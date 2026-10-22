@@ -17,5 +17,5 @@ public class BookCopy {
  @Version @Column(nullable=false) public Long version;
  @Column(nullable=false) public Instant createdAt;
  @Column(nullable=false) public Instant updatedAt;
- public void touch(Instant now){updatedAt=now;}
+ public void touch(Instant now){updatedAt=updatedAt==null||now.isAfter(updatedAt)?now:updatedAt.plusNanos(1000);}
 }

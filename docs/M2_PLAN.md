@@ -77,12 +77,12 @@
 
 **Interfaces:** BookCommandService.create(AdminUser,BookWrite):BookDetail; update(long id,long version,AdminUser,BookWrite):BookDetail. BookValidation.validateDraft(BookWrite):void; BookAccess.requireWritable(AdminUser,Publication):void. AuditService.record(AdminUser,String targetType,long targetId,String action,Map before,Map after,long version):void.
 
-- [ ] Viết failing `createsDraftAndListingAtomically`, `duplicateTitleIsTwoPhysicalCopies`, `rejectsMissingPictureBinding`, `nullableLevelClearsBasis`, `staleWriteDoesNotChangeListingOrAudit`; assert create có DRAFT/AVAILABLE, hai mã khác, update cũ trả conflict và dữ liệu/audit không đổi.
-- [ ] Viết `auditFailureRollsBackBothTables` bằng audit collaborator test-only ném lỗi; `noOpDoesNotBumpVersion` so sánh root version và số audit. Test biên giá 1/999999999999, 0/float, text trim/null và link HTTPS không userinfo.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=BookCommandIntegrationTest test`.
-- [ ] Implement transaction create/update, set root updatedAt + @Version, flush trước map DTO; validate full BookWrite theo spec 4–5. Check version kể cả no-op; mapping age/collection cùng transaction, không delete/recreate Listing khi update.
-- [ ] Audit field allowlist, actor/time server, không secret/cloud URL; Clock bean trong TimeConfiguration tiêm vào service, không mock thời gian hệ thống toàn JVM.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: save book aggregates with validation and audit`.
+- [x] Viết failing `createsDraftAndListingAtomically`, `duplicateTitleIsTwoPhysicalCopies`, `rejectsMissingPictureBinding`, `nullableLevelClearsBasis`, `staleWriteDoesNotChangeListingOrAudit`; assert create có DRAFT/AVAILABLE, hai mã khác, update cũ trả conflict và dữ liệu/audit không đổi.
+- [x] Viết `auditFailureRollsBackBothTables` bằng audit collaborator test-only ném lỗi; `noOpDoesNotBumpVersion` so sánh root version và số audit. Test biên giá 1/999999999999, 0/float, text trim/null và link HTTPS không userinfo.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=BookCommandIntegrationTest test`.
+- [x] Implement transaction create/update, set root updatedAt + @Version, flush trước map DTO; validate full BookWrite theo spec 4–5. Check version kể cả no-op; mapping age/collection cùng transaction, không delete/recreate Listing khi update.
+- [x] Audit field allowlist, actor/time server, không secret/cloud URL; Clock bean trong TimeConfiguration tiêm vào service, không mock thời gian hệ thống toàn JVM.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: save book aggregates with validation and audit`.
 
 ## Task 3 — Publication, availability và quyền tại transaction
 
