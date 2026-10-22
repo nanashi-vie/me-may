@@ -1,0 +1,10 @@
+server:
+  servlet:
+    session:
+      cookie:
+        secure: false
+memay:
+  bootstrap:
+    enabled: true
+    email: ${BOOTSTRAP_OWNER_EMAIL}
+    password: ${BOOTSTRAP_OWNER_PASSWORD}
