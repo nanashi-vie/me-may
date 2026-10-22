@@ -1,4 +1,4 @@
-# M0 — field schema và pilot dữ liệu
+# Mẹ Mây — schema nhập liệu và pilot dữ liệu
 
 ## Hai tập dữ liệu khác nhau
 
@@ -50,4 +50,4 @@ Các cột `dataset_kind`, `verified` chỉ để quản trị fixture/pilot, kh
 5. Ghi thời gian nhập mỗi cuốn, field khó hiểu và thiếu sót ảnh; không đặt mục tiêu tốc độ khi chưa đo.
 6. Sửa schema/taxonomy và brief UI theo phát hiện; ghi quyết định vào DEV_LOG trước khi tạo technical spec.
 
-M0 chưa qua gate pilot cho tới khi các bước trên có bằng chứng. Bộ demo không phải ground truth nghiên cứu AI hoặc dữ liệu thương mại được phép xuất bản.
+M0 đã được duyệt về phạm vi/UX; pilot thật vẫn chưa đạt cho tới khi các bước trên có bằng chứng. Bộ demo không phải ground truth nghiên cứu AI hoặc dữ liệu thương mại được phép xuất bản.

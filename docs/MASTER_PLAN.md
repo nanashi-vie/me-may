@@ -1,12 +1,16 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản nội bộ dành cho người phát triển | 21/10/2026 | Phiên bản 3.2 (M0 bắt đầu; database tự quản trên VPS/Dokploy)**
+**Bản hiện hành | Cập nhật 22/10/2026 | M0 đã duyệt; M1 local đã triển khai**
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
-> **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Bản này thay thế v3.1 về database/hạ tầng; M0 đang thiết kế, chưa triển khai sản phẩm.
+> **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Các proposal và phiên bản cũ đã được gộp/xóa; lịch sử xem trong Git.
 
-> **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [M1 local plan](superpowers/plans/2026-10-22-m1-local.md) và [PROGRESS](PROGRESS.md).
+> **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [báo cáo kiểm tra M1](VERIFICATION.md) và [PROGRESS](PROGRESS.md).
+
+### Phạm vi M1 local đã thực hiện
+
+Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, bootstrap Owner idempotent, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
 
 ## 0. Chốt quyết định và giới hạn
 
@@ -46,19 +50,19 @@ Các mặc định trên là **cấu hình triển khai đề xuất**, không b
 - Trang bộ sưu tập có **lọc thể loại, nhà xuất bản, khoảng giá**, sắp xếp theo tên/giá/mới-cũ.
 - Trang chi tiết có **mã sản phẩm, giá, tình trạng, ISBN, tác giả, khuôn khổ, số trang, định dạng, trọng lượng** khi được khai báo; trang Kim Đồng còn có thêm giỏ hàng/mua ngay.
 
-**Giữ lại cho Mẹ Mây:** cấu trúc IA, danh mục/độ tuổi, card sách, tìm kiếm, sort/filter, trang chi tiết và metadata chia sẻ.  
-**Thay đổi cho Mẹ Mây:** ưu tiên ảnh thật của **đúng cuốn**, phần tình trạng/lỗi, loại sách Picture/Board/Chapter, bằng chứng trang ruột, mã cuốn duy nhất; thay nút giỏ/mua bằng hỏi mua/danh sách quan tâm.  
+**Giữ lại cho Mẹ Mây:** cấu trúc IA, danh mục/độ tuổi, card sách, tìm kiếm, sort/filter, trang chi tiết và metadata chia sẻ.
+**Thay đổi cho Mẹ Mây:** ưu tiên ảnh thật của **đúng cuốn**, phần tình trạng/lỗi, loại sách Picture/Board/Chapter, bằng chứng trang ruột, mã cuốn duy nhất; thay nút giỏ/mua bằng hỏi mua/danh sách quan tâm.
 **Không bê sang:** khuyến mãi giả định, kho theo số lượng của một SKU, combo tự động, đánh giá sao không có dữ liệu, checkout, tin tức phức tạp.
 
 Nguồn tham khảo: [Trang chủ](https://nxbkimdong.com.vn/), [Ví dụ trang bộ sưu tập](https://nxbkimdong.com.vn/collections/em-biet-gi), [Ví dụ trang chi tiết](https://nxbkimdong.com.vn/products/lo-au-oi-tam-biet-tro-chuyen-ve-suc-khoe-tam-than-chung-roi-loan-lo-au).
 
 ## 2. Sitemap và UX cần thiết
 
-Home lấy bố cục từ ảnh `docs/nxbkimdong.com.vn.png` do người dùng cung cấp: nhiều hàng sách, banner ngang và footer, không chuyển sang landing kể chuyện ít sản phẩm. Các bản nháp M0 nằm tại [docs/m0](m0/README.md); cần review trước khi trở thành thiết kế đã duyệt.
+Home lấy bố cục từ ảnh `docs/assets/nxbkimdong.com.vn.png` do người dùng cung cấp: nhiều hàng sách, banner ngang và footer, không chuyển sang landing kể chuyện ít sản phẩm. Thiết kế M0 đã được người dùng duyệt; xem [DESIGN](DESIGN.md). Visual chi tiết và dữ liệu pilot thật vẫn cần hoàn thiện.
 
 | Khu vực | Route gợi ý | Nội dung MVP |
 |---|---|---|
-| Home | `/` | Header/search, menu danh mục, banner ngang lớn, các hàng sách/bộ sưu tập và banner xen kẽ theo ảnh tham khảo người dùng; xem docs/m0/home-brief.md |
+| Home | `/` | Header/search, menu danh mục, banner ngang lớn, các hàng sách/bộ sưu tập và banner xen kẽ theo ảnh tham khảo người dùng; xem DESIGN.md |
 | Catalogue | `/sach` | Grid, search, filter, sort, pagination; URL giữ filter |
 | Collection | `/bo-suu-tap/:slug` | Tập sách chủ/nhân viên biên tập |
 | Detail | `/sach/:slug` | Gallery ảnh, ảnh lỗi, tên/giá/mã/tình trạng, mô tả, CTA, sách tương tự nếu có |
@@ -328,7 +332,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
-Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chưa code/commit/deploy từ tài liệu này.**
+Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất, các milestone sau cần spec tương ứng.**
 
 ## 9. Definition of Done — nghiệm thu MVP
 
@@ -365,13 +369,13 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 | VPS/Dokploy dashboard hoặc API lộ công khai sai cách | **Cao** | Firewall, secrets, origin TLS, Dokploy RBAC, không expose container ports |
 | Chi phí Cloudflare + VPS + lưu backup ngoài máy + Cloudinary | Trung bình | Staging footprint/quota đo thực tế, xem giới hạn gói và thông báo vượt mức |
 
-## 11. Các cột mốc ngay sau tài liệu này
+## 11. Các bước còn lại sau M1 local
 
-1. **Chốt tài liệu Word gửi chủ**: đây là phần mô tả sản phẩm, không buộc chủ trả lời lại bộ câu hỏi nghiệp vụ.
-2. **Làm wireframes**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish.
+1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
+2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá, ảnh, format, tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
 4. **Tạo technical specification sau wireframe**: ERD, OpenAPI, role matrix, testing strategy, **Cloudflare rendering spike**, **PostgreSQL private connection + offsite backup/restore test**, Dokploy release/rollback, repo structure; hosting provider đã chọn, chỉ còn chọn plan/cấu hình.
-5. **Triển khai M1→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
+5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
 6. **Sau MVP ổn định** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
 
 ### Kết luận

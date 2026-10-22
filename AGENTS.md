@@ -4,8 +4,8 @@
 
 1. Đọc `docs/PROGRESS.md` để biết giai đoạn hiện tại, việc dang dở và bước kế tiếp.
 2. Đọc mục mới nhất của `docs/DEV_LOG.md`; nếu đang sửa việc cũ, đọc thêm mục liên quan.
-3. Đọc các phần liên quan của `docs/Me-May_MASTER_PLAN_v3.2_2026-10-21.md`. Đây là baseline phạm vi hiện tại, chưa thay cho technical spec được duyệt.
-4. Đọc `docs/SKILLS.md`, chọn skill phù hợp và đọc đầy đủ `SKILL.md` của skill đó trước khi áp dụng. Không nạp toàn bộ 19 skill mỗi phiên.
+3. Đọc các phần liên quan của `docs/MASTER_PLAN.md`. Đây là baseline phạm vi hiện tại, chưa thay cho technical spec được duyệt.
+4. Chọn skill phù hợp từ danh mục runtime hoặc `.agents/skills/`, đọc đầy đủ `SKILL.md` trước khi áp dụng. Bộ skill local được bỏ qua bởi Git; không nạp toàn bộ mỗi phiên.
 5. Kiểm tra trạng thái file/Git và xác minh lại môi trường thực tế. Log là bản bàn giao, không phải bằng chứng rằng code hoặc dịch vụ hiện tại vẫn hoạt động.
 
 Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat mới. Dùng log để tìm bằng chứng và tiếp tục từ bước chưa xong. Nếu yêu cầu mới thay đổi phạm vi, ghi quyết định đó vào log và cập nhật tiến độ.
@@ -13,9 +13,9 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Nguồn quyết định và giới hạn
 
 - Yêu cầu mới nhất của người dùng là nguồn chỉ đạo hiện tại; system/developer instructions vẫn có độ ưu tiên cao hơn file này.
-- Master plan v3.2 ưu tiên hơn proposal cũ trong `docs/proposals/` khi có khác biệt. Proposal cũ và legacy assessment là lịch sử/tham khảo.
+- `docs/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/DESIGN.md`, dữ liệu ở `docs/DATA.md`, kiến trúc và khảo sát nguồn cũ ở `docs/ARCHITECTURE.md`. Lịch sử phiên bản tra bằng Git.
 - Bản spec/ADR được duyệt sau này ghi rõ quyết định nào thay thế master plan. Không âm thầm sửa phạm vi thông qua code hoặc skill.
-- Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Plan thực thi: `docs/superpowers/plans/2026-10-22-m1-local.md`.
+- Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `README.md`.
 
 ## Các ràng buộc chính từ master plan
 
@@ -30,7 +30,7 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 
 ## Skill tái sử dụng và Superpowers
 
-- Skill project-local nằm ở `.agents/skills/`; bản gốc được sao chép từ Ellora và chưa sửa nội dung. Registry và lưu ý tương thích: `docs/SKILLS.md`.
+- Skill project-local nằm ở `.agents/skills/`, sao chép từ `/Users/daoquanghung/Documents/FBT/7/exe/ellora/.agents/` ngày 21/10/2026. Giữ local, không commit `.agents/`, `.agent/`, cấu hình IDE hoặc cache agent. Khi cần trên máy mới, sao chép từ nguồn hoặc cài skill phù hợp; không giả định Git clone có skill. Nếu runtime không liệt kê, đọc trực tiếp `SKILL.md` trong thư mục local. Khi cập nhật skill phải đối chiếu diff với bản đã chỉnh trước đó; ghi nguồn/đổi khác vào DEV_LOG.
 - Khi tác vụ phù hợp Superpowers, dùng quy trình tương ứng: brainstorming cho thiết kế mới, writing-plans sau khi spec được duyệt; debugging cho lỗi; verification trước khi tuyên bố hoàn thành.
 - Hướng dẫn project-local bổ sung cho Superpowers, không bỏ qua giai đoạn thiết kế/duyệt hiện hành và không tự cấp quyền deploy/publish.
 - Áp dụng nguyên tắc gọn, tái sử dụng, ít dependency từ `.agents/rules/ponytail.md`, trong phạm vi đã hiểu và cần thiết.
@@ -38,6 +38,15 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 - Các ví dụ React/Tailwind/GSAP, motion bắt buộc, màu/font và bố cục trong skill là tham khảo có điều kiện. Stack, wireframe được duyệt, khả năng đọc, reduced motion và hiệu năng Mẹ Mây ưu tiên hơn các mặc định đó.
 - Không cài thêm framework/library hoặc tạo ảnh chỉ vì một skill có ví dụ dùng chúng. Khi cần image generation, dùng tool/skill imagegen đang có theo phạm vi tác vụ.
 - `stitch-design-taste/DESIGN.md` là mẫu đi kèm skill, không phải design system đã duyệt của Mẹ Mây. Skill nhắc tool không có thì ghi giới hạn và dùng lựa chọn phù hợp hiện có.
+
+## Giữ tài liệu gọn sau mỗi thay đổi
+
+- Dùng mục lục `docs/README.md`; mỗi chủ đề có một file hiện hành với tên cố định. Ưu tiên cập nhật ngay file đó, không tạo thêm bản theo ngày/version hoặc proposal trùng phạm vi.
+- Nếu cần file thay thế, chuyển đầy đủ quyết định/nội dung còn giá trị, sửa mọi liên kết đang dùng rồi xóa file cũ trong cùng thay đổi. Không chuyển bản cũ sang thư mục archive để giữ lại sự trùng lặp; lịch sử do Git quản lý.
+- Spec/plan mới chỉ tạo khi có phạm vi triển khai mới cần duyệt. Khi hoàn tất, gộp quyết định vào tài liệu chuẩn, bằng chứng vào VERIFICATION/DEV_LOG rồi xóa plan đã hết vai trò. Không xóa spec đang được thực thi hoặc chưa chuyển hết tiêu chí chấp nhận.
+- DEV_LOG giữ checkpoint lịch sử trong một file; PROGRESS là snapshot cập nhật tại chỗ. Không xóa bằng chứng/việc chưa làm chỉ để làm tài liệu ngắn hơn.
+- Chỉ dùng `.gitignore` ở root cho repo này; quy tắc riêng frontend phải ghi đường dẫn phù hợp trong file root.
+- Trước bàn giao: kiểm tra link local, không còn plan/proposal đã thay thế, `.env` và công cụ local được ignore; `code/frontend/public/` chứa asset nguồn (gồm logo) vẫn được Git theo dõi.
 
 ## Ghi log bắt buộc khi thực hiện công việc
 
