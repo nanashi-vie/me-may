@@ -1,6 +1,10 @@
 spring:
   application:
     name: me-may-api
+  jackson:
+    deserialization:
+      fail-on-unknown-properties: true
+      accept-float-as-int: false
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}

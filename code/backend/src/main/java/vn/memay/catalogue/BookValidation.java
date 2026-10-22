@@ -12,7 +12,10 @@ public class BookValidation {
  private static void text(String key,String value,int max){if(value!=null&&value.length()>max)throw AdminApiException.field(key,"Tối đa "+max+" ký tự");}
  public BookWrite normalize(BookWrite w){
   if(w==null)throw AdminApiException.field("body","Thiếu nội dung");
-  return new BookWrite(trim(w.title()),trim(w.isbn()),trim(w.publisher()),trim(w.author()),trim(w.language()),trim(w.binding()),trim(w.conditionGrade()),trim(w.conditionNote()),w.priceVnd(),trim(w.description()),trim(w.categoryCode()),w.ageGroups()==null?List.of():w.ageGroups(),trim(w.readingLevel()),trim(w.readingLevel())==null?null:trim(w.readingLevelBasis()),trim(w.readingVideoUrl()),w.collectionIds()==null?List.of():w.collectionIds());
+  return new BookWrite(trim(w.title()),trim(w.isbn()),trim(w.publisher()),trim(w.author()),trim(w.language()),trim(w.binding()),trim(w.conditionGrade()),trim(w.conditionNote()),w.priceVnd(),trim(w.description()),trim(w.categoryCode()),ordered(w.ageGroups(),Comparator.comparingInt(AGES::indexOf)),trim(w.readingLevel()),trim(w.readingLevel())==null?null:trim(w.readingLevelBasis()),trim(w.readingVideoUrl()),ordered(w.collectionIds(),Comparator.comparing(java.math.BigInteger::new)));
+ }
+ private static List<String> ordered(List<String> input,Comparator<String> comparator){
+  if(input==null)return List.of();var values=new ArrayList<>(input);try{values.sort(comparator);}catch(RuntimeException ignored){return input;}return values;
  }
  public void validateDraft(BookWrite w){
   text("title",w.title(),300);text("isbn",w.isbn(),32);text("publisher",w.publisher(),200);text("author",w.author(),200);text("language",w.language(),50);text("conditionNote",w.conditionNote(),4000);text("description",w.description(),10000);text("readingLevelBasis",w.readingLevelBasis(),1000);text("readingVideoUrl",w.readingVideoUrl(),2048);

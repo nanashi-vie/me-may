@@ -103,13 +103,13 @@
 
 **Interfaces:** AdminActorResolver.current(Authentication):AdminUser; BookQueryService.list(AdminUser,BookFilter):Page<BookSummary>, detail(long,AdminUser):BookDetail, preview(long,AdminUser):PreviewBook, audit(long,AdminUser,PageRequest):Page<AuditSummary>; TaxonomyService.get():Taxonomy; CollectionService.list(AdminUser):List<CollectionDto>, create(AdminUser,CollectionCreate):CollectionDto, update(long,long,AdminUser,CollectionUpdate):CollectionDto.
 
-- [ ] Viết failing API tests đúng status/body/Location/ID string tại spec 6–7; assert `forgedBookCodeOrActorReturns400` và unknown field bị từ chối bằng DTO strict parsing, không đổi contract auth `{error}`.
-- [ ] Viết `searchTreatsPercentAndUnderscoreLiterally`, tên có dấu/nháy; q>200, page<0,size>100 và enum sai→400; list ổn định updatedAt/id, collection sortOrder/id. Anonymous/CSRF/Staff gọi thẳng đều đúng quyền.
-- [ ] Viết `previewDoesNotLeakInternalFields`: `assertThat(json).doesNotContain("readingLevelBasis", "sourceRef", "storagePublicId", "cloudinary")`; preview có nội dung thiếu được gắn trạng thái nháp qua UI, không public API.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=AdminBooksApiTest,CollectionsApiTest test`.
-- [ ] Implement mọi endpoint JSON spec 7, binding parameters/escape LIKE, no-store, DTO projection và mapping lỗi 400/403/404/409. Owner collection tạo/sửa/active/version; slug bất biến, inactive không gán mới, mapping cũ được giữ/bỏ.
-- [ ] AdminHttpClient test helper dùng cookie jar, CSRF mới sau login và request JSON/multipart; không nới security để test pass. Kiểm strict parsing không đổi login form-encoded hoặc auth `{error}`.
-- [ ] GREEN cùng lệnh, rồi auth regression; checkpoint và commit `feat: expose guarded admin catalogue APIs`.
+- [x] Viết failing API tests đúng status/body/Location/ID string tại spec 6–7; assert `forgedBookCodeOrActorReturns400` và unknown field bị từ chối bằng DTO strict parsing, không đổi contract auth `{error}`.
+- [x] Viết `searchTreatsPercentAndUnderscoreLiterally`, tên có dấu/nháy; q>200, page<0,size>100 và enum sai→400; list ổn định updatedAt/id, collection sortOrder/id. Anonymous/CSRF/Staff gọi thẳng đều đúng quyền.
+- [x] Viết `previewDoesNotLeakInternalFields`: `assertThat(json).doesNotContain("readingLevelBasis", "sourceRef", "storagePublicId", "cloudinary")`; preview có nội dung thiếu được gắn trạng thái nháp qua UI, không public API.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=AdminBooksApiTest,CollectionsApiTest test`.
+- [x] Implement mọi endpoint JSON spec 7, binding parameters/escape LIKE, no-store, DTO projection và mapping lỗi 400/403/404/409. Owner collection tạo/sửa/active/version; slug bất biến, inactive không gán mới, mapping cũ được giữ/bỏ.
+- [x] AdminHttpClient test helper dùng cookie jar, CSRF mới sau login và request JSON/multipart; không nới security để test pass. Kiểm strict parsing không đổi login form-encoded hoặc auth `{error}`.
+- [x] GREEN cùng lệnh, rồi auth regression; checkpoint và commit `feat: expose guarded admin catalogue APIs`.
 
 ## Task 5 — Cloudinary adapter, validation ảnh và giới hạn tài nguyên
 

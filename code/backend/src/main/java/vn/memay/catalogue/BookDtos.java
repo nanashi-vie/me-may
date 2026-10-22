@@ -6,6 +6,11 @@ public final class BookDtos {
  public enum Publication { DRAFT, PUBLISHED, ARCHIVED }
  public enum Availability { AVAILABLE, SOLD }
  public record BookWrite(String title,String isbn,String publisher,String author,String language,String binding,String conditionGrade,String conditionNote,Long priceVnd,String description,String categoryCode,List<String> ageGroups,String readingLevel,String readingLevelBasis,String readingVideoUrl,List<String> collectionIds) {}
+ public record BookUpdate(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,String title,String isbn,String publisher,String author,String language,String binding,String conditionGrade,String conditionNote,Long priceVnd,String description,String categoryCode,List<String> ageGroups,String readingLevel,String readingLevelBasis,String readingVideoUrl,List<String> collectionIds) {
+  public BookWrite write(){return new BookWrite(title,isbn,publisher,author,language,binding,conditionGrade,conditionNote,priceVnd,description,categoryCode,ageGroups,readingLevel,readingLevelBasis,readingVideoUrl,collectionIds);}
+ }
+ public record PublicationChange(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,@jakarta.validation.constraints.NotNull Publication status,Boolean confirmedActualCopy){}
+ public record AvailabilityChange(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,@jakarta.validation.constraints.NotNull Availability availability){}
  public record MediaView(String id,MediaRole role,String alt,String sourceRef,String contentPath){}
  public record BookDetail(String id,String bookCode,String slug,long version,String title,String isbn,String publisher,String author,String language,String binding,String conditionGrade,String conditionNote,Long priceVnd,String description,String categoryCode,List<String> ageGroups,String readingLevel,String readingLevelBasis,String readingVideoUrl,List<String> collectionIds,Publication publication,Availability availability,Instant publishedAt,Instant createdAt,Instant updatedAt,List<MediaView> media){}
  public record BookSummary(String id,String bookCode,String title,Long priceVnd,Publication publication,Availability availability,long version,Instant updatedAt,String frontContentPath){}
