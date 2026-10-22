@@ -53,4 +53,8 @@ class AdminBooksApiTest extends CatalogueTestSupport {
   var code=api.send("GET","/api/v1/admin/books?q="+first.bookCode().toLowerCase(Locale.ROOT),null,false);assertThat(tree(code).path("totalElements").asLong()).isEqualTo(1);
   assertThat(api.send("GET","/api/v1/admin/books/999999999",null,false).statusCode()).isEqualTo(404);
  }
+ @Test void jsonNumbersCannotBeCoercedFromStrings()throws Exception{
+  assertThat(api.send("POST","/api/v1/admin/books",json(Map.of("priceVnd","1000")),true).statusCode()).isEqualTo(400);
+  var b=commands.create(owner,BookFixtures.draft("A"));assertThat(api.send("PATCH","/api/v1/admin/books/"+b.id()+"/availability",json(Map.of("version","0","availability","SOLD")),true).statusCode()).isEqualTo(400);
+ }
 }

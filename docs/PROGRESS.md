@@ -1,55 +1,38 @@
-# Mẹ Mây — tiến độ và bàn giao hiện tại
+# Tiến độ Mẹ Mây
 
-Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S010-C01 trong [DEV_LOG](DEV_LOG.md).
+Cập nhật 22/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](README.md), checkpoint mới nhất ở cuối [DEV_LOG](DEV_LOG.md). Luôn kiểm tra lại Git/process/môi trường.
 
-## Trạng thái
+## Trạng thái hiện tại
 
-**M0 đã được người dùng duyệt. M1 local đã triển khai và kiểm tra; Docker hóa app, CI/CD và deploy được hoãn theo yêu cầu.** Pilot 10–20 cuốn thật vẫn chuẩn bị song song, chưa có dữ liệu thương mại được xác nhận.
+- M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
+- Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa hoặc chuyển M3.
+- Branch `feat/m2-admin-catalogue`; task1–10 đã commit local, kiểm tra cuối/review/bàn giao được lưu cùng thay đổi liên quan. Không push/merge/deploy.
 
-Baseline sản phẩm: [MASTER_PLAN](MASTER_PLAN.md). Phạm vi M1 local đã gộp vào bản hiện hành; không giữ plan thực thi đã hoàn tất.
+## Đã kiểm chứng
 
-Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. [M2_SPEC](M2_SPEC.md) đã được người dùng duyệt; [M2_PLAN](M2_PLAN.md) gồm 11 task đã duyệt; **đang thực thi tuần tự, task 1–6 đạt 69 backend tests + live Cloudinary adapter 1/1, task7–10 frontend31/31; tiếp task11 tích hợp/nghiệm thu**. Chi tiết hạ tầng ở ARCHITECTURE, provider/gate giữ ở master.
+- Schema BookCopy/Listing, taxonomy cố định, mã tăng dần MM-000001 bất biến và có thể khuyết; aggregate version/audit, Owner/Staff, publication độc lập availability.
+- API admin strict JSON, tìm kiếm literal, collections, preview/audit; ảnh authenticated Cloudinary, ba slot, bounded upload và cleanup recoverable. Timeout chưa rõ kết quả giữ intent chờ 1h, không dọn sớm.
+- Angular list/editor/collection/media/status/preview/audit; CSRF mới, không replay POST tạo, giữ form khi lỗi/xung đột/hết phiên; dirty guard gồm file/metadata ảnh; admin noindex/no-store, giá vi-VN.
+- Backend verify73 PASS +2 live skipped mặc định; live Cloudinary2/2 PASS riêng; frontend34/34 và build PASS; SSR public/404/admin headers PASS. Chi tiết mới ở [VERIFICATION](VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
+- Browser Owner flow và Staff restriction; hai tab stale, offline, cookie expiry, dirty navigation và keyboard focus đã thử trên me_may_test/memay/test, không dùng dữ liệu tiệm làm synthetic fixture.
+- Backup trước dev migration; restore scratch giữ auth và M2 data/audit/code sequence/media reference; asset test đã cleanup. Không coi đây là gate production/backup media độc lập.
+- Review độc lập toàn nhánh: 4 finding đã có RED→GREEN; giữ thêm gate pilot thật, không lấy dữ liệu/ảnh giả để nghiệm thu.
 
-## Baseline trước M2 đã cập nhật
+## Chạy local / pilot
 
-- MVP nhập thủ công; lọc chỉ tuổi/thể loại, nhiều nhóm tuổi và một thể loại/cuốn. Picture book bắt buộc đúng một kiểu Paperback/Hardcover; “Tất cả” chỉ dùng khi lọc.
-- Giá tham khảo + ghi chú tình trạng; ba ảnh FRONT/BACK/INSIDE bắt buộc trước xuất bản; bảy mức đọc Cambridge/CEFR chọn thủ công, có thể chưa xác định; link video đọc sách tùy chọn.
-- Chỉ Còn hàng/Hết hàng; trái tim wishlist, CTA liên hệ/tư vấn tương đương qua Zalo hotline cá nhân zBusiness và link nhóm riêng. Điền sẵn chưa kiểm chứng; chấp nhận copy → mở Zalo → dán/gửi, có copy thủ công dự phòng.
-- Import CSV/Excel ngay sau MVP chỉ tạo mới thành nháp, mã trùng báo lỗi; cập nhật sách có sẵn là giai đoạn sau. Chưa đặc tả file/preview/lỗi, chưa code importer.
-- MASTER_PLAN/DATA/DESIGN đã đồng bộ; fixture/wireframe M0 giữ nguyên và ghi rõ chưa khớp baseline mới. Chưa triển khai hoặc nghiệm thu M2; thay đổi phiên này chỉ là tài liệu. Kiểm tra 51 link local, code fence, nội dung baseline/gate giữ lại và `git diff --check` đạt; không chạy lại build/test ứng dụng.
+Backend 8080 và frontend 4200 được để chạy để chủ thử; kiểm tra lại khi tiếp tục phiên. Mở [Quản lý sách](http://127.0.0.1:4200/admin/sach), đăng nhập bằng BOOTSTRAP_OWNER_EMAIL/PASSWORD trong `.env` local; không gửi secret qua chat. Hướng dẫn nhập/pilot ở [README](../README.md#nhập-sách-và-pilot-m2).
 
-## Đã có
-
-- Angular 21.2 standalone/SSR-ready, public/admin layouts, login form và guard; Home mới là shell, chưa dựng các hàng sách M0.
-- Spring Boot 4.1.1/Java21, JPA/Validation/Security/Flyway, session Owner/Staff, CSRF, JSON auth errors, owner bootstrap local idempotent.
-- PostgreSQL 18.4 ở container my-postgres, localhost:5432; database riêng me_may_dev và me_may_test, role me_may_app. Credential ngẫu nhiên trong root .env ignored (0600), không ghi vào tài liệu.
-- README hướng dẫn chạy/test, check-ssr script; [verification report](VERIFICATION.md).
-- Backend 13 tests và JAR verify pass; frontend 7 tests/build pass; npm audit 0; SSR dev + production local metadata/content/404 pass; browser login/logout/wrong-password đã thử.
-- Review độc lập phát hiện noindex sau 404, đã sửa và có test hồi quy.
-
-## Chạy local
-
-Từ root: `bash code/backend/run-local.sh`. Frontend: `cd code/frontend` rồi `npm start`.
-
-Mở http://127.0.0.1:4200/admin/dang-nhap. Đọc BOOTSTRAP_OWNER_EMAIL / BOOTSTRAP_OWNER_PASSWORD trong .env local bằng editor; không gửi mật khẩu vào chat. Không commit .env. Xem [README](../README.md) để chạy trên phiên khác hoặc kiểm tra SSR production local.
-
-Ở thời điểm bàn giao, backend 8080 và dev frontend 4200 được giữ chạy để xem thử; kiểm tra lại process trong phiên sau, không giả định còn chạy. SSR preview 4000 chỉ dùng kiểm tra, có thể đã dừng.
-
-## Git và môi trường
-
-Repo đã nối origin https://github.com/nanashi193/me-may.git. Nhánh feat/m1-local dựa trên origin/dev (5d70ec8, cùng initial commit với main); chỉ lưu commit local, không push/merge/deploy. Kiểm tra git status/log khi tiếp tục.
-
-Đã có .agents/skills và graph project Users-daoquanghung-Projects-me-may; refresh index nếu source đổi. Không tạo worktree khác hoặc sửa nguồn Ellora.
+Dev dùng me_may_dev; tests dùng me_may_test có guard; Cloudinary đã được cấu hình và xác minh. Không dùng `.local/*-browser.json` hoặc tài khoản fixture test cho pilot. Không reset sequence; sách bán thật do tiệm nhập thủ công. Dữ liệu synthetic trong browser test đã xóa khỏi DB/cloud.
 
 ## Bước tiếp theo
 
-1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; task 1–6 đã đạt (69 PASS + 1 opt-in skipped mặc định; live adapter riêng 1/1 PASS), task7–10 frontend đạt31/31; tiếp task11 tích hợp/browser/live/restore/pilot. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
-2. Cloudinary đã xác minh upload/preview authenticated và cleanup đúng asset test; chuẩn bị 10–20 cuốn thật cho gate media/pilot M2; không gửi secret qua chat. Link Zalo hotline/nhóm thật cần trước nghiệm thu luồng liên hệ M3; khả năng điền sẵn còn phải kiểm chứng, không chặn các task catalogue local.
-3. M2 triển khai CRUD nhập thủ công sau khi plan được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
-4. Khi quay lại staging, làm Cloudflare rendering spike, domain cookie/CORS/CSRF, VPS/Dokploy, production DB roles, backup/restore và CI/CD. Không đánh dấu các gate đó đạt từ kiểm tra local.
+1. Chủ nhập 10–20 cuốn thật: mã/nhãn, giá/tình trạng, ba ảnh; tự tìm/sửa/preview/publish/sold/ẩn/khôi phục; ghi thời gian nhập/tìm/sửa và các điểm vướng. Chưa có kết quả pilot thì M2 còn mở.
+2. Nếu có lỗi pilot: tái hiện, sửa có kiểm chứng và ghi checkpoint. Khi chủ duyệt gate M2, chuyển hết quyết định/bằng chứng vào tài liệu chuẩn rồi mới xóa spec/plan hết vai trò.
+3. M3 catalogue/detail/contact cần đặc tả tiếp; link Zalo hotline/nhóm thật cần trước nghiệm thu contact. M4 wishlist trên thiết bị; import CSV/Excel tạo mới thành nháp ngay sau MVP.
+4. Cloudflare render/SEO/OG spike, staging/VPS/Dokploy, production roles/domains/CORS/CSRF, CI/CD, backup ngoài VPS còn các gate riêng, chưa triển khai từ phiên này.
 
-Chọn file/mục cần đọc theo [chỉ mục duy nhất](README.md#đọc-theo-đầu-việc); không nạp toàn bộ bộ tài liệu hoặc nhật ký. Quy tắc ở [AGENTS](../AGENTS.md).
+## Bàn giao và tài liệu
 
-## Dọn repository theo yêu cầu mới
-
-Đã gộp tài liệu thành bộ hiện hành có tên cố định, bỏ proposal/plan cũ sau khi chuyển nội dung hữu ích. Chỉ dùng một `.gitignore` root; các quy tắc riêng Angular đã được gộp với đường dẫn phù hợp. Skill `.agents/` và cấu hình `.vscode/` được giữ trên máy nhưng bỏ theo dõi Git. Logo mới `code/frontend/public/logo.jpg` được giữ làm asset nguồn, chưa tích hợp UI. Cleanup ở b4bb335; baseline/rule ở b8d32d9; mã/spec S007–S008 ở 35441c2. Plan và cập nhật trạng thái S009 còn local, chưa commit/push/merge/deploy. Quy tắc cập nhật và xóa tài liệu cũ đã ghi trong AGENTS và mục lục docs.
+- Một chỉ mục docs/README; Markdown tối đa 400 dòng/file, không có tối thiểu bắt buộc; DEV_LOG ngoại lệ. Không tạo proposal trùng phạm vi hoặc thêm .gitignore con.
+- Log/artifact/backup/cookie local nằm trong `.superpowers/`, `.local/`, `output/playwright/` được ignore; không commit secret/dump/ảnh pilot. Source asset public/logo vẫn theo dõi Git.
+- Knowledge graph project Users-daoquanghung-Projects-me-may đã refresh trong M2, có thể thiếu file media do default exclusion; dùng fallback khi không đủ kết quả. Lần refresh graph cuối báo Transport closed; không giả định index chứa frontend mới. Skill ở `.agents/` local, không giả định có trong clone.

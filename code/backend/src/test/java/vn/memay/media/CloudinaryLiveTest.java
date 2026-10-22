@@ -13,7 +13,7 @@ import static org.assertj.core.api.Assertions.*;
 @EnabledIfEnvironmentVariable(named="MEMAY_LIVE_MEDIA_TEST",matches="true")
 class CloudinaryLiveTest {
  @Test void authenticatedUploadPreviewPrivacyAndDelete()throws Exception{
-  PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL"));assertThat(System.getenv("MEMAY_LIVE_MEDIA_NAMESPACE")).isEqualTo("memay/test");
+  PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL"));assertThat(System.getenv("CLOUDINARY_NAMESPACE")).isEqualTo("memay/test");
   String cloud=System.getenv("CLOUDINARY_CLOUD_NAME"),key=System.getenv("CLOUDINARY_API_KEY"),secret=System.getenv("CLOUDINARY_API_SECRET");assertThat(cloud!=null&&key!=null&&secret!=null).isTrue();
   String id="memay/test/"+UUID.randomUUID();
   try(var transport=new DeadlineCloudinaryTransport(JsonMapper.builder().build())){

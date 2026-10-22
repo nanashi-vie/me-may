@@ -28,4 +28,5 @@ public final class AdminHttpClient {
   if(csrf)b.header("X-CSRF-TOKEN",tree(send("GET","/api/v1/auth/csrf",null,false)).path("token").asString());
   return client.send(b.POST(HttpRequest.BodyPublishers.ofByteArray(bytes.toByteArray())).build(),HttpResponse.BodyHandlers.ofString());
  }
+ public HttpResponse<byte[]> download(String path)throws Exception{return client.send(HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).GET().build(),HttpResponse.BodyHandlers.ofByteArray());}
 }

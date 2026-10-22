@@ -10,7 +10,10 @@ for (const [path, title, heading] of [
   const html = await response.text();
   assert.ok(html.includes(`<title>${title}</title>`), `Initial HTML title missing: ${path}`);
   assert.ok(html.includes(heading), `Initial HTML content missing: ${path}`);
-  assert.ok(/<meta[^>]+name="description"[^>]+content="[^"]+"/.test(html), `Description missing: ${path}`);
+  assert.ok(
+    /<meta[^>]+name="description"[^>]+content="[^"]+"/.test(html),
+    `Description missing: ${path}`,
+  );
   assert.ok(html.includes('property="og:title"'), `OG title missing: ${path}`);
   assert.ok(html.includes('rel="canonical"'), `Canonical missing: ${path}`);
   console.log(`PASS initial HTML: ${path}`);
@@ -19,3 +22,18 @@ const missing = await fetch(new URL('/this-page-does-not-exist', origin));
 assert.equal(missing.status, 404, 'Unknown page must return a real HTTP 404');
 assert.ok((await missing.text()).includes('Không tìm thấy trang'));
 console.log('PASS unknown route: HTTP 404');
+
+for (const path of ['/admin/dang-nhap', '/admin/sach', '/admin/sach/1/xem-truoc']) {
+  const response = await fetch(new URL(path, origin));
+  assert.match(
+    response.headers.get('x-robots-tag') ?? '',
+    /noindex/,
+    `Admin HTML must be noindex: ${path}`,
+  );
+  assert.match(
+    response.headers.get('cache-control') ?? '',
+    /no-store/,
+    `Admin HTML must not be cached: ${path}`,
+  );
+  console.log(`PASS admin HTML privacy headers: ${path}`);
+}

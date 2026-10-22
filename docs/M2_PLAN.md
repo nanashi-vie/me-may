@@ -198,16 +198,16 @@
 
 **Interfaces:** Live test chỉ bật khi MEMAY_LIVE_MEDIA_TEST=true, dùng me_may_test và CLOUDINARY_NAMESPACE=memay/test; namespace khác/thiếu guard phải từ chối trước upload/delete. Không dùng hook xóa ảnh pilot production.
 
-- [ ] Trước áp migration vào me_may_dev: backup DB dạng custom ở thư mục local ignored/quyền hạn chế; dùng schema test task1 kiểm V1→V3. Không reset V1/checksum hoặc DB khác trong container my-postgres.
-- [ ] Viết và chạy RED→GREEN live opt-in bằng credential người dùng cấu hình ở .env ignored: upload JPEG/PNG test, unsigned original/derived bị chặn, admin stream đúng, replace/cleanup/not-found và metadata không rò. Không in signed URLs hoặc secret trong report.
-- [ ] Live test có finally cleanup đúng các public_id nó đã tạo trong memay/test, kể cả assertion lỗi; không enumerate/xóa cả namespace hoặc ảnh pilot. Chỉ dọn row test sau khi xác nhận cloud cleanup, nếu thất bại giữ ID/DELETE_PENDING nội bộ để retry.
-- [ ] Chạy backend `bash run-local.sh -B -ntp verify`; frontend `npm test`, `npm run build` và `node scripts/check-ssr.mjs http://127.0.0.1:4200` tại code/frontend khi dev server đã chạy. Ghi kết quả mới, không tái dùng số test M1.
-- [ ] Browser Owner/Staff tại proxy local: tạo→sửa→ba ảnh→preview→publish→sold→hide→restore; hai tab stale, session hết hạn, disconnect và bàn phím. Không tạo tài khoản Staff demo cố định trong production; tài khoản test local qua fixture có guard, giữ credential ngoài log.
-- [ ] Khôi phục backup vào DB scratch riêng `me_may_restore_test` với quyền DBA, không restore đè dev/test; đối chiếu code/high-water sequence/media references/auth. Nếu chưa có quyền DBA thì ghi chưa kiểm chứng, giữ gate restore/pilot còn mở; không tự đổi role global.
+- [x] Trước áp migration vào me_may_dev: backup DB dạng custom ở thư mục local ignored/quyền hạn chế; dùng schema test task1 kiểm V1→V3. Không reset V1/checksum hoặc DB khác trong container my-postgres.
+- [x] Viết và chạy RED→GREEN live opt-in bằng credential người dùng cấu hình ở .env ignored: upload JPEG/PNG test, unsigned original/derived bị chặn, admin stream đúng, replace/cleanup/not-found và metadata không rò. Không in signed URLs hoặc secret trong report.
+- [x] Live test có finally cleanup đúng các public_id nó đã tạo trong memay/test, kể cả assertion lỗi; không enumerate/xóa cả namespace hoặc ảnh pilot. Chỉ dọn row test sau khi xác nhận cloud cleanup, nếu thất bại giữ ID/DELETE_PENDING nội bộ để retry.
+- [x] Chạy backend `bash run-local.sh -B -ntp verify`; frontend `npm test`, `npm run build` và `node scripts/check-ssr.mjs http://127.0.0.1:4200` tại code/frontend khi dev server đã chạy. Ghi kết quả mới, không tái dùng số test M1.
+- [x] Browser Owner/Staff tại proxy local: tạo→sửa→ba ảnh→preview→publish→sold→hide→restore; hai tab stale, session hết hạn, disconnect và bàn phím. Không tạo tài khoản Staff demo cố định trong production; tài khoản test local qua fixture có guard, giữ credential ngoài log.
+- [x] Khôi phục backup vào DB scratch riêng `me_may_restore_test` với quyền DBA, không restore đè dev/test; đối chiếu code/high-water sequence/media references/auth. Nếu chưa có quyền DBA thì ghi chưa kiểm chứng, giữ gate restore/pilot còn mở; không tự đổi role global.
 - [ ] Chủ thử 10–20 cuốn thật và nhãn mã; xác nhận giá/ba ảnh/tình trạng, đo thời gian nhập/tìm/sửa; không lấy hàng giao dịch từ ảnh Excel hay ảnh AI làm pilot.
-- [ ] Review toàn nhánh đối chiếu spec: race/quyền/cloud leak/cleanup/audit và hồi quy M1; sửa finding quan trọng rồi chạy lại test liên quan. Chọn người/agent review theo phương thức đã được người dùng duyệt, không tự dispatch khi chưa được phép.
-- [ ] Cập nhật bằng chứng/giới hạn trong VERIFICATION, trạng thái gate trong PROGRESS và checkpoint DEV_LOG; thiếu credential/pilot/live/restore không được đánh dấu M2 hoàn tất. Không tự mở rộng sang M3/deploy/import.
-- [ ] Kiểm Markdown/link/giới hạn dòng, secrets/ignore và git diff --check; commit `docs: record M2 verification and handoff`. Chỉ gộp spec/plan vào tài liệu chuẩn rồi xóa khi đã hoàn tất và chuyển đủ tiêu chí, không xóa khi còn gate mở.
+- [x] Review toàn nhánh đối chiếu spec: race/quyền/cloud leak/cleanup/audit và hồi quy M1; sửa finding quan trọng rồi chạy lại test liên quan. Chọn người/agent review theo phương thức đã được người dùng duyệt, không tự dispatch khi chưa được phép.
+- [x] Cập nhật bằng chứng/giới hạn trong VERIFICATION, trạng thái gate trong PROGRESS và checkpoint DEV_LOG; thiếu credential/pilot/live/restore không được đánh dấu M2 hoàn tất. Không tự mở rộng sang M3/deploy/import.
+- [x] Kiểm Markdown/link/giới hạn dòng, secrets/ignore và git diff --check; commit `docs: record M2 verification and handoff`. Chỉ gộp spec/plan vào tài liệu chuẩn rồi xóa khi đã hoàn tất và chuyển đủ tiêu chí, không xóa khi còn gate mở.
 
 ## Tự rà soát và cách thực thi
 

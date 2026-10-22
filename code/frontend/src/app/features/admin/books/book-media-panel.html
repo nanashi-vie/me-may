@@ -1,3 +1,63 @@
-<section><h2>Ba ảnh thật của cuốn sách</h2><p>JPEG hoặc PNG, tối đa 10 MiB / 25 megapixel mỗi ảnh. Đối chiếu đúng mã {{book().bookCode}}. Ảnh mới chỉ thay ảnh cũ sau khi lưu thành công.</p>@if(dirty()){<p class="error">Lưu nội dung sách trước khi chỉnh ảnh.</p>}@if(error()){<p class="error" role="alert">{{error()}}</p>}
-<fieldset [disabled]="dirty()||disabled()||busy()"><legend class="sr-only">Ảnh và thông tin ảnh</legend><div class="photo-grid">@for(role of roles;track role){<div class="photo-slot"><h3>{{labels[role]}}</h3>@if(image(role);as img){<img [src]="img.contentPath+'?v='+book().version" [alt]="img.alt||labels[role]">}@else{<div class="empty-photo">Chưa có ảnh</div>}<label>Chọn {{image(role)?'ảnh thay thế':'ảnh'}}<input type="file" accept="image/jpeg,image/png" (change)="select(role,$event)"></label>@if(selected()[role];as file){<small>Đã chọn: {{file.name}}</small>}<label>Mô tả ảnh<input [value]="alt(role)" maxlength="300" (input)="setAlt(role,$any($event.target).value)"></label><label>Nguồn / ghi chú nội bộ<input [value]="source(role)" maxlength="500" (input)="setSource(role,$any($event.target).value)"></label>@if(image(role)){<div class="actions"><button class="secondary" type="button" (click)="saveMetadata(role)">Lưu thông tin ảnh</button>@if(book().publication!=='PUBLISHED'){<button class="secondary" type="button" (click)="remove(role)">Gỡ ảnh</button>}</div>}</div>}</div><button type="button" (click)="uploadFiles()">Tải các ảnh đã chọn</button></fieldset>
-@if(busy()){<p role="status">{{uploadingRole()?labels[uploadingRole()!]:''}} · Đang xử lý… {{progress()}}%</p><progress [value]="progress()" max="100" aria-label="Tiến trình tải ảnh"></progress>}</section>
+<section>
+  <h2>Ba ảnh thật của cuốn sách</h2>
+  <p>
+    JPEG hoặc PNG, tối đa 10 MiB / 25 megapixel mỗi ảnh. Đối chiếu đúng mã {{ book().bookCode }}.
+    Ảnh mới chỉ thay ảnh cũ sau khi lưu thành công.
+  </p>
+  @if (dirty()) {
+    <p class="error">Lưu nội dung sách trước khi chỉnh ảnh.</p>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  <fieldset [disabled]="dirty() || disabled() || busy()">
+    <legend class="sr-only">Ảnh và thông tin ảnh</legend>
+    <div class="photo-grid">
+      @for (role of roles; track role) {
+        <div class="photo-slot">
+          <h3>{{ labels[role] }}</h3>
+          @if (image(role); as img) {
+            <img [src]="img.contentPath + '?v=' + book().version" [alt]="img.alt || labels[role]" />
+          } @else {
+            <div class="empty-photo">Chưa có ảnh</div>
+          }
+          <label
+            >Chọn {{ image(role) ? 'ảnh thay thế' : 'ảnh'
+            }}<input type="file" accept="image/jpeg,image/png" (change)="select(role, $event)"
+          /></label>
+          @if (selected()[role]; as file) {
+            <small>Đã chọn: {{ file.name }}</small>
+          }
+          <label
+            >Mô tả ảnh<input
+              [value]="alt(role)"
+              maxlength="300"
+              (input)="setAlt(role, $any($event.target).value)" /></label
+          ><label
+            >Nguồn / ghi chú nội bộ<input
+              [value]="source(role)"
+              maxlength="500"
+              (input)="setSource(role, $any($event.target).value)"
+          /></label>
+          @if (image(role)) {
+            <div class="actions">
+              <button class="secondary" type="button" (click)="saveMetadata(role)">
+                Lưu thông tin ảnh
+              </button>
+              @if (book().publication !== 'PUBLISHED') {
+                <button class="secondary" type="button" (click)="remove(role)">Gỡ ảnh</button>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+    <button type="button" (click)="uploadFiles()">Tải các ảnh đã chọn</button>
+  </fieldset>
+  @if (busy()) {
+    <p role="status">
+      {{ uploadingRole() ? labels[uploadingRole()!] : '' }} · Đang xử lý… {{ progress() }}%
+    </p>
+    <progress [value]="progress()" max="100" aria-label="Tiến trình tải ảnh"></progress>
+  }
+</section>

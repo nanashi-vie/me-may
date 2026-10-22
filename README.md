@@ -1,6 +1,6 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M1 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL. Catalogue đầy đủ, nhập sách/ảnh và wishlist thuộc các milestone sau. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
+M2 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã triển khai và qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue public, wishlist và importer thuộc các bước sau. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
 
 ## Chạy trên máy hiện tại
 
@@ -48,6 +48,24 @@ npm audit
 `check-ssr.mjs` cần frontend server đang chạy; kiểm tra HTML ban đầu của Home/Cách mua và HTTP 404. Để kiểm tra production SSR local, chạy `npm run serve:ssr:me-may-web` sau build, rồi dùng `node scripts/check-ssr.mjs http://127.0.0.1:4000`. Runtime SSR này phục vụ FE, không proxy API; kiểm tra đăng nhập local bằng `npm start` có proxy.
 
 Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có thể cần chạy ngoài sandbox. Không đổi source chỉ để bỏ SSR khi gặp giới hạn môi trường.
+
+## Nhập sách và pilot M2
+
+- Đăng nhập Owner rồi mở [Quản lý sách](http://127.0.0.1:4200/admin/sach). Tạo tại `/admin/sach/moi`; lưu nháp trước để nhận mã tự sinh và thêm ảnh. Mã không sửa hoặc tái sử dụng; số có thể khuyết.
+- Mỗi cuốn một thể loại, nhiều nhóm tuổi. Picture book chọn Paperback hoặc Hardcover. Mức đọc có thể chưa xác định; khi chọn mức phải ghi căn cứ nội bộ.
+- Nhập giá nguyên VND, ghi tình trạng/lỗi; tải đủ ba ảnh thật bìa trước/mặt sau/trang nội dung, JPEG/PNG <=10 MiB và 25 MP. Lưu nội dung trước khi chỉnh ảnh; ảnh được tải tuần tự theo version mới.
+- Mở preview nội dung đã lưu; Owner đối chiếu đúng mã, ba ảnh và tình trạng trước xuất bản. Còn hàng/Hết hàng độc lập Nháp/Công khai/Ẩn. Khôi phục sách ẩn về nháp để chỉnh lại.
+- Staff chỉ sửa nháp; Owner quản trị trạng thái và bộ sưu tập. Không có UI quản lý tài khoản; không tạo tài khoản demo trong dữ liệu vận hành.
+- Khi xung đột hoặc hết phiên, nội dung chưa lưu được giữ trong tab. Có đăng nhập lại ngay trên editor. Không tự gửi lại yêu cầu tạo nếu chưa rõ kết quả; mở danh sách ở tab khác để kiểm tra. Reload/đóng tab có thể mất nội dung chưa lưu.
+- Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. Chưa xác nhận pilot thì chưa nghiệm thu M2 hoặc chuyển M3.
+
+Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
+
+Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách chưa triển khai.
+
+Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env` (run-local.sh nạp lại `.env`, nên không để namespace dev ghi đè lệnh test); chỉ chạy `MediaLiveTest,CloudinaryLiveTest` với `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test`. Guard `me_may_test` và namespace phải đạt trước upload/delete. Test mặc định không gọi cloud thật; cleanup chỉ public_id do gate tạo.
+
+Trước migration/pilot, dùng `pg_dump -Fc` và quyền file 0600 ở thư mục ignored. Restore thử vào database scratch riêng, đối chiếu auth/audit/book/media references và cả `last_value/is_called` của sequence. Không restore đè dev/test hoặc reset mã từ MAX một cách mù quáng. Bằng chứng local tại [VERIFICATION](docs/VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
 
 ## Auth/API M1
 

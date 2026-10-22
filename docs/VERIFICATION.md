@@ -1,6 +1,6 @@
-# M1 local — báo cáo kiểm tra
+# Kiểm chứng local — M1 và M2
 
-Ngày: 22/10/2026. Phạm vi: kế hoạch M1 local đã duyệt; không phải nghiệm thu staging/production.
+Ngày: 22/10/2026. Phần M1 là bằng chứng lịch sử; trạng thái M2 mới nhất ở cuối. Không phải nghiệm thu staging/production.
 
 ## Kết quả
 
@@ -46,6 +46,28 @@ Cloudflare runtime compatibility, SEO/OG sách thật, cookie/CORS trên domain 
 
 Home hiện là shell nền tảng; chưa phải Home nhiều hàng sách trong wireframe M0. Không có CRUD sách, upload hoặc wishlist thực ở M1. Tài khoản Staff được kiểm tra trong test database; chưa có giao diện quản lý tài khoản.
 
-## M2 đang thực thi — checkpoint media adapter
+## M2 — gate kỹ thuật và pilot
 
-22/10/2026: task1–5 đã có schema, aggregate/audit/status, API admin và Cloudinary adapter. Backend 57 tests PASS, 1 live test opt-in skip trong suite mặc định. Live `MEMAY_LIVE_MEDIA_TEST=true MEMAY_LIVE_MEDIA_NAMESPACE=memay/test bash code/backend/run-local.sh -B -ntp -Dtest=CloudinaryLiveTest test` chạy riêng 1/1 PASS: authenticated upload, signed JPEG preview, unsigned original/derived bị chặn; cleanup đúng UUID và NOT_FOUND khi xóa lại. Không coi đây là nghiệm thu lifecycle/UI/backup/pilot M2.
+Ngày 22/10/2026, branch `feat/m2-admin-catalogue`. Task1–10 hoàn tất; task11 còn **pilot chủ tiệm10–20 cuốn thật**, người dùng đã xác nhận sẵn sàng tự nhập/đối chiếu. Chưa đánh dấu M2 hoàn tất hoặc chuyển M3.
+
+| Kiểm tra mới | Kết quả |
+|---|---|
+| Backend `bash code/backend/run-local.sh -B -ntp verify` |73 PASS,2 live opt-in skipped mặc định; JAR đóng gói PASS |
+| Live `MediaLiveTest,CloudinaryLiveTest` |2/2 PASS với me_may_test/memay/test; authenticated JPEG/PNG upload, unsigned original/derived bị chặn, admin stream, replacement, NOT_FOUND, scoped cleanup |
+| Frontend `npm test` |34/34 PASS; không token/admin drafts trong browser storage |
+| Frontend `npm run build` ngoài sandbox | Browser/server bundles PASS; sandbox build từng đứng, chạy lại ngoài sandbox |
+| `node scripts/check-ssr.mjs http://127.0.0.1:4200` | Home/Cách mua initial content/meta,404; HTML admin noindex/no-store PASS |
+| Browser Owner qua proxy test4201→8081 | Create→ba ảnh cloud thật→preview→publish→sold→ẩn→khôi phục nháp PASS; ba ảnh load được và default alt đúng mã |
+| Browser lỗi/quyền/bàn phím | Hai tab409 giữ nội dung; offline không báo thành công; cookie bị xóa→401 giữ form/hiện reauth; dirty route confirm; Staff không Owner action/menu collection; Tab có focus outline |
+| Backup trước dev migration | Custom dump me_may_dev mode0600; restore scratch giữ đúng auth rows; V1→V3 dev đã áp sau backup |
+| Restore dữ liệu M2 | Snapshot me_may_test vào me_may_restore_test riêng:9 bảng/auth/audit bằng nguồn, last_value/is_called giữ nguyên, nextval vượt high-water; signed preview từ media reference phục hồi load được |
+| Cleanup kiểm thử | Browser fixture riêng cùng3 asset memay/test đã xóa sau restore gate; giữ sequence. Live gate finally chỉ dọn IDs tự tạo; không xóa asset khác hoặc ảnh pilot |
+| Review độc lập toàn nhánh |4 finding đã sửa một lượt, test RED→GREEN; không còn finding treo từ lượt review, không dispatch re-review |
+
+Các sửa từ review: timeout upload chưa rõ kết quả giữ UPLOADING đến stale cutoff1h để tránh orphan; media alt/source/file pending tham gia dirty guard; raw/Spring optimistic409 có currentVersion sau rollback; audit media đúng ATTACHED/REPLACED/UPDATED/REMOVED. Browser còn phát hiện format giá en-US, đã thay Intl vi-VN có test; CSR admin cần noindex ở HTTP header, đã thêm cùng regression SSR.
+
+Live rerun sau suite từng dừng ở safety guard vì có pending fixture khác; finally vẫn xóa asset của gate. Worker đã tách đường dọn theo operation UUID dùng chung với batch, live chỉ kiểm trên operation tự tạo; lần sau2/2 PASS. Không bỏ guard hoặc dọn rộng database để làm gate xanh.
+
+Artifact/log local ignored: `.superpowers/sdd/M2_PLAN/`, `.local/backups/S010-before-m2.dump`, `.local/backups/S010-m2-test.dump`, `.local/restore-gate.log`, `output/playwright/m2-preview.png`. Dump thứ hai chỉ chứa dữ liệu kiểm thử; asset disposable đã xóa sau đối chiếu, không dùng làm backup sách bán thật. Credential/cookie/dump không commit.
+
+**Chưa kiểm chứng:** pilot 10–20 cuốn thật/thời gian thao tác/nhãn mã do chủ thực hiện; M3 public SEO/OG/contact, M4 wishlist, importer sau MVP, staging/production/Cloudflare và backup ngoài VPS. Database restore local cùng media references không thay cho backup media độc lập hay gate vận hành production.
