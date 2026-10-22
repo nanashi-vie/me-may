@@ -149,11 +149,11 @@
 - BookApi.publication(id,version,status,confirmedActualCopy?):Observable<BookDetail>; availability(id,version,status):Observable<BookDetail>; preview(id):Observable<PreviewBook>; audit(id,page):Observable<Page<AuditSummary>>; upload(id,role,version,FormData):Observable<HttpEvent<BookDetail>>; updateMedia(id,role,version,alt,sourceRef):Observable<BookDetail>; removeMedia(id,role,version):Observable<BookDetail>. id:string,version/page:number, role/status dùng union tương ứng spec, không any.
 - CollectionApi.list():Observable<CollectionDto[]>; create(CollectionCreate):Observable<CollectionDto>; update(id:string,version:number,CollectionUpdate):Observable<CollectionDto>.
 
-- [ ] Viết failing HttpTestingController tests: credentials=true, transferCache=false, CSRF fetch trước mutation, payload version/enum/ID string đúng; multipart không tự set Content-Type boundary; POST không tự retry khi timeout.
-- [ ] Assert chưa login/CSRF cũ/401 lỗi truyền về component để giữ form; mutation không dùng token lưu localStorage và không tự replay POST khi refresh token.
-- [ ] RED: `npm test -- --include='src/app/core/auth/admin-http.spec.ts' --include='src/app/features/admin/books/book-api.spec.ts' --include='src/app/features/admin/collections/collection-api.spec.ts'`.
-- [ ] Implement typed transport/services; tái dùng auth session/guard M1, không sửa login semantics; media source dùng contentPath same-origin proxy. Upload progress cần fetch/XHR backend có báo progress: dùng HttpClient XHR chỉ cho transport upload, không đổi toàn app/SSR.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: connect typed admin catalogue client`.
+- [x] Viết failing HttpTestingController tests: credentials=true, transferCache=false, CSRF fetch trước mutation, payload version/enum/ID string đúng; multipart không tự set Content-Type boundary; POST không tự retry khi timeout.
+- [x] Assert chưa login/CSRF cũ/401 lỗi truyền về component để giữ form; mutation không dùng token lưu localStorage và không tự replay POST khi refresh token.
+- [x] RED: `npm test -- --include='src/app/core/auth/admin-http.spec.ts' --include='src/app/features/admin/books/book-api.spec.ts' --include='src/app/features/admin/collections/collection-api.spec.ts'`.
+- [x] Implement typed transport/services; tái dùng auth session/guard M1, không sửa login semantics; media source dùng contentPath same-origin proxy. Upload progress cần fetch/XHR backend có báo progress: dùng HttpClient XHR chỉ cho transport upload, không đổi toàn app/SSR.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: connect typed admin catalogue client`.
 
 ## Task 8 — Bảng sách, editor và lưu nháp an toàn
 

@@ -8,7 +8,7 @@ Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S010-C01 trong [DEV_LOG
 
 Baseline sản phẩm: [MASTER_PLAN](MASTER_PLAN.md). Phạm vi M1 local đã gộp vào bản hiện hành; không giữ plan thực thi đã hoàn tất.
 
-Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. [M2_SPEC](M2_SPEC.md) đã được người dùng duyệt; [M2_PLAN](M2_PLAN.md) gồm 11 task đã duyệt; **đang thực thi tuần tự, task 1–6 đạt 69 backend tests + live Cloudinary adapter 1/1, tiếp task 7 frontend**. Chi tiết hạ tầng ở ARCHITECTURE, provider/gate giữ ở master.
+Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. [M2_SPEC](M2_SPEC.md) đã được người dùng duyệt; [M2_PLAN](M2_PLAN.md) gồm 11 task đã duyệt; **đang thực thi tuần tự, task 1–6 đạt 69 backend tests + live Cloudinary adapter 1/1, tiếp task 8 list/editor**. Chi tiết hạ tầng ở ARCHITECTURE, provider/gate giữ ở master.
 
 ## Baseline trước M2 đã cập nhật
 
@@ -43,7 +43,7 @@ Repo đã nối origin https://github.com/nanashi193/me-may.git. Nhánh feat/m1-
 
 ## Bước tiếp theo
 
-1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; task 1–6 đã đạt (69 PASS + 1 opt-in skipped mặc định; live adapter riêng 1/1 PASS), tiếp task 7 typed frontend transport. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
+1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; task 1–6 đã đạt (69 PASS + 1 opt-in skipped mặc định; live adapter riêng 1/1 PASS), task7 frontend transport đạt12/12; tiếp task8 list/editor. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
 2. Cloudinary đã xác minh upload/preview authenticated và cleanup đúng asset test; chuẩn bị 10–20 cuốn thật cho gate media/pilot M2; không gửi secret qua chat. Link Zalo hotline/nhóm thật cần trước nghiệm thu luồng liên hệ M3; khả năng điền sẵn còn phải kiểm chứng, không chặn các task catalogue local.
 3. M2 triển khai CRUD nhập thủ công sau khi plan được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
 4. Khi quay lại staging, làm Cloudflare rendering spike, domain cookie/CORS/CSRF, VPS/Dokploy, production DB roles, backup/restore và CI/CD. Không đánh dấu các gate đó đạt từ kiểm tra local.
