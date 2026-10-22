@@ -8,6 +8,13 @@ export class PageMetadata {
   private readonly meta = inject(Meta);
   private readonly document = inject(DOCUMENT);
 
+  admin(title:string) {
+    this.title.setTitle(title);
+    this.meta.updateTag({name:'robots',content:'noindex, nofollow, nosnippet'});
+    for(const selector of ['name="description"','property="og:title"','property="og:description"','property="og:type"'])this.meta.removeTag(selector);
+    this.document.querySelector('link[rel="canonical"]')?.remove();
+  }
+
   set(title: string, description: string, path: string) {
     this.meta.removeTag('name="robots"');
     this.title.setTitle(title);

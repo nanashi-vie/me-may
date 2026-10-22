@@ -1,0 +1,12 @@
+import { Component,inject,input,output,signal,OnChanges } from '@angular/core';
+import { DatePipe,JsonPipe } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
+import { BookApi } from './book-api';
+import { AuditSummary,Page } from './book.models';
+@Component({selector:'app-book-audit-panel',imports:[DatePipe,JsonPipe],template:`<section><h2>Lịch sử thay đổi</h2>@if(error()){<p class="error" role="alert">{{error()}}</p>}@if(result();as data){@for(event of data.items;track event.id){<details><summary>{{event.createdAt|date:'dd/MM/yyyy HH:mm':'+0700'}} · {{label(event.action)}} · Người dùng #{{event.actorId}} · Phiên bản {{event.aggregateVersion}}</summary><div class="audit-values"><div><h3>Trước</h3><pre>{{event.before|json}}</pre></div><div><h3>Sau</h3><pre>{{event.after|json}}</pre></div></div></details>}@empty{<p>Chưa có lịch sử.</p>}<nav aria-label="Trang lịch sử"><button class="secondary" [disabled]="loading()||data.page===0" (click)="load(data.page-1)">Trước</button><span>Trang {{data.page+1}} / {{data.totalPages||1}}</span><button class="secondary" [disabled]="loading()||data.page+1>=data.totalPages" (click)="load(data.page+1)">Sau</button></nav>}</section>`,styles:[`section{border-top:1px solid var(--line);padding-top:1rem;margin-top:2rem}details{border-bottom:1px solid var(--line);padding:1rem 0}summary{cursor:pointer}.audit-values{display:grid;grid-template-columns:1fr 1fr;gap:1rem}pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.85rem}nav{align-items:center;justify-content:end;margin-top:1rem}`]})
+export class BookAuditPanel implements OnChanges {
+ readonly bookId=input.required<string>();readonly version=input(0);readonly failed=output<HttpErrorResponse>();private readonly api=inject(BookApi);readonly result=signal<Page<AuditSummary>|null>(null);readonly error=signal('');readonly loading=signal(false);private sequence=0;
+ ngOnChanges(){this.load(0);}
+ load(page=0){const seq=++this.sequence;this.loading.set(true);this.api.audit(this.bookId(),page).subscribe({next:r=>{if(seq===this.sequence){this.result.set(r);this.loading.set(false);this.error.set('');}},error:e=>{if(seq===this.sequence){this.loading.set(false);this.error.set('Chưa tải được lịch sử.');this.failed.emit(e);}}});}
+ label(action:string){return ({CREATE:'Tạo sách',UPDATE:'Sửa thông tin',PUBLICATION_CHANGED:'Đổi xuất bản',AVAILABILITY_CHANGED:'Đổi khả dụng',MEDIA_UPLOADED:'Tải ảnh',MEDIA_METADATA_CHANGED:'Sửa thông tin ảnh',MEDIA_REMOVED:'Gỡ ảnh'} as Record<string,string>)[action]??action;}
+}

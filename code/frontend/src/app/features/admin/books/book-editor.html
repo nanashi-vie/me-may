@@ -6,7 +6,7 @@
 @if(createUncertain()){<p><a href="/admin/sach" target="_blank" rel="noopener">Mở danh sách để kiểm tra sách vừa tạo</a>. Nội dung hiện tại vẫn được giữ.</p>}
 @if(book();as b){<p>Trạng thái: {{b.publication==='DRAFT'?'Nháp':b.publication==='PUBLISHED'?'Công khai':'Ẩn'}} · {{b.availability==='AVAILABLE'?'Còn hàng':'Hết hàng'}} · Phiên bản {{b.version}}</p><a [href]="'/admin/sach/'+b.id" target="_blank" rel="noopener">Mở bản đã lưu trong tab khác</a>}
 <form [formGroup]="form" (ngSubmit)="saveDraft()" class="book-form">
-<fieldset [disabled]="busy()||loading()||!editable()||createUncertain()">
+<fieldset [disabled]="busy()||otherBusy()||loading()||!editable()||createUncertain()">
 <legend>Thông tin cuốn sách</legend>
 <div class="fields"><label>Tên sách<input formControlName="title" maxlength="300"></label><label>ISBN <small>(nếu có)</small><input formControlName="isbn" maxlength="32"></label><label>Nhà xuất bản<input formControlName="publisher" maxlength="200"></label><label>Tác giả<input formControlName="author" maxlength="200"></label><label>Ngôn ngữ<input formControlName="language" maxlength="50"></label>
 <label>Thể loại<select formControlName="categoryCode"><option [ngValue]="null">Chưa xác định</option>@for(c of taxonomy().categories;track c.code){<option [ngValue]="c.code">{{c.label}}</option>}</select></label>
@@ -20,7 +20,9 @@
 <fieldset class="choices"><legend>Bộ sưu tập</legend>@for(c of availableCollections();track c.id){<label><input type="checkbox" [checked]="form.controls.collectionIds.value.includes(c.id)" (change)="toggleCollection(c.id,$any($event.target).checked)">{{c.name}} {{c.active?'':'(ngừng dùng)'}}</label>}@empty{<p class="muted">Chưa có bộ sưu tập để chọn.</p>}</fieldset>
 </fieldset>
 @for(entry of fieldErrors();track entry.key){<p class="error">{{entry.key}}: {{entry.message}}</p>}
-<button type="submit" [disabled]="busy()||loading()||!editable()||createUncertain()">{{busy()?'Đang lưu…':book()?'Lưu thay đổi':'Tạo sách nháp'}}</button>
+<button type="submit" [disabled]="busy()||otherBusy()||loading()||!editable()||createUncertain()">{{busy()?'Đang lưu…':book()?'Lưu thay đổi':'Tạo sách nháp'}}</button>
 @if(!editable()){<p class="muted">Chỉ Owner được sửa sách công khai hoặc đã ẩn.</p>}
 </form>
 @if(needsLogin()){<section class="reauth"><h2>Đăng nhập lại</h2><p>Nội dung chưa lưu được giữ trong bộ nhớ của tab này.</p><form [formGroup]="loginForm" (ngSubmit)="loginAgain()"><label>Email<input type="email" formControlName="email" autocomplete="username" required></label><label>Mật khẩu<input type="password" formControlName="password" autocomplete="current-password" required></label><button type="submit" [disabled]="busy()">Đăng nhập</button></form></section>}
+
+@if(book();as saved){<p><a [routerLink]="['/admin/sach',saved.id,'xem-truoc']" target="_blank" rel="noopener">Xem trước nội dung đã lưu ↗</a></p><app-book-media-panel [book]="saved" [dirty]="form.dirty" [disabled]="busy()||otherBusy()||!editable()" (changed)="accept($event)" (failed)="fail($event)" (busyChange)="otherBusy.set($event)"/><app-book-status-actions [book]="saved" [role]="auth.user()?.role" [dirty]="form.dirty" [disabled]="busy()||otherBusy()" (changed)="accept($event)" (failed)="fail($event)" (busyChange)="otherBusy.set($event)"/><app-book-audit-panel [bookId]="saved.id" [version]="saved.version" (failed)="fail($event)"/>}

@@ -8,6 +8,7 @@ export const routes: Routes = [
   {path: 'admin', canActivate: [requireAdmin], loadComponent: () => import('./layouts/admin-layout').then(m => m.AdminLayout), children: [
     {path:'sach',title:'Quản lý sách | Mẹ Mây',loadComponent:()=>import('./features/admin/books/book-list').then(m=>m.BookList)},
     {path:'sach/them',title:'Thêm sách | Mẹ Mây',canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/books/book-editor').then(m=>m.BookEditor)},
+    {path:'sach/:id/xem-truoc',title:'Xem trước sách | Mẹ Mây',loadComponent:()=>import('./features/admin/books/book-preview').then(m=>m.BookPreview)},
     {path:'sach/:id',title:'Chỉnh sửa sách | Mẹ Mây',canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/books/book-editor').then(m=>m.BookEditor)},
     {path: '', pathMatch: 'full', title: 'Quản trị | Mẹ Mây', loadComponent: () => import('./features/admin/overview').then(m => m.Overview)},
   ]},

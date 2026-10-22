@@ -8,11 +8,14 @@ import { BookDetail,Taxonomy,AgeGroup,AdminApiError } from './book.models';
 import { buildBookForm,toBookWrite } from './book-form';
 import { CollectionApi,CollectionDto } from '../collections/collection-api';
 import { AuthService } from '../../../core/auth/auth.service';
+import { BookMediaPanel } from './book-media-panel';
+import { BookStatusActions } from './book-status-actions';
+import { BookAuditPanel } from './book-audit-panel';
 import { PRICE_NOTE,READING_NOTE } from './book-copy';
-@Component({selector:'app-book-editor',imports:[ReactiveFormsModule,RouterLink],templateUrl:'./book-editor.html',styleUrl:'./book-editor.scss'})
+@Component({selector:'app-book-editor',imports:[ReactiveFormsModule,RouterLink,BookMediaPanel,BookStatusActions,BookAuditPanel],templateUrl:'./book-editor.html',styleUrl:'./book-editor.scss'})
 export class BookEditor {
  readonly api=inject(BookApi);readonly auth=inject(AuthService);private readonly collectionApi=inject(CollectionApi);private readonly route=inject(ActivatedRoute);private readonly router=inject(Router);private readonly element=inject<ElementRef<HTMLElement>>(ElementRef);private readonly destroy=inject(DestroyRef);
- readonly form=buildBookForm();readonly book=signal<BookDetail|null>(null);readonly taxonomy=signal<Taxonomy>({categories:[],ageGroups:[],bindings:[],readingLevels:[]});readonly collections=signal<CollectionDto[]>([]);readonly busy=signal(false);readonly loading=signal(false);readonly loadFailed=signal(false);readonly error=signal('');readonly notice=signal('');readonly fields=signal<Record<string,string[]>>({});readonly needsLogin=signal(false);readonly createUncertain=signal(false);readonly priceNote=PRICE_NOTE;readonly readingNote=READING_NOTE;
+ readonly form=buildBookForm();readonly book=signal<BookDetail|null>(null);readonly taxonomy=signal<Taxonomy>({categories:[],ageGroups:[],bindings:[],readingLevels:[]});readonly collections=signal<CollectionDto[]>([]);readonly busy=signal(false);readonly otherBusy=signal(false);readonly loading=signal(false);readonly loadFailed=signal(false);readonly error=signal('');readonly notice=signal('');readonly fields=signal<Record<string,string[]>>({});readonly needsLogin=signal(false);readonly createUncertain=signal(false);readonly priceNote=PRICE_NOTE;readonly readingNote=READING_NOTE;
  readonly loginForm=new FormGroup({email:new FormControl('',{nonNullable:true}),password:new FormControl('',{nonNullable:true})});
  readonly editable=computed(()=>!this.loadFailed()&&(this.auth.user()?.role==='OWNER'||!this.book()||this.book()?.publication==='DRAFT'));
  fieldErrors(){return Object.entries(this.fields()).map(([key,messages])=>({key,message:messages.join(" ")}));}
@@ -24,7 +27,7 @@ export class BookEditor {
  toggleAge(age:AgeGroup,checked:boolean){const values=this.form.controls.ageGroups;values.setValue(checked?[...values.value,age]:values.value.filter(a=>a!==age));values.markAsDirty();}
  toggleCollection(id:string,checked:boolean){const values=this.form.controls.collectionIds;values.setValue(checked?[...values.value,id]:values.value.filter(c=>c!==id));values.markAsDirty();}
  saveDraft(){
-  if(this.busy()||this.loading()||!this.editable()||this.createUncertain())return;this.form.markAllAsTouched();this.error.set('');this.notice.set('');this.fields.set({});
+  if(this.busy()||this.otherBusy()||this.loading()||!this.editable()||this.createUncertain())return;this.form.markAllAsTouched();this.error.set('');this.notice.set('');this.fields.set({});
   if(this.form.invalid){this.error.set('Kiểm tra các trường chưa hợp lệ.');this.focusInvalid();return;}
   this.busy.set(true);const b=this.book(),request=b?this.api.update(b.id,b.version,toBookWrite(this.form)):this.api.create(toBookWrite(this.form));request.pipe(takeUntilDestroyed(this.destroy)).subscribe({next:saved=>{this.busy.set(false);this.accept(saved);this.notice.set('Đã lưu sách.');if(!b)void this.router.navigate(['/admin/sach',saved.id]);},error:e=>{this.busy.set(false);if(!b&&(e.status===0||e.status>=500))this.createUncertain.set(true);this.fail(e);}});
  }

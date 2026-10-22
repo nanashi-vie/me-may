@@ -174,12 +174,12 @@
 
 **Interfaces:** BookMediaPanel nhận BookDetail và dirty:boolean, emit BookDetail mới; BookStatusActions nhận BookDetail/role, emit BookDetail; BookPreview đọc BookApi.preview(id); BookAuditPanel đọc BookApi.audit(id,page).
 
-- [ ] Viết failing `threeFixedSlotsUploadSequentially`, `dirtyFormBlocksUpload`, `replacementFailureKeepsOldPreview`; mỗi response update version trước request ảnh kế tiếp, retry lỗi không mất form hay tạo thêm slot.
-- [ ] Viết `staffHasNoOwnerActions`, `publishNeedsActualCopyConfirmation`, hide/restore/sold đúng API/version và modal nêu mã; audit pagination, metadata ảnh chỉnh được không upload lại.
-- [ ] Viết `previewHidesInternalFieldsAndMarksIncompleteDraft`, giá note/mức đọc/title ghép đúng DATA; link video dùng anchor HTTPS an toàn, không embed; noindex admin biến mất khi chuyển trang public như regression M1.
-- [ ] RED: `npm test -- --include='src/app/features/admin/books/book-media-panel.spec.ts' --include='src/app/features/admin/books/book-status-actions.spec.ts' --include='src/app/features/admin/books/book-preview.spec.ts' --include='src/app/features/admin/books/book-audit-panel.spec.ts'`.
-- [ ] Implement ba slot/progress/alt/sourceRef, action theo quyền và preview đã lưu; không trái tim/Zalo giả hoạt động trong M2. Authenticated images dùng contentPath qua proxy, không signed cloud URL trong DOM.
-- [ ] GREEN cùng lệnh, `npm test` kiểm metadata regression; checkpoint và commit `feat: add guarded media publication and preview UI`.
+- [x] Viết failing `threeFixedSlotsUploadSequentially`, `dirtyFormBlocksUpload`, `replacementFailureKeepsOldPreview`; mỗi response update version trước request ảnh kế tiếp, retry lỗi không mất form hay tạo thêm slot.
+- [x] Viết `staffHasNoOwnerActions`, `publishNeedsActualCopyConfirmation`, hide/restore/sold đúng API/version và modal nêu mã; audit pagination, metadata ảnh chỉnh được không upload lại.
+- [x] Viết `previewHidesInternalFieldsAndMarksIncompleteDraft`, giá note/mức đọc/title ghép đúng DATA; link video dùng anchor HTTPS an toàn, không embed; noindex admin biến mất khi chuyển trang public như regression M1.
+- [x] RED: `npm test -- --include='src/app/features/admin/books/book-media-panel.spec.ts' --include='src/app/features/admin/books/book-status-actions.spec.ts' --include='src/app/features/admin/books/book-preview.spec.ts' --include='src/app/features/admin/books/book-audit-panel.spec.ts'`.
+- [x] Implement ba slot/progress/alt/sourceRef, action theo quyền và preview đã lưu; không trái tim/Zalo giả hoạt động trong M2. Authenticated images dùng contentPath qua proxy, không signed cloud URL trong DOM.
+- [x] GREEN cùng lệnh, `npm test` kiểm metadata regression; checkpoint và commit `feat: add guarded media publication and preview UI`.
 
 ## Task 10 — Quản trị collection tối thiểu
 

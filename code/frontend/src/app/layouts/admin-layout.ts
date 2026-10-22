@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { PageMetadata } from '../core/page-metadata';
 import { AuthService } from '../core/auth/auth.service';
 
 @Component({
@@ -10,6 +11,7 @@ import { AuthService } from '../core/auth/auth.service';
     <main class="admin-content"><router-outlet /></main></div></div>`,
 })
 export class AdminLayout {
+  constructor(){inject(PageMetadata).admin("Quản trị | Mẹ Mây");}
   readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   readonly busy = signal(false);
