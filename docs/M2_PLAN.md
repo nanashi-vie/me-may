@@ -55,7 +55,7 @@
 - Namespace dev/test tách biệt; FakeMediaGateway chỉ ở test config. Không có profile mock tạo ảnh giả để vượt publish/pilot thật.
 - Mỗi task dùng chu trình RED→GREEN→commit local, không push. RED có thể là compile failure khi API chưa tồn tại; GREEN phải chạy lại đúng test, không suy từ code.
 - Lệnh backend bên dưới chạy tại code/backend qua run-local.sh (nạp env nhưng không in secret); frontend tại code/frontend. Không chạy các lệnh này trong lượt soạn plan.
-- Trước code, kiểm git status và giữ thay đổi người dùng; lưu spec/plan/bàn giao liên quan thành commit tài liệu local rồi tạo nhánh codex/m2-admin-catalogue từ HEAD đó. Dùng workspace hiện có, không thêm worktree hoặc reset nhánh/dữ liệu; nếu nhánh đã tồn tại thì kiểm tra và tiếp tục đúng checkpoint.
+- Trước code, kiểm git status và giữ thay đổi người dùng; lưu spec/plan/bàn giao liên quan thành commit tài liệu local rồi tạo nhánh feat/m2-admin-catalogue từ HEAD đó. Dùng workspace hiện có, không thêm worktree hoặc reset nhánh/dữ liệu; nếu nhánh đã tồn tại thì kiểm tra và tiếp tục đúng checkpoint.
 
 ## Task 1 — Schema, reference và fixture an toàn
 
@@ -63,13 +63,13 @@
 
 **Interfaces:** BookCodeGenerator.nextCode():String, static format(long):String; BookCopy có @Version và touch(Instant); PgTestData.requireTestJdbcUrl(String):String chỉ chấp nhận JDBC PostgreSQL database me_may_test; clean(JdbcTemplate):void kiểm lại current_database()=me_may_test trước cleanup.
 
-- [ ] Viết failing `M2MigrationTest.upgradesM1WithoutLosingAdmin` và `rejectsMultipleActiveMediaPerRole`: migration V1→V3 giữ user, FK/partial unique/code unique đúng. Dùng schema UUID tạm trong me_may_test để thử migration mới/nâng cấp; không clean public schema bằng Flyway.
-- [ ] Viết `BookCodeGeneratorTest.expandsBeyondSixDigits`: `assertThat(BookCodeGenerator.format(1000000L)).isEqualTo("MM-1000000")`; test concurrent nextCode không trùng, rollback không trả lại số. Định dạng dùng Locale.ROOT và độ rộng tối thiểu, không lpad cắt số.
-- [ ] Viết `PgTestDataTest.rejectsDevDatabaseBeforeConnecting`: `assertThatThrownBy(() -> PgTestData.requireTestJdbcUrl("jdbc:postgresql://localhost:5432/me_may_dev")).isInstanceOf(IllegalArgumentException.class)`; null/malformed cũng bị từ chối, test URL pass không mở connection.
-- [ ] Chạy RED: `bash run-local.sh -B -ntp -Dtest=M2MigrationTest,BookCodeGeneratorTest,PgTestDataTest test`; lưu failure thật trước tạo schema/code.
-- [ ] Thêm migrations/seed đúng spec; mapping entity trùng SQL. PgTestData dọn audit/media/mapping/listing/book/collection trước admin_user; giữ reference, không reset sequence hoặc đụng DB dev. Schema test tạm được xóa trong finally sau guard.
-- [ ] Chạy lại GREEN cùng lệnh rồi `bash run-local.sh -B -ntp -Dtest=AuthIntegrationTest,OwnerBootstrapTest test`; xác nhận auth cũ không hỏng vì FK mới và Flyway không thể nhận DB dev qua test config.
-- [ ] Cập nhật checkpoint và commit `feat: add M2 catalogue schema and generated codes`; stage đúng file task, không git add . mù quáng.
+- [x] Viết failing `M2MigrationTest.upgradesM1WithoutLosingAdmin` và `rejectsMultipleActiveMediaPerRole`: migration V1→V3 giữ user, FK/partial unique/code unique đúng. Dùng schema UUID tạm trong me_may_test để thử migration mới/nâng cấp; không clean public schema bằng Flyway.
+- [x] Viết `BookCodeGeneratorTest.expandsBeyondSixDigits`: `assertThat(BookCodeGenerator.format(1000000L)).isEqualTo("MM-1000000")`; test concurrent nextCode không trùng, rollback không trả lại số. Định dạng dùng Locale.ROOT và độ rộng tối thiểu, không lpad cắt số.
+- [x] Viết `PgTestDataTest.rejectsDevDatabaseBeforeConnecting`: `assertThatThrownBy(() -> PgTestData.requireTestJdbcUrl("jdbc:postgresql://localhost:5432/me_may_dev")).isInstanceOf(IllegalArgumentException.class)`; null/malformed cũng bị từ chối, test URL pass không mở connection.
+- [x] Chạy RED: `bash run-local.sh -B -ntp -Dtest=M2MigrationTest,BookCodeGeneratorTest,PgTestDataTest test`; lưu failure thật trước tạo schema/code.
+- [x] Thêm migrations/seed đúng spec; mapping entity trùng SQL. PgTestData dọn audit/media/mapping/listing/book/collection trước admin_user; giữ reference, không reset sequence hoặc đụng DB dev. Schema test tạm được xóa trong finally sau guard.
+- [x] Chạy lại GREEN cùng lệnh rồi `bash run-local.sh -B -ntp -Dtest=AuthIntegrationTest,OwnerBootstrapTest test`; xác nhận auth cũ không hỏng vì FK mới và Flyway không thể nhận DB dev qua test config.
+- [x] Cập nhật checkpoint và commit `feat: add M2 catalogue schema and generated codes`; stage đúng file task, không git add . mù quáng.
 
 ## Task 2 — Lưu aggregate, validation và audit nguyên tử
 
