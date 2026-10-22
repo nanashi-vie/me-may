@@ -1,27 +1,46 @@
-# Tài liệu Mẹ Mây
+# Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 22/10/2026. Mỗi chủ đề chỉ giữ một bản hiện hành; lịch sử bản cũ xem bằng Git.
+Cập nhật: 22/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
-| Tài liệu | Nội dung |
+## Bắt đầu hoặc tiếp tục phiên
+
+1. Đọc [PROGRESS](PROGRESS.md) để biết milestone, việc dang dở và bước kế tiếp.
+2. Đọc **checkpoint mới nhất** ở cuối [DEV_LOG](DEV_LOG.md); chỉ tìm/đọc checkpoint cũ khi cần đối chiếu việc liên quan, không nạp cả nhật ký.
+3. Chọn hàng phù hợp bên dưới và chỉ đọc các file/mục phục vụ đầu việc. Đối chiếu Git/môi trường thực tế trước khi tiếp tục; log không phải bằng chứng dịch vụ vẫn chạy.
+
+## Đọc theo đầu việc
+
+| Đầu việc | File/mục cần đọc |
 |---|---|
-| [PROGRESS](PROGRESS.md) | Snapshot để tiếp tục phiên sau, việc đang làm và bước kế tiếp |
-| [MASTER_PLAN](MASTER_PLAN.md) | Phạm vi, quyết định sản phẩm/hạ tầng và milestone; gồm phạm vi M1 local đã duyệt |
-| [DESIGN](DESIGN.md) | Sitemap, quyền, Home và UX các màn hình từ M0 đã duyệt |
-| [DATA](DATA.md) | Field schema, fixture giả lập và quy trình pilot thật còn phải làm |
-| [ARCHITECTURE](ARCHITECTURE.md) | Tổ chức code và bằng chứng khảo sát Web Shop/Ellora |
-| [VERIFICATION](VERIFICATION.md) | Báo cáo kiểm tra ứng dụng mới nhất và giới hạn; chưa phải nghiệm thu production |
-| [DEV_LOG](DEV_LOG.md) | Checkpoint theo phiên, quyết định và bằng chứng bàn giao |
+| Chốt hoặc thay đổi phạm vi | [MASTER_PLAN — quyết định](MASTER_PLAN.md#0-chốt-quyết-định-và-giới-hạn), [MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket), [milestones](MASTER_PLAN.md#8-kế-hoạch-triển-khai-theo-milestones-1-full-stack-developer) |
+| Đặc tả M2: nhập sách, taxonomy, publication, media | [DATA — field](DATA.md#field-nhập-liệu-baseline-trước-m2), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop), [MASTER_PLAN — dữ liệu](MASTER_PLAN.md#4-mô-hình-dữ-liệu-đề-xuất) và [API minh họa](MASTER_PLAN.md#52-api-contract-khởi-điểm-minh-họa) |
+| M3: Home/catalogue/detail, bộ lọc và liên hệ | [DESIGN — Home](DESIGN.md#home-theo-mẫu-nxb-kim-đồng), [catalogue](DESIGN.md#catalogue--collection--khách-mobile), [detail](DESIGN.md#chi-tiết-cuốn--khách-mobile); đối chiếu phạm vi MVP trong MASTER_PLAN |
+| M4: wishlist và nội dung hỏi sách | [DESIGN — danh sách quan tâm](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [MASTER_PLAN — MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket) |
+| Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
+| Tổ chức code hoặc khảo sát nguồn cũ | [ARCHITECTURE — layout](ARCHITECTURE.md#layout-dự-kiến), [trách nhiệm](ARCHITECTURE.md#trách-nhiệm-và-phụ-thuộc); chỉ đọc [khảo sát Web Shop](ARCHITECTURE.md#khảo-sát-khả-năng-tận-dụng-web-shop-cũ) khi cần tái sử dụng |
+| Staging/deploy, SEO/OG, bảo mật hạ tầng, backup/restore | [ARCHITECTURE — hạ tầng triển khai](ARCHITECTURE.md#hạ-tầng-triển-khai), [MASTER_PLAN — nghiệm thu MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp), [VERIFICATION — chưa kiểm chứng](VERIFICATION.md#chưa-kiểm-chứng--để-sau) |
+| Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
 
-Cách chạy/test và auth API: [README ở root](../README.md). Quy tắc làm việc: [AGENTS](../AGENTS.md).
+## Spec và plan đang thực thi
 
-Ảnh tham khảo và wireframe nằm ở `assets/`; CSV minh họa ở `fixtures/`. Đây không phải dữ liệu sách thật được phép xuất bản. Logo nguồn mới ở `code/frontend/public/logo.jpg` (tính từ root repo), chưa tích hợp vào UI.
+Chưa có technical spec hoặc implementation plan M2 được duyệt; baseline mới đã chốt, bước tiếp theo là đặc tả M2. Không coi MASTER_PLAN, fixture hoặc wireframe là spec triển khai đã duyệt. Khi tạo spec/plan, thêm liên kết và trạng thái ngay tại mục này; chỉ đọc tài liệu của milestone đang làm.
 
-## Quy tắc cập nhật
+## Vai trò của từng tài liệu
 
-1. Sửa trực tiếp file hiện hành thay vì tạo nhiều bản có ngày/version.
-2. Khi cần thay file, chuyển nội dung còn giá trị, sửa liên kết và xóa file bị thay trong cùng thay đổi. Không giữ thêm bản archive trùng lặp.
-3. Chỉ tạo spec/plan riêng cho phạm vi mới cần duyệt; khi hoàn tất, gộp quyết định/bằng chứng về bộ hiện hành rồi dọn plan hết vai trò.
-4. Cập nhật PROGRESS tại chỗ và thêm checkpoint vào DEV_LOG; nhật ký này được giữ nối tiếp để phiên sau làm tiếp.
-5. DEV_LOG có thể nhắc đường dẫn cũ như bằng chứng lịch sử; đó không phải tài liệu hiện hành. Dùng `git log --all -- docs` hoặc `git show <commit>:<path>` khi cần tra bản đã xóa.
+| Tài liệu | Nguồn thông tin hiện hành |
+|---|---|
+| [AGENTS](../AGENTS.md) | Quy tắc làm việc, giới hạn Markdown, cập nhật và bàn giao |
+| [PROGRESS](PROGRESS.md) | Snapshot trạng thái, việc dang dở, blocker và bước tiếp theo |
+| [MASTER_PLAN](MASTER_PLAN.md) | Baseline sản phẩm/provider, phân kỳ, milestone và gate nghiệm thu |
+| [DESIGN](DESIGN.md) | Sitemap, quyền, Home và UX public/admin theo baseline trước M2 |
+| [DATA](DATA.md) | Field, phân loại/mức đọc, giới hạn fixture cũ và quy trình pilot thật |
+| [ARCHITECTURE](ARCHITECTURE.md) | Tổ chức code, chi tiết hạ tầng và bằng chứng khảo sát nguồn cũ |
+| [VERIFICATION](VERIFICATION.md) | Kiểm tra ứng dụng và giới hạn; chưa phải nghiệm thu production |
+| [DEV_LOG](DEV_LOG.md) | Checkpoint lịch sử nối tiếp; đọc theo mục liên quan, được miễn trần 400 dòng |
 
-Skill tái sử dụng từ Ellora nằm local trong `.agents/`, được Git ignore. Hướng dẫn chọn và tương thích Angular/Spring giữ trong AGENTS; máy mới cần sao chép/cài skill riêng.
+## Cập nhật và tài nguyên
+
+- Theo [quy tắc tài liệu trong AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi): tối đa 400 dòng/file, tài liệu lớn hướng tới 200–400, không có tối thiểu bắt buộc; DEV_LOG là ngoại lệ. Khi chuyển/tách nội dung, cập nhật chỉ mục và liên kết, giữ một nguồn hiện hành cho mỗi chủ đề.
+- Không tạo INDEX.md hoặc chỉ mục song song; lịch sử phiên bản do Git quản lý. DEV_LOG có thể nhắc đường dẫn cũ như bằng chứng lịch sử, không phải liên kết tài liệu hiện hành.
+- Ảnh tham khảo/wireframe ở `assets/`, CSV minh họa ở `fixtures/`; chúng chưa chuyển sang baseline trước M2 và không phải dữ liệu thương mại. Logo nguồn ở `code/frontend/public/logo.jpg` (tính từ root), chưa tích hợp UI.
+- Skill Ellora giữ local trong `.agents/`, được Git ignore; chọn theo AGENTS, không nạp toàn bộ hoặc coi Git clone sẽ có sẵn skill.

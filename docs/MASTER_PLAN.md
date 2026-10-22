@@ -1,12 +1,14 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật 22/10/2026 | M0 đã duyệt; M1 local đã triển khai**
+**Bản hiện hành | Cập nhật 22/10/2026 | M0 đã duyệt; M1 local đã triển khai; baseline MVP trước M2 đã duyệt**
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
 > **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Các proposal và phiên bản cũ đã được gộp/xóa; lịch sử xem trong Git.
 
 > **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [báo cáo kiểm tra M1](VERIFICATION.md) và [PROGRESS](PROGRESS.md).
+
+> **Baseline trước M2 được duyệt ngày 22/10/2026:** MVP nhập thủ công, lọc tuổi/thể loại, mỗi cuốn một thể loại, Picture book bắt buộc Paperback hoặc Hardcover, ba ảnh thật, giá và mức đọc tham khảo, liên hệ Zalo theo khả dụng. Import CSV/Excel là bước ngay sau MVP, không phải điều kiện ra mắt. Quyết định này thay thế các mặc định M0 tương ứng; chưa triển khai code M2.
 
 ### Phạm vi M1 local đã thực hiện
 
@@ -21,26 +23,28 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Admin/merchant | **Desktop-first** | Tối ưu bảng, form nhiều trường, quản lý ảnh và tìm kiếm; tablet dùng được, mobile admin không phải ưu tiên |
 | Tính năng khách ở MVP | **A + B**: duyệt catalogue, tìm/lọc/sắp xếp, chi tiết cuốn sách, hỏi mua một cuốn, danh sách quan tâm nhiều cuốn | Danh sách quan tâm **không phải giỏ hàng**, không tạo đơn, không tự giữ sách |
 | Người chọn sách trên web | **Chủ tiệm** | Nhân viên có thể hỗ trợ nhập liệu; phân quyền xuất bản theo thiết kế bên dưới |
-| Chốt mua | **Facebook/Zalo**, ngoài website | Liên hệ chỉ chuyển người dùng sang kênh chat hoặc sao chép mã/link |
+| Chốt mua | **Zalo hotline cá nhân có zBusiness**, ngoài website | Detail dùng Zalo; Facebook vẫn có thể là link thông tin cửa hàng. Không tự gửi tin |
 | Kho & đơn livestream | **Giữ luồng hiện tại** | Không ép livestream → website, không tự đồng bộ Excel/Zalo |
 | Sách cũ | **Mỗi cuốn vật lý = một định danh** | Hai cuốn cùng tên khác tình trạng vẫn riêng biệt; ISBN không thay mã cuốn |
 | Tech stack | Angular + Spring Boot + **PostgreSQL tự quản trên VPS/Dokploy** + Cloudinary | Modular monolith; chỉ Spring truy cập DB qua JDBC |
 | Hosting frontend | **Cloudflare** | Ưu tiên Workers Assets cho Angular; chiến lược SEO/SSR/SSG phải qua spike kiểm chứng |
 | Hosting backend | **VPS + Dokploy** | Spring Boot container, Dokploy quản lý deploy/route/HTTPS, tách staging và production hợp lý |
 | Email | **Resend (sau MVP)** | Dự trù cổng tích hợp, chưa làm gửi mail/notification tại MVP |
-| Mở rộng | Giỏ hàng/đặt hàng → thanh toán/giao vận → AI số hóa/đối soát | Phân kỳ độc lập với MVP |
+| Bước ngay sau MVP | **Import CSV/Excel tạo sách mới thành nháp** | Mã trùng báo lỗi, không ghi đè; chưa đặc tả định dạng file |
+| Mở rộng sau đó | Import cập nhật sách; giỏ hàng/đặt hàng → thanh toán/giao vận → AI số hóa/đối soát | Mỗi bước cần đặc tả riêng |
 
-### 0.1. Các mặc định để có thể làm ngay, không cần thêm vòng hỏi nghiệp vụ
+### 0.1. Quy tắc MVP đã chốt trước M2
 
-1. **Có giá niêm yết cho sản phẩm được xuất bản**; nếu chủ không muốn đăng giá một cuốn, giữ cuốn ở nháp đến khi có quyết định biên tập khác. Không tự động suy ra giá từ ảnh hoặc từ bảng Excel.
+1. **Có một mức giá tham khảo cho mỗi cuốn được xuất bản**, số nguyên VND > 0; nếu thiếu giá, giữ nháp. Kèm ghi chú “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Không tự suy ra giá từ ảnh/Excel; giá chốt do tiệm xác nhận ngoài web.
 2. **Chủ tiệm duyệt tập sách đăng bằng quyền xuất bản** (`OWNER`); nhân viên (`STAFF`) tạo/sửa nháp. Trường hợp chủ trực tiếp đăng, không buộc đi qua bước duyệt thừa. Đây là lựa chọn kỹ thuật mặc định, không phải khẳng định tất cả công việc ở tiệm đều cần phê duyệt.
 3. **Wishlist lưu trong trình duyệt** (localStorage) và không cần tài khoản; nó chỉ tồn tại trong cùng trình duyệt/thiết bị, có thể mất khi xóa dữ liệu hoặc dùng ẩn danh. Khi mở danh sách, đọc trạng thái mới nhất từ server; không tự động gửi dữ liệu cho tiệm.
-4. **Nút “Hỏi mua”** mở Facebook Page/Zalo theo liên kết được chủ cung cấp; luôn có **Sao chép mã và link** dự phòng. Không hứa prefill chat vì tùy nền tảng và kiểu liên kết.
-5. **Tình trạng khả dụng** quản lý thủ công. `AVAILABLE`/`SOLD` bắt buộc; `HELD` sử dụng nếu tiệm muốn hiển thị tạm giữ. Dữ liệu website có thể trễ so với Page/livestream.
-6. **Sách đã bán** tiếp tục có trang chi tiết hiển thị “Đã bán” để giữ link cũ, mặc định không ưu tiên trong danh sách. Chủ vẫn có thể ẩn riêng mục đăng.
-7. **Chủ đề, độ tuổi, loại sách** là taxonomy biên tập có thể thay đổi; không gán tự động nhãn CEFR/Cambridge/Lexile hoặc độ tuổi khi không đủ bằng chứng.
+4. **Liên hệ theo khả dụng:** còn hàng dùng “Liên hệ”; hết hàng dùng “Tư vấn sách tương đương”. Cùng mở Zalo hotline cá nhân có zBusiness; chuẩn bị mục đích hỏi, mã, tên, giá tham khảo và URL. Chỉ cam kết điền sẵn sau kiểm chứng; MVP chấp nhận sao chép → mở Zalo → khách dán/gửi, có copy thủ công nếu clipboard lỗi. Nút cộng đồng mở link nhóm Zalo riêng.
+5. **Tình trạng khả dụng** quản lý thủ công, chỉ `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng); không có trạng thái Đang giữ trong MVP. Dữ liệu website có thể trễ so với Page/livestream.
+6. **Sách hết hàng** tiếp tục có trang chi tiết hiển thị “Hết hàng” để giữ link cũ, mặc định không ưu tiên trong danh sách. Chủ vẫn có thể ẩn riêng mục đăng.
+7. **Tuổi/thể loại và mức đọc** do chủ chọn thủ công theo mục 3.1; độc lập với nhau. Không tự suy mức đọc từ tuổi/thể loại hoặc tự gán tuổi khi thiếu căn cứ. Mức đọc không bắt buộc để xuất bản.
+8. **Nhập thủ công trong MVP**, đủ ba ảnh thật (bìa trước, mặt sau, một trang nội dung) mới được xuất bản; tình trạng/lỗi vẫn mô tả bằng chữ. Import CSV/Excel triển khai ngay sau MVP.
 
-Các mặc định trên là **cấu hình triển khai đề xuất**, không biến thành cam kết về chính sách giao hàng, hoàn trả hay thời hạn giữ sách. Nội dung chính sách chỉ công bố khi tiệm cung cấp nội dung hợp lệ.
+Các quy tắc trên là baseline MVP đã duyệt; không suy thêm cam kết về chính sách giao hàng, hoàn trả hay thời hạn giữ sách. Nội dung chính sách chỉ công bố khi tiệm cung cấp nội dung hợp lệ.
 
 ## 1. Phân tích website tham khảo và mức độ học theo
 
@@ -65,14 +69,14 @@ Home lấy bố cục từ ảnh `docs/assets/nxbkimdong.com.vn.png` do người
 | Home | `/` | Header/search, menu danh mục, banner ngang lớn, các hàng sách/bộ sưu tập và banner xen kẽ theo ảnh tham khảo người dùng; xem DESIGN.md |
 | Catalogue | `/sach` | Grid, search, filter, sort, pagination; URL giữ filter |
 | Collection | `/bo-suu-tap/:slug` | Tập sách chủ/nhân viên biên tập |
-| Detail | `/sach/:slug` | Gallery ảnh, ảnh lỗi, tên/giá/mã/tình trạng, mô tả, CTA, sách tương tự nếu có |
+| Detail | `/sach/:slug` | Ba ảnh thật, tiêu đề ghép, giá tham khảo/mã/tình trạng, mô tả, mức đọc, link video đọc sách, trái tim và CTA Zalo |
 | Wishlist | `/quan-tam` | Danh sách lưu trên thiết bị; xóa sách; refresh trạng thái; copy danh sách |
 | About/How to buy | `/gioi-thieu`, `/cach-mua`, `/lien-he` | Nội dung và link thật do tiệm cung cấp |
 | Admin | `/admin/...` | Login, dashboard thao tác, danh sách sản phẩm, editor, media, taxonomy |
 
 **Customer mobile-first:** thanh tìm kiếm dễ thấy; thẻ sách có ảnh nổi bật + giá + tag tình trạng; lọc hiển thị qua bottom sheet; hình thực tế có thứ tự; nút hỏi mua/danh sách quan tâm ở vùng dễ bấm; không che ảnh sách bằng banner. Điều hướng qua lại giữ từ khóa và bộ lọc.
 
-**Admin desktop-first:** thanh điều hướng trái, bảng rộng, tìm mã nhanh, bộ lọc trạng thái, edit trên trang rộng, thao tác ảnh drag-to-reorder, preview bản công khai; không yêu cầu dashboard phân tích doanh thu.
+**Admin desktop-first:** thanh điều hướng trái, bảng rộng, tìm mã nhanh, bộ lọc trạng thái, edit trên trang rộng, ba vị trí ảnh có vai trò cố định, preview bản công khai; không yêu cầu dashboard phân tích doanh thu.
 
 ### 2.1. Luồng khách hàng
 
@@ -80,10 +84,10 @@ Home lấy bố cục từ ảnh `docs/assets/nxbkimdong.com.vn.png` do người
 flowchart LR
   A[Trang chủ / tìm kiếm] --> B[Catalogue + bộ lọc]
   B --> C[Chi tiết cuốn sách]
-  C --> D[Hỏi mua 1 cuốn]
+  C --> D[Liên hệ / tư vấn sách tương đương]
   C --> E[Thêm danh sách quan tâm]
   E --> F[Gửi thông tin nhiều cuốn]
-  D --> G[Facebook / Zalo]
+  D --> G[Zalo hotline]
   F --> G
   G --> H[Tiệm xác nhận còn và chốt bên ngoài web]
 ```
@@ -99,7 +103,7 @@ flowchart TD
   C --> D[Chủ quyết định xuất bản]
   D --> E[Listing công khai]
   E --> F[Tiệm chốt mua ngoài website]
-  F --> G[Người phụ trách cập nhật còn/giữ/đã bán]
+  F --> G[Người phụ trách cập nhật còn hàng/hết hàng]
   E --> H[Chủ ẩn hoặc sửa nội dung]
 ```
 
@@ -112,32 +116,52 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 **Public catalogue**
 - Hiển thị Home, catalogue, collection, detail và các trang thông tin cơ bản.
 - Search theo tên/mã, case-insensitive; hỗ trợ tiếng Việt không dấu nếu có thể thực hiện bằng PostgreSQL unaccent hoặc giải pháp tương đương; chỉ công khai published listing.
-- Filter **giá, độ tuổi gợi ý, loại sách, chủ đề, khả dụng**; sort mới nhất, giá tăng/giảm. Trường dữ liệu không đầy đủ thì không đưa vào bộ lọc tương ứng.
+- Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa nằm trong Picture book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
 - Mã sách/slug ổn định; HTML ban đầu cho trang sách/danh sách có SEO title/description/canonical/OG image bằng giải pháp render được **kiểm chứng trên Cloudflare** (SSR hoặc SSG với cập nhật phù hợp).
-- Trang detail hỗ trợ ảnh front/back/spine/inside/defect; không buộc đủ tất cả ảnh nếu dữ liệu nguồn thiếu nhưng phải có ảnh bìa và xác thực lỗi trước khi xuất bản.
-- CTA Facebook/Zalo và copy `Mã – Tên – URL`; trạng thái cuối cùng cần cửa hàng xác nhận.
+- Detail chỉ hiển thị ba ảnh thật của đúng cuốn: FRONT / BACK / INSIDE; đủ cả ba và kiểm tra tình trạng/lỗi trước xuất bản. Ảnh/video bổ sung trao đổi qua Zalo, không xây gallery ảnh lỗi riêng trong MVP.
+- Tiêu đề ghép `Tên | NXB | Tác giả | Độ tuổi`, lưu các trường riêng và bỏ phần thiếu/dấu phân cách thừa. Có mô tả, tình trạng/lỗi, độ tuổi, mức đọc tham khảo, link video đọc sách tùy chọn và giá tham khảo.
+- Trái tim wishlist; “Liên hệ” khi còn hàng / “Tư vấn sách tương đương” khi hết hàng; “Tham gia cộng đồng để nhận thông tin ưu đãi” mở nhóm Zalo. Chuẩn bị nội dung/copy theo mục 0.1; không tự gửi, không giữ hàng; tiệm xác nhận giá và khả dụng. Link hotline và nhóm thật là đầu vào trước nghiệm thu.
 
 **Wishlist / enquiry list**
-- Thêm/xóa cuốn, badge số cuốn, trang xem tổng hợp, không cần đăng nhập.
+- Thêm/xóa cuốn bằng nút trái tim có nhãn truy cập, badge số cuốn, trang xem tổng hợp, không cần đăng nhập.
 - Client localStorage lưu ID/mã, server GET xác nhận và cập nhật tên/giá/trạng thái mới khi xem lại; cuốn đã bán hiển thị cảnh báo.
 - Sao chép format nhiều dòng: `Mã | Tên | Giá tham khảo | Link`. Có phương án mở kênh chat; bản sao chép là lối dự phòng luôn hoạt động.
 - Không giới thiệu là giỏ hàng, không có số lượng, không cộng phí ship, không tạo đơn.
 
 **Admin**
 - Owner/Staff login. `STAFF`: tạo, sửa nháp; `OWNER`: quản lý người dùng và xuất bản/ẩn (quy tắc đề xuất có thể cấu hình sau).
-- Form tạo cuốn + listing, upload nhiều ảnh, chọn thumbnail, sắp thứ tự, loại ảnh, ghi chú lỗi và alt text.
+- Nhập thủ công cuốn + listing; ba vị trí ảnh bìa trước/mặt sau/trang nội dung, thay ảnh và alt text; bìa trước làm thumbnail. Ghi chú tình trạng/lỗi bằng chữ, không có importer trong MVP.
 - Cập nhật giá/trạng thái; tìm theo code; xem trước/ẩn/khôi phục; audit giá/trạng thái và người chỉnh sửa.
-- Taxonomy tối thiểu cho loại sách, chủ đề, bộ sưu tập, độ tuổi gợi ý; không làm hệ CMS tổng quát.
+- Taxonomy tuổi/thể loại/mức đọc theo mục 3.1 và bộ sưu tập biên tập; không làm CMS tổng quát hoặc thêm bộ lọc chủ đề.
 
 ### P1 — nên làm nếu không ảnh hưởng ra mắt
 
-- Sách tương tự theo chủ đề/độ tuổi, danh sách “mới đăng”, tối ưu empty states.
+- Sách tương tự theo thể loại/độ tuổi, danh sách “mới đăng”, tối ưu empty states.
 - Chỉnh hàng loạt trạng thái **chỉ** nếu chủ tiệm có nhu cầu và đã làm pilot.
-- Video sản phẩm tùy chọn nếu hạ tầng/media đã sẵn, không dùng video làm điều kiện để publish.
+- Không xây upload/player video sản phẩm trong MVP. Link ngoài tới video đọc sách là trường tùy chọn ở detail; ảnh/video thực tế bổ sung xem qua Zalo.
 
 ### Không làm trong MVP
 
-Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/PayOS/VNPay, vận chuyển/J&T, thanh toán/cọc, hold timer, phân tích doanh thu, Meta/Zalo API, đồng bộ Excel, tự đăng comment, OCR/VLM/AI, gợi ý sách bằng ML, chatbot, loyalty, review khách và quản lý tồn đa kênh.
+Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/PayOS/VNPay, vận chuyển/J&T, thanh toán/cọc, hold timer, phân tích doanh thu, Meta/Zalo API, Zalo Mini App, import CSV/Excel, đồng bộ Excel, tự đăng comment, OCR/VLM/AI, gợi ý sách bằng ML, chatbot, loyalty, review khách và quản lý tồn đa kênh.
+
+### 3.1. Phân loại và trình độ đọc đã duyệt
+
+- **Tuổi:** 0–3, 4–6, 7–9, 10+; một cuốn có thể gán nhiều nhóm. Không suy tuổi từ mức đọc.
+- **Thể loại:** mỗi cuốn chọn đúng một trong Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện.
+- **Picture book:** bắt buộc chọn đúng một kiểu Paperback hoặc Hardcover khi nhập. “Tất cả” chỉ là lựa chọn bộ lọc lấy cả hai kiểu; không lưu làm kiểu bìa của cuốn sách.
+- **Mức đọc:** chọn một trong bảy mức bên dưới hoặc “Chưa xác định”; ghi căn cứ nội bộ (nguồn NXB hoặc nhận định của tiệm). Không bắt buộc để publish; chưa xác định thì ẩn trường public. Không tự gán bằng thể loại/độ tuổi.
+
+| Mức lưu tham khảo | Nhãn hiển thị |
+|---|---|
+| Pre A1 | Starters · Pre A1 |
+| A1 | Movers · A1 |
+| A2 | Flyers / Key · A2 |
+| B1 | Preliminary · B1 |
+| B2 | First · B2 |
+| C1 | Advanced · C1 |
+| C2 | Proficiency · C2 |
+
+Flyers và Key cùng A2, không phải hai bậc đọc kế tiếp. Tên Cambridge là cách trình bày gợi ý cho người đọc; mức gán cho sách do tiệm đánh giá, không phải chứng nhận Cambridge. Detail kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Tham chiếu đối chiếu: [Cambridge Young Learners](https://www.cambridgeenglish.org/qualifications-young-learners/) và [Cambridge English Qualifications](https://www.cambridgeenglish.org/in/exams-and-tests/qualifications/general/).
 
 ## 4. Mô hình dữ liệu đề xuất
 
@@ -147,7 +171,7 @@ Chia **BookCopy (cuốn vật lý)** và **Listing (mục niêm yết)** ngay t�
 erDiagram
   BOOK_COPY ||--o| LISTING : published_as
   BOOK_COPY ||--o{ BOOK_MEDIA : evidenced_by
-  LISTING }o--o{ CATEGORY : tagged
+  CATEGORY ||--o{ LISTING : classifies
   LISTING }o--o{ COLLECTION : grouped
   ADMIN_USER ||--o{ AUDIT_EVENT : changes
   BOOK_COPY ||--o{ AUDIT_EVENT : tracked
@@ -156,18 +180,20 @@ erDiagram
 
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
-| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `format`, `condition_grade?`, `condition_note`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
-| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd`, `description`, `publication_status`, `published_at`, `updated_at`, `version` | Một cuốn có thể chưa có listing hoặc listing chưa công khai |
-| `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/SPINE/INSIDE/DEFECT/OTHER), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
-| `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Taxonomy do chủ biên tập; độ tuổi gợi ý có cấu trúc nhưng nullable |
+| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
+| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_level_basis?` (nội bộ), `reading_video_url?`, `publication_status`, `published_at`, `updated_at`, `version` | Một cuốn có thể chưa có listing hoặc listing chưa công khai |
+| `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/INSIDE), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
+| `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |
 | `AdminUser` | `id`, credential hash, `role`, `active` | RBAC và audit |
 | `AuditEvent` | actor, target ID, field, before/after (hạn chế thông tin nhạy cảm), timestamp | Reconstruct lịch sử chỉnh giá/trạng thái, provenance |
 
 **Các bất biến:**
 - `book_code` không tái sử dụng, không trùng TikTok ID (TikTok ID trên sticker thuộc về khách); ISBN không bắt buộc và **không duy nhất cho cuốn vật lý**.
 - Public DTO chỉ trả các bản ghi công khai; không lộ nháp/lưu trữ qua URL, sitemap, API hay preview do web kiểm soát.
-- `publication_status` (DRAFT / PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / HELD / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
-- Giá kiểu **số nguyên VND**, giá trước phát hành bắt buộc > 0. Có thể đổi giá, nhưng audit cần giữ lịch sử.
+- `publication_status` (DRAFT / PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
+- Giá tham khảo kiểu **số nguyên VND**, trước xuất bản bắt buộc > 0, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
+- Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc/căn cứ được biên tập thủ công; căn cứ nội bộ không nằm trong public DTO.
+- Xuất bản cần tên, mã, thể loại, giá, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE; ghi chú lỗi không được bỏ vì giới hạn ảnh. Schema chi tiết, validation và mapping sẽ chốt trong technical spec M2.
 - `optimistic locking` (`version`/ETag) tránh người thứ hai ghi đè form đang cũ.
 - Nếu triển khai C về sau, `OrderItem` tham chiếu ID cuốn và **snapshot mã/tên/giá**; transaction/lock chỉ bảo vệ cập nhật trong web, không thể bảo vệ dữ liệu Facebook chưa đồng bộ.
 
@@ -181,7 +207,7 @@ flowchart TB
   API -->|JDBC - private network| DB[(PostgreSQL - VPS / Dokploy)]
   API --> MEDIA[Cloudinary - signed media operations]
   CF -->|Public optimized images| MEDIA
-  C --> CHAT[Facebook / Zalo - contact outside web]
+  C --> CHAT[Zalo hotline - contact outside web]
   API -. Future: EmailService .-> EMAIL[Resend transactional email]
   API -. Future: AI review API .-> AI[AI ingestion / reconciliation worker - capstone]
   API -. Future .-> ORDER[Cart / Order / Payment / Shipping]
@@ -195,70 +221,16 @@ flowchart TB
 - **Deployment:** Cloudflare phục vụ Angular FE; **Dokploy trên VPS** chạy image/container Spring Boot với domain `api.example.com` qua Traefik HTTPS. PostgreSQL có service/volume riêng trên VPS; mặc định MVP có thể cùng máy với API nhưng đây là một điểm lỗi chung cần backup ngoài máy. **Không** có Angular Node SSR process trên VPS trong phương án mặc định (chỉ cân nhắc lại nếu spike Cloudflare thất bại và được chấp thuận thay kiến trúc). Cloudflare DNS quản lý `www`/`api`; CI build-test trước release, GitHub/CI triển khai FE và backend độc lập. Staging và production dùng secrets, database và tên miền tách biệt khi đi production; chi phí/quota phải đo thực tế.
 - **Caching:** cache Angular JS/CSS có fingerprint dài hạn; `index.html`, HTML metadata và `/api/v1/books/**` dùng cache có TTL/invalidation thích hợp, **không cache admin response hoặc cookie/token**. Giá/trạng thái thay đổi phải thấy sau refresh; OG previews do Facebook/Zalo có cache riêng nên cần test lại và không cam kết cập nhật tức thì.
 
-### 5.1. Hạ tầng triển khai đã chọn và các quyết định cần kiểm chứng
+### 5.1. Chi tiết hạ tầng và kiểm chứng
 
-#### A. Luồng mạng / domain (tên minh họa, chưa mua domain)
+Xem [hạ tầng triển khai trong ARCHITECTURE](ARCHITECTURE.md#hạ-tầng-triển-khai): domain/private network, PostgreSQL roles/pool, Cloudflare rendering spike, Dokploy/CI/rollback, backup database/media và Resend sau MVP. Đây là nơi giữ chi tiết kỹ thuật hiện hành, không nhân bản trong master plan.
 
-| URL minh họa | Nơi chạy | Bảo mật / ghi chú |
-|---|---|---|
-| `www.example.com`, `example.com` | Cloudflare Workers Assets / Angular | Domain công khai; SPA/SSG/SSR phụ thuộc quyết định sau spike |
-| `www.example.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
-| `api.example.com` | VPS → Dokploy/Traefik → Spring Boot | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
-| PostgreSQL internal service:5432 | VPS/Dokploy, persistent volume | Chỉ JDBC từ backend; không public port hoặc kết nối browser |
-| Cloudinary delivery domain | Cloudinary CDN | Chỉ giao ảnh đã xuất bản; quản lý signed uploads/delete qua API |
-| Resend API | Resend, **chưa kích hoạt ở MVP** | Gọi từ Spring Boot khi đã có tính năng email |
-
-**Kết nối PostgreSQL tự quản:**
-
-- Backend kết nối service hostname trong private network, port nội bộ 5432; không dùng public DNS cho luồng DB cùng VPS và không public port database.
-- Tách database role ứng dụng khỏi role migration/admin; giới hạn quyền theo schema, giữ credential trong secret/env của Dokploy, không ghi vào source hoặc browser bundle.
-- Volume bền vững tách khỏi vòng đời container; không lưu data trong filesystem tạm. Tách database/role/volume của staging và production.
-- Nếu DB và API khác máy, cần mạng riêng/VPN và TLS có xác minh certificate; cấu hình JDBC, authentication và network cụ thể phải được kiểm chứng tại M1. Không coi mạng Docker là cơ chế mã hóa.
-- Chỉnh Hikari `maximumPoolSize` theo tài nguyên PostgreSQL, connection limit và số instance; Flyway chạy có kiểm soát trong release, không tự tạo schema bằng `ddl-auto: update` ở production.
-- Theo dõi dung lượng disk, memory, connection count; chọn VPS sau đo tải. Ban đầu API/DB có thể cùng máy, không tuyên bố high availability.
-- Backup database hằng ngày ra nơi lưu tách khỏi VPS, có retention và cảnh báo lỗi. Dùng `pg_dump`/`pg_restore` phù hợp định dạng; kiểm thử restore sang database trống, bao gồm quyền/extension cần thiết. Snapshot VPS/volume không thay cho kiểm thử phục hồi database.
-
-**Cloudflare / SEO quyết định bằng spike tại M0/M1:**
-
-1. Deploy thử Angular app với **Workers Assets**, cả route `/admin` và `/sach/:slug`.
-2. Kiểm tra ở bản build triển khai thật: `curl` HTML ban đầu có **tên sách, mô tả, giá, OG image**, canonical, HTTP 404 cho sách không tồn tại; Facebook/Zalo crawler nhận đúng preview.
-3. Kiểm tra sau khi **publish, sửa giá, sold, archive**: HTML/preview/API không giữ dữ liệu cũ do Cloudflare cache.
-4. Nếu Workers Angular không có SSR tương thích: lựa chọn có kiểm chứng gồm **(a)** prerender theo danh mục đã publish + cơ chế rebuild khi thay đổi, hoặc **(b)** giải pháp edge-render/SSR tương thích được spike chứng minh. Không tự triển khai một runtime Node SSR truyền thống trên Cloudflare chỉ từ hướng dẫn static assets.
-5. Nếu cả hai nhánh không đáp ứng SEO và tốc độ cập nhật, phải ghi lại trade-off và **đổi kiến trúc FE một cách có chủ đích**; không mặc định hạ yêu cầu SEO mà không quyết định.
-
-**VPS / Dokploy:**
-
-- VPS cần đủ RAM cho JVM + PostgreSQL + Dokploy/Traefik + hệ thống; chọn cấu hình từ smoke load test và quan sát memory, **không mặc định một size cố định**.
-- Build image Spring Boot (multi-stage), health check `/actuator/health` tối giản, restart policy, giới hạn bộ nhớ và log rotation; Dokploy deploy image ổn định thay vì build production không có kiểm soát.
-- Dokploy quản lý domain/routing qua Traefik. Không publish cổng container backend trực tiếp ra Internet nếu không cần; tách quyền quản trị Dokploy, SSH key, firewall, bảo vệ dashboard và định kỳ cập nhật bản vá.
-- Cloudflare DNS `api.example.com` trỏ về VPS; origin sử dụng certificate hợp lệ và **Full (strict)** để không để lỏng mã hóa giữa Cloudflare và VPS. Kiểm tra việc cấp/renew certificate thực tế với chế độ proxy DNS.
-- Secrets của VPS/Dokploy như `SPRING_DATASOURCE_URL`, `DB_USER`, `DB_PASSWORD`, `CLOUDINARY_*`, `SESSION_SECRET` (nếu cấu hình) nằm trong secret/env của hạ tầng, không commit vào Git; chỉ cấu hình credential PostgreSQL cần thiết cho backend.
-- CI tách **PR: lint/build/test** và **release: deploy**; có rollback image tag, migration tương thích ngược khi cần. Nếu chỉ một backend instance, user admin có thể phải đăng nhập lại sau restart khi session in-memory; ghi rõ trước khi scale.
-
-**Backup / khôi phục:**
-
-- PostgreSQL tự quản: chủ dự án chịu trách nhiệm lịch backup, bản vá, retention và restore. Đề xuất RPO tối đa 24 giờ; retention ban đầu 7 bản ngày + 4 bản tuần ngoài VPS, quyền truy cập hạn chế và mã hóa nơi lưu. Chốt RTO sau phép thử phục hồi, không mặc định có PITR hoặc failover.
-- DB backup **không đồng nghĩa backup file ảnh Cloudinary**; ghi nhận public IDs, phương án giữ ảnh gốc trên Drive hoặc xuất file định kỳ. Không mất tham chiếu media khi restore DB; kiểm thử phục hồi chéo DB/media.
-- Lưu runbook cho lỗi PostgreSQL mất kết nối, DB pool cạn, VPS full disk, Cloudflare deploy lỗi, Cloudinary upload lỗi và certificate hết hạn.
-
-**Resend — mở rộng sau MVP:**
-
-- Không tạo bảng gửi email, OTP, notification jobs hay Resend integration endpoint ở MVP nếu không sử dụng. Có thể ghi `EmailService`/`NotificationSender` thành **contract dự kiến** trong ADR/backlog tương lai.
-- Khi làm cart/order sau này: email xác nhận yêu cầu/đơn, cập nhật trạng thái, thông báo quản trị; Spring Boot là bên tạo sự kiện nghiệp vụ và gọi Resend (không để FE chứa API key).
-- Khi kích hoạt: xác minh domain gửi, cấu hình DNS SPF/DKIM (xem xét DMARC), cấu hình FROM/REPLY-TO; secrets lưu trên Dokploy, ghi log ID email nhưng không log dữ liệu cá nhân quá mức.
-- Xử lý thất bại bằng retry có kiểm soát và idempotency key; khi nghiệp vụ email tăng mới cân nhắc outbox/queue. Database không cung cấp hệ thống auth/email cho ứng dụng; Spring Security tiếp tục phụ trách session quản trị.
-
-**Nguồn tài liệu chính thức để đối chiếu khi bắt đầu:**
-- Cloudflare: https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/angular/ và https://developers.cloudflare.com/pages/framework-guides/
-- PostgreSQL: https://www.postgresql.org/docs/current/backup-dump.html
-- Dokploy database: https://docs.dokploy.com/docs/core/databases
-- Dokploy: https://docs.dokploy.com/docs/core/docker-compose/domains và https://docs.dokploy.com/docs/core/docker-compose
-- Resend: https://resend.com/java và https://resend.com/changelog/idempotency-keys
+Provider và các release gate vẫn được quyết định tại tài liệu này: Angular/Cloudflare; Spring Boot/PostgreSQL trên VPS/Dokploy; Cloudinary; phải kiểm chứng SEO/OG, quyền admin, kết nối riêng, backup/restore và rollback. M1 chỉ hoàn tất local; Docker hóa app/CI/CD/deploy vẫn hoãn, chưa có bằng chứng các gate staging/production đã đạt.
 
 ### 5.2. API contract khởi điểm (minh họa)
 
 ```text
-GET  /api/v1/books?q=&category=&format=&age=&minPrice=&maxPrice=&availability=&sort=&page=
+GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
 GET  /api/v1/books/{slug}
 GET  /api/v1/collections
 GET  /api/v1/collections/{slug}
@@ -271,7 +243,9 @@ POST /api/v1/admin/media/upload-authorization
 GET  /api/v1/admin/audit?targetId=...
 ```
 
-MVP **không có** `POST /orders`, `/payments`, `/shipments`, `/reservations`. Có thể đổi tên endpoint khi thiết kế OpenAPI, không nên khóa tên chỉ vì proposal.
+`binding` chỉ dùng khi lọc Picture book; “Tất cả” nghĩa là không giới hạn binding. Public không có tham số lọc giá/chủ đề/khả dụng/mức đọc. Đây là contract dự kiến, chưa thay đổi API ứng dụng đang chạy.
+
+MVP **không có** importer hoặc `POST /orders`, `/payments`, `/shipments`, `/reservations`. Có thể đổi tên endpoint khi thiết kế OpenAPI, không nên khóa tên chỉ vì proposal.
 
 ## 6. Tái sử dụng từ project Angular/Spring cũ
 
@@ -286,6 +260,8 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | Giai đoạn | Đầu ra | Điều kiện chấp nhận |
 |---|---|---|
 | **MVP A+B (hiện tại)** | Public catalogue + wishlist + liên hệ; admin desktop quản lý sách/ảnh/trạng thái | Chủ có thể đăng 10–20 cuốn thật và khách có thể tự tìm/gửi yêu cầu; không phát sinh đơn web |
+| **Ngay sau MVP — import CSV/Excel** | Chỉ tạo sách mới thành nháp; mã trùng trong file/database báo lỗi, không ghi đè | Đặc tả cấu trúc file, preview và xử lý lỗi tại bước này; không phải gate nghiệm thu MVP |
+| **Mở rộng import về sau** | Tạo mới và cập nhật cả sách đã công khai theo mã | Đối chiếu thay đổi, chống ghi đè và audit; đặc tả riêng, không gộp vào bước import đầu |
 | **V1 e-commerce** | Giỏ hàng thực, yêu cầu đặt hàng, admin xác nhận, record đơn | Có chính sách giữ hàng, dữ liệu khách và đối soát đa kênh được đặc tả riêng |
 | **V2 vận hành** | Thanh toán/cọc, giao hàng, trạng thái hoàn/hủy, có thể tích hợp tồn | Chỉ khi chủ muốn thay đổi workflow Excel/Zalo và có quyền API phù hợp |
 | **Capstone R&D** | Ingestion ảnh, OCR/VLM multi-image, fusion, đối soát, confidence + human verification, đo metrics | Có tập dữ liệu chú giải, baseline, đánh giá định lượng, phân tích lỗi và phép thử thực tế |
@@ -294,7 +270,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 
 ### 7.1. Dữ liệu nên chuẩn bị ngay để không phải thiết kế lại
 
-- Lưu mã từng cuốn, loại ảnh (`front`, `back`, `spine`, `inside`, `defect`), nguồn ảnh (tham chiếu nếu có), timestamps, người/phiên bản chỉnh sửa.
+- Lưu mã từng cuốn, ba vai trò ảnh MVP (`front`, `back`, `inside`), mô tả lỗi, nguồn ảnh nội bộ nếu có, timestamps và người/phiên bản chỉnh sửa. Ảnh spine/defect hoặc evidence bổ sung chỉ mở rộng trong giai đoạn nghiên cứu khi được đặc tả.
 - Để giá chủ định ra riêng với dữ liệu có thể nhận dạng từ ảnh; tuyệt đối không học/đoán giá bán bằng OCR bìa.
 - Dùng `BookCopy` làm điểm neo cho evidence; khi làm AI bổ sung `ExtractionRun`, `FieldCandidate`, `EvidenceRef`, `ReviewDecision`, `ReconciliationLink` qua migration mới, **không tạo chúng ở MVP nếu chưa dùng**.
 - Nếu dùng dữ liệu livestream/sticker, tách thông tin định danh khách và số tiền/cọc khỏi dataset công khai; tối thiểu hóa, ẩn danh khi nghiên cứu.
@@ -317,18 +293,21 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 |---|---|---|---|
 | **M0 – scope/data/UX (3–5 ngày)** | Chốt phạm vi từ tài liệu này, 10–20 cuốn thí điểm, field schema, wireframes public mobile/admin desktop, định dạng wishlist | Sitemap, design wireframes, fixture data, checklist | Không còn trường dữ liệu bắt buộc khó nhập; CTA rõ |
 | **M1 – foundation (4–6 ngày, ước lượng cần hiệu chỉnh)** | Monorepo, Cloudflare Workers Assets FE, spike SEO/SSR/SSG, Spring Boot Docker trên Dokploy/VPS, PostgreSQL private JDBC/Flyway, auth/RBAC, Cloudinary adapter, CI | Local và staging chạy end-to-end; có bằng chứng HTML metadata/link preview, kết nối DB nội bộ | Không rò draft; login role hoạt động; **chọn xong chiến lược SEO và Cloudflare** |
-| **M2 – admin catalogue (6–9 ngày)** | BookCopy/Listing CRUD, uploads/media order, taxonomy, publish/status, optimistic locking/audit | Admin desktop nhập thật 10–20 cuốn | Chủ tự tìm, sửa, publish, đánh dấu sold được |
-| **M3 – customer UX (6–9 ngày)** | Home/catalogue/filter/search/detail/gallery, SEO/SSR/OG, contact buttons, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
+| **M2 – admin catalogue (6–9 ngày)** | BookCopy/Listing CRUD thủ công, ba vai trò ảnh, tuổi/thể loại/kiểu bìa/mức đọc, publish/status, optimistic locking/audit | Admin desktop nhập thật 10–20 cuốn | Chủ tự tìm, sửa, publish, đánh dấu sold được |
+| **M3 – customer UX (6–9 ngày)** | Home/catalogue, lọc tuổi/thể loại, search/sort, detail ba ảnh/giá tham khảo, SEO/SSR/OG, CTA Zalo + nhóm, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
 | **M4 – wishlist + polish (3–5 ngày)** | Local wishlist, copy multi-book enquiry, cập nhật sold, empty states, accessibility | A+B end-to-end trên điện thoại | Không tạo order, đã bán được cảnh báo |
 | **M5 – hardening/pilot/release (4–7 ngày, ước lượng cần hiệu chỉnh)** | QA iOS/Android/in-app, security, **PostgreSQL restore ngoài VPS**, Cloudflare cache/SEO, Dokploy health/HTTPS/rollback, performance, owner demo | Checklist pass, release notes, hướng dẫn nhập liệu; Cloudflare + VPS production | Hoạt động với dữ liệu thật; backup/restore, rollback thử thành công |
 
-**Quy tắc ưu tiên khi trễ:** cắt video/collection đẹp/recommendations trước; không cắt khả năng phân biệt từng cuốn, cập nhật sold, backup, quyền admin và luồng hỏi mua. Không đưa `Order` vào làm đường tắt.
+**Ngay sau M5/MVP:** import CSV/Excel tạo mới thành nháp theo mục 7; không đưa importer vào gate M2 hoặc M5.
+
+**Quy tắc ưu tiên khi trễ:** cắt collection đẹp/recommendations trước; không cắt ba ảnh bắt buộc hoặc link video đọc sách tùy chọn; không cắt khả năng phân biệt từng cuốn, cập nhật sold, backup, quyền admin và luồng hỏi mua. Không đưa `Order` vào làm đường tắt.
 
 ### 8.1. Backlog mở ticket ngay
 
 - `SETUP-01` tạo repository layout, env validation, CI PR checks; `SETUP-02` PostgreSQL trên Dokploy + Flyway + seed taxonomy; `SETUP-03` VPS/Dokploy Spring staging; `SETUP-04` Cloudflare Workers Assets + **SSR/SSG/OG spike**; `SETUP-05` domain + TLS + credentials/CORS/CSRF + Cloudflare routing.
 - `DATA-01` BookCopy/Listing migrations và constraints; `DATA-02` BookMedia upload lifecycle; `DATA-03` AuditEvent/versioning.
-- `ADMIN-01` login + RBAC; `ADMIN-02` desktop book editor; `ADMIN-03` listing publication/status; `ADMIN-04` media gallery + thumbnail; `ADMIN-05` taxonomy/collections.
+- `ADMIN-01` login + RBAC; `ADMIN-02` desktop book editor; `ADMIN-03` listing publication/status; `ADMIN-04` ba vị trí ảnh + thumbnail bìa trước; `ADMIN-05` taxonomy/collections.
+- `POST-MVP-IMPORT-01` CSV/Excel tạo sách mới thành nháp, mã trùng báo lỗi; chốt file/preview/lỗi sau MVP. Cập nhật sách có sẵn là mở rộng sau đó.
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
@@ -337,10 +316,14 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 ## 9. Definition of Done — nghiệm thu MVP
 
 - [ ] Chủ chọn một bộ **50–100 listing kiểm thử** (có thể có subset 10–20 ảnh thật cho pilot), cùng tên nhưng khác bản cuốn vẫn có mã/ảnh/giá/tình trạng khác.
-- [ ] Customer ở iPhone Safari và Android Chrome tìm theo tên/mã, lọc kết hợp và quay lại detail không mất filters.
-- [ ] Ảnh front/back/spine/inside/defect hiển thị đúng vai trò; trường thiếu không bị bịa, ảnh lỗi có thể xem khi có.
+- [ ] Customer ở iPhone Safari và Android Chrome tìm theo tên/mã, lọc tuổi/thể loại và quay lại detail không mất filters; không có bộ lọc giá/chủ đề/khả dụng/mức đọc. Cuốn gán nhiều nhóm tuổi được tìm thấy theo từng nhóm.
+- [ ] Một thể loại/cuốn; Picture book bắt buộc Paperback hoặc Hardcover, không lưu “Tất cả”; lọc “Tất cả” lấy cả hai kiểu.
+- [ ] Đủ đúng ba ảnh thật FRONT/BACK/INSIDE mới xuất bản; detail chỉ hiện ba ảnh, mô tả tình trạng/lỗi rõ; thiếu một ảnh bị chặn publish và giữ dữ liệu đang nhập.
+- [ ] Tiêu đề ghép không có dấu phân cách thừa; giá tham khảo và ghi chú đúng. Bảy mức đọc đúng thứ tự, Flyers/Key chung A2, có căn cứ nội bộ không lộ public và chú thích gợi ý của tiệm; “Chưa xác định” không chặn publish và ẩn trường. Link video đọc sách tùy chọn, không bịa thông tin thiếu.
 - [ ] Add/remove wishlist, reopen cùng browser còn danh sách; khác máy/ẩn danh không bị hứa đồng bộ; sách sold hiển thị cảnh báo.
-- [ ] Hỏi mua một cuốn hoặc danh sách nhiều cuốn: copy mã/link chính xác; Facebook/Zalo link + fallback được thử trong browser thường và in-app browser.
+- [ ] Trái tim wishlist; còn hàng “Liên hệ”, hết hàng “Tư vấn sách tương đương”; nội dung có mục đích, mã/tên/giá tham khảo/URL. Hotline Zalo và nhóm cộng đồng đúng link tiệm cung cấp; không tự gửi tin.
+- [ ] Luồng sao chép → mở Zalo → dán/gửi và copy thủ công khi clipboard lỗi được thử trên desktop, mobile và in-app browser; điền sẵn chỉ cam kết nếu kiểm chứng được trên tài khoản hotline cá nhân zBusiness. Wishlist nhiều cuốn copy thông tin chính xác.
+- [ ] MVP nhập thủ công; import CSV/Excel không phải điều kiện nghiệm thu. Khả dụng chỉ Còn hàng/Hết hàng, độc lập publication.
 - [ ] Customer click không tạo `order`, không đổi `availability`, không làm giữ chỗ.
 - [ ] Admin trên laptop/desktop tạo nháp, upload, xem trước, xuất bản/ẩn, đổi giá/trạng thái; role staff không tự publish nếu không có quyền.
 - [ ] Nháp/ẩn không lộ public API, sitemap và chi tiết URL; XSS/file upload/authorization được kiểm thử; concurrent edit không ghi đè âm thầm.
@@ -357,7 +340,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 |---|---|---|
 | Bán chéo Page/livestream nhưng web chưa cập nhật | **Cao** | Người phụ trách đổi sold ngay sau chốt; nhấn mạnh phải xác nhận trong chat; không hứa tồn realtime |
 | Danh sách quan tâm bị hiểu là giỏ hàng/giữ sách | **Cao** | Ngôn ngữ UI “Quan tâm / Gửi hỏi mua”, thông báo rõ không giữ; không tạo reservation |
-| Nhập 500+ cuốn thủ công thành bottleneck | Cao | **Không ép nhập toàn kho**; chủ chọn trước, pilot 10–20; sau MVP mới cân nhắc batch import |
+| Nhập 500+ cuốn thủ công thành bottleneck | Cao | **Không ép nhập toàn kho**; chủ chọn trước, pilot 10–20; ngay sau MVP làm import CSV/Excel chỉ tạo mới thành nháp; cập nhật hàng loạt để bước sau |
 | Ảnh thực tế nặng/quá nhiều | Trung bình | CDN/transforms, giới hạn file, thumbnails, lazy load, retention/backup hợp lý |
 | SEO/OpenGraph sai khi Angular client render | **Cao** | Chốt chiến lược SSR/SSG qua spike, crawler/in-app test, cache invalidation |
 | Reuse code cũ kéo rác nghiệp vụ | Trung bình | Chỉ chuyển module đủ scope, migration mới, static/security checks |
@@ -373,10 +356,11 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
 2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
-3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá, ảnh, format, tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
+3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá tham khảo, ba ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
 4. **Tạo technical specification sau wireframe**: ERD, OpenAPI, role matrix, testing strategy, **Cloudflare rendering spike**, **PostgreSQL private connection + offsite backup/restore test**, Dokploy release/rollback, repo structure; hosting provider đã chọn, chỉ còn chọn plan/cấu hình.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
-6. **Sau MVP ổn định** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
+6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
+7. **Sau đó** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
 
 ### Kết luận
 

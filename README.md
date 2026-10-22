@@ -76,4 +76,4 @@ Session mặc định 30 phút không hoạt động, in-memory (restart backend
 
 ## Bàn giao
 
-Đọc [mục lục tài liệu](docs/README.md) → [PROGRESS](docs/PROGRESS.md) → [DEV_LOG](docs/DEV_LOG.md). Baseline sản phẩm: [MASTER_PLAN](docs/MASTER_PLAN.md); phạm vi M1 local đã gộp vào đó, kết quả kiểm tra ở [VERIFICATION](docs/VERIFICATION.md).
+Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc trạng thái/checkpoint mới nhất rồi chọn file hoặc mục theo đầu việc. Không cần đọc toàn bộ nhật ký và bộ tài liệu. Quy tắc làm việc nằm trong [AGENTS](AGENTS.md).

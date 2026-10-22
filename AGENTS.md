@@ -2,9 +2,9 @@
 
 ## Bắt đầu hoặc tiếp tục một phiên
 
-1. Đọc `docs/PROGRESS.md` để biết giai đoạn hiện tại, việc dang dở và bước kế tiếp.
-2. Đọc mục mới nhất của `docs/DEV_LOG.md`; nếu đang sửa việc cũ, đọc thêm mục liên quan.
-3. Đọc các phần liên quan của `docs/MASTER_PLAN.md`. Đây là baseline phạm vi hiện tại, chưa thay cho technical spec được duyệt.
+1. Bắt đầu từ [chỉ mục duy nhất](docs/README.md), chọn luồng đọc theo đầu việc; không nạp toàn bộ bộ tài liệu mỗi phiên.
+2. Theo chỉ mục, đọc `docs/PROGRESS.md` và checkpoint mới nhất của `docs/DEV_LOG.md` để biết trạng thái/bàn giao; chỉ đọc checkpoint cũ khi liên quan.
+3. Chỉ đọc các file/mục mà đầu việc cần theo chỉ mục, gồm baseline `docs/MASTER_PLAN.md` và spec đang thực thi nếu có. Master plan chưa thay cho technical spec được duyệt.
 4. Chọn skill phù hợp từ danh mục runtime hoặc `.agents/skills/`, đọc đầy đủ `SKILL.md` trước khi áp dụng. Bộ skill local được bỏ qua bởi Git; không nạp toàn bộ mỗi phiên.
 5. Kiểm tra trạng thái file/Git và xác minh lại môi trường thực tế. Log là bản bàn giao, không phải bằng chứng rằng code hoặc dịch vụ hiện tại vẫn hoạt động.
 
@@ -13,7 +13,7 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Nguồn quyết định và giới hạn
 
 - Yêu cầu mới nhất của người dùng là nguồn chỉ đạo hiện tại; system/developer instructions vẫn có độ ưu tiên cao hơn file này.
-- `docs/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/DESIGN.md`, dữ liệu ở `docs/DATA.md`, kiến trúc và khảo sát nguồn cũ ở `docs/ARCHITECTURE.md`. Lịch sử phiên bản tra bằng Git.
+- `docs/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/DESIGN.md`, dữ liệu ở `docs/DATA.md`, kiến trúc/chi tiết hạ tầng và khảo sát nguồn cũ ở `docs/ARCHITECTURE.md`. Lịch sử phiên bản tra bằng Git.
 - Bản spec/ADR được duyệt sau này ghi rõ quyết định nào thay thế master plan. Không âm thầm sửa phạm vi thông qua code hoặc skill.
 - Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `README.md`.
 
@@ -42,11 +42,14 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Giữ tài liệu gọn sau mỗi thay đổi
 
 - Dùng mục lục `docs/README.md`; mỗi chủ đề có một file hiện hành với tên cố định. Ưu tiên cập nhật ngay file đó, không tạo thêm bản theo ngày/version hoặc proposal trùng phạm vi.
+- Markdown do dự án quản lý (context, spec, plan, hướng dẫn và chỉ mục) tối đa **400 dòng/file**. Tài liệu lớn hướng tới **200–400 dòng**; file ngắn hơn giữ ngắn, không thêm chữ cho đủ 200 dòng. Không áp việc sửa này lên skill/dependency bên ngoài được sao chép hoặc sinh tự động.
+- Không lách giới hạn bằng dòng dài hoặc gộp đoạn. Khi vượt 400 dòng, tách theo trách nhiệm vào file chủ đề hiện hành hoặc file con cần thiết, chuyển đủ nội dung và cập nhật chỉ mục/liên kết trong cùng thay đổi; không nhân bản quyết định hoặc cắt tiêu chí nghiệm thu để giảm dòng.
+- `docs/README.md` là chỉ mục duy nhất: ghi rõ đầu việc → file/mục cần đọc, đăng ký spec/plan đang dùng khi tạo và gỡ liên kết khi chúng hết vai trò. Không tạo thêm INDEX.md hoặc một cây chỉ mục song song.
 - Nếu cần file thay thế, chuyển đầy đủ quyết định/nội dung còn giá trị, sửa mọi liên kết đang dùng rồi xóa file cũ trong cùng thay đổi. Không chuyển bản cũ sang thư mục archive để giữ lại sự trùng lặp; lịch sử do Git quản lý.
 - Spec/plan mới chỉ tạo khi có phạm vi triển khai mới cần duyệt. Khi hoàn tất, gộp quyết định vào tài liệu chuẩn, bằng chứng vào VERIFICATION/DEV_LOG rồi xóa plan đã hết vai trò. Không xóa spec đang được thực thi hoặc chưa chuyển hết tiêu chí chấp nhận.
-- DEV_LOG giữ checkpoint lịch sử trong một file; PROGRESS là snapshot cập nhật tại chỗ. Không xóa bằng chứng/việc chưa làm chỉ để làm tài liệu ngắn hơn.
+- DEV_LOG là **ngoại lệ trần 400 dòng**, giữ checkpoint lịch sử nối tiếp trong một file; không tách/xóa/rút gọn lịch sử chỉ để đạt trần. PROGRESS là snapshot ngắn cập nhật tại chỗ; không sao chép lịch sử vào snapshot. Chỉ đọc log theo checkpoint liên quan.
 - Chỉ dùng `.gitignore` ở root cho repo này; quy tắc riêng frontend phải ghi đường dẫn phù hợp trong file root.
-- Trước bàn giao: kiểm tra link local, không còn plan/proposal đã thay thế, `.env` và công cụ local được ignore; `code/frontend/public/` chứa asset nguồn (gồm logo) vẫn được Git theo dõi.
+- Trước bàn giao: kiểm tra giới hạn dòng và chỉ mục theo rule trên, link local, không còn plan/proposal đã thay thế, `.env` và công cụ local được ignore; `code/frontend/public/` chứa asset nguồn (gồm logo) vẫn được Git theo dõi.
 
 ## Ghi log bắt buộc khi thực hiện công việc
 

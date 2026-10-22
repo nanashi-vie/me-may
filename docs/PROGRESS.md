@@ -1,12 +1,22 @@
 # Mẹ Mây — tiến độ và bàn giao hiện tại
 
-Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S004-C02 trong [DEV_LOG](DEV_LOG.md).
+Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S006-C02 trong [DEV_LOG](DEV_LOG.md).
 
 ## Trạng thái
 
 **M0 đã được người dùng duyệt. M1 local đã triển khai và kiểm tra; Docker hóa app, CI/CD và deploy được hoãn theo yêu cầu.** Pilot 10–20 cuốn thật vẫn chuẩn bị song song, chưa có dữ liệu thương mại được xác nhận.
 
 Baseline sản phẩm: [MASTER_PLAN](MASTER_PLAN.md). Phạm vi M1 local đã gộp vào bản hiện hành; không giữ plan thực thi đã hoàn tất.
+
+Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. Chi tiết hạ tầng đã chuyển nguyên sang ARCHITECTURE, provider/gate giữ ở master. Chưa bắt đầu spec/code M2.
+
+## Baseline trước M2 đã cập nhật
+
+- MVP nhập thủ công; lọc chỉ tuổi/thể loại, nhiều nhóm tuổi và một thể loại/cuốn. Picture book bắt buộc đúng một kiểu Paperback/Hardcover; “Tất cả” chỉ dùng khi lọc.
+- Giá tham khảo + ghi chú tình trạng; ba ảnh FRONT/BACK/INSIDE bắt buộc trước xuất bản; bảy mức đọc Cambridge/CEFR chọn thủ công, có thể chưa xác định; link video đọc sách tùy chọn.
+- Chỉ Còn hàng/Hết hàng; trái tim wishlist, CTA liên hệ/tư vấn tương đương qua Zalo hotline cá nhân zBusiness và link nhóm riêng. Điền sẵn chưa kiểm chứng; chấp nhận copy → mở Zalo → dán/gửi, có copy thủ công dự phòng.
+- Import CSV/Excel ngay sau MVP chỉ tạo mới thành nháp, mã trùng báo lỗi; cập nhật sách có sẵn là giai đoạn sau. Chưa đặc tả file/preview/lỗi, chưa code importer.
+- MASTER_PLAN/DATA/DESIGN đã đồng bộ; fixture/wireframe M0 giữ nguyên và ghi rõ chưa khớp baseline mới. Chưa triển khai hoặc nghiệm thu M2; thay đổi phiên này chỉ là tài liệu. Kiểm tra 51 link local, code fence, nội dung baseline/gate giữ lại và `git diff --check` đạt; không chạy lại build/test ứng dụng.
 
 ## Đã có
 
@@ -33,13 +43,13 @@ Repo đã nối origin https://github.com/nanashi193/me-may.git. Nhánh feat/m1-
 
 ## Bước tiếp theo
 
-1. Người dùng xem M1 local. Nếu có lỗi, tái hiện và thêm test trước khi sửa.
-2. Chuẩn bị pilot thật, link liên hệ/chính sách do tiệm xác nhận và technical spec M2: BookCopy/Listing, publication/availability, media lifecycle, optimistic locking và audit; dựa trên M0 đã duyệt, dùng pilot thật khi có.
-3. M2 mới triển khai CRUD nhập sách; Home catalogue hoàn chỉnh thuộc M3, wishlist thuộc M4.
+1. Tiếp tục đặc tả M2 theo baseline mới đã duyệt; nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
+2. Chuẩn bị pilot thật, link liên hệ/chính sách do tiệm xác nhận và technical spec M2: BookCopy/Listing, publication/availability, media lifecycle, optimistic locking và audit; dựa trên baseline trước M2 và DATA/DESIGN đã cập nhật, dùng pilot thật khi có. Cần chủ cung cấp link Zalo hotline/nhóm thật trước nghiệm thu; khả năng điền sẵn còn phải kiểm chứng.
+3. M2 triển khai CRUD nhập thủ công sau khi spec tương ứng được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
 4. Khi quay lại staging, làm Cloudflare rendering spike, domain cookie/CORS/CSRF, VPS/Dokploy, production DB roles, backup/restore và CI/CD. Không đánh dấu các gate đó đạt từ kiểm tra local.
 
-Đọc [mục lục](README.md) → [AGENTS](../AGENTS.md) → [DEV_LOG](DEV_LOG.md) → [DESIGN](DESIGN.md) và [DATA](DATA.md).
+Chọn file/mục cần đọc theo [chỉ mục duy nhất](README.md#đọc-theo-đầu-việc); không nạp toàn bộ bộ tài liệu hoặc nhật ký. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Dọn repository theo yêu cầu mới
 
-Đã gộp tài liệu thành bộ hiện hành có tên cố định, bỏ proposal/plan cũ sau khi chuyển nội dung hữu ích. Chỉ dùng một `.gitignore` root; các quy tắc riêng Angular đã được gộp với đường dẫn phù hợp. Skill `.agents/` và cấu hình `.vscode/` được giữ trên máy nhưng bỏ theo dõi Git. Logo mới `code/frontend/public/logo.jpg` được giữ làm asset nguồn, chưa tích hợp UI. Thay đổi cleanup đang local trên nhánh hiện tại; không push/deploy. Quy tắc cập nhật và xóa tài liệu cũ đã ghi trong AGENTS và mục lục docs.
+Đã gộp tài liệu thành bộ hiện hành có tên cố định, bỏ proposal/plan cũ sau khi chuyển nội dung hữu ích. Chỉ dùng một `.gitignore` root; các quy tắc riêng Angular đã được gộp với đường dẫn phù hợp. Skill `.agents/` và cấu hình `.vscode/` được giữ trên máy nhưng bỏ theo dõi Git. Logo mới `code/frontend/public/logo.jpg` được giữ làm asset nguồn, chưa tích hợp UI. Cleanup đã lưu ở commit local b4bb335; thay đổi baseline phiên này còn local, chưa commit/push/merge/deploy. Quy tắc cập nhật và xóa tài liệu cũ đã ghi trong AGENTS và mục lục docs.
