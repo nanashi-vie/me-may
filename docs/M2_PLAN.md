@@ -187,10 +187,10 @@
 
 **Interfaces:** CollectionList.load/save():void dùng CollectionApi; OWNER tạo/sửa/ẩn, STAFF chỉ dùng danh sách để gán nháp, không menu quản trị collection. Không UI tạo/sửa các taxonomy cố định.
 
-- [ ] Viết failing `ownerCanCreateAndDeactivate`, `slugImmutableAfterCreate`, `staleCollectionEditKeepsForm`, `staffCannotMutate`; inactive biến mất khỏi lựa chọn mới nhưng liên kết cũ không tự mất hoặc ẩn sách.
-- [ ] RED: `npm test -- --include='src/app/features/admin/collections/collection-list.spec.ts'`.
-- [ ] Implement form name/slug/sort/active/version, validate ASCII slug spec, error/unsaved/focus như editor; không xóa collection hoặc cascade sách.
-- [ ] GREEN cùng lệnh và book-editor regression; checkpoint và commit `feat: add owner collection management`.
+- [x] Viết failing `ownerCanCreateAndDeactivate`, `slugImmutableAfterCreate`, `staleCollectionEditKeepsForm`, `staffCannotMutate`; inactive biến mất khỏi lựa chọn mới nhưng liên kết cũ không tự mất hoặc ẩn sách.
+- [x] RED: `npm test -- --include='src/app/features/admin/collections/collection-list.spec.ts'`.
+- [x] Implement form name/slug/sort/active/version, validate ASCII slug spec, error/unsaved/focus như editor; không xóa collection hoặc cascade sách.
+- [x] GREEN cùng lệnh và book-editor regression; checkpoint và commit `feat: add owner collection management`.
 
 ## Task 11 — Tích hợp, cloud thật, restore/pilot và bàn giao
 

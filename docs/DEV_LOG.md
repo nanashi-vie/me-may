@@ -315,3 +315,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bắt đầu ba slot ảnh tuần tự theo version mới, Owner status có đối chiếu cuốn/confirmation, preview public projection và audit page. Tất cả vẫn là route quản trị session-only, chưa contact/wishlist public.
 - Task9 RED thiếu components; GREEN selected6/fullfrontend28/28 PASS. Ba slot upload concat tuần tự cập nhật version, dirty chặn mutation, lỗi replacement giữ preview; Owner confirm đúng cuốn trước publish, archive/restore/availability dùng version hiện tại.
 - Preview projection không căn cứ/sourceRef/audit, title bỏ phần thiếu, unknown level ẩn, note giá; admin/login noindex và xóa khi quay public. Audit hiển thị plain text escaped và paging. Commit local, tiếp task10 collection.
+
+## S010-C11 — 22/10/2026 — Task10 collection UI
+
+- Bắt đầu Owner create/edit/deactivate collection, slug readonly sau tạo, giữ form khi conflict; Staff không có menu/mutation UI. Taxonomy cố định không có editor.
+- Task10 RED thiếu collection component; GREEN frontend31/31 PASS. Owner create/deactivate, slug immutable trong update,409 giữ dirty form và Staff không gọi mutation. Inactive mapping book-editor regression vẫn đạt. Commit local; tiếp task11 integration/browser/live/backup/restore và pilot.

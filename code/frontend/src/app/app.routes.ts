@@ -1,4 +1,6 @@
-import { CanDeactivateFn, Routes } from '@angular/router';
+import { CanDeactivateFn, Routes,Router } from '@angular/router';
+import { inject } from '@angular/core';
+import { AuthService } from './core/auth/auth.service';
 import { requireAdmin } from './core/auth/auth.guard';
 
 const pendingBookChanges:CanDeactivateFn<{canLeave():boolean}>=component=>component.canLeave();
@@ -6,6 +8,7 @@ const pendingBookChanges:CanDeactivateFn<{canLeave():boolean}>=component=>compon
 export const routes: Routes = [
   {path: 'admin/dang-nhap', title: 'Đăng nhập quản trị | Mẹ Mây', loadComponent: () => import('./features/admin/login').then(m => m.Login)},
   {path: 'admin', canActivate: [requireAdmin], loadComponent: () => import('./layouts/admin-layout').then(m => m.AdminLayout), children: [
+    {path:'bo-suu-tap',title:'Bộ sưu tập | Mẹ Mây',canActivate:[()=>inject(AuthService).user()?.role==='OWNER'||inject(Router).createUrlTree(['/admin/sach'])],canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/collections/collection-list').then(m=>m.CollectionList)},
     {path:'sach',title:'Quản lý sách | Mẹ Mây',loadComponent:()=>import('./features/admin/books/book-list').then(m=>m.BookList)},
     {path:'sach/them',title:'Thêm sách | Mẹ Mây',canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/books/book-editor').then(m=>m.BookEditor)},
     {path:'sach/:id/xem-truoc',title:'Xem trước sách | Mẹ Mây',loadComponent:()=>import('./features/admin/books/book-preview').then(m=>m.BookPreview)},
