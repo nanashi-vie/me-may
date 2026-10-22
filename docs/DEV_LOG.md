@@ -291,3 +291,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Live Cloudinary: synthetic PNG trong memay/test/UUID, upload authenticated, signed preview JPEG decode được <=1280, unsigned original/derived bị chặn; finally xóa đúng public_id vừa tạo, xóa lại NOT_FOUND. Không ghi secret/URL signed, không chạm asset khác.
 - Ruling: HTTP5 SDK strategy giấu request nên socket timeout chưa bảo đảm tổng60s. Dùng Uploader SDK cho params/signature + Apache HTTP5 transport do app quản lý, timer gọi request.cancel() để hủy I/O. Source SDK2.5.0 đọc từ Maven sources; test fake chậm xác nhận request bị cancel.
 - Gate live adapter chạy sớm vì credential đã sẵn sàng; chưa thay gate tích hợp stream/DB/UI/pilot. Commit local task5; tiếp task6 lifecycle.
+
+## S010-C07 — 22/10/2026 — Task6 lifecycle media
+
+- Bắt đầu intent trước upload, attach sau upload, recheck quyền/version, cleanup recoverable và stream session-only. Test dùng FakeMediaGateway bean test-only; cloud live adapter đã đạt riêng, không coi fake là nghiệm thu thật.
+- Task6 RED thiếu lifecycle classes; initial GREEN9/9. Extra RED tái hiện actor bị deactivate vẫn attach thành công; sửa resolve actor hiện hành trong mỗi transaction ngắn. Extra RED multipart413 thiếu error envelope vì lỗi trước handler; typed global advice xử lý, auth/security writers không đổi.
+- GREEN `bash run-local.sh -B -ntp verify`: 69 PASS +1 live opt-in skipped, JAR đóng gói thành công. Stricter audit rollback assertion chạy riêng 5/5 PASS. Có test cleanup claim/attach, max100, retry/not-found/không xóa ACTIVE; HTTP multipart/CSRF/size/format/metadata/stream no-store/nosniff/session/version.
+- Task6 commit local; chưa chạy luồng UI/live tích hợp hoặc dev migration; tiếp task7 typed frontend transport.

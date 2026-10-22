@@ -131,14 +131,14 @@
 
 **Interfaces:** MediaService.upload(long bookId,MediaRole,long version,AdminUser,byte[] file,String alt,String sourceRef):BookDetail; updateMetadata(long,MediaRole,long,AdminUser,String alt,String sourceRef):BookDetail; remove(long,MediaRole,long,AdminUser):BookDetail; content(long,MediaRole,AdminUser):InputStream. MediaTransactions.begin/attach/fail là bean transaction riêng; MediaCleanupJob.runOnce():void dùng Clock.
 
-- [ ] Viết failing `failedReplacementKeepsOldImage`, `dbFailureAfterUploadLeavesRecoverableIntent`, `uploadFinishesAfterPublishReturns409`, `twoUploadsSameSlotOnlyOneActive`; FakeMediaGateway có latch để chủ động giữ/release upload và lỗi theo từng operation.
-- [ ] Viết cleanup `restartRecoversStaleUploading`, `deleteNotFoundIsSuccess`, `retryDoesNotDeleteWinner`, `cleanupClaimCannotRaceAttach`; assert UPLOADING chưa đủ 1h/ACTIVE không bị xóa, tối đa100/lượt và failure giữ DELETE_PENDING.
-- [ ] Viết API tests anonymous content→401, authenticated stream JPEG/no-store/nosniff/không redirect; metadata không cloud URL; 502/503/413/415/429 đúng; invalid role/CSRF/Staff published bị chặn trước provider; published DELETE ảnh→409.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=MediaLifecycleIntegrationTest,MediaCleanupIntegrationTest,MediaPrivacyApiTest test`.
-- [ ] Implement đúng hai transaction trước/sau cloud theo spec 8; dùng bean MediaTransactions tránh @Transactional self-invocation. Attach recheck state/role/version, chuyển ảnh cũ DELETE_PENDING và tăng root version/audit cùng transaction.
-- [ ] Worker conditional state update và provider destroy invalidate=true; giữ key không tái sử dụng, không giữ DB transaction khi upload/delete/stream. Preview stream đóng InputStream khi client disconnect/lỗi, không log token/URL.
-- [ ] Implement PATCH metadata/default alt theo role+mã; UI-independent content path chỉ từ ACTIVE row; private stream ký URL ở backend, không cung cấp public CDN endpoint M2.
-- [ ] GREEN cùng lệnh rồi toàn bộ backend `bash run-local.sh -B -ntp verify`; checkpoint và commit `feat: manage recoverable three-photo lifecycle`.
+- [x] Viết failing `failedReplacementKeepsOldImage`, `dbFailureAfterUploadLeavesRecoverableIntent`, `uploadFinishesAfterPublishReturns409`, `twoUploadsSameSlotOnlyOneActive`; FakeMediaGateway có latch để chủ động giữ/release upload và lỗi theo từng operation.
+- [x] Viết cleanup `restartRecoversStaleUploading`, `deleteNotFoundIsSuccess`, `retryDoesNotDeleteWinner`, `cleanupClaimCannotRaceAttach`; assert UPLOADING chưa đủ 1h/ACTIVE không bị xóa, tối đa100/lượt và failure giữ DELETE_PENDING.
+- [x] Viết API tests anonymous content→401, authenticated stream JPEG/no-store/nosniff/không redirect; metadata không cloud URL; 502/503/413/415/429 đúng; invalid role/CSRF/Staff published bị chặn trước provider; published DELETE ảnh→409.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=MediaLifecycleIntegrationTest,MediaCleanupIntegrationTest,MediaPrivacyApiTest test`.
+- [x] Implement đúng hai transaction trước/sau cloud theo spec 8; dùng bean MediaTransactions tránh @Transactional self-invocation. Attach recheck state/role/version, chuyển ảnh cũ DELETE_PENDING và tăng root version/audit cùng transaction.
+- [x] Worker conditional state update và provider destroy invalidate=true; giữ key không tái sử dụng, không giữ DB transaction khi upload/delete/stream. Preview stream đóng InputStream khi client disconnect/lỗi, không log token/URL.
+- [x] Implement PATCH metadata/default alt theo role+mã; UI-independent content path chỉ từ ACTIVE row; private stream ký URL ở backend, không cung cấp public CDN endpoint M2.
+- [x] GREEN cùng lệnh rồi toàn bộ backend `bash run-local.sh -B -ntp verify`; checkpoint và commit `feat: manage recoverable three-photo lifecycle`.
 
 ## Task 7 — Frontend contracts và transport session/CSRF
 

@@ -21,4 +21,11 @@ public final class AdminHttpClient {
   if(body!=null)b.header("Content-Type","application/json");
   return client.send(b.method(method,body==null?HttpRequest.BodyPublishers.noBody():HttpRequest.BodyPublishers.ofString(body)).build(),HttpResponse.BodyHandlers.ofString());
  }
+ public HttpResponse<String> upload(String path,long version,byte[] file,boolean csrf)throws Exception{
+  String boundary="test"+java.util.UUID.randomUUID();var bytes=new java.io.ByteArrayOutputStream();
+  bytes.write(("--"+boundary+"\r\nContent-Disposition: form-data; name=\"version\"\r\n\r\n"+version+"\r\n--"+boundary+"\r\nContent-Disposition: form-data; name=\"file\"; filename=\"cover.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n").getBytes(StandardCharsets.UTF_8));bytes.write(file);bytes.write(("\r\n--"+boundary+"--\r\n").getBytes(StandardCharsets.UTF_8));
+  var b=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).header("Content-Type","multipart/form-data; boundary="+boundary);
+  if(csrf)b.header("X-CSRF-TOKEN",tree(send("GET","/api/v1/auth/csrf",null,false)).path("token").asString());
+  return client.send(b.POST(HttpRequest.BodyPublishers.ofByteArray(bytes.toByteArray())).build(),HttpResponse.BodyHandlers.ofString());
+ }
 }
