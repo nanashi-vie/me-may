@@ -1,6 +1,6 @@
 # M2 — Đặc tả quản trị catalogue local
 
-Ngày 22/10/2026. **Bản để review; thiết kế tổng thể đã duyệt, spec này chưa được duyệt để triển khai.**
+Ngày 22/10/2026. **Spec đã được người dùng duyệt. Implementation plan cũng đã được duyệt; đang thực thi tuần tự.**
 
 Baseline: [MASTER_PLAN](MASTER_PLAN.md), [DATA](DATA.md), [UX/quyền](DESIGN.md). Vị trí trong workflow: [chỉ mục](README.md#spec-và-plan-đang-thực-thi).
 
@@ -237,6 +237,6 @@ Quy trình upload/thay slot:
 ## 13. Nguồn và quyết định cụ thể hóa
 
 - Tiếp tục tuân thủ [gate MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp) và [chi tiết hạ tầng](ARCHITECTURE.md#hạ-tầng-triển-khai); không cắt bảo mật, accessibility hoặc backup để rút scope.
-- Spec chọn aggregate API thay create hai bước, version aggregate duy nhất, sequence mã riêng, upload qua backend và ảnh authenticated; đây là các chi tiết cần duyệt cùng spec, chưa phải code đã chạy.
+- Spec đã chốt aggregate API thay create hai bước, version aggregate duy nhất, sequence mã riêng, upload qua backend và ảnh authenticated; các quyết định này đã duyệt, chưa phải code đã chạy.
 - Cloudinary: [access control](https://cloudinary.com/documentation/control_access_to_media), [upload/destroy API](https://cloudinary.com/documentation/image_upload_api_reference), [cache invalidation](https://cloudinary.com/documentation/invalidate_cached_media_assets_on_the_cdn). Signed upload không tự làm asset thành private; CDN invalidation cũng không tức thì.
 - Không dùng bảng Excel bán hàng làm schema catalogue; taxonomy giá/tuổi/mức đọc/ba ảnh theo DATA và quyết định chủ đã xác nhận qua người dùng.

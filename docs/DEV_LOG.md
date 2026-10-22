@@ -227,3 +227,29 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Kiểm tra tại root: Python stdlib kiểm cả tracked/untracked Markdown (12 file), mọi file không miễn trần <=400 dòng; 86 link local và 30 anchor mục hợp lệ, code fence cân bằng. Kiểm tra phủ các trạng thái/API/field trọng yếu và scan TODO markers PASS; git diff --check PASS. Đây là kiểm tra tài liệu, không chứng minh code chưa viết đã hoạt động.
 - Chưa chạy Maven/frontend test/build, browser, migration/restore hoặc Cloudinary live; chưa xác nhận credential/pilot thật. VERIFICATION vẫn là bằng chứng M1 cũ. Điều kiện live media/pilot được giữ trong gate M2, không thay bằng mock test.
 - Bước tiếp theo: người dùng review/duyệt M2_SPEC; sau đó dùng writing-plans để lập implementation plan và chọn cách thực thi, chưa bắt đầu code. Theo brainstorming, lưu spec và tài liệu bàn giao liên quan thành commit local sau kiểm tra; nhánh feat/m1-local, không push/merge/deploy. Đối chiếu git log/status sau lệnh commit để biết kết quả thực tế.
+
+## S009-C01 — 22/10/2026 — Spec M2 được duyệt, lập implementation plan
+
+- Người dùng duyệt M2_SPEC và yêu cầu qua bước tiếp theo. Ghi spec đã duyệt, lập docs/M2_PLAN.md theo writing-plans, giới hạn <=400 dòng; chưa có phê duyệt implementation plan hoặc lựa chọn cách thực thi.
+- Git đầu phiên sạch trên feat/m1-local, HEAD 35441c2 (docs: draft M2 catalogue technical spec). Không tự tạo worktree hoặc bắt đầu code trong lượt lập plan.
+- Discovery graph: kiểm lại AuthIntegrationTest, AuthService, AdminLayout, PageMetadata để nối vào convention hiện có. Phát hiện test M1 đang xóa admin_user trực tiếp; plan phải dọn fixture M2 trước khi xóa user có FK audit.
+- Đối chiếu Cloudinary Java guide và artifact registry: cloudinary-http5 2.5.0 có bản phát hành trên Maven Central; GitHub releases được search cache trả phiên bản cũ hơn nên không lấy cache đó làm latest. Chưa cài SDK hoặc gọi tài khoản cloud.
+- Tiếp theo: khóa cấu trúc file/interface, chia task test-first theo phụ thuộc, tự rà spec coverage/signature/review focus; cập nhật chỉ mục và bàn giao. Chưa chạy test/build ứng dụng vì chỉ soạn tài liệu.
+
+## S009-C02 — 22/10/2026 — Implementation plan M2 để review
+
+- Thêm docs/M2_PLAN.md, 219 dòng/11 task: schema và test guard, aggregate/audit, publication/race, REST/collection, Cloudinary adapter, media lifecycle/cleanup, frontend transport, list/editor, media/preview/actions, collection UI, rồi verification/live/restore/pilot. Mỗi task có file/interface, RED/GREEN, lệnh kiểm chứng và commit; chưa task nào được thực thi.
+- Spec đã được người dùng duyệt; ghi trạng thái trong M2_SPEC/chỉ mục/PROGRESS. MASTER_PLAN gỡ API admin hai bước đã bị spec thay thế, dẫn contract aggregate và bỏ version Listing riêng; các endpoint public minh họa giữ cho M3/M4. Không đổi phạm vi nghiệp vụ đã duyệt.
+- Đã tự rà coverage spec 1–13, tên DTO/method/dependency giữa task và năm Review Focus: literal query, field giả mạo, header ảnh gây overflow, upload race, mất response create. Bổ sung guard TEST_DB_URL trước Spring/Flyway thay vì chỉ guard sau migration, cleanup test trước xóa user, sửa cwd SSR command đúng code/frontend và finally cleanup đúng asset live-test, không quét xóa namespace.
+- Khóa SDK backend com.cloudinary:cloudinary-http5:2.5.0 từ https://central.sonatype.com/artifact/com.cloudinary/cloudinary-http5 và https://cloudinary.com/documentation/java_integration ; chưa tải/cài/chạy SDK. GitHub raw pom thử URL master trả404; không suy từ đó rằng SDK không tồn tại hoặc dùng GitHub search cache cũ làm latest.
+- Kiểm tra tại root: Python stdlib kiểm 13 Markdown tracked/untracked, giới hạn/code fence PASS; 90 link local và 30 anchor mục hợp lệ; cấu trúc 11 task/files/interfaces/RED/GREEN/commit, các interface/trạng thái trọng yếu và trạng thái spec đã duyệt PASS; không có TODO/TBD/FIXME trong plan. git diff --check PASS. Đọc ng test --help ở code/frontend xác nhận cờ --include, không chạy unit test/build ứng dụng.
+- Handoff: chờ người dùng review/duyệt plan và chọn cách thực thi. Đề xuất tự triển khai trong phiên (executing-plans) do interface/version/media phụ thuộc chặt; subagent theo task là lựa chọn khác cần người dùng chọn. Chưa spawn agent hoặc chạy code/migration/cloud/browser.
+- Gate live Cloudinary/restore/pilot vẫn giữ nguyên, không tính mock là nghiệm thu; thiếu credential/ảnh thật/quyền DBA phải ghi chưa kiểm chứng. Nhánh feat/m1-local, HEAD 35441c2; thay đổi sáu tài liệu S009 còn local, chưa commit/push/merge/deploy. Bước tiếp theo sau duyệt: preflight Git, lưu checkpoint/plan và triển khai task1 theo phương thức được chọn.
+
+
+## S010-C01 — 22/10/2026 — Bắt đầu thực thi M2 tuần tự
+
+- Người dùng duyệt plan và chọn làm tuần tự. Đọc executing-plans/TDD/using-git-worktrees và writing-good-tests; giữ workspace hiện tại theo plan, tạo nhánh codex/m2-admin-catalogue sau commit tài liệu. Không push/deploy hoặc tạo worktree mới.
+- Trước code: frontend baseline 7/7 pass; backend baseline trong sandbox lỗi SocketException Operation not permitted, đã chạy lại với quyền localhost ngoài sandbox; chờ kết quả. Không thay code vì lỗi môi trường.
+- Ruling: dùng .superpowers/sdd/M2_PLAN/progress.md và trích brief/test theo cùng quy trình bằng công cụ local thay wrapper sdd-workspace, vì wrapper tạo thêm .gitignore trong thư mục con trái rule chỉ .gitignore root; root đã ignore .superpowers. DEV_LOG/PROGRESS vẫn là bàn giao chính.
+- Phạm vi task1: migrations/reference/entity/mã, guard URL trước Flyway, cleanup fixture trước xóa user. Chưa có schema sách được áp vào dev; test chỉ me_may_test. Chi tiết pre-flight và task BASE trong ledger ignored.

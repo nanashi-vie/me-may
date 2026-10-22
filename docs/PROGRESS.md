@@ -1,6 +1,6 @@
 # Mẹ Mây — tiến độ và bàn giao hiện tại
 
-Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S008-C02 trong [DEV_LOG](DEV_LOG.md).
+Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S010-C01 trong [DEV_LOG](DEV_LOG.md).
 
 ## Trạng thái
 
@@ -8,7 +8,7 @@ Cập nhật: 22/10/2026 (Asia/Ho_Chi_Minh). Checkpoint: S008-C02 trong [DEV_LOG
 
 Baseline sản phẩm: [MASTER_PLAN](MASTER_PLAN.md). Phạm vi M1 local đã gộp vào bản hiện hành; không giữ plan thực thi đã hoàn tất.
 
-Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. Thiết kế tổng thể M2 đã duyệt; [M2_SPEC](M2_SPEC.md) 242 dòng đã tự rà soát và **chờ người dùng review/duyệt spec**. Chưa có implementation plan hoặc code M2. Chi tiết hạ tầng ở ARCHITECTURE, provider/gate giữ ở master.
+Đã áp dụng rule tài liệu: trần 400 dòng (DEV_LOG ngoại lệ), không có tối thiểu 200 dòng bắt buộc; bắt đầu từ chỉ mục duy nhất [docs/README](README.md) để chọn file/mục theo đầu việc. [M2_SPEC](M2_SPEC.md) đã được người dùng duyệt; [M2_PLAN](M2_PLAN.md) gồm 11 task đã duyệt; **đang thực thi tuần tự, bắt đầu task 1 schema/test guard**. Chi tiết hạ tầng ở ARCHITECTURE, provider/gate giữ ở master.
 
 ## Baseline trước M2 đã cập nhật
 
@@ -43,13 +43,13 @@ Repo đã nối origin https://github.com/nanashi193/me-may.git. Nhánh feat/m1-
 
 ## Bước tiếp theo
 
-1. Review/duyệt [M2_SPEC](M2_SPEC.md); sau duyệt mới viết implementation plan, rồi triển khai theo plan được duyệt. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
-2. Chuẩn bị pilot thật, link liên hệ/chính sách do tiệm xác nhận và technical spec M2: BookCopy/Listing, publication/availability, media lifecycle, optimistic locking và audit; dựa trên baseline trước M2 và DATA/DESIGN đã cập nhật, dùng pilot thật khi có. Cần chủ cung cấp link Zalo hotline/nhóm thật trước nghiệm thu; khả năng điền sẵn còn phải kiểm chứng.
-3. M2 triển khai CRUD nhập thủ công sau khi spec tương ứng được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
+1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; hiện task 1. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
+2. Chuẩn bị Cloudinary credential qua .env ignored và 10–20 cuốn thật cho gate media/pilot M2; không gửi secret qua chat. Link Zalo hotline/nhóm thật cần trước nghiệm thu luồng liên hệ M3; khả năng điền sẵn còn phải kiểm chứng, không chặn các task catalogue local.
+3. M2 triển khai CRUD nhập thủ công sau khi plan được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
 4. Khi quay lại staging, làm Cloudflare rendering spike, domain cookie/CORS/CSRF, VPS/Dokploy, production DB roles, backup/restore và CI/CD. Không đánh dấu các gate đó đạt từ kiểm tra local.
 
 Chọn file/mục cần đọc theo [chỉ mục duy nhất](README.md#đọc-theo-đầu-việc); không nạp toàn bộ bộ tài liệu hoặc nhật ký. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Dọn repository theo yêu cầu mới
 
-Đã gộp tài liệu thành bộ hiện hành có tên cố định, bỏ proposal/plan cũ sau khi chuyển nội dung hữu ích. Chỉ dùng một `.gitignore` root; các quy tắc riêng Angular đã được gộp với đường dẫn phù hợp. Skill `.agents/` và cấu hình `.vscode/` được giữ trên máy nhưng bỏ theo dõi Git. Logo mới `code/frontend/public/logo.jpg` được giữ làm asset nguồn, chưa tích hợp UI. Cleanup ở b4bb335; baseline/rule tài liệu ở b8d32d9. Quyết định mã S007 và spec S008 được lưu cùng checkpoint tài liệu sau verification (đối chiếu git log/status); không push/merge/deploy. Quy tắc cập nhật và xóa tài liệu cũ đã ghi trong AGENTS và mục lục docs.
+Đã gộp tài liệu thành bộ hiện hành có tên cố định, bỏ proposal/plan cũ sau khi chuyển nội dung hữu ích. Chỉ dùng một `.gitignore` root; các quy tắc riêng Angular đã được gộp với đường dẫn phù hợp. Skill `.agents/` và cấu hình `.vscode/` được giữ trên máy nhưng bỏ theo dõi Git. Logo mới `code/frontend/public/logo.jpg` được giữ làm asset nguồn, chưa tích hợp UI. Cleanup ở b4bb335; baseline/rule ở b8d32d9; mã/spec S007–S008 ở 35441c2. Plan và cập nhật trạng thái S009 còn local, chưa commit/push/merge/deploy. Quy tắc cập nhật và xóa tài liệu cũ đã ghi trong AGENTS và mục lục docs.

@@ -181,7 +181,7 @@ erDiagram
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
 | `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
-| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_level_basis?` (nội bộ), `reading_video_url?`, `publication_status`, `published_at`, `updated_at`, `version` | Một cuốn có thể chưa có listing hoặc listing chưa công khai |
+| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_level_basis?` (nội bộ), `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M2 tạo cuốn + listing nháp cùng giao dịch; dùng version của BookCopy cho cả aggregate |
 | `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/INSIDE), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
 | `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |
 | `AdminUser` | `id`, credential hash, `role`, `active` | RBAC và audit |
@@ -229,20 +229,13 @@ Provider và các release gate vẫn được quyết định tại tài liệu 
 
 ### 5.2. API contract khởi điểm (minh họa)
 
-Chi tiết được đề xuất trong [M2_SPEC](M2_SPEC.md) đang chờ duyệt: một aggregate API lưu BookCopy/Listing, version cấp aggregate và upload qua backend. Khi spec được duyệt, contract M2 thay ví dụ tạo hai bước bên dưới; chưa có thay đổi API ứng dụng đang chạy.
+Contract M2 đã duyệt ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng giao dịch, version cấp aggregate và upload qua backend. Contract này thay ví dụ tạo hai bước/cấp quyền upload trước đây; chưa có thay đổi API ứng dụng đang chạy. Các endpoint public dưới đây dành cho M3/M4, vẫn là minh họa.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
 GET  /api/v1/books/{slug}
 GET  /api/v1/collections
 GET  /api/v1/collections/{slug}
-POST /api/v1/admin/book-copies
-PUT  /api/v1/admin/book-copies/{id}
-POST /api/v1/admin/listings
-PATCH /api/v1/admin/listings/{id}/publication
-PATCH /api/v1/admin/book-copies/{id}/availability
-POST /api/v1/admin/media/upload-authorization
-GET  /api/v1/admin/audit?targetId=...
 ```
 
 `binding` chỉ dùng khi lọc Picture book; “Tất cả” nghĩa là không giới hạn binding. Public không có tham số lọc giá/chủ đề/khả dụng/mức đọc. Đây là contract dự kiến, chưa thay đổi API ứng dụng đang chạy.
