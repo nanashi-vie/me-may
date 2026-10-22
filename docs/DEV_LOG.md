@@ -269,3 +269,9 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - BookCommandService lưu BookCopy/Listing/mapping/audit cùng transaction, validate binding/tuổi/mức đọc/giá/link, slug bất biến, version cấp aggregate và no-op. Có explicit DTO để không serialize entity ra API.
 - RED compile thiếu BookWrite/service; lần GREEN đầu phát hiện 7 NPE do immutable List.of().contains(null), stack trace trỏ validation. Đã sửa null scan bằng stream anyMatch, không đổi test để che lỗi; suite backend đủ 26/26 PASS. Test kiểm audit FK lỗi rollback cả hai bảng và stale write không đổi dữ liệu/audit.
 - Chưa API REST, ảnh thật hoặc dev migration. Commit local task2; tiếp task3 status/race.
+
+## S010-C04 — 22/10/2026 — Task3 publication/availability và race
+
+- Owner-only status/publication, ba ảnh và field bắt buộc trước publish, xác nhận đúng cuốn, archive→draft và giữ firstPublishedAt; published edit không xóa field bắt buộc. Instant publishedAt chuẩn microsecond để khớp round-trip PostgreSQL.
+- RED thiếu BookStatusService; GREEN backend đủ 34/34. Kiểm race save/save và Staff-save/Owner-publish có đúng một winner, audit chỉ cho winner; stricter assertion phát hiện JPA flush ném OptimisticLockException raw, đã cho phép đúng kiểu lock (không catch mọi RuntimeException). REST task4 sẽ map cả JPA/Spring lock thành409.
+- Người dùng sẽ tự bổ sung Cloudinary credential trong .env khi sẵn sàng; không cần/chưa nhận secret qua chat. Chưa xác minh cloud/pilot. Commit task3, tiếp API task4, không dừng xin duyệt giữa các task.

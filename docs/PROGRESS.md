@@ -43,7 +43,7 @@ Repo đã nối origin https://github.com/nanashi193/me-may.git. Nhánh feat/m1-
 
 ## Bước tiếp theo
 
-1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; task 1–2 đã đạt (backend 26/26), tiếp task 3 quyền/status/race. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
+1. Thực thi từng task [M2_PLAN](M2_PLAN.md) theo [spec đã duyệt](M2_SPEC.md), ghi checkpoint và chạy RED/GREEN; task 1–3 đã đạt (backend 34/34), tiếp task 4 API/search/collection. Nếu phát hiện lỗi M1, tái hiện và kiểm tra trước khi sửa.
 2. Chuẩn bị Cloudinary credential qua .env ignored và 10–20 cuốn thật cho gate media/pilot M2; không gửi secret qua chat. Link Zalo hotline/nhóm thật cần trước nghiệm thu luồng liên hệ M3; khả năng điền sẵn còn phải kiểm chứng, không chặn các task catalogue local.
 3. M2 triển khai CRUD nhập thủ công sau khi plan được duyệt; Home catalogue/detail thuộc M3, wishlist thuộc M4; import CSV/Excel là bước ngay sau MVP.
 4. Khi quay lại staging, làm Cloudflare rendering spike, domain cookie/CORS/CSRF, VPS/Dokploy, production DB roles, backup/restore và CI/CD. Không đánh dấu các gate đó đạt từ kiểm tra local.

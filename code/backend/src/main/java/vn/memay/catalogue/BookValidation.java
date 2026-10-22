@@ -25,4 +25,11 @@ public class BookValidation {
   if(w.readingLevel()!=null){if(!LEVELS.contains(w.readingLevel()))throw AdminApiException.field("readingLevel","Mức đọc không hợp lệ");if(w.readingLevelBasis()==null)throw AdminApiException.field("readingLevelBasis","Ghi căn cứ chọn mức đọc");}
   if(w.readingVideoUrl()!=null){try{var u=URI.create(w.readingVideoUrl());if(!"https".equalsIgnoreCase(u.getScheme())||u.getHost()==null||u.getUserInfo()!=null||w.readingVideoUrl().chars().anyMatch(c->c<32||c==127))throw new IllegalArgumentException();}catch(RuntimeException ex){throw AdminApiException.field("readingVideoUrl","Dùng URL HTTPS hợp lệ");}}
  }
+ public void validatePublished(BookDetail b){
+  if(trim(b.title())==null)throw AdminApiException.field("title","Nhập tên sách");
+  if(b.categoryCode()==null)throw AdminApiException.field("categoryCode","Chọn thể loại");
+  if(b.priceVnd()==null)throw AdminApiException.field("priceVnd","Nhập giá tham khảo");
+  if(trim(b.conditionNote())==null)throw AdminApiException.field("conditionNote","Mô tả tình trạng thực tế");
+  if(b.media().size()!=3 || !new HashSet<>(b.media().stream().map(BookDtos.MediaView::role).toList()).equals(java.util.EnumSet.allOf(vn.memay.media.MediaDtos.MediaRole.class)))throw AdminApiException.field("media","Cần đủ bìa trước, mặt sau và một trang nội dung");
+ }
 }

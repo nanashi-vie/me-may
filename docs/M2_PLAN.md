@@ -90,12 +90,12 @@
 
 **Interfaces:** BookStatusService.publication(long id,long version,AdminUser,Publication status,boolean confirmedActualCopy):BookDetail; availability(long id,long version,AdminUser,Availability status):BookDetail.
 
-- [ ] Viết failing `ownerPublishesOnlyWithThreeActiveRoles`, `staffCannotPublishOrChangeAvailability`, `archiveRestorePreservesCodeAndFirstPublishedAt`; assert từng field/ảnh thiếu bị từ chối và no-op không tạo publish time mới.
-- [ ] Viết `staffSaveRacingOwnerPublish` và `twoVersionsHaveOneWinner` dùng barrier/latch, hai transaction/connection; assert tối đa một thành công, không có cập nhật một phần hoặc audit thành công cho request thua.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=BookStatusIntegrationTest,BookRaceIntegrationTest test`.
-- [ ] Implement role/state/version checks trong transaction; DRAFT→PUBLISHED→ARCHIVED→DRAFT, không hard delete; publish cần confirmedActualCopy và validated active slots. Giá/availability khác publication; published update không làm mất field bắt buộc.
-- [ ] Dùng fixture DB ACTIVE ở test nội bộ cho state machine, ghi rõ không phải chứng minh ảnh thật; không cung cấp endpoint tạo metadata ACTIVE cho client.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: guard publication and availability transitions`.
+- [x] Viết failing `ownerPublishesOnlyWithThreeActiveRoles`, `staffCannotPublishOrChangeAvailability`, `archiveRestorePreservesCodeAndFirstPublishedAt`; assert từng field/ảnh thiếu bị từ chối và no-op không tạo publish time mới.
+- [x] Viết `staffSaveRacingOwnerPublish` và `twoVersionsHaveOneWinner` dùng barrier/latch, hai transaction/connection; assert tối đa một thành công, không có cập nhật một phần hoặc audit thành công cho request thua.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=BookStatusIntegrationTest,BookRaceIntegrationTest test`.
+- [x] Implement role/state/version checks trong transaction; DRAFT→PUBLISHED→ARCHIVED→DRAFT, không hard delete; publish cần confirmedActualCopy và validated active slots. Giá/availability khác publication; published update không làm mất field bắt buộc.
+- [x] Dùng fixture DB ACTIVE ở test nội bộ cho state machine, ghi rõ không phải chứng minh ảnh thật; không cung cấp endpoint tạo metadata ACTIVE cho client.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: guard publication and availability transitions`.
 
 ## Task 4 — REST, tìm kiếm, taxonomy, collection và preview projection
 

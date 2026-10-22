@@ -26,7 +26,7 @@ public class BookCommandService {
   access.requireWritable(actor,l.publicationStatus);if(b.version!=version)throw AdminApiException.conflict(b.version);
   var w=validation.normalize(input);validation.validateDraft(w);var before=mapper.detail(b,l);
   if(mapper.write(before).equals(w))return before;
-  apply(b,l,w);mappings(l,w);b.touch(clock.instant());l.updatedAt=b.updatedAt;em.flush();var after=mapper.detail(b,l);audit.record(actor,"BOOK",id,"UPDATE",audit.snapshot(before),audit.snapshot(after),b.version);return after;
+  apply(b,l,w);mappings(l,w);b.touch(clock.instant());l.updatedAt=b.updatedAt;em.flush();var after=mapper.detail(b,l);if(l.publicationStatus==Publication.PUBLISHED)validation.validatePublished(after);audit.record(actor,"BOOK",id,"UPDATE",audit.snapshot(before),audit.snapshot(after),b.version);return after;
  }
  private void apply(BookCopy b,Listing l,BookWrite w){
   b.title=w.title();b.isbn=w.isbn();b.publisher=w.publisher();b.author=w.author();b.language=w.language();b.binding=w.binding();b.conditionGrade=w.conditionGrade();b.conditionNote=w.conditionNote();
