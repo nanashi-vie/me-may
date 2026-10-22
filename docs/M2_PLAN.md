@@ -117,13 +117,13 @@
 
 **Interfaces:** MediaGateway.upload(String publicId,byte[] bytes):UploadedMedia; openPreview(String publicId):InputStream; delete(String publicId):DeleteResult. UploadedMedia record(assetId,publicId,format,bytes,width,height); DeleteResult=DELETED/NOT_FOUND. ImageValidator.validate(byte[]):ImageInfo. UploadLimiter.acquire(long actorId):AutoCloseable, ném lỗi 429 nếu hết hạn mức/chỗ.
 
-- [ ] Viết failing `rejectsSpoofedAndTruncatedImages`, biên 10 MiB/25 MP; `hugeHeaderFailsBeforeDecode` đọc dimensions bằng ImageReader trước decode và nhân (long)width*height để tránh overflow; JPEG/PNG thật pass, HEIC/WebP/SVG/PDF fail.
-- [ ] Viết `thirtyFirstUploadIs429`, cửa sổ 10 phút, slot đồng thời thứ năm bị chặn; exception không rò permit; fixed Clock và dọn limiter entry hết hạn.
-- [ ] Viết adapter test kiểm resource_type=image,type=authenticated, namespace/UUID, eager JPEG <=1280px/giữ tỉ lệ/orient/strip metadata, overwrite=false; không trả/log signed URL, không theo URL host/redirect tùy ý.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=ImageValidatorTest,UploadLimiterTest,CloudinaryMediaGatewayTest test`.
-- [ ] Thêm duy nhất com.cloudinary:cloudinary-http5:2.5.0; giữ version stack khác. Adapter cấu hình connect/read timeout hữu hạn và deadline upload 60s có hủy I/O, không chỉ timeout Future rồi bỏ request chạy ngầm; test bằng transport giả chậm, không gọi cloud thật.
-- [ ] Configure multipart file 10MB/request 11MB để có chỗ cho metadata; giới hạn ImageIO vẫn tính chính xác 10*1024*1024 byte. Config thiếu dùng UnconfiguredMediaGateway trả 503, không làm auth/startup fail và không dùng fake production.
-- [ ] GREEN cùng lệnh, dependency tree kiểm không kéo SDK frontend; checkpoint và commit `feat: add private Cloudinary media adapter`.
+- [x] Viết failing `rejectsSpoofedAndTruncatedImages`, biên 10 MiB/25 MP; `hugeHeaderFailsBeforeDecode` đọc dimensions bằng ImageReader trước decode và nhân (long)width*height để tránh overflow; JPEG/PNG thật pass, HEIC/WebP/SVG/PDF fail.
+- [x] Viết `thirtyFirstUploadIs429`, cửa sổ 10 phút, slot đồng thời thứ năm bị chặn; exception không rò permit; fixed Clock và dọn limiter entry hết hạn.
+- [x] Viết adapter test kiểm resource_type=image,type=authenticated, namespace/UUID, eager JPEG <=1280px/giữ tỉ lệ/orient/strip metadata, overwrite=false; không trả/log signed URL, không theo URL host/redirect tùy ý.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=ImageValidatorTest,UploadLimiterTest,CloudinaryMediaGatewayTest test`.
+- [x] Thêm duy nhất com.cloudinary:cloudinary-http5:2.5.0; giữ version stack khác. Adapter cấu hình connect/read timeout hữu hạn và deadline upload 60s có hủy I/O, không chỉ timeout Future rồi bỏ request chạy ngầm; test bằng transport giả chậm, không gọi cloud thật.
+- [x] Configure multipart file 10MB/request 11MB để có chỗ cho metadata; giới hạn ImageIO vẫn tính chính xác 10*1024*1024 byte. Config thiếu dùng UnconfiguredMediaGateway trả 503, không làm auth/startup fail và không dùng fake production.
+- [x] GREEN cùng lệnh, dependency tree kiểm không kéo SDK frontend; checkpoint và commit `feat: add private Cloudinary media adapter`.
 
 ## Task 6 — Vòng đời ảnh, cleanup và API stream bảo vệ nháp
 

@@ -45,3 +45,7 @@ Các test backend có cảnh báo Mockito/JDK về agent tự attach từ test i
 Cloudflare runtime compatibility, SEO/OG sách thật, cookie/CORS trên domain thật, Dokploy deployment, production role separation/rate limit, backup/restore ngoài VPS, media upload và dữ liệu pilot. Không coi local Node SSR là phương án Cloudflare đã được chấp thuận.
 
 Home hiện là shell nền tảng; chưa phải Home nhiều hàng sách trong wireframe M0. Không có CRUD sách, upload hoặc wishlist thực ở M1. Tài khoản Staff được kiểm tra trong test database; chưa có giao diện quản lý tài khoản.
+
+## M2 đang thực thi — checkpoint media adapter
+
+22/10/2026: task1–5 đã có schema, aggregate/audit/status, API admin và Cloudinary adapter. Backend 57 tests PASS, 1 live test opt-in skip trong suite mặc định. Live `MEMAY_LIVE_MEDIA_TEST=true MEMAY_LIVE_MEDIA_NAMESPACE=memay/test bash code/backend/run-local.sh -B -ntp -Dtest=CloudinaryLiveTest test` chạy riêng 1/1 PASS: authenticated upload, signed JPEG preview, unsigned original/derived bị chặn; cleanup đúng UUID và NOT_FOUND khi xóa lại. Không coi đây là nghiệm thu lifecycle/UI/backup/pilot M2.

@@ -1,6 +1,10 @@
 spring:
   application:
     name: me-may-api
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
   jackson:
     deserialization:
       fail-on-unknown-properties: true
@@ -38,5 +42,7 @@ management:
     health:
       show-details: never
 memay:
+  media:
+    namespace: ${MEMAY_MEDIA_NAMESPACE:memay/dev}
   bootstrap:
     enabled: false

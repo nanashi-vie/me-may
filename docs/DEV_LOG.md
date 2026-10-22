@@ -283,3 +283,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Sửa lỗi escape trong test trước RED; lần compile lỗi không được tính là bằng chứng hành vi. Thay đổi task4 còn local.
 - Task4 RED: 8 API tests fail 404 đúng do chưa có endpoint; GREEN đầy đủ backend 44/44 PASS (`bash run-local.sh -B -ntp test`, log task4-suite). JSON unknown/giá thập phân bị từ chối, preview không rò căn cứ nội bộ, LIKE escape và thứ tự ổn định đạt, auth regression đạt.
 - Chuẩn hóa thứ tự multi-select để đổi thứ tự chọn không tạo version/audit giả. Query audit dùng page/size trực tiếp thay PageRequest ở brief, cùng contract wire; collection slug immutable, inactive chỉ giữ mapping cũ. Task4 commit local, tiếp task5 adapter/media.
+
+## S010-C06 — 22/10/2026 — Task5 Cloudinary adapter
+
+- Bắt đầu adapter authenticated media, JPEG/PNG validator và rate/concurrency limiter theo brief. SDK duy nhất Cloudinary HTTP5 2.5.0 đã chọn trong plan; test transport giả, không chạm cloud dữ liệu thật ở unit test.
+- Task5 GREEN: 13 unit tests PASS (JPEG/PNG, spoof/truncated/size/pixel header, limiter, SDK signed params, host/redirect policy, deadline cancels request). Full backend: 57 PASS + 1 live test skipped by default; live opt-in chạy riêng 1/1 PASS. Dependency tree chỉ thêm Cloudinary HTTP5/core2.5.0 ở backend.
+- Live Cloudinary: synthetic PNG trong memay/test/UUID, upload authenticated, signed preview JPEG decode được <=1280, unsigned original/derived bị chặn; finally xóa đúng public_id vừa tạo, xóa lại NOT_FOUND. Không ghi secret/URL signed, không chạm asset khác.
+- Ruling: HTTP5 SDK strategy giấu request nên socket timeout chưa bảo đảm tổng60s. Dùng Uploader SDK cho params/signature + Apache HTTP5 transport do app quản lý, timer gọi request.cancel() để hủy I/O. Source SDK2.5.0 đọc từ Maven sources; test fake chậm xác nhận request bị cancel.
+- Gate live adapter chạy sớm vì credential đã sẵn sàng; chưa thay gate tích hợp stream/DB/UI/pilot. Commit local task5; tiếp task6 lifecycle.
