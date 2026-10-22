@@ -161,12 +161,12 @@
 
 **Interfaces:** buildBookForm():FormGroup; toBookWrite(form):BookWrite gửi đủ field; BookEditor.load(id?)/saveDraft():void dùng BookApi; BookList đồng bộ q/publication/availability/page vào query params. book-copy.ts chỉ chứa các chuỗi UI đã chốt, không là framework dịch thuật.
 
-- [ ] Viết failing component tests `createsThenNavigatesToEditor`, `pictureBookRequiresOneBinding`, `ageGroupsAllowMultiple`, `unknownReadingLevelIsOptional`, `inactiveCollectionCanBeKeptOrRemoved` và validation field/focus đúng.
-- [ ] Viết `lostCreateResponseDoesNotPostAgain`: sau một POST và timeout, `expect(createRequests).toHaveLength(1)` dù component hiện gợi ý kiểm tra danh sách; double-click cũng chỉ một request.
-- [ ] Viết `conflictPreservesDirtyForm`, `sessionExpiryKeepsFormInMemory`, `leavingDirtyFormWarns`; 400/409/401/network không xóa nội dung, không báo thành công, không có admin data trong localStorage.
-- [ ] RED: `npm test -- --include='src/app/features/admin/books/book-list.spec.ts' --include='src/app/features/admin/books/book-editor.spec.ts' --include='src/app/features/admin/books/book-form.spec.ts'`.
-- [ ] Implement list/editor Reactive Forms, guard rời trang, mã readonly/tự tạo khi lưu, giữ state màn hình khi xác thực lại; không lưu bản nháp vào browser storage. Navigation query back/pagination giữ tìm kiếm; chỉ hiện menu chức năng đã có.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: build admin book list and draft editor`.
+- [x] Viết failing component tests `createsThenNavigatesToEditor`, `pictureBookRequiresOneBinding`, `ageGroupsAllowMultiple`, `unknownReadingLevelIsOptional`, `inactiveCollectionCanBeKeptOrRemoved` và validation field/focus đúng.
+- [x] Viết `lostCreateResponseDoesNotPostAgain`: sau một POST và timeout, `expect(createRequests).toHaveLength(1)` dù component hiện gợi ý kiểm tra danh sách; double-click cũng chỉ một request.
+- [x] Viết `conflictPreservesDirtyForm`, `sessionExpiryKeepsFormInMemory`, `leavingDirtyFormWarns`; 400/409/401/network không xóa nội dung, không báo thành công, không có admin data trong localStorage.
+- [x] RED: `npm test -- --include='src/app/features/admin/books/book-list.spec.ts' --include='src/app/features/admin/books/book-editor.spec.ts' --include='src/app/features/admin/books/book-form.spec.ts'`.
+- [x] Implement list/editor Reactive Forms, guard rời trang, mã readonly/tự tạo khi lưu, giữ state màn hình khi xác thực lại; không lưu bản nháp vào browser storage. Navigation query back/pagination giữ tìm kiếm; chỉ hiện menu chức năng đã có.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: build admin book list and draft editor`.
 
 ## Task 9 — Ba ảnh, Owner actions, preview và audit
 

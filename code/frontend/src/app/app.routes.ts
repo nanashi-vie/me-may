@@ -1,9 +1,14 @@
-import { Routes } from '@angular/router';
+import { CanDeactivateFn, Routes } from '@angular/router';
 import { requireAdmin } from './core/auth/auth.guard';
+
+const pendingBookChanges:CanDeactivateFn<{canLeave():boolean}>=component=>component.canLeave();
 
 export const routes: Routes = [
   {path: 'admin/dang-nhap', title: 'Đăng nhập quản trị | Mẹ Mây', loadComponent: () => import('./features/admin/login').then(m => m.Login)},
   {path: 'admin', canActivate: [requireAdmin], loadComponent: () => import('./layouts/admin-layout').then(m => m.AdminLayout), children: [
+    {path:'sach',title:'Quản lý sách | Mẹ Mây',loadComponent:()=>import('./features/admin/books/book-list').then(m=>m.BookList)},
+    {path:'sach/them',title:'Thêm sách | Mẹ Mây',canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/books/book-editor').then(m=>m.BookEditor)},
+    {path:'sach/:id',title:'Chỉnh sửa sách | Mẹ Mây',canDeactivate:[pendingBookChanges],loadComponent:()=>import('./features/admin/books/book-editor').then(m=>m.BookEditor)},
     {path: '', pathMatch: 'full', title: 'Quản trị | Mẹ Mây', loadComponent: () => import('./features/admin/overview').then(m => m.Overview)},
   ]},
   {path: '', loadComponent: () => import('./layouts/public-layout').then(m => m.PublicLayout), children: [
