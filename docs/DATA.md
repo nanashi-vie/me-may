@@ -12,7 +12,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 
 | Field | Nơi thuộc về | Yêu cầu và kiểm tra |
 |---|---|---|
-| book_code | BookCopy | Duy nhất, ổn định; fixture có prefix DEMO để không nhầm mã vận hành |
+| book_code | BookCopy | Website tự sinh mã tăng dần, duy nhất và bất biến sau khi tạo; dùng để dán nhãn/trao đổi với tiệm. Không lấy từ tên sách, ISBN hoặc mã khách; fixture có prefix DEMO để không nhầm mã vận hành |
 | title | BookCopy | Bắt buộc khi publish; giữ tên sách nguồn |
 | category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện; bắt buộc khi publish |
 | binding | BookCopy | Khi nhập Picture book bắt buộc đúng một kiểu Paperback hoặc Hardcover; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
@@ -71,7 +71,9 @@ MVP chỉ nhập thủ công qua admin. Bước tiếp theo ngay sau MVP hỗ tr
 
 ## Quy trình pilot thật và đầu ra cần ghi
 
-1. Chủ chọn 10–20 cuốn, gán mã và xác nhận giá tham khảo.
+Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách/trọng lượng hoặc tạo module quản lý đơn từ ảnh này.
+
+1. Chủ chọn 10–20 cuốn và xác nhận giá tham khảo; website tự sinh mã khi tạo cuốn, tiệm dùng mã đó để nhận diện đúng vật thể.
 2. Chuẩn bị đủ ba ảnh bìa trước/mặt sau/một trang nội dung và mô tả lỗi đúng từng cuốn; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
 3. Điền mẫu field, để trống dữ liệu chưa biết; ghi riêng các ảnh và thứ tự cần có.
 4. Một người kiểm tra lại mã/giá/ảnh/tình trạng với cuốn thật.

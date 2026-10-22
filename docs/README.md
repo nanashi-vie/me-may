@@ -13,7 +13,7 @@ Cập nhật: 22/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Đầu việc | File/mục cần đọc |
 |---|---|
 | Chốt hoặc thay đổi phạm vi | [MASTER_PLAN — quyết định](MASTER_PLAN.md#0-chốt-quyết-định-và-giới-hạn), [MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket), [milestones](MASTER_PLAN.md#8-kế-hoạch-triển-khai-theo-milestones-1-full-stack-developer) |
-| Đặc tả M2: nhập sách, taxonomy, publication, media | [DATA — field](DATA.md#field-nhập-liệu-baseline-trước-m2), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop), [MASTER_PLAN — dữ liệu](MASTER_PLAN.md#4-mô-hình-dữ-liệu-đề-xuất) và [API minh họa](MASTER_PLAN.md#52-api-contract-khởi-điểm-minh-họa) |
+| Đặc tả M2: nhập sách, taxonomy, publication, media | Bắt đầu từ [M2_SPEC — chờ duyệt](M2_SPEC.md); đối chiếu [DATA — field](DATA.md#field-nhập-liệu-baseline-trước-m2), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop), [MASTER_PLAN — dữ liệu](MASTER_PLAN.md#4-mô-hình-dữ-liệu-đề-xuất) |
 | M3: Home/catalogue/detail, bộ lọc và liên hệ | [DESIGN — Home](DESIGN.md#home-theo-mẫu-nxb-kim-đồng), [catalogue](DESIGN.md#catalogue--collection--khách-mobile), [detail](DESIGN.md#chi-tiết-cuốn--khách-mobile); đối chiếu phạm vi MVP trong MASTER_PLAN |
 | M4: wishlist và nội dung hỏi sách | [DESIGN — danh sách quan tâm](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [MASTER_PLAN — MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket) |
 | Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
@@ -23,7 +23,8 @@ Cập nhật: 22/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
-Chưa có technical spec hoặc implementation plan M2 được duyệt; baseline mới đã chốt, bước tiếp theo là đặc tả M2. Không coi MASTER_PLAN, fixture hoặc wireframe là spec triển khai đã duyệt. Khi tạo spec/plan, thêm liên kết và trạng thái ngay tại mục này; chỉ đọc tài liệu của milestone đang làm.
+- [M2_SPEC](M2_SPEC.md): đã viết theo thiết kế tổng thể được duyệt, **đang chờ người dùng review/duyệt spec**; chưa cho phép triển khai code. Đọc theo mục dữ liệu/API/media/kiểm thử khi cần.
+- Implementation plan M2 chưa viết; chỉ lập sau khi spec được duyệt. Không coi master, fixture hoặc wireframe là spec triển khai đã duyệt; đăng ký liên kết/trạng thái plan tại đây khi tạo.
 
 ## Vai trò của từng tài liệu
 

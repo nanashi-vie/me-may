@@ -188,7 +188,7 @@ erDiagram
 | `AuditEvent` | actor, target ID, field, before/after (hạn chế thông tin nhạy cảm), timestamp | Reconstruct lịch sử chỉnh giá/trạng thái, provenance |
 
 **Các bất biến:**
-- `book_code` không tái sử dụng, không trùng TikTok ID (TikTok ID trên sticker thuộc về khách); ISBN không bắt buộc và **không duy nhất cho cuốn vật lý**.
+- `book_code` do website tự sinh tăng dần, bất biến và không tái sử dụng; dùng để dán nhãn/trao đổi với tiệm, không lấy từ tên sách hoặc TikTok ID của khách. Tiệm hiện chưa quản lý bằng mã. ISBN không bắt buộc và **không duy nhất cho cuốn vật lý**.
 - Public DTO chỉ trả các bản ghi công khai; không lộ nháp/lưu trữ qua URL, sitemap, API hay preview do web kiểm soát.
 - `publication_status` (DRAFT / PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
 - Giá tham khảo kiểu **số nguyên VND**, trước xuất bản bắt buộc > 0, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
@@ -228,6 +228,8 @@ Xem [hạ tầng triển khai trong ARCHITECTURE](ARCHITECTURE.md#hạ-tầng-tr
 Provider và các release gate vẫn được quyết định tại tài liệu này: Angular/Cloudflare; Spring Boot/PostgreSQL trên VPS/Dokploy; Cloudinary; phải kiểm chứng SEO/OG, quyền admin, kết nối riêng, backup/restore và rollback. M1 chỉ hoàn tất local; Docker hóa app/CI/CD/deploy vẫn hoãn, chưa có bằng chứng các gate staging/production đã đạt.
 
 ### 5.2. API contract khởi điểm (minh họa)
+
+Chi tiết được đề xuất trong [M2_SPEC](M2_SPEC.md) đang chờ duyệt: một aggregate API lưu BookCopy/Listing, version cấp aggregate và upload qua backend. Khi spec được duyệt, contract M2 thay ví dụ tạo hai bước bên dưới; chưa có thay đổi API ứng dụng đang chạy.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
