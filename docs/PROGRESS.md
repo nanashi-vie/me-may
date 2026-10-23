@@ -6,7 +6,7 @@ Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](READ
 
 - M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
 - Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa hoặc chuyển M3.
-- Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đang đưa các commit lên origin, không merge/deploy.
+- Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đã push lên origin/feat/m2-admin-catalogue thành công, không merge/deploy.
 
 ## Đã kiểm chứng
 
