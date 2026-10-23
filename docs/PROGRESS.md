@@ -1,12 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 22/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](README.md), checkpoint mới nhất ở cuối [DEV_LOG](DEV_LOG.md). Luôn kiểm tra lại Git/process/môi trường.
+Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](README.md), checkpoint mới nhất ở cuối [DEV_LOG](DEV_LOG.md). Luôn kiểm tra lại Git/process/môi trường.
 
 ## Trạng thái hiện tại
 
 - M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
 - Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa hoặc chuyển M3.
-- Branch `feat/m2-admin-catalogue`; task1–10 đã commit local; các sửa review/verification ở `9ef3121`, bàn giao trong commit tài liệu tiếp theo. Không push/merge/deploy.
+- Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đang đưa các commit lên origin, không merge/deploy.
 
 ## Đã kiểm chứng
 
@@ -26,7 +26,7 @@ Dev dùng me_may_dev; tests dùng me_may_test có guard; Cloudinary đã đượ
 
 ## Bước tiếp theo
 
-1. Chủ nhập 10–20 cuốn thật: mã/nhãn, giá/tình trạng, ba ảnh; tự tìm/sửa/preview/publish/sold/ẩn/khôi phục; ghi thời gian nhập/tìm/sửa và các điểm vướng. Chưa có kết quả pilot thì M2 còn mở.
+1. Đã xác minh cuốn thật đầu tiên MM-000001 trong me_may_dev (Công khai/Còn hàng, ba ảnh ACTIVE); chưa đủ bằng chứng hoàn tất pilot. Chủ tiếp tục nhập 10–20 cuốn thật: mã/nhãn, giá/tình trạng, ba ảnh; tự tìm/sửa/preview/publish/sold/ẩn/khôi phục; ghi thời gian nhập/tìm/sửa và các điểm vướng. Chưa có kết quả pilot thì M2 còn mở.
 2. Nếu có lỗi pilot: tái hiện, sửa có kiểm chứng và ghi checkpoint. Khi chủ duyệt gate M2, chuyển hết quyết định/bằng chứng vào tài liệu chuẩn rồi mới xóa spec/plan hết vai trò.
 3. M3 catalogue/detail/contact cần đặc tả tiếp; link Zalo hotline/nhóm thật cần trước nghiệm thu contact. M4 wishlist trên thiết bị; import CSV/Excel tạo mới thành nháp ngay sau MVP.
 4. Cloudflare render/SEO/OG spike, staging/VPS/Dokploy, production roles/domains/CORS/CSRF, CI/CD, backup ngoài VPS còn các gate riêng, chưa triển khai từ phiên này.
