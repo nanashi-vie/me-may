@@ -10,6 +10,11 @@ import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest(properties = {"spring.profiles.active=test", "spring.datasource.url=${TEST_DB_URL}", "memay.bootstrap.enabled=false"})
 class OwnerBootstrapTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void testDatabase(org.springframework.test.context.DynamicPropertyRegistry props) {
+        props.add("spring.datasource.url", () -> vn.memay.support.PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL")));
+    }
+
     @Autowired AdminUserRepository repository;
     @Autowired PasswordEncoder encoder;
     @Autowired JdbcTemplate jdbc;

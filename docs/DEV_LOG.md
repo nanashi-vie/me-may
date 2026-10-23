@@ -253,3 +253,95 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Trước code: frontend baseline 7/7 pass; backend baseline trong sandbox lỗi SocketException Operation not permitted, đã chạy lại với quyền localhost ngoài sandbox; chờ kết quả. Không thay code vì lỗi môi trường.
 - Ruling: dùng .superpowers/sdd/M2_PLAN/progress.md và trích brief/test theo cùng quy trình bằng công cụ local thay wrapper sdd-workspace, vì wrapper tạo thêm .gitignore trong thư mục con trái rule chỉ .gitignore root; root đã ignore .superpowers. DEV_LOG/PROGRESS vẫn là bàn giao chính.
 - Phạm vi task1: migrations/reference/entity/mã, guard URL trước Flyway, cleanup fixture trước xóa user. Chưa có schema sách được áp vào dev; test chỉ me_may_test. Chi tiết pre-flight và task BASE trong ledger ignored.
+
+- Steering S010-C01: người dùng yêu cầu đổi prefix nhánh sang feat/; đã đổi nhánh hiện tại thành feat/m2-admin-catalogue, giữ nguyên commit/file và tiếp tục task1. Tên codex/ trong checkpoint trước là lịch sử, không phải nhánh hiện tại.
+- Baseline backend ngoài sandbox đã xác minh 13/13 pass, frontend 7/7 pass. Plan được lưu ở 0a9a30a trước khi tạo/đổi tên nhánh.
+
+## S010-C02 — 22/10/2026 — Task1 schema/mã/test guard
+
+- Đã thêm V2 catalogue/V3 reference, entities/repositories, sequence NO CYCLE và MM-000001 mở rộng không cắt số. Test schema tạm kiểm nâng V1→V3 giữ user, seed, mã unique và partial unique ba slot ảnh. Guard URL được dùng trước Flyway trong test M1/M2; cleanup DB test theo FK, không reset sequence/dev.
+- RED: task1 test compile fail vì thiếu BookCodeGenerator; GREEN: lệnh chọn task1 + regression auth đạt 18/18 trên PostgreSQL me_may_test. Đang chạy lại suite backend đầy đủ trước commit; không chạy migration trên me_may_dev.
+- Ruling: entity dùng field public nội bộ để tránh boilerplate; controller về sau chỉ trả record DTO, không serialize entity. Test code/khôi phục schema chỉ ở schema UUID trong me_may_test, không tác động database khác.
+- Chốt task1: suite backend đầy đủ `bash run-local.sh -B -ntp test` 18/18 PASS; git diff --check PASS. Lưu commit local cùng checkpoint; tiếp task2, chưa push/deploy.
+
+## S010-C03 — 22/10/2026 — Task2 aggregate/audit
+
+- BookCommandService lưu BookCopy/Listing/mapping/audit cùng transaction, validate binding/tuổi/mức đọc/giá/link, slug bất biến, version cấp aggregate và no-op. Có explicit DTO để không serialize entity ra API.
+- RED compile thiếu BookWrite/service; lần GREEN đầu phát hiện 7 NPE do immutable List.of().contains(null), stack trace trỏ validation. Đã sửa null scan bằng stream anyMatch, không đổi test để che lỗi; suite backend đủ 26/26 PASS. Test kiểm audit FK lỗi rollback cả hai bảng và stale write không đổi dữ liệu/audit.
+- Chưa API REST, ảnh thật hoặc dev migration. Commit local task2; tiếp task3 status/race.
+
+## S010-C04 — 22/10/2026 — Task3 publication/availability và race
+
+- Owner-only status/publication, ba ảnh và field bắt buộc trước publish, xác nhận đúng cuốn, archive→draft và giữ firstPublishedAt; published edit không xóa field bắt buộc. Instant publishedAt chuẩn microsecond để khớp round-trip PostgreSQL.
+- RED thiếu BookStatusService; GREEN backend đủ 34/34. Kiểm race save/save và Staff-save/Owner-publish có đúng một winner, audit chỉ cho winner; stricter assertion phát hiện JPA flush ném OptimisticLockException raw, đã cho phép đúng kiểu lock (không catch mọi RuntimeException). REST task4 sẽ map cả JPA/Spring lock thành409.
+- Người dùng sẽ tự bổ sung Cloudinary credential trong .env khi sẵn sàng; không cần/chưa nhận secret qua chat. Chưa xác minh cloud/pilot. Commit task3, tiếp API task4, không dừng xin duyệt giữa các task.
+
+## S010-C05 — 22/10/2026 — Task4 API admin
+
+- Bắt đầu REST/search/collection/projection theo task4; test HTTP thực qua session/CSRF, strict field và phân quyền. Chưa triển khai media ở task này.
+- Người dùng đã cấu hình Cloudinary; kiểm tra ba biến CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET đều có giá trị, không đọc ra chat/log. Chưa kiểm chứng kết nối hoặc upload thật; gate live ở phần media.
+- Sửa lỗi escape trong test trước RED; lần compile lỗi không được tính là bằng chứng hành vi. Thay đổi task4 còn local.
+- Task4 RED: 8 API tests fail 404 đúng do chưa có endpoint; GREEN đầy đủ backend 44/44 PASS (`bash run-local.sh -B -ntp test`, log task4-suite). JSON unknown/giá thập phân bị từ chối, preview không rò căn cứ nội bộ, LIKE escape và thứ tự ổn định đạt, auth regression đạt.
+- Chuẩn hóa thứ tự multi-select để đổi thứ tự chọn không tạo version/audit giả. Query audit dùng page/size trực tiếp thay PageRequest ở brief, cùng contract wire; collection slug immutable, inactive chỉ giữ mapping cũ. Task4 commit local, tiếp task5 adapter/media.
+
+## S010-C06 — 22/10/2026 — Task5 Cloudinary adapter
+
+- Bắt đầu adapter authenticated media, JPEG/PNG validator và rate/concurrency limiter theo brief. SDK duy nhất Cloudinary HTTP5 2.5.0 đã chọn trong plan; test transport giả, không chạm cloud dữ liệu thật ở unit test.
+- Task5 GREEN: 13 unit tests PASS (JPEG/PNG, spoof/truncated/size/pixel header, limiter, SDK signed params, host/redirect policy, deadline cancels request). Full backend: 57 PASS + 1 live test skipped by default; live opt-in chạy riêng 1/1 PASS. Dependency tree chỉ thêm Cloudinary HTTP5/core2.5.0 ở backend.
+- Live Cloudinary: synthetic PNG trong memay/test/UUID, upload authenticated, signed preview JPEG decode được <=1280, unsigned original/derived bị chặn; finally xóa đúng public_id vừa tạo, xóa lại NOT_FOUND. Không ghi secret/URL signed, không chạm asset khác.
+- Ruling: HTTP5 SDK strategy giấu request nên socket timeout chưa bảo đảm tổng60s. Dùng Uploader SDK cho params/signature + Apache HTTP5 transport do app quản lý, timer gọi request.cancel() để hủy I/O. Source SDK2.5.0 đọc từ Maven sources; test fake chậm xác nhận request bị cancel.
+- Gate live adapter chạy sớm vì credential đã sẵn sàng; chưa thay gate tích hợp stream/DB/UI/pilot. Commit local task5; tiếp task6 lifecycle.
+
+## S010-C07 — 22/10/2026 — Task6 lifecycle media
+
+- Bắt đầu intent trước upload, attach sau upload, recheck quyền/version, cleanup recoverable và stream session-only. Test dùng FakeMediaGateway bean test-only; cloud live adapter đã đạt riêng, không coi fake là nghiệm thu thật.
+- Task6 RED thiếu lifecycle classes; initial GREEN9/9. Extra RED tái hiện actor bị deactivate vẫn attach thành công; sửa resolve actor hiện hành trong mỗi transaction ngắn. Extra RED multipart413 thiếu error envelope vì lỗi trước handler; typed global advice xử lý, auth/security writers không đổi.
+- GREEN `bash run-local.sh -B -ntp verify`: 69 PASS +1 live opt-in skipped, JAR đóng gói thành công. Stricter audit rollback assertion chạy riêng 5/5 PASS. Có test cleanup claim/attach, max100, retry/not-found/không xóa ACTIVE; HTTP multipart/CSRF/size/format/metadata/stream no-store/nosniff/session/version.
+- Task6 commit local; chưa chạy luồng UI/live tích hợp hoặc dev migration; tiếp task7 typed frontend transport.
+
+## S010-C08 — 22/10/2026 — Task7 frontend transport
+
+- Bắt đầu typed client/session/CSRF, upload XHR riêng; giữ HttpClient Fetch của app và auth semantics M1. Không tự replay POST, không lưu token/dữ liệu admin vào storage.
+- Task7 RED thiếu transport/services; GREEN5/5 transport tests, toàn frontend12/12 PASS. Typed IDs chuỗi/version số, status và collection payload đúng; credentials/no transfer cache, CSRF mới và lỗi401 không retry; XHR upload riêng qua injection token, không tự set multipart Content-Type. Commit local, tiếp task8 list/editor.
+
+## S010-C09 — 22/10/2026 — Task8 list/editor
+
+- Bắt đầu bảng sách/query pagination, Reactive Forms và dirty guard. Giữ dữ liệu form trong bộ nhớ khi400/401/409/network; response tạo mới không rõ kết quả không tự gửi POST lần nữa.
+- Task8 RED thiếu form/list/editor; GREEN frontend22/22. Test giữ form khi409/401, không replay create sau lost response/double-click, dirty navigation warning, binding/mức đọc/tuổi, inactive mapping. Thêm RED existing-ID404 không được rơi về create; đã chặn lưu khi load thất bại, test GREEN.
+- Có inline đăng nhập lại để giữ form trong bộ nhớ, không storage. Danh sách giữ filter/page bằng query params và link quay lại preserve. Không nạp editor vào bundle eager chỉ vì dirty guard. Commit local task8; tiếp task9 media/status/preview/audit.
+
+## S010-C10 — 22/10/2026 — Task9 media/status/preview
+
+- Bắt đầu ba slot ảnh tuần tự theo version mới, Owner status có đối chiếu cuốn/confirmation, preview public projection và audit page. Tất cả vẫn là route quản trị session-only, chưa contact/wishlist public.
+- Task9 RED thiếu components; GREEN selected6/fullfrontend28/28 PASS. Ba slot upload concat tuần tự cập nhật version, dirty chặn mutation, lỗi replacement giữ preview; Owner confirm đúng cuốn trước publish, archive/restore/availability dùng version hiện tại.
+- Preview projection không căn cứ/sourceRef/audit, title bỏ phần thiếu, unknown level ẩn, note giá; admin/login noindex và xóa khi quay public. Audit hiển thị plain text escaped và paging. Commit local, tiếp task10 collection.
+
+## S010-C11 — 22/10/2026 — Task10 collection UI
+
+- Bắt đầu Owner create/edit/deactivate collection, slug readonly sau tạo, giữ form khi conflict; Staff không có menu/mutation UI. Taxonomy cố định không có editor.
+- Task10 RED thiếu collection component; GREEN frontend31/31 PASS. Owner create/deactivate, slug immutable trong update,409 giữ dirty form và Staff không gọi mutation. Inactive mapping book-editor regression vẫn đạt. Commit local; tiếp task11 integration/browser/live/backup/restore và pilot.
+
+## S010-C12 — 22/10/2026 — Task11 tích hợp/nghiệm thu kỹ thuật
+
+- Bắt đầu live tích hợp Cloudinary/backend/API, backup trước dev migration, scratch restore, browser Owner/Staff và verification toàn bộ. Pilot cần10–20 cuốn thật/người đối chiếu, đã hỏi người dùng; không thay bằng ảnh synthetic.
+
+- S010-C12: gate live tích hợp2/2 PASS, cleanup đúng IDs; một lần rerun dừng vì pending fixture khác, finally vẫn cleanup own assets. Tách cleanupPending(UUID) dùng chung với batch để live không dọn asset ngoài gate. Không xóa rộng fixture hoặc bỏ guard để lấy PASS.
+- Review độc lập toàn nhánh bằng một fresh-context agent theo executing-plans;4 finding: ambiguous upload orphan race, media dirty guard, currentVersion409, audit action contract. Hai mục reviewer gọi Minor được đánh giá Important vì contract phục hồi/audit rõ; sửa một lượt, không re-review. RED backend3 failures và frontend missing pending guard; GREEN full verify73 PASS +2 opt-in skipped, JAR; frontend33 rồi34 PASS sau format giá vi-VN.
+- Browser test proxy4201→8081 dùng me_may_test/memay/test: tạo328→ba ảnh cloud→preview→publish→sold→archive→draft. Hai tab409 giữ form, offline không thành công, cookie clear401 giữ form/hiện reauth, routeleave confirm, Staff không Owner action/collection menu, Tab outline đạt. Phiên Playwright default bị treo; đóng và dùng session m2final. Staff fixture bị deactivate từ test trước, chỉ bật lại đúng staff@catalogue.test trong me_may_test; không tạo user demo trong dev/production.
+- Browser tìm thấy price dùng en-US; test RED missing formatter, Intl vi-VN GREEN. HTML admin CSR ban đầu thiếu noindex header dù JS meta đúng; RED header assertion, ServerRoute headers + check-ssr GREEN cả admin/login/preview, public content/meta và404.
+- Backup dev trước migration `.local/backups/S010-before-m2.dump` mode0600; restore me_may_restore_test giữ auth chính xác. Sau browser, dump me_may_test `.local/backups/S010-m2-test.dump`, restore vào scratch do phiên này tạo với --clean/--if-exists;9 bảng/auth/audit khớp, sequence last_value/is_called giữ và nextval vượt high-water, preview thật load từ media key đã restore. Helper scoped browser328 cleanup3 Cloudinary test assets và own rows; không reset sequence. Không coi dump test có asset disposable đã xóa là backup dữ liệu tiệm.
+- User xác nhận sẵn sàng tự nhập/đối chiếu10–20 cuốn thật khi UI local sẵn sàng. Pilot chưa có kết quả; task11/M2 còn mở, giữ spec/plan; chưa M3/import/deploy. Backend dev không có sách synthetic; cổng4200/8080 dành pilot, cổng4201/8081 và cookie fixture chỉ kiểm thử.
+- Quyết định triển khai (rulings) để giữ sau bàn giao: dùng brief/ledger thủ công vì wrapper tạo .gitignore con (chi phí nếu sai: đối chiếu tooling); reuse checkout theo plan thay worktree (chi phí: isolation bằng branch); feat/ theo yêu cầu user thay codex/ (không đổi nội dung); audit paging int page/size thay PageRequest nội bộ (chi phí: đổi chữ ký nếu consumer cần).
+- Rulings media: SDK ký params + owned Apache transport request.cancel tổng60s vì SDK giấu request (chi phí: duy trì adapter nhỏ); chạy live adapter sớm khi credential có (chi phí: một asset test đã dọn); cleanup theo operation UUID cho live chỉ đụng ảnh tự tạo (chi phí: thêm một query/ảnh cleanup). Không có deferred minor từ review.
+- Lệnh bằng chứng: backend `bash code/backend/run-local.sh -B -ntp verify`73 PASS+2 skipped; live `CLOUDINARY_NAMESPACE=memay/test MEMAY_LIVE_MEDIA_TEST=true bash code/backend/run-local.sh -B -ntp -Dtest=MediaLiveTest,CloudinaryLiveTest test`2/2; frontend `npm test`34/34, build ngoài sandbox PASS, `node scripts/check-ssr.mjs http://127.0.0.1:4200` PASS. Log ignored trong .superpowers/sdd/M2_PLAN, restore .local/restore-gate.log; ảnh screenshot output/playwright/m2-preview.png đã xem kiểm tra.
+- Kiểm bàn giao:13 Markdown file trong giới hạn400 dòng (DEV_LOG ngoại lệ),89 local links PASS sau khi checker hiểu suffix :line; actual credential values không có trong tracked source/frontend bundles; git diff --check PASS. Graph refresh cuối báo Transport closed (lần refresh thành công trước đó ở task6), nên không khẳng định index chứa frontend mới.
+- Đã dừng browser m2final và service test4201/8081; restart backend pilot8080 bản cuối, giữ frontend4200. Chỉ log lỗi401/409/offline dự kiến trong browser test; không có lỗi không giải thích được trong flow đã kiểm. Commit local review/verification; chưa push/merge/deploy và chưa đóng M2 vì chờ owner pilot.
+- Chốt bàn giao S010-C12: commit code/review/verification9ef3121 trên feat/m2-admin-catalogue. Sau restart, health8080 UP; SSR/public/404/admin headers4200 PASS; me_may_dev thực tế books=0/categories=6/Owner=1, không có synthetic/pilot tự tạo. Đã gửi mở panel browser4200/admin/sach (tool trả queued); link trực tiếp vẫn dùng được. Tiệm nhập pilot bằng Owner trong .env; chưa có kết quả nên M2/plan còn mở. Commit tài liệu bàn giao tiếp theo, không push/merge/deploy.
+
+## 23/10/2026 — S011-C01: xác minh dữ liệu pilot và push GitHub
+
+- Người dùng đã nhập cuốn đầu tiên, duyệt và yêu cầu push lên GitHub; đồng thời hỏi ý nghĩa Căn cứ chọn trình độ. Phạm vi: bàn giao branch M2 hiện tại, không merge/deploy; chưa coi một cuốn là đủ nghiệm thu pilot10–20.
+- Read-only PostgreSQL Docker: me_may_dev.public có MM-000001, giá20000, PUBLISHED/AVAILABLE và ba book_media ACTIVE FRONT/BACK/INSIDE. Ảnh DBeaver đang mở postgres.public nên không thấy bảng ứng dụng. Không sửa dữ liệu tiệm.
+- Đối chiếu MASTER_PLAN mục3.1 và M2_SPEC: reading_level_basis là ghi chú nội bộ, bắt buộc khi chọn mức đọc; Chưa xác định không cần căn cứ; không lộ preview/public. Không thay đổi code.
+- Git trước push: feat/m2-admin-catalogue, HEAD53f2bbf; origin nanashi193/me-may. Thư mục input/ untracked được giữ local, không stage/push. Cập nhật PROGRESS/DEV_LOG và kiểm diff; không chạy lại test vì chỉ thay đổi tài liệu bàn giao.
+- Push origin/feat/m2-admin-catalogue thành công (new branch), commit bàn giao012bdc3; upstream đã được thiết lập. Lần đầu sandbox chặn index.lock và DNS; chạy lại với quyền được duyệt đã thành công. Không merge/deploy. Tiếp theo tiếp tục pilot, ghi nhận vướng mắc trước đóng M2.

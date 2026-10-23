@@ -39,6 +39,9 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/admin/owner-access").hasRole("OWNER")
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("OWNER", "STAFF")
                         .anyRequest().authenticated())
+                .headers(headers -> headers.addHeaderWriter((req,res) -> {
+                    if(req.getRequestURI().startsWith("/api/v1/admin/"))res.setHeader("Cache-Control","no-store");
+                }))
                 .requestCache(cache -> cache.disable())
                 .exceptionHandling(errors -> errors
                         .authenticationEntryPoint((req, res, ex) -> json(res, mapper, 401, Map.of("error", "unauthorized")))

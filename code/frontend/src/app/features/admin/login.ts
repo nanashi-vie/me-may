@@ -4,6 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
+import { PageMetadata } from '../../core/page-metadata';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
@@ -20,6 +21,7 @@ import { AuthService } from '../../core/auth/auth.service';
     </form></section><a routerLink="/">Về trang chủ</a></main>`,
 })
 export class Login {
+  constructor(){inject(PageMetadata).admin("Đăng nhập quản trị | Mẹ Mây");}
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);

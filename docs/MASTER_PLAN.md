@@ -306,7 +306,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
-Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất, các milestone sau cần spec tương ứng.**
+Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; chờ chủ pilot10–20 cuốn thật, chưa chuyển M3. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
 
 ## 9. Definition of Done — nghiệm thu MVP
 

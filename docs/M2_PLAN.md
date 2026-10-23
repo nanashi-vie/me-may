@@ -55,7 +55,7 @@
 - Namespace dev/test tách biệt; FakeMediaGateway chỉ ở test config. Không có profile mock tạo ảnh giả để vượt publish/pilot thật.
 - Mỗi task dùng chu trình RED→GREEN→commit local, không push. RED có thể là compile failure khi API chưa tồn tại; GREEN phải chạy lại đúng test, không suy từ code.
 - Lệnh backend bên dưới chạy tại code/backend qua run-local.sh (nạp env nhưng không in secret); frontend tại code/frontend. Không chạy các lệnh này trong lượt soạn plan.
-- Trước code, kiểm git status và giữ thay đổi người dùng; lưu spec/plan/bàn giao liên quan thành commit tài liệu local rồi tạo nhánh codex/m2-admin-catalogue từ HEAD đó. Dùng workspace hiện có, không thêm worktree hoặc reset nhánh/dữ liệu; nếu nhánh đã tồn tại thì kiểm tra và tiếp tục đúng checkpoint.
+- Trước code, kiểm git status và giữ thay đổi người dùng; lưu spec/plan/bàn giao liên quan thành commit tài liệu local rồi tạo nhánh feat/m2-admin-catalogue từ HEAD đó. Dùng workspace hiện có, không thêm worktree hoặc reset nhánh/dữ liệu; nếu nhánh đã tồn tại thì kiểm tra và tiếp tục đúng checkpoint.
 
 ## Task 1 — Schema, reference và fixture an toàn
 
@@ -63,13 +63,13 @@
 
 **Interfaces:** BookCodeGenerator.nextCode():String, static format(long):String; BookCopy có @Version và touch(Instant); PgTestData.requireTestJdbcUrl(String):String chỉ chấp nhận JDBC PostgreSQL database me_may_test; clean(JdbcTemplate):void kiểm lại current_database()=me_may_test trước cleanup.
 
-- [ ] Viết failing `M2MigrationTest.upgradesM1WithoutLosingAdmin` và `rejectsMultipleActiveMediaPerRole`: migration V1→V3 giữ user, FK/partial unique/code unique đúng. Dùng schema UUID tạm trong me_may_test để thử migration mới/nâng cấp; không clean public schema bằng Flyway.
-- [ ] Viết `BookCodeGeneratorTest.expandsBeyondSixDigits`: `assertThat(BookCodeGenerator.format(1000000L)).isEqualTo("MM-1000000")`; test concurrent nextCode không trùng, rollback không trả lại số. Định dạng dùng Locale.ROOT và độ rộng tối thiểu, không lpad cắt số.
-- [ ] Viết `PgTestDataTest.rejectsDevDatabaseBeforeConnecting`: `assertThatThrownBy(() -> PgTestData.requireTestJdbcUrl("jdbc:postgresql://localhost:5432/me_may_dev")).isInstanceOf(IllegalArgumentException.class)`; null/malformed cũng bị từ chối, test URL pass không mở connection.
-- [ ] Chạy RED: `bash run-local.sh -B -ntp -Dtest=M2MigrationTest,BookCodeGeneratorTest,PgTestDataTest test`; lưu failure thật trước tạo schema/code.
-- [ ] Thêm migrations/seed đúng spec; mapping entity trùng SQL. PgTestData dọn audit/media/mapping/listing/book/collection trước admin_user; giữ reference, không reset sequence hoặc đụng DB dev. Schema test tạm được xóa trong finally sau guard.
-- [ ] Chạy lại GREEN cùng lệnh rồi `bash run-local.sh -B -ntp -Dtest=AuthIntegrationTest,OwnerBootstrapTest test`; xác nhận auth cũ không hỏng vì FK mới và Flyway không thể nhận DB dev qua test config.
-- [ ] Cập nhật checkpoint và commit `feat: add M2 catalogue schema and generated codes`; stage đúng file task, không git add . mù quáng.
+- [x] Viết failing `M2MigrationTest.upgradesM1WithoutLosingAdmin` và `rejectsMultipleActiveMediaPerRole`: migration V1→V3 giữ user, FK/partial unique/code unique đúng. Dùng schema UUID tạm trong me_may_test để thử migration mới/nâng cấp; không clean public schema bằng Flyway.
+- [x] Viết `BookCodeGeneratorTest.expandsBeyondSixDigits`: `assertThat(BookCodeGenerator.format(1000000L)).isEqualTo("MM-1000000")`; test concurrent nextCode không trùng, rollback không trả lại số. Định dạng dùng Locale.ROOT và độ rộng tối thiểu, không lpad cắt số.
+- [x] Viết `PgTestDataTest.rejectsDevDatabaseBeforeConnecting`: `assertThatThrownBy(() -> PgTestData.requireTestJdbcUrl("jdbc:postgresql://localhost:5432/me_may_dev")).isInstanceOf(IllegalArgumentException.class)`; null/malformed cũng bị từ chối, test URL pass không mở connection.
+- [x] Chạy RED: `bash run-local.sh -B -ntp -Dtest=M2MigrationTest,BookCodeGeneratorTest,PgTestDataTest test`; lưu failure thật trước tạo schema/code.
+- [x] Thêm migrations/seed đúng spec; mapping entity trùng SQL. PgTestData dọn audit/media/mapping/listing/book/collection trước admin_user; giữ reference, không reset sequence hoặc đụng DB dev. Schema test tạm được xóa trong finally sau guard.
+- [x] Chạy lại GREEN cùng lệnh rồi `bash run-local.sh -B -ntp -Dtest=AuthIntegrationTest,OwnerBootstrapTest test`; xác nhận auth cũ không hỏng vì FK mới và Flyway không thể nhận DB dev qua test config.
+- [x] Cập nhật checkpoint và commit `feat: add M2 catalogue schema and generated codes`; stage đúng file task, không git add . mù quáng.
 
 ## Task 2 — Lưu aggregate, validation và audit nguyên tử
 
@@ -77,12 +77,12 @@
 
 **Interfaces:** BookCommandService.create(AdminUser,BookWrite):BookDetail; update(long id,long version,AdminUser,BookWrite):BookDetail. BookValidation.validateDraft(BookWrite):void; BookAccess.requireWritable(AdminUser,Publication):void. AuditService.record(AdminUser,String targetType,long targetId,String action,Map before,Map after,long version):void.
 
-- [ ] Viết failing `createsDraftAndListingAtomically`, `duplicateTitleIsTwoPhysicalCopies`, `rejectsMissingPictureBinding`, `nullableLevelClearsBasis`, `staleWriteDoesNotChangeListingOrAudit`; assert create có DRAFT/AVAILABLE, hai mã khác, update cũ trả conflict và dữ liệu/audit không đổi.
-- [ ] Viết `auditFailureRollsBackBothTables` bằng audit collaborator test-only ném lỗi; `noOpDoesNotBumpVersion` so sánh root version và số audit. Test biên giá 1/999999999999, 0/float, text trim/null và link HTTPS không userinfo.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=BookCommandIntegrationTest test`.
-- [ ] Implement transaction create/update, set root updatedAt + @Version, flush trước map DTO; validate full BookWrite theo spec 4–5. Check version kể cả no-op; mapping age/collection cùng transaction, không delete/recreate Listing khi update.
-- [ ] Audit field allowlist, actor/time server, không secret/cloud URL; Clock bean trong TimeConfiguration tiêm vào service, không mock thời gian hệ thống toàn JVM.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: save book aggregates with validation and audit`.
+- [x] Viết failing `createsDraftAndListingAtomically`, `duplicateTitleIsTwoPhysicalCopies`, `rejectsMissingPictureBinding`, `nullableLevelClearsBasis`, `staleWriteDoesNotChangeListingOrAudit`; assert create có DRAFT/AVAILABLE, hai mã khác, update cũ trả conflict và dữ liệu/audit không đổi.
+- [x] Viết `auditFailureRollsBackBothTables` bằng audit collaborator test-only ném lỗi; `noOpDoesNotBumpVersion` so sánh root version và số audit. Test biên giá 1/999999999999, 0/float, text trim/null và link HTTPS không userinfo.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=BookCommandIntegrationTest test`.
+- [x] Implement transaction create/update, set root updatedAt + @Version, flush trước map DTO; validate full BookWrite theo spec 4–5. Check version kể cả no-op; mapping age/collection cùng transaction, không delete/recreate Listing khi update.
+- [x] Audit field allowlist, actor/time server, không secret/cloud URL; Clock bean trong TimeConfiguration tiêm vào service, không mock thời gian hệ thống toàn JVM.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: save book aggregates with validation and audit`.
 
 ## Task 3 — Publication, availability và quyền tại transaction
 
@@ -90,12 +90,12 @@
 
 **Interfaces:** BookStatusService.publication(long id,long version,AdminUser,Publication status,boolean confirmedActualCopy):BookDetail; availability(long id,long version,AdminUser,Availability status):BookDetail.
 
-- [ ] Viết failing `ownerPublishesOnlyWithThreeActiveRoles`, `staffCannotPublishOrChangeAvailability`, `archiveRestorePreservesCodeAndFirstPublishedAt`; assert từng field/ảnh thiếu bị từ chối và no-op không tạo publish time mới.
-- [ ] Viết `staffSaveRacingOwnerPublish` và `twoVersionsHaveOneWinner` dùng barrier/latch, hai transaction/connection; assert tối đa một thành công, không có cập nhật một phần hoặc audit thành công cho request thua.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=BookStatusIntegrationTest,BookRaceIntegrationTest test`.
-- [ ] Implement role/state/version checks trong transaction; DRAFT→PUBLISHED→ARCHIVED→DRAFT, không hard delete; publish cần confirmedActualCopy và validated active slots. Giá/availability khác publication; published update không làm mất field bắt buộc.
-- [ ] Dùng fixture DB ACTIVE ở test nội bộ cho state machine, ghi rõ không phải chứng minh ảnh thật; không cung cấp endpoint tạo metadata ACTIVE cho client.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: guard publication and availability transitions`.
+- [x] Viết failing `ownerPublishesOnlyWithThreeActiveRoles`, `staffCannotPublishOrChangeAvailability`, `archiveRestorePreservesCodeAndFirstPublishedAt`; assert từng field/ảnh thiếu bị từ chối và no-op không tạo publish time mới.
+- [x] Viết `staffSaveRacingOwnerPublish` và `twoVersionsHaveOneWinner` dùng barrier/latch, hai transaction/connection; assert tối đa một thành công, không có cập nhật một phần hoặc audit thành công cho request thua.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=BookStatusIntegrationTest,BookRaceIntegrationTest test`.
+- [x] Implement role/state/version checks trong transaction; DRAFT→PUBLISHED→ARCHIVED→DRAFT, không hard delete; publish cần confirmedActualCopy và validated active slots. Giá/availability khác publication; published update không làm mất field bắt buộc.
+- [x] Dùng fixture DB ACTIVE ở test nội bộ cho state machine, ghi rõ không phải chứng minh ảnh thật; không cung cấp endpoint tạo metadata ACTIVE cho client.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: guard publication and availability transitions`.
 
 ## Task 4 — REST, tìm kiếm, taxonomy, collection và preview projection
 
@@ -103,13 +103,13 @@
 
 **Interfaces:** AdminActorResolver.current(Authentication):AdminUser; BookQueryService.list(AdminUser,BookFilter):Page<BookSummary>, detail(long,AdminUser):BookDetail, preview(long,AdminUser):PreviewBook, audit(long,AdminUser,PageRequest):Page<AuditSummary>; TaxonomyService.get():Taxonomy; CollectionService.list(AdminUser):List<CollectionDto>, create(AdminUser,CollectionCreate):CollectionDto, update(long,long,AdminUser,CollectionUpdate):CollectionDto.
 
-- [ ] Viết failing API tests đúng status/body/Location/ID string tại spec 6–7; assert `forgedBookCodeOrActorReturns400` và unknown field bị từ chối bằng DTO strict parsing, không đổi contract auth `{error}`.
-- [ ] Viết `searchTreatsPercentAndUnderscoreLiterally`, tên có dấu/nháy; q>200, page<0,size>100 và enum sai→400; list ổn định updatedAt/id, collection sortOrder/id. Anonymous/CSRF/Staff gọi thẳng đều đúng quyền.
-- [ ] Viết `previewDoesNotLeakInternalFields`: `assertThat(json).doesNotContain("readingLevelBasis", "sourceRef", "storagePublicId", "cloudinary")`; preview có nội dung thiếu được gắn trạng thái nháp qua UI, không public API.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=AdminBooksApiTest,CollectionsApiTest test`.
-- [ ] Implement mọi endpoint JSON spec 7, binding parameters/escape LIKE, no-store, DTO projection và mapping lỗi 400/403/404/409. Owner collection tạo/sửa/active/version; slug bất biến, inactive không gán mới, mapping cũ được giữ/bỏ.
-- [ ] AdminHttpClient test helper dùng cookie jar, CSRF mới sau login và request JSON/multipart; không nới security để test pass. Kiểm strict parsing không đổi login form-encoded hoặc auth `{error}`.
-- [ ] GREEN cùng lệnh, rồi auth regression; checkpoint và commit `feat: expose guarded admin catalogue APIs`.
+- [x] Viết failing API tests đúng status/body/Location/ID string tại spec 6–7; assert `forgedBookCodeOrActorReturns400` và unknown field bị từ chối bằng DTO strict parsing, không đổi contract auth `{error}`.
+- [x] Viết `searchTreatsPercentAndUnderscoreLiterally`, tên có dấu/nháy; q>200, page<0,size>100 và enum sai→400; list ổn định updatedAt/id, collection sortOrder/id. Anonymous/CSRF/Staff gọi thẳng đều đúng quyền.
+- [x] Viết `previewDoesNotLeakInternalFields`: `assertThat(json).doesNotContain("readingLevelBasis", "sourceRef", "storagePublicId", "cloudinary")`; preview có nội dung thiếu được gắn trạng thái nháp qua UI, không public API.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=AdminBooksApiTest,CollectionsApiTest test`.
+- [x] Implement mọi endpoint JSON spec 7, binding parameters/escape LIKE, no-store, DTO projection và mapping lỗi 400/403/404/409. Owner collection tạo/sửa/active/version; slug bất biến, inactive không gán mới, mapping cũ được giữ/bỏ.
+- [x] AdminHttpClient test helper dùng cookie jar, CSRF mới sau login và request JSON/multipart; không nới security để test pass. Kiểm strict parsing không đổi login form-encoded hoặc auth `{error}`.
+- [x] GREEN cùng lệnh, rồi auth regression; checkpoint và commit `feat: expose guarded admin catalogue APIs`.
 
 ## Task 5 — Cloudinary adapter, validation ảnh và giới hạn tài nguyên
 
@@ -117,13 +117,13 @@
 
 **Interfaces:** MediaGateway.upload(String publicId,byte[] bytes):UploadedMedia; openPreview(String publicId):InputStream; delete(String publicId):DeleteResult. UploadedMedia record(assetId,publicId,format,bytes,width,height); DeleteResult=DELETED/NOT_FOUND. ImageValidator.validate(byte[]):ImageInfo. UploadLimiter.acquire(long actorId):AutoCloseable, ném lỗi 429 nếu hết hạn mức/chỗ.
 
-- [ ] Viết failing `rejectsSpoofedAndTruncatedImages`, biên 10 MiB/25 MP; `hugeHeaderFailsBeforeDecode` đọc dimensions bằng ImageReader trước decode và nhân (long)width*height để tránh overflow; JPEG/PNG thật pass, HEIC/WebP/SVG/PDF fail.
-- [ ] Viết `thirtyFirstUploadIs429`, cửa sổ 10 phút, slot đồng thời thứ năm bị chặn; exception không rò permit; fixed Clock và dọn limiter entry hết hạn.
-- [ ] Viết adapter test kiểm resource_type=image,type=authenticated, namespace/UUID, eager JPEG <=1280px/giữ tỉ lệ/orient/strip metadata, overwrite=false; không trả/log signed URL, không theo URL host/redirect tùy ý.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=ImageValidatorTest,UploadLimiterTest,CloudinaryMediaGatewayTest test`.
-- [ ] Thêm duy nhất com.cloudinary:cloudinary-http5:2.5.0; giữ version stack khác. Adapter cấu hình connect/read timeout hữu hạn và deadline upload 60s có hủy I/O, không chỉ timeout Future rồi bỏ request chạy ngầm; test bằng transport giả chậm, không gọi cloud thật.
-- [ ] Configure multipart file 10MB/request 11MB để có chỗ cho metadata; giới hạn ImageIO vẫn tính chính xác 10*1024*1024 byte. Config thiếu dùng UnconfiguredMediaGateway trả 503, không làm auth/startup fail và không dùng fake production.
-- [ ] GREEN cùng lệnh, dependency tree kiểm không kéo SDK frontend; checkpoint và commit `feat: add private Cloudinary media adapter`.
+- [x] Viết failing `rejectsSpoofedAndTruncatedImages`, biên 10 MiB/25 MP; `hugeHeaderFailsBeforeDecode` đọc dimensions bằng ImageReader trước decode và nhân (long)width*height để tránh overflow; JPEG/PNG thật pass, HEIC/WebP/SVG/PDF fail.
+- [x] Viết `thirtyFirstUploadIs429`, cửa sổ 10 phút, slot đồng thời thứ năm bị chặn; exception không rò permit; fixed Clock và dọn limiter entry hết hạn.
+- [x] Viết adapter test kiểm resource_type=image,type=authenticated, namespace/UUID, eager JPEG <=1280px/giữ tỉ lệ/orient/strip metadata, overwrite=false; không trả/log signed URL, không theo URL host/redirect tùy ý.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=ImageValidatorTest,UploadLimiterTest,CloudinaryMediaGatewayTest test`.
+- [x] Thêm duy nhất com.cloudinary:cloudinary-http5:2.5.0; giữ version stack khác. Adapter cấu hình connect/read timeout hữu hạn và deadline upload 60s có hủy I/O, không chỉ timeout Future rồi bỏ request chạy ngầm; test bằng transport giả chậm, không gọi cloud thật.
+- [x] Configure multipart file 10MB/request 11MB để có chỗ cho metadata; giới hạn ImageIO vẫn tính chính xác 10*1024*1024 byte. Config thiếu dùng UnconfiguredMediaGateway trả 503, không làm auth/startup fail và không dùng fake production.
+- [x] GREEN cùng lệnh, dependency tree kiểm không kéo SDK frontend; checkpoint và commit `feat: add private Cloudinary media adapter`.
 
 ## Task 6 — Vòng đời ảnh, cleanup và API stream bảo vệ nháp
 
@@ -131,14 +131,14 @@
 
 **Interfaces:** MediaService.upload(long bookId,MediaRole,long version,AdminUser,byte[] file,String alt,String sourceRef):BookDetail; updateMetadata(long,MediaRole,long,AdminUser,String alt,String sourceRef):BookDetail; remove(long,MediaRole,long,AdminUser):BookDetail; content(long,MediaRole,AdminUser):InputStream. MediaTransactions.begin/attach/fail là bean transaction riêng; MediaCleanupJob.runOnce():void dùng Clock.
 
-- [ ] Viết failing `failedReplacementKeepsOldImage`, `dbFailureAfterUploadLeavesRecoverableIntent`, `uploadFinishesAfterPublishReturns409`, `twoUploadsSameSlotOnlyOneActive`; FakeMediaGateway có latch để chủ động giữ/release upload và lỗi theo từng operation.
-- [ ] Viết cleanup `restartRecoversStaleUploading`, `deleteNotFoundIsSuccess`, `retryDoesNotDeleteWinner`, `cleanupClaimCannotRaceAttach`; assert UPLOADING chưa đủ 1h/ACTIVE không bị xóa, tối đa100/lượt và failure giữ DELETE_PENDING.
-- [ ] Viết API tests anonymous content→401, authenticated stream JPEG/no-store/nosniff/không redirect; metadata không cloud URL; 502/503/413/415/429 đúng; invalid role/CSRF/Staff published bị chặn trước provider; published DELETE ảnh→409.
-- [ ] RED: `bash run-local.sh -B -ntp -Dtest=MediaLifecycleIntegrationTest,MediaCleanupIntegrationTest,MediaPrivacyApiTest test`.
-- [ ] Implement đúng hai transaction trước/sau cloud theo spec 8; dùng bean MediaTransactions tránh @Transactional self-invocation. Attach recheck state/role/version, chuyển ảnh cũ DELETE_PENDING và tăng root version/audit cùng transaction.
-- [ ] Worker conditional state update và provider destroy invalidate=true; giữ key không tái sử dụng, không giữ DB transaction khi upload/delete/stream. Preview stream đóng InputStream khi client disconnect/lỗi, không log token/URL.
-- [ ] Implement PATCH metadata/default alt theo role+mã; UI-independent content path chỉ từ ACTIVE row; private stream ký URL ở backend, không cung cấp public CDN endpoint M2.
-- [ ] GREEN cùng lệnh rồi toàn bộ backend `bash run-local.sh -B -ntp verify`; checkpoint và commit `feat: manage recoverable three-photo lifecycle`.
+- [x] Viết failing `failedReplacementKeepsOldImage`, `dbFailureAfterUploadLeavesRecoverableIntent`, `uploadFinishesAfterPublishReturns409`, `twoUploadsSameSlotOnlyOneActive`; FakeMediaGateway có latch để chủ động giữ/release upload và lỗi theo từng operation.
+- [x] Viết cleanup `restartRecoversStaleUploading`, `deleteNotFoundIsSuccess`, `retryDoesNotDeleteWinner`, `cleanupClaimCannotRaceAttach`; assert UPLOADING chưa đủ 1h/ACTIVE không bị xóa, tối đa100/lượt và failure giữ DELETE_PENDING.
+- [x] Viết API tests anonymous content→401, authenticated stream JPEG/no-store/nosniff/không redirect; metadata không cloud URL; 502/503/413/415/429 đúng; invalid role/CSRF/Staff published bị chặn trước provider; published DELETE ảnh→409.
+- [x] RED: `bash run-local.sh -B -ntp -Dtest=MediaLifecycleIntegrationTest,MediaCleanupIntegrationTest,MediaPrivacyApiTest test`.
+- [x] Implement đúng hai transaction trước/sau cloud theo spec 8; dùng bean MediaTransactions tránh @Transactional self-invocation. Attach recheck state/role/version, chuyển ảnh cũ DELETE_PENDING và tăng root version/audit cùng transaction.
+- [x] Worker conditional state update và provider destroy invalidate=true; giữ key không tái sử dụng, không giữ DB transaction khi upload/delete/stream. Preview stream đóng InputStream khi client disconnect/lỗi, không log token/URL.
+- [x] Implement PATCH metadata/default alt theo role+mã; UI-independent content path chỉ từ ACTIVE row; private stream ký URL ở backend, không cung cấp public CDN endpoint M2.
+- [x] GREEN cùng lệnh rồi toàn bộ backend `bash run-local.sh -B -ntp verify`; checkpoint và commit `feat: manage recoverable three-photo lifecycle`.
 
 ## Task 7 — Frontend contracts và transport session/CSRF
 
@@ -149,11 +149,11 @@
 - BookApi.publication(id,version,status,confirmedActualCopy?):Observable<BookDetail>; availability(id,version,status):Observable<BookDetail>; preview(id):Observable<PreviewBook>; audit(id,page):Observable<Page<AuditSummary>>; upload(id,role,version,FormData):Observable<HttpEvent<BookDetail>>; updateMedia(id,role,version,alt,sourceRef):Observable<BookDetail>; removeMedia(id,role,version):Observable<BookDetail>. id:string,version/page:number, role/status dùng union tương ứng spec, không any.
 - CollectionApi.list():Observable<CollectionDto[]>; create(CollectionCreate):Observable<CollectionDto>; update(id:string,version:number,CollectionUpdate):Observable<CollectionDto>.
 
-- [ ] Viết failing HttpTestingController tests: credentials=true, transferCache=false, CSRF fetch trước mutation, payload version/enum/ID string đúng; multipart không tự set Content-Type boundary; POST không tự retry khi timeout.
-- [ ] Assert chưa login/CSRF cũ/401 lỗi truyền về component để giữ form; mutation không dùng token lưu localStorage và không tự replay POST khi refresh token.
-- [ ] RED: `npm test -- --include='src/app/core/auth/admin-http.spec.ts' --include='src/app/features/admin/books/book-api.spec.ts' --include='src/app/features/admin/collections/collection-api.spec.ts'`.
-- [ ] Implement typed transport/services; tái dùng auth session/guard M1, không sửa login semantics; media source dùng contentPath same-origin proxy. Upload progress cần fetch/XHR backend có báo progress: dùng HttpClient XHR chỉ cho transport upload, không đổi toàn app/SSR.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: connect typed admin catalogue client`.
+- [x] Viết failing HttpTestingController tests: credentials=true, transferCache=false, CSRF fetch trước mutation, payload version/enum/ID string đúng; multipart không tự set Content-Type boundary; POST không tự retry khi timeout.
+- [x] Assert chưa login/CSRF cũ/401 lỗi truyền về component để giữ form; mutation không dùng token lưu localStorage và không tự replay POST khi refresh token.
+- [x] RED: `npm test -- --include='src/app/core/auth/admin-http.spec.ts' --include='src/app/features/admin/books/book-api.spec.ts' --include='src/app/features/admin/collections/collection-api.spec.ts'`.
+- [x] Implement typed transport/services; tái dùng auth session/guard M1, không sửa login semantics; media source dùng contentPath same-origin proxy. Upload progress cần fetch/XHR backend có báo progress: dùng HttpClient XHR chỉ cho transport upload, không đổi toàn app/SSR.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: connect typed admin catalogue client`.
 
 ## Task 8 — Bảng sách, editor và lưu nháp an toàn
 
@@ -161,12 +161,12 @@
 
 **Interfaces:** buildBookForm():FormGroup; toBookWrite(form):BookWrite gửi đủ field; BookEditor.load(id?)/saveDraft():void dùng BookApi; BookList đồng bộ q/publication/availability/page vào query params. book-copy.ts chỉ chứa các chuỗi UI đã chốt, không là framework dịch thuật.
 
-- [ ] Viết failing component tests `createsThenNavigatesToEditor`, `pictureBookRequiresOneBinding`, `ageGroupsAllowMultiple`, `unknownReadingLevelIsOptional`, `inactiveCollectionCanBeKeptOrRemoved` và validation field/focus đúng.
-- [ ] Viết `lostCreateResponseDoesNotPostAgain`: sau một POST và timeout, `expect(createRequests).toHaveLength(1)` dù component hiện gợi ý kiểm tra danh sách; double-click cũng chỉ một request.
-- [ ] Viết `conflictPreservesDirtyForm`, `sessionExpiryKeepsFormInMemory`, `leavingDirtyFormWarns`; 400/409/401/network không xóa nội dung, không báo thành công, không có admin data trong localStorage.
-- [ ] RED: `npm test -- --include='src/app/features/admin/books/book-list.spec.ts' --include='src/app/features/admin/books/book-editor.spec.ts' --include='src/app/features/admin/books/book-form.spec.ts'`.
-- [ ] Implement list/editor Reactive Forms, guard rời trang, mã readonly/tự tạo khi lưu, giữ state màn hình khi xác thực lại; không lưu bản nháp vào browser storage. Navigation query back/pagination giữ tìm kiếm; chỉ hiện menu chức năng đã có.
-- [ ] GREEN cùng lệnh; checkpoint và commit `feat: build admin book list and draft editor`.
+- [x] Viết failing component tests `createsThenNavigatesToEditor`, `pictureBookRequiresOneBinding`, `ageGroupsAllowMultiple`, `unknownReadingLevelIsOptional`, `inactiveCollectionCanBeKeptOrRemoved` và validation field/focus đúng.
+- [x] Viết `lostCreateResponseDoesNotPostAgain`: sau một POST và timeout, `expect(createRequests).toHaveLength(1)` dù component hiện gợi ý kiểm tra danh sách; double-click cũng chỉ một request.
+- [x] Viết `conflictPreservesDirtyForm`, `sessionExpiryKeepsFormInMemory`, `leavingDirtyFormWarns`; 400/409/401/network không xóa nội dung, không báo thành công, không có admin data trong localStorage.
+- [x] RED: `npm test -- --include='src/app/features/admin/books/book-list.spec.ts' --include='src/app/features/admin/books/book-editor.spec.ts' --include='src/app/features/admin/books/book-form.spec.ts'`.
+- [x] Implement list/editor Reactive Forms, guard rời trang, mã readonly/tự tạo khi lưu, giữ state màn hình khi xác thực lại; không lưu bản nháp vào browser storage. Navigation query back/pagination giữ tìm kiếm; chỉ hiện menu chức năng đã có.
+- [x] GREEN cùng lệnh; checkpoint và commit `feat: build admin book list and draft editor`.
 
 ## Task 9 — Ba ảnh, Owner actions, preview và audit
 
@@ -174,12 +174,12 @@
 
 **Interfaces:** BookMediaPanel nhận BookDetail và dirty:boolean, emit BookDetail mới; BookStatusActions nhận BookDetail/role, emit BookDetail; BookPreview đọc BookApi.preview(id); BookAuditPanel đọc BookApi.audit(id,page).
 
-- [ ] Viết failing `threeFixedSlotsUploadSequentially`, `dirtyFormBlocksUpload`, `replacementFailureKeepsOldPreview`; mỗi response update version trước request ảnh kế tiếp, retry lỗi không mất form hay tạo thêm slot.
-- [ ] Viết `staffHasNoOwnerActions`, `publishNeedsActualCopyConfirmation`, hide/restore/sold đúng API/version và modal nêu mã; audit pagination, metadata ảnh chỉnh được không upload lại.
-- [ ] Viết `previewHidesInternalFieldsAndMarksIncompleteDraft`, giá note/mức đọc/title ghép đúng DATA; link video dùng anchor HTTPS an toàn, không embed; noindex admin biến mất khi chuyển trang public như regression M1.
-- [ ] RED: `npm test -- --include='src/app/features/admin/books/book-media-panel.spec.ts' --include='src/app/features/admin/books/book-status-actions.spec.ts' --include='src/app/features/admin/books/book-preview.spec.ts' --include='src/app/features/admin/books/book-audit-panel.spec.ts'`.
-- [ ] Implement ba slot/progress/alt/sourceRef, action theo quyền và preview đã lưu; không trái tim/Zalo giả hoạt động trong M2. Authenticated images dùng contentPath qua proxy, không signed cloud URL trong DOM.
-- [ ] GREEN cùng lệnh, `npm test` kiểm metadata regression; checkpoint và commit `feat: add guarded media publication and preview UI`.
+- [x] Viết failing `threeFixedSlotsUploadSequentially`, `dirtyFormBlocksUpload`, `replacementFailureKeepsOldPreview`; mỗi response update version trước request ảnh kế tiếp, retry lỗi không mất form hay tạo thêm slot.
+- [x] Viết `staffHasNoOwnerActions`, `publishNeedsActualCopyConfirmation`, hide/restore/sold đúng API/version và modal nêu mã; audit pagination, metadata ảnh chỉnh được không upload lại.
+- [x] Viết `previewHidesInternalFieldsAndMarksIncompleteDraft`, giá note/mức đọc/title ghép đúng DATA; link video dùng anchor HTTPS an toàn, không embed; noindex admin biến mất khi chuyển trang public như regression M1.
+- [x] RED: `npm test -- --include='src/app/features/admin/books/book-media-panel.spec.ts' --include='src/app/features/admin/books/book-status-actions.spec.ts' --include='src/app/features/admin/books/book-preview.spec.ts' --include='src/app/features/admin/books/book-audit-panel.spec.ts'`.
+- [x] Implement ba slot/progress/alt/sourceRef, action theo quyền và preview đã lưu; không trái tim/Zalo giả hoạt động trong M2. Authenticated images dùng contentPath qua proxy, không signed cloud URL trong DOM.
+- [x] GREEN cùng lệnh, `npm test` kiểm metadata regression; checkpoint và commit `feat: add guarded media publication and preview UI`.
 
 ## Task 10 — Quản trị collection tối thiểu
 
@@ -187,10 +187,10 @@
 
 **Interfaces:** CollectionList.load/save():void dùng CollectionApi; OWNER tạo/sửa/ẩn, STAFF chỉ dùng danh sách để gán nháp, không menu quản trị collection. Không UI tạo/sửa các taxonomy cố định.
 
-- [ ] Viết failing `ownerCanCreateAndDeactivate`, `slugImmutableAfterCreate`, `staleCollectionEditKeepsForm`, `staffCannotMutate`; inactive biến mất khỏi lựa chọn mới nhưng liên kết cũ không tự mất hoặc ẩn sách.
-- [ ] RED: `npm test -- --include='src/app/features/admin/collections/collection-list.spec.ts'`.
-- [ ] Implement form name/slug/sort/active/version, validate ASCII slug spec, error/unsaved/focus như editor; không xóa collection hoặc cascade sách.
-- [ ] GREEN cùng lệnh và book-editor regression; checkpoint và commit `feat: add owner collection management`.
+- [x] Viết failing `ownerCanCreateAndDeactivate`, `slugImmutableAfterCreate`, `staleCollectionEditKeepsForm`, `staffCannotMutate`; inactive biến mất khỏi lựa chọn mới nhưng liên kết cũ không tự mất hoặc ẩn sách.
+- [x] RED: `npm test -- --include='src/app/features/admin/collections/collection-list.spec.ts'`.
+- [x] Implement form name/slug/sort/active/version, validate ASCII slug spec, error/unsaved/focus như editor; không xóa collection hoặc cascade sách.
+- [x] GREEN cùng lệnh và book-editor regression; checkpoint và commit `feat: add owner collection management`.
 
 ## Task 11 — Tích hợp, cloud thật, restore/pilot và bàn giao
 
@@ -198,16 +198,16 @@
 
 **Interfaces:** Live test chỉ bật khi MEMAY_LIVE_MEDIA_TEST=true, dùng me_may_test và CLOUDINARY_NAMESPACE=memay/test; namespace khác/thiếu guard phải từ chối trước upload/delete. Không dùng hook xóa ảnh pilot production.
 
-- [ ] Trước áp migration vào me_may_dev: backup DB dạng custom ở thư mục local ignored/quyền hạn chế; dùng schema test task1 kiểm V1→V3. Không reset V1/checksum hoặc DB khác trong container my-postgres.
-- [ ] Viết và chạy RED→GREEN live opt-in bằng credential người dùng cấu hình ở .env ignored: upload JPEG/PNG test, unsigned original/derived bị chặn, admin stream đúng, replace/cleanup/not-found và metadata không rò. Không in signed URLs hoặc secret trong report.
-- [ ] Live test có finally cleanup đúng các public_id nó đã tạo trong memay/test, kể cả assertion lỗi; không enumerate/xóa cả namespace hoặc ảnh pilot. Chỉ dọn row test sau khi xác nhận cloud cleanup, nếu thất bại giữ ID/DELETE_PENDING nội bộ để retry.
-- [ ] Chạy backend `bash run-local.sh -B -ntp verify`; frontend `npm test`, `npm run build` và `node scripts/check-ssr.mjs http://127.0.0.1:4200` tại code/frontend khi dev server đã chạy. Ghi kết quả mới, không tái dùng số test M1.
-- [ ] Browser Owner/Staff tại proxy local: tạo→sửa→ba ảnh→preview→publish→sold→hide→restore; hai tab stale, session hết hạn, disconnect và bàn phím. Không tạo tài khoản Staff demo cố định trong production; tài khoản test local qua fixture có guard, giữ credential ngoài log.
-- [ ] Khôi phục backup vào DB scratch riêng `me_may_restore_test` với quyền DBA, không restore đè dev/test; đối chiếu code/high-water sequence/media references/auth. Nếu chưa có quyền DBA thì ghi chưa kiểm chứng, giữ gate restore/pilot còn mở; không tự đổi role global.
+- [x] Trước áp migration vào me_may_dev: backup DB dạng custom ở thư mục local ignored/quyền hạn chế; dùng schema test task1 kiểm V1→V3. Không reset V1/checksum hoặc DB khác trong container my-postgres.
+- [x] Viết và chạy RED→GREEN live opt-in bằng credential người dùng cấu hình ở .env ignored: upload JPEG/PNG test, unsigned original/derived bị chặn, admin stream đúng, replace/cleanup/not-found và metadata không rò. Không in signed URLs hoặc secret trong report.
+- [x] Live test có finally cleanup đúng các public_id nó đã tạo trong memay/test, kể cả assertion lỗi; không enumerate/xóa cả namespace hoặc ảnh pilot. Chỉ dọn row test sau khi xác nhận cloud cleanup, nếu thất bại giữ ID/DELETE_PENDING nội bộ để retry.
+- [x] Chạy backend `bash run-local.sh -B -ntp verify`; frontend `npm test`, `npm run build` và `node scripts/check-ssr.mjs http://127.0.0.1:4200` tại code/frontend khi dev server đã chạy. Ghi kết quả mới, không tái dùng số test M1.
+- [x] Browser Owner/Staff tại proxy local: tạo→sửa→ba ảnh→preview→publish→sold→hide→restore; hai tab stale, session hết hạn, disconnect và bàn phím. Không tạo tài khoản Staff demo cố định trong production; tài khoản test local qua fixture có guard, giữ credential ngoài log.
+- [x] Khôi phục backup vào DB scratch riêng `me_may_restore_test` với quyền DBA, không restore đè dev/test; đối chiếu code/high-water sequence/media references/auth. Nếu chưa có quyền DBA thì ghi chưa kiểm chứng, giữ gate restore/pilot còn mở; không tự đổi role global.
 - [ ] Chủ thử 10–20 cuốn thật và nhãn mã; xác nhận giá/ba ảnh/tình trạng, đo thời gian nhập/tìm/sửa; không lấy hàng giao dịch từ ảnh Excel hay ảnh AI làm pilot.
-- [ ] Review toàn nhánh đối chiếu spec: race/quyền/cloud leak/cleanup/audit và hồi quy M1; sửa finding quan trọng rồi chạy lại test liên quan. Chọn người/agent review theo phương thức đã được người dùng duyệt, không tự dispatch khi chưa được phép.
-- [ ] Cập nhật bằng chứng/giới hạn trong VERIFICATION, trạng thái gate trong PROGRESS và checkpoint DEV_LOG; thiếu credential/pilot/live/restore không được đánh dấu M2 hoàn tất. Không tự mở rộng sang M3/deploy/import.
-- [ ] Kiểm Markdown/link/giới hạn dòng, secrets/ignore và git diff --check; commit `docs: record M2 verification and handoff`. Chỉ gộp spec/plan vào tài liệu chuẩn rồi xóa khi đã hoàn tất và chuyển đủ tiêu chí, không xóa khi còn gate mở.
+- [x] Review toàn nhánh đối chiếu spec: race/quyền/cloud leak/cleanup/audit và hồi quy M1; sửa finding quan trọng rồi chạy lại test liên quan. Chọn người/agent review theo phương thức đã được người dùng duyệt, không tự dispatch khi chưa được phép.
+- [x] Cập nhật bằng chứng/giới hạn trong VERIFICATION, trạng thái gate trong PROGRESS và checkpoint DEV_LOG; thiếu credential/pilot/live/restore không được đánh dấu M2 hoàn tất. Không tự mở rộng sang M3/deploy/import.
+- [x] Kiểm Markdown/link/giới hạn dòng, secrets/ignore và git diff --check; commit `docs: record M2 verification and handoff`. Chỉ gộp spec/plan vào tài liệu chuẩn rồi xóa khi đã hoàn tất và chuyển đủ tiêu chí, không xóa khi còn gate mở.
 
 ## Tự rà soát và cách thực thi
 

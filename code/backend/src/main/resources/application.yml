@@ -1,6 +1,16 @@
 spring:
   application:
     name: me-may-api
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 11MB
+  jackson:
+    mapper:
+      allow-coercion-of-scalars: false
+    deserialization:
+      fail-on-unknown-properties: true
+      accept-float-as-int: false
   datasource:
     url: ${DB_URL}
     username: ${DB_USER}
@@ -34,5 +44,7 @@ management:
     health:
       show-details: never
 memay:
+  media:
+    namespace: ${CLOUDINARY_NAMESPACE:memay/dev}
   bootstrap:
     enabled: false

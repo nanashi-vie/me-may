@@ -29,6 +29,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 })
 @Import(AuthIntegrationTest.ShortSessionConfig.class)
 class AuthIntegrationTest {
+    @org.springframework.test.context.DynamicPropertySource
+    static void testDatabase(org.springframework.test.context.DynamicPropertyRegistry props) {
+        props.add("spring.datasource.url", () -> vn.memay.support.PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL")));
+    }
+
     @Value("${local.server.port}") int port;
     @Autowired JdbcTemplate jdbc;
     private HttpClient client;
@@ -36,7 +41,7 @@ class AuthIntegrationTest {
     @BeforeEach
     void setup() {
         assertThat(jdbc.queryForObject("SELECT current_database()", String.class)).isEqualTo("me_may_test");
-        jdbc.update("DELETE FROM admin_user");
+        vn.memay.support.PgTestData.clean(jdbc);
         var hash = new BCryptPasswordEncoder().encode("test-password-123");
         jdbc.update("INSERT INTO admin_user(email,password_hash,role,active) VALUES (?,?,?,?)", "owner@test.local", hash, "OWNER", true);
         jdbc.update("INSERT INTO admin_user(email,password_hash,role,active) VALUES (?,?,?,?)", "staff@test.local", hash, "STAFF", true);
