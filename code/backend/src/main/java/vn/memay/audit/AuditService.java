@@ -9,7 +9,7 @@ import vn.memay.auth.AdminUser;
 public class AuditService {
  private final JdbcTemplate jdbc;private final ObjectMapper mapper;private final Clock clock;
  public AuditService(JdbcTemplate jdbc,ObjectMapper mapper,Clock clock){this.jdbc=jdbc;this.mapper=mapper;this.clock=clock;}
- private static final Set<String> FIELDS=Set.of("bookCode","title","isbn","publisher","author","language","binding","conditionGrade","conditionNote","priceVnd","description","categoryCode","ageGroups","readingLevel","readingVideoUrl","collectionIds","publication","availability","media","confirmedActualCopy","name","slug","sortOrder","active");
+ private static final Set<String> FIELDS=Set.of("bookCode","title","isbn","publisher","author","language","binding","conditionGrade","conditionNote","priceVnd","description","categoryCode","ageGroups","readingLevel","readingVideoUrl","collectionIds","publication","availability","media","confirmedActualCopy","name","slug","sortOrder","active","enabled","startsAt","endsAt","items");
  public Map<String,Object> snapshot(Object value){var result=new LinkedHashMap<String,Object>();if(value!=null){Map<?,?> raw=mapper.convertValue(value,Map.class);raw.forEach((key,v)->{if(FIELDS.contains(key.toString()))result.put(key.toString(),v);});}return result;}
  public void record(AdminUser actor,String targetType,long targetId,String action,Map before,Map after,long version){
   Map<String,Object> a=new LinkedHashMap<>(),b=new LinkedHashMap<>();

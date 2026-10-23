@@ -36,11 +36,12 @@ public class SecurityConfiguration {
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.GET, "/actuator/health", "/api/v1/auth/csrf").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/**", "/api/v1/collections", "/api/v1/collections/**", "/api/v1/taxonomy", "/api/v1/home", "/api/v1/contact", "/api/v1/flash-sale").permitAll()
                         .requestMatchers("/api/v1/admin/owner-access").hasRole("OWNER")
                         .requestMatchers("/api/v1/admin/**").hasAnyRole("OWNER", "STAFF")
                         .anyRequest().authenticated())
                 .headers(headers -> headers.addHeaderWriter((req,res) -> {
-                    if(req.getRequestURI().startsWith("/api/v1/admin/"))res.setHeader("Cache-Control","no-store");
+                    if(req.getRequestURI().startsWith("/api/"))res.setHeader("Cache-Control","no-store");
                 }))
                 .requestCache(cache -> cache.disable())
                 .exceptionHandling(errors -> errors
