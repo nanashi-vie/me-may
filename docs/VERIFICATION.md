@@ -74,16 +74,16 @@ Artifact/log local ignored: `.superpowers/sdd/M2_PLAN/`, `.local/backups/S010-be
 
 ## M3 local — kết quả kỹ thuật và gate còn mở
 
-Ngày23/10/2026, branch feat/m3-public-catalogue. User duyệt M3 local + Flash Sale; không deploy/Cloudflare/M4/import. M2 pilot6cuốn, chưa đủ10–20.
+Ngày 23/10/2026, branch feat/m3-public-catalogue. User duyệt M3 local + Flash Sale; không deploy/Cloudflare/M4/import. M2 pilot6 cuốn, chưa đủ10–20.
 
 | Kiểm tra | Kết quả / bằng chứng |
 |---|---|
-| Backend `bash code/backend/run-local.sh -B -ntp verify` | 85total,83PASS/2live skipped, JAR PASS; gồm migration3→latest giữ book/level/media/audit JSON/code sequence, public visibility/media, filters/page, sale expiry/sold/hidden/version/OWNER |
+| Backend `bash code/backend/run-local.sh -B -ntp verify` | 85 total,83 PASS/2 live skipped, JAR PASS; gồm migration3→latest giữ book/level/media/audit JSON/code sequence, public visibility/media, filters/page, sale expiry/sold/hidden/version/OWNER |
 | Frontend `npm test` (code/frontend) |56/56 PASS; level không căn cứ/video optional, URL/query races, failure vs empty, copyfallback/expiredprice, campaign409 giữ edits |
 | Angular `npm run build` | Browser+server PASS ngoài sandbox; trong sandbox exit134 tại Building |
 | SSR4200 và built4000 | Initial HTML/title/description/canonical/OG ảnh sách, public ảnh thật200/no-store, unknownbook/collection404, admin headersnoindex/no-store PASS qua check-ssr.mjs |
 | Backenddown SSR4001 | Home/catalogue/detail/FlashSale503, không falseempty/404 PASS; sale200 được bắt RED rồi sửa GREEN |
-| Dev bảo toàn dữ liệu | pg_dump custom mode0600 trước migration; fingerprint books/listing-minus-basis/media/audit/sequence khớp trước/sau;6cuốn/18ACTIVE; không resetsequence hoặc tạo sale giả |
+| Dev bảo toàn dữ liệu | pg_dump custom mode0600 trước migration; fingerprint books/listing-minus-basis/media/audit/sequence khớp trước/sau;6 cuốn/18ACTIVE; không resetsequence hoặc tạo sale giả |
 | Browser thật | Detail390: ảnh3/3load, nooverflow, dialog text/copy/Escape trả focus. FlashSale layout chụp với browser-only responsefixture, không tạo ưu đãi trênDB; PictureHardcover lọc1, Back và tìm mã1 kết quả PASS ở built4000 |
 
 Artifact/testlog ignored trong .superpowers/sdd/M3_PLAN; backup/fingerprint ignored trong .local/backups. Không commit data/ảnh/cookie tiệm.
@@ -92,4 +92,4 @@ Hai link Zalo thật đã cấu hình và endpoint public xác nhận có cả h
 
 Chưa đạt: nghiệm thu Zalo trên thiết bị thực, chủ duyệt UX/sale thật, pilot M2 đủ10–20, Cloudflare/crawler/SEO cache/staging/production. Không dùng fixture để thay nghiệm thu tiệm.
 
-Review độc lập:4Important đã sửa một lượt, không re-review: server-clock cho directentry/enquiry; refresh cancellation/URL-state; origin TransferState; khóa inputs sale load/save. RED8frontend+1backend→GREEN56frontend/83backend,2live skipped; thêm4RED/GREEN recovery metadata/destroy. Không có Critical/Minor được reviewer nêu. PublicApi dùng credentials omit, X-Memay-Server-Time từ database; CORS expose header này là việc release nếu API khác origin.
+Review độc lập:4 Important đã sửa một lượt, không re-review: server-clock cho directentry/enquiry; refresh cancellation/URL-state; origin TransferState; khóa inputs sale load/save. RED8frontend+1backend→GREEN56 frontend/83 backend,2 live skipped; thêm4RED/GREEN recovery metadata/destroy. Không có Critical/Minor được reviewer nêu. PublicApi dùng credentials omit, X-Memay-Server-Time từ database; CORS expose header này là việc release nếu API khác origin.

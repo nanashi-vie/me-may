@@ -387,3 +387,5 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Linklocal/Markdownmax400 và diffcheck PASS; .env/.local/.superpowers/output bịignore, input giữ untracked. FeatureM3 commitlocal, dev2a73249 đãpush theo yêu cầu; không tựmergeM3/pushfeature/deploy. Bước tiếp: chủ thử UX vàsale thật nếu muốn, tiếp tụcM2pilot10–20/M4 sauduyệt.
 
 - Chốt QA mobile360/390/desktop: publicdetail3ảnh, focusoutline và Escape, cataloguePictureHardcover/tìmmã/Back; rawscreenshots ignored. Hai linkZalo thực tế có trongpublicconfig, không mở nativeapp hoặc gửi tin. Giữ cổng4200/8080 cho chủ thử, dừng builtQA4000/browser phiên này sau bàn giao.
+
+- Commit sửa review/bàn giao a6a4a38; SSRdev4200 cuối PASS sau restartbackend/nhận linkZalo. Dọn ownbrowserm3/m3final và builtSSR4000,4001 đã dừng; giữ pilot4200/8080. Commit tài liệu chốt sau cleanup.

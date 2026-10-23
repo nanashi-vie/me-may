@@ -99,9 +99,9 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 ## M3 public và Flash Sale local
 
 - Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`. Không cần tài khoản; wishlist chưa triển khai.
-- API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
-- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3local.
-- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
+- API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20 cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
+- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3 local.
+- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50 cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
 - Link video optional; trường căn cứ đã bỏ qua migrationV4, audit lịch sử vẫn giữ. MigrationV5 thêm campaign mặc định tắt, không tạo sale thật tự động.
 - Thêm `CONTACT_ZALO_HOTLINE_URL` và `CONTACT_ZALO_GROUP_URL` vào root`.env`, dùng HTTPS zalo.me; restart backend sau đổi. Thiếu cấu hình hiện đang cập nhật; dialog luôn có copy/thủ công, không tự gửi.
 - SSR backend origin server-only `MEMAY_API_ORIGIN` mặc định http://127.0.0.1:8080; canonical/enquiry origin `MEMAY_SITE_ORIGIN` mặc định http://localhost:4200. M3 chỉ chốt local; cấu hình origin browser/deployment cần spike Cloudflare riêng trước phát hành.

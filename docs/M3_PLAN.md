@@ -12,7 +12,7 @@
 - No wishlist/order/payment/import/deploy; no invented promotion statistics. Audit/locking/RBAC remain mandatory.
 - Public PUBLISHED only, ACTIVE media only, no-store HTML/API/media. Sold remains visible; Home prefers available.
 - Reading basis removed from active contracts/storage; historical audit preserved. Video nullable HTTPS when supplied.
-- M2 pilot still open; M3 authorized independently. docs index remains README, max400 lines/file; DEV_LOG exempt.
+- M2 pilot still open; M3 authorized independently. docs index remains README, max 400 lines/file; DEV_LOG exempt.
 - Flash Sale single editable campaign with startsAt/endsAt and per-book sale price; original price is current listing reference price. OWNER edits with campaign version and audit. No sold counts.
 - Sale prices apply only while campaign is enabled and server time is in [start,end), published/available books only, salePrice < reference price. List/detail/contact use effective price. No frontend price authority.
 - Contact URLs from environment, absent means unavailable; no placeholder link. User provides real links before contact acceptance.
@@ -71,4 +71,4 @@
 
 ## Bàn giao23/10
 
-Code/API/UI/SSR và review kỹ thuật đã hoàn tất local; frontend56PASS, backend85total/83PASS/2live skipped, build/JAR PASS. Migration bảo toàn6cuốn/18ảnh/audit/sequence; actual campaign mặc định tắt. Giữ plan khi chủ chưa nghiệm thu UX/Zalo trên thiết bị; pilot M2 còn6cuốn, không đóng gate10–20. Không deploy/Cloudflare hoặc chuyển M4.
+Code/API/UI/SSR và review kỹ thuật đã hoàn tất local; frontend56 PASS, backend85 total/83 PASS/2 live skipped, build/JAR PASS. Migration bảo toàn6 cuốn/18 ảnh/audit/sequence; actual campaign mặc định tắt. Giữ plan khi chủ chưa nghiệm thu UX/Zalo trên thiết bị; pilot M2 còn6 cuốn, không đóng gate10–20. Không deploy/Cloudflare hoặc chuyển M4.
