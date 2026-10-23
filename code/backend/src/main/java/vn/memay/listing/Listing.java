@@ -10,7 +10,6 @@ public class Listing {
  @Column(length=10000) public String description;
   public Long categoryId;
  @Column(length=8) public String readingLevel;
- @Column(length=1000) public String readingLevelBasis;
  @Column(length=2048) public String readingVideoUrl;
  @Enumerated(EnumType.STRING) @Column(nullable=false,length=16) public vn.memay.catalogue.BookDtos.Publication publicationStatus;
   public Instant publishedAt;

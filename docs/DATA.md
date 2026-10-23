@@ -28,7 +28,6 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | publication_status | Listing | DRAFT / PUBLISHED / ARCHIVED; độc lập availability |
 | age_groups | Mapping listing | Chọn nhiều nhóm trong 0–3 / 4–6 / 7–9 / 10+; để trống nếu chưa xác định, không tự suy từ mức đọc |
 | reading_level | Listing | Một trong Pre A1 / A1 / A2 / B1 / B2 / C1 / C2 hoặc chưa xác định; nhãn Cambridge theo bảng bên dưới |
-| reading_level_basis | Listing, nội bộ | Ghi căn cứ khi gán mức: nguồn NXB hoặc nhận định của tiệm; không đưa vào public DTO |
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
 | ảnh FRONT / BACK / INSIDE | BookMedia | Đủ đúng ba ảnh thật trước publish: bìa trước, mặt sau, một trang nội dung; bìa trước là thumbnail; fixture không có ảnh |

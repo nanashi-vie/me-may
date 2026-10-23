@@ -23,6 +23,8 @@ Cập nhật: 22/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [M3_PLAN](M3_PLAN.md): user đã duyệt M3 local23/10; thực thi tuần tự, gồm Flash Sale được duyệt bổ sung.
+
 - [M2_SPEC](M2_SPEC.md): **đã được người dùng duyệt**, gồm contract dữ liệu/API/quyền/media và gate nghiệm thu local; không thay bằng fixture/wireframe cũ.
 - [M2_PLAN](M2_PLAN.md): **đã duyệt, thực thi tuần tự**, 11 task theo phụ thuộc; task1–10 xong, task11 còn pilot chủ tiệm; đọc cả spec và task liên quan. Tiến độ task/checkpoint ở PROGRESS/DEV_LOG.
 

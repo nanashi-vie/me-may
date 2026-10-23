@@ -21,7 +21,6 @@ export function buildBookForm() {
       categoryCode: new FormControl<CategoryCode | null>(null),
       ageGroups: new FormControl<AgeGroup[]>([], { nonNullable: true }),
       readingLevel: new FormControl<ReadingLevel | null>(null),
-      readingLevelBasis: text(1000),
       readingVideoUrl: text(2048),
       collectionIds: new FormControl<string[]>([], { nonNullable: true }),
     },
@@ -30,7 +29,6 @@ export function buildBookForm() {
         const w = group.value as BookWrite;
         const errors: Record<string, boolean> = {};
         if (w.categoryCode === 'PICTURE_BOOK' && !w.binding) errors['binding'] = true;
-        if (w.readingLevel && !w.readingLevelBasis?.trim()) errors['readingLevelBasis'] = true;
         if (w.readingVideoUrl?.trim()) {
           try {
             const u = new URL(w.readingVideoUrl.trim());
@@ -64,7 +62,6 @@ export function toBookWrite(form: BookForm): BookWrite {
     conditionNote: trim(w.conditionNote),
     description: trim(w.description),
     binding: w.categoryCode === 'PICTURE_BOOK' ? w.binding : null,
-    readingLevelBasis: w.readingLevel ? trim(w.readingLevelBasis) : null,
     readingVideoUrl: trim(w.readingVideoUrl),
   };
 }

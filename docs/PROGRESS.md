@@ -5,7 +5,7 @@ Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](READ
 ## Trạng thái hiện tại
 
 - M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
-- Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa hoặc chuyển M3.
+- Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa khi pilot còn mở. Người dùng đã duyệt bắt đầu M3 local và xác nhận hiện có6 cuốn.
 - Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đã push lên origin/feat/m2-admin-catalogue thành công, không merge/deploy.
 
 ## Đã kiểm chứng
@@ -23,6 +23,12 @@ Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](READ
 Backend 8080 và frontend 4200 được để chạy để chủ thử; kiểm tra lại khi tiếp tục phiên. Mở [Quản lý sách](http://127.0.0.1:4200/admin/sach), đăng nhập bằng BOOTSTRAP_OWNER_EMAIL/PASSWORD trong `.env` local; không gửi secret qua chat. Hướng dẫn nhập/pilot ở [README](../README.md#nhập-sách-và-pilot-m2).
 
 Dev dùng me_may_dev; tests dùng me_may_test có guard; Cloudinary đã được cấu hình và xác minh. Không dùng `.local/*-browser.json` hoặc tài khoản fixture test cho pilot. Không reset sequence; sách bán thật do tiệm nhập thủ công. Dữ liệu synthetic trong browser test đã xóa khỏi DB/cloud.
+
+## M3 đang thực hiện
+
+- Người dùng duyệt M3 local; merge M1/M2 vào dev đã push (2a73249), làm trên feat/m3-public-catalogue.
+- Backup .local/backups/S012-before-m3.dump trước migration; xác minh dev có6 cuốn/18 ảnh ACTIVE. Không thay đổi sách/ảnh để làm fixture.
+- Thực thi tuần tự theo M3_PLAN; bỏ căn cứ, video optional, API public, public UX/contact/SSR. Flash Sale được duyệt thêm giá gốc/giá sale/thời gian; không số đã bán.
 
 ## Bước tiếp theo
 

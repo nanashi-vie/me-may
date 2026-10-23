@@ -115,7 +115,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 Breadcrumb → gallery ba ảnh (bìa trước, mặt sau, một trang nội dung) → tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã → giá tham khảo và khả dụng → mô tả/tình trạng/lỗi → độ tuổi, mức đọc tham khảo và link video đọc sách → trái tim wishlist và các CTA Zalo. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa. Trên desktop gallery và thông tin thành hai cột; mobile một cột, vùng CTA không che nội dung.
 
-Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Căn cứ chọn mức chỉ hiển thị nội bộ. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
+Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
 Các nút trên detail:
 
@@ -144,9 +144,9 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 
 ## Editor — desktop
 
-Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → ba vị trí upload FRONT/BACK/INSIDE, alt text, bìa trước làm thumbnail → listing mô tả + giá tham khảo + nhiều nhóm tuổi/collection + mức đọc/căn cứ nội bộ và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, lưu nháp/preview/xuất bản theo quyền.
+Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → ba vị trí upload FRONT/BACK/INSIDE, alt text, bìa trước làm thumbnail → listing mô tả + giá tham khảo + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, lưu nháp/preview/xuất bản theo quyền.
 
-Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản; publish yêu cầu tên, mã, giá tham khảo nguyên >0, một thể loại, đúng một kiểu bìa nếu Picture book, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE đã kiểm tra. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish, khi gán mức đọc cần ghi căn cứ nội bộ. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản; publish yêu cầu tên, mã, giá tham khảo nguyên >0, một thể loại, đúng một kiểu bìa nếu Picture book, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE đã kiểm tra. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ## Trạng thái UX dùng chung
 

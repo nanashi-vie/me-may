@@ -15,7 +15,7 @@ public class BookMapper {
   var ages=jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by case age_group when 'AGE_0_3' then 0 when 'AGE_4_6' then 1 when 'AGE_7_9' then 2 else 3 end",String.class,l.id);
   var cols=jdbc.queryForList("select collection_id::text from listing_collection where listing_id=? order by collection_id",String.class,l.id);
   var images=media.findByBookCopyIdAndState(b.id,MediaDtos.MediaState.ACTIVE).stream().sorted(Comparator.comparing(x->x.role.ordinal())).map(m->new MediaView(m.id.toString(),m.role,m.alt,m.sourceRef,"/api/v1/admin/books/"+b.id+"/media/"+m.role+"/content")).toList();
-  return new BookDetail(b.id.toString(),b.bookCode,l.slug,b.version,b.title,b.isbn,b.publisher,b.author,b.language,b.binding,b.conditionGrade,b.conditionNote,l.priceVnd,l.description,category,ages,l.readingLevel,l.readingLevelBasis,l.readingVideoUrl,cols,l.publicationStatus,b.availability,l.publishedAt,b.createdAt,b.updatedAt,images);
+  return new BookDetail(b.id.toString(),b.bookCode,l.slug,b.version,b.title,b.isbn,b.publisher,b.author,b.language,b.binding,b.conditionGrade,b.conditionNote,l.priceVnd,l.description,category,ages,l.readingLevel,l.readingVideoUrl,cols,l.publicationStatus,b.availability,l.publishedAt,b.createdAt,b.updatedAt,images);
  }
- public BookWrite write(BookDetail d){return new BookWrite(d.title(),d.isbn(),d.publisher(),d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceVnd(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),d.readingLevelBasis(),d.readingVideoUrl(),d.collectionIds());}
+ public BookWrite write(BookDetail d){return new BookWrite(d.title(),d.isbn(),d.publisher(),d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceVnd(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),d.readingVideoUrl(),d.collectionIds());}
 }

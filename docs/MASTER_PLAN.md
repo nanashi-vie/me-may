@@ -149,7 +149,7 @@ Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/
 - **Tuổi:** 0–3, 4–6, 7–9, 10+; một cuốn có thể gán nhiều nhóm. Không suy tuổi từ mức đọc.
 - **Thể loại:** mỗi cuốn chọn đúng một trong Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện.
 - **Picture book:** bắt buộc chọn đúng một kiểu Paperback hoặc Hardcover khi nhập. “Tất cả” chỉ là lựa chọn bộ lọc lấy cả hai kiểu; không lưu làm kiểu bìa của cuốn sách.
-- **Mức đọc:** chọn một trong bảy mức bên dưới hoặc “Chưa xác định”; ghi căn cứ nội bộ (nguồn NXB hoặc nhận định của tiệm). Không bắt buộc để publish; chưa xác định thì ẩn trường public. Không tự gán bằng thể loại/độ tuổi.
+- **Mức đọc:** chọn một trong bảy mức bên dưới hoặc “Chưa xác định”. Không bắt buộc để publish; chưa xác định thì ẩn trường public. Không tự gán bằng thể loại/độ tuổi.
 
 | Mức lưu tham khảo | Nhãn hiển thị |
 |---|---|
@@ -181,7 +181,7 @@ erDiagram
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
 | `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
-| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_level_basis?` (nội bộ), `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M2 tạo cuốn + listing nháp cùng giao dịch; dùng version của BookCopy cho cả aggregate |
+| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M2 tạo cuốn + listing nháp cùng giao dịch; dùng version của BookCopy cho cả aggregate |
 | `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/INSIDE), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
 | `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |
 | `AdminUser` | `id`, credential hash, `role`, `active` | RBAC và audit |
@@ -192,7 +192,7 @@ erDiagram
 - Public DTO chỉ trả các bản ghi công khai; không lộ nháp/lưu trữ qua URL, sitemap, API hay preview do web kiểm soát.
 - `publication_status` (DRAFT / PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
 - Giá tham khảo kiểu **số nguyên VND**, trước xuất bản bắt buộc > 0, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
-- Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc/căn cứ được biên tập thủ công; căn cứ nội bộ không nằm trong public DTO.
+- Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc do tiệm chọn thủ công, không yêu cầu trường căn cứ.
 - Xuất bản cần tên, mã, thể loại, giá, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE; ghi chú lỗi không được bỏ vì giới hạn ảnh. Schema chi tiết, validation và mapping sẽ chốt trong technical spec M2.
 - `optimistic locking` (`version`/ETag) tránh người thứ hai ghi đè form đang cũ.
 - Nếu triển khai C về sau, `OrderItem` tham chiếu ID cuốn và **snapshot mã/tên/giá**; transaction/lock chỉ bảo vệ cập nhật trong web, không thể bảo vệ dữ liệu Facebook chưa đồng bộ.
@@ -314,7 +314,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 - [ ] Customer ở iPhone Safari và Android Chrome tìm theo tên/mã, lọc tuổi/thể loại và quay lại detail không mất filters; không có bộ lọc giá/chủ đề/khả dụng/mức đọc. Cuốn gán nhiều nhóm tuổi được tìm thấy theo từng nhóm.
 - [ ] Một thể loại/cuốn; Picture book bắt buộc Paperback hoặc Hardcover, không lưu “Tất cả”; lọc “Tất cả” lấy cả hai kiểu.
 - [ ] Đủ đúng ba ảnh thật FRONT/BACK/INSIDE mới xuất bản; detail chỉ hiện ba ảnh, mô tả tình trạng/lỗi rõ; thiếu một ảnh bị chặn publish và giữ dữ liệu đang nhập.
-- [ ] Tiêu đề ghép không có dấu phân cách thừa; giá tham khảo và ghi chú đúng. Bảy mức đọc đúng thứ tự, Flyers/Key chung A2, có căn cứ nội bộ không lộ public và chú thích gợi ý của tiệm; “Chưa xác định” không chặn publish và ẩn trường. Link video đọc sách tùy chọn, không bịa thông tin thiếu.
+- [ ] Tiêu đề ghép không có dấu phân cách thừa; giá tham khảo và ghi chú đúng. Bảy mức đọc đúng thứ tự, Flyers/Key chung A2, chú thích gợi ý của tiệm; “Chưa xác định” không chặn publish và ẩn trường. Link video đọc sách tùy chọn, không bịa thông tin thiếu.
 - [ ] Add/remove wishlist, reopen cùng browser còn danh sách; khác máy/ẩn danh không bị hứa đồng bộ; sách sold hiển thị cảnh báo.
 - [ ] Trái tim wishlist; còn hàng “Liên hệ”, hết hàng “Tư vấn sách tương đương”; nội dung có mục đích, mã/tên/giá tham khảo/URL. Hotline Zalo và nhóm cộng đồng đúng link tiệm cung cấp; không tự gửi tin.
 - [ ] Luồng sao chép → mở Zalo → dán/gửi và copy thủ công khi clipboard lỗi được thử trên desktop, mobile và in-app browser; điền sẵn chỉ cam kết nếu kiểm chứng được trên tài khoản hotline cá nhân zBusiness. Wishlist nhiều cuốn copy thông tin chính xác.

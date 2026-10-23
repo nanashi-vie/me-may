@@ -345,3 +345,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đối chiếu MASTER_PLAN mục3.1 và M2_SPEC: reading_level_basis là ghi chú nội bộ, bắt buộc khi chọn mức đọc; Chưa xác định không cần căn cứ; không lộ preview/public. Không thay đổi code.
 - Git trước push: feat/m2-admin-catalogue, HEAD53f2bbf; origin nanashi193/me-may. Thư mục input/ untracked được giữ local, không stage/push. Cập nhật PROGRESS/DEV_LOG và kiểm diff; không chạy lại test vì chỉ thay đổi tài liệu bàn giao.
 - Push origin/feat/m2-admin-catalogue thành công (new branch), commit bàn giao012bdc3; upstream đã được thiết lập. Lần đầu sandbox chặn index.lock và DNS; chạy lại với quyền được duyệt đã thành công. Không merge/deploy. Tiếp theo tiếp tục pilot, ghi nhận vướng mắc trước đóng M2.
+
+## 23/10/2026 — S012-C01: bắt đầu M3 local
+
+- User duyệt plan M3 và yêu cầu merge hai feat vào dev; thêm Flash Sale dưới banner theo screenshot: giá gốc/giá sale/thời gian, không số đã bán. Giữ wishlist M4, import sau MVP, Cloudflare/deploy hoãn.
+- Fetch origin; feat/m1-local có3 commit local chưa push nhưng là tổ tiên M2. Merge --no-ff cả hai vào dev rồi push thành công2a73249; tạo feat/m3-public-catalogue. input/ untracked giữ local.
+- Dev read-only xác minh6 books/18 ACTIVE media; pg_dump custom thành công .local/backups/S012-before-m3.dump với umask077 trước migration. Chưa áp dụng migration.
+- Dùng writing-plans/executing-plans/TDD/verification; tiếp tục checkout theo workflow đã dùng M2 và môi trường pilot hiện có, không tạo worktree mới. Plan/doc và log theo chỉ mục, tối đa400 dòng ngoại trừ DEV_LOG.
+
+### S012-C02 — Task1
+- RED: BookCommandIntegrationTest chọn A1 không căn cứ bị từ chối; frontend2 assertion fail (level invalid và field còn payload). GREEN: backend75 tests/0failure/2live skipped; frontend34/34. Video trống null và HTTPS validation giữ. Không chạy lại live cloud vì không đổi adapter.
+- Bỏ field khỏi production DTO/entity/validation/form/audit mới; V4 drop column, V2/V3 giữ nguyên. Đồng bộ baseline và spec. Migration hiện mới áp dụng test, dev chưa restart nên6 cuốn vẫn nguyên.
+- Ruling: V3 đã là seed taxonomy nên migration bỏ căn cứ là V4, Flash Sale V5. Lệnh RED frontend đầu dùng nhầm cwd không chạy được; sửa cwd rồi xác nhận2 fail đúng trước code.
