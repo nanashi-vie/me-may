@@ -1,28 +1,46 @@
-# Angular specific
-/dist/
-/out-tsc/
-/tmp/
-/coverage/
-/e2e/test-output/
-/.angular/
+.DS_Store
+.env
+.env.*
+!.env.example
+node_modules/
 .angular/
-
-# Node modules and dependency files
-/node_modules/
-/package-lock.json
-/yarn.lock
-
-# Environment files
-/.env
-
-# Angular CLI and build artefacts
-/.angular-cli.json
-/.ng/
-
-# TypeScript cache
+dist/
+target/
+.superpowers/
+# Local agent skills/configuration and generated tooling; keep AGENTS.md tracked.
+.agent/
+.agents/
+.codex/
+.claude/
+.github/modernize/
+.vscode/
+.idea/
+.history/
+# Source assets in code/frontend/public and Maven Wrapper remain tracked.
+Thumbs.db
+playwright-report/
+test-results/
+*.log
+*.pid
+.local/
+.playwright-cli/
+output/playwright/
+coverage/
 *.tsbuildinfo
 
-# Logs
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Angular-specific output and tooling (paths relative to repository root).
+/code/frontend/tmp/
+/code/frontend/out-tsc/
+/code/frontend/bazel-out/
+/code/frontend/.project
+/code/frontend/.classpath
+/code/frontend/.c9/
+/code/frontend/*.launch
+/code/frontend/.settings/
+/code/frontend/*.sublime-workspace
+/code/frontend/.sass-cache/
+/code/frontend/connect.lock
+/code/frontend/libpeerconnection.log
+/code/frontend/testem.log
+/code/frontend/typings/
+__screenshots__/
