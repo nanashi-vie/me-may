@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 const origin = process.argv[2] ?? process.env.SSR_ORIGIN ?? 'http://127.0.0.1:4200';
 for (const [path, title, heading] of [
-  ['/', 'Mẹ Mây — Sách ngoại văn cho bé', 'Mỗi cuốn sách, một lần khám phá mới.'],
+  ['/', 'Mẹ Mây — Sách ngoại văn cho bé', 'Khám phá thế giới lớn.'],
   ['/cach-mua', 'Cách hỏi mua sách | Mẹ Mây', 'Chọn sách và nhắn tiệm'],
 ]) {
   const response = await fetch(new URL(path, origin));
@@ -37,3 +37,39 @@ for (const path of ['/admin/dang-nhap', '/admin/sach', '/admin/sach/1/xem-truoc'
   );
   console.log(`PASS admin HTML privacy headers: ${path}`);
 }
+
+const booksResponse = await fetch(new URL('/api/v1/books', origin));
+assert.equal(booksResponse.status, 200);
+assert.match(booksResponse.headers.get('cache-control') ?? '', /no-store/);
+const books = await booksResponse.json();
+for (const path of ['/sach', '/flash-sale', '/lien-he']) {
+  const r = await fetch(new URL(path, origin));
+  assert.equal(r.status, 200, path);
+  assert.match(r.headers.get('cache-control') ?? '', /no-store/);
+  const h = await r.text();
+  assert.match(h, /<h1[ >]/, path);
+  assert.ok(!h.includes('Thêm vào danh sách yêu thích'));
+}
+if (books.items.length) {
+  const b = books.items[0];
+  const r = await fetch(new URL('/sach/' + b.slug, origin));
+  assert.equal(r.status, 200);
+  assert.match(r.headers.get('cache-control') ?? '', /no-store/);
+  const h = await r.text();
+  assert.ok(h.includes(b.bookCode));
+  assert.ok(h.includes('property="og:image"'));
+  assert.ok(h.includes('Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.'));
+  assert.ok(!h.includes('readingLevelBasis'));
+  console.log('PASS real published detail HTML/OG');
+  const image = await fetch(new URL(b.media[0].contentPath, origin));
+  assert.equal(image.status, 200);
+  assert.match(image.headers.get('cache-control') ?? '', /no-store/);
+  assert.match(image.headers.get('content-type') ?? '', /image\/jpeg/);
+  console.log('PASS public image delivery');
+}
+for (const path of ['/sach/not-a-book', '/bo-suu-tap/not-a-collection']) {
+  const r = await fetch(new URL(path, origin));
+  assert.equal(r.status, 404, path);
+  assert.match(r.headers.get('cache-control') ?? '', /no-store/);
+}
+console.log('PASS M3 public HTML/API/media no-store and missing book/collection404');

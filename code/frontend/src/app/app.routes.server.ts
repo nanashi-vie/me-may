@@ -9,5 +9,6 @@ export const serverRoutes: ServerRoute[] = [
   {
     path: '**',
     renderMode: RenderMode.Server,
+    headers: { 'Cache-Control': 'no-store' },
   },
 ];

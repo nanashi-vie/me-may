@@ -51,7 +51,7 @@ Tiêu đề detail ghép `Tên | NXB | Tác giả | Độ tuổi` từ các trư
 | C1 | Advanced · C1 |
 | C2 | Proficiency · C2 |
 
-Mức đọc do chủ chọn thủ công và ghi căn cứ nội bộ; không suy từ tuổi/thể loại. “Chưa xác định” không chặn xuất bản và ẩn trường public. Khi có mức, detail kèm “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Không gán nhãn này như chứng nhận cho sách; Flyers/Key cùng A2. Không dùng mức đọc làm bộ lọc MVP.
+Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. “Chưa xác định” không chặn xuất bản và ẩn trường public. Khi có mức, detail kèm “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Không gán nhãn này như chứng nhận cho sách; Flyers/Key cùng A2. Không dùng mức đọc làm bộ lọc MVP.
 
 ## Ca dữ liệu cần review
 
@@ -60,7 +60,7 @@ Mức đọc do chủ chọn thủ công và ghi căn cứ nội bộ; không su
 - Thiếu ISBN/author/publisher; không chặn nhập nháp.
 - Tên dài, thiếu NXB/tác giả không tạo dấu phân cách thừa; dữ liệu tiếng Việt/Anh; tuổi chưa xác định hoặc gán nhiều nhóm.
 - Mỗi cuốn đúng một thể loại; Picture book thiếu kiểu bìa hoặc dùng “Tất cả” bị từ chối; Paperback và Hardcover đều xuất hiện ở bộ lọc “Tất cả”.
-- Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; căn cứ nội bộ không lộ public, không suy mức đọc từ tuổi/thể loại.
+- Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; không yêu cầu căn cứ, không suy mức đọc từ tuổi/thể loại.
 - Thiếu bất kỳ ảnh FRONT/BACK/INSIDE, lỗi chưa xác minh hoặc giá nháp rỗng: không cho publish thật; không bắt có mức đọc/link video.
 - Cuốn đang ở wishlist rồi bị sold hoặc ẩn.
 

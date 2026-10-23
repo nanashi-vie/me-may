@@ -363,3 +363,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Flash Sale3 tests RED endpoint thiếu → GREEN: effective price thống nhất list/detail/sale, endsAt/future/sold/hidden/invalid discount, OWNER/version/audit. Thêm regression tắt sale sau sold RED400 thay200; fix validation chỉ buộc published/available khi enabled, đang chạy suite.
 - V5 campaign singleton+item, original price từ listing, server DB clock [start,end), không số đã bán; admin OWNER formversion giữ nội dung khi409. Frontend39/39 PASS gồm5 test mới state/campaign. Build/browser/SSR chưa xong.
 - Dev chưa migrate (schema1–3); dump mode0600 và fingerprint books/listing-minus-basis/media/audit/sequence đã lưu .local/backups. Giữ input/ untracked. Ledger thủ công trong ignored .superpowers/sdd/M3_PLAN/progress.md.
+
+### S012-C04 — public UX/SSR và bảo toàn dữ liệu
+- Frontend44/44 PASS; backend85 total/83PASS/2live skipped và JAR verify PASS. Thêm kiểm tra migration3→latest giữ level/ảnh/audit JSON/sequence; lỗi ban đầu do FluentConfiguration giữ target3, sửa test targetLATEST rồi GREEN.
+- Dev V4/V5 chạy sau backup, fingerprint books/listing(trừ basis)/media/audit/sequence khớp hoàn toàn;6books/18ACTIVE giữ nguyên. Không tạo sale/synthetic trong dev.
+- SSR dev4200 và built4000 PASS: HTML có nội dung/OG, ảnh thật public200/no-store, missing book/collection404, adminnoindex/no-store. Built Express có API bridge với origin server-only. IsolatedSSR4001 backenddown: /flash-sale ban đầu200 RED; sửa503 và GREEN cảHome/catalogue/detail/sale.
+- Browser real detail390:3ảnh load, không tràn ngang, dialog có nội dung đúng, Escape trả focus về Liên hệ; copy flow chạy, fallback có unit test. HMR làm ref cũ; wrapper npx có lần chờ mạng nên dùng CLI cache; không coi lần filter timeout là PASS. Tiếp tục kiểm thử bằng builtserver để tránh HMR.
+- Contact URLs chưa cấu hình; user xác nhận sẽ thêm .env. Chưa nghiệm thu mở Zalo thật. Flash Sale screenshot dùng browser-only response fixture để xem layout; backend sale có integrationtests, không tạo ưu đãi giả trên6 cuốn của tiệm.
