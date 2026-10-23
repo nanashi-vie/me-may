@@ -81,15 +81,19 @@ export class FlashSaleEditor {
     this.dirty = false;
   }
   load() {
-    if (this.dirty && !this.canLeave()) return;
+    if (this.busy() || (this.dirty && !this.canLeave())) return;
     this.error.set('');
-    this.http
-      .get<Campaign>('/flash-sale')
-      .subscribe({
-        next: (c) => this.accept(c),
-        error: () =>
-          this.error.set('Chưa tải được Flash Sale. Kiểm tra phiên đăng nhập rồi thử lại.'),
-      });
+    this.busy.set(true);
+    this.http.get<Campaign>('/flash-sale').subscribe({
+      next: (c) => {
+        this.accept(c);
+        this.busy.set(false);
+      },
+      error: () => {
+        this.busy.set(false);
+        this.error.set('Chưa tải được Flash Sale. Kiểm tra phiên đăng nhập rồi thử lại.');
+      },
+    });
   }
   add() {
     this.items = [...this.items, { bookCode: '', salePriceVnd: 1 }];

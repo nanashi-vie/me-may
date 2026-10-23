@@ -1,8 +1,8 @@
-import { Component, DestroyRef, RESPONSE_INIT, inject, signal, effect } from '@angular/core';
+import { Component, RESPONSE_INIT, inject, signal, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap, tap, combineLatest } from 'rxjs';
+import { catchError, map, of, switchMap, tap, combineLatest, Subject, startWith } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PublicApi } from './public-api';
 import { CatalogueFilter, Page, PublicBook, Taxonomy } from './public.models';
@@ -21,7 +21,7 @@ export class CataloguePage {
   readonly api = inject(PublicApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly destroy = inject(DestroyRef);
+  private readonly refreshRequests = new Subject<void>();
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
   readonly loading = signal(true);
@@ -49,7 +49,11 @@ export class CataloguePage {
       .taxonomy()
       .pipe(takeUntilDestroyed())
       .subscribe({ next: (t) => this.taxonomy.set(t), error: () => {} });
-    combineLatest([this.route.paramMap, this.route.queryParamMap])
+    combineLatest([
+      this.route.paramMap,
+      this.route.queryParamMap,
+      this.refreshRequests.pipe(startWith(undefined)),
+    ])
       .pipe(
         tap(([, p]) => {
           this.draft = readFilters(p);
@@ -57,12 +61,14 @@ export class CataloguePage {
           this.error.set(0);
         }),
         switchMap(([p]) =>
-          this.api.books(this.draft, p.get('slug') || undefined).pipe(
-            map((data) => ({ data, error: 0 })),
-            catchError((e: HttpErrorResponse) =>
-              of({ data: null, error: e.status === 404 ? 404 : 503 }),
+          this.api
+            .books(readFilters(this.route.snapshot.queryParamMap), p.get('slug') || undefined)
+            .pipe(
+              map((data) => ({ data, error: 0 })),
+              catchError((e: HttpErrorResponse) =>
+                of({ data: null, error: e.status === 404 ? 404 : 503 }),
+              ),
             ),
-          ),
         ),
         takeUntilDestroyed(),
       )
@@ -104,20 +110,6 @@ export class CataloguePage {
     this.apply();
   }
   retry() {
-    this.loading.set(true);
-    this.api
-      .books(this.draft, this.route.snapshot.paramMap.get('slug') || undefined)
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({
-        next: (d) => {
-          this.page.set('books' in d ? d.books : d);
-          this.error.set(0);
-          this.loading.set(false);
-        },
-        error: () => {
-          this.error.set(503);
-          this.loading.set(false);
-        },
-      });
+    this.refreshRequests.next();
   }
 }

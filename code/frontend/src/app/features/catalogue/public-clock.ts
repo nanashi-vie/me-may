@@ -12,7 +12,9 @@ export class PublicClock {
   }
   private readonly destroy = inject(DestroyRef);
   align(serverNow: string) {
-    this.offset = Date.parse(serverNow) - Date.now();
-    if (this.now()) this.now.set(Date.now() + this.offset);
+    const timestamp = Date.parse(serverNow);
+    if (!Number.isFinite(timestamp)) return;
+    this.offset = timestamp - Date.now();
+    this.now.set(timestamp);
   }
 }

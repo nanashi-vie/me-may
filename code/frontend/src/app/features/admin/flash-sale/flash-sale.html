@@ -14,62 +14,64 @@
 <button class="secondary" (click)="load()" [disabled]="busy()">Tải lại dữ liệu</button>
 @if (campaign()) {
   <form (ngSubmit)="save()" (change)="dirty = true">
-    <label class="enabled"
-      ><input type="checkbox" name="enabled" [(ngModel)]="enabled" />Bật đợt Flash Sale</label
-    >
-    <div class="dates">
-      <label
-        >Bắt đầu (giờ Việt Nam)<input
-          type="datetime-local"
-          name="start"
-          [(ngModel)]="startsAt" /></label
-      ><label
-        >Kết thúc (giờ Việt Nam)<input type="datetime-local" name="end" [(ngModel)]="endsAt"
-      /></label>
-    </div>
-    <h2>Sách tham gia</h2>
-    @for (item of items; track $index) {
-      <div class="sale-item">
+    <fieldset [disabled]="busy()">
+      <label class="enabled"
+        ><input type="checkbox" name="enabled" [(ngModel)]="enabled" />Bật đợt Flash Sale</label
+      >
+      <div class="dates">
         <label
-          >Mã sách<input
-            [name]="'code' + $index"
-            [(ngModel)]="item.bookCode"
-            maxlength="32"
-            placeholder="MM-000001" /></label
+          >Bắt đầu (giờ Việt Nam)<input
+            type="datetime-local"
+            name="start"
+            [(ngModel)]="startsAt" /></label
         ><label
-          >Giá sale (VND)<input
-            type="number"
-            [name]="'price' + $index"
-            [(ngModel)]="item.salePriceVnd"
-            min="1"
-            max="999999999999"
-            step="1" /></label
-        ><button
+          >Kết thúc (giờ Việt Nam)<input type="datetime-local" name="end" [(ngModel)]="endsAt"
+        /></label>
+      </div>
+      <h2>Sách tham gia</h2>
+      @for (item of items; track $index) {
+        <div class="sale-item">
+          <label
+            >Mã sách<input
+              [name]="'code' + $index"
+              [(ngModel)]="item.bookCode"
+              maxlength="32"
+              placeholder="MM-000001" /></label
+          ><label
+            >Giá sale (VND)<input
+              type="number"
+              [name]="'price' + $index"
+              [(ngModel)]="item.salePriceVnd"
+              min="1"
+              max="999999999999"
+              step="1" /></label
+          ><button
+            type="button"
+            class="secondary"
+            (click)="remove($index)"
+            [disabled]="busy()"
+            [attr.aria-label]="'Bỏ cuốn ' + item.bookCode"
+          >
+            Bỏ
+          </button>
+        </div>
+      }
+      <div class="actions">
+        <button
           type="button"
           class="secondary"
-          (click)="remove($index)"
-          [disabled]="busy()"
-          [attr.aria-label]="'Bỏ cuốn ' + item.bookCode"
+          (click)="add()"
+          [disabled]="busy() || items.length >= 50"
         >
-          Bỏ
+          Thêm mã sách</button
+        ><button type="submit" [disabled]="busy()">
+          {{ busy() ? 'Đang lưu…' : 'Lưu Flash Sale' }}
         </button>
       </div>
-    }
-    <div class="actions">
-      <button
-        type="button"
-        class="secondary"
-        (click)="add()"
-        [disabled]="busy() || items.length >= 50"
+      <small
+        >Phiên bản {{ campaign()!.version }} · Một đợt sale tại một thời điểm. Muốn tắt sale: bỏ
+        chọn Bật rồi lưu.</small
       >
-        Thêm mã sách</button
-      ><button type="submit" [disabled]="busy()">
-        {{ busy() ? 'Đang lưu…' : 'Lưu Flash Sale' }}
-      </button>
-    </div>
-    <small
-      >Phiên bản {{ campaign()!.version }} · Một đợt sale tại một thời điểm. Muốn tắt sale: bỏ chọn
-      Bật rồi lưu.</small
-    >
+    </fieldset>
   </form>
 }

@@ -1,6 +1,6 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M2 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã triển khai và qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue public, wishlist và importer thuộc các bước sau. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
+M3 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã triển khai và qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue/detail/contact và Flash Sale đã triển khai local; wishlist M4, importer sau MVP. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
 
 ## Chạy trên máy hiện tại
 
@@ -61,7 +61,7 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 
 Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
 
-Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách chưa triển khai.
+Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
 
 Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env` (run-local.sh nạp lại `.env`, nên không để namespace dev ghi đè lệnh test); chỉ chạy `MediaLiveTest,CloudinaryLiveTest` với `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test`. Guard `me_may_test` và namespace phải đạt trước upload/delete. Test mặc định không gọi cloud thật; cleanup chỉ public_id do gate tạo.
 
@@ -89,9 +89,20 @@ Session mặc định 30 phút không hoạt động, in-memory (restart backend
 - Database dev/test phải tách riêng. Tests từ chối dọn fixture nếu current_database không phải me_may_test.
 - Profile local được bật bởi run-local.sh; khi triển khai sau này cấu hình profile/secrets/domain/CSRF/CORS tương ứng, không dùng profile local trên Internet.
 - Local dùng role sở hữu schema để phát triển; production cần tách role migration và role runtime, thêm login rate limit, backup/restore và deployment gates theo master plan.
-- Canonical hiện dùng origin local `http://localhost:4200`; chưa có OG ảnh sách vì chưa làm catalogue/media. Cloudflare compatibility/SEO/OG phải kiểm chứng riêng trên staging.
+- Canonical local `http://localhost:4200`; M3 có OG ảnh public theo sách. Cloudflare compatibility/SEO/OG crawler phải kiểm chứng riêng trên staging.
 - SSR local chỉ bind `127.0.0.1`; host allowlist gồm `localhost` và `127.0.0.1`. Khi có domain staging, cấu hình allowlist và canonical theo domain thật; không dùng wildcard để bỏ SSRF protection.
 
 ## Bàn giao
 
 Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc trạng thái/checkpoint mới nhất rồi chọn file hoặc mục theo đầu việc. Không cần đọc toàn bộ nhật ký và bộ tài liệu. Quy tắc làm việc nằm trong [AGENTS](AGENTS.md).
+
+## M3 public và Flash Sale local
+
+- Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`. Không cần tài khoản; wishlist chưa triển khai.
+- API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
+- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3local.
+- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
+- Link video optional; trường căn cứ đã bỏ qua migrationV4, audit lịch sử vẫn giữ. MigrationV5 thêm campaign mặc định tắt, không tạo sale thật tự động.
+- Thêm `CONTACT_ZALO_HOTLINE_URL` và `CONTACT_ZALO_GROUP_URL` vào root`.env`, dùng HTTPS zalo.me; restart backend sau đổi. Thiếu cấu hình hiện đang cập nhật; dialog luôn có copy/thủ công, không tự gửi.
+- SSR backend origin server-only `MEMAY_API_ORIGIN` mặc định http://127.0.0.1:8080; canonical/enquiry origin `MEMAY_SITE_ORIGIN` mặc định http://localhost:4200. M3 chỉ chốt local; cấu hình origin browser/deployment cần spike Cloudflare riêng trước phát hành.
+- `npm run build` rồi `PORT=4000 npm run serve:ssr:me-may-web` (cwd code/frontend) để thử builtSSR và APIbridge local; `node code/frontend/scripts/check-ssr.mjs http://127.0.0.1:4000` (cwd root) kiểm HTML/OG/404/media/headers. Không coi localserver Node là phương án deploy lên VPS.

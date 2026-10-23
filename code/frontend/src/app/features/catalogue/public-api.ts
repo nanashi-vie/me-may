@@ -1,5 +1,6 @@
-import { inject, Injectable, InjectionToken } from '@angular/core';
-import { Observable } from 'rxjs';
+import { inject, Injectable, InjectionToken, TransferState, makeStateKey } from '@angular/core';
+import { Observable, tap, map } from 'rxjs';
+import { PublicClock } from './public-clock';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import {
   CatalogueFilter,
@@ -15,21 +16,32 @@ export const PUBLIC_API_ORIGIN = new InjectionToken<string>('Public backend orig
   providedIn: 'root',
   factory: () => '',
 });
+export const PUBLIC_SITE_STATE = makeStateKey<string>('memay-public-site-origin');
 export const PUBLIC_SITE_ORIGIN = new InjectionToken<string>('Public site origin', {
   providedIn: 'root',
-  factory: () => 'http://localhost:4200',
+  factory: () => inject(TransferState).get(PUBLIC_SITE_STATE, 'http://localhost:4200'),
 });
 @Injectable({ providedIn: 'root' })
 export class PublicApi {
   private readonly http = inject(HttpClient);
+  private readonly clock = inject(PublicClock);
   private readonly origin = inject(PUBLIC_API_ORIGIN);
   private get<T>(path: string, params?: HttpParams) {
-    return this.http.get<T>(this.origin + '/api/v1' + path, {
-      params,
-      transferCache: false,
-      credentials: 'omit',
-      timeout: 10000,
-    });
+    return this.http
+      .get<T>(this.origin + '/api/v1' + path, {
+        params,
+        transferCache: false,
+        credentials: 'omit',
+        timeout: 10000,
+        observe: 'response',
+      })
+      .pipe(
+        tap((r) => {
+          const time = r.headers.get('X-Memay-Server-Time');
+          if (time) this.clock.align(time);
+        }),
+        map((r) => r.body as T),
+      );
   }
   books(
     f: CatalogueFilter,

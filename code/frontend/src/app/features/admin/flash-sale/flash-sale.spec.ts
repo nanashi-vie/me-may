@@ -38,3 +38,39 @@ describe('Flash Sale editor', () => {
     http.verify();
   });
 });
+
+describe('Campaign save locks editing', () => {
+  it('disables inputs while waiting for successful save', () => {
+    TestBed.configureTestingModule({
+      imports: [FlashSaleEditor],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }) } },
+      ],
+    });
+    const f = TestBed.createComponent(FlashSaleEditor);
+    f.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http
+      .expectOne('/api/v1/admin/flash-sale')
+      .flush({ version: 0, enabled: false, startsAt: null, endsAt: null, items: [] });
+    f.detectChanges();
+    f.componentInstance.save();
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('input[name=enabled]').matches(':disabled')).toBe(true);
+    http.expectOne('/api/v1/auth/csrf').flush({ headerName: 'X-CSRF-TOKEN', token: 'token' });
+    http
+      .expectOne('/api/v1/admin/flash-sale')
+      .flush({ version: 1, enabled: false, startsAt: null, endsAt: null, items: [] });
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('input[name=enabled]').matches(':disabled')).toBe(false);
+    f.componentInstance.load();
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('input[name=enabled]').matches(':disabled')).toBe(true);
+    http
+      .expectOne('/api/v1/admin/flash-sale')
+      .flush({ version: 1, enabled: false, startsAt: null, endsAt: null, items: [] });
+    http.verify();
+  });
+});

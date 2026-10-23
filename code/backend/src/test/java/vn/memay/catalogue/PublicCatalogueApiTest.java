@@ -11,7 +11,7 @@ class PublicCatalogueApiTest extends CatalogueTestSupport {
  private BookDtos.BookDetail published(){var b=ready();jdbc.update("update listing set publication_status='PUBLISHED',published_at='2026-01-01T00:00:00Z' where book_copy_id=?",Long.parseLong(b.id()));return b;}
  @Test void anonymousOnlySeesPublishedIncludingSold()throws Exception{
   var draft=ready();var pub=published();jdbc.update("update book_copy set availability='SOLD' where id=?",Long.parseLong(pub.id()));
-  var r=anon.send("GET","/api/v1/books",null,false);assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("totalElements").asInt()).isEqualTo(1);assertThat(r.body()).contains(pub.bookCode(),"SOLD").doesNotContain(draft.bookCode(),"sourceRef","storagePublicId","version","readingLevelBasis");assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");
+  var r=anon.send("GET","/api/v1/books",null,false);assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("totalElements").asInt()).isEqualTo(1);assertThat(r.body()).contains(pub.bookCode(),"SOLD").doesNotContain(draft.bookCode(),"sourceRef","storagePublicId","version","readingLevelBasis");assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");assertThat(r.headers().firstValue("x-memay-server-time").map(java.time.Instant::parse)).isPresent();
   assertThat(anon.send("GET","/api/v1/books/"+draft.slug(),null,false).statusCode()).isEqualTo(404);
   var detail=anon.send("GET","/api/v1/books/"+pub.slug(),null,false);assertThat(tree(detail).path("media").size()).isEqualTo(3);
   jdbc.update("update listing set publication_status='ARCHIVED' where book_copy_id=?",Long.parseLong(pub.id()));

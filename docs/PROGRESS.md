@@ -1,44 +1,36 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](README.md), checkpoint mới nhất ở cuối [DEV_LOG](DEV_LOG.md). Luôn kiểm tra lại Git/process/môi trường.
+Cập nhật23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint mới nhất cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
-## Trạng thái hiện tại
+## Trạng thái
 
-- M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
-- Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa khi pilot còn mở. Người dùng đã duyệt bắt đầu M3 local và xác nhận hiện có6 cuốn.
-- Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đã push lên origin/feat/m2-admin-catalogue thành công, không merge/deploy.
+- M0/M1 local đã duyệt. M2 gate kỹ thuật đã đạt; pilot chủ tiệm hiện6 cuốn/18ảnh ACTIVE, còn thiếu10–20 cuốn và đối chiếu nghiệp vụ. Giữ M2_SPEC/M2_PLAN khi gate còn mở.
+- Người dùng đã duyệt M3 local và cho bắt đầu dù pilot M2 còn mở. Yêu cầu gộp feat/m1-local và feat/m2-admin-catalogue vào dev đã thực hiện/push2a73249. M3 ở feat/m3-public-catalogue.
+- Code M3:82be192 bỏ căn cứ;60fe09f public API/Flash Sale;fc20dfe public UX/admin sale/SSR. Review độc lập4Important đã sửa một lượt với RED→GREEN; build/handoff kỹ thuật đã kiểm chứng, chờ tiệm nghiệm thu UX.
 
-## Đã kiểm chứng
+## Đã kiểm chứng M3
 
-- Schema BookCopy/Listing, taxonomy cố định, mã tăng dần MM-000001 bất biến và có thể khuyết; aggregate version/audit, Owner/Staff, publication độc lập availability.
-- API admin strict JSON, tìm kiếm literal, collections, preview/audit; ảnh authenticated Cloudinary, ba slot, bounded upload và cleanup recoverable. Timeout chưa rõ kết quả giữ intent chờ 1h, không dọn sớm.
-- Angular list/editor/collection/media/status/preview/audit; CSRF mới, không replay POST tạo, giữ form khi lỗi/xung đột/hết phiên; dirty guard gồm file/metadata ảnh; admin noindex/no-store, giá vi-VN.
-- Backend verify73 PASS +2 live skipped mặc định; live Cloudinary2/2 PASS riêng; frontend34/34 và build PASS; SSR public/404/admin headers PASS. Chi tiết mới ở [VERIFICATION](VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
-- Browser Owner flow và Staff restriction; hai tab stale, offline, cookie expiry, dirty navigation và keyboard focus đã thử trên me_may_test/memay/test, không dùng dữ liệu tiệm làm synthetic fixture.
-- Backup trước dev migration; restore scratch giữ auth và M2 data/audit/code sequence/media reference; asset test đã cleanup. Không coi đây là gate production/backup media độc lập.
-- Review độc lập toàn nhánh: 4 finding đã có RED→GREEN; giữ thêm gate pilot thật, không lấy dữ liệu/ảnh giả để nghiệm thu.
+- Backup .local/backups/S012-before-m3.dump mode0600; dev V4/V5 chạy sau backup. Fingerprint books/listing(trừ cột căn cứ)/media/audit/sequence trước-sau khớp,6cuốn/18ảnh giữ nguyên. Không reset mã hoặc tạo sale giả trong dev.
+- Reading basis bỏ khỏi schema/API/form/audit mới; audit lịch sử giữ. Video optional/null; có nhập kiểm tra HTTPS. Backend migration test giữ mức đọc/media/audit/sequence.
+- Public PUBLISHED-only incl SOLD, tuổiOR/thể loạiAND/kiểu bìa, literal search, sort/page20, active collection; ảnh ACTIVE qua endpoint kiểm publication; no-store.
+- Flash Sale do OWNER biên tập, thời gian Việt Nam, version/audit. Giá gốc từ reference; chỉ hiệu lực khi campaign bật/đúng giờ/PUBLISHED/AVAILABLE/sale<reference. Không số đã bán. Tắt campaign sau sold vẫn được.
+- Home/catalogue/collection/detail3ảnh/contact dialog/copyfallback; không wishlist trước M4. Frontend56/56 PASS; backend85total/83PASS/2live skipped, verify/JAR PASS. Build PASS ngoài sandbox.
+- SSRdev4200 và built4000: HTML/meta/OG/ảnh thật,404 missing book/collection và no-store PASS. Isolatedbackenddown4001:Home/catalogue/detail/sale503 PASS; sửa sale200→503 có RED/GREEN.
+- Browser detail390 ảnh3/3load, không tràn ngang, Escape trả focus; copy/manualfallback có kiểm tra. Catalogue/back/tìm mã đã kiểm chứng bằng built4000; screenshot sale là response fixture browser-only, không giá giả trong DB.
 
-## Chạy local / pilot
+## Local và điều kiện còn thiếu
 
-Backend 8080 và frontend 4200 được để chạy để chủ thử; kiểm tra lại khi tiếp tục phiên. Mở [Quản lý sách](http://127.0.0.1:4200/admin/sach), đăng nhập bằng BOOTSTRAP_OWNER_EMAIL/PASSWORD trong `.env` local; không gửi secret qua chat. Hướng dẫn nhập/pilot ở [README](../README.md#nhập-sách-và-pilot-m2).
+- Pilot frontend4200/backend8080; built QA4000 và backenddown QA4001 chỉ phục vụ kiểm thử, dừng sau QA. [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach), [admin Flash Sale](http://127.0.0.1:4200/admin/flash-sale).
+- User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
+- CloudflareSEO/OG/crawler, staging/VPS/Dokploy, deploy/CI/CD và backup ngoài VPS vẫn gate riêng trước release. Không coi localSSR là đã đạt Cloudflare.
 
-Dev dùng me_may_dev; tests dùng me_may_test có guard; Cloudinary đã được cấu hình và xác minh. Không dùng `.local/*-browser.json` hoặc tài khoản fixture test cho pilot. Không reset sequence; sách bán thật do tiệm nhập thủ công. Dữ liệu synthetic trong browser test đã xóa khỏi DB/cloud.
+## Tiếp theo
 
-## M3 đang thực hiện
+1. Tiệm review M3 local; code/review kỹ thuật hoàn tất, chưa tự merge featureM3 hoặc deploy.
+2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
+3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
 
-- Người dùng duyệt M3 local; merge M1/M2 vào dev đã push (2a73249), làm trên feat/m3-public-catalogue.
-- Backup .local/backups/S012-before-m3.dump trước migration; xác minh dev có6 cuốn/18 ảnh ACTIVE. Không thay đổi sách/ảnh để làm fixture.
-- Thực thi tuần tự theo M3_PLAN; bỏ căn cứ, video optional, API public, public UX/contact/SSR. Flash Sale được duyệt thêm giá gốc/giá sale/thời gian; không số đã bán.
+## Tài liệu và giới hạn
 
-## Bước tiếp theo
-
-1. Đã xác minh cuốn thật đầu tiên MM-000001 trong me_may_dev (Công khai/Còn hàng, ba ảnh ACTIVE); chưa đủ bằng chứng hoàn tất pilot. Chủ tiếp tục nhập 10–20 cuốn thật: mã/nhãn, giá/tình trạng, ba ảnh; tự tìm/sửa/preview/publish/sold/ẩn/khôi phục; ghi thời gian nhập/tìm/sửa và các điểm vướng. Chưa có kết quả pilot thì M2 còn mở.
-2. Nếu có lỗi pilot: tái hiện, sửa có kiểm chứng và ghi checkpoint. Khi chủ duyệt gate M2, chuyển hết quyết định/bằng chứng vào tài liệu chuẩn rồi mới xóa spec/plan hết vai trò.
-3. M3 catalogue/detail/contact cần đặc tả tiếp; link Zalo hotline/nhóm thật cần trước nghiệm thu contact. M4 wishlist trên thiết bị; import CSV/Excel tạo mới thành nháp ngay sau MVP.
-4. Cloudflare render/SEO/OG spike, staging/VPS/Dokploy, production roles/domains/CORS/CSRF, CI/CD, backup ngoài VPS còn các gate riêng, chưa triển khai từ phiên này.
-
-## Bàn giao và tài liệu
-
-- Một chỉ mục docs/README; Markdown tối đa 400 dòng/file, không có tối thiểu bắt buộc; DEV_LOG ngoại lệ. Không tạo proposal trùng phạm vi hoặc thêm .gitignore con.
-- Log/artifact/backup/cookie local nằm trong `.superpowers/`, `.local/`, `output/playwright/` được ignore; không commit secret/dump/ảnh pilot. Source asset public/logo vẫn theo dõi Git.
-- Knowledge graph project Users-daoquanghung-Projects-me-may đã refresh trong M2, có thể thiếu file media do default exclusion; dùng fallback khi không đủ kết quả. Lần refresh graph cuối báo Transport closed; không giả định index chứa frontend mới. Skill ở `.agents/` local, không giả định có trong clone.
+- docs/README là chỉ mục duy nhất; M3_PLAN là phạm vi thực thi. Markdownmax400 dòng, DEV_LOG ngoại lệ. input/ giữ local/untracked, không commit ảnh/dump/.env/cookie.
+- Codebase graph đã index lại fast/persistencefalse trongM3; media bị default exclusion, dùng fallback khi không đủ kết quả.

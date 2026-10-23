@@ -30,7 +30,7 @@ public class SecurityConfiguration {
     }
 
     @Bean SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper mapper,
-                                                AdminUserRepository repository) throws Exception {
+                                                AdminUserRepository repository, org.springframework.jdbc.core.JdbcTemplate jdbc) throws Exception {
         return http
                 .authorizeHttpRequests(auth -> auth
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
@@ -42,6 +42,10 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated())
                 .headers(headers -> headers.addHeaderWriter((req,res) -> {
                     if(req.getRequestURI().startsWith("/api/"))res.setHeader("Cache-Control","no-store");
+                    if(req.getMethod().equals("GET") && req.getRequestURI().startsWith("/api/v1/") && !req.getRequestURI().startsWith("/api/v1/admin/") && !req.getRequestURI().startsWith("/api/v1/auth/")) {
+                        try {res.setHeader("X-Memay-Server-Time",jdbc.queryForObject("select current_timestamp",(r,n)->r.getTimestamp(1).toInstant().toString()));}
+                        catch(org.springframework.dao.DataAccessException ignored) { /* Failed responses do not carry a confirmed server price/time. */ }
+                    }
                 }))
                 .requestCache(cache -> cache.disable())
                 .exceptionHandling(errors -> errors

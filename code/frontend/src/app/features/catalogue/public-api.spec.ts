@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+import { PublicClock } from './public-clock';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
@@ -29,4 +31,25 @@ describe('Public catalogue HTTP', () => {
     req.flush({ items: [], page: 1, size: 20, totalElements: 0, totalPages: 0 });
     http.verify();
   });
+});
+
+describe('Server time on direct entry', () => {
+  for (const skew of [-3600000, 3600000])
+    it('synchronizes public detail despite device skew ' + skew, () => {
+      TestBed.configureTestingModule({
+        providers: [provideHttpClient(), provideHttpClientTesting()],
+      });
+      const api = TestBed.inject(PublicApi),
+        http = TestBed.inject(HttpTestingController),
+        clock = TestBed.inject(PublicClock);
+      const now = Date.parse('2026-10-23T13:00:00Z');
+      vi.spyOn(Date, 'now').mockReturnValue(now + skew);
+      api.detail('mm-000001').subscribe();
+      http
+        .expectOne('/api/v1/books/mm-000001')
+        .flush({}, { headers: { 'X-Memay-Server-Time': '2026-10-23T13:00:00Z' } });
+      expect(clock.now()).toBe(now);
+      vi.restoreAllMocks();
+      http.verify();
+    });
 });

@@ -183,3 +183,9 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 - Dokploy database: https://docs.dokploy.com/docs/core/databases
 - Dokploy: https://docs.dokploy.com/docs/core/docker-compose/domains và https://docs.dokploy.com/docs/core/docker-compose
 - Resend: https://resend.com/java và https://resend.com/changelog/idempotency-keys
+
+### M3 local đã triển khai
+
+Public AngularSSR đọc backend qua MEMAY_API_ORIGIN server-only; browser dùng relative /api, omit credentials và không HttpTransferCache. Built Node server có APIbridge phục vụ QA local, không thay phương án deploy Cloudflare. MEMAY_SITE_ORIGIN được chuyển bằng AngularTransferState để metadata/enquiry không đổi origin khi hydrate.
+
+Public GET trả X-Memay-Server-Time theo database; PublicClock dùng cùng giờ cho giá/countdown/enquiry. Khi triển khai khác origin, phải expose header này qua CORS và xác minh HTML/cache/ảnh sau đổi trạng thái. Gate đó chưa đạt chỉ bằng localhost.

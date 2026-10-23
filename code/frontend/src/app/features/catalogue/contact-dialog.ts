@@ -1,3 +1,4 @@
+import { PublicClock } from './public-clock';
 import { Component, ElementRef, ViewChild, input, signal, inject, output } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ContactConfig, PublicBook } from './public.models';
@@ -67,8 +68,9 @@ export class ContactDialog {
     this.message.set('');
     this.dialog.nativeElement.showModal();
   }
+  private readonly clock = inject(PublicClock);
   text() {
-    return enquiryText(effectiveBook(this.book(), Date.now()), this.url());
+    return enquiryText(effectiveBook(this.book(), this.clock.now() || Date.now()), this.url());
   }
   select(event: Event) {
     (event.target as HTMLTextAreaElement).select();

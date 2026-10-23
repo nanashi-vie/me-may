@@ -1,4 +1,5 @@
-import { Component, inject, signal, effect, RESPONSE_INIT } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { Component, inject, signal, effect, RESPONSE_INIT, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PublicApi } from '../catalogue/public-api';
@@ -18,6 +19,9 @@ export class HomePage {
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
   private readonly api = inject(PublicApi);
+  private readonly destroy = inject(DestroyRef);
+  private homeRequest?: Subscription;
+  private saleRequest?: Subscription;
   readonly clock = inject(PublicClock);
   readonly data = signal<HomeData | null>(null);
   readonly sale = signal<FlashSale | null>(null);
@@ -51,31 +55,44 @@ export class HomePage {
   load() {
     this.loading.set(true);
     this.error.set(false);
-    this.api.home().subscribe({
-      next: (d) => {
-        this.data.set(d);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set(true);
-        this.loading.set(false);
-        if (this.response) this.response.status = 503;
-        this.meta.unavailable(503);
-      },
-    });
+    this.homeRequest?.unsubscribe();
+    this.homeRequest = this.api
+      .home()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (d) => {
+          this.meta.set(
+            'Mẹ Mây — Sách ngoại văn cho bé',
+            'Những cuốn sách ngoại văn đã qua sử dụng, ảnh thật và tình trạng rõ ràng.',
+            '/',
+          );
+          this.data.set(d);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set(true);
+          this.loading.set(false);
+          if (this.response) this.response.status = 503;
+          this.meta.unavailable(503);
+        },
+      });
   }
   loadSale() {
-    this.api.sale().subscribe({
-      next: (s) => {
-        this.clock.align(s.serverNow);
-        this.sale.set(s);
-        this.saleError.set(false);
-      },
-      error: () => {
-        this.sale.set(null);
-        this.saleError.set(true);
-      },
-    });
+    this.saleRequest?.unsubscribe();
+    this.saleRequest = this.api
+      .sale()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (s) => {
+          this.clock.align(s.serverNow);
+          this.sale.set(s);
+          this.saleError.set(false);
+        },
+        error: () => {
+          this.sale.set(null);
+          this.saleError.set(true);
+        },
+      });
   }
   remaining() {
     return this.sale()?.endsAt

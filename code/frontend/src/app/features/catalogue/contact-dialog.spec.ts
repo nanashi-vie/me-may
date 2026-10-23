@@ -1,3 +1,5 @@
+import { PublicClock } from './public-clock';
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { ContactDialog } from './contact-dialog';
@@ -50,5 +52,25 @@ describe('Contact copy fallback', () => {
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
     expect(f.componentInstance.text()).not.toContain('7.000');
+  });
+});
+
+describe('Enquiry uses server clock', () => {
+  it('does not copy expired discount on a device whose clock is behind', () => {
+    const now = Date.parse('2026-10-23T14:00:00Z');
+    vi.spyOn(Date, 'now').mockReturnValue(now - 7200000);
+    TestBed.configureTestingModule({
+      providers: [{ provide: PublicClock, useValue: { now: signal(now) } }],
+    });
+    const f = TestBed.createComponent(ContactDialog);
+    f.componentRef.setInput('book', {
+      ...book,
+      priceVnd: 7000,
+      originalPriceVnd: 20000,
+      saleEndsAt: '2026-10-23T13:00:00Z',
+    });
+    f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
+    expect(f.componentInstance.text()).not.toContain('7.000');
+    vi.restoreAllMocks();
   });
 });

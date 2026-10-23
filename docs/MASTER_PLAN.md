@@ -144,6 +144,13 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 
 Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/PayOS/VNPay, vận chuyển/J&T, thanh toán/cọc, hold timer, phân tích doanh thu, Meta/Zalo API, Zalo Mini App, import CSV/Excel, đồng bộ Excel, tự đăng comment, OCR/VLM/AI, gợi ý sách bằng ML, chatbot, loyalty, review khách và quản lý tồn đa kênh.
 
+### Flash Sale bổ sung M3 (duyệt 23/10/2026)
+
+- Home có section Flash Sale ngay dưới banner, theo mẫu người dùng: nền đỏ cam, thanh tiêu đề/countdown, thẻ sách và Xem tất cả. Chỉ hiện khi đợt đang có hiệu lực và có sách hợp lệ; không tạo sale/số đã bán giả.
+- Một campaign do OWNER quản lý: bật/tắt, bắt đầu/kết thúc theo giờ Việt Nam, tối đa50 mã sách và giá sale nguyên VND từng cuốn. Giá gốc là giá tham khảo hiện tại; giá sale phải thấp hơn giá gốc.
+- Hiệu lực theo giờ database `[start,end)`, chỉ sách PUBLISHED/AVAILABLE; hết hạn, sold, ẩn hoặc giá gốc giảm xuống không còn giảm giá thì public dùng giá tham khảo. Catalogue sort/detail/nội dung hỏi dùng cùng giá hiệu lực.
+- Campaign có version/audit độc lập, không tạo order/quantity hoặc số bán; STAFF không sửa. Không có campaign trong dữ liệu tiệm cho đến khi OWNER chủ động cấu hình.
+
 ### 3.1. Phân loại và trình độ đọc đã duyệt
 
 - **Tuổi:** 0–3, 4–6, 7–9, 10+; một cuốn có thể gán nhiều nhóm. Không suy tuổi từ mức đọc.
@@ -229,7 +236,7 @@ Provider và các release gate vẫn được quyết định tại tài liệu 
 
 ### 5.2. API contract khởi điểm (minh họa)
 
-Contract M2 đã duyệt ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng giao dịch, version cấp aggregate và upload qua backend. Contract này thay ví dụ tạo hai bước/cấp quyền upload trước đây; chưa có thay đổi API ứng dụng đang chạy. Các endpoint public dưới đây dành cho M3/M4, vẫn là minh họa.
+Contract M2 đã duyệt ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng giao dịch, version cấp aggregate và upload qua backend. Contract này thay ví dụ tạo hai bước/cấp quyền upload trước đây; chưa có thay đổi API ứng dụng đang chạy. API public M3 local đã triển khai; chi tiết query/giá sale/ảnh ở M3_PLAN.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
@@ -238,7 +245,7 @@ GET  /api/v1/collections
 GET  /api/v1/collections/{slug}
 ```
 
-`binding` chỉ dùng khi lọc Picture book; “Tất cả” nghĩa là không giới hạn binding. Public không có tham số lọc giá/chủ đề/khả dụng/mức đọc. Đây là contract dự kiến, chưa thay đổi API ứng dụng đang chạy.
+`binding` chỉ dùng khi lọc Picture book; “Tất cả” nghĩa là không giới hạn binding. Public không có tham số lọc giá/chủ đề/khả dụng/mức đọc. M3 local dùng public GET chỉ PUBLISHED và no-store; pagination20, sort newest/price_asc/price_desc.
 
 MVP **không có** importer hoặc `POST /orders`, `/payments`, `/shipments`, `/reservations`. Có thể đổi tên endpoint khi thiết kế OpenAPI, không nên khóa tên chỉ vì proposal.
 
@@ -306,7 +313,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
-Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; chờ chủ pilot10–20 cuốn thật, chưa chuyển M3. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
+Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; chờ chủ pilot10–20 cuốn thật, M3 local đã được duyệt độc lập; Người dùng đã duyệt bắt đầu M3 local23/10; pilot M2 hiện6 cuốn vẫn mở. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
 
 ## 9. Definition of Done — nghiệm thu MVP
 

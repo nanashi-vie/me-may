@@ -1,4 +1,6 @@
-import { Component, effect, inject, signal, RESPONSE_INIT } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, effect, inject, signal, RESPONSE_INIT, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PublicApi } from './public-api';
 import { FlashSale } from './public.models';
@@ -76,6 +78,8 @@ export class FlashSalePage {
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
   private readonly api = inject(PublicApi);
+  private readonly destroy = inject(DestroyRef);
+  private request?: Subscription;
   readonly clock = inject(PublicClock);
   readonly sale = signal<FlashSale | null>(null);
   readonly loading = signal(true);
@@ -110,18 +114,27 @@ export class FlashSalePage {
   load() {
     this.loading.set(true);
     this.error.set(false);
-    this.api.sale().subscribe({
-      next: (s) => {
-        this.clock.align(s.serverNow);
-        this.sale.set(s);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.error.set(true);
-        this.loading.set(false);
-        if (this.response) this.response.status = 503;
-        this.meta.unavailable(503);
-      },
-    });
+    this.request?.unsubscribe();
+    this.request = this.api
+      .sale()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (s) => {
+          this.meta.set(
+            'Flash Sale | Mẹ Mây',
+            'Ưu đãi có thời hạn cho những cuốn sách ngoại văn tại tiệm.',
+            '/flash-sale',
+          );
+          this.clock.align(s.serverNow);
+          this.sale.set(s);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.error.set(true);
+          this.loading.set(false);
+          if (this.response) this.response.status = 503;
+          this.meta.unavailable(503);
+        },
+      });
   }
 }

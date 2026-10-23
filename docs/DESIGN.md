@@ -63,7 +63,8 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 2. **Header:** logo Mẹ Mây (asset mới: `code/frontend/public/logo.jpg`, chưa tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
 3. **Navigation:** Tất cả sách, Sách mới đăng, Theo độ tuổi, Theo loại sách, Bộ sưu tập, Cách mua. Dropdown phải thao tác được bằng bàn phím/touch khi triển khai.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
-5. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
+5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có giá gốc/giá sale/% giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
+6. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
 6. **Board books cho bé nhỏ:** hàng 5 cuốn hoặc ít hơn nếu thiếu; tên nhóm chỉ xuất hiện khi có nội dung công khai.
 7. **Banner nhóm 1:** giới thiệu “Cùng bé đọc mỗi ngày” bằng nội dung/asset Mẹ Mây; link tới bộ sưu tập thật.
 8. **Picture books:** hàng sách kèm giá, mã và tình trạng đúng cuốn.
@@ -78,7 +79,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 
 - Bìa dùng `contain` trong khung thống nhất để không cắt mất phần bìa/lỗi. Không chỉnh ảnh thật theo tone làm che tình trạng cuốn.
 - Tên tối đa 2 dòng; mã dễ đọc; giá tham khảo VND nổi bật; nhãn tình trạng vật lý tách khỏi khả dụng; nút trái tim quan tâm có tên truy cập rõ và thể hiện trạng thái đã thêm/xóa.
-- Không hiện sale badge, giá gạch ngang, “bán chạy”, rating hoặc preorder khi không có dữ liệu/nghiệp vụ chứng minh.
+- Chỉ hiện sale badge/giá gạch ngang khi API xác nhận Flash Sale còn hiệu lực; không có số đã bán, “bán chạy”, rating hoặc preorder giả.
 - Desktop khoảng 1200–1280 px nội dung, 5 cột; tablet 3 cột; mobile 360–390 px: 2 cột, search một hàng riêng, menu cuộn ngang hoặc menu mở bằng nút có nhãn.
 - Mobile cho mỗi nhóm tối đa 4 cuốn + Xem tất cả; tránh hàng ngang chỉ có thể kéo mà không có chỉ dẫn. Hero có asset/tỉ lệ riêng cho mobile, không thu nhỏ chữ trên banner desktop.
 - Không dùng animation xuất hiện khiến sách/giá bị ẩn trước khi chạy JavaScript. Không autoplay bắt buộc; tôn trọng reduced motion.
@@ -151,3 +152,9 @@ Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản;
 ## Trạng thái UX dùng chung
 
 Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit đều cần mô tả/test khi chuyển thành technical spec. Focus rõ, nút có nhãn, form có label, badge không dựa duy nhất vào màu. Public đọc được từ HTML đầu tiên theo chiến lược render đã qua spike; browser API của wishlist/clipboard không chạy trong server initialization.
+
+## Trạng thái triển khai M3 local
+
+Home/catalogue/collection/detail đã nối API, ba ảnh thật, metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. Không hiển thị control wishlist trước M4.
+
+Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.

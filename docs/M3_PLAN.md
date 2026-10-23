@@ -37,34 +37,38 @@
 ### Task2: public catalogue API and media
 **Files:** catalogue/PublicCatalogueController/Service/Dtos; media public content service; auth GET whitelist; integration tests.
 **Interfaces:** GET /api/v1/books?q&category&binding&age&sort&page (page0-based,size20 fixed); /books/{slug}; /books/{slug}/media/{role}; /taxonomy; /collections; /collections/{slug}; /home; /contact.
-- [ ] RED public API tests: PUBLISHED-only incl SOLD; ageOR+categoryAND; bindingALL normalization; literal q; sort tieIDdesc; stable page; draft/archive/media404; no internal DTO fields; no-store; anonymous reads/no anonymous admin mutations.
-- [ ] Implement parameterized JDBC queries and explicit DTO projection; collection active only. Empty real data returns empty, backend failure stays error.
-- [ ] Media through authenticated provider adapter, no signed URLs exposed; public can only fetch ACTIVE slot of PUBLISHED book. No-store including errors.
-- [ ] GREEN backend suite; commit/checkpoint.
+- [x] RED public API tests: PUBLISHED-only incl SOLD; ageOR+categoryAND; bindingALL normalization; literal q; sort tieIDdesc; stable page; draft/archive/media404; no internal DTO fields; no-store; anonymous reads/no anonymous admin mutations.
+- [x] Implement parameterized JDBC queries and explicit DTO projection; collection active only. Empty real data returns empty, backend failure stays error.
+- [x] Media through authenticated provider adapter, no signed URLs exposed; public can only fetch ACTIVE slot of PUBLISHED book. No-store including errors.
+- [x] GREEN backend suite; commit/checkpoint.
 
 ### Task3: truthful Flash Sale + OWNER management
 **Files:** V5 flash campaign/item migration; promotion controller/service/DTO/test; admin promotion page/API/tests.
 **Interfaces:** GET /api/v1/flash-sale (campaign metadata/items while active); OWNER GET/PUT /api/v1/admin/flash-sale with version, enabled, startsAt,endsAt,items[{bookCode,salePriceVnd}]. Single campaign id1; version starts0.
-- [ ] RED tests: start/end boundaries, original/sale/effective prices, invalid schedule/price/duplicates, nonpublic/sold exclusion, OWNER-only, stale edit rollback/no audit, audit on success.
-- [ ] Implement DB constraints, transaction with locked campaign/version and audit. Edit reference price can invalidate discount; ignore invalid discount publicly rather than show negative reduction.
-- [ ] Public list/detail/sort/contact derive effective price from same DB clock evaluation; expose saleEndsAt/originalPriceVnd only during applicable sale.
-- [ ] Admin manual form selects books by code and sale amount; Asia/Ho_Chi_Minh labels, ISO timestamps; unsaved/error/stale protection.
-- [ ] GREEN backend/frontend suites, commit/checkpoint.
+- [x] RED tests: start/end boundaries, original/sale/effective prices, invalid schedule/price/duplicates, nonpublic/sold exclusion, OWNER-only, stale edit rollback/no audit, audit on success.
+- [x] Implement DB constraints, transaction with locked campaign/version and audit. Edit reference price can invalidate discount; ignore invalid discount publicly rather than show negative reduction.
+- [x] Public list/detail/sort/contact derive effective price from same DB clock evaluation; expose saleEndsAt/originalPriceVnd only during applicable sale.
+- [x] Admin manual form selects books by code and sale amount; Asia/Ho_Chi_Minh labels, ISO timestamps; unsaved/error/stale protection.
+- [x] GREEN backend/frontend suites, commit/checkpoint.
 
 ### Task4: public pages, metadata and enquiry
 **Files:** frontend catalogue/home/detail components+public API/models; shared book-card/filter/gallery; public-layout; routes; page-metadata; contact dialog; tests.
 **Interfaces:** /, /sach, /sach/:slug, /bo-suu-tap/:slug, /cach-mua, /lien-he. QueryURL q/category/binding/age repeated/sort/page (page1-based UI mapped API0-based).
-- [ ] RED tests public HTTP/route models: query normalization, resetpage, stale-response switchMap, failurevs404, title join, optional fields, price format, enquiry AVAILABLE/SOLD, clipboard fallback, no M4 controls.
-- [ ] Implement mobile-first catalogue and detail, accessible filter sheet/details desktop panel, manual pagination. Collection shares catalogue query UI.
-- [ ] Home approved banner/rows with real nonempty collections; Flash Sale directly below hero, original/sale/%/countdown, no sold counters. Timer updates browser only; at expiry refresh API, clear discount and show pending verification while fetch fails.
-- [ ] Zalo dialog copy/open manual fallback, no automatic send; env contact config server allowlist HTTPS Zalo links. Missing config explicit unavailable.
-- [ ] SSR fetch uses server-only backend origin, browser relative API. Correct initial content/meta/canonical/OG, no-store and real404/503 status, no admin cookies in public calls/cache.
-- [ ] GREEN frontend suite/build; commit/checkpoint.
+- [x] RED tests public HTTP/route models: query normalization, resetpage, stale-response switchMap, failurevs404, title join, optional fields, price format, enquiry AVAILABLE/SOLD, clipboard fallback, no M4 controls.
+- [x] Implement mobile-first catalogue and detail, accessible filter sheet/details desktop panel, manual pagination. Collection shares catalogue query UI.
+- [x] Home approved banner/rows with real nonempty collections; Flash Sale directly below hero, original/sale/%/countdown, no sold counters. Timer updates browser only; at expiry refresh API, clear discount and show pending verification while fetch fails.
+- [x] Zalo dialog copy/open manual fallback, no automatic send; env contact config server allowlist HTTPS Zalo links. Missing config explicit unavailable.
+- [x] SSR fetch uses server-only backend origin, browser relative API. Correct initial content/meta/canonical/OG, no-store and real404/503 status, no admin cookies in public calls/cache.
+- [x] GREEN frontend suite/build; commit/checkpoint.
 
 ### Task5: browser/SSR/data verification and handoff
 **Files:** check-ssr.mjs; docs MASTER_PLAN/DATA/DESIGN/README/VERIFICATION/PROGRESS/DEV_LOG/index.
-- [ ] Backup/compare dev rows including6 books/18 photos, apply migrations via controlled backend restart only after tests. Never clean/reset dev database.
-- [ ] Backend suite/frontend suite/build; anonymous SSR HTML and404, metadata image, no-store, draft/hidden media, sort/filter and status refresh tests.
-- [ ] Browser mobile360/390 and desktop, keyboard/focus, gallery/contact/copy errors, admin regression; fixtures only isolated test environment.
-- [ ] Fresh whole-branch review, fix Important/Critical once with RED→GREEN; record residual limits.
-- [ ] Sync docs/check links/line limits/ignore/secrets; retain M2 plan while pilot open and M3 plan until all criteria transferred.
+- [x] Backup/compare dev rows including6 books/18 photos, apply migrations via controlled backend restart only after tests. Never clean/reset dev database.
+- [x] Backend suite/frontend suite/build; anonymous SSR HTML and404, metadata image, no-store, draft/hidden media, sort/filter and status refresh tests.
+- [x] Browser mobile360/390 and desktop, keyboard/focus, gallery/contact/copy errors, admin regression; fixtures only isolated test environment.
+- [x] Fresh whole-branch review, fix Important/Critical once with RED→GREEN; record residual limits.
+- [x] Sync docs/check links/line limits/ignore/secrets; retain M2 plan while pilot open and M3 plan until all criteria transferred.
+
+## Bàn giao23/10
+
+Code/API/UI/SSR và review kỹ thuật đã hoàn tất local; frontend56PASS, backend85total/83PASS/2live skipped, build/JAR PASS. Migration bảo toàn6cuốn/18ảnh/audit/sequence; actual campaign mặc định tắt. Giữ plan khi chủ chưa nghiệm thu UX/Zalo trên thiết bị; pilot M2 còn6cuốn, không đóng gate10–20. Không deploy/Cloudflare hoặc chuyển M4.

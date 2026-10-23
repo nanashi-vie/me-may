@@ -1,8 +1,12 @@
-import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
+import { mergeApplicationConfig, ApplicationConfig, inject, TransferState } from '@angular/core';
 import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { appConfig } from './app.config';
 import { serverRoutes } from './app.routes.server';
-import { PUBLIC_API_ORIGIN, PUBLIC_SITE_ORIGIN } from './features/catalogue/public-api';
+import {
+  PUBLIC_API_ORIGIN,
+  PUBLIC_SITE_ORIGIN,
+  PUBLIC_SITE_STATE,
+} from './features/catalogue/public-api';
 
 const serverConfig: ApplicationConfig = {
   providers: [
@@ -12,7 +16,11 @@ const serverConfig: ApplicationConfig = {
     },
     {
       provide: PUBLIC_SITE_ORIGIN,
-      useValue: process.env['MEMAY_SITE_ORIGIN'] || 'http://localhost:4200',
+      useFactory: () => {
+        const origin = new URL(process.env['MEMAY_SITE_ORIGIN'] || 'http://localhost:4200').origin;
+        inject(TransferState).set(PUBLIC_SITE_STATE, origin);
+        return origin;
+      },
     },
     provideServerRendering(withRoutes(serverRoutes)),
   ],

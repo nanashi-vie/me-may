@@ -56,3 +56,56 @@ describe('Catalogue route responses', () => {
     expect(h.routeNativeElement?.textContent).not.toContain('Chưa có cuốn phù hợp');
   });
 });
+
+describe('Retry stays with the URL request stream', () => {
+  it('late retry cannot replace newer filter results', async () => {
+    const retry = new Subject<Page<PublicBook>>(),
+      next = new Subject<Page<PublicBook>>();
+    const books = vi
+      .fn()
+      .mockReturnValueOnce(of({ items: [], page: 0, size: 20, totalElements: 1, totalPages: 1 }))
+      .mockReturnValueOnce(retry)
+      .mockReturnValueOnce(next);
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach', component: CataloguePage }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            books,
+            taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach?q=first', CataloguePage);
+    c.retry();
+    await h.navigateByUrl('/sach?q=second', CataloguePage);
+    next.next({ items: [], page: 0, size: 20, totalElements: 2, totalPages: 1 });
+    retry.next({ items: [], page: 0, size: 20, totalElements: 99, totalPages: 5 });
+    expect(c.page()?.totalElements).toBe(2);
+  });
+  it('retry ignores unapplied draft filters', async () => {
+    const books = vi.fn((_f: unknown) =>
+      of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }),
+    );
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach', component: CataloguePage }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            books,
+            taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach?q=applied', CataloguePage);
+    c.draft.q = 'not-applied';
+    c.retry();
+    expect((books.mock.calls[1][0] as { q: string }).q).toBe('applied');
+  });
+});

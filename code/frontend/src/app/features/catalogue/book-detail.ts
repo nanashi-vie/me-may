@@ -1,7 +1,7 @@
 import { Component, RESPONSE_INIT, inject, signal, effect } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap, combineLatest, Subject, startWith } from 'rxjs';
 import { PublicApi, PUBLIC_SITE_ORIGIN } from './public-api';
 import { PublicBook, ContactConfig } from './public.models';
 import { bookTitle, effectiveBook } from './catalogue-state';
@@ -33,6 +33,7 @@ export class BookDetail {
   readonly loading = signal(true);
   readonly error = signal(0);
   readonly config = signal<ContactConfig | null>(null);
+  private readonly refreshRequests = new Subject<void>();
   private expiredSlug = '';
   readonly title = bookTitle;
   readonly price = formatPrice;
@@ -45,9 +46,9 @@ export class BookDetail {
       .contact()
       .pipe(takeUntilDestroyed())
       .subscribe({ next: (c) => this.config.set(c), error: () => {} });
-    this.route.paramMap
+    combineLatest([this.route.paramMap, this.refreshRequests.pipe(startWith(undefined))])
       .pipe(
-        switchMap((p) => {
+        switchMap(([p]) => {
           this.loading.set(true);
           this.error.set(0);
           return this.api.detail(p.get('slug')!).pipe(
@@ -92,15 +93,6 @@ export class BookDetail {
       );
   }
   refresh() {
-    this.api.detail(this.route.snapshot.paramMap.get('slug')!).subscribe({
-      next: (b) => this.accept(b),
-      error: (e) => {
-        if (e.status === 404) this.accept(null, 404);
-        else {
-          this.loading.set(false);
-          this.error.set(503);
-        }
-      },
-    });
+    this.refreshRequests.next();
   }
 }
