@@ -1,0 +1,96 @@
+<p class="breadcrumb"><a routerLink="/">Trang chủ</a> / {{ title() }}</p>
+<header class="catalogue-heading">
+  <div>
+    <p class="eyebrow">Chọn một cuốn, mở một thế giới</p>
+    <h1>{{ title() }}</h1>
+  </div>
+  @if (!loading() && !error()) {
+    <p>{{ page()?.totalElements }} cuốn sách</p>
+  }
+</header>
+<div class="catalogue-layout">
+  <details class="filters" open>
+    <summary>Lọc và tìm sách</summary>
+    <form (ngSubmit)="apply()">
+      <label
+        >Tên hoặc mã sách<input
+          name="q"
+          [(ngModel)]="draft.q"
+          maxlength="200"
+          placeholder="Tên sách hoặc MM-000001"
+      /></label>
+      <fieldset>
+        <legend>Độ tuổi</legend>
+        @for (a of taxonomy()?.ageGroups; track a.code) {
+          <label class="check"
+            ><input
+              type="checkbox"
+              [checked]="draft.age.includes(a.code)"
+              (change)="toggleAge(a.code, $event)"
+            />{{ a.label }}</label
+          >
+        }
+      </fieldset>
+      <label
+        >Thể loại<select
+          name="category"
+          [(ngModel)]="draft.category"
+          (ngModelChange)="draft.binding = ''"
+        >
+          <option value="">Tất cả thể loại</option>
+          @for (c of taxonomy()?.categories; track c.code) {
+            <option [value]="c.code">{{ c.label }}</option>
+          }
+        </select></label
+      >
+      @if (draft.category === 'PICTURE_BOOK') {
+        <label
+          >Kiểu bìa<select name="binding" [(ngModel)]="draft.binding">
+            <option value="">Tất cả</option>
+            <option value="PAPERBACK">Paperback</option>
+            <option value="HARDCOVER">Hardcover</option>
+          </select></label
+        >
+      }
+      <label
+        >Sắp xếp<select name="sort" [(ngModel)]="draft.sort">
+          <option value="newest">Mới xuất bản</option>
+          <option value="price_asc">Giá tăng dần</option>
+          <option value="price_desc">Giá giảm dần</option>
+        </select></label
+      ><button type="submit">Áp dụng</button
+      ><button type="button" class="secondary" (click)="reset()">Xóa bộ lọc</button>
+    </form>
+  </details>
+  <section aria-label="Kết quả sách" aria-live="polite">
+    @if (loading()) {
+      <p class="loading" role="status">Đang tìm những cuốn sách…</p>
+    } @else if (error()) {
+      <app-public-error [status]="error()" (retry)="retry()" />
+    } @else if (page()?.items?.length) {
+      <div class="book-grid">
+        @for (b of page()!.items; track b.id) {
+          <app-book-card [book]="b" [now]="now()" />
+        }
+      </div>
+      <nav class="pagination" aria-label="Phân trang">
+        <button class="secondary" [disabled]="page()!.page === 0" (click)="apply(page()!.page)">
+          Trang trước</button
+        ><span>Trang {{ page()!.page + 1 }} / {{ page()!.totalPages }}</span
+        ><button
+          class="secondary"
+          [disabled]="page()!.page + 1 >= page()!.totalPages"
+          (click)="apply(page()!.page + 2)"
+        >
+          Trang sau
+        </button>
+      </nav>
+    } @else {
+      <div class="empty">
+        <h2>Chưa có cuốn phù hợp</h2>
+        <p>Thử bỏ bớt bộ lọc hoặc tìm bằng mã sách.</p>
+        <button class="secondary" (click)="reset()">Bỏ bộ lọc</button>
+      </div>
+    }
+  </section>
+</div>
