@@ -15,13 +15,15 @@ Cập nhật: 22/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Chốt hoặc thay đổi phạm vi | [MASTER_PLAN — quyết định](MASTER_PLAN.md#0-chốt-quyết-định-và-giới-hạn), [MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket), [milestones](MASTER_PLAN.md#8-kế-hoạch-triển-khai-theo-milestones-1-full-stack-developer) |
 | M2: nhập sách, taxonomy, publication, media | Đọc [M2_SPEC — đã duyệt](M2_SPEC.md) cùng [M2_PLAN — đang thực thi](M2_PLAN.md); đối chiếu [DATA — field](DATA.md#field-nhập-liệu-baseline-trước-m2), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop) khi cần |
 | M3: Home/catalogue/detail, bộ lọc, Flash Sale và liên hệ | [M3_PLAN](M3_PLAN.md), [DESIGN — Home](DESIGN.md#home-theo-mẫu-nxb-kim-đồng), [catalogue](DESIGN.md#catalogue--collection--khách-mobile), [detail](DESIGN.md#chi-tiết-cuốn--khách-mobile); đối chiếu phạm vi MVP trong MASTER_PLAN |
-| M4: wishlist và nội dung hỏi sách | [DESIGN — danh sách quan tâm](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [MASTER_PLAN — MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket) |
+| M4: wishlist và nội dung hỏi sách | [M4_PLAN — đã duyệt, đang thực thi](M4_PLAN.md), [DESIGN — danh sách quan tâm](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [MASTER_PLAN — MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket) |
 | Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
 | Tổ chức code hoặc khảo sát nguồn cũ | [ARCHITECTURE — layout](ARCHITECTURE.md#layout-dự-kiến), [trách nhiệm](ARCHITECTURE.md#trách-nhiệm-và-phụ-thuộc); chỉ đọc [khảo sát Web Shop](ARCHITECTURE.md#khảo-sát-khả-năng-tận-dụng-web-shop-cũ) khi cần tái sử dụng |
 | Staging/deploy, SEO/OG, bảo mật hạ tầng, backup/restore | [ARCHITECTURE — hạ tầng triển khai](ARCHITECTURE.md#hạ-tầng-triển-khai), [MASTER_PLAN — nghiệm thu MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp), [VERIFICATION — chưa kiểm chứng](VERIFICATION.md#chưa-kiểm-chứng--để-sau) |
 | Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
 
 ## Spec và plan đang thực thi
+
+- [M4_PLAN](M4_PLAN.md): user duyệt24/10, checklist tuần tự API/storage/UI/enquiry/QA; chọn từng cuốn, tối đa100 mã local.
 
 - [M3_PLAN](M3_PLAN.md): user đã duyệt M3 local23/10; thực thi tuần tự, gồm Flash Sale được duyệt bổ sung.
 

@@ -38,6 +38,17 @@ public class PublicCatalogueService {
   return new BookDtos.Page<>(rows,page,20,total,(int)((total+19)/20));
  }
  public Book detail(String slug){var found=jdbc.query(SELECT+FROM+" where l.slug=? and l.publication_status='PUBLISHED'",this::book,slug);if(found.isEmpty())throw new AdminApiException(404,"not_found");return found.getFirst();}
+ public List<Book> lookup(List<String> codes){
+  if(codes==null||codes.isEmpty()||codes.size()>100)throw AdminApiException.field("code","Cần từ1 đến100 mã sách");
+  for(String code:codes){
+   try{if(code==null||!code.matches("MM-[0-9]{6,19}")||!BookCodeGenerator.format(Long.parseLong(code.substring(3))).equals(code))throw new IllegalArgumentException();}
+   catch(IllegalArgumentException e){throw AdminApiException.field("code","Mã sách không hợp lệ");}
+  }
+  var ordered=new LinkedHashSet<>(codes);
+  var books=jdbc.query(SELECT+FROM+" where l.publication_status='PUBLISHED' and b.book_code in ("+String.join(",",Collections.nCopies(ordered.size(),"?"))+")",this::book,ordered.toArray());
+  var byCode=new HashMap<String,Book>();for(var book:books)byCode.put(book.bookCode(),book);
+  return ordered.stream().filter(byCode::containsKey).map(byCode::get).toList();
+ }
  private Book book(ResultSet r,int n)throws SQLException{
   long id=r.getLong("id"),listing=r.getLong("listing_id");String slug=r.getString("slug");
   var ages=jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",String.class,listing);

@@ -400,3 +400,14 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã commit f2ba005 và merge vào main tại38c908f bằng --no-ff, không conflict; tree merge khớp feature. Sau merge: npm test tại code/frontend PASS56/56; backend verify ngoài sandbox PASS85 total/83 pass/2 live skipped, JAR thành công. Log /tmp/me-may-main-postmerge-{frontend,backend}.log. Markdown tracked dưới400 dòng (DEV_LOG ngoại lệ), link local PASS sau khi checker hiểu suffix :line của link nguồn cũ.
 - User yêu cầu gộp/push cả angular.json: khôi phục thay đổi analytics đã stash, đưa vào commit main. Đây là đúng config đã dùng trong test/build pre-merge. input/ đã ignore, ảnh nguồn public/logo vẫn tracked. Chuẩn bị push main lên origin; không force-push, không bắt đầu M4/deploy.
 - Kết quả: da9b20a gồm angular.json/bàn giao đã push origin/main thành công (5d70ec8→da9b20a); working tree sạch, main đồng bộ origin/main. Check ls-remote trong sandbox bị DNS chặn, xác minh lại ngoài sandbox ở bước cuối. Commit checkpoint cuối đi cùng main. Bước tiếp theo: chốt M4; pilot M2/Zalo thiết bị/release vẫn cần bằng chứng riêng.
+
+## S014-C01 — 24/10/2026 — bắt đầu M4 đã duyệt
+
+- User yêu cầu implement toàn bộ plan M4, đã chọn checkbox hỏi từng cuốn. Tạo codex/m4-wishlist từ main a0a2642; scope lookup1–100/storage100/trái tim/badge/page/enquiry revalidation/accessibility.
+- Ghi M4_PLAN và đăng ký chỉ mục trước code. Baseline đã kiểm chứng trong phiên main: frontend56/56, backend85 total/83 pass/2live skipped, build/JAR PASS; đang kiểm tra lại trước thay đổi.
+- Ruling: dùng branch trong checkout hiện tại đúng plan đã duyệt và môi trường local đang có thay vì worktree mới — không đổi main; chi phí nếu sai là thiếu isolation thư mục. Giữ ledger thủ công trong ignored .superpowers để không sinh child .gitignore; chi phí là cập nhật checklist tay. Một M4_PLAN chứa contract/spec đã duyệt để tránh nhân bản tài liệu.
+- Chưa có product code M4; không sửa dữ liệu dev, không deploy/push/merge M4. Tiếp task1 API RED→GREEN.
+
+### S014-C02 — API lookup
+- RED backend3 failures404 và frontend thiếu lookup; GREEN backend verify87 total/85PASS/2live skipped, JAR; frontend57/57. Code lookup dùng chung SELECT/FROM/mapper/giá M3, thứ tự input, PUBLISHED-only và mã canonical theo Long generator (không giới hạn6digit).
+- Contract validation1–100 trước dedupe; test missing/empty/malformed/too many/large/overflow, no-store/time, sale expiry, SOLD/hidden/no internal fields. Log /tmp/me-may-m4-task1-*.log; không gọi cloud live hoặc sửa dev. Task2 test đang RED vì chưa có store/button.

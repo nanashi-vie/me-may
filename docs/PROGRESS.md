@@ -4,6 +4,8 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Trạng thái
 
+- M4 đã được user duyệt24/10: đang thực thi trên codex/m4-wishlist, baseline main a0a2642. Plan ở M4_PLAN, bước hiện tại API lookup → storage/trái tim → danh sách/enquiry → QA/review.
+
 - M0/M1 local đã duyệt. M2 gate kỹ thuật đã đạt; pilot chủ tiệm hiện6 cuốn/18 ảnh ACTIVE, còn thiếu10–20 cuốn và đối chiếu nghiệp vụ. Giữ M2_SPEC/M2_PLAN khi gate còn mở.
 - Người dùng đã duyệt M3 local và cho bắt đầu dù pilot M2 còn mở. Yêu cầu gộp feat/m1-local và feat/m2-admin-catalogue vào dev đã thực hiện/push2a73249. M3 ở feat/m3-public-catalogue.
 - Người dùng xác nhận code hiện tại ổn định ngày 24/10. Đã merge feat/m3-public-catalogue (gồm M1/M2) vào main tại 38c908f, không conflict; kiểm tra sau merge đạt. /input/ đã được ignore; user yêu cầu commit/push cả thay đổi Angular CLI analytics trong angular.json.
@@ -26,7 +28,7 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Tiếp theo
 
-1. Main là baseline ổn định trước M4, đã push origin/main (merge38c908f, cấu hình/bàn giao da9b20a). Bước tiếp theo là chốt thiết kế/spec M4, chưa triển khai hoặc deploy trong phiên này.
+1. Thực thi M4_PLAN tuần tự và kiểm chứng local; chưa merge/release M4.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
 

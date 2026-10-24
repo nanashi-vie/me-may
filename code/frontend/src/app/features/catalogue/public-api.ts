@@ -60,6 +60,11 @@ export class PublicApi {
   detail(slug: string) {
     return this.get<PublicBook>('/books/' + encodeURIComponent(slug));
   }
+  lookup(codes: string[]) {
+    let params = new HttpParams();
+    for (const code of codes) params = params.append('code', code);
+    return this.get<PublicBook[]>('/books/lookup', params);
+  }
   home() {
     return this.get<HomeData>('/home');
   }
