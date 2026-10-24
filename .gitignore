@@ -23,6 +23,7 @@ test-results/
 *.log
 *.pid
 .local/
+/input/
 .playwright-cli/
 output/playwright/
 coverage/

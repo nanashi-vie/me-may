@@ -71,4 +71,4 @@
 
 ## Bàn giao23/10
 
-Code/API/UI/SSR và review kỹ thuật đã hoàn tất local; frontend56 PASS, backend85 total/83 PASS/2 live skipped, build/JAR PASS. Migration bảo toàn6 cuốn/18 ảnh/audit/sequence; actual campaign mặc định tắt. Giữ plan khi chủ chưa nghiệm thu UX/Zalo trên thiết bị; pilot M2 còn6 cuốn, không đóng gate10–20. Không deploy/Cloudflare hoặc chuyển M4.
+Code/API/UI/SSR và review kỹ thuật đã hoàn tất local; frontend56 PASS, backend85 total/83 PASS/2 live skipped, build/JAR PASS. Migration bảo toàn6 cuốn/18 ảnh/audit/sequence; actual campaign mặc định tắt. Ngày24/10 user xác nhận bản hiện tại ổn định, duyệt merge main trước M4. Giữ plan khi tiêu chí chưa chuyển hết và Zalo thiết bị chưa có bằng chứng; pilot M2 còn6 cuốn, không đóng gate10–20. Không deploy/Cloudflare hoặc triển khai M4 trong lần tích hợp này.

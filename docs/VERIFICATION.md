@@ -90,6 +90,6 @@ Artifact/testlog ignored trong .superpowers/sdd/M3_PLAN; backup/fingerprint igno
 
 Hai link Zalo thật đã cấu hình và endpoint public xác nhận có cả hai. Hydrated browser4000: canonical/OG và enquiry giữ origin cấu hình qua TransferState, dialog có Mở Zalo. Chưa mở nativeapp/gửi tin.
 
-Chưa đạt: nghiệm thu Zalo trên thiết bị thực, chủ duyệt UX/sale thật, pilot M2 đủ10–20, Cloudflare/crawler/SEO cache/staging/production. Không dùng fixture để thay nghiệm thu tiệm.
+Ngày 24/10/2026, người dùng xác nhận bản hiện tại ổn định và duyệt merge vào main trước M4. Xác nhận này chưa bổ sung bằng chứng mở Zalo trên thiết bị thực hoặc cấu hình sale thật. Các gate còn thiếu bằng chứng: Zalo thiết bị, pilot M2 đủ10–20, Cloudflare/crawler/SEO cache/staging/production.
 
 Review độc lập:4 Important đã sửa một lượt, không re-review: server-clock cho directentry/enquiry; refresh cancellation/URL-state; origin TransferState; khóa inputs sale load/save. RED8frontend+1backend→GREEN56 frontend/83 backend,2 live skipped; thêm4RED/GREEN recovery metadata/destroy. Không có Critical/Minor được reviewer nêu. PublicApi dùng credentials omit, X-Memay-Server-Time từ database; CORS expose header này là việc release nếu API khác origin.

@@ -1,12 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint mới nhất cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint mới nhất cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Trạng thái
 
 - M0/M1 local đã duyệt. M2 gate kỹ thuật đã đạt; pilot chủ tiệm hiện6 cuốn/18 ảnh ACTIVE, còn thiếu10–20 cuốn và đối chiếu nghiệp vụ. Giữ M2_SPEC/M2_PLAN khi gate còn mở.
 - Người dùng đã duyệt M3 local và cho bắt đầu dù pilot M2 còn mở. Yêu cầu gộp feat/m1-local và feat/m2-admin-catalogue vào dev đã thực hiện/push2a73249. M3 ở feat/m3-public-catalogue.
-- Code M3:82be192 bỏ căn cứ;60fe09f public API/Flash Sale;fc20dfe public UX/admin sale/SSR. Review độc lập4 Important đã sửa một lượt với RED→GREEN; build/handoff kỹ thuật đã kiểm chứng, chờ tiệm nghiệm thu UX.
+- Người dùng xác nhận code hiện tại ổn định ngày 24/10 và yêu cầu merge vào main trước M4. Đang kiểm tra lại và tích hợp feat/m3-public-catalogue (đã gồm M1/M2) vào main; thêm /input/ vào .gitignore theo yêu cầu.
 
 ## Đã kiểm chứng M3
 
@@ -26,11 +26,11 @@ Cập nhật23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 ## Tiếp theo
 
-1. Tiệm review M3 local; code/review kỹ thuật hoàn tất, chưa tự merge featureM3 hoặc deploy.
+1. Hoàn tất kiểm tra, merge và push main theo xác nhận của người dùng; chưa bắt đầu M4 hoặc deploy.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
 
 ## Tài liệu và giới hạn
 
-- docs/README là chỉ mục duy nhất; M3_PLAN là phạm vi thực thi. Markdownmax 400 dòng, DEV_LOG ngoại lệ. input/ giữ local/untracked, không commit ảnh/dump/.env/cookie.
+- docs/README là chỉ mục duy nhất; M3_PLAN giữ các tiêu chí chưa chuyển hết và gate thiết bị. Markdownmax 400 dòng, DEV_LOG ngoại lệ. input/ được ignore ở root, không commit ảnh/dump/.env/cookie.
 - Codebase graph đã index lại fast/persistencefalse trongM3; media bị default exclusion, dùng fallback khi không đủ kết quả.

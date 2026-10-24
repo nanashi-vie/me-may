@@ -389,3 +389,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Chốt QA mobile360/390/desktop: publicdetail3ảnh, focusoutline và Escape, cataloguePictureHardcover/tìmmã/Back; rawscreenshots ignored. Hai linkZalo thực tế có trongpublicconfig, không mở nativeapp hoặc gửi tin. Giữ cổng4200/8080 cho chủ thử, dừng builtQA4000/browser phiên này sau bàn giao.
 
 - Commit sửa review/bàn giao a6a4a38; SSRdev4200 cuối PASS sau restartbackend/nhận linkZalo. Dọn ownbrowserm3/m3final và builtSSR4000,4001 đã dừng; giữ pilot4200/8080. Commit tài liệu chốt sau cleanup.
+
+## S013-C01 — 24/10/2026 — tích hợp bản ổn định vào main trước M4
+
+- User xác nhận đến hiện tại ổn định, yêu cầu merge code vào main; bổ sung yêu cầu đưa input/ vào .gitignore. Chỉ tích hợp code hiện có và cập nhật bàn giao, chưa triển khai M4/deploy.
+- Bắt đầu từ feat/m3-public-catalogue tại a0e8623; đã fetch origin, origin/main tại 5d70ec8 là tổ tiên của nhánh hiện tại. M1/M2 đã nằm trong lịch sử M3 qua dev2a73249.
+- Working tree có Angular CLI analytics ID local trong code/frontend/angular.json; giữ thay đổi này ngoài commit tích hợp. input/ là dữ liệu local, thêm /input/ vào .gitignore root.
+- Đang kiểm tra: npm test tại code/frontend đạt56/56; bash code/backend/run-local.sh -B -ntp verify từ root đang chạy. Chưa merge/push ở checkpoint này. Giữ gate pilot M2, Zalo thiết bị và release Cloudflare riêng.
+- Pre-merge: backend verify ngoài sandbox PASS85 total/83 pass/2 live skipped, JAR thành công; lần sandbox lỗi Operation not permitted khi kết nối PostgreSQL/Mockito attach. Frontend npm run build sandbox exit134, rerun ngoài sandbox PASS. Log build/backend ở /tmp/me-may-main-{build,premerge-backend}.log. git diff --check, ignore input/.env/.local/.agents và logo nguồn tracked đạt.
