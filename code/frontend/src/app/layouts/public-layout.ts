@@ -26,11 +26,20 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
         /><button type="submit">Tìm sách</button>
       </form>
       <div class="header-links">
-        <a class="header-contact" routerLink="/quan-tam">♡ Quan tâm@if (wishlist.ready()) { <span class="wishlist-count" aria-label="Số cuốn đã lưu">{{ wishlist.codes().length }}</span> }</a>
+        <a class="header-contact" routerLink="/quan-tam"
+          >♡ Quan tâm
+          @if (wishlist.ready()) {
+            <span class="wishlist-count" aria-label="Số cuốn đã lưu">{{
+              wishlist.codes().length
+            }}</span>
+          }
+        </a>
         <a class="header-contact" routerLink="/lien-he">Nhắn tiệm ↗</a>
       </div>
     </header>
-    @if (wishlist.warning()) { <p class="storage-warning wrap" role="status">{{ wishlist.warning() }}</p> }
+    @if (wishlist.warning()) {
+      <p class="storage-warning wrap" role="status">{{ wishlist.warning() }}</p>
+    }
     <nav class="public-nav wrap" aria-label="Điều hướng chính">
       <a routerLink="/sach">Tất cả sách</a><a routerLink="/flash-sale">Flash Sale</a
       ><a routerLink="/sach" [queryParams]="{ category: 'BOARD_BOOK' }">Board book</a
@@ -109,9 +118,25 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
       font-size: 0.85rem;
       white-space: nowrap;
     }
-    .header-links { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
-    .wishlist-count { display: inline-block; min-width: 1.4em; text-align: center; background: var(--red); color: white; border-radius: 1em; padding: .1em .3em; }
-    .storage-warning { font-size: .85rem; color: #8e4b35; }
+    .header-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem 1rem;
+      align-items: center;
+    }
+    .wishlist-count {
+      display: inline-block;
+      min-width: 1.4em;
+      text-align: center;
+      background: var(--red);
+      color: white;
+      border-radius: 1em;
+      padding: 0.1em 0.3em;
+    }
+    .storage-warning {
+      font-size: 0.85rem;
+      color: #8e4b35;
+    }
     .public-nav {
       display: flex;
       gap: 1.8rem;

@@ -105,6 +105,11 @@ export const routes: Routes = [
           import('./features/information/contact-page').then((m) => m.ContactPage),
       },
       {
+        path: 'quan-tam',
+        loadComponent: () =>
+          import('./features/wishlist/wishlist-page').then((m) => m.WishlistPage),
+      },
+      {
         path: 'cach-mua',
         loadComponent: () => import('./features/information/public-page').then((m) => m.PublicPage),
         data: {

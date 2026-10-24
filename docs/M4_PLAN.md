@@ -53,7 +53,7 @@
 - [ ] RED select-all/SOLD/hidden/refresh/races/price-changes/network/expired-sale/cross-tab removal/copy fallback tests.
 - [ ] Implement page and revalidation; reuse dialog with explicit text mode without changing single-book behavior.
 - [ ] SSR shell/header noindex and navigation restore public SEO tests.
-- [ ] GREEN frontend suite/backend regression/build, commit/checkpoint.
+- [x] GREEN frontend78/78; backend regression87 total đã đạt task1; build đang xác minh (S014-C04).
 
 ## Task 4 — browser, review và bàn giao
 

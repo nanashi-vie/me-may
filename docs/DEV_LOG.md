@@ -415,3 +415,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 ### S014-C03 — storage và trái tim
 - RED missing store/button modules → GREEN frontend68/68. WishlistStore signals, browser-only afterNextRender, key memay.wishlist.v1 chỉ chứa mã; validation canonical Long, cap100, giữ memory khi read/write bị chặn, warning, reread latest trước mutation và storage event/clear, cleanup listener.
 - Shared accessible heart thêm vào card/detail, header link/badge/warning. Tests order/reopen/large-code/corrupt/null/blocked-read/quota-write/cap/remove-full/cross-tab/clear/listener/aria-pressed đạt. Không dependency mới; tiếp task3 page/enquiry/revalidation.
+
+### S014-C04 — trang quan tâm và nội dung hỏi mua
+- Task3 RED thiếu page module → implementation; JSDOM thiếu native showModal làm10test dừng ở setup, giả lập method trên đúng dialog test rồi GREEN78/78 (25file). Không polyfill product. Rerun sau Prettier78/78 PASS.
+- /quan-tam SSR shell/noindex/no-store; checkbox mặc định rỗng/select-all AVAILABLE; row hidden chỉ mã, SOLD cảnh báo. Refresh stream switchMap/takeUntilDestroyed, foreground/expiry/local-codechange invalidate text; prepared lookup selected và public server price, không snapshot storage.
+- Reuse ContactDialog với preparedText/busy/notice, giữ one-book mode và SOLD tư vấn tương đương; manual textarea + nút copy riêng, canonical origin M3. Tests price/new sold/hidden/cross-tab pending+ready/empty/offline/retry/expiry/late response/destroy/clipboard đạt. Build/SSR/browser/review ở task4, chưa tuyên bố phone/nativeZalo đạt.

@@ -7,9 +7,19 @@ import { enquiryText, effectiveBook } from './catalogue-state';
   selector: 'app-contact-dialog',
   template: `<dialog #dialog (close)="closed.emit()" aria-labelledby="contact-title">
     <h2 id="contact-title">
-      {{ book().availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ tiệm' }}
+      {{
+        preparedText() !== null
+          ? 'Hỏi mua các cuốn đã chọn'
+          : book()?.availability === 'SOLD'
+            ? 'Tư vấn sách tương đương'
+            : 'Liên hệ tiệm'
+      }}
     </h2>
     <p>Sao chép nội dung, mở Zalo rồi dán và gửi cho tiệm. Liên hệ không giữ sách.</p>
+    @if (busy()) {
+      <p role="status">Đang xác nhận lại giá và tình trạng…</p>
+    }
+    <p role="status">{{ notice() }}</p>
     <label
       >Nội dung hỏi sách<textarea
         readonly
@@ -20,7 +30,7 @@ import { enquiryText, effectiveBook } from './catalogue-state';
     </label>
     <p role="status">{{ message() }}</p>
     <div class="actions">
-      <button (click)="copy()">Sao chép nội dung</button>
+      <button [disabled]="busy() || !text()" (click)="copy()">Sao chép nội dung</button>
       @if (config()?.hotlineUrl) {
         <a
           class="button secondary"
@@ -58,9 +68,12 @@ import { enquiryText, effectiveBook } from './catalogue-state';
 })
 export class ContactDialog {
   @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
-  readonly book = input.required<PublicBook>();
+  readonly book = input<PublicBook | null>(null);
+  readonly preparedText = input<string | null>(null);
+  readonly busy = input(false);
+  readonly notice = input('');
   readonly config = input<ContactConfig | null>(null);
-  readonly url = input.required<string>();
+  readonly url = input('');
   readonly closed = output<void>();
   readonly message = signal('');
   private readonly document = inject(DOCUMENT);
@@ -70,19 +83,25 @@ export class ContactDialog {
   }
   private readonly clock = inject(PublicClock);
   text() {
-    return enquiryText(effectiveBook(this.book(), this.clock.now() || Date.now()), this.url());
+    if (this.busy()) return '';
+    if (this.preparedText() !== null) return this.preparedText()!;
+    const book = this.book();
+    return book ? enquiryText(effectiveBook(book, this.clock.now() || Date.now()), this.url()) : '';
   }
   select(event: Event) {
     (event.target as HTMLTextAreaElement).select();
   }
   async copy() {
+    const text = this.text();
+    if (!text || this.busy()) return;
     try {
       const clipboard = this.document.defaultView?.navigator.clipboard;
       if (!clipboard) throw new Error();
-      await clipboard.writeText(this.text());
-      this.message.set('Đã sao chép. Mở Zalo, dán và gửi cho tiệm.');
+      await clipboard.writeText(text);
+      if (text === this.text()) this.message.set('Đã sao chép. Mở Zalo, dán và gửi cho tiệm.');
     } catch {
-      this.message.set('Chưa sao chép tự động được. Chọn nội dung trong ô để sao chép thủ công.');
+      if (text === this.text())
+        this.message.set('Chưa sao chép tự động được. Chọn nội dung trong ô để sao chép thủ công.');
     }
   }
 }

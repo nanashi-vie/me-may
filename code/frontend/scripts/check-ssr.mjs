@@ -23,6 +23,20 @@ assert.equal(missing.status, 404, 'Unknown page must return a real HTTP 404');
 assert.ok((await missing.text()).includes('Không tìm thấy trang'));
 console.log('PASS unknown route: HTTP 404');
 
+const wishlist = await fetch(new URL('/quan-tam', origin));
+assert.equal(wishlist.status, 200);
+assert.match(wishlist.headers.get('x-robots-tag') ?? '', /noindex/);
+assert.match(wishlist.headers.get('cache-control') ?? '', /no-store/);
+const wishlistHtml = await wishlist.text();
+assert.ok(wishlistHtml.includes('<title>Danh sách quan tâm | Mẹ Mây</title>'));
+assert.ok(wishlistHtml.includes('Đang mở danh sách trên thiết bị'));
+assert.ok(
+  !wishlistHtml.includes('Số cuốn đã lưu'),
+  'SSR must not pretend to know the device count',
+);
+assert.ok(!/MM-\d{6,}/.test(wishlistHtml), 'SSR wishlist must not contain saved book data');
+console.log('PASS wishlist private SSR shell/noindex/no-store');
+
 for (const path of ['/admin/dang-nhap', '/admin/sach', '/admin/sach/1/xem-truoc']) {
   const response = await fetch(new URL(path, origin));
   assert.match(
@@ -48,7 +62,10 @@ for (const path of ['/sach', '/flash-sale', '/lien-he']) {
   assert.match(r.headers.get('cache-control') ?? '', /no-store/);
   const h = await r.text();
   assert.match(h, /<h1[ >]/, path);
-  assert.ok(!h.includes('Thêm vào danh sách yêu thích'));
+  assert.ok(
+    !/<meta[^>]+name="robots"[^>]+content="noindex/.test(h),
+    'Public page must remain indexable: ' + path,
+  );
 }
 if (books.items.length) {
   const b = books.items[0];
