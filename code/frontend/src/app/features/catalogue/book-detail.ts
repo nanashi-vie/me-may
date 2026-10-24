@@ -9,6 +9,7 @@ import { PageMetadata } from '../../core/page-metadata';
 import { PublicError } from './public-error';
 import { ContactDialog } from './contact-dialog';
 import { PublicClock } from './public-clock';
+import { WishlistButton } from '../wishlist/wishlist-button';
 import {
   AGE_LABELS,
   READING_LABELS,
@@ -18,7 +19,7 @@ import {
 } from '../admin/books/book-copy';
 @Component({
   selector: 'app-book-detail',
-  imports: [RouterLink, PublicError, ContactDialog],
+  imports: [RouterLink, PublicError, ContactDialog, WishlistButton],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
 })

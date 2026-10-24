@@ -92,6 +92,7 @@
         }
       </dl>
       <div class="contact-actions">
+        <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
         <button (click)="contact.open()">
           {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
         </button>

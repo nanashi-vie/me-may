@@ -411,3 +411,7 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 ### S014-C02 — API lookup
 - RED backend3 failures404 và frontend thiếu lookup; GREEN backend verify87 total/85PASS/2live skipped, JAR; frontend57/57. Code lookup dùng chung SELECT/FROM/mapper/giá M3, thứ tự input, PUBLISHED-only và mã canonical theo Long generator (không giới hạn6digit).
 - Contract validation1–100 trước dedupe; test missing/empty/malformed/too many/large/overflow, no-store/time, sale expiry, SOLD/hidden/no internal fields. Log /tmp/me-may-m4-task1-*.log; không gọi cloud live hoặc sửa dev. Task2 test đang RED vì chưa có store/button.
+
+### S014-C03 — storage và trái tim
+- RED missing store/button modules → GREEN frontend68/68. WishlistStore signals, browser-only afterNextRender, key memay.wishlist.v1 chỉ chứa mã; validation canonical Long, cap100, giữ memory khi read/write bị chặn, warning, reread latest trước mutation và storage event/clear, cleanup listener.
+- Shared accessible heart thêm vào card/detail, header link/badge/warning. Tests order/reopen/large-code/corrupt/null/blocked-read/quota-write/cap/remove-full/cross-tab/clear/listener/aria-pressed đạt. Không dependency mới; tiếp task3 page/enquiry/revalidation.

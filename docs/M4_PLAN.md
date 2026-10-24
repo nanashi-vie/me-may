@@ -44,7 +44,7 @@
 **Interface:** codes/ready/warning signals, toggle/remove/has; button input bookCode/title.
 - [ ] RED persist/reopen/corrupt/blocked/cap100/large-code/storage event/SSR initialization.
 - [ ] Store/browser lifecycle + accessible shared button, badge/header.
-- [ ] GREEN frontend suite, commit/checkpoint.
+- [x] GREEN frontend suite, commit/checkpoint (S014-C03).
 
 ## Task 3 — danh sách và enquiry
 
