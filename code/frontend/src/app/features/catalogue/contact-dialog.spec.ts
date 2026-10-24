@@ -26,6 +26,24 @@ const book: PublicBook = {
   media: [],
 };
 describe('Contact copy fallback', () => {
+  for (const change of ['busy', 'text'])
+    it('clears copy success when verified content becomes ' + change, async () => {
+      const f = TestBed.createComponent(ContactDialog);
+      f.componentRef.setInput('preparedText', 'old enquiry');
+      f.detectChanges();
+      Object.defineProperty(navigator, 'clipboard', {
+        configurable: true,
+        value: { writeText: vi.fn().mockResolvedValue(undefined) },
+      });
+      await f.componentInstance.copy();
+      expect(f.componentInstance.message()).toContain('Đã sao chép');
+      f.componentRef.setInput(
+        change === 'busy' ? 'busy' : 'preparedText',
+        change === 'busy' ? true : 'new enquiry',
+      );
+      f.detectChanges();
+      expect(f.componentInstance.message()).not.toContain('Đã sao chép');
+    });
   it('preserves selectable enquiry when clipboard fails', async () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', book);

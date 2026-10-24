@@ -65,6 +65,54 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     localStorage.clear();
     now.set(Date.parse('2026-10-24T12:00:00Z'));
   });
+  it('remembers the Prepare opener before async verification disables it', () => {
+    const { f, c, lookup } = setup();
+    c.selectAll();
+    f.detectChanges();
+    const pending = new Subject<PublicBook[]>();
+    lookup.mockReturnValueOnce(pending);
+    const opener = f.nativeElement.querySelector('.enquiry-actions button') as HTMLButtonElement;
+    const open = vi.spyOn(c.dialog, 'open');
+    opener.focus();
+    c.prepare();
+    f.detectChanges();
+    expect(opener.disabled).toBe(true);
+    pending.next([book()]);
+    expect(open).toHaveBeenCalledWith(opener);
+    f.detectChanges();
+    (f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).focus();
+    c.dialog.dialog.nativeElement.dispatchEvent(new Event('close'));
+    expect(document.activeElement).toBe(opener);
+  });
+  it('invalidates prior clipboard success after a fresh price, removal, or failed verification', async () => {
+    const { f, c, lookup } = setup(['MM-000001', 'MM-000002'], [book(), book('MM-000002')]);
+    c.selectAll();
+    c.prepare();
+    f.detectChanges();
+    Object.defineProperty(navigator, 'clipboard', {
+      configurable: true,
+      value: { writeText: vi.fn().mockResolvedValue(undefined) },
+    });
+    await c.dialog.copy();
+    expect(c.dialog.message()).toContain('Đã sao chép');
+    lookup.mockReturnValueOnce(of([book(undefined, { priceVnd: 15000 }), book('MM-000002')]));
+    c.refresh();
+    f.detectChanges();
+    expect(c.dialog.message()).not.toContain('Đã sao chép');
+    expect(c.enquiry()).toContain('15.000');
+    await c.dialog.copy();
+    localStorage.setItem(WISHLIST_KEY, '["MM-000001"]');
+    window.dispatchEvent(new StorageEvent('storage', { key: WISHLIST_KEY }));
+    f.detectChanges();
+    expect(c.dialog.message()).not.toContain('Đã sao chép');
+    expect(c.enquiry()).not.toContain('MM-000002');
+    await c.dialog.copy();
+    lookup.mockReturnValueOnce(throwError(() => Error('offline')));
+    c.refresh();
+    f.detectChanges();
+    expect(c.dialog.message()).not.toContain('Đã sao chép');
+    expect(c.enquiry()).toBe('');
+  });
   it('loads server state with no initial selection; select-all excludes sold and missing rows', () => {
     const { f, c, lookup } = setup();
     expect(lookup).toHaveBeenCalledWith(['MM-000001', 'MM-000002', 'MM-000003']);
@@ -134,6 +182,7 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     c.refresh();
     f.detectChanges();
     expect(c.error()).toBe(false);
+    expect(f.nativeElement.textContent).not.toContain('Chưa xác nhận được');
     expect(c.enquiry()).toBeTruthy();
   });
   it('cancels a late enquiry response when a selected code is removed in another tab', () => {

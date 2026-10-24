@@ -4,7 +4,9 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Trạng thái
 
-- M4 đã được user duyệt24/10: đang thực thi trên codex/m4-wishlist, baseline main a0a2642. Plan ở M4_PLAN, bước hiện tại API lookup → storage/trái tim → danh sách/enquiry → QA/review.
+- M4 hoàn tất kỹ thuật local trên `codex/m4-wishlist`, baseline main a0a2642: lookup1–100, storage100mã, trái tim/badge, checkbox subset, multi-book enquiry/revalidation. User duyệt plan24/10; chưa merge/push/release M4.
+- Frontend82/82 (25files), backend87total/85PASS/2live skipped, verify/JAR/build PASS. Fresh review1Important + browser focus đã sửa một lượt RED→GREEN; recovery notice cũng có regression. Không deferred Minor.
+- SSR private shell/noindex/no-store, public metadata/404/ảnh; browser360/390/desktop1440, save/reload/subset/multi/cross-tab/copycallback+manualfallback/SOLDhiddenoffline fixture/retry/nativeEscape/focus/noindexreset đạt. Fingerprint dev6books/18media/46audit trước–sau khớp.
 
 - M0/M1 local đã duyệt. M2 gate kỹ thuật đã đạt; pilot chủ tiệm hiện6 cuốn/18 ảnh ACTIVE, còn thiếu10–20 cuốn và đối chiếu nghiệp vụ. Giữ M2_SPEC/M2_PLAN khi gate còn mở.
 - Người dùng đã duyệt M3 local và cho bắt đầu dù pilot M2 còn mở. Yêu cầu gộp feat/m1-local và feat/m2-admin-catalogue vào dev đã thực hiện/push2a73249. M3 ở feat/m3-public-catalogue.
@@ -22,15 +24,15 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Local và điều kiện còn thiếu
 
-- Pilot frontend4200/backend8080; built QA4000/backenddown QA4001 đã dừng sau kiểm thử. [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach), [admin Flash Sale](http://127.0.0.1:4200/admin/flash-sale).
+- Pilot frontend4200/backend8080 phục vụ M4; QA4000/browser phiên này dừng sau bàn giao. [Quan tâm](http://127.0.0.1:4200/quan-tam), [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach).
 - User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
 - CloudflareSEO/OG/crawler, staging/VPS/Dokploy, deploy/CI/CD và backup ngoài VPS vẫn gate riêng trước release. Không coi localSSR là đã đạt Cloudflare.
 
 ## Tiếp theo
 
-1. Thực thi M4_PLAN tuần tự và kiểm chứng local; chưa merge/release M4.
+1. Tiệm thử /quan-tam và nghiệm thu M4; merge/push feature khi có yêu cầu. Contract/UX/bằng chứng đã gộp vào ARCHITECTURE/DESIGN/VERIFICATION/README; M4_PLAN hết vai trò đã xóa.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
-3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
+3. Tiếp M5 hardening/pilot/release. Gate phoneSafari/Android/in-app/mở-dán-gửiZalo thật còn mở; callback không chứng minh OSclipboard mọi nền tảng. localStorage sync best-effort, hai tab ghi đồng thời có thể last-write-wins; chưa đo100cuốn. ImportCSV/Excel tạo nháp ngay sauMVP.
 
 ## Tài liệu và giới hạn
 

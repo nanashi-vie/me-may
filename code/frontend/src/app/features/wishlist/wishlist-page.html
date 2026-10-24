@@ -1,5 +1,5 @@
 <p class="eyebrow">Những cuốn bạn muốn xem lại</p>
-<h1>Danh sách quan tâm</h1>
+<h1 id="wishlist-heading" tabindex="-1">Danh sách quan tâm</h1>
 <p class="intro">
   Lưu trong cùng trình duyệt trên thiết bị này, có thể mất khi xóa dữ liệu hoặc dùng ẩn danh. Danh
   sách không giữ sách; tiệm xác nhận giá và tình trạng khi trao đổi.
@@ -108,11 +108,11 @@
     </section>
   }
 }
-<p role="status">{{ notice() }}</p>
+<p role="status">{{ feedback() }}</p>
 <app-contact-dialog
   [preparedText]="enquiry()"
   [busy]="loading()"
-  [notice]="notice()"
+  [notice]="feedback()"
   [config]="config()"
   (closed)="onDialogClosed()"
 />

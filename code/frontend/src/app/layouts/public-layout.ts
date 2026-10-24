@@ -201,6 +201,19 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
       .brand {
         font-size: 1.5rem;
       }
+      .brand-name {
+        font-size: 1.5rem;
+        white-space: nowrap;
+      }
+      .brand small {
+        max-width: 120px;
+        white-space: normal;
+      }
+      .header-links {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.45rem;
+      }
       .public-nav {
         gap: 1.2rem;
         flex-wrap: wrap;

@@ -67,13 +67,22 @@ Package thực tế ở M1 là `vn.memay`; các domain chưa dùng trong sơ đ�
 ## Trách nhiệm và phụ thuộc
 
 - Home lấy public catalogue/taxonomy; không đọc trực tiếp database hoặc API quản trị.
-- Wishlist dùng ID công khai và storage adapter chỉ chạy ở browser; xác minh lại dữ liệu qua public API, không giữ snapshot làm nguồn giá cuối cùng.
+- Wishlist dùng mã công khai và storage adapter chỉ chạy ở browser; xác minh lại dữ liệu qua public API, không giữ snapshot làm nguồn giá cuối cùng.
 - Admin dùng endpoint có session/CSRF; guard chỉ hỗ trợ UI, backend là nơi quyết định quyền.
 - Media xử lý provider; catalogue/listing chỉ dùng định danh và metadata media cần thiết.
 - Test đặt gần feature theo convention framework, test backend nằm trong src/test; tránh folder test cấp root rời ngữ cảnh khi chưa cần.
 - `database/` không chứa dump production/PII; `ops/` không chứa secret hoặc data volume. Mọi config mẫu chỉ có tên biến và giá trị demo an toàn.
 
 ## Hệ quả triển khai
+
+### Wishlist M4 local
+
+- `WishlistStore`: Angular signals; localStorage `memay.wishlist.v1` là mảng mã duy nhất/thứ tự thêm, tối đa100. Mã canonical theo generator Java Long dương, tối thiểu6 chữ số, không ép đúng6. Không lưu snapshot tên/ảnh/giá, selection hoặc token. Init bằng afterNextRender; cleanup listener khi destroy.
+- Storage parse lọc mã invalid/trùng/quá100 và warning; malformed JSON/root sai dùng danh sách rỗng có cảnh báo, không overwrite trước thao tác lưu mới. Storage unavailable/read/write lỗi chuyển sang memory-only giữ trạng thái đang có và cảnh báo. Event key đúng hoặc clear đọc lại latest; mutation reread latest trước ghi. Đồng bộ best-effort cùng origin, không transaction/CRDT; ghi tab đồng thời vẫn có thể last-write-wins.
+- Public `GET /api/v1/books/lookup?code=...` repeated:1–100 tham số trước dedupe, validate canonical/Long, thiếu/sai/quá giới hạn400. Response `PublicBook[]` giữ thứ tự mã input sau dedupe, chỉ PUBLISHED gồm SOLD; mã thiếu/không public bị bỏ qua không phân biệt lý do. Parameterized JDBC tái sử dụng SELECT/FROM/mapper, giá sale/server clock M3, ACTIVE media. Không cần migration.
+- `PublicApi.lookup(codes)` dùng omit credentials/no transfer cache, no-store và X-Memay-Server-Time hiện có. Empty local list không gọi lookup. Page dùng stream switchMap/takeUntilDestroyed; refresh và prepare cùng stream hủy request cũ; response chỉ nhận mã còn trong local list/request hiện tại.
+- Revalidation lifecycle/selection/dialog theo DESIGN. Prepared text được tính từ dữ liệu đã xác minh, selection/codes hiện hành và PublicClock; expiry hoặc mã đã xóa làm text rỗng ngay, trước khi refresh hoàn tất. Chỉ copy sau thao tác riêng của khách; không tự gửi hoặc ghi availability.
+- Route /quan-tam có SSR shell + X-Robots-Tag/meta noindex/no-store; sau browser render mới đọc storage. PUBLIC_SITE_ORIGIN qua TransferState M3 cung cấp URL canonical. Không thêm dependency, customer auth, order hoặc backend wishlist persistence.
 
 Cloudflare build root là `code/frontend`; Spring build context `code/backend`. PostgreSQL là service riêng của Dokploy, có volume và private network. Không nhét database binary hoặc file ảnh thật lớn vào repo. Dockerfile/Compose/CI được hoãn theo yêu cầu; chốt khi quay lại milestone triển khai.
 

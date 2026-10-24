@@ -45,12 +45,18 @@ export class WishlistPage {
   readonly loading = signal(false);
   readonly error = signal(false);
   readonly notice = signal('');
+  readonly feedback = computed(() =>
+    this.error()
+      ? 'Chưa xác nhận được giá và tình trạng. Hãy thử lại trước khi sao chép.'
+      : this.notice(),
+  );
   readonly config = signal<ContactConfig | null>(null);
   readonly price = formatPrice;
   private readonly prepared = signal<PublicBook[]>([]);
   private readonly enquiryMode = signal(false);
   private readonly requests = new Subject<LookupRequest>();
   private readonly expired = new Set<string>();
+  private returnFocus: HTMLElement | null = null;
   readonly rows = computed(() =>
     this.store.codes().map((code) => {
       const book = this.books()[code];
@@ -187,6 +193,7 @@ export class WishlistPage {
   }
   prepare() {
     if (this.loading() || this.error() || !this.selected().length) return;
+    this.returnFocus = this.document.activeElement as HTMLElement | null;
     this.notice.set('');
     this.enquiryMode.set(true);
     this.requests.next({
@@ -197,6 +204,7 @@ export class WishlistPage {
   onDialogClosed() {
     this.enquiryMode.set(false);
     this.prepared.set([]);
+    if (!this.selected().length) this.document.getElementById('wishlist-heading')?.focus();
   }
 
   private accept(request: LookupRequest, incoming: PublicBook[], failed: boolean) {
@@ -210,7 +218,6 @@ export class WishlistPage {
         books[b.bookCode] = b;
     this.books.set(books);
     if (failed) {
-      this.notice.set('Chưa xác nhận được giá và tình trạng. Hãy thử lại trước khi sao chép.');
       return;
     }
     const oldSelection = this.selected();
@@ -225,7 +232,7 @@ export class WishlistPage {
     if (this.enquiryMode()) {
       this.prepared.set(currentCodes.filter((c) => selected.includes(c)).map((c) => books[c]));
       if (request.prepare && selected.length && !this.dialog.dialog.nativeElement.open)
-        this.dialog.open();
+        this.dialog.open(this.returnFocus);
     }
   }
 }

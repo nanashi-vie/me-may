@@ -1,11 +1,20 @@
 import { PublicClock } from './public-clock';
-import { Component, ElementRef, ViewChild, input, signal, inject, output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChild,
+  input,
+  signal,
+  inject,
+  output,
+  effect,
+} from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { ContactConfig, PublicBook } from './public.models';
 import { enquiryText, effectiveBook } from './catalogue-state';
 @Component({
   selector: 'app-contact-dialog',
-  template: `<dialog #dialog (close)="closed.emit()" aria-labelledby="contact-title">
+  template: `<dialog #dialog (close)="onClose()" aria-labelledby="contact-title">
     <h2 id="contact-title">
       {{
         preparedText() !== null
@@ -77,9 +86,23 @@ export class ContactDialog {
   readonly closed = output<void>();
   readonly message = signal('');
   private readonly document = inject(DOCUMENT);
-  open() {
+  private returnFocus: HTMLElement | null = null;
+  constructor() {
+    effect(() => {
+      const text = this.preparedText();
+      this.busy();
+      if (text !== null) this.message.set('');
+    });
+  }
+  open(returnFocus?: HTMLElement | null) {
+    this.returnFocus = returnFocus ?? (this.document.activeElement as HTMLElement | null);
     this.message.set('');
     this.dialog.nativeElement.showModal();
+  }
+  onClose() {
+    this.closed.emit();
+    if (this.returnFocus?.isConnected && !this.returnFocus.matches(':disabled'))
+      this.returnFocus.focus();
   }
   private readonly clock = inject(PublicClock);
   text() {

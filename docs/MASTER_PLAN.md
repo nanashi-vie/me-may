@@ -124,7 +124,8 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 
 **Wishlist / enquiry list**
 - Thêm/xóa cuốn bằng nút trái tim có nhãn truy cập, badge số cuốn, trang xem tổng hợp, không cần đăng nhập.
-- Client localStorage lưu ID/mã, server GET xác nhận và cập nhật tên/giá/trạng thái mới khi xem lại; cuốn đã bán hiển thị cảnh báo.
+- Client localStorage chỉ lưu tối đa100 mã trong cùng browser; server GET xác nhận tên/giá/trạng thái mới. Cuốn sold cảnh báo, mã không public chỉ hiện mã/không còn hiển thị.
+- M4 duyệt24/10: checkbox chọn từng cuốn để hỏi, ban đầu chưa chọn; chọn tất cả chỉ sách còn hàng. Các cuốn không chọn vẫn được lưu. Chi tiết lifecycle/revalidation ở DESIGN và contract ở ARCHITECTURE.
 - Sao chép format nhiều dòng: `Mã | Tên | Giá tham khảo | Link`. Có phương án mở kênh chat; bản sao chép là lối dự phòng luôn hoạt động.
 - Không giới thiệu là giỏ hàng, không có số lượng, không cộng phí ship, không tạo đơn.
 
@@ -241,6 +242,7 @@ Contract M2 đã duyệt ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
 GET  /api/v1/books/{slug}
+GET  /api/v1/books/lookup?code=MM-000001&code=MM-000002
 GET  /api/v1/collections
 GET  /api/v1/collections/{slug}
 ```
