@@ -26,7 +26,7 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Tiếp theo
 
-1. Main là baseline ổn định trước M4; hoàn tất push/đối chiếu remote ở checkpoint S013. Bước tiếp theo là chốt thiết kế/spec M4, chưa triển khai hoặc deploy trong phiên này.
+1. Main là baseline ổn định trước M4, đã push origin/main (merge38c908f, cấu hình/bàn giao da9b20a). Bước tiếp theo là chốt thiết kế/spec M4, chưa triển khai hoặc deploy trong phiên này.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
 
