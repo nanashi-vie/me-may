@@ -114,3 +114,10 @@ Ngày24/10/2026, branch `codex/m4-wishlist`, baseline main a0a2642. User duyệt
 Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`, ảnh QA ignored `output/playwright/m4-{mobile360,desktop,enquiry390}.png`. Browser inject clipboard callback để kiểm UI và denied fallback; không coi đây là xác nhận OS clipboard/permission trên mọi nền tảng. Console ERR_FAILED duy nhất đến lookup bị abort có chủ đích trong test offline. CLI run-code lần đầu dùng callback destructuring sai, không tính PASS; rerun đúng callback đạt.
 
 **Chưa kiểm chứng/giới hạn:** Safari iPhone/Android Chrome/Facebook/Zalo in-app và mở/dán/gửi Zalo trên thiết bị thật; không gửi tin trong QA. Chưa đo hiệu năng100cuốn thực tế hoặc atomic concurrent tab writes (localStorage best-effort). M2 pilot10–20, Cloudflare/deploy/production/offsite restore/performance giữ gate riêng; M4 chỉ bàn giao local, chờ tiệm nghiệm thu/merge riêng.
+
+## Xác nhận M3/M4 và publish GitHub — 25/10/2026
+
+- Người dùng xác nhận “đã test xong m3 và m4”, yêu cầu publish GitHub và để các chỉnh sửa còn lại sau MVP; chưa cung cấp chi tiết chỉnh sửa. Ghi nhận nghiệm thu local của người dùng; không suy thêm thiết bị/trình duyệt hoặc kết quả native Zalo chưa được mô tả.
+- Chạy lại trước tích hợp: frontend `npm test`82/82 (25files), backend root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR thành công. Không đổi product code hoặc gọi cloud live. Log /tmp/me-may-m3-m4-publish-{frontend,backend}.log.
+- M3 đã có trên main a0a2642; M4 source a02b697 gồm4commits cần tích hợp. Trạng thái merge/push/remote cuối ở DEV_LOG/PROGRESS.
+- Chưa có VPS; user tự chuẩn bị Cloudflare Pages và nhờ đề xuất backend/database miễn phí. Render Free + Neon Free là đề xuất test, chưa provision/chốt/deploy. Cold-start/auth/DB/render/backup phải kiểm chứng trong spec M5, chưa coi local nghiệm thu là production.

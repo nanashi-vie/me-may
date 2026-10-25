@@ -84,7 +84,7 @@ Package thực tế ở M1 là `vn.memay`; các domain chưa dùng trong sơ đ�
 - Revalidation lifecycle/selection/dialog theo DESIGN. Prepared text được tính từ dữ liệu đã xác minh, selection/codes hiện hành và PublicClock; expiry hoặc mã đã xóa làm text rỗng ngay, trước khi refresh hoàn tất. Chỉ copy sau thao tác riêng của khách; không tự gửi hoặc ghi availability.
 - Route /quan-tam có SSR shell + X-Robots-Tag/meta noindex/no-store; sau browser render mới đọc storage. PUBLIC_SITE_ORIGIN qua TransferState M3 cung cấp URL canonical. Không thêm dependency, customer auth, order hoặc backend wishlist persistence.
 
-Cloudflare build root là `code/frontend`; Spring build context `code/backend`. PostgreSQL là service riêng của Dokploy, có volume và private network. Không nhét database binary hoặc file ảnh thật lớn vào repo. Dockerfile/Compose/CI được hoãn theo yêu cầu; chốt khi quay lại milestone triển khai.
+Cloudflare build root là `code/frontend`; Spring build context `code/backend`. Môi trường online test trước M5 theo điều chỉnh25/10 ở phần hạ tầng dưới đây; PostgreSQL/Dokploy private volume là hướng production hoãn. Không nhét database binary hoặc ảnh thật lớn vào repo. Dockerfile/Compose/CI chưa triển khai; chỉ bổ sung khi thực thi spec deploy được duyệt.
 
 
 ## Khảo sát khả năng tận dụng Web Shop cũ
@@ -135,18 +135,35 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 
 ## Hạ tầng triển khai
 
+### Điều chỉnh trước M5 — 25/10/2026
+
+- User xác nhận đã test xong M3/M4, yêu cầu publish GitHub; vài chỉnh sửa chưa mô tả để sau MVP. Hiện chưa thuê VPS. User tự chuẩn bị Cloudflare Pages; yêu cầu agent đề xuất host backend/database miễn phí để test.
+- Đề xuất hiện tại: **Render Free Web Service chạy Spring Boot/Java21 bằng Docker + Neon Free PostgreSQL**, Cloudinary giữ. Chưa chốt/provision/deploy hay đổi production sang các provider này; VPS/Dokploy hoãn, không là điều kiện để bắt đầu test online.
+- Theo [Render Free](https://render.com/docs/free), web service ngủ sau15phút không có traffic, khởi động khoảng1phút, filesystem ephemeral; Free Postgres hết hạn30ngày. [Docker Render](https://render.com/docs/docker) hỗ trợ JVM. [Neon Free](https://neon.com/docs/introduction/plans) là ứng viên PostgreSQL test riêng; quota/version/TLS/Flyway/pooling cần kiểm chứng lúc chọn region/plan. Không tự dùng DB dev trên máy cá nhân từ cloud.
+- Code hiện tại bind127.0.0.1 mặc định, có PORT env; khi deploy cần SERVER_ADDRESS=0.0.0.0/profile phù hợp, không bật local profile cookie insecure. Session in-memory mất khi restart/sleep; public HTTP timeout10s có thể ngắn hơn cold-start. Đây là đầu vào spec M5, chưa sửa code tại checkpoint publish.
+- Pages và Render default domains là khác site; cookie SameSite=Lax hiện tại và API browser-relative cần thiết kế route/proxy hoặc domain/CORS/credentials/CSRF phù hợp. Không dùng wildcard credentials, tắt CSRF hoặc chỉ sửa URL rồi coi admin login đã chạy.
+- [Hướng dẫn Angular Pages](https://developers.cloudflare.com/pages/framework-guides/deploy-an-angular-site/) không chứng minh build Node/Express SSR hiện tại chạy nguyên trên Pages. User chuẩn bị Pages theo lựa chọn của họ; spike initial HTML/OG/404/publish-sold-cache và runtime/adapter/SSG vẫn phải giữ. Không tự chuyển frontend sang Workers/backend SSR.
+- Tách test DB/media namespace/secrets khỏi dữ liệu thật; chưa di chuyển6cuốn/18ảnh hoặc cung cấp dump/secrets lên cloud. M5 còn phải chốt budget/quota, health/rollback, auth/mobile/in-app, backup/restore và chứng cứ SEO; test miễn phí không thay release production.
+
+### Public M3 — contract đã triển khai
+
+- Public GET `/api/v1/books?q&category&binding&age&sort&page`: page0-based/size20; ageOR + categoryAND; binding chỉ Picture book/ALL bỏ giới hạn; sort newest/price_asc/price_desc và IDdesc tie-break. Search literal theo mã hoặc tên, PUBLISHED-only gồm SOLD. Collections chỉ active; Home ưu tiên available. DTO không field nội bộ.
+- GET `/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/contact`, `/flash-sale`. Media chỉ ACTIVE của PUBLISHED, no-store kể cả lỗi. Initial HTML public có metadata/canonical/OG, missing404, backend failure503; admin noindex/no-store.
+- Flash Sale singleton id1/version0, startsAt/endsAt/items[{bookCode,salePriceVnd}], OWNER GET/PUT `/api/v1/admin/flash-sale`, version/audit. Original price từ listing; effective chỉ enabled/[start,end)/PUBLISHED/AVAILABLE/sale<reference. List/detail/sort/enquiry dùng cùng DBclock; response timestamp sync PublicClock, origin qua TransferState. Không sold counts. Tắt campaign sau sold vẫn được.
+- V4 bỏ reading basis khỏi field/storage/audit mới, giữ audit lịch sử và optional HTTPS video; V5 thêm campaign mặc định tắt. Backup/fingerprint/migration bảo toàn sách/media/audit/sequence đã kiểm chứng. Không cần chạy lại hoặc reset dữ liệu vì user nghiệm thu.
+
 ### Luồng mạng / domain (tên minh họa, chưa mua domain)
 
 | URL minh họa | Nơi chạy | Bảo mật / ghi chú |
 |---|---|---|
-| `www.example.com`, `example.com` | Cloudflare Workers Assets / Angular | Domain công khai; SPA/SSG/SSR phụ thuộc quyết định sau spike |
+| `www.example.com`, `example.com` | Cloudflare Pages / Angular, user chuẩn bị | Domain minh họa, SPA/SSG/SSR phụ thuộc spike |
 | `www.example.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
-| `api.example.com` | VPS → Dokploy/Traefik → Spring Boot | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
-| PostgreSQL internal service:5432 | VPS/Dokploy, persistent volume | Chỉ JDBC từ backend; không public port hoặc kết nối browser |
+| `api.example.com` | Test: backend host miễn phí chưa chốt; production VPS/Dokploy hoãn | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
+| PostgreSQL test endpoint / internal service:5432 | Test provider chưa chốt; production VPS/Dokploy hoãn | Chỉ JDBC từ backend, TLS mạng ngoài; không kết nối browser |
 | Cloudinary delivery domain | Cloudinary CDN | Chỉ giao ảnh đã xuất bản; quản lý signed uploads/delete qua API |
 | Resend API | Resend, **chưa kích hoạt ở MVP** | Gọi từ Spring Boot khi đã có tính năng email |
 
-**Kết nối PostgreSQL tự quản:**
+**Kết nối PostgreSQL tự quản (hướng production, chưa có VPS):**
 
 - Backend kết nối service hostname trong private network, port nội bộ 5432; không dùng public DNS cho luồng DB cùng VPS và không public port database.
 - Tách database role ứng dụng khỏi role migration/admin; giới hạn quyền theo schema, giữ credential trong secret/env của Dokploy, không ghi vào source hoặc browser bundle.
@@ -164,7 +181,7 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 4. Nếu Workers Angular không có SSR tương thích: lựa chọn có kiểm chứng gồm **(a)** prerender theo danh mục đã publish + cơ chế rebuild khi thay đổi, hoặc **(b)** giải pháp edge-render/SSR tương thích được spike chứng minh. Không tự triển khai một runtime Node SSR truyền thống trên Cloudflare chỉ từ hướng dẫn static assets.
 5. Nếu cả hai nhánh không đáp ứng SEO và tốc độ cập nhật, phải ghi lại trade-off và **đổi kiến trúc FE một cách có chủ đích**; không mặc định hạ yêu cầu SEO mà không quyết định.
 
-**VPS / Dokploy:**
+**VPS / Dokploy (hướng production hoãn, không phải test M5 đã provision):**
 
 - VPS cần đủ RAM cho JVM + PostgreSQL + Dokploy/Traefik + hệ thống; chọn cấu hình từ smoke load test và quan sát memory, **không mặc định một size cố định**.
 - Build image Spring Boot (multi-stage), health check `/actuator/health` tối giản, restart policy, giới hạn bộ nhớ và log rotation; Dokploy deploy image ổn định thay vì build production không có kiểm soát.

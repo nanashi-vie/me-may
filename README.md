@@ -1,6 +1,6 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M4 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue/detail/contact/Flash Sale và wishlist chọn nhiều cuốn đã triển khai local. Importer sau MVP; Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
+M3/M4 local đã được người dùng xác nhận test xong25/10/2026: Angular21.2 + Spring Boot4.1.1/Java21 + PostgreSQL + Cloudinary. Pilot M2 vẫn cần10–20cuốn. Trước M5 chưa thuê VPS; user tự chuẩn bị Cloudflare Pages, backend/database miễn phí cho test đang được đề xuất (Render + Neon), chưa deploy. Các chỉnh sửa còn lại và importer để sau MVP.
 
 ## Chạy trên máy hiện tại
 
