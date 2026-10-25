@@ -1,6 +1,6 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S015 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S015-C03/C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Trạng thái
 
@@ -26,13 +26,13 @@ Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 - Pilot frontend4200/backend8080 phục vụ M4; QA4000/browser phiên này dừng sau bàn giao. [Quan tâm](http://127.0.0.1:4200/quan-tam), [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach).
 - User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
-- User chưa thuê VPS; tự chuẩn bị deploy frontend Cloudflare Pages, nhờ đề xuất backend/database miễn phí. Đề xuất Render Free Docker + Neon Free PostgreSQL cho test, chưa chốt/provision/deploy. Production VPS/Dokploy hoãn; SEO/auth/backup/restore vẫn phải kiểm chứng trên môi trường thật.
+- User đã chốt **Cloudflare Workers cho Angular SSR**, thay Pages; đã cung cấp Neon trong .env. Chuẩn hóa URL thô thành NEON_DATABASE_URL, pooled/TLS và read-only connection PASS PostgreSQL18.6/public0tables/noFlyway. DB_URL/TEST_DB_URL vẫn local; chưa migration/deploy. Render Free là đề xuất backend; chưa có VPS. SSR/auth/backup/restore vẫn gate môi trường thật.
 
 ## Tiếp theo
 
-1. Publish main đã xong; tiếp theo chốt đề xuất Render Free + Neon Free và spec M5/test online với frontend Pages do user chuẩn bị. Contract/UX/bằng chứng M3/M4 đã gộp tài liệu chuẩn, plan hết vai trò đã xóa.
+1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; bước tiếp là spec/spike Angular SSR Worker và backend Render đề xuất. Credential không phải ủy quyền migrate/deploy; chưa có product code M5.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
-3. Trước M5 chốt host/DB online/region, domain hoặc route API cùng origin, cookie/CSRF, Pages runtime/SSR/SSG và cold-start. Chưa có spec M5 hoặc lệnh deploy được duyệt. Usertest không bổ sung danh sách thiết bị/nativeZalo; giữ gate cụ thể khi chưa có chứng cứ. ImportCSV/Excel và chỉnh sửa còn lại sau MVP.
+3. Cần NEON_DATABASE_URL_UNPOOLED cho Flyway (hiện chưa có), tách datasource/migration config, chốt host/region/domain hoặc /api cùng origin/cookie/CSRF và Worker runtime/SSR/cold-start. Chưa có spec M5/lệnh deploy được duyệt. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
 
 ## Tài liệu và giới hạn
 

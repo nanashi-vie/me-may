@@ -137,12 +137,14 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 
 ### Điều chỉnh trước M5 — 25/10/2026
 
-- User xác nhận đã test xong M3/M4, yêu cầu publish GitHub; vài chỉnh sửa chưa mô tả để sau MVP. Hiện chưa thuê VPS. User tự chuẩn bị Cloudflare Pages; yêu cầu agent đề xuất host backend/database miễn phí để test.
-- Đề xuất hiện tại: **Render Free Web Service chạy Spring Boot/Java21 bằng Docker + Neon Free PostgreSQL**, Cloudinary giữ. Chưa chốt/provision/deploy hay đổi production sang các provider này; VPS/Dokploy hoãn, không là điều kiện để bắt đầu test online.
-- Theo [Render Free](https://render.com/docs/free), web service ngủ sau15phút không có traffic, khởi động khoảng1phút, filesystem ephemeral; Free Postgres hết hạn30ngày. [Docker Render](https://render.com/docs/docker) hỗ trợ JVM. [Neon Free](https://neon.com/docs/introduction/plans) là ứng viên PostgreSQL test riêng; quota/version/TLS/Flyway/pooling cần kiểm chứng lúc chọn region/plan. Không tự dùng DB dev trên máy cá nhân từ cloud.
+- M3/M4 đã publish; chỉnh sửa chưa mô tả để sau MVP. User chốt **Cloudflare Workers cho frontend SSR** thay Pages và cung cấp URL Neon trong .env; chưa thuê VPS. Backend miễn phí vẫn là đề xuất Render.
+- Hướng test: Workers Angular SSR/assets/API proxy → Spring Boot/Java21 Docker trên Render đề xuất → Neon PostgreSQL; Cloudinary giữ. Neon có endpoint/credential kiểm tra chỉ đọc, chưa migration/deploy. Production VPS/Dokploy hoãn; không đổi auth/media hoặc thêm Neon Functions/Data API vì skill có mẫu.
+- Theo [Render Free](https://render.com/docs/free), service ngủ sau15phút/start~1phút/filesystem ephemeral; Free Postgres hết hạn30ngày. [Docker Render](https://render.com/docs/docker) hỗ trợ JVM. [Neon Free](https://neon.com/docs/introduction/plans) được user chuẩn bị cho DBtest; quota/region/migration/backup còn phải chốt. Không dùng Docker DB cá nhân từ cloud.
 - Code hiện tại bind127.0.0.1 mặc định, có PORT env; khi deploy cần SERVER_ADDRESS=0.0.0.0/profile phù hợp, không bật local profile cookie insecure. Session in-memory mất khi restart/sleep; public HTTP timeout10s có thể ngắn hơn cold-start. Đây là đầu vào spec M5, chưa sửa code tại checkpoint publish.
-- Pages và Render default domains là khác site; cookie SameSite=Lax hiện tại và API browser-relative cần thiết kế route/proxy hoặc domain/CORS/credentials/CSRF phù hợp. Không dùng wildcard credentials, tắt CSRF hoặc chỉ sửa URL rồi coi admin login đã chạy.
-- [Hướng dẫn Angular Pages](https://developers.cloudflare.com/pages/framework-guides/deploy-an-angular-site/) không chứng minh build Node/Express SSR hiện tại chạy nguyên trên Pages. User chuẩn bị Pages theo lựa chọn của họ; spike initial HTML/OG/404/publish-sold-cache và runtime/adapter/SSG vẫn phải giữ. Không tự chuyển frontend sang Workers/backend SSR.
+- Workers.dev và Render default domains khác site; cookie SameSite=Lax/API browser-relative cần route/proxy hoặc domain/CORS/credentials/CSRF phù hợp. Ưu tiên khảo sát /api proxy cùng origin trong spec, chưa triển khai; không wildcard credentials hoặc tắt CSRF để làm demo.
+- [Angular non-Node SSR](https://angular.dev/guide/ssr#non-nodejs) có AngularAppEngine với Request/Response; version21 đang cài cũng có API này. [Cloudflare Angular guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/angular/) mặc định chỉ Assets, không là bằng chứng SSR. Cần spike entry/bundle/env/allowedHosts/hydration/initialHTML/OG/404/cache thực tế trên Workers, không chỉ upload browser hoặc đổi renderMode.
+- Root .env có `NEON_DATABASE_URL` pooled URL được chuẩn hóa từ dòng URL thô; local DB_URL/TEST_DB_URL giữ nguyên, application chưa tự tiêu thụ biến Neon này. `NEON_DATABASE_URL_UNPOOLED` dành direct connection cho Flyway, hiện chưa cung cấp. Theo [Neon Flyway](https://neon.com/docs/guides/flyway), schema migration dùng direct/non-pooled endpoint; không tự dùng pooler để chạy migration.
+- Kiểm tra25/10 bằng PostgreSQL JDBC driver/JDK sẵn có, transaction read-only/rollback: TLS kết nối thành công, PostgreSQL18.6, public0bảng, chưa flyway_schema_history. Không bootstrap owner/migrate/tạo branch/project, không di chuyển sách hoặc để credential trong frontend/Workers bundle. Spring API vẫn là nơi duy nhất truy cập DB.
 - Tách test DB/media namespace/secrets khỏi dữ liệu thật; chưa di chuyển6cuốn/18ảnh hoặc cung cấp dump/secrets lên cloud. M5 còn phải chốt budget/quota, health/rollback, auth/mobile/in-app, backup/restore và chứng cứ SEO; test miễn phí không thay release production.
 
 ### Public M3 — contract đã triển khai
@@ -156,10 +158,10 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 
 | URL minh họa | Nơi chạy | Bảo mật / ghi chú |
 |---|---|---|
-| `www.example.com`, `example.com` | Cloudflare Pages / Angular, user chuẩn bị | Domain minh họa, SPA/SSG/SSR phụ thuộc spike |
+| `www.example.com`, `example.com` | Cloudflare Workers / Angular SSR + assets | User đã chốt; runtime SSR còn spike, không chỉ Workers Assets |
 | `www.example.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
 | `api.example.com` | Test: backend host miễn phí chưa chốt; production VPS/Dokploy hoãn | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
-| PostgreSQL test endpoint / internal service:5432 | Test provider chưa chốt; production VPS/Dokploy hoãn | Chỉ JDBC từ backend, TLS mạng ngoài; không kết nối browser |
+| PostgreSQL test endpoint / internal service:5432 | Neon test có URL; production VPS/Dokploy hoãn | JDBC chỉ từ Spring backend, TLS mạng ngoài, direct migrations riêng |
 | Cloudinary delivery domain | Cloudinary CDN | Chỉ giao ảnh đã xuất bản; quản lý signed uploads/delete qua API |
 | Resend API | Resend, **chưa kích hoạt ở MVP** | Gọi từ Spring Boot khi đã có tính năng email |
 

@@ -121,3 +121,10 @@ Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`
 - Chạy lại trước tích hợp: frontend `npm test`82/82 (25files), backend root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR thành công. Không đổi product code hoặc gọi cloud live. Log /tmp/me-may-m3-m4-publish-{frontend,backend}.log.
 - M3 đã có trên main a0a2642; M4 source a02b697 gồm4commits cần tích hợp. Trạng thái merge/push/remote cuối ở DEV_LOG/PROGRESS.
 - Chưa có VPS; user tự chuẩn bị Cloudflare Pages và nhờ đề xuất backend/database miễn phí. Render Free + Neon Free là đề xuất test, chưa provision/chốt/deploy. Cold-start/auth/DB/render/backup phải kiểm chứng trong spec M5, chưa coi local nghiệm thu là production.
+
+### Workers đã chốt và Neon đã cung cấp — cập nhật25/10
+
+- User sau đó chốt frontend **Workers thay Pages** để giữ SSR, cung cấp Neon trong root .env. Đây là quyết định hạ tầng mới nhất, thay dòng Pages ở checkpoint publish trên. SSR runtime/handler chưa deploy hoặc kiểm chứng trên Worker.
+- Static kiểm tra secret-safe thấy URL Neon pooled/TLS ở dòng riêng chưa phải env assignment. Đã chuẩn hóa thành NEON_DATABASE_URL, giữ DB_URL/TEST_DB_URL local. .env ignored; .env.example chỉ thêm tên biến rỗng. Không thay Spring datasource hoặc chạy app với DBcloud.
+- `python3 /tmp/me-may-neon-readonly/check.py` dùng JDK21/PostgreSQL JDBC42.7.13 sẵn có, credential qua process env (không argv/log). Transaction read-only + rollback PASS: PostgreSQL18.6, public0base tables, chưa có flyway_schema_history. Không ghi schema/data, bootstrap Owner, tạo project/branch, migrate hoặc di chuyển local books/media.
+- Chỉ có pooled URL; direct/non-pooled cho Flyway chưa cung cấp. Chưa đo quota/connection pooling/load/cold-start, chưa dùng Neon MCP để thay tài nguyên. Kiểm tra kết nối không thay nghiệm thu deployment, backup hoặc auth.
