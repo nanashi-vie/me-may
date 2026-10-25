@@ -93,3 +93,31 @@ Hai link Zalo thật đã cấu hình và endpoint public xác nhận có cả h
 Ngày 24/10/2026, người dùng xác nhận bản hiện tại ổn định và duyệt merge vào main trước M4. Xác nhận này chưa bổ sung bằng chứng mở Zalo trên thiết bị thực hoặc cấu hình sale thật. Các gate còn thiếu bằng chứng: Zalo thiết bị, pilot M2 đủ10–20, Cloudflare/crawler/SEO cache/staging/production.
 
 Review độc lập:4 Important đã sửa một lượt, không re-review: server-clock cho directentry/enquiry; refresh cancellation/URL-state; origin TransferState; khóa inputs sale load/save. RED8frontend+1backend→GREEN56 frontend/83 backend,2 live skipped; thêm4RED/GREEN recovery metadata/destroy. Không có Critical/Minor được reviewer nêu. PublicApi dùng credentials omit, X-Memay-Server-Time từ database; CORS expose header này là việc release nếu API khác origin.
+
+## M4 local — wishlist và hỏi mua nhiều cuốn
+
+Ngày24/10/2026, branch `codex/m4-wishlist`, baseline main a0a2642. User duyệt toàn bộ plan và checkbox chọn một phần danh sách. Không migration/dependency mới, không order/giữ sách. Contract và hành vi ở ARCHITECTURE/DESIGN, cách dùng ở README root.
+
+| Kiểm tra | Kết quả/bằng chứng |
+|---|---|
+| Baseline trước M4 | Frontend56/56; backend85 total/83pass/2live skipped, JAR PASS |
+| Lookup | RED404→GREEN87total/85pass/2live skipped; anonymous PUBLISHED/SOLD/order/dedupe/no internal fields/no-store/time; missing/sai/cap100/large-code/Long overflow/sale expiry |
+| Storage/trái tim | RED thiếu module→GREEN68 frontend; browser-only init, order/reopen/corrupt/blocked/quota/cap100/large-code/storage event+clear/destroy/aria |
+| Trang/enquiry | RED thiếu page→GREEN78; checkbox subset/selectall/SOLD/hidden/giá mới/offline/retry/late response/cross-tab pending+ready/expiry/destroy/clipboard |
+| Review và sửa | Fresh reviewer1Important stale copy-success; browser xác nhận thêm async focus→BODY.4RED→GREEN82; thêm recovery stale notice1RED→GREEN82. Không re-review, không deferred Minor |
+| Suite cuối | `npm test` tại code/frontend82/82 (25files); root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR; `npm run build` ngoài sandbox PASS |
+| SSR | `node scripts/check-ssr.mjs http://127.0.0.1:4000` từ frontend PASS: private wishlist shell/noindex/no-store/no saved codes, public metadata/OG/media/404, admin headers |
+| Browser thật Chromium | Lưu hai cuốn/reload còn2, selection reset; chọn1 và2 copy đúng mã/tên/giá/canonical; 360/390 và desktop1440 không tràn ngang; ảnh1280 tải thật |
+| Browser recovery/privacy | Cross-tab xóa sau copy xóa text/status cũ và focus về heading khi zero; Escape về Prepare khi còn selection; clipboard success callback/denied fallback, SOLD/hidden/offline fixture browser-only và retry; detail bỏ noindex, heart giữ pressed |
+| Dev không đổi | Fingerprint book_copy/listing/book_media/audit_event trước–sau byte-identical;6books/18images/46audit giữ nguyên. Không sửa availability/giá/publication hoặc tạo campaign giả |
+
+Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`, ảnh QA ignored `output/playwright/m4-{mobile360,desktop,enquiry390}.png`. Browser inject clipboard callback để kiểm UI và denied fallback; không coi đây là xác nhận OS clipboard/permission trên mọi nền tảng. Console ERR_FAILED duy nhất đến lookup bị abort có chủ đích trong test offline. CLI run-code lần đầu dùng callback destructuring sai, không tính PASS; rerun đúng callback đạt.
+
+**Chưa kiểm chứng/giới hạn:** Safari iPhone/Android Chrome/Facebook/Zalo in-app và mở/dán/gửi Zalo trên thiết bị thật; không gửi tin trong QA. Chưa đo hiệu năng100cuốn thực tế hoặc atomic concurrent tab writes (localStorage best-effort). M2 pilot10–20, Cloudflare/deploy/production/offsite restore/performance giữ gate riêng; M4 chỉ bàn giao local, chờ tiệm nghiệm thu/merge riêng.
+
+## Xác nhận M3/M4 và publish GitHub — 25/10/2026
+
+- Người dùng xác nhận “đã test xong m3 và m4”, yêu cầu publish GitHub và để các chỉnh sửa còn lại sau MVP; chưa cung cấp chi tiết chỉnh sửa. Ghi nhận nghiệm thu local của người dùng; không suy thêm thiết bị/trình duyệt hoặc kết quả native Zalo chưa được mô tả.
+- Chạy lại trước tích hợp: frontend `npm test`82/82 (25files), backend root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR thành công. Không đổi product code hoặc gọi cloud live. Log /tmp/me-may-m3-m4-publish-{frontend,backend}.log.
+- M3 đã có trên main a0a2642; M4 source a02b697 gồm4commits cần tích hợp. Trạng thái merge/push/remote cuối ở DEV_LOG/PROGRESS.
+- Chưa có VPS; user tự chuẩn bị Cloudflare Pages và nhờ đề xuất backend/database miễn phí. Render Free + Neon Free là đề xuất test, chưa provision/chốt/deploy. Cold-start/auth/DB/render/backup phải kiểm chứng trong spec M5, chưa coi local nghiệm thu là production.

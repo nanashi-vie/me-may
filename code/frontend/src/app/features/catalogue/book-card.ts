@@ -3,9 +3,10 @@ import { RouterLink } from '@angular/router';
 import { PublicBook } from './public.models';
 import { formatPrice } from '../admin/books/book-copy';
 import { effectiveBook } from './catalogue-state';
+import { WishlistButton } from '../wishlist/wishlist-button';
 @Component({
   selector: 'app-book-card',
-  imports: [RouterLink],
+  imports: [RouterLink, WishlistButton],
   template: ` <article class="book-card">
     <a [routerLink]="['/sach', book().slug]" class="cover-link" tabindex="-1" aria-hidden="true">
       @if (front()) {
@@ -37,6 +38,7 @@ import { effectiveBook } from './catalogue-state';
     <span class="stock" [class.sold]="book().availability === 'SOLD'">{{
       book().availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
     }}</span>
+    <app-wishlist-button [bookCode]="book().bookCode" [title]="book().title" />
   </article>`,
   styles: `
     :host {

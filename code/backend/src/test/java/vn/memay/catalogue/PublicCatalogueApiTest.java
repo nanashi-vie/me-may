@@ -9,6 +9,26 @@ class PublicCatalogueApiTest extends CatalogueTestSupport {
  @Value("${local.server.port}") int port; AdminHttpClient anon;
  @BeforeEach void client(){anon=new AdminHttpClient(port);}
  private BookDtos.BookDetail published(){var b=ready();jdbc.update("update listing set publication_status='PUBLISHED',published_at='2026-01-01T00:00:00Z' where book_copy_id=?",Long.parseLong(b.id()));return b;}
+ @Test void lookupPreservesOrderDeduplicatesAndNeverExposesHiddenBooks()throws Exception{
+  var first=published();var sold=published();var draft=ready();var hidden=published();
+  jdbc.update("update book_copy set availability='SOLD' where id=?",Long.parseLong(sold.id()));
+  jdbc.update("update listing set publication_status='ARCHIVED' where book_copy_id=?",Long.parseLong(hidden.id()));
+  var r=anon.send("GET","/api/v1/books/lookup?code="+sold.bookCode()+"&code="+draft.bookCode()+"&code="+first.bookCode()+"&code="+sold.bookCode()+"&code="+hidden.bookCode()+"&code=MM-999999999",null,false);
+  assertThat(r.statusCode()).isEqualTo(200);var body=tree(r);assertThat(body.size()).isEqualTo(2);
+  assertThat(body.get(0).path("bookCode").asString()).isEqualTo(sold.bookCode());assertThat(body.get(0).path("availability").asString()).isEqualTo("SOLD");
+  assertThat(body.get(1).path("bookCode").asString()).isEqualTo(first.bookCode());
+  assertThat(r.body()).doesNotContain(draft.bookCode(),hidden.bookCode(),"storagePublicId","sourceRef","version");
+  assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");assertThat(r.headers().firstValue("x-memay-server-time").map(java.time.Instant::parse)).isPresent();
+ }
+ @Test void lookupValidatesBoundedCanonicalCodesAndSupportsMoreThanSixDigits()throws Exception{
+  var b=published();jdbc.update("update book_copy set book_code='MM-1000000' where id=?",Long.parseLong(b.id()));
+  var large=anon.send("GET","/api/v1/books/lookup?code=MM-1000000",null,false);assertThat(large.statusCode()).isEqualTo(200);assertThat(tree(large).get(0).path("bookCode").asString()).isEqualTo("MM-1000000");
+  assertThat(anon.send("GET","/api/v1/books/lookup?code=MM-9223372036854775807",null,false).statusCode()).isEqualTo(200);
+  for(String query:List.of("","?code=","?code=MM-000000","?code=MM-1","?code=MM-0000001","?code=mm-000001","?code=MM-9223372036854775808","?code=MM-000001&code=invalid","?"+String.join("&",Collections.nCopies(101,"code=MM-000001")))){
+   var r=anon.send("GET","/api/v1/books/lookup"+query,null,false);assertThat(r.statusCode()).as(query).isEqualTo(400);assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");
+  }
+  assertThat(anon.send("GET","/api/v1/books/lookup?"+String.join("&",Collections.nCopies(100,"code=MM-1000000")),null,false).statusCode()).isEqualTo(200);
+ }
  @Test void anonymousOnlySeesPublishedIncludingSold()throws Exception{
   var draft=ready();var pub=published();jdbc.update("update book_copy set availability='SOLD' where id=?",Long.parseLong(pub.id()));
   var r=anon.send("GET","/api/v1/books",null,false);assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("totalElements").asInt()).isEqualTo(1);assertThat(r.body()).contains(pub.bookCode(),"SOLD").doesNotContain(draft.bookCode(),"sourceRef","storagePublicId","version","readingLevelBasis");assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");assertThat(r.headers().firstValue("x-memay-server-time").map(java.time.Instant::parse)).isPresent();

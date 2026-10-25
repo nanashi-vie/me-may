@@ -133,7 +133,17 @@ Chỉ ba ảnh public; ảnh/video thực tế bổ sung trao đổi qua Zalo. M
 
 Mỗi dòng: ảnh nhỏ, tên, mã, giá tham khảo mới nhất, trạng thái mới nhất, mở chi tiết và xóa. Không có quantity, phí ship, nút thanh toán hoặc tổng đơn. Dưới danh sách: Sao chép danh sách hỏi mua, mở Zalo hotline với luồng copy dự phòng như detail; giải thích danh sách lưu trên thiết bị, không giữ sách.
 
+M4 duyệt24/10: trái tim chung card/detail có nhãn truy cập/aria-pressed; header badge đếm toàn bộ mã đã lưu (kể cả sold/mã không public). Tối đa100 cuốn. Checkbox mặc định chưa chọn; “Chọn tất cả sách còn hàng”/“Bỏ chọn tất cả”; chọn một phần để hỏi hôm nay vẫn giữ các cuốn khác. Selection chỉ sống trong lần mở trang, không persist.
+
+SOLD hiện ảnh/tên/giá public với cảnh báo, checkbox bị khóa. Mã nháp/ẩn/không tồn tại chỉ hiện mã + “Không còn hiển thị”, không snapshot tên/ảnh/giá cũ. Có loading/empty/error/retry; xóa được mã không public. Storage hỏng báo rõ, storage chặn/quota dùng bộ nhớ và cảnh báo mất khi tải lại; không hứa đồng bộ khác browser/thiết bị.
+
 Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công.
+
+“Chuẩn bị nội dung hỏi mua” lookup lại các mã được chọn rồi mới mở nội dung; giá thay đổi cập nhật, cuốn vừa sold/hidden bị loại và giải thích. Zero valid không copy. Text có mục đích hỏi, các dòng mã/tên/giá tham khảo/URL canonical và câu cuối nhờ xác nhận. Native dialog có nút copy riêng sau tải (giữ user gesture), textarea manual fallback, hotline có cấu hình mới hiện link; thiếu hotline vẫn copy được. Không tự gửi.
+
+Refresh khi vào trang/retry/foreground/codes thay đổi; hủy response cũ. Sale hết hạn/xóa mã tab khác/foreground làm text cũ không copy được và xác minh lại; thất bại không giữ text giá cũ. Thay text hoặc đang xác minh xóa thông báo “Đã sao chép”; khách phải copy nội dung mới. Retry thành công bỏ lỗi cũ. Escape trả focus về nút chuẩn bị, nếu selection đã hết thì về tiêu đề trang. Nút trái tim không nằm trong link mở sách; dùng được bằng bàn phím.
+
+`/quan-tam` SSR chỉ có shell “Đang mở danh sách trên thiết bị”, noindex/no-store và không đụng storage; hydrate mới có badge/dữ liệu cá nhân. Sang trang public khôi phục metadata/indexability. Gate Safari/Chrome/in-app và mở/dán/gửi Zalo trên thiết bị thật phải có bằng chứng riêng, không suy từ browser giả lập.
 
 ## Bảng quản trị — desktop
 
@@ -155,6 +165,6 @@ Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit
 
 ## Trạng thái triển khai M3 local
 
-Home/catalogue/collection/detail đã nối API, ba ảnh thật, metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. Không hiển thị control wishlist trước M4.
+Home/catalogue/collection/detail đã nối API, ba ảnh thật, metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
 
 Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.

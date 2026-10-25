@@ -1,11 +1,15 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint mới nhất cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S015 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Trạng thái
 
-- M0/M1 local đã duyệt. M2 gate kỹ thuật đã đạt; pilot chủ tiệm hiện6 cuốn/18 ảnh ACTIVE, còn thiếu10–20 cuốn và đối chiếu nghiệp vụ. Giữ M2_SPEC/M2_PLAN khi gate còn mở.
-- Người dùng đã duyệt M3 local và cho bắt đầu dù pilot M2 còn mở. Yêu cầu gộp feat/m1-local và feat/m2-admin-catalogue vào dev đã thực hiện/push2a73249. M3 ở feat/m3-public-catalogue.
+- User25/10 xác nhận đã test xong M3/M4 và yêu cầu publish GitHub. M3 đã trên main a0a2642; đang tích hợp/push M4 từ codex/m4-wishlist a02b697. Không deploy website hoặc triển khai M5 trong task publish.
+- Frontend82/82 (25files), backend87total/85PASS/2live skipped, verify/JAR/build PASS. Fresh review1Important + browser focus đã sửa một lượt RED→GREEN; recovery notice cũng có regression. Không deferred Minor.
+- SSR private shell/noindex/no-store, public metadata/404/ảnh; browser360/390/desktop1440, save/reload/subset/multi/cross-tab/copycallback+manualfallback/SOLDhiddenoffline fixture/retry/nativeEscape/focus/noindexreset đạt. Fingerprint dev6books/18media/46audit trước–sau khớp.
+
+- M0/M1 local đã duyệt. M2 gate kỹ thuật đạt; checkpoint24/10 có6cuốn/18ảnh ACTIVE, pilot10–20 chưa có xác nhận mới. Phiên publish không đọc/sửa dữ liệu dev; giữ M2_SPEC/M2_PLAN khi gate còn mở.
+- M1/M2 đã có trong lịch sử dev2a73249 rồi main. M3/M4 source và review kỹ thuật hoàn tất; một số chỉnh sửa user chưa mô tả được hoãn sau MVP, không tự triển khai/bịa backlog chi tiết.
 - Người dùng xác nhận code hiện tại ổn định ngày 24/10. Đã merge feat/m3-public-catalogue (gồm M1/M2) vào main tại 38c908f, không conflict; kiểm tra sau merge đạt. /input/ đã được ignore; user yêu cầu commit/push cả thay đổi Angular CLI analytics trong angular.json.
 
 ## Đã kiểm chứng M3
@@ -20,17 +24,17 @@ Cập nhật 24/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md
 
 ## Local và điều kiện còn thiếu
 
-- Pilot frontend4200/backend8080; built QA4000/backenddown QA4001 đã dừng sau kiểm thử. [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach), [admin Flash Sale](http://127.0.0.1:4200/admin/flash-sale).
+- Pilot frontend4200/backend8080 phục vụ M4; QA4000/browser phiên này dừng sau bàn giao. [Quan tâm](http://127.0.0.1:4200/quan-tam), [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach).
 - User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
-- CloudflareSEO/OG/crawler, staging/VPS/Dokploy, deploy/CI/CD và backup ngoài VPS vẫn gate riêng trước release. Không coi localSSR là đã đạt Cloudflare.
+- User chưa thuê VPS; tự chuẩn bị deploy frontend Cloudflare Pages, nhờ đề xuất backend/database miễn phí. Đề xuất Render Free Docker + Neon Free PostgreSQL cho test, chưa chốt/provision/deploy. Production VPS/Dokploy hoãn; SEO/auth/backup/restore vẫn phải kiểm chứng trên môi trường thật.
 
 ## Tiếp theo
 
-1. Main là baseline ổn định trước M4, đã push origin/main (merge38c908f, cấu hình/bàn giao da9b20a). Bước tiếp theo là chốt thiết kế/spec M4, chưa triển khai hoặc deploy trong phiên này.
+1. Hoàn tất publish main và đối chiếu GitHub. User đã nghiệm thu local; contract/UX/bằng chứng M3/M4 đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
-3. M4 wishlist thiết bị; importCSV/Excel tạo nháp ngay sauMVP. Không có order/checkout/giữ sách.
+3. Trước M5 chốt host/DB online/region, domain hoặc route API cùng origin, cookie/CSRF, Pages runtime/SSR/SSG và cold-start. Chưa có spec M5 hoặc lệnh deploy được duyệt. Usertest không bổ sung danh sách thiết bị/nativeZalo; giữ gate cụ thể khi chưa có chứng cứ. ImportCSV/Excel và chỉnh sửa còn lại sau MVP.
 
 ## Tài liệu và giới hạn
 
-- docs/README là chỉ mục duy nhất; M3_PLAN giữ các tiêu chí chưa chuyển hết và gate thiết bị. Markdownmax 400 dòng, DEV_LOG ngoại lệ. input/ được ignore ở root, không commit ảnh/dump/.env/cookie.
+- docs/README là chỉ mục duy nhất; M2_SPEC/M2_PLAN còn pilot. Markdownmax400, DEV_LOG ngoại lệ. input/.env/.local/.superpowers/output bịignore, asset nguồn/logo tracked; không commit ảnh/dump/secrets.
 - Codebase graph đã index lại fast/persistencefalse trongM3; media bị default exclusion, dùng fallback khi không đủ kết quả.

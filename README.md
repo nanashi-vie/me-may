@@ -1,6 +1,6 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M3 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã triển khai và qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue/detail/contact và Flash Sale đã triển khai local; wishlist M4, importer sau MVP. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
+M3/M4 local đã được người dùng xác nhận test xong25/10/2026: Angular21.2 + Spring Boot4.1.1/Java21 + PostgreSQL + Cloudinary. Pilot M2 vẫn cần10–20cuốn. Trước M5 chưa thuê VPS; user tự chuẩn bị Cloudflare Pages, backend/database miễn phí cho test đang được đề xuất (Render + Neon), chưa deploy. Các chỉnh sửa còn lại và importer để sau MVP.
 
 ## Chạy trên máy hiện tại
 
@@ -98,7 +98,7 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 
 ## M3 public và Flash Sale local
 
-- Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`. Không cần tài khoản; wishlist chưa triển khai.
+- Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`, `/quan-tam`. Không cần tài khoản.
 - API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20 cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
 - GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3 local.
 - OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50 cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
@@ -106,3 +106,10 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 - Thêm `CONTACT_ZALO_HOTLINE_URL` và `CONTACT_ZALO_GROUP_URL` vào root`.env`, dùng HTTPS zalo.me; restart backend sau đổi. Thiếu cấu hình hiện đang cập nhật; dialog luôn có copy/thủ công, không tự gửi.
 - SSR backend origin server-only `MEMAY_API_ORIGIN` mặc định http://127.0.0.1:8080; canonical/enquiry origin `MEMAY_SITE_ORIGIN` mặc định http://localhost:4200. M3 chỉ chốt local; cấu hình origin browser/deployment cần spike Cloudflare riêng trước phát hành.
 - `npm run build` rồi `PORT=4000 npm run serve:ssr:me-may-web` (cwd code/frontend) để thử builtSSR và APIbridge local; `node code/frontend/scripts/check-ssr.mjs http://127.0.0.1:4000` (cwd root) kiểm HTML/OG/404/media/headers. Không coi localserver Node là phương án deploy lên VPS.
+
+## Wishlist M4 local
+
+- Bấm “Quan tâm” trên card/detail; header mở `/quan-tam` và badge tổng số cuốn. Tối đa100 mã lưu trong cùng browser qua `memay.wishlist.v1`; không lưu giá/ảnh. Storage lỗi hiện cảnh báo, tiếp tục dùng bộ nhớ. Xóa dữ liệu/ẩn danh có thể mất danh sách.
+- Checkbox chọn các cuốn muốn hỏi, ban đầu chưa chọn; chọn tất cả chỉ còn hàng. SOLD cảnh báo/không chọn; mã ẩn/thiếu chỉ hiện “Không còn hiển thị”. Những cuốn chưa chọn vẫn được lưu.
+- “Chuẩn bị nội dung hỏi mua” gọi GET `/api/v1/books/lookup?code=...&code=...` (1–100 mã,400 nếu sai/thiếu/quá nhiều), cập nhật giá và loại sold/hidden. Copy → mở Zalo → khách dán/gửi; luôn có textarea copy thủ công, không tự gửi/giữ sách/tạo đơn.
+- Foreground/sale expiry/thay đổi tab khác làm mới trạng thái và vô hiệu hóa nội dung cũ; mất mạng không copy giá cũ. `/quan-tam` noindex/no-store, SSR không chứa dữ liệu đã lưu. Thiết bị thật/Zalo in-app vẫn cần nghiệm thu riêng.

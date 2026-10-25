@@ -5,6 +5,20 @@ import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { PublicApi } from './public-api';
 describe('Public catalogue HTTP', () => {
+  it('looks up ordered book codes without credentials or transfer cache', () => {
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()],
+    });
+    const api = TestBed.inject(PublicApi),
+      http = TestBed.inject(HttpTestingController);
+    api.lookup(['MM-000002', 'MM-1000000']).subscribe();
+    const req = http.expectOne((r) => r.url === '/api/v1/books/lookup');
+    expect(req.request.params.getAll('code')).toEqual(['MM-000002', 'MM-1000000']);
+    expect(req.request.credentials).toBe('omit');
+    expect(req.request.transferCache).toBe(false);
+    req.flush([]);
+    http.verify();
+  });
   it('maps URL page and multiple ages without credentials or admin endpoint', () => {
     TestBed.configureTestingModule({
       providers: [provideHttpClient(), provideHttpClientTesting()],

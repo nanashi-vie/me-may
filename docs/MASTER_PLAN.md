@@ -1,12 +1,14 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật 22/10/2026 | M0 đã duyệt; M1 local đã triển khai; baseline MVP trước M2 đã duyệt**
+**Bản hiện hành | Cập nhật 25/10/2026 | M3/M4 local được người dùng xác nhận đã test; chuẩn bị làm rõ M5**
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
 > **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Các proposal và phiên bản cũ đã được gộp/xóa; lịch sử xem trong Git.
 
 > **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [báo cáo kiểm tra M1](VERIFICATION.md) và [PROGRESS](PROGRESS.md).
+
+> **Điều chỉnh trước M5 ngày25/10/2026:** user đã test xong M3/M4, yêu cầu publish GitHub và hoãn các chỉnh sửa còn lại sau MVP (chưa có danh sách chi tiết). Hiện chưa thuê VPS; backend có thể dùng dịch vụ miễn phí như Render để test, provider/database chưa chốt. Frontend do user tự chuẩn bị deploy **Cloudflare Pages**. Quyết định này thay mặc định Workers/VPS là điều kiện bắt buộc cho môi trường test; hướng production VPS/Dokploy và các gate SEO/security/backup/restore giữ riêng, chưa coi test miễn phí là production.
 
 > **Baseline trước M2 được duyệt ngày 22/10/2026:** MVP nhập thủ công, lọc tuổi/thể loại, mỗi cuốn một thể loại, Picture book bắt buộc Paperback hoặc Hardcover, ba ảnh thật, giá và mức đọc tham khảo, liên hệ Zalo theo khả dụng. Import CSV/Excel là bước ngay sau MVP, không phải điều kiện ra mắt. Quyết định này thay thế các mặc định M0 tương ứng; chưa triển khai code M2.
 
@@ -26,9 +28,9 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Chốt mua | **Zalo hotline cá nhân có zBusiness**, ngoài website | Detail dùng Zalo; Facebook vẫn có thể là link thông tin cửa hàng. Không tự gửi tin |
 | Kho & đơn livestream | **Giữ luồng hiện tại** | Không ép livestream → website, không tự đồng bộ Excel/Zalo |
 | Sách cũ | **Mỗi cuốn vật lý = một định danh** | Hai cuốn cùng tên khác tình trạng vẫn riêng biệt; ISBN không thay mã cuốn |
-| Tech stack | Angular + Spring Boot + **PostgreSQL tự quản trên VPS/Dokploy** + Cloudinary | Modular monolith; chỉ Spring truy cập DB qua JDBC |
-| Hosting frontend | **Cloudflare** | Ưu tiên Workers Assets cho Angular; chiến lược SEO/SSR/SSG phải qua spike kiểm chứng |
-| Hosting backend | **VPS + Dokploy** | Spring Boot container, Dokploy quản lý deploy/route/HTTPS, tách staging và production hợp lý |
+| Tech stack | Angular + Spring Boot + **PostgreSQL** + Cloudinary | Dev/test local dùng Docker hiện có; DB online test chưa chốt, chỉ Spring truy cập JDBC |
+| Hosting frontend | **Cloudflare Pages**, user tự chuẩn bị | SSR/SSG/SEO/OG cần spike trên môi trường thật; upload bundle browser không chứng minh SSR |
+| Hosting backend | Test: dịch vụ miễn phí do user chuẩn bị, ví dụ Render | Chưa thuê VPS/chốt provider; VPS + Dokploy là hướng production hoãn, không chặn test online |
 | Email | **Resend (sau MVP)** | Dự trù cổng tích hợp, chưa làm gửi mail/notification tại MVP |
 | Bước ngay sau MVP | **Import CSV/Excel tạo sách mới thành nháp** | Mã trùng báo lỗi, không ghi đè; chưa đặc tả định dạng file |
 | Mở rộng sau đó | Import cập nhật sách; giỏ hàng/đặt hàng → thanh toán/giao vận → AI số hóa/đối soát | Mỗi bước cần đặc tả riêng |
@@ -124,7 +126,8 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 
 **Wishlist / enquiry list**
 - Thêm/xóa cuốn bằng nút trái tim có nhãn truy cập, badge số cuốn, trang xem tổng hợp, không cần đăng nhập.
-- Client localStorage lưu ID/mã, server GET xác nhận và cập nhật tên/giá/trạng thái mới khi xem lại; cuốn đã bán hiển thị cảnh báo.
+- Client localStorage chỉ lưu tối đa100 mã trong cùng browser; server GET xác nhận tên/giá/trạng thái mới. Cuốn sold cảnh báo, mã không public chỉ hiện mã/không còn hiển thị.
+- M4 duyệt24/10: checkbox chọn từng cuốn để hỏi, ban đầu chưa chọn; chọn tất cả chỉ sách còn hàng. Các cuốn không chọn vẫn được lưu. Chi tiết lifecycle/revalidation ở DESIGN và contract ở ARCHITECTURE.
 - Sao chép format nhiều dòng: `Mã | Tên | Giá tham khảo | Link`. Có phương án mở kênh chat; bản sao chép là lối dự phòng luôn hoạt động.
 - Không giới thiệu là giỏ hàng, không có số lượng, không cộng phí ship, không tạo đơn.
 
@@ -208,10 +211,10 @@ erDiagram
 
 ```mermaid
 flowchart TB
-  C[Customer - mobile-first] --> CF[Cloudflare - Angular public + admin assets]
+  C[Customer - mobile-first] --> CF[Cloudflare Pages - Angular public + admin]
   A[Admin - desktop-first] --> CF
-  CF -->|HTTPS API request| API[api.example.com - VPS + Dokploy + Spring Boot]
-  API -->|JDBC - private network| DB[(PostgreSQL - VPS / Dokploy)]
+  CF -->|HTTPS API request| API[Spring Boot - free test host TBD]
+  API -->|JDBC TLS| DB[(PostgreSQL online test TBD)]
   API --> MEDIA[Cloudinary - signed media operations]
   CF -->|Public optimized images| MEDIA
   C --> CHAT[Zalo hotline - contact outside web]
@@ -220,27 +223,28 @@ flowchart TB
   API -. Future .-> ORDER[Cart / Order / Payment / Shipping]
 ```
 
-- **Frontend / Cloudflare:** một Angular app với `public` mobile-first và `admin` desktop-first. **Cloudflare Workers Assets** là lựa chọn triển khai mặc định để phục vụ SPA/static assets; admin dùng CSR. Public detail/catalogue **phải có spike xác minh** khả năng HTML động/SSR hoặc cơ chế SSG có chiến lược cập nhật khi chủ đăng/sửa/ẩn sách. Đừng mặc định triển khai Angular lên Workers đồng nghĩa đã có runtime SSR; giữ SEO và link preview đúng làm *release gate*. Cloudflare Pages có thể chạy site tĩnh, nhưng ưu tiên Workers theo tài liệu Cloudflare cho ứng dụng mới.
+- **Frontend / Cloudflare Pages:** một Angular app, public mobile-first/admin desktop-first CSR; user tự chuẩn bị deployment. Public detail/catalogue phải spike HTML ban đầu/SSR hoặc SSG có cập nhật publish/sửa/ẩn. Build hiện có Node/Express SSR local, chưa xác minh runtime/adapter Pages. Không tự đổi sang Workers hoặc chuyển SSR lên backend vì chưa được duyệt.
 - **Backend:** Spring Boot modular monolith, module `catalogue`, `listing`, `media`, `taxonomy`, `auth`, `audit`, `contact-config`. Dùng REST API DTO versioned; validation; transactions ở boundaries thích hợp. **Không cần** microservice, event bus, search engine riêng hay Redis khi dữ liệu còn nhỏ.
-- **Database:** PostgreSQL tự quản do Dokploy quản lý trên VPS, chỉ Spring truy cập qua JDBC (JPA/Hibernate + Flyway). Đặt database trong mạng nội bộ, persistent volume và database role riêng cho ứng dụng/migration. Không public cổng 5432; truy cập quản trị qua SSH tunnel/VPN khi cần. Giữ index slug/code/status/price và `unaccent` khi được bật. Không bê nguyên schema SQL Server cũ.
+- **Database:** PostgreSQL, chỉ Spring truy cập JDBC (JPA/Hibernate + Flyway). Dev giữ Docker hiện có; test online cần DB riêng mà host backend kết nối được, không trỏ localhost của cloud về Docker trên máy cá nhân. Provider/version/TLS/quota/backup phải chốt trước migration test online. Hướng production tự quản VPS/Dokploy vẫn cần private network/volume/role/backup; không public Docker DB để làm đường tắt.
 - **Media:** Cloudinary phục vụ ảnh tối ưu và thumbnail; backend cấp/signed upload hoặc kiểm soát tải lên; loại ảnh, kích thước, thứ tự; xử lý ảnh mồ côi khi upload thành công nhưng DB lưu lỗi. Google Drive (nếu dùng) chỉ là nơi nhân viên quản lý ảnh gốc, **không có tự động import/sync ở MVP**.
 - **Security:** Spring Security session cookie `HttpOnly`, `Secure`, `SameSite` phù hợp; RBAC owner/staff, CSRF trên request thay đổi trạng thái, rate limit login/upload, MIME/size verification, HTTPS và không public Actuator nhạy cảm. Với FE `www.example.com` và API `api.example.com`, đây là **cross-origin nhưng có thể same-site**: cấu hình CORS theo origin xác định, `credentials: true`, client gửi cookies đúng chỗ; kiểm tra chính sách cookie/CSRF trong trình duyệt và staging cùng site. Không dùng CORS `*` với credentials. Nên dùng cookie host-only của API; không lưu token admin ở localStorage.
-- **Deployment:** Cloudflare phục vụ Angular FE; **Dokploy trên VPS** chạy image/container Spring Boot với domain `api.example.com` qua Traefik HTTPS. PostgreSQL có service/volume riêng trên VPS; mặc định MVP có thể cùng máy với API nhưng đây là một điểm lỗi chung cần backup ngoài máy. **Không** có Angular Node SSR process trên VPS trong phương án mặc định (chỉ cân nhắc lại nếu spike Cloudflare thất bại và được chấp thuận thay kiến trúc). Cloudflare DNS quản lý `www`/`api`; CI build-test trước release, GitHub/CI triển khai FE và backend độc lập. Staging và production dùng secrets, database và tên miền tách biệt khi đi production; chi phí/quota phải đo thực tế.
+- **Deployment:** trước M5 chưa có VPS. User chuẩn bị FE Pages và có thể chuẩn bị host backend miễn phí cho test; Render chỉ là ứng viên. Khi chốt provider mới thực thi profile deploy/container/runtime/env/health/rollback và kiểm chứng end-to-end. Không tự provision/deploy hoặc đổi stack; production VPS/Dokploy chưa được nghiệm thu, cần quyết định riêng trước release và tách secrets/DB/media test với production.
 - **Caching:** cache Angular JS/CSS có fingerprint dài hạn; `index.html`, HTML metadata và `/api/v1/books/**` dùng cache có TTL/invalidation thích hợp, **không cache admin response hoặc cookie/token**. Giá/trạng thái thay đổi phải thấy sau refresh; OG previews do Facebook/Zalo có cache riêng nên cần test lại và không cam kết cập nhật tức thì.
 
 ### 5.1. Chi tiết hạ tầng và kiểm chứng
 
 Xem [hạ tầng triển khai trong ARCHITECTURE](ARCHITECTURE.md#hạ-tầng-triển-khai): domain/private network, PostgreSQL roles/pool, Cloudflare rendering spike, Dokploy/CI/rollback, backup database/media và Resend sau MVP. Đây là nơi giữ chi tiết kỹ thuật hiện hành, không nhân bản trong master plan.
 
-Provider và các release gate vẫn được quyết định tại tài liệu này: Angular/Cloudflare; Spring Boot/PostgreSQL trên VPS/Dokploy; Cloudinary; phải kiểm chứng SEO/OG, quyền admin, kết nối riêng, backup/restore và rollback. M1 chỉ hoàn tất local; Docker hóa app/CI/CD/deploy vẫn hoãn, chưa có bằng chứng các gate staging/production đã đạt.
+Baseline hiện tại: Angular/Cloudflare Pages do user chuẩn bị; backend miễn phí và PostgreSQL online test chưa chốt; Cloudinary giữ. Production VPS/Dokploy hoãn. SEO/OG, quyền admin, kết nối DB, backup/restore/rollback vẫn cần bằng chứng theo môi trường; chưa có chứng nhận staging/production.
 
 ### 5.2. API contract khởi điểm (minh họa)
 
-Contract M2 đã duyệt ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng giao dịch, version cấp aggregate và upload qua backend. Contract này thay ví dụ tạo hai bước/cấp quyền upload trước đây; chưa có thay đổi API ứng dụng đang chạy. API public M3 local đã triển khai; chi tiết query/giá sale/ảnh ở M3_PLAN.
+Contract M2 ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng transaction/version, upload qua backend. API public M3/M4 đã triển khai; contract hiện hành ở README/ARCHITECTURE, UX ở DESIGN và bằng chứng ở VERIFICATION.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
 GET  /api/v1/books/{slug}
+GET  /api/v1/books/lookup?code=MM-000001&code=MM-000002
 GET  /api/v1/collections
 GET  /api/v1/collections/{slug}
 ```
@@ -298,7 +302,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | **M2 – admin catalogue (6–9 ngày)** | BookCopy/Listing CRUD thủ công, ba vai trò ảnh, tuổi/thể loại/kiểu bìa/mức đọc, publish/status, optimistic locking/audit | Admin desktop nhập thật 10–20 cuốn | Chủ tự tìm, sửa, publish, đánh dấu sold được |
 | **M3 – customer UX (6–9 ngày)** | Home/catalogue, lọc tuổi/thể loại, search/sort, detail ba ảnh/giá tham khảo, SEO/SSR/OG, CTA Zalo + nhóm, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
 | **M4 – wishlist + polish (3–5 ngày)** | Local wishlist, copy multi-book enquiry, cập nhật sold, empty states, accessibility | A+B end-to-end trên điện thoại | Không tạo order, đã bán được cảnh báo |
-| **M5 – hardening/pilot/release (4–7 ngày, ước lượng cần hiệu chỉnh)** | QA iOS/Android/in-app, security, **PostgreSQL restore ngoài VPS**, Cloudflare cache/SEO, Dokploy health/HTTPS/rollback, performance, owner demo | Checklist pass, release notes, hướng dẫn nhập liệu; Cloudflare + VPS production | Hoạt động với dữ liệu thật; backup/restore, rollback thử thành công |
+| **M5 – hardening/pilot/test online; release tách gate hạ tầng** | Chốt host backend/DB test miễn phí; user chuẩn bị Pages; QA iOS/Android/in-app, cookie/CSRF/HTTPS, SEO/cache, backup/restore/rollback, performance/owner demo | Test end-to-end theo hạ tầng có thật; production VPS chưa thuê nên chưa nghiệm thu | Không cắt gate an toàn/SEO/khôi phục; không coi deployment test là release production |
 
 **Ngay sau M5/MVP:** import CSV/Excel tạo mới thành nháp theo mục 7; không đưa importer vào gate M2 hoặc M5.
 
@@ -310,6 +314,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `DATA-01` BookCopy/Listing migrations và constraints; `DATA-02` BookMedia upload lifecycle; `DATA-03` AuditEvent/versioning.
 - `ADMIN-01` login + RBAC; `ADMIN-02` desktop book editor; `ADMIN-03` listing publication/status; `ADMIN-04` ba vị trí ảnh + thumbnail bìa trước; `ADMIN-05` taxonomy/collections.
 - `POST-MVP-IMPORT-01` CSV/Excel tạo sách mới thành nháp, mã trùng báo lỗi; chốt file/preview/lỗi sau MVP. Cập nhật sách có sẵn là mở rộng sau đó.
+- `POST-MVP-POLISH-01`: user25/10 có một số chỗ muốn chỉnh nhưng yêu cầu để sau MVP; chưa cung cấp chi tiết, không tự bịa ticket/triển khai trong M5.
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
@@ -359,11 +364,11 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
 2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá tham khảo, ba ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
-4. **Tạo technical specification sau wireframe**: ERD, OpenAPI, role matrix, testing strategy, **Cloudflare rendering spike**, **PostgreSQL private connection + offsite backup/restore test**, Dokploy release/rollback, repo structure; hosting provider đã chọn, chỉ còn chọn plan/cấu hình.
+4. **Chốt spec M5 theo hạ tầng test**: user chuẩn bị Pages/host backend miễn phí; xác định PostgreSQL online, runtime/SSR, domain/cookie/CORS/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn, không tự chọn provider thay user.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
 6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
 7. **Sau đó** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
 
 ### Kết luận
 
-Mẹ Mây không cần một bản sao NXB Kim Đồng. Cần **một catalogue sách có UX giống cửa hàng online nhưng đáng tin về từng cuốn sách cũ**, kèm admin desktop để đăng/sửa nhanh. Stack deployment được chốt ở tầng provider: **Angular trên Cloudflare; Spring Boot trên VPS/Dokploy; PostgreSQL tự quản trên VPS/Dokploy; Cloudinary media; Resend dành cho email sau MVP**. Chỉ chiến lược render public HTML/SEO trên Cloudflare còn là **spike kỹ thuật bắt buộc**. Việc chuẩn hóa `BookCopy` + `Listing` + media evidence + audit ngay từ đầu tạo nền tốt cho đặt hàng và capstone, mà **không cần trả giá bằng việc xây sớm những tính năng chưa dùng**.
+Mẹ Mây cần catalogue đáng tin theo từng cuốn và admin nhập/sửa nhanh. Stack giữ Angular/Spring Boot/PostgreSQL/Cloudinary. Hướng test trước M5 là Cloudflare Pages do user chuẩn bị, backend miễn phí và PostgreSQL online còn chốt; production VPS/Dokploy hoãn. Render/SEO, auth, backup/restore vẫn phải kiểm chứng, không đổi mô hình dữ liệu hoặc thêm nghiệp vụ chỉ vì đổi nơi test.

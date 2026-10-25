@@ -13,11 +13,12 @@ class FlashSaleApiTest extends CatalogueTestSupport {
  BookDtos.BookDetail published(){var b=ready();jdbc.update("update listing set publication_status='PUBLISHED',published_at=current_timestamp where book_copy_id=?",Long.parseLong(b.id()));return b;}
  @Test void activeSaleChangesDetailListAndFlashPricesAndStopsOnExpiry()throws Exception{
   var b=published();var r=api.send("PUT","/api/v1/admin/flash-sale",json(sale(0,b.bookCode(),7000)),true);assertThat(r.statusCode()).isEqualTo(200);
-  for(String path:List.of("/api/v1/books/"+b.slug(),"/api/v1/books","/api/v1/flash-sale")){
+  for(String path:List.of("/api/v1/books/"+b.slug(),"/api/v1/books","/api/v1/flash-sale","/api/v1/books/lookup?code="+b.bookCode())){
    var data=anon.send("GET",path,null,false);assertThat(data.statusCode()).isEqualTo(200);assertThat(data.body()).contains("\"priceVnd\":7000","\"originalPriceVnd\":10000").doesNotContain("storagePublicId","sourceRef");
   }
   jdbc.update("update flash_sale set ends_at=current_timestamp-interval '1 second',starts_at=current_timestamp-interval '1 hour'");
   assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceVnd").asLong()).isEqualTo(10000);
+  assertThat(tree(anon.send("GET","/api/v1/books/lookup?code="+b.bookCode(),null,false)).get(0).path("priceVnd").asLong()).isEqualTo(10000);
   assertThat(tree(anon.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isZero();
  }
  @Test void soldHiddenOrInvalidDiscountNeverShowsSale()throws Exception{
