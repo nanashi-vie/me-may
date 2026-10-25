@@ -4,7 +4,7 @@ Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 ## Trạng thái
 
-- User25/10 xác nhận đã test xong M3/M4 và yêu cầu publish GitHub. M3 đã trên main a0a2642; đang tích hợp/push M4 từ codex/m4-wishlist a02b697. Không deploy website hoặc triển khai M5 trong task publish.
+- User25/10 xác nhận đã test xong M3/M4; đã merge M4 vào main dfecf8a và push origin/main thành công. Source M4 a02b697, cập nhật nghiệm thu/hướng M5 ở61d6f88; không deploy website hoặc triển khai M5 trong task publish.
 - Frontend82/82 (25files), backend87total/85PASS/2live skipped, verify/JAR/build PASS. Fresh review1Important + browser focus đã sửa một lượt RED→GREEN; recovery notice cũng có regression. Không deferred Minor.
 - SSR private shell/noindex/no-store, public metadata/404/ảnh; browser360/390/desktop1440, save/reload/subset/multi/cross-tab/copycallback+manualfallback/SOLDhiddenoffline fixture/retry/nativeEscape/focus/noindexreset đạt. Fingerprint dev6books/18media/46audit trước–sau khớp.
 
@@ -30,7 +30,7 @@ Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 ## Tiếp theo
 
-1. Hoàn tất publish main và đối chiếu GitHub. User đã nghiệm thu local; contract/UX/bằng chứng M3/M4 đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa.
+1. Publish main đã xong; tiếp theo chốt đề xuất Render Free + Neon Free và spec M5/test online với frontend Pages do user chuẩn bị. Contract/UX/bằng chứng M3/M4 đã gộp tài liệu chuẩn, plan hết vai trò đã xóa.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. Trước M5 chốt host/DB online/region, domain hoặc route API cùng origin, cookie/CSRF, Pages runtime/SSR/SSG và cold-start. Chưa có spec M5 hoặc lệnh deploy được duyệt. Usertest không bổ sung danh sách thiết bị/nativeZalo; giữ gate cụ thể khi chưa có chứng cứ. ImportCSV/Excel và chỉnh sửa còn lại sau MVP.
 
