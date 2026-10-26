@@ -1,6 +1,6 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S017-C02 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S018-C01 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Bàn giao — frontend Workers local
 
@@ -9,6 +9,8 @@ Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 - Đã merge main15e2446 và push GitHub26/10; postmerge frontend89/89, Workersbuild/SSR và backendverify87total85PASS2liveSkipped/JAR PASS. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
 
 ## Trạng thái
+
+- Kiểm kê26/10: cả6 branch local ngoài main đã merge đầy đủ (branch_only0); không còn commit cần hợp nhất. Giữ branch lịch sử; main đã publish.
 
 - User25/10 xác nhận đã test xong M3/M4; đã merge M4 vào main dfecf8a và push origin/main thành công. Source M4 a02b697, cập nhật nghiệm thu/hướng M5 ở61d6f88; không deploy website hoặc triển khai M5 trong task publish.
 - Frontend82/82 (25files), backend87total/85PASS/2live skipped, verify/JAR/build PASS. Fresh review1Important + browser focus đã sửa một lượt RED→GREEN; recovery notice cũng có regression. Không deferred Minor.
