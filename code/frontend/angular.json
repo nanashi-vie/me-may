@@ -30,9 +30,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
@@ -62,6 +60,13 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "workers": {
+              "outputPath": "dist/me-may-workers",
+              "ssr": {
+                "entry": "src/server.worker.ts",
+                "experimentalPlatform": "neutral"
+              }
             }
           },
           "defaultConfiguration": "production"

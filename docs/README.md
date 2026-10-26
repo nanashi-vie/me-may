@@ -24,6 +24,8 @@ Cập nhật: 25/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [WORKERS_LOCAL_PLAN](WORKERS_LOCAL_PLAN.md): frontend Workers local đã được chọn26/10; SSR/proxy/build/workerd, không deploy hoặc migration.
+
 - M3/M4 local user xác nhận đã test xong25/10 và yêu cầu publish GitHub. Contract/UX/bằng chứng đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa. M5 đang làm rõ hạ tầng test, chưa có implementation plan.
 
 - [M2_SPEC](M2_SPEC.md): **đã được người dùng duyệt**, gồm contract dữ liệu/API/quyền/media và gate nghiệm thu local; không thay bằng fixture/wireframe cũ.
