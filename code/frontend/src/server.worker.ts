@@ -6,6 +6,11 @@ const angularApp = new AngularAppEngine();
 export const reqHandler = createRequestHandler((request) => angularApp.handle(request));
 export default {
   fetch(request: Request, env: WorkerEnvironment): Promise<Response> {
-    return handleWorkerRequest(request, env, (req, context) => angularApp.handle(req, context));
+    return handleWorkerRequest(request, env, (req, context) =>
+      new AngularAppEngine({ allowedHosts: [new URL(context.MEMAY_SITE_ORIGIN).hostname] }).handle(
+        req,
+        context,
+      ),
+    );
   },
 };

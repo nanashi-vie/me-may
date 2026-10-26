@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "me-may",
+  "main": "dist/me-may-workers/server/server.mjs",
+  "compatibility_date": "2026-10-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "preview_urls": false,
+  "build": { "command": "npm run build:workers" },
+  "assets": {
+    "directory": "dist/me-may-workers/browser",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none",
+  },
+  "vars": {
+    "MEMAY_API_ORIGIN": "https://me-may-api.onrender.com",
+    "MEMAY_WORKER_NAME": "me-may",
+  },
+}

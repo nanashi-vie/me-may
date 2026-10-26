@@ -1,6 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S019-C03 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S020-C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+
+## Đang làm — setup deploy và Neon migration
+
+- Branch codex/m5-deploy-setup từ main4efec52; DEPLOY_PLAN đang thực thi.
+- Workers me-may/configonline/dry-run+HTTPSworkerd đạt; Render imagebuild/run512MB đạt, backend88total86PASS2liveSkip; frontend91/91.
+- Neon target đã migrate/validateV1–V5,0sách/ảnh/admin, giữ DBdev; branch thử đã xóa sau xác nhận. DEPLOYMENT hướng dẫn dashboard/env; review cuối đang làm, chưa deploy dịch vụ.
 
 ## Bàn giao — frontend Workers local
 

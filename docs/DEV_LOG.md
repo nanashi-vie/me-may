@@ -522,3 +522,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 ### S019-C03 — đã dọn feature branches, giữ dev
 - git push origin --delete feat/m1-local feat/m2-admin-catalogue PASS; git branch -d5feature/codex PASS, không force. Giữ localdev/origin dev2a73249 và main, không cập nhật/reset dev.
 - Không đổi product code/config/DB hoặc deploy; không chạy lại tests vì chỉ thao tác refs và tài liệu. Checkpoint được commit/push main; xác minh danh sách ref và SHA remote cuối.
+
+## S020-C01 — 26/10/2026 — setup Workers/Render và migrate Neon
+- User yêu cầu wrangler.jsonc online, Dockerfile Render và setup/migration Neon; quyền migrate Neon đã được cấp trong yêu cầu này. Tự deploy Worker/Render chưa được yêu cầu. Annotation1 về cấu hình local được xử lý trong task này.
+- Đầu task main4efec52 sạch; tạo codex/m5-deploy-setup. Giữ dev branch. Đọc current docs/config; Docker28.3.2 truy cập được ngoài sandbox. Neon raw pooled URL có sẵn, direct chưa đặt; không in secret. Domain hỏi async, đang chuẩn bị phần độc lập.
+- Phương án giữ stack/auth/Cloudinary; Worker same-origin proxy, Render profile riêng/Java21/nonroot, Flyway direct và schema-only initialization. DEPLOY_PLAN đăng ký trước code; không copy dữ liệu sách/ảnh dev. Tests/QA/review rồi chuyển tài liệu chuẩn.
+
+### S020-C02 — config và kiểm chứng trước target migration
+- User cung cấp tên Worker me-may/Render me-may-api, chưa có account subdomain. Workers nhận origin chỉ từ me-may.<account>.workers.dev HTTPS hoặc MEMAY_SITE_ORIGIN explicit, kiểm tra match và xóa untrusted x-forwarded trước Angular; engine allowedHosts mỗi request. RED2/91→GREEN91/91, build PASS; dry-run gzip421.23KiB, không publish.
+- HTTPSworkerd8790 Hostme-may.qa.workers.dev + malicious forwarding: HTTP200, SSRheading/canonical/hydration PASS. wrangler.jsonc auto custombuild, assets/no-store/SSR giữ. Local config riêng.
+- Render Java21 multi-stage/nonroot, profile render datasource pooled/Flywaydirect, cookieSecure/CSRF; bootstrap opt-in và namespace memay/online-test riêng. Test Render RED thiếu owner; test credentials ban đầu chưa override NEON_DB_USER gây auth fail, sửa wiringtest. Startup phát hiện namespace chỉ dev|test, thêm online-test sau RED; verify88total86PASS2liveSkipped/JAR PASS.
+- prepare-render-env Python3tests PASS (decodecredential/strictNeon/directsameDB/no localsettings), tạo .local/render.env0600; root.env không đổi. Flyway Maven plugin dùng env, schema public/cleanDisabled/no baseline.
+- Neon production public trống; neon_auth có sẵn ngoài app, không can thiệp. Tạo branch thử m5-migration-verification br-shiny-recipe-b44agos2; request compute suspend300 bị Freeplan412 trước tạo, retry giữ defaults thành công. Child Flyway V1–V5 migrate/validate/info PASS;5migrations/0books/0admins/0media. Direct endpoint derived đúng host từ API endpoint inventory, TLSverify-full/channelbindingRequire PASS.
+- Bắt đầu migrate target .env khớp production endpoint đã inventory, quyền từ user hiện hành. Không copy sách/ảnh/dev data. Docker final rebuild đang chạy; target migration/log+finalreview còn chờ. Credential child lưu private qua stdin echo-off, không argv/log/trackedfiles.
+
+### S020-C03 — target migration và Docker runtime
+- Target production supplied.env khớp inspected endpoint: Flyway V1–V5 migrate/validate/info PASS. MCP postcheck5migrations/version5,0books/0media/0admins/campaignDisabled. Không tạo owner hoặc copydev; neon_auth để nguyên. CLI helper chỉ Neon validatehost/direct, credentials env, logsprivate0600.
+- Docker finalimage build PASS; run mem512MB against verificationbranch, health200/UID10001/PORT10000/RAM271MiB PASS, không phải nghiệm thu Render thật. Testsbackend88total86PASS2liveSkip; frontend91/91. DEPLOYMENT hướng dẫn Cloudflare root/build/deploy và Renderenv/bootstrap, DBcommands/gates.
+- Giữ branch Neon thử do chưa có quyền xóa riêng; không gọi destructive MCP. Chưa deploy services hoặc publish code tại checkpoint. Bước tiếp: HTTPprobe đầy đủ, review độc lập và docs consolidation/publish theo luồng user đang chuẩn bị deploy GitHub.
+
+### S020-C04 — dọn branch thử được user duyệt
+- User xác nhận Xóa branch thử. Dừng container QA đang trỏ child rồi delete Neon br-shiny-recipe-b44agos2; production br-green-water-b4ny98q0 được giữ nguyên. Xóa hai generated credentialfile chỉ dành child; .local/render.env target vẫn giữ0600.
+- HTTPSworkerd fullprobe Home/howto/catalogue/wishlist/admin/API/unknown404/no-store/canonical + x-forwarded-host sai PASS; host không phải app bị400. Local8787 SSRchecker rerun để đối chiếu. Không deploy dịch vụ trong bước này.

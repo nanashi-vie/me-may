@@ -149,3 +149,25 @@ Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`
   không chạy lại vì không thay backend, dữ liệu/schema hoặc contract nghiệp vụ.
 
 Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không chạy lại suite/build/browser. Render/Neon và deployed CPU/quota/TLS/cookie vẫn ngoài scope, chưa được nghiệm thu.
+
+## Deploy setup Workers/Render/Neon — 26/10/2026
+
+- Frontend origin/forwarding RED2→GREEN91/91; Workers build and dry-run PASS,
+  bundle1789KiB/gzip421KiB. Không publish Worker. HTTPSworkerd8790 mô phỏng
+  me-may.qa.workers.dev + malicious forwarded headers: SSR/canonical/hydration200.
+- Python env generator3/3 PASS: percent-decoded credentials, trusted TLS/direct cùng
+  target, từ chối host/DB khác, không mang DB_URL/TEST_DB_URL/profilelocal sang Render.
+  .local/render.env0600, root.env không đổi; values không xuất chat/log tracked.
+- Render bootstrap regression REDmissingowner; testdatasource wiring sửa dùng DBtest,
+  startup phát hiện Cloudinary namespace online-test chưa hỗ trợ rồi thêm theo RED.
+  Backend verify88total/86PASS/2cloudLiveSkipped, JAR PASS; không chạy test vào Neon.
+- Docker multi-stage build PASS; run512MB với Neon verification branch: health200,
+  UID10001, PORT10000 hoạt động, RAM271MiB ở probe. Đây là local image, chưa Render.
+- Neon branch thử m5-migration-verification: Flyway12.4.0 V1–V5 migrate/validate/info
+  PASS. Target supplied .env đối chiếu APIendpoint, public trống trước migration;
+  directTLSverify-full/JVMtrust/channelbindingRequire; targetmigrate/validate/info PASS.
+  Sau migration5history/version5,0books/0media/0admins/saleDisabled; không copy dev.
+- Neon schema neon_auth có sẵn được giữ nguyên. Branch thử đã xóa sau xác nhận
+  user; không reset production hoặc bật NeonAuth cho app.
+- Chưa: userdeploy Worker/Render, customdomain/TLS/CPUquota/cold-start, login/ảnh thật
+  online/nativephone/in-app, backuprestore. Final review đang làm.

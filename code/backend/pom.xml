@@ -16,5 +16,17 @@
     <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><scope>runtime</scope></dependency>
     <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-test</artifactId><scope>test</scope></dependency>
   </dependencies>
-  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin></plugins></build>
+  <build><plugins><plugin><groupId>org.springframework.boot</groupId><artifactId>spring-boot-maven-plugin</artifactId></plugin><plugin>
+    <groupId>org.flywaydb</groupId><artifactId>flyway-maven-plugin</artifactId><version>${flyway.version}</version>
+    <configuration>
+      <url>${env.NEON_JDBC_URL_UNPOOLED}</url><user>${env.NEON_DB_USER}</user><password>${env.NEON_DB_PASSWORD}</password>
+      <schemas><schema>public</schema></schemas><defaultSchema>public</defaultSchema>
+      <locations><location>filesystem:src/main/resources/db/migration</location></locations>
+      <cleanDisabled>true</cleanDisabled><baselineOnMigrate>false</baselineOnMigrate>
+    </configuration>
+    <dependencies>
+      <dependency><groupId>org.flywaydb</groupId><artifactId>flyway-database-postgresql</artifactId><version>${flyway.version}</version></dependency>
+      <dependency><groupId>org.postgresql</groupId><artifactId>postgresql</artifactId><version>${postgresql.version}</version></dependency>
+    </dependencies>
+  </plugin></plugins></build>
 </project>

@@ -248,3 +248,15 @@ Nguồn chính thức đối chiếu: [Angular non-Node SSR](https://angular.dev
 [Workers assets binding](https://developers.cloudflare.com/workers/static-assets/binding/).
 Installed Angular builder schema21.2.27 xác nhận neutral platform còn experimental;
 phải build/check runtime lại khi nâng Angular/Wrangler. Không cài framework adapter khác.
+
+### Deploy setup — 26/10/2026
+
+[DEPLOYMENT](DEPLOYMENT.md) là nguồn hướng dẫn dashboard/secret/migration hiện hành.
+Production wrangler.jsonc dùng tên me-may/APIme-may-api.onrender.com; site origin
+chỉ derive từ đúng WorkerHTTPS host hoặc explicit custom origin. Per-request
+AngularAppEngine allowedHosts exact; x-forwarded headers bị bỏ để giữ SSR và origin.
+Render Docker Java21/nonroot/profile render, opt-in owner bootstrap không dùng
+profile local; datasource pooled/Flywaydirect/public/cleanDisabled. NamespaceCloudinary
+online-test tách dev/test. Migrations V1–V5 đã chạy và validate trên Neon target, không
+copy dữ liệu dev hoặc dùng neon_auth. User tự deploy; CPU/quota/auth/restore online
+vẫn là gate riêng. Local config và Node SSR giữ nguyên.
