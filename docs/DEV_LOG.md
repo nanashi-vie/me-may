@@ -493,3 +493,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Tổng kiểm chứng: frontend89/89, Workers build+SSR+isolatedproxy final PASS; Node build+SSR PASS; npm audit0. Không chạy backend verify mới vì không thay backend/schema/DB và không cloud live. Markdownmax400/linklocal/diff/ignore/publiclogo PASS. Logs /tmp/me-may-workers-*.
 - Chuyển plan vào README/ARCHITECTURE/VERIFICATION/masterplan, gỡ khỏi chỉ mục và xóa WORKERS_LOCAL_PLAN hết vai trò; PROGRESS là snapshot. Commits db13f17/4a0f463, final docs commit tiếp theo; không merge/push/deploy. Ledger generated được dọn sau chuyển đủ rulings/bằng chứng.
 - Giữ branch codex/m5-workers-local trong checkout hiện có theo scope local. Workerd PID14208 port8787, pilot20631 port4200/backend72455 port8080 còn listen; QA Node4002/mockworkerd8788 và browserworkers-local đã dừng. Người dùng nghiệm thu local; khi làm online cần backend origin HTTPS/domain allowedHosts/cookieSecure/CFquota và Neon direct/Flyway/backup gates riêng.
+
+## S017-C01 — 26/10/2026 — publish frontend Workers và merge main
+- User yêu cầu publish và merge qua main để tự deploy Cloudflare/Render; ủy quyền merge/push source, không yêu cầu agent deploy hoặc migrate DB.
+- Đầu task branch codex/m5-workers-local78d3832 sạch, gồm Workers SSR local đã review0finding; main localcded8a7. Đối chiếu remote trước merge, chạy frontend suite/build Workers và backend verify trên kết quả merge; không sửa product config hoặc bí mật.
+- Cấu hình hiện có wrangler.local.jsonc vẫn dùng origin local; chưa phải cấu hình deployment online. Không suy kết quả local thành cloud runtime/Render/Neon đã nghiệm thu.
