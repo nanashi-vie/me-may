@@ -140,8 +140,12 @@ Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`
   Mock backend ephemeral, không ghi DBdev hoặc dùng Neon.
 - Chromium390: hydrate rồi lưu1, badge1/wishlist/chọn1/enquiry URL8787 đúng;
   Escape đóng dialog, detail navigation xóa noindex, không overflow. Không mở/gửi Zalo.
+- Chromium desktop1440 direct detail reload: saved heart pressed, không overflow hoặc pageerror;
+  anonymous CSRF endpoint giữ MEMAYSESSION và token header, không in token/cookie values.
 - npm audit sau override body-parser2.4.0/undici7.30.1:0 vulnerabilities.
-  SSR checker Node4002 và Workers8787 final PASS; final review đang làm; log /tmp/me-may-workers-*.
+  SSR checker Node4002 và Workers8787 final PASS; review độc lập0Critical/Important/Minor; log /tmp/me-may-workers-*.
 - Chưa deploy Cloudflare/Render, migrate Neon; chưa bằng chứng production CPU/quota/
   cold-start/TLS/Secure cookie hoặc thiết bị Safari/Chrome/Zalo thật. Backend verify
   không chạy lại vì không thay backend, dữ liệu/schema hoặc contract nghiệp vụ.
+
+Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không chạy lại suite/build/browser. Render/Neon và deployed CPU/quota/TLS/cookie vẫn ngoài scope, chưa được nghiệm thu.

@@ -1,12 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S015-C03/C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S016-C05 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
-## Đang làm — frontend Workers local
+## Bàn giao — frontend Workers local
 
 - User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
-- SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Đang review theo WORKERS_LOCAL_PLAN.
-- Không deploy Cloudflare, chuẩn bị Render hoặc migrate Neon. Backend local8080 còn listen.
+- SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
+- Giữ branch local chưa merge/push/deploy. Workers8787, pilot4200 và backend8080 còn listen; QA4002/8788 đã dừng. Render/Neon không thay đổi.
 
 ## Trạng thái
 
