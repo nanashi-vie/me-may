@@ -510,3 +510,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Kiểm tra từng ref bằng git rev-list --left-right --count main...<branch> và merge-base --is-ancestor: codex/m4-wishlist, codex/m5-workers-local, dev, feat/m1-local, feat/m2-admin-catalogue, feat/m3-public-catalogue đều branch_only0/ancestorPASS. git branch --no-merged main rỗng. Không có commit thiếu để merge, không tạo merge rỗng hoặc xóa branch.
 - feat/m1-local ahead origin/feat/m1-local3 chỉ là tracking branch cũ; toàn bộ commit vẫn đã trong main. Không cần push riêng các branch lịch sử để hoàn thành hợp nhất main.
 - Không đổi product code/config/DB hoặc deploy; không chạy lại suites vì chỉ audit Git và cập nhật checkpoint. Kết quả kiểm tra ứng dụng gần nhất ở S017-C02. PROGRESS cập nhật; commit/push tài liệu theo luồng publish đã được yêu cầu, đối chiếu remote SHA cuối.
+
+## S019-C01 — 26/10/2026 — dọn branch đã merge
+- User yêu cầu xóa branch cũ cả local và remote. Đầu task main5fce88c sạch/đồng bộ origin; fetch --prune PASS, GitHub default HEAD là main, chỉ một checkout main.
+- Kiểm tra lại ancestor:6local codex/m4-wishlist, codex/m5-workers-local, dev, feat/m1-local, feat/m2-admin-catalogue, feat/m3-public-catalogue và3remote dev/feat/m1-local/feat/m2-admin-catalogue đều đã nằm trong main. Phạm vi xóa đúng9refs này, giữ main/origin/main/remoteHEAD. Không xóa commit/tag hoặc sửa product/DB/deploy.
+- Đang xóa remote rồi local bằng branch -d; không force-delete branch chưa merge. Kết quả và đối chiếu remote ghi sau thực hiện.
+
+### S019-C02 — điều chỉnh giữ dev
+- User bổ sung không xóa dev. Lệnh xóa remote gồm dev ở C01 bị user từ chối trước thực thi; batch dừng, local deletion chưa chạy. Giữ dev và origin/dev; phạm vi mới5local feature/codex và2remote feat/m1-local/feat/m2-admin-catalogue. Không yêu cầu lại quyền xóa dev.
+
+### S019-C03 — đã dọn feature branches, giữ dev
+- git push origin --delete feat/m1-local feat/m2-admin-catalogue PASS; git branch -d5feature/codex PASS, không force. Giữ localdev/origin dev2a73249 và main, không cập nhật/reset dev.
+- Không đổi product code/config/DB hoặc deploy; không chạy lại tests vì chỉ thao tác refs và tài liệu. Checkpoint được commit/push main; xác minh danh sách ref và SHA remote cuối.
