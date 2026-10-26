@@ -474,3 +474,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Build sandbox exit134 không diagnostic, rerun elevated PASS; workerd8787 lên và check-ssr PASS Home/detail/OG/media/404/wishlist/admin. Node build PASS, frontend rerun88/88. Logs /tmp/me-may-workers-{red,green,build,ssr,node-build,final-tests}.log.
 - Thêm Wrangler4.152.0 devdependency (Node>=22); npm audit phát hiện body-parser/undici advisory, override bản vá2.4.0/7.30.1 trong major phù hợp, npm install audit0. Các package có sẵn chỉ hai bản vá này đổi version, không upgrade Angular/framework.
 - Isolated check-worker-proxy.mjs chạy backend giả HTTP port ngẫu nhiên và workerd8788: POST/query/body/CSRF/cookie/multipart/separate Set-Cookie/server-time/no-store/canonical context/down503 PASS; không dùng DBdev. Browser QA đang làm; chưa review/deploy/push.
+
+### S016-C03 — browser và regression privacy
+- Chromium8787 mobile390: hydrate/save1/badge1/wishlist/select1/enquiry đúng canonical8787; Escape và detail không còn noindex/không overflow PASS. Ref e51 stale sau hydrate: snapshot lại rồi dùng ref mới, không coi lỗi tool là product. Không mở/gửi Zalo, không dùng clipboard OS hoặc sửa dữ liệu backend.
+- Bổ sung regression admin URL dạng asset .json giữ noindex/no-store: RED null Cache-Control1/89; fix wrapper asset private, đang rerun GREEN. Thêm script check:workers:proxy và hướng dẫn frontend local; giữ cloud quota/CPU/domain/TLS/auth/phone là gate môi trường thật.
+
+### S016-C04 — kết quả trước review
+- Privacy regression GREEN89/89 (26files). Workers finalbuild PASS; SSR checker8787 final PASS, proxy isolated final PASS, Node SSR4002 checker PASS. Node4002 là QA tạm; pilot4200/backend8080 không restart.
+- README hướng dẫn dev:workers/build/check; ARCHITECTURE ghi request context/proxy/static routing và giới hạn; VERIFICATION bằng chứng, masterplan phân biệt local đạt/deployed gate còn mở. Không backend verify mới vì không đổi backend/DB/schema, đã test adapter với mock và backend anonymous read-only.
+- Task2 hoàn tất; một review độc lập toàn nhánh trước bàn giao. Chưa merge/push/deploy.

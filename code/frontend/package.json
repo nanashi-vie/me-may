@@ -9,7 +9,8 @@
     "test": "ng test --watch=false",
     "serve:ssr:me-may-web": "node dist/me-may-web/server/server.mjs",
     "build:workers": "ng build --configuration production,workers",
-    "dev:workers": "npm run build:workers && CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler dev --config wrangler.local.jsonc --local --ip 127.0.0.1 --port 8787"
+    "dev:workers": "npm run build:workers && CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler dev --config wrangler.local.jsonc --local --ip 127.0.0.1 --port 8787",
+    "check:workers:proxy": "node scripts/check-worker-proxy.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.3",

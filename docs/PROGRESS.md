@@ -5,7 +5,7 @@ Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 ## Đang làm — frontend Workers local
 
 - User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
-- Thực hiện WORKERS_LOCAL_PLAN: SSR neutral + runtime/proxy/env + kiểm chứng workerd.
+- SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Đang review theo WORKERS_LOCAL_PLAN.
 - Không deploy Cloudflare, chuẩn bị Render hoặc migrate Neon. Backend local8080 còn listen.
 
 ## Trạng thái
@@ -36,7 +36,7 @@ Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 ## Tiếp theo
 
-1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; bước tiếp là spec/spike Angular SSR Worker và backend Render đề xuất. Credential không phải ủy quyền migrate/deploy; chưa có product code M5.
+1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; frontend Workers local đã triển khai; bước tiếp chốt backend Render đề xuất và deployed SSR gate. Credential không phải ủy quyền migrate/deploy.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. Cần NEON_DATABASE_URL_UNPOOLED cho Flyway (hiện chưa có), tách datasource/migration config, chốt host/region/domain hoặc /api cùng origin/cookie/CSRF và Worker runtime/SSR/cold-start. Chưa có spec M5/lệnh deploy được duyệt. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
 

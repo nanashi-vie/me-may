@@ -103,6 +103,17 @@ describe('Workers HTTP boundary', () => {
     expect(post.status).toBe(405);
   });
 });
+describe('private asset-like URLs', () => {
+  it('keeps privacy headers even when an admin path looks like a static file', async () => {
+    const response = await handleWorkerRequest(
+      new Request('http://127.0.0.1:8787/admin/preview.json'),
+      env,
+      async () => null,
+    );
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-robots-tag')).toContain('noindex');
+  });
+});
 describe('server origins', () => {
   it('isolates per-request configuration and validates an origin instead of accepting credentials/paths', () => {
     expect(serverOrigins(env).MEMAY_SITE_ORIGIN).toBe('http://127.0.0.1:8787');

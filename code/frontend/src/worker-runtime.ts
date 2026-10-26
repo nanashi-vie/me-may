@@ -78,7 +78,8 @@ export async function handleWorkerRequest(
   }
   // Never let an HTML asset or SPA fallback bypass Angular status/privacy/metadata.
   if (/\.[a-z0-9]+$/i.test(url.pathname) && !/\.html?$/i.test(url.pathname)) {
-    return env.ASSETS.fetch(request);
+    const asset = await env.ASSETS.fetch(request);
+    return privatePage ? noStore(asset) : asset;
   }
   try {
     return noStore((await render(request, origins)) ?? new Response('Not found', { status: 404 }));
