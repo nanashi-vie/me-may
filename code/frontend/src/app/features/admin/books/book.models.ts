@@ -25,7 +25,6 @@ export interface BookWrite {
   categoryCode: CategoryCode | null;
   ageGroups: AgeGroup[];
   readingLevel: ReadingLevel | null;
-  readingLevelBasis: string | null;
   readingVideoUrl: string | null;
   collectionIds: string[];
 }

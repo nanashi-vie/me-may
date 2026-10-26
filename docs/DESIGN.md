@@ -63,7 +63,8 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 2. **Header:** logo Mẹ Mây (asset mới: `code/frontend/public/logo.jpg`, chưa tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
 3. **Navigation:** Tất cả sách, Sách mới đăng, Theo độ tuổi, Theo loại sách, Bộ sưu tập, Cách mua. Dropdown phải thao tác được bằng bàn phím/touch khi triển khai.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
-5. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
+5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có giá gốc/giá sale/% giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
+6. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
 6. **Board books cho bé nhỏ:** hàng 5 cuốn hoặc ít hơn nếu thiếu; tên nhóm chỉ xuất hiện khi có nội dung công khai.
 7. **Banner nhóm 1:** giới thiệu “Cùng bé đọc mỗi ngày” bằng nội dung/asset Mẹ Mây; link tới bộ sưu tập thật.
 8. **Picture books:** hàng sách kèm giá, mã và tình trạng đúng cuốn.
@@ -78,7 +79,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 
 - Bìa dùng `contain` trong khung thống nhất để không cắt mất phần bìa/lỗi. Không chỉnh ảnh thật theo tone làm che tình trạng cuốn.
 - Tên tối đa 2 dòng; mã dễ đọc; giá tham khảo VND nổi bật; nhãn tình trạng vật lý tách khỏi khả dụng; nút trái tim quan tâm có tên truy cập rõ và thể hiện trạng thái đã thêm/xóa.
-- Không hiện sale badge, giá gạch ngang, “bán chạy”, rating hoặc preorder khi không có dữ liệu/nghiệp vụ chứng minh.
+- Chỉ hiện sale badge/giá gạch ngang khi API xác nhận Flash Sale còn hiệu lực; không có số đã bán, “bán chạy”, rating hoặc preorder giả.
 - Desktop khoảng 1200–1280 px nội dung, 5 cột; tablet 3 cột; mobile 360–390 px: 2 cột, search một hàng riêng, menu cuộn ngang hoặc menu mở bằng nút có nhãn.
 - Mobile cho mỗi nhóm tối đa 4 cuốn + Xem tất cả; tránh hàng ngang chỉ có thể kéo mà không có chỉ dẫn. Hero có asset/tỉ lệ riêng cho mobile, không thu nhỏ chữ trên banner desktop.
 - Không dùng animation xuất hiện khiến sách/giá bị ẩn trước khi chạy JavaScript. Không autoplay bắt buộc; tôn trọng reduced motion.
@@ -115,7 +116,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 Breadcrumb → gallery ba ảnh (bìa trước, mặt sau, một trang nội dung) → tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã → giá tham khảo và khả dụng → mô tả/tình trạng/lỗi → độ tuổi, mức đọc tham khảo và link video đọc sách → trái tim wishlist và các CTA Zalo. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa. Trên desktop gallery và thông tin thành hai cột; mobile một cột, vùng CTA không che nội dung.
 
-Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Căn cứ chọn mức chỉ hiển thị nội bộ. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
+Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
 Các nút trên detail:
 
@@ -132,7 +133,17 @@ Chỉ ba ảnh public; ảnh/video thực tế bổ sung trao đổi qua Zalo. M
 
 Mỗi dòng: ảnh nhỏ, tên, mã, giá tham khảo mới nhất, trạng thái mới nhất, mở chi tiết và xóa. Không có quantity, phí ship, nút thanh toán hoặc tổng đơn. Dưới danh sách: Sao chép danh sách hỏi mua, mở Zalo hotline với luồng copy dự phòng như detail; giải thích danh sách lưu trên thiết bị, không giữ sách.
 
+M4 duyệt24/10: trái tim chung card/detail có nhãn truy cập/aria-pressed; header badge đếm toàn bộ mã đã lưu (kể cả sold/mã không public). Tối đa100 cuốn. Checkbox mặc định chưa chọn; “Chọn tất cả sách còn hàng”/“Bỏ chọn tất cả”; chọn một phần để hỏi hôm nay vẫn giữ các cuốn khác. Selection chỉ sống trong lần mở trang, không persist.
+
+SOLD hiện ảnh/tên/giá public với cảnh báo, checkbox bị khóa. Mã nháp/ẩn/không tồn tại chỉ hiện mã + “Không còn hiển thị”, không snapshot tên/ảnh/giá cũ. Có loading/empty/error/retry; xóa được mã không public. Storage hỏng báo rõ, storage chặn/quota dùng bộ nhớ và cảnh báo mất khi tải lại; không hứa đồng bộ khác browser/thiết bị.
+
 Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công.
+
+“Chuẩn bị nội dung hỏi mua” lookup lại các mã được chọn rồi mới mở nội dung; giá thay đổi cập nhật, cuốn vừa sold/hidden bị loại và giải thích. Zero valid không copy. Text có mục đích hỏi, các dòng mã/tên/giá tham khảo/URL canonical và câu cuối nhờ xác nhận. Native dialog có nút copy riêng sau tải (giữ user gesture), textarea manual fallback, hotline có cấu hình mới hiện link; thiếu hotline vẫn copy được. Không tự gửi.
+
+Refresh khi vào trang/retry/foreground/codes thay đổi; hủy response cũ. Sale hết hạn/xóa mã tab khác/foreground làm text cũ không copy được và xác minh lại; thất bại không giữ text giá cũ. Thay text hoặc đang xác minh xóa thông báo “Đã sao chép”; khách phải copy nội dung mới. Retry thành công bỏ lỗi cũ. Escape trả focus về nút chuẩn bị, nếu selection đã hết thì về tiêu đề trang. Nút trái tim không nằm trong link mở sách; dùng được bằng bàn phím.
+
+`/quan-tam` SSR chỉ có shell “Đang mở danh sách trên thiết bị”, noindex/no-store và không đụng storage; hydrate mới có badge/dữ liệu cá nhân. Sang trang public khôi phục metadata/indexability. Gate Safari/Chrome/in-app và mở/dán/gửi Zalo trên thiết bị thật phải có bằng chứng riêng, không suy từ browser giả lập.
 
 ## Bảng quản trị — desktop
 
@@ -144,10 +155,16 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 
 ## Editor — desktop
 
-Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → ba vị trí upload FRONT/BACK/INSIDE, alt text, bìa trước làm thumbnail → listing mô tả + giá tham khảo + nhiều nhóm tuổi/collection + mức đọc/căn cứ nội bộ và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, lưu nháp/preview/xuất bản theo quyền.
+Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → ba vị trí upload FRONT/BACK/INSIDE, alt text, bìa trước làm thumbnail → listing mô tả + giá tham khảo + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, lưu nháp/preview/xuất bản theo quyền.
 
-Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản; publish yêu cầu tên, mã, giá tham khảo nguyên >0, một thể loại, đúng một kiểu bìa nếu Picture book, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE đã kiểm tra. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish, khi gán mức đọc cần ghi căn cứ nội bộ. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản; publish yêu cầu tên, mã, giá tham khảo nguyên >0, một thể loại, đúng một kiểu bìa nếu Picture book, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE đã kiểm tra. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ## Trạng thái UX dùng chung
 
 Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit đều cần mô tả/test khi chuyển thành technical spec. Focus rõ, nút có nhãn, form có label, badge không dựa duy nhất vào màu. Public đọc được từ HTML đầu tiên theo chiến lược render đã qua spike; browser API của wishlist/clipboard không chạy trong server initialization.
+
+## Trạng thái triển khai M3 local
+
+Home/catalogue/collection/detail đã nối API, ba ảnh thật, metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
+
+Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.

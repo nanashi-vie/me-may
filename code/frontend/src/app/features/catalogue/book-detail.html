@@ -1,0 +1,116 @@
+@if (loading()) {
+  <p class="loading" role="status">Đang mở sách…</p>
+} @else if (error()) {
+  <app-public-error [status]="error()" (retry)="refresh()" />
+} @else if (book(); as b) {
+  <p class="breadcrumb">
+    <a routerLink="/">Trang chủ</a> / <a routerLink="/sach">Sách</a> / {{ b.bookCode }}
+  </p>
+  <div class="detail-layout">
+    <section class="gallery" aria-label="Ba ảnh thật của cuốn sách">
+      @for (m of b.media; track m.role) {
+        <figure>
+          <img
+            [src]="m.contentPath"
+            [alt]="m.alt || b.title"
+            [attr.loading]="$first ? 'eager' : 'lazy'"
+            width="600"
+            height="740"
+          />
+          <figcaption>
+            {{
+              m.role === 'FRONT' ? 'Bìa trước' : m.role === 'BACK' ? 'Mặt sau' : 'Trang nội dung'
+            }}
+          </figcaption>
+        </figure>
+      }
+    </section>
+    <article>
+      <p class="eyebrow">Ảnh thật · Đúng từng cuốn</p>
+      <h1>{{ title(b) }}</h1>
+      <p class="code">
+        Mã sách <strong>{{ b.bookCode }}</strong>
+      </p>
+      <span class="stock" [class.sold]="b.availability === 'SOLD'">{{
+        b.availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
+      }}</span>
+      <div class="pricing">
+        <p class="price">{{ price(display()!.priceVnd) }}</p>
+        @if (display()!.originalPriceVnd) {
+          <del>{{ price(display()!.originalPriceVnd) }}</del
+          ><span>Giá Flash Sale</span>
+        }
+        @if (display()!.priceVnd === null) {
+          <p>Đang chờ xác nhận lại giá.</p>
+        }
+        <small>{{ priceNote }}</small>
+      </div>
+      <section class="condition">
+        <h2>Tình trạng thực tế</h2>
+        <p>{{ b.conditionNote }}</p>
+      </section>
+      @if (b.description) {
+        <section>
+          <h2>Về cuốn sách</h2>
+          <p class="description">{{ b.description }}</p>
+        </section>
+      }
+      <dl>
+        @if (b.publisher) {
+          <dt>Nhà xuất bản</dt>
+          <dd>{{ b.publisher }}</dd>
+        }
+        @if (b.author) {
+          <dt>Tác giả</dt>
+          <dd>{{ b.author }}</dd>
+        }
+        @if (b.ageGroups.length) {
+          <dt>Độ tuổi</dt>
+          <dd>
+            @for (a of b.ageGroups; track a) {
+              {{ ages[a] }}{{ $last ? '' : ', ' }}
+            }
+          </dd>
+        }
+        @if (b.binding) {
+          <dt>Kiểu bìa</dt>
+          <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
+        }
+        @if (b.readingLevel) {
+          <dt>Trình độ đọc tham khảo</dt>
+          <dd>
+            {{ levels[b.readingLevel] }}<small>{{ readingNote }}</small>
+          </dd>
+        }
+        @if (b.readingVideoUrl) {
+          <dt>Đọc tham khảo</dt>
+          <dd>
+            <a [href]="b.readingVideoUrl" target="_blank" rel="noopener noreferrer"
+              >Xem video đọc sách ↗</a
+            >
+          </dd>
+        }
+      </dl>
+      <div class="contact-actions">
+        <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
+        <button (click)="contact.open()">
+          {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
+        </button>
+        @if (config()?.groupUrl) {
+          <a class="community" [href]="config()!.groupUrl" target="_blank" rel="noopener noreferrer"
+            >Tham gia cộng đồng để nhận thông tin ưu đãi ↗</a
+          >
+        } @else {
+          <p class="muted">Link cộng đồng Zalo đang được cập nhật.</p>
+        }
+        <small>Tiệm xác nhận tình trạng và giá qua Zalo. Liên hệ không giữ sách.</small>
+      </div>
+      <app-contact-dialog
+        #contact
+        [book]="b"
+        [config]="config()"
+        [url]="origin + '/sach/' + b.slug"
+      />
+    </article>
+  </div>
+}

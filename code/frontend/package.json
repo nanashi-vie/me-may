@@ -7,7 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test --watch=false",
-    "serve:ssr:me-may-web": "node dist/me-may-web/server/server.mjs"
+    "serve:ssr:me-may-web": "node dist/me-may-web/server/server.mjs",
+    "build:workers": "ng build --configuration production,workers",
+    "dev:workers": "npm run build:workers && CLOUDFLARE_LOAD_DEV_VARS_FROM_DOT_ENV=false wrangler dev --config wrangler.local.jsonc --local --ip 127.0.0.1 --port 8787",
+    "check:workers:proxy": "node scripts/check-worker-proxy.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.3",
@@ -33,10 +36,13 @@
     "jsdom": "^28.0.0",
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.8",
+    "wrangler": "4.152.0"
   },
   "overrides": {
     "vite": "7.3.7",
-    "@modelcontextprotocol/sdk": "1.32.0"
+    "@modelcontextprotocol/sdk": "1.32.0",
+    "undici@^7": "7.30.1",
+    "body-parser": "2.4.0"
   }
 }

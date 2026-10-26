@@ -30,7 +30,7 @@ public class BookCommandService {
  }
  private void apply(BookCopy b,Listing l,BookWrite w){
   b.title=w.title();b.isbn=w.isbn();b.publisher=w.publisher();b.author=w.author();b.language=w.language();b.binding=w.binding();b.conditionGrade=w.conditionGrade();b.conditionNote=w.conditionNote();
-  l.priceVnd=w.priceVnd();l.description=w.description();l.categoryId=w.categoryCode()==null?null:categories.findByCode(w.categoryCode()).orElseThrow(()->AdminApiException.field("categoryCode","Thể loại không hợp lệ")).id;l.readingLevel=w.readingLevel();l.readingLevelBasis=w.readingLevelBasis();l.readingVideoUrl=w.readingVideoUrl();
+  l.priceVnd=w.priceVnd();l.description=w.description();l.categoryId=w.categoryCode()==null?null:categories.findByCode(w.categoryCode()).orElseThrow(()->AdminApiException.field("categoryCode","Thể loại không hợp lệ")).id;l.readingLevel=w.readingLevel();l.readingVideoUrl=w.readingVideoUrl();
  }
  private void mappings(Listing l,BookWrite w){
   Set<String> previous=new HashSet<>(jdbc.queryForList("select collection_id::text from listing_collection where listing_id=?",String.class,l.id));

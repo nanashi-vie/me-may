@@ -1,6 +1,8 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M2 local: Angular 21.2 + Spring Boot 4.1.1/Java 21 + PostgreSQL + Cloudinary. Quản trị nhập sách/ảnh đã triển khai và qua gate kỹ thuật; chờ chủ thử 10–20 cuốn thật. Catalogue public, wishlist và importer thuộc các bước sau. Docker hóa ứng dụng, CI/CD và deploy chưa thực hiện.
+M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (read-only connection PASS, chưa migration); backend Render vẫn là đề xuất, chưa thuê VPS/deploy. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
+
+Neon chuẩn bị cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway, hiện chưa cung cấp. Giữ `DB_URL`/`TEST_DB_URL` local. App hiện chưa tự đọc các biến Neon này; không chạy `run-local.sh` để migrate Neon. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
 
 ## Chạy trên máy hiện tại
 
@@ -61,11 +63,43 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 
 Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
 
-Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách chưa triển khai.
+Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
 
 Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env` (run-local.sh nạp lại `.env`, nên không để namespace dev ghi đè lệnh test); chỉ chạy `MediaLiveTest,CloudinaryLiveTest` với `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test`. Guard `me_may_test` và namespace phải đạt trước upload/delete. Test mặc định không gọi cloud thật; cleanup chỉ public_id do gate tạo.
 
 Trước migration/pilot, dùng `pg_dump -Fc` và quyền file 0600 ở thư mục ignored. Restore thử vào database scratch riêng, đối chiếu auth/audit/book/media references và cả `last_value/is_called` của sequence. Không restore đè dev/test hoặc reset mã từ MAX một cách mù quáng. Bằng chứng local tại [VERIFICATION](docs/VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
+
+## Frontend Workers local
+
+Backend local8080 cần chạy như trên. Từ `code/frontend` (Node22.12+):
+
+```bash
+npm ci
+npm run dev:workers
+```
+
+Mở [Workers local](http://127.0.0.1:8787). Lệnh build Angular SSR riêng
+`dist/me-may-workers`, rồi chạy Wrangler/workerd local; sửa code cần chạy lại lệnh.
+`npm start`4200 và `npm run build`/Node SSR cũ vẫn dùng riêng.
+
+`wrangler.local.jsonc` chỉ có origin local8080/8787, asset binding và compatibility
+flag `nodejs_compat`. `/api` được proxy cùng origin, giữ session/CSRF/upload và
+no-store; SSR nhận origin qua request context. Không đặt DB/Neon/Cloudinary key
+trong frontend. Root `.env` không được nạp; script tắt Wrangler dotenv loading.
+Nếu cần override dùng `code/frontend/.dev.vars` (ignored), chỉ hai origin trên.
+Không dùng config local để publish; chưa có domain/account/backend online.
+
+Kiểm tra sau khi Worker đã chạy:
+
+```bash
+node scripts/check-ssr.mjs http://127.0.0.1:8787
+npm run check:workers:proxy
+```
+
+Probe thứ hai tự chạy mock backend và workerd8788 (inspector9231), kiểm tra
+body/multipart/cookie/CSRF/Set-Cookie/time/down503 rồi dừng, không dùng DB dev.
+Tránh dùng các cổng8788/9231 khi probe chạy. Bằng chứng local không thay kiểm tra
+Cloudflare thực tế về CPU/quota/cold-start/domain/TLS/cookie Secure.
 
 ## Auth/API M1
 
@@ -89,9 +123,27 @@ Session mặc định 30 phút không hoạt động, in-memory (restart backend
 - Database dev/test phải tách riêng. Tests từ chối dọn fixture nếu current_database không phải me_may_test.
 - Profile local được bật bởi run-local.sh; khi triển khai sau này cấu hình profile/secrets/domain/CSRF/CORS tương ứng, không dùng profile local trên Internet.
 - Local dùng role sở hữu schema để phát triển; production cần tách role migration và role runtime, thêm login rate limit, backup/restore và deployment gates theo master plan.
-- Canonical hiện dùng origin local `http://localhost:4200`; chưa có OG ảnh sách vì chưa làm catalogue/media. Cloudflare compatibility/SEO/OG phải kiểm chứng riêng trên staging.
+- Canonical local `http://localhost:4200`; M3 có OG ảnh public theo sách. Cloudflare compatibility/SEO/OG crawler phải kiểm chứng riêng trên staging.
 - SSR local chỉ bind `127.0.0.1`; host allowlist gồm `localhost` và `127.0.0.1`. Khi có domain staging, cấu hình allowlist và canonical theo domain thật; không dùng wildcard để bỏ SSRF protection.
 
 ## Bàn giao
 
 Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc trạng thái/checkpoint mới nhất rồi chọn file hoặc mục theo đầu việc. Không cần đọc toàn bộ nhật ký và bộ tài liệu. Quy tắc làm việc nằm trong [AGENTS](AGENTS.md).
+
+## M3 public và Flash Sale local
+
+- Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`, `/quan-tam`. Không cần tài khoản.
+- API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20 cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
+- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3 local.
+- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50 cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
+- Link video optional; trường căn cứ đã bỏ qua migrationV4, audit lịch sử vẫn giữ. MigrationV5 thêm campaign mặc định tắt, không tạo sale thật tự động.
+- Thêm `CONTACT_ZALO_HOTLINE_URL` và `CONTACT_ZALO_GROUP_URL` vào root`.env`, dùng HTTPS zalo.me; restart backend sau đổi. Thiếu cấu hình hiện đang cập nhật; dialog luôn có copy/thủ công, không tự gửi.
+- SSR backend origin server-only `MEMAY_API_ORIGIN` mặc định http://127.0.0.1:8080; canonical/enquiry origin `MEMAY_SITE_ORIGIN` mặc định http://localhost:4200. M3 chỉ chốt local; cấu hình origin browser/deployment cần spike Cloudflare riêng trước phát hành.
+- `npm run build` rồi `PORT=4000 npm run serve:ssr:me-may-web` (cwd code/frontend) để thử builtSSR và APIbridge local; `node code/frontend/scripts/check-ssr.mjs http://127.0.0.1:4000` (cwd root) kiểm HTML/OG/404/media/headers. Không coi localserver Node là phương án deploy lên VPS.
+
+## Wishlist M4 local
+
+- Bấm “Quan tâm” trên card/detail; header mở `/quan-tam` và badge tổng số cuốn. Tối đa100 mã lưu trong cùng browser qua `memay.wishlist.v1`; không lưu giá/ảnh. Storage lỗi hiện cảnh báo, tiếp tục dùng bộ nhớ. Xóa dữ liệu/ẩn danh có thể mất danh sách.
+- Checkbox chọn các cuốn muốn hỏi, ban đầu chưa chọn; chọn tất cả chỉ còn hàng. SOLD cảnh báo/không chọn; mã ẩn/thiếu chỉ hiện “Không còn hiển thị”. Những cuốn chưa chọn vẫn được lưu.
+- “Chuẩn bị nội dung hỏi mua” gọi GET `/api/v1/books/lookup?code=...&code=...` (1–100 mã,400 nếu sai/thiếu/quá nhiều), cập nhật giá và loại sold/hidden. Copy → mở Zalo → khách dán/gửi; luôn có textarea copy thủ công, không tự gửi/giữ sách/tạo đơn.
+- Foreground/sale expiry/thay đổi tab khác làm mới trạng thái và vô hiệu hóa nội dung cũ; mất mạng không copy giá cũ. `/quan-tam` noindex/no-store, SSR không chứa dữ liệu đã lưu. Thiết bị thật/Zalo in-app vẫn cần nghiệm thu riêng.

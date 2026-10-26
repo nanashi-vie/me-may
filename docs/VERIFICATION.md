@@ -71,3 +71,81 @@ Live rerun sau suite từng dừng ở safety guard vì có pending fixture khá
 Artifact/log local ignored: `.superpowers/sdd/M2_PLAN/`, `.local/backups/S010-before-m2.dump`, `.local/backups/S010-m2-test.dump`, `.local/restore-gate.log`, `output/playwright/m2-preview.png`. Dump thứ hai chỉ chứa dữ liệu kiểm thử; asset disposable đã xóa sau đối chiếu, không dùng làm backup sách bán thật. Credential/cookie/dump không commit.
 
 **Chưa kiểm chứng:** pilot 10–20 cuốn thật/thời gian thao tác/nhãn mã do chủ thực hiện; M3 public SEO/OG/contact, M4 wishlist, importer sau MVP, staging/production/Cloudflare và backup ngoài VPS. Database restore local cùng media references không thay cho backup media độc lập hay gate vận hành production.
+
+## M3 local — kết quả kỹ thuật và gate còn mở
+
+Ngày 23/10/2026, branch feat/m3-public-catalogue. User duyệt M3 local + Flash Sale; không deploy/Cloudflare/M4/import. M2 pilot6 cuốn, chưa đủ10–20.
+
+| Kiểm tra | Kết quả / bằng chứng |
+|---|---|
+| Backend `bash code/backend/run-local.sh -B -ntp verify` | 85 total,83 PASS/2 live skipped, JAR PASS; gồm migration3→latest giữ book/level/media/audit JSON/code sequence, public visibility/media, filters/page, sale expiry/sold/hidden/version/OWNER |
+| Frontend `npm test` (code/frontend) |56/56 PASS; level không căn cứ/video optional, URL/query races, failure vs empty, copyfallback/expiredprice, campaign409 giữ edits |
+| Angular `npm run build` | Browser+server PASS ngoài sandbox; trong sandbox exit134 tại Building |
+| SSR4200 và built4000 | Initial HTML/title/description/canonical/OG ảnh sách, public ảnh thật200/no-store, unknownbook/collection404, admin headersnoindex/no-store PASS qua check-ssr.mjs |
+| Backenddown SSR4001 | Home/catalogue/detail/FlashSale503, không falseempty/404 PASS; sale200 được bắt RED rồi sửa GREEN |
+| Dev bảo toàn dữ liệu | pg_dump custom mode0600 trước migration; fingerprint books/listing-minus-basis/media/audit/sequence khớp trước/sau;6 cuốn/18ACTIVE; không resetsequence hoặc tạo sale giả |
+| Browser thật | Detail390: ảnh3/3load, nooverflow, dialog text/copy/Escape trả focus. FlashSale layout chụp với browser-only responsefixture, không tạo ưu đãi trênDB; PictureHardcover lọc1, Back và tìm mã1 kết quả PASS ở built4000 |
+
+Artifact/testlog ignored trong .superpowers/sdd/M3_PLAN; backup/fingerprint ignored trong .local/backups. Không commit data/ảnh/cookie tiệm.
+
+Hai link Zalo thật đã cấu hình và endpoint public xác nhận có cả hai. Hydrated browser4000: canonical/OG và enquiry giữ origin cấu hình qua TransferState, dialog có Mở Zalo. Chưa mở nativeapp/gửi tin.
+
+Ngày 24/10/2026, người dùng xác nhận bản hiện tại ổn định và duyệt merge vào main trước M4. Xác nhận này chưa bổ sung bằng chứng mở Zalo trên thiết bị thực hoặc cấu hình sale thật. Các gate còn thiếu bằng chứng: Zalo thiết bị, pilot M2 đủ10–20, Cloudflare/crawler/SEO cache/staging/production.
+
+Review độc lập:4 Important đã sửa một lượt, không re-review: server-clock cho directentry/enquiry; refresh cancellation/URL-state; origin TransferState; khóa inputs sale load/save. RED8frontend+1backend→GREEN56 frontend/83 backend,2 live skipped; thêm4RED/GREEN recovery metadata/destroy. Không có Critical/Minor được reviewer nêu. PublicApi dùng credentials omit, X-Memay-Server-Time từ database; CORS expose header này là việc release nếu API khác origin.
+
+## M4 local — wishlist và hỏi mua nhiều cuốn
+
+Ngày24/10/2026, branch `codex/m4-wishlist`, baseline main a0a2642. User duyệt toàn bộ plan và checkbox chọn một phần danh sách. Không migration/dependency mới, không order/giữ sách. Contract và hành vi ở ARCHITECTURE/DESIGN, cách dùng ở README root.
+
+| Kiểm tra | Kết quả/bằng chứng |
+|---|---|
+| Baseline trước M4 | Frontend56/56; backend85 total/83pass/2live skipped, JAR PASS |
+| Lookup | RED404→GREEN87total/85pass/2live skipped; anonymous PUBLISHED/SOLD/order/dedupe/no internal fields/no-store/time; missing/sai/cap100/large-code/Long overflow/sale expiry |
+| Storage/trái tim | RED thiếu module→GREEN68 frontend; browser-only init, order/reopen/corrupt/blocked/quota/cap100/large-code/storage event+clear/destroy/aria |
+| Trang/enquiry | RED thiếu page→GREEN78; checkbox subset/selectall/SOLD/hidden/giá mới/offline/retry/late response/cross-tab pending+ready/expiry/destroy/clipboard |
+| Review và sửa | Fresh reviewer1Important stale copy-success; browser xác nhận thêm async focus→BODY.4RED→GREEN82; thêm recovery stale notice1RED→GREEN82. Không re-review, không deferred Minor |
+| Suite cuối | `npm test` tại code/frontend82/82 (25files); root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR; `npm run build` ngoài sandbox PASS |
+| SSR | `node scripts/check-ssr.mjs http://127.0.0.1:4000` từ frontend PASS: private wishlist shell/noindex/no-store/no saved codes, public metadata/OG/media/404, admin headers |
+| Browser thật Chromium | Lưu hai cuốn/reload còn2, selection reset; chọn1 và2 copy đúng mã/tên/giá/canonical; 360/390 và desktop1440 không tràn ngang; ảnh1280 tải thật |
+| Browser recovery/privacy | Cross-tab xóa sau copy xóa text/status cũ và focus về heading khi zero; Escape về Prepare khi còn selection; clipboard success callback/denied fallback, SOLD/hidden/offline fixture browser-only và retry; detail bỏ noindex, heart giữ pressed |
+| Dev không đổi | Fingerprint book_copy/listing/book_media/audit_event trước–sau byte-identical;6books/18images/46audit giữ nguyên. Không sửa availability/giá/publication hoặc tạo campaign giả |
+
+Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`, ảnh QA ignored `output/playwright/m4-{mobile360,desktop,enquiry390}.png`. Browser inject clipboard callback để kiểm UI và denied fallback; không coi đây là xác nhận OS clipboard/permission trên mọi nền tảng. Console ERR_FAILED duy nhất đến lookup bị abort có chủ đích trong test offline. CLI run-code lần đầu dùng callback destructuring sai, không tính PASS; rerun đúng callback đạt.
+
+**Chưa kiểm chứng/giới hạn:** Safari iPhone/Android Chrome/Facebook/Zalo in-app và mở/dán/gửi Zalo trên thiết bị thật; không gửi tin trong QA. Chưa đo hiệu năng100cuốn thực tế hoặc atomic concurrent tab writes (localStorage best-effort). M2 pilot10–20, Cloudflare/deploy/production/offsite restore/performance giữ gate riêng; M4 chỉ bàn giao local, chờ tiệm nghiệm thu/merge riêng.
+
+## Xác nhận M3/M4 và publish GitHub — 25/10/2026
+
+- Người dùng xác nhận “đã test xong m3 và m4”, yêu cầu publish GitHub và để các chỉnh sửa còn lại sau MVP; chưa cung cấp chi tiết chỉnh sửa. Ghi nhận nghiệm thu local của người dùng; không suy thêm thiết bị/trình duyệt hoặc kết quả native Zalo chưa được mô tả.
+- Chạy lại trước tích hợp: frontend `npm test`82/82 (25files), backend root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2live skipped, JAR thành công. Không đổi product code hoặc gọi cloud live. Log /tmp/me-may-m3-m4-publish-{frontend,backend}.log.
+- M3 đã có trên main a0a2642; M4 source a02b697 gồm4commits cần tích hợp. Trạng thái merge/push/remote cuối ở DEV_LOG/PROGRESS.
+- Chưa có VPS; user tự chuẩn bị Cloudflare Pages và nhờ đề xuất backend/database miễn phí. Render Free + Neon Free là đề xuất test, chưa provision/chốt/deploy. Cold-start/auth/DB/render/backup phải kiểm chứng trong spec M5, chưa coi local nghiệm thu là production.
+
+### Workers đã chốt và Neon đã cung cấp — cập nhật25/10
+
+- User sau đó chốt frontend **Workers thay Pages** để giữ SSR, cung cấp Neon trong root .env. Đây là quyết định hạ tầng mới nhất, thay dòng Pages ở checkpoint publish trên. SSR runtime/handler chưa deploy hoặc kiểm chứng trên Worker.
+- Static kiểm tra secret-safe thấy URL Neon pooled/TLS ở dòng riêng chưa phải env assignment. Đã chuẩn hóa thành NEON_DATABASE_URL, giữ DB_URL/TEST_DB_URL local. .env ignored; .env.example chỉ thêm tên biến rỗng. Không thay Spring datasource hoặc chạy app với DBcloud.
+- `python3 /tmp/me-may-neon-readonly/check.py` dùng JDK21/PostgreSQL JDBC42.7.13 sẵn có, credential qua process env (không argv/log). Transaction read-only + rollback PASS: PostgreSQL18.6, public0base tables, chưa có flyway_schema_history. Không ghi schema/data, bootstrap Owner, tạo project/branch, migrate hoặc di chuyển local books/media.
+- Chỉ có pooled URL; direct/non-pooled cho Flyway chưa cung cấp. Chưa đo quota/connection pooling/load/cold-start, chưa dùng Neon MCP để thay tài nguyên. Kiểm tra kết nối không thay nghiệm thu deployment, backup hoặc auth.
+
+## Frontend Workers local — 26/10/2026
+
+- Angular neutral Workers build PASS; Node build PASS. Frontend89/89 (26files), regression
+  admin asset-like privacy RED1/89→GREEN89/89; không thay backend/migration.
+- workerd8787 check-ssr PASS HTML Home/how-to/catalogue/detail/OG/canonical/images,
+  unknown/book/collection404, private wishlist shell và admin noindex/no-store.
+- Isolated check-worker-proxy PASS POST/query/body/cookie/CSRF/multipart, separate
+  Set-Cookie, server-time/no-store, request context canonical8788 và backend-down503.
+  Mock backend ephemeral, không ghi DBdev hoặc dùng Neon.
+- Chromium390: hydrate rồi lưu1, badge1/wishlist/chọn1/enquiry URL8787 đúng;
+  Escape đóng dialog, detail navigation xóa noindex, không overflow. Không mở/gửi Zalo.
+- Chromium desktop1440 direct detail reload: saved heart pressed, không overflow hoặc pageerror;
+  anonymous CSRF endpoint giữ MEMAYSESSION và token header, không in token/cookie values.
+- npm audit sau override body-parser2.4.0/undici7.30.1:0 vulnerabilities.
+  SSR checker Node4002 và Workers8787 final PASS; review độc lập0Critical/Important/Minor; log /tmp/me-may-workers-*.
+- Chưa deploy Cloudflare/Render, migrate Neon; chưa bằng chứng production CPU/quota/
+  cold-start/TLS/Secure cookie hoặc thiết bị Safari/Chrome/Zalo thật. Backend verify
+  không chạy lại vì không thay backend, dữ liệu/schema hoặc contract nghiệp vụ.
+
+Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không chạy lại suite/build/browser. Render/Neon và deployed CPU/quota/TLS/cookie vẫn ngoài scope, chưa được nghiệm thu.

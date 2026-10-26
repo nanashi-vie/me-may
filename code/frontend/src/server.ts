@@ -12,17 +12,43 @@ const browserDistFolder = join(import.meta.dirname, '../browser');
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-/**
- * Example Express Rest API endpoints can be defined here.
- * Uncomment and define endpoints as necessary.
- *
- * Example:
- * ```ts
- * app.get('/api/{*splat}', (req, res) => {
- *   // Handle API request
- * });
- * ```
- */
+// Local built-server API bridge. Backend origin is server configuration only.
+const backendOrigin = process.env['MEMAY_API_ORIGIN'] || 'http://127.0.0.1:8080';
+app.use('/api', express.raw({ type: () => true, limit: '11mb' }), async (req, res) => {
+  res.setHeader('Cache-Control', 'no-store');
+  try {
+    const headers = new Headers();
+    for (const name of ['accept', 'content-type', 'cookie', 'x-csrf-token']) {
+      const value = req.headers[name];
+      if (typeof value === 'string') headers.set(name, value);
+    }
+    const upstream = await fetch(new URL(req.originalUrl, backendOrigin), {
+      method: req.method,
+      headers,
+      body: ['GET', 'HEAD'].includes(req.method) ? undefined : req.body,
+      signal: AbortSignal.timeout(70000),
+      redirect: 'manual',
+    });
+    res.status(upstream.status);
+    upstream.headers.forEach((value, name) => {
+      if (
+        ![
+          'set-cookie',
+          'content-length',
+          'content-encoding',
+          'transfer-encoding',
+          'connection',
+        ].includes(name)
+      )
+        res.setHeader(name, value);
+    });
+    const cookies = upstream.headers.getSetCookie();
+    if (cookies.length) res.setHeader('Set-Cookie', cookies);
+    res.send(Buffer.from(await upstream.arrayBuffer()));
+  } catch {
+    res.status(503).json({ error: 'backend_unavailable' });
+  }
+});
 
 /**
  * Serve static files from /browser
@@ -41,9 +67,7 @@ app.use(
 app.use((req, res, next) => {
   angularApp
     .handle(req)
-    .then((response) =>
-      response ? writeResponseToNodeResponse(response, res) : next(),
-    )
+    .then((response) => (response ? writeResponseToNodeResponse(response, res) : next()))
     .catch(next);
 });
 

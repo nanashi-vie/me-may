@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "npm"
+    "packageManager": "npm",
+    "analytics": "a7df2fa9-bda0-478a-b35e-8dc41f65a343"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -29,9 +30,7 @@
                 "input": "public"
               }
             ],
-            "styles": [
-              "src/styles.scss"
-            ],
+            "styles": ["src/styles.scss"],
             "server": "src/main.server.ts",
             "outputMode": "server",
             "security": {
@@ -61,6 +60,13 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "workers": {
+              "outputPath": "dist/me-may-workers",
+              "ssr": {
+                "entry": "src/server.worker.ts",
+                "experimentalPlatform": "neutral"
+              }
             }
           },
           "defaultConfiguration": "production"

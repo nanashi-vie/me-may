@@ -13,7 +13,6 @@ describe('Book preview', () => {
       title: 'Tên',
       publisher: null,
       author: 'Tác giả',
-      readingLevelBasis: 'SECRET',
       sourceRef: 'SECRET',
     };
     TestBed.configureTestingModule({

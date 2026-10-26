@@ -1,38 +1,48 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 23/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu từ [chỉ mục](README.md), checkpoint mới nhất ở cuối [DEV_LOG](DEV_LOG.md). Luôn kiểm tra lại Git/process/môi trường.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S019-C03 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
-## Trạng thái hiện tại
+## Bàn giao — frontend Workers local
 
-- M0 và M1 local đã được duyệt. M2 đã duyệt spec/plan và triển khai tuần tự task1–10; gate kỹ thuật task11 đã kiểm chứng, **chờ chủ nhập/đối chiếu 10–20 cuốn thật để nghiệm thu M2**. Người dùng đã xác nhận sẵn sàng làm pilot trên local.
-- Giữ [M2_SPEC](M2_SPEC.md) và [M2_PLAN](M2_PLAN.md) hiện hành khi pilot còn mở; chưa gộp/xóa hoặc chuyển M3.
-- Branch `feat/m2-admin-catalogue`; code/review `9ef3121`, bàn giao `53f2bbf`. Người dùng yêu cầu push GitHub ngày 23/10; đã push lên origin/feat/m2-admin-catalogue thành công, không merge/deploy.
+- User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
+- SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
+- Đã merge main15e2446 và push GitHub26/10; postmerge frontend89/89, Workersbuild/SSR và backendverify87total85PASS2liveSkipped/JAR PASS. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
 
-## Đã kiểm chứng
+## Trạng thái
 
-- Schema BookCopy/Listing, taxonomy cố định, mã tăng dần MM-000001 bất biến và có thể khuyết; aggregate version/audit, Owner/Staff, publication độc lập availability.
-- API admin strict JSON, tìm kiếm literal, collections, preview/audit; ảnh authenticated Cloudinary, ba slot, bounded upload và cleanup recoverable. Timeout chưa rõ kết quả giữ intent chờ 1h, không dọn sớm.
-- Angular list/editor/collection/media/status/preview/audit; CSRF mới, không replay POST tạo, giữ form khi lỗi/xung đột/hết phiên; dirty guard gồm file/metadata ảnh; admin noindex/no-store, giá vi-VN.
-- Backend verify73 PASS +2 live skipped mặc định; live Cloudinary2/2 PASS riêng; frontend34/34 và build PASS; SSR public/404/admin headers PASS. Chi tiết mới ở [VERIFICATION](VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
-- Browser Owner flow và Staff restriction; hai tab stale, offline, cookie expiry, dirty navigation và keyboard focus đã thử trên me_may_test/memay/test, không dùng dữ liệu tiệm làm synthetic fixture.
-- Backup trước dev migration; restore scratch giữ auth và M2 data/audit/code sequence/media reference; asset test đã cleanup. Không coi đây là gate production/backup media độc lập.
-- Review độc lập toàn nhánh: 4 finding đã có RED→GREEN; giữ thêm gate pilot thật, không lấy dữ liệu/ảnh giả để nghiệm thu.
+- Kiểm kê26/10: cả6 branch local ngoài main đã merge đầy đủ (branch_only0); không còn commit cần hợp nhất. Đã xóa5local/2remote feature đã merge; chỉ giữ main và dev ở cả local/GitHub theo yêu cầu bổ sung. dev giữ nguyên2a73249.
 
-## Chạy local / pilot
+- User25/10 xác nhận đã test xong M3/M4; đã merge M4 vào main dfecf8a và push origin/main thành công. Source M4 a02b697, cập nhật nghiệm thu/hướng M5 ở61d6f88; không deploy website hoặc triển khai M5 trong task publish.
+- Frontend82/82 (25files), backend87total/85PASS/2live skipped, verify/JAR/build PASS. Fresh review1Important + browser focus đã sửa một lượt RED→GREEN; recovery notice cũng có regression. Không deferred Minor.
+- SSR private shell/noindex/no-store, public metadata/404/ảnh; browser360/390/desktop1440, save/reload/subset/multi/cross-tab/copycallback+manualfallback/SOLDhiddenoffline fixture/retry/nativeEscape/focus/noindexreset đạt. Fingerprint dev6books/18media/46audit trước–sau khớp.
 
-Backend 8080 và frontend 4200 được để chạy để chủ thử; kiểm tra lại khi tiếp tục phiên. Mở [Quản lý sách](http://127.0.0.1:4200/admin/sach), đăng nhập bằng BOOTSTRAP_OWNER_EMAIL/PASSWORD trong `.env` local; không gửi secret qua chat. Hướng dẫn nhập/pilot ở [README](../README.md#nhập-sách-và-pilot-m2).
+- M0/M1 local đã duyệt. M2 gate kỹ thuật đạt; checkpoint24/10 có6cuốn/18ảnh ACTIVE, pilot10–20 chưa có xác nhận mới. Phiên publish không đọc/sửa dữ liệu dev; giữ M2_SPEC/M2_PLAN khi gate còn mở.
+- M1/M2 đã có trong lịch sử dev2a73249 rồi main. M3/M4 source và review kỹ thuật hoàn tất; một số chỉnh sửa user chưa mô tả được hoãn sau MVP, không tự triển khai/bịa backlog chi tiết.
+- Người dùng xác nhận code hiện tại ổn định ngày 24/10. Đã merge feat/m3-public-catalogue (gồm M1/M2) vào main tại 38c908f, không conflict; kiểm tra sau merge đạt. /input/ đã được ignore; user yêu cầu commit/push cả thay đổi Angular CLI analytics trong angular.json.
 
-Dev dùng me_may_dev; tests dùng me_may_test có guard; Cloudinary đã được cấu hình và xác minh. Không dùng `.local/*-browser.json` hoặc tài khoản fixture test cho pilot. Không reset sequence; sách bán thật do tiệm nhập thủ công. Dữ liệu synthetic trong browser test đã xóa khỏi DB/cloud.
+## Đã kiểm chứng M3
 
-## Bước tiếp theo
+- Backup .local/backups/S012-before-m3.dump mode0600; dev V4/V5 chạy sau backup. Fingerprint books/listing(trừ cột căn cứ)/media/audit/sequence trước-sau khớp,6 cuốn/18 ảnh giữ nguyên. Không reset mã hoặc tạo sale giả trong dev.
+- Reading basis bỏ khỏi schema/API/form/audit mới; audit lịch sử giữ. Video optional/null; có nhập kiểm tra HTTPS. Backend migration test giữ mức đọc/media/audit/sequence.
+- Public PUBLISHED-only incl SOLD, tuổiOR/thể loạiAND/kiểu bìa, literal search, sort/page20, active collection; ảnh ACTIVE qua endpoint kiểm publication; no-store.
+- Flash Sale do OWNER biên tập, thời gian Việt Nam, version/audit. Giá gốc từ reference; chỉ hiệu lực khi campaign bật/đúng giờ/PUBLISHED/AVAILABLE/sale<reference. Không số đã bán. Tắt campaign sau sold vẫn được.
+- Home/catalogue/collection/detail3 ảnh/contact dialog/copyfallback; không wishlist trước M4. Frontend56/56 PASS; backend85 total/83 PASS/2 live skipped, verify/JAR PASS. Build PASS ngoài sandbox.
+- SSRdev4200 và built4000: HTML/meta/OG/ảnh thật,404 missing book/collection và no-store PASS. Isolatedbackenddown4001:Home/catalogue/detail/sale503 PASS; sửa sale200→503 có RED/GREEN.
+- Browser detail390 ảnh3/3load, không tràn ngang, Escape trả focus; copy/manualfallback có kiểm tra. Catalogue/back/tìm mã đã kiểm chứng bằng built4000; screenshot sale là response fixture browser-only, không giá giả trong DB.
 
-1. Đã xác minh cuốn thật đầu tiên MM-000001 trong me_may_dev (Công khai/Còn hàng, ba ảnh ACTIVE); chưa đủ bằng chứng hoàn tất pilot. Chủ tiếp tục nhập 10–20 cuốn thật: mã/nhãn, giá/tình trạng, ba ảnh; tự tìm/sửa/preview/publish/sold/ẩn/khôi phục; ghi thời gian nhập/tìm/sửa và các điểm vướng. Chưa có kết quả pilot thì M2 còn mở.
-2. Nếu có lỗi pilot: tái hiện, sửa có kiểm chứng và ghi checkpoint. Khi chủ duyệt gate M2, chuyển hết quyết định/bằng chứng vào tài liệu chuẩn rồi mới xóa spec/plan hết vai trò.
-3. M3 catalogue/detail/contact cần đặc tả tiếp; link Zalo hotline/nhóm thật cần trước nghiệm thu contact. M4 wishlist trên thiết bị; import CSV/Excel tạo mới thành nháp ngay sau MVP.
-4. Cloudflare render/SEO/OG spike, staging/VPS/Dokploy, production roles/domains/CORS/CSRF, CI/CD, backup ngoài VPS còn các gate riêng, chưa triển khai từ phiên này.
+## Local và điều kiện còn thiếu
 
-## Bàn giao và tài liệu
+- Pilot frontend4200/backend8080 phục vụ M4; QA4000/browser phiên này dừng sau bàn giao. [Quan tâm](http://127.0.0.1:4200/quan-tam), [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach).
+- User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
+- User đã chốt **Cloudflare Workers cho Angular SSR**, thay Pages; đã cung cấp Neon trong .env. Chuẩn hóa URL thô thành NEON_DATABASE_URL, pooled/TLS và read-only connection PASS PostgreSQL18.6/public0tables/noFlyway. DB_URL/TEST_DB_URL vẫn local; chưa migration/deploy. Render Free là đề xuất backend; chưa có VPS. SSR/auth/backup/restore vẫn gate môi trường thật.
 
-- Một chỉ mục docs/README; Markdown tối đa 400 dòng/file, không có tối thiểu bắt buộc; DEV_LOG ngoại lệ. Không tạo proposal trùng phạm vi hoặc thêm .gitignore con.
-- Log/artifact/backup/cookie local nằm trong `.superpowers/`, `.local/`, `output/playwright/` được ignore; không commit secret/dump/ảnh pilot. Source asset public/logo vẫn theo dõi Git.
-- Knowledge graph project Users-daoquanghung-Projects-me-may đã refresh trong M2, có thể thiếu file media do default exclusion; dùng fallback khi không đủ kết quả. Lần refresh graph cuối báo Transport closed; không giả định index chứa frontend mới. Skill ở `.agents/` local, không giả định có trong clone.
+## Tiếp theo
+
+1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; frontend Workers local đã triển khai; bước tiếp chốt backend Render đề xuất và deployed SSR gate. Credential không phải ủy quyền migrate/deploy.
+2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
+3. Cần NEON_DATABASE_URL_UNPOOLED cho Flyway (hiện chưa có), tách datasource/migration config, chốt host/region/domain hoặc /api cùng origin/cookie/CSRF và Worker runtime/SSR/cold-start. Chưa có spec M5/lệnh deploy được duyệt. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
+
+## Tài liệu và giới hạn
+
+- docs/README là chỉ mục duy nhất; M2_SPEC/M2_PLAN còn pilot. Markdownmax400, DEV_LOG ngoại lệ. input/.env/.local/.superpowers/output bịignore, asset nguồn/logo tracked; không commit ảnh/dump/secrets.
+- Codebase graph đã index lại fast/persistencefalse trongM3; media bị default exclusion, dùng fallback khi không đủ kết quả.

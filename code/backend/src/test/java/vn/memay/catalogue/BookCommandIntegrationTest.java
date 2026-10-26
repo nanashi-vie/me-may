@@ -26,9 +26,9 @@ class BookCommandIntegrationTest {
   var a=commands.create(owner,write("  Picture  ","PICTURE_BOOK","PAPERBACK",1L,"A1","Tiệm xem nội dung",List.of("AGE_4_6","AGE_7_9"),List.of()));
   assertThat(a.title()).isEqualTo("Picture"); assertThat(a.ageGroups()).containsExactly("AGE_4_6","AGE_7_9");
  }
- @Test void nullableLevelClearsBasis(){
+ @Test void nullableLevelIsOptional(){
   var a=commands.create(owner,write("A",null,null,100L,"A1","Đánh giá",List.of(),List.of()));
-  var b=commands.update(Long.parseLong(a.id()),a.version(),owner,draft("A"));assertThat(b.readingLevel()).isNull();assertThat(b.readingLevelBasis()).isNull();
+  var b=commands.update(Long.parseLong(a.id()),a.version(),owner,draft("A"));assertThat(b.readingLevel()).isNull();
  }
  @Test void staleWriteDoesNotChangeListingOrAudit(){
   var a=commands.create(owner,draft("A"));commands.update(Long.parseLong(a.id()),a.version(),owner,draft("B"));
@@ -45,6 +45,6 @@ class BookCommandIntegrationTest {
  @Test void rejectsInvalidPriceLevelAndLink(){
   for(Long price:new Long[]{0L,-1L,1000000000000L}) assertThatThrownBy(()->commands.create(owner,write("A",null,null,price,null,null,List.of(),List.of()))).hasMessageContaining("priceVnd");
   assertThat(commands.create(owner,write("A",null,null,999999999999L,null,null,List.of(),List.of())).priceVnd()).isEqualTo(999999999999L);
-  assertThatThrownBy(()->commands.create(owner,write("A",null,null,1L,"A1"," ",List.of(),List.of()))).hasMessageContaining("readingLevelBasis");
+  assertThat(commands.create(owner,write("A",null,null,1L,"A1",null,List.of(),List.of())).readingLevel()).isEqualTo("A1");
  }
 }

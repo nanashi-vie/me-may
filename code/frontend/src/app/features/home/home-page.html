@@ -1,0 +1,76 @@
+<section class="hero">
+  <div>
+    <p class="eyebrow">Tiệm sách ngoại văn Mẹ Mây</p>
+    <h1>Mở sách nhỏ.<br />Khám phá thế giới lớn.</h1>
+    <p>
+      Sách đã qua sử dụng, được tiệm chọn và chụp ảnh thật từng cuốn. Cùng bé tìm một câu chuyện mới
+      mỗi ngày.
+    </p>
+    <a class="button" routerLink="/sach">Khám phá sách →</a>
+  </div>
+  <div class="hero-art" aria-hidden="true">
+    <span class="orbit">✦</span><img src="/logo.jpg" alt="" width="280" height="280" /><span
+      class="art-note"
+      >Đọc cùng con<br />lớn cùng những trang sách</span
+    >
+  </div>
+</section>
+@if (sale()?.items?.length) {
+  <section class="flash-section" aria-label="Flash Sale">
+    <header>
+      <h2>FLASH <span>ϟ</span> SALE</h2>
+      <p>
+        Kết thúc trong <time [attr.datetime]="sale()!.endsAt">{{ countdown(remaining()) }}</time>
+      </p>
+      <a routerLink="/flash-sale">Xem tất cả →</a>
+    </header>
+    <div class="shelf-grid">
+      @for (b of sale()!.items.slice(0, 5); track b.id) {
+        <app-book-card [book]="b" [now]="clock.now()" />
+      }
+    </div>
+  </section>
+} @else if (saleError()) {
+  <p class="sale-unavailable">
+    Chưa kiểm tra được Flash Sale. <button class="text-button" (click)="loadSale()">Thử lại</button>
+  </p>
+}
+@if (loading()) {
+  <p class="loading" role="status">Đang mở kệ sách của tiệm…</p>
+} @else if (error()) {
+  <app-public-error (retry)="load()" />
+} @else if (data()?.shelves?.length) {
+  @for (s of data()!.shelves; track s.href) {
+    <section class="shelf">
+      <header>
+        <h2>{{ s.title }}</h2>
+        <a
+          [routerLink]="s.href.split('?')[0]"
+          [queryParams]="s.href.includes('?') ? { category: s.href.split('=')[1] } : {}"
+          >Xem tất cả →</a
+        >
+      </header>
+      <div class="shelf-grid">
+        @for (b of s.books; track b.id) {
+          <app-book-card [book]="b" [now]="clock.now()" />
+        }
+      </div>
+    </section>
+  }
+} @else {
+  <section class="empty">
+    <h2>Tiệm đang sắp những cuốn sách đầu tiên</h2>
+    <p>Bạn ghé lại để khám phá sách mới nhé.</p>
+  </section>
+}
+<section class="how">
+  <p class="eyebrow">Cách hỏi mua</p>
+  <h2>Tìm cuốn bé thích, nhắn Mẹ Mây.</h2>
+  <ol>
+    <li><span>01</span>Chọn sách và xem ba ảnh thật</li>
+    <li><span>02</span>Sao chép mã và thông tin cuốn sách</li>
+    <li><span>03</span>Nhắn Zalo để tiệm xác nhận</li>
+  </ol>
+  <a routerLink="/cach-mua">Xem hướng dẫn hỏi mua →</a>
+  <p class="muted">Website không giữ sách. Tiệm xác nhận tình trạng và giá khi trao đổi.</p>
+</section>

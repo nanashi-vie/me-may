@@ -44,7 +44,7 @@ Tên dưới đây là contract triển khai đề xuất; FK không cascade-del
 | Bảng | Dữ liệu và constraint chính |
 |---|---|
 | book_copy | bigint identity PK; book_code varchar(32) UNIQUE NOT NULL; title varchar(300) nullable; isbn varchar(32), publisher/author varchar(200), language varchar(50) nullable; binding varchar(16) nullable; condition_grade varchar(16) nullable; condition_note varchar(4000) nullable; availability NOT NULL CHECK; version bigint NOT NULL >=0; created_at/updated_at NOT NULL |
-| listing | bigint identity PK; book_copy_id UNIQUE NOT NULL FK; slug varchar(80) UNIQUE NOT NULL; price_vnd bigint nullable CHECK >0 nếu có; description varchar(10000) nullable; category_id nullable FK; reading_level varchar(8), reading_level_basis varchar(1000), reading_video_url varchar(2048) nullable; publication_status NOT NULL CHECK; published_at nullable; updated_at NOT NULL |
+| listing | bigint identity PK; book_copy_id UNIQUE NOT NULL FK; slug varchar(80) UNIQUE NOT NULL; price_vnd bigint nullable CHECK >0 nếu có; description varchar(10000) nullable; category_id nullable FK; reading_level varchar(8),  reading_video_url varchar(2048) nullable; publication_status NOT NULL CHECK; published_at nullable; updated_at NOT NULL |
 | category | Sáu bản ghi seed có code UNIQUE cố định, name, slug UNIQUE, sort_order; một FK category/listing, không có many-to-many category |
 | listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
 | collection | bigint identity PK; name varchar(100) NOT NULL; slug varchar(120) UNIQUE NOT NULL; sort_order integer >=0; active boolean; version bigint; timestamps |
@@ -59,7 +59,7 @@ Tên dưới đây là contract triển khai đề xuất; FK không cascade-del
 - binding: PAPERBACK/HARDCOVER; category PICTURE_BOOK bắt buộc đúng một binding cả khi lưu nháp; category khác phải binding=null.
 - Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
 - condition_grade tùy chọn: VERY_GOOD/GOOD/FAIR; không thay condition_note.
-- reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; khi có phải có reading_level_basis không rỗng; khi null, basis=null.
+- reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; không yêu cầu căn cứ khi gán mức.
 - Nhãn và thứ tự đọc theo DATA, Flyers/Key chung A2. Không suy ra level/tuổi từ nhau hoặc từ category.
 - Các enum cố định được seed/định nghĩa trong code, không làm trình chỉnh sửa danh sách mức/tuổi/thể loại trong M2.
 - Owner quản lý collection; collection inactive không được gán mới, mapping cũ giữ nguyên và hiện rõ là ngừng dùng. Không tự ẩn sách thành viên.
@@ -75,11 +75,11 @@ Tên dưới đây là contract triển khai đề xuất; FK không cascade-del
 - Publish cần title, category, price_vnd, condition_note, binding hợp lệ nếu Picture book và ba media ACTIVE với ba role khác nhau.
 - Owner phải xác nhận đã đối chiếu ba ảnh/tình trạng với đúng cuốn (`confirmedActualCopy=true` trong request publish); ghi xác nhận vào audit.
 - Checkbox xác nhận không phải thuật toán chứng minh ảnh thật; pilot vẫn cần người đối chiếu vật thể. Không tự publish dữ liệu demo M0.
-- Publish không bắt tuổi, author/publisher, ISBN, description, level hoặc video. Có level vẫn phải có căn cứ nội bộ.
+- Publish không bắt tuổi, author/publisher, ISBN, description, level hoặc video. Có level không yêu cầu căn cứ nội bộ.
 - Lần publish đầu set published_at; hide/restore không xóa mốc này, publish lại không biến cuốn cũ thành mới đăng.
 - Mọi cập nhật lên listing PUBLISHED phải giữ điều kiện publish; không được xóa ảnh bắt buộc hoặc làm rỗng giá/title/condition/category.
 - Muốn sửa thành dữ liệu chưa hoàn chỉnh: Owner ẩn rồi khôi phục nháp. Thay một ảnh khi published dùng swap nguyên tử ở mục 8.
-- Preview là route admin được bảo vệ, có noindex/no-store; chiếu DTO public dự kiến, không hiển thị căn cứ mức đọc/source_ref/audit.
+- Preview là route admin được bảo vệ, có noindex/no-store; chiếu DTO public dự kiến, không hiển thị source_ref/audit.
 - Preview thiếu dữ liệu được ghi rõ “Bản nháp/chưa đủ điều kiện xuất bản”; không biến thành URL public chia sẻ được.
 - Giá luôn có note về tình trạng; level chưa xác định ẩn trường; title ghép bỏ thành phần thiếu/dấu phân cách thừa theo DATA.
 
@@ -130,8 +130,8 @@ Các path dưới đây có prefix `/api/v1/admin`. ID bigint trả qua JSON dư
 - Tất cả field BookWrite là nullable/trống theo quy tắc draft, ageGroups/collectionIds là mảng không trùng (tối đa 4/100); PUT gửi đủ field, không chứa code/slug/media/publication/availability.
 - Field unknown/server-managed bị trả 400; không mass assignment. Tạo không nhận availability hoặc publication từ client.
 - BookDetail gồm id,bookCode,slug,version, các field BookWrite,publication,availability,publishedAt,createdAt,updatedAt và media[{id,role,alt,sourceRef,contentPath}].
-- BookSummary là id,bookCode,title,priceVnd,publication,availability,version,updatedAt,frontContentPath?; không có cloud URL/căn cứ mức đọc.
-- PreviewBook gồm bookCode,slug,title,publisher,author,ageGroups,categoryCode,binding,conditionGrade,conditionNote,priceVnd,description,readingLevel,readingVideoUrl,availability,media; không có căn cứ nội bộ/source_ref.
+- BookSummary là id,bookCode,title,priceVnd,publication,availability,version,updatedAt,frontContentPath?; không có cloud URL hoặc dữ liệu nội bộ.
+- PreviewBook gồm bookCode,slug,title,publisher,author,ageGroups,categoryCode,binding,conditionGrade,conditionNote,priceVnd,description,readingLevel,readingVideoUrl,availability,media; không có source_ref.
 - Page<T> = {items,page,size,totalElements,totalPages}; sort list updated_at DESC,id DESC, audit created_at DESC,id DESC.
 - q trim, tối đa 200 ký tự; mã so khớp không phân biệt hoa/thường, tên tìm substring không phân biệt hoa/thường, escape wildcard và bind SQL parameters.
 - M2 chưa hứa tìm tiếng Việt không dấu; unaccent public search sẽ đặc tả M3. Filter admin publication/availability không làm phát sinh filter public.
@@ -188,7 +188,7 @@ Quy trình upload/thay slot:
 - Form mã readonly sau create; trước create hiển thị “Tự tạo khi lưu”. Một nút Lưu nháp tạo hai record; thành công điều hướng editor theo ID để upload.
 - Disable nút khi đang lưu để chống double-click. POST create không tự retry sau timeout; báo chưa xác định kết quả và cho kiểm tra danh sách gần đây trước tạo lại.
 - Field tuổi multi-select, category single-select; Picture book hiện radio Paperback/Hardcover bắt buộc. Đổi category hiển thị rõ việc xóa binding không còn áp dụng.
-- Mức đọc single-select có Chưa xác định, basis xuất hiện khi chọn level; không hứa nhãn Cambridge là chứng nhận. Collection chọn nhiều; mục inactive đã gán hiện readonly và được phép bỏ.
+- Mức đọc single-select có Chưa xác định, không hứa nhãn Cambridge là chứng nhận. Collection chọn nhiều; mục inactive đã gán hiện readonly và được phép bỏ.
 - Ba slot ảnh cố định, bìa là thumbnail; mỗi slot có progress/lỗi/thay/xóa theo quyền. Không kéo sắp thứ tự hoặc đổi vai trò tùy ý.
 - Không cho upload khi form còn thay đổi chưa lưu; hướng dẫn lưu trước. Sau upload cập nhật snapshot/version, không làm mất field người dùng đang nhập.
 - Khi 400 giữ dữ liệu và focus field đầu tiên; 409 giữ form cũ, cho tải bản server để đối chiếu, không tự reload/ghi đè.
@@ -218,12 +218,12 @@ Quy trình upload/thay slot:
 |---|---|
 | Migrations | DB test trống áp V1→V3; DB M1 nâng cấp không mất user/auth; schema validate; seed không lặp |
 | Mã/aggregate | Tạo hai cuốn cùng tên/ISBN nhận hai mã khác; concurrent create không trùng; rollback có thể khuyết; mốc 999999→1000000; code/slug không sửa; create/save hai entity nguyên tử |
-| Draft/validation | Lưu thiếu field được phép; category một/tuổi nhiều; Picture book thiếu binding/ALL bị từ chối; enum/giá/link sai; level null/basis; không suy tuổi/level |
+| Draft/validation | Lưu thiếu field được phép; category một/tuổi nhiều; Picture book thiếu binding/ALL bị từ chối; enum/giá/link sai; level nullable không cần căn cứ; không suy tuổi/level |
 | Publish | Thiếu từng ảnh hoặc title/category/giá/condition bị chặn; đủ ba ảnh + Owner xác nhận thì pass; SOLD vẫn publish được, archive không đổi availability |
 | Quyền | Anonymous/CSRF/Staff gọi thẳng API, Staff sửa published/archived, đổi availability/publication/collection đều bị từ chối; không tạo side effect cloud trước kiểm quyền |
 | Races | Hai save, save/publish, upload/publish, hai upload cùng slot, remove/replace: một version thắng, request còn lại không ghi đè; state/media cleanup không đua xóa ACTIVE |
 | Media | MIME giả/ảnh hỏng/10 MiB/25 MP/HEIC/SVG; lỗi/timeout cloud; DB lỗi sau upload; thay giữ ảnh cũ; cleanup retry restart và not-found; public không lấy draft image qua content path/unsigned cloud URL |
-| Audit | Actor/time/version server; before/after đúng; rollback không có event thành công; không leak basis/source/secret trong preview hoặc public projection |
+| Audit | Actor/time/version server; before/after đúng; rollback không có event thành công; không leak source/secret trong preview hoặc public projection |
 | Frontend | Search mã/tên, filter admin, paging; create→edit→upload→preview→publish→sold→hide→restore; 400/409/401/network giữ dữ liệu; unsaved warning; keyboard/focus/noindex |
 | Regression | Auth/CSRF/session M1, metadata/noindex, frontend build và SSR shell hiện có không hỏng |
 

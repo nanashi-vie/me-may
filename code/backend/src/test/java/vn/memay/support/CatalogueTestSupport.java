@@ -7,7 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import vn.memay.auth.*;
 import vn.memay.catalogue.*;
 import java.util.*;
-@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"spring.profiles.active=test","memay.bootstrap.enabled=false","server.servlet.session.cookie.secure=false"})
+@SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.RANDOM_PORT,properties={"spring.profiles.active=test","memay.bootstrap.enabled=false","server.servlet.session.cookie.secure=false","CONTACT_ZALO_HOTLINE_URL=","CONTACT_ZALO_GROUP_URL="})
 public abstract class CatalogueTestSupport {
  @DynamicPropertySource static void db(DynamicPropertyRegistry p){p.add("spring.datasource.url",()->PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL")));}
  @Autowired protected JdbcTemplate jdbc; @Autowired protected AdminUserRepository users; @Autowired protected BookCommandService commands;

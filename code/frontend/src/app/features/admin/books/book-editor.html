@@ -105,19 +105,11 @@
           }</select
         ><small>{{ readingNote }}</small></label
       >
-      @if (form.controls.readingLevel.value) {
-        <label
-          >Căn cứ chọn trình độ <small>(nội bộ, bắt buộc khi chọn mức)</small
-          ><textarea formControlName="readingLevelBasis" maxlength="1000" rows="3"></textarea>
-          @if (form.hasError('readingLevelBasis') && form.touched) {
-            <span class="error">Ghi căn cứ chọn mức đọc.</span>
-          }
-        </label>
-      }
       <label
-        >Link video đọc sách (HTTPS)<input
+        >Link video đọc sách (không bắt buộc)<input
           formControlName="readingVideoUrl"
           type="url"
+          placeholder="https://…"
           maxlength="2048"
       /></label>
     </div>

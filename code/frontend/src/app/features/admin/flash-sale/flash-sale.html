@@ -1,0 +1,77 @@
+<p class="eyebrow">Ưu đãi có thời hạn</p>
+<h1>Flash Sale</h1>
+<p>
+  Giá gốc lấy từ giá tham khảo hiện tại. Chỉ áp dụng cho sách công khai và còn hàng; giá sale phải
+  thấp hơn giá gốc.
+</p>
+<p>Thời gian nhập theo Việt Nam (UTC+7). Không có số lượng đã bán.</p>
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p role="status">{{ notice() }}</p>
+}
+<button class="secondary" (click)="load()" [disabled]="busy()">Tải lại dữ liệu</button>
+@if (campaign()) {
+  <form (ngSubmit)="save()" (change)="dirty = true">
+    <fieldset [disabled]="busy()">
+      <label class="enabled"
+        ><input type="checkbox" name="enabled" [(ngModel)]="enabled" />Bật đợt Flash Sale</label
+      >
+      <div class="dates">
+        <label
+          >Bắt đầu (giờ Việt Nam)<input
+            type="datetime-local"
+            name="start"
+            [(ngModel)]="startsAt" /></label
+        ><label
+          >Kết thúc (giờ Việt Nam)<input type="datetime-local" name="end" [(ngModel)]="endsAt"
+        /></label>
+      </div>
+      <h2>Sách tham gia</h2>
+      @for (item of items; track $index) {
+        <div class="sale-item">
+          <label
+            >Mã sách<input
+              [name]="'code' + $index"
+              [(ngModel)]="item.bookCode"
+              maxlength="32"
+              placeholder="MM-000001" /></label
+          ><label
+            >Giá sale (VND)<input
+              type="number"
+              [name]="'price' + $index"
+              [(ngModel)]="item.salePriceVnd"
+              min="1"
+              max="999999999999"
+              step="1" /></label
+          ><button
+            type="button"
+            class="secondary"
+            (click)="remove($index)"
+            [disabled]="busy()"
+            [attr.aria-label]="'Bỏ cuốn ' + item.bookCode"
+          >
+            Bỏ
+          </button>
+        </div>
+      }
+      <div class="actions">
+        <button
+          type="button"
+          class="secondary"
+          (click)="add()"
+          [disabled]="busy() || items.length >= 50"
+        >
+          Thêm mã sách</button
+        ><button type="submit" [disabled]="busy()">
+          {{ busy() ? 'Đang lưu…' : 'Lưu Flash Sale' }}
+        </button>
+      </div>
+      <small
+        >Phiên bản {{ campaign()!.version }} · Một đợt sale tại một thời điểm. Muốn tắt sale: bỏ
+        chọn Bật rồi lưu.</small
+      >
+    </fieldset>
+  </form>
+}

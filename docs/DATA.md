@@ -28,7 +28,6 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | publication_status | Listing | DRAFT / PUBLISHED / ARCHIVED; độc lập availability |
 | age_groups | Mapping listing | Chọn nhiều nhóm trong 0–3 / 4–6 / 7–9 / 10+; để trống nếu chưa xác định, không tự suy từ mức đọc |
 | reading_level | Listing | Một trong Pre A1 / A1 / A2 / B1 / B2 / C1 / C2 hoặc chưa xác định; nhãn Cambridge theo bảng bên dưới |
-| reading_level_basis | Listing, nội bộ | Ghi căn cứ khi gán mức: nguồn NXB hoặc nhận định của tiệm; không đưa vào public DTO |
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
 | ảnh FRONT / BACK / INSIDE | BookMedia | Đủ đúng ba ảnh thật trước publish: bìa trước, mặt sau, một trang nội dung; bìa trước là thumbnail; fixture không có ảnh |
@@ -52,7 +51,7 @@ Tiêu đề detail ghép `Tên | NXB | Tác giả | Độ tuổi` từ các trư
 | C1 | Advanced · C1 |
 | C2 | Proficiency · C2 |
 
-Mức đọc do chủ chọn thủ công và ghi căn cứ nội bộ; không suy từ tuổi/thể loại. “Chưa xác định” không chặn xuất bản và ẩn trường public. Khi có mức, detail kèm “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Không gán nhãn này như chứng nhận cho sách; Flyers/Key cùng A2. Không dùng mức đọc làm bộ lọc MVP.
+Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. “Chưa xác định” không chặn xuất bản và ẩn trường public. Khi có mức, detail kèm “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Không gán nhãn này như chứng nhận cho sách; Flyers/Key cùng A2. Không dùng mức đọc làm bộ lọc MVP.
 
 ## Ca dữ liệu cần review
 
@@ -61,7 +60,7 @@ Mức đọc do chủ chọn thủ công và ghi căn cứ nội bộ; không su
 - Thiếu ISBN/author/publisher; không chặn nhập nháp.
 - Tên dài, thiếu NXB/tác giả không tạo dấu phân cách thừa; dữ liệu tiếng Việt/Anh; tuổi chưa xác định hoặc gán nhiều nhóm.
 - Mỗi cuốn đúng một thể loại; Picture book thiếu kiểu bìa hoặc dùng “Tất cả” bị từ chối; Paperback và Hardcover đều xuất hiện ở bộ lọc “Tất cả”.
-- Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; căn cứ nội bộ không lộ public, không suy mức đọc từ tuổi/thể loại.
+- Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; không yêu cầu căn cứ, không suy mức đọc từ tuổi/thể loại.
 - Thiếu bất kỳ ảnh FRONT/BACK/INSIDE, lỗi chưa xác minh hoặc giá nháp rỗng: không cho publish thật; không bắt có mức đọc/link video.
 - Cuốn đang ở wishlist rồi bị sold hoặc ẩn.
 
@@ -81,3 +80,9 @@ MVP chỉ nhập thủ công qua admin. Bước tiếp theo ngay sau MVP hỗ tr
 6. Sửa schema/taxonomy và brief UI theo phát hiện; ghi quyết định vào DEV_LOG trước khi tạo technical spec.
 
 M0 đã được duyệt về phạm vi/UX; pilot thật vẫn chưa đạt cho tới khi các bước trên có bằng chứng. Bộ demo không phải ground truth nghiên cứu AI hoặc dữ liệu thương mại được phép xuất bản.
+
+## Flash Sale M3
+
+Một giá tham khảo trên listing được giữ làm giá gốc. `flash_sale` singleton lưu enabled/starts_at/ends_at/version; `flash_sale_item` gắn listing và sale_price_vnd. OWNER quản lý thủ công, audit và optimistic version; không import hoặc ghi số đã bán.
+
+Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED, AVAILABLE và giá sale thấp hơn giá tham khảo. Hết hạn/sold/ẩn/giá không còn hợp lệ thì không trả nhãn giảm giá. Giá gốc lấy giá tham khảo hiện tại, không phải snapshot cố định lúc tạo campaign.

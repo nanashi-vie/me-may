@@ -12,7 +12,8 @@ import { AuthService } from '../core/auth/auth.service';
       <nav aria-label="Quản trị">
         <a routerLink="/admin">Tổng quan</a><a routerLink="/admin/sach">Sách</a>
         @if (auth.user()?.role === 'OWNER') {
-          <a routerLink="/admin/bo-suu-tap">Bộ sưu tập</a>
+          <a routerLink="/admin/bo-suu-tap">Bộ sưu tập</a
+          ><a routerLink="/admin/flash-sale">Flash Sale</a>
         }
         <a routerLink="/">Xem website</a>
       </nav>

@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "me-may-frontend-local",
+  "main": "dist/me-may-workers/server/server.mjs",
+  "compatibility_date": "2026-10-26",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "dist/me-may-workers/browser",
+    "binding": "ASSETS",
+    "run_worker_first": true,
+    "html_handling": "none",
+    "not_found_handling": "none",
+  },
+  "vars": {
+    "MEMAY_API_ORIGIN": "http://127.0.0.1:8080",
+    "MEMAY_SITE_ORIGIN": "http://127.0.0.1:8787",
+  },
+}
