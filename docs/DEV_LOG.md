@@ -462,3 +462,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Theo official Neon Flyway doc qua plugin search_docs/get_doc, migration cần direct endpoint; chỉ URLpooled hiện có, chưa tự suy hoặc thay hostname. .env.example thêm NEON_DATABASE_URL/NEON_DATABASE_URL_UNPOOLED rỗng; app config/run-local không đổi nên dev/test tiếp tục local. .env đã normalize, không log secret/endpoint/database/user.
 - Cập nhật MASTER_PLAN/ARCHITECTURE/README/index/PROGRESS/VERIFICATION: Workers AngularSSR đã chốt thay Pages, Neon đã nhận/kiểm tra chỉ đọc; Render vẫn là đề xuất backend, productionVPS hoãn. SSR handler/adapter/APIproxy/cookie/CSRF/cold-start/directFlyway là đầu vào spec M5, chưa triển khai.
 - Không chạy lại frontend/backend suites vì chỉ đổi docs/.env.example và chuẩn hóa file secret ignored; không product code/configruntime/migration thay đổi. Syntax .env/local DB isolation/Neon assignment/ignore/linklocal/line limits/diff PASS. Checkpoint này commit local tài liệu/.env.example, không push; main37f8919 trên GitHub vẫn là bản M3/M4 đã publish. Secret .env không stage/commit.
+
+## S016-C01 — 26/10/2026 — frontend Workers local trước deploy
+- User chốt chỉ frontend Workers local. Branch codex/m5-workers-local từ main cded8a7 (main ahead origin1docscommit), checkout sạch trước task. Backend8080 PID72455 đang listen; không suy trạng thái từ log cũ.
+- Phạm vi: Angular neutral SSR build/entry, Wrangler local, request context/APIproxy, tests/QA/tài liệu. Không deploy/push/migrate Neon/Render hoặc sửa DB dev. WORKERS_LOCAL_PLAN đăng ký chỉ mục trước code.
+- Dùng executing-plans/TDD/verification; thực hiện inline, một review độc lập cuối. Giữ checkout/deps hiện có theo workflow phiên trước; ledger thủ công ignored để không tạo .gitignore con. Chưa chạy tests/build tại checkpoint này.
+
+### S016-C02 — SSR/proxy Workers local
+- RED frontend worker-runtime module chưa tồn tại; GREEN88/88 (26files). Hai lần gọi npm nhầm root dừng ENOENT trước suite, đã chạy đúng code/frontend; không coi là RED nghiệp vụ. Tests cover target origin, auth/body/query, cookie/server-time/no-store, missing404/privacy/HTML/assets, validation/origin isolation.
+- Angular neutral build với server.worker.ts + request-scoped REQUEST_CONTEXT; giữ Node/dev entry. wrangler.local.jsonc local8787/backend8080, assets run_worker_first/none fallback. Không đọc root.env; dev script tắt dotenv loading. .wrangler/.dev.vars ignore root.
+- Build sandbox exit134 không diagnostic, rerun elevated PASS; workerd8787 lên và check-ssr PASS Home/detail/OG/media/404/wishlist/admin. Node build PASS, frontend rerun88/88. Logs /tmp/me-may-workers-{red,green,build,ssr,node-build,final-tests}.log.
+- Thêm Wrangler4.152.0 devdependency (Node>=22); npm audit phát hiện body-parser/undici advisory, override bản vá2.4.0/7.30.1 trong major phù hợp, npm install audit0. Các package có sẵn chỉ hai bản vá này đổi version, không upgrade Angular/framework.
+- Isolated check-worker-proxy.mjs chạy backend giả HTTP port ngẫu nhiên và workerd8788: POST/query/body/CSRF/cookie/multipart/separate Set-Cookie/server-time/no-store/canonical context/down503 PASS; không dùng DBdev. Browser QA đang làm; chưa review/deploy/push.
+
+### S016-C03 — browser và regression privacy
+- Chromium8787 mobile390: hydrate/save1/badge1/wishlist/select1/enquiry đúng canonical8787; Escape và detail không còn noindex/không overflow PASS. Ref e51 stale sau hydrate: snapshot lại rồi dùng ref mới, không coi lỗi tool là product. Không mở/gửi Zalo, không dùng clipboard OS hoặc sửa dữ liệu backend.
+- Bổ sung regression admin URL dạng asset .json giữ noindex/no-store: RED null Cache-Control1/89; fix wrapper asset private, đang rerun GREEN. Thêm script check:workers:proxy và hướng dẫn frontend local; giữ cloud quota/CPU/domain/TLS/auth/phone là gate môi trường thật.
+
+### S016-C04 — kết quả trước review
+- Privacy regression GREEN89/89 (26files). Workers finalbuild PASS; SSR checker8787 final PASS, proxy isolated final PASS, Node SSR4002 checker PASS. Node4002 là QA tạm; pilot4200/backend8080 không restart.
+- README hướng dẫn dev:workers/build/check; ARCHITECTURE ghi request context/proxy/static routing và giới hạn; VERIFICATION bằng chứng, masterplan phân biệt local đạt/deployed gate còn mở. Không backend verify mới vì không đổi backend/DB/schema, đã test adapter với mock và backend anonymous read-only.
+- Task2 hoàn tất; một review độc lập toàn nhánh trước bàn giao. Chưa merge/push/deploy.
+
+### S016-C05 — review và bàn giao frontend local
+- Fresh gpt-6-astra read-only cded8a7..4a0f463:0Critical/Important/Minor; reviewer tự HTTPprobe wishlist/admin-asset/indexhtml/missing404, không tự chạy lại suite/build/browser. Không fix pass/re-review cần thiết.
+- Final Ruling: deployed Cloudflare CPU/quota/cold-start/TLS/Secure-cookie chưa đánh giá — đúng phạm vi frontend local user chọn, giữ release gate — chi phí nếu sai là phải chỉnh cấu hình hoặc hiệu năng sau deployed spike.
+- Final Ruling: Render provisioning và Neon migration/backup/restore chưa đánh giá — user loại khỏi phạm vi, source/runtime backend và DB không đổi — chi phí là chưa có môi trường online hoặc chứng cứ khôi phục.
+- Thêm read-only realbackend CSRF/session qua Worker PASS, HTML chỉ có site8787 không backend8080; admin preview.json404/no-store/noindex PASS. Probe ban đầu assertion tên cookie MEMAY_SESSION sai, đối chiếu application.yml và response chỉ tên MEMAYSESSION rồi rerun đạt; không đổi product. Không log token/cookie values.
+- Desktop1440 direct detail reload saved heart pressed/no overflow/no pageerror PASS. Assertion đầu regex Bỏ lưu không khớp nhãn Bỏ khỏi danh sách quan tâm, dùng snapshot và rerun đúng đạt. Linkchecker ban đầu không strip :line của source link, sửa parser→PASS; không có link source bị thiếu thực tế.
+- Tổng kiểm chứng: frontend89/89, Workers build+SSR+isolatedproxy final PASS; Node build+SSR PASS; npm audit0. Không chạy backend verify mới vì không thay backend/schema/DB và không cloud live. Markdownmax400/linklocal/diff/ignore/publiclogo PASS. Logs /tmp/me-may-workers-*.
+- Chuyển plan vào README/ARCHITECTURE/VERIFICATION/masterplan, gỡ khỏi chỉ mục và xóa WORKERS_LOCAL_PLAN hết vai trò; PROGRESS là snapshot. Commits db13f17/4a0f463, final docs commit tiếp theo; không merge/push/deploy. Ledger generated được dọn sau chuyển đủ rulings/bằng chứng.
+- Giữ branch codex/m5-workers-local trong checkout hiện có theo scope local. Workerd PID14208 port8787, pilot20631 port4200/backend72455 port8080 còn listen; QA Node4002/mockworkerd8788 và browserworkers-local đã dừng. Người dùng nghiệm thu local; khi làm online cần backend origin HTTPS/domain allowedHosts/cookieSecure/CFquota và Neon direct/Flyway/backup gates riêng.
+
+## S017-C01 — 26/10/2026 — publish frontend Workers và merge main
+- User yêu cầu publish và merge qua main để tự deploy Cloudflare/Render; ủy quyền merge/push source, không yêu cầu agent deploy hoặc migrate DB.
+- Đầu task branch codex/m5-workers-local78d3832 sạch, gồm Workers SSR local đã review0finding; main localcded8a7. Đối chiếu remote trước merge, chạy frontend suite/build Workers và backend verify trên kết quả merge; không sửa product config hoặc bí mật.
+- Cấu hình hiện có wrangler.local.jsonc vẫn dùng origin local; chưa phải cấu hình deployment online. Không suy kết quả local thành cloud runtime/Render/Neon đã nghiệm thu.

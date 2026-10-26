@@ -128,3 +128,24 @@ Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`
 - Static kiểm tra secret-safe thấy URL Neon pooled/TLS ở dòng riêng chưa phải env assignment. Đã chuẩn hóa thành NEON_DATABASE_URL, giữ DB_URL/TEST_DB_URL local. .env ignored; .env.example chỉ thêm tên biến rỗng. Không thay Spring datasource hoặc chạy app với DBcloud.
 - `python3 /tmp/me-may-neon-readonly/check.py` dùng JDK21/PostgreSQL JDBC42.7.13 sẵn có, credential qua process env (không argv/log). Transaction read-only + rollback PASS: PostgreSQL18.6, public0base tables, chưa có flyway_schema_history. Không ghi schema/data, bootstrap Owner, tạo project/branch, migrate hoặc di chuyển local books/media.
 - Chỉ có pooled URL; direct/non-pooled cho Flyway chưa cung cấp. Chưa đo quota/connection pooling/load/cold-start, chưa dùng Neon MCP để thay tài nguyên. Kiểm tra kết nối không thay nghiệm thu deployment, backup hoặc auth.
+
+## Frontend Workers local — 26/10/2026
+
+- Angular neutral Workers build PASS; Node build PASS. Frontend89/89 (26files), regression
+  admin asset-like privacy RED1/89→GREEN89/89; không thay backend/migration.
+- workerd8787 check-ssr PASS HTML Home/how-to/catalogue/detail/OG/canonical/images,
+  unknown/book/collection404, private wishlist shell và admin noindex/no-store.
+- Isolated check-worker-proxy PASS POST/query/body/cookie/CSRF/multipart, separate
+  Set-Cookie, server-time/no-store, request context canonical8788 và backend-down503.
+  Mock backend ephemeral, không ghi DBdev hoặc dùng Neon.
+- Chromium390: hydrate rồi lưu1, badge1/wishlist/chọn1/enquiry URL8787 đúng;
+  Escape đóng dialog, detail navigation xóa noindex, không overflow. Không mở/gửi Zalo.
+- Chromium desktop1440 direct detail reload: saved heart pressed, không overflow hoặc pageerror;
+  anonymous CSRF endpoint giữ MEMAYSESSION và token header, không in token/cookie values.
+- npm audit sau override body-parser2.4.0/undici7.30.1:0 vulnerabilities.
+  SSR checker Node4002 và Workers8787 final PASS; review độc lập0Critical/Important/Minor; log /tmp/me-may-workers-*.
+- Chưa deploy Cloudflare/Render, migrate Neon; chưa bằng chứng production CPU/quota/
+  cold-start/TLS/Secure cookie hoặc thiết bị Safari/Chrome/Zalo thật. Backend verify
+  không chạy lại vì không thay backend, dữ liệu/schema hoặc contract nghiệp vụ.
+
+Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không chạy lại suite/build/browser. Render/Neon và deployed CPU/quota/TLS/cookie vẫn ngoài scope, chưa được nghiệm thu.

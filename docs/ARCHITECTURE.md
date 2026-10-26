@@ -141,7 +141,7 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 - Hướng test: Workers Angular SSR/assets/API proxy → Spring Boot/Java21 Docker trên Render đề xuất → Neon PostgreSQL; Cloudinary giữ. Neon có endpoint/credential kiểm tra chỉ đọc, chưa migration/deploy. Production VPS/Dokploy hoãn; không đổi auth/media hoặc thêm Neon Functions/Data API vì skill có mẫu.
 - Theo [Render Free](https://render.com/docs/free), service ngủ sau15phút/start~1phút/filesystem ephemeral; Free Postgres hết hạn30ngày. [Docker Render](https://render.com/docs/docker) hỗ trợ JVM. [Neon Free](https://neon.com/docs/introduction/plans) được user chuẩn bị cho DBtest; quota/region/migration/backup còn phải chốt. Không dùng Docker DB cá nhân từ cloud.
 - Code hiện tại bind127.0.0.1 mặc định, có PORT env; khi deploy cần SERVER_ADDRESS=0.0.0.0/profile phù hợp, không bật local profile cookie insecure. Session in-memory mất khi restart/sleep; public HTTP timeout10s có thể ngắn hơn cold-start. Đây là đầu vào spec M5, chưa sửa code tại checkpoint publish.
-- Workers.dev và Render default domains khác site; cookie SameSite=Lax/API browser-relative cần route/proxy hoặc domain/CORS/credentials/CSRF phù hợp. Ưu tiên khảo sát /api proxy cùng origin trong spec, chưa triển khai; không wildcard credentials hoặc tắt CSRF để làm demo.
+- Workers.dev và Render default domains khác site; cookie SameSite=Lax/API browser-relative cần route/proxy hoặc domain/CORS/credentials/CSRF phù hợp. Frontend local26/10 đã có /api proxy cùng origin, online còn phải xác minh; không wildcard credentials hoặc tắt CSRF để làm demo.
 - [Angular non-Node SSR](https://angular.dev/guide/ssr#non-nodejs) có AngularAppEngine với Request/Response; version21 đang cài cũng có API này. [Cloudflare Angular guide](https://developers.cloudflare.com/workers/framework-guides/web-apps/more-web-frameworks/angular/) mặc định chỉ Assets, không là bằng chứng SSR. Cần spike entry/bundle/env/allowedHosts/hydration/initialHTML/OG/404/cache thực tế trên Workers, không chỉ upload browser hoặc đổi renderMode.
 - Root .env có `NEON_DATABASE_URL` pooled URL được chuẩn hóa từ dòng URL thô; local DB_URL/TEST_DB_URL giữ nguyên, application chưa tự tiêu thụ biến Neon này. `NEON_DATABASE_URL_UNPOOLED` dành direct connection cho Flyway, hiện chưa cung cấp. Theo [Neon Flyway](https://neon.com/docs/guides/flyway), schema migration dùng direct/non-pooled endpoint; không tự dùng pooler để chạy migration.
 - Kiểm tra25/10 bằng PostgreSQL JDBC driver/JDK sẵn có, transaction read-only/rollback: TLS kết nối thành công, PostgreSQL18.6, public0bảng, chưa flyway_schema_history. Không bootstrap owner/migrate/tạo branch/project, không di chuyển sách hoặc để credential trong frontend/Workers bundle. Spring API vẫn là nơi duy nhất truy cập DB.
@@ -158,7 +158,7 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 
 | URL minh họa | Nơi chạy | Bảo mật / ghi chú |
 |---|---|---|
-| `www.example.com`, `example.com` | Cloudflare Workers / Angular SSR + assets | User đã chốt; runtime SSR còn spike, không chỉ Workers Assets |
+| `www.example.com`, `example.com` | Cloudflare Workers / Angular SSR + assets | User đã chốt; SSR workerd local đạt; deployed spike còn mở |
 | `www.example.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
 | `api.example.com` | Test: backend host miễn phí chưa chốt; production VPS/Dokploy hoãn | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
 | PostgreSQL test endpoint / internal service:5432 | Neon test có URL; production VPS/Dokploy hoãn | JDBC chỉ từ Spring backend, TLS mạng ngoài, direct migrations riêng |
@@ -217,3 +217,34 @@ Các số dòng dưới đây thuộc bản local tại thời điểm khảo s�
 Public AngularSSR đọc backend qua MEMAY_API_ORIGIN server-only; browser dùng relative /api, omit credentials và không HttpTransferCache. Built Node server có APIbridge phục vụ QA local, không thay phương án deploy Cloudflare. MEMAY_SITE_ORIGIN được chuyển bằng AngularTransferState để metadata/enquiry không đổi origin khi hydrate.
 
 Public GET trả X-Memay-Server-Time theo database; PublicClock dùng cùng giờ cho giá/countdown/enquiry. Khi triển khai khác origin, phải expose header này qua CORS và xác minh HTML/cache/ảnh sau đổi trạng thái. Gate đó chưa đạt chỉ bằng localhost.
+
+### Frontend Workers local — 26/10/2026
+
+User chọn phạm vi frontend local trước. `src/server.worker.ts` dùng Angular21
+AngularAppEngine Request/Response; config production,workers dùng experimentalPlatform
+neutral, output riêng me-may-workers. Node Express/dev4200 giữ entry/output cũ.
+Wrangler4.152.0/workerd local8787, compatibility date2026-10-26 + nodejs_compat;
+chưa có cấu hình account/domain/deploy và chưa xác nhận Free CPU/quota thực tế.
+
+assets binding run_worker_first=true, html_handling/not_found_handling=none;
+Worker chỉ giao URL extension không phải HTML cho assets. HTML qua Angular, giữ
+SSR/no-store/404; admin/quan-tam luôn noindex/nofollow/nosnippet, kể cả asset-like URL.
+Không dùng SPA fallback/index.html để che server response.
+
+MEMAY_API_ORIGIN/MEMAY_SITE_ORIGIN được validate HTTPS origin hoặc HTTP loopback;
+Worker truyền đúng hai origin qua REQUEST_CONTEXT, provider factory mỗi render.
+Không sửa process.env/global giữa requests. Browser chỉ nhận site origin qua
+TransferState; backend origin/DB credentials không đưa vào HTML. Node vẫn fallback
+env và default8080/4200 khi không có request context.
+
+/api chỉ tới configured origin; giữ path/query/method/stream body, allowlist
+accept/content-type/cookie/x-csrf-token. Redirect manual, timeout70s, status/body/
+Set-Cookie/server-time được giữ và Cache-Control ép no-store; lỗi transport503
+backend_unavailable. Spring tiếp tục quyết định auth/quyền/CSRF; không thêm auth mới.
+Config local tách root.env/Neon; dev script tắt Wrangler dotenv auto-loading.
+.dev.vars và .wrangler ignored ở root. Chỉ origin không secret được phép override.
+
+Nguồn chính thức đối chiếu: [Angular non-Node SSR](https://angular.dev/guide/ssr#non-nodejs),
+[Workers assets binding](https://developers.cloudflare.com/workers/static-assets/binding/).
+Installed Angular builder schema21.2.27 xác nhận neutral platform còn experimental;
+phải build/check runtime lại khi nâng Angular/Wrangler. Không cài framework adapter khác.

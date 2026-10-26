@@ -19,12 +19,14 @@ Cập nhật: 25/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
 | Tổ chức code hoặc khảo sát nguồn cũ | [ARCHITECTURE — layout](ARCHITECTURE.md#layout-dự-kiến), [trách nhiệm](ARCHITECTURE.md#trách-nhiệm-và-phụ-thuộc); chỉ đọc [khảo sát Web Shop](ARCHITECTURE.md#khảo-sát-khả-năng-tận-dụng-web-shop-cũ) khi cần tái sử dụng |
 | Staging/deploy, SEO/OG, bảo mật hạ tầng, backup/restore | [ARCHITECTURE — hạ tầng triển khai](ARCHITECTURE.md#hạ-tầng-triển-khai), [MASTER_PLAN — nghiệm thu MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp), [VERIFICATION — chưa kiểm chứng](VERIFICATION.md#chưa-kiểm-chứng--để-sau) |
-| Chuẩn bị M5 khi chưa có VPS | [MASTER_PLAN — Workers/Neon đã chốt](MASTER_PLAN.md), [ARCHITECTURE — SSR/runtime/Neon env](ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026); Neon read-only đạt, chưa migration; còn spec SSR/backend/domain/APIroute |
+| Chuẩn bị M5 khi chưa có VPS | [MASTER_PLAN — Workers/Neon đã chốt](MASTER_PLAN.md), [ARCHITECTURE — SSR/runtime/Neon env](ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026); Neon read-only và Workers SSR local đạt, chưa migration/deploy; còn backend/domain/online SSR gate |
 | Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
 
 ## Spec và plan đang thực thi
 
-- M3/M4 local user xác nhận đã test xong25/10 và yêu cầu publish GitHub. Contract/UX/bằng chứng đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa. M5 đang làm rõ hạ tầng test, chưa có implementation plan.
+- Frontend Workers local26/10 đã kiểm chứng; cách chạy ở [README root](../README.md#frontend-workers-local), runtime/proxy ở [ARCHITECTURE](ARCHITECTURE.md#frontend-workers-local--26102026), bằng chứng ở [VERIFICATION](VERIFICATION.md#frontend-workers-local--26102026).
+
+- M3/M4 local user xác nhận đã test xong25/10 và yêu cầu publish GitHub. Contract/UX/bằng chứng đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa. Frontend Workers local đã hoàn tất26/10; phần online M5 chưa triển khai.
 
 - [M2_SPEC](M2_SPEC.md): **đã được người dùng duyệt**, gồm contract dữ liệu/API/quyền/media và gate nghiệm thu local; không thay bằng fixture/wireframe cũ.
 - [M2_PLAN](M2_PLAN.md): **đã duyệt, thực thi tuần tự**, 11 task theo phụ thuộc; task1–10 xong, task11 còn pilot chủ tiệm; đọc cả spec và task liên quan. Tiến độ task/checkpoint ở PROGRESS/DEV_LOG.

@@ -1,6 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S015-C03/C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S017-C01 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+
+## Bàn giao — frontend Workers local
+
+- User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
+- SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
+- User yêu cầu merge/publish main26/10; đang fetch/merge/xác minh/push. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
 
 ## Trạng thái
 
@@ -30,7 +36,7 @@ Cập nhật25/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 ## Tiếp theo
 
-1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; bước tiếp là spec/spike Angular SSR Worker và backend Render đề xuất. Credential không phải ủy quyền migrate/deploy; chưa có product code M5.
+1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; frontend Workers local đã triển khai; bước tiếp chốt backend Render đề xuất và deployed SSR gate. Credential không phải ủy quyền migrate/deploy.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
 3. Cần NEON_DATABASE_URL_UNPOOLED cho Flyway (hiện chưa có), tách datasource/migration config, chốt host/region/domain hoặc /api cùng origin/cookie/CSRF và Worker runtime/SSR/cold-start. Chưa có spec M5/lệnh deploy được duyệt. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
 

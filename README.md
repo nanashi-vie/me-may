@@ -69,6 +69,38 @@ Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env
 
 Trước migration/pilot, dùng `pg_dump -Fc` và quyền file 0600 ở thư mục ignored. Restore thử vào database scratch riêng, đối chiếu auth/audit/book/media references và cả `last_value/is_called` của sequence. Không restore đè dev/test hoặc reset mã từ MAX một cách mù quáng. Bằng chứng local tại [VERIFICATION](docs/VERIFICATION.md#m2--gate-kỹ-thuật-và-pilot).
 
+## Frontend Workers local
+
+Backend local8080 cần chạy như trên. Từ `code/frontend` (Node22.12+):
+
+```bash
+npm ci
+npm run dev:workers
+```
+
+Mở [Workers local](http://127.0.0.1:8787). Lệnh build Angular SSR riêng
+`dist/me-may-workers`, rồi chạy Wrangler/workerd local; sửa code cần chạy lại lệnh.
+`npm start`4200 và `npm run build`/Node SSR cũ vẫn dùng riêng.
+
+`wrangler.local.jsonc` chỉ có origin local8080/8787, asset binding và compatibility
+flag `nodejs_compat`. `/api` được proxy cùng origin, giữ session/CSRF/upload và
+no-store; SSR nhận origin qua request context. Không đặt DB/Neon/Cloudinary key
+trong frontend. Root `.env` không được nạp; script tắt Wrangler dotenv loading.
+Nếu cần override dùng `code/frontend/.dev.vars` (ignored), chỉ hai origin trên.
+Không dùng config local để publish; chưa có domain/account/backend online.
+
+Kiểm tra sau khi Worker đã chạy:
+
+```bash
+node scripts/check-ssr.mjs http://127.0.0.1:8787
+npm run check:workers:proxy
+```
+
+Probe thứ hai tự chạy mock backend và workerd8788 (inspector9231), kiểm tra
+body/multipart/cookie/CSRF/Set-Cookie/time/down503 rồi dừng, không dùng DB dev.
+Tránh dùng các cổng8788/9231 khi probe chạy. Bằng chứng local không thay kiểm tra
+Cloudflare thực tế về CPU/quota/cold-start/domain/TLS/cookie Secure.
+
 ## Auth/API M1
 
 | Endpoint | Hành vi |

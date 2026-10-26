@@ -45,3 +45,7 @@ coverage/
 /code/frontend/testem.log
 /code/frontend/typings/
 __screenshots__/
+
+# Workers local runtime/cache and private overrides.
+/code/frontend/.wrangler/
+/code/frontend/.dev.vars*
