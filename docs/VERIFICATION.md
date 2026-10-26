@@ -175,3 +175,8 @@ Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không c
 - Chrome390 với DNSmapping browser-only me-may.qa.workers.dev→workerdHTTPS8790:
   hydrate/save/badge/wishlist/select/enquiry đúng HTTPSorigin, no overflow/Escape PASS.
   Không deploy hoặc gửi Zalo. Chromium mới chưa cài, dùng Chrome đã cài, không đổi app.
+
+Postmerge main9b87e6f: frontend91/91, Python3/3, backend88total86PASS2liveSkipped/JAR
+PASS; source publish GitHub. Không deploy Worker/Render; endpoint/DB credentials chỉ
+executor kiểm tra live, reviewer không mở secret. Logs /tmp/me-may-deploy-* và .local
+ignored; migration info/history xác nhận version5, không thay gate recovery.
