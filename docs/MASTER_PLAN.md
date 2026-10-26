@@ -8,7 +8,7 @@
 
 > **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [báo cáo kiểm tra M1](VERIFICATION.md) và [PROGRESS](PROGRESS.md).
 
-> **Điều chỉnh trước M5 ngày25/10/2026:** M3/M4 đã được user test và publish GitHub; chỉnh sửa còn lại để sau MVP. User **chốt Cloudflare Workers cho frontend để giữ SSR**, thay lựa chọn Pages trước đó, và cung cấp Neon qua .env. Kết nối Neon chỉ đọc đã đạt, chưa migrate. Backend Render Free vẫn là đề xuất test; chưa thuê VPS. Production VPS/Dokploy và gate SEO/security/backup/restore giữ riêng, không coi test miễn phí là production.
+> **Điều chỉnh trước M5 ngày25/10/2026:** M3/M4 đã được user test và publish GitHub; chỉnh sửa còn lại để sau MVP. User **chốt Cloudflare Workers cho frontend để giữ SSR**, thay lựa chọn Pages trước đó, và cung cấp Neon qua .env. Ngày26/10 user chọn Render me-may-api; Docker/Workers config đã chuẩn bị, Neon V1–V5 migrate/validate đạt. Chưa deploy services; chưa thuê VPS. Production VPS/Dokploy và gate SEO/security/backup/restore giữ riêng, không coi test miễn phí là production.
 
 > **Baseline trước M2 được duyệt ngày 22/10/2026:** MVP nhập thủ công, lọc tuổi/thể loại, mỗi cuốn một thể loại, Picture book bắt buộc Paperback hoặc Hardcover, ba ảnh thật, giá và mức đọc tham khảo, liên hệ Zalo theo khả dụng. Import CSV/Excel là bước ngay sau MVP, không phải điều kiện ra mắt. Quyết định này thay thế các mặc định M0 tương ứng; chưa triển khai code M2.
 
@@ -225,17 +225,17 @@ flowchart TB
 
 - **Frontend / Cloudflare Workers:** user chốt thay Pages để giữ SSR. Một Angular app, public mobile-first/admin desktop-first CSR. Build hiện dùng Node/Express; cần worker SSR handler/runtime tương thích, route assets/API và kiểm chứng HTML đầu tiên/OG/404/hydration/publish-sold-cache. Workers Assets đơn thuần không chứng minh SSR. Giữ Angular, không tự chuyển SSR sang VPS hoặc bỏ SEO gate.
 - **Backend:** Spring Boot modular monolith, module `catalogue`, `listing`, `media`, `taxonomy`, `auth`, `audit`, `contact-config`. Dùng REST API DTO versioned; validation; transactions ở boundaries thích hợp. **Không cần** microservice, event bus, search engine riêng hay Redis khi dữ liệu còn nhỏ.
-- **Database:** PostgreSQL, chỉ Spring truy cập JDBC (JPA/Hibernate + Flyway); Workers SSR gọi Spring API. Local giữ Docker/DBtest. User cung cấp Neon pooled URL, kiểm tra read-only/TLS đạt PostgreSQL18.6/public chưa có bảng; chưa migration. Cần direct URL cho Flyway và spec tách application/migration/config/secrets/backup trước test online. Production VPS/Dokploy vẫn là hướng hoãn, không public Docker DB.
+- **Database:** PostgreSQL, chỉ Spring truy cập JDBC (JPA/Hibernate + Flyway); Workers SSR gọi Spring API. Local giữ Docker/DBtest. Neon V1–V5 đã migrate/validate26/10 bằng direct endpoint; datasource pooled/Flyway direct ở Render profile, secrets sinh private riêng local. Backup/restore/online auth vẫn gate riêng. Production VPS/Dokploy vẫn là hướng hoãn, không public Docker DB.
 - **Media:** Cloudinary phục vụ ảnh tối ưu và thumbnail; backend cấp/signed upload hoặc kiểm soát tải lên; loại ảnh, kích thước, thứ tự; xử lý ảnh mồ côi khi upload thành công nhưng DB lưu lỗi. Google Drive (nếu dùng) chỉ là nơi nhân viên quản lý ảnh gốc, **không có tự động import/sync ở MVP**.
 - **Security:** Spring Security session cookie `HttpOnly`, `Secure`, `SameSite` phù hợp; RBAC owner/staff, CSRF trên request thay đổi trạng thái, rate limit login/upload, MIME/size verification, HTTPS và không public Actuator nhạy cảm. Với FE `www.example.com` và API `api.example.com`, đây là **cross-origin nhưng có thể same-site**: cấu hình CORS theo origin xác định, `credentials: true`, client gửi cookies đúng chỗ; kiểm tra chính sách cookie/CSRF trong trình duyệt và staging cùng site. Không dùng CORS `*` với credentials. Nên dùng cookie host-only của API; không lưu token admin ở localStorage.
-- **Deployment:** trước M5 chưa có VPS. Frontend Workers đã chốt; Neon có credential kiểm tra chỉ đọc; Render là ứng viên backend miễn phí. Chưa deploy hoặc migration remote. Spec M5 cần SSR handler/API proxy/auth/CSRF, profile/container/env/health/rollback và DB direct/pooled. Production VPS/Dokploy chưa nghiệm thu, cần quyết định riêng; tách DB/media/secrets test với production.
+- **Deployment:** trước M5 chưa có VPS. Frontend Workers đã chốt; Render Docker và Workers SSR/proxy/config đã chuẩn bị; Neon migration remote đạt, services chưa deploy. M5 còn nghiệm thu online auth/CSRF/health/rollback/CPUquota. Production VPS/Dokploy chưa nghiệm thu, cần quyết định riêng; tách DB/media/secrets test với production.
 - **Caching:** cache Angular JS/CSS có fingerprint dài hạn; `index.html`, HTML metadata và `/api/v1/books/**` dùng cache có TTL/invalidation thích hợp, **không cache admin response hoặc cookie/token**. Giá/trạng thái thay đổi phải thấy sau refresh; OG previews do Facebook/Zalo có cache riêng nên cần test lại và không cam kết cập nhật tức thì.
 
 ### 5.1. Chi tiết hạ tầng và kiểm chứng
 
 Xem [hạ tầng triển khai trong ARCHITECTURE](ARCHITECTURE.md#hạ-tầng-triển-khai): domain/private network, PostgreSQL roles/pool, Cloudflare rendering spike, Dokploy/CI/rollback, backup database/media và Resend sau MVP. Đây là nơi giữ chi tiết kỹ thuật hiện hành, không nhân bản trong master plan.
 
-Baseline hiện tại: Angular SSR trên Cloudflare Workers; Neon cho PostgreSQL test (mới kiểm tra chỉ đọc), backend miễn phí Render là đề xuất; Cloudinary giữ. Production VPS/Dokploy hoãn. SSR/auth/backup/restore/rollback cần bằng chứng end-to-end, chưa có chứng nhận staging/production.
+Baseline hiện tại: Angular SSR trên Cloudflare Workers; Neon PostgreSQL test đã migrateV1–V5, backend Render Docker đã chuẩn bị; Cloudinary giữ. Production VPS/Dokploy hoãn. SSR/auth/backup/restore/rollback cần bằng chứng end-to-end, chưa có chứng nhận staging/production.
 
 ### 5.2. API contract khởi điểm (minh họa)
 
@@ -302,7 +302,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | **M2 – admin catalogue (6–9 ngày)** | BookCopy/Listing CRUD thủ công, ba vai trò ảnh, tuổi/thể loại/kiểu bìa/mức đọc, publish/status, optimistic locking/audit | Admin desktop nhập thật 10–20 cuốn | Chủ tự tìm, sửa, publish, đánh dấu sold được |
 | **M3 – customer UX (6–9 ngày)** | Home/catalogue, lọc tuổi/thể loại, search/sort, detail ba ảnh/giá tham khảo, SEO/SSR/OG, CTA Zalo + nhóm, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
 | **M4 – wishlist + polish (3–5 ngày)** | Local wishlist, copy multi-book enquiry, cập nhật sold, empty states, accessibility | A+B end-to-end trên điện thoại | Không tạo order, đã bán được cảnh báo |
-| **M5 – hardening/pilot/test online; release tách gate hạ tầng** | Spike Angular SSR trên Workers; backend Render đề xuất + Neon test; QA iOS/Android/in-app, cookie/CSRF/HTTPS, SEO/cache, backup/restore/rollback, performance/owner demo | Test end-to-end theo hạ tầng có thật; production VPS chưa thuê nên chưa nghiệm thu | Không cắt gate an toàn/SEO/khôi phục; không coi deployment test là release production |
+| **M5 – hardening/pilot/test online; release tách gate hạ tầng** | Spike Angular SSR trên Workers; backend Render Docker + Neon V1–V5 test; QA iOS/Android/in-app, cookie/CSRF/HTTPS, SEO/cache, backup/restore/rollback, performance/owner demo | Test end-to-end theo hạ tầng có thật; production VPS chưa thuê nên chưa nghiệm thu | Không cắt gate an toàn/SEO/khôi phục; không coi deployment test là release production |
 
 **Ngay sau M5/MVP:** import CSV/Excel tạo mới thành nháp theo mục 7; không đưa importer vào gate M2 hoặc M5.
 
@@ -364,11 +364,11 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
 2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá tham khảo, ba ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
-4. **Chốt spec M5 theo hạ tầng test** (26/10 frontend Workers local SSR/proxy đạt; deployed gate còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
+4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; deployed gate còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
 6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
 7. **Sau đó** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
 
 ### Kết luận
 
-Mẹ Mây cần catalogue đáng tin theo từng cuốn và admin nhập/sửa nhanh. Stack giữ Angular/Spring Boot/PostgreSQL/Cloudinary. Hướng test M5: Workers cho Angular SSR, backend Render đề xuất, Neon có credential; production VPS/Dokploy hoãn. Render/SEO, auth, backup/restore vẫn phải kiểm chứng, không đổi mô hình dữ liệu hoặc thêm nghiệp vụ chỉ vì đổi nơi test.
+Mẹ Mây cần catalogue đáng tin theo từng cuốn và admin nhập/sửa nhanh. Stack giữ Angular/Spring Boot/PostgreSQL/Cloudinary. Hướng test M5: Workers cho Angular SSR, backend Render Docker đã chuẩn bị, Neon V1–V5 migrate/validate đạt; production VPS/Dokploy hoãn. Render/SEO, auth, backup/restore vẫn phải kiểm chứng, không đổi mô hình dữ liệu hoặc thêm nghiệp vụ chỉ vì đổi nơi test.

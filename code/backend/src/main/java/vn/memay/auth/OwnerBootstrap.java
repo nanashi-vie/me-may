@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 @Component
-@Profile("local")
+@Profile({"local", "render"})
 @ConditionalOnProperty(name = "memay.bootstrap.enabled", havingValue = "true")
 public class OwnerBootstrap {
     private final AdminUserRepository repository;

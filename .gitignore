@@ -49,3 +49,6 @@ __screenshots__/
 # Workers local runtime/cache and private overrides.
 /code/frontend/.wrangler/
 /code/frontend/.dev.vars*
+
+# Python deployment tooling cache.
+__pycache__/

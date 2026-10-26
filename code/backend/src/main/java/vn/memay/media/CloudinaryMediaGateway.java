@@ -9,7 +9,7 @@ public class CloudinaryMediaGateway implements MediaGateway {
  static final String PREVIEW="a_auto/c_limit,w_1280/fl_strip_profile,f_jpg";
  private final Cloudinary cloud;private final Uploader uploader;private final CloudinaryTransport transport;private final String namespace;
  public CloudinaryMediaGateway(String cloudName,String apiKey,String apiSecret,String namespace,CloudinaryTransport transport){
-  if(!cloudName.matches("[a-zA-Z0-9_-]+")||!namespace.matches("memay/(dev|test)"))throw new IllegalArgumentException("Invalid media configuration");
+  if(!cloudName.matches("[a-zA-Z0-9_-]+")||!namespace.matches("memay/(dev|test|online-test)"))throw new IllegalArgumentException("Invalid media configuration");
   this.namespace=namespace;this.transport=transport;this.cloud=new Cloudinary(Map.of("cloud_name",cloudName,"api_key",apiKey,"api_secret",apiSecret,"secure",true,"load_strategies",false));
   this.uploader=new Uploader(cloud,new AbstractUploaderStrategy(){
    public Map callApi(String action,Map<String,Object> params,Map options,Object file,ProgressCallback callback)throws IOException{
