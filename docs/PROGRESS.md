@@ -1,12 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S017-C01 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S017-C02 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Bàn giao — frontend Workers local
 
 - User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
 - SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
-- User yêu cầu merge/publish main26/10; đang fetch/merge/xác minh/push. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
+- Đã merge main15e2446 và push GitHub26/10; postmerge frontend89/89, Workersbuild/SSR và backendverify87total85PASS2liveSkipped/JAR PASS. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
 
 ## Trạng thái
 

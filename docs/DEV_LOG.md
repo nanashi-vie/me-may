@@ -498,3 +498,9 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - User yêu cầu publish và merge qua main để tự deploy Cloudflare/Render; ủy quyền merge/push source, không yêu cầu agent deploy hoặc migrate DB.
 - Đầu task branch codex/m5-workers-local78d3832 sạch, gồm Workers SSR local đã review0finding; main localcded8a7. Đối chiếu remote trước merge, chạy frontend suite/build Workers và backend verify trên kết quả merge; không sửa product config hoặc bí mật.
 - Cấu hình hiện có wrangler.local.jsonc vẫn dùng origin local; chưa phải cấu hình deployment online. Không suy kết quả local thành cloud runtime/Render/Neon đã nghiệm thu.
+
+### S017-C02 — đã merge và publish GitHub
+- Fetch origin PASS, remote main không có commit mới; commit scope24ba9b5, merge --no-ff codex/m5-workers-local→main15e2446 không conflict, merge tree khớp feature. Giữ feature local tham chiếu; không tạo PR/tag/release.
+- Fresh postmerge code/frontend `npm test`89/89 (26files), `npm run build:workers` PASS; root `bash code/backend/run-local.sh -B -ntp verify`87total/85PASS/2liveSkipped, JAR BUILD SUCCESS. SSR checker8787 PASS HTML/meta/OG/media/404/private headers. Logs /tmp/me-may-workers-publish-{tests,build,backend,ssr}.log.
+- `git push origin main` PASS37f8919→15e2446. Source đã lên GitHub để user tự deploy. Checkpoint docs này được commit/push cùng main, đối chiếu remote SHA ở bước cuối. Không product config mới, deploy Cloudflare/Render, migration Neon hoặc chạm dữ liệu dev.
+- Lưu ý bàn giao: wrangler.local.jsonc vẫn local8080/8787, không dùng nguyên cấu hình đó cho online. Online cần backend HTTPS/site origin/allowedHosts và Render runtime/env/Neon Flyway theo gate đã ghi; việc publish không tự hoàn thành các gate đó. Markdown giới hạn/linklocal/diff/ignore/publiclogo đã kiểm tra; secret không stage/commit.

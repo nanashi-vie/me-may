@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 25/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
+Cập nhật: 26/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
