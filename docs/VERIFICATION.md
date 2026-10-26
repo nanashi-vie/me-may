@@ -170,4 +170,8 @@ Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không c
 - Neon schema neon_auth có sẵn được giữ nguyên. Branch thử đã xóa sau xác nhận
   user; không reset production hoặc bật NeonAuth cho app.
 - Chưa: userdeploy Worker/Render, customdomain/TLS/CPUquota/cold-start, login/ảnh thật
-  online/nativephone/in-app, backuprestore. Final review đang làm.
+  online/nativephone/in-app, backuprestore. Review47be225:0Critical/0Important; một finding current summaries cũ được giải quyết trong bước consolidation bắt buộc.
+
+- Chrome390 với DNSmapping browser-only me-may.qa.workers.dev→workerdHTTPS8790:
+  hydrate/save/badge/wishlist/select/enquiry đúng HTTPSorigin, no overflow/Escape PASS.
+  Không deploy hoặc gửi Zalo. Chromium mới chưa cài, dùng Chrome đã cài, không đổi app.

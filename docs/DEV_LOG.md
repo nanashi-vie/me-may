@@ -544,3 +544,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 ### S020-C04 — dọn branch thử được user duyệt
 - User xác nhận Xóa branch thử. Dừng container QA đang trỏ child rồi delete Neon br-shiny-recipe-b44agos2; production br-green-water-b4ny98q0 được giữ nguyên. Xóa hai generated credentialfile chỉ dành child; .local/render.env target vẫn giữ0600.
 - HTTPSworkerd fullprobe Home/howto/catalogue/wishlist/admin/API/unknown404/no-store/canonical + x-forwarded-host sai PASS; host không phải app bị400. Local8787 SSRchecker rerun để đối chiếu. Không deploy dịch vụ trong bước này.
+
+### S020-C05 — review độc lập và consolidation
+- Review gpt-6-astra read-only4efec52..47be225:0Critical/0Important/1Minor current summaries còn ghi Renderđềxuất/Neonchưamigrate. Đây là phần consolidation đã lên kế hoạch và bắt buộc theo AGENTS, hoàn tất cập nhật README/index/MASTER_PLAN/ARCHITECTURE/PROGRESS; không thay product hoặc viết test soi prose. Không còn minor deferred hoặc fixcode/re-review.
+- Final Ruling: deployedTLS/auth/media/WorkersCPUquota/Rendercoldstart chưa đánh giá — user tự deploy, local bằng chứng không thay online — chi phí là có thể phải chỉnh cấu hình/hiệu năng sau deploy.
+- Final Ruling: reviewer không mở credentials hoặc query lại Neon — executor đã đối chiếu API/endpoint, trực tiếp migrate/validate/postcounts và cleanupbranch — chi phí là review độc lập không chứng nhận trạng thái live/secret tại thời điểm khác.
+- Final Ruling: backup/restore vẫn gate online tiếp theo — hiện target mới chỉ schema/taxonomy, không suy migration thành nghiệm thu recovery — chi phí là chưa có bằng chứng khôi phục trước release.
+- LocalSSR8787 checker PASS; targetinfoonly rerun PASS sau deletechild, render.env0600. Tiếp kiểm tra browser và bàn giao/publish source cho Git dashboard theo mục tiêu user, không bấm deploy service.
+
+### S020-C06 — browser cuối và chuẩn bị publish
+- Chrome390 DNSmapping chỉ browser tới workerdlocalHTTPS: Homehydrate/save1/badge1/wishlist/select/enquiry canonicalHTTPS đúng, Escape/nooverflow PASS. CLI ban đầu registryDNS sandbox lỗi, elevated được; defaultChromium runtime mới chưa cài, dùng Chrome có sẵn thành công. Không coi lỗi tool là product, không hostmapping OS hoặc deploy cloud.
+- Đã chuyển đầy đủ plan vào DEPLOYMENT/ARCHITECTURE/masterplan, bằng chứngVERIFICATION/log; xóa DEPLOY_PLAN và linkactive hết vai trò. Còn gate deployedCPU/auth/media/TLS/coldstart/nativephone/backuprestore như đã ghi. Không minor deferred; summary finding được xử lý bằng consolidation bắt buộc.
+- Code47be225 đã commit, docs final commit tiếp; chuẩn bị merge/push main để user Gitintegration deploy theo luồng publish hiện hành. Không tự thay dev branch hoặc deploy Worker/Render. Secret .local/render.env0600 vẫn ignored; testbranchcred đã dọn, tempNeonbranch đã xóa theo user.
