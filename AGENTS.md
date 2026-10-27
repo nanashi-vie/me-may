@@ -20,6 +20,7 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Git workflow — user chốt 27/10/2026
 
 - Mọi thay đổi code/tài liệu bàn giao được đưa lên branch `dev`.
+- Bắt đầu task mới từ `dev` đã cập nhật hoặc branch `codex/` tạo từ `dev`, không mặc định từ `main`.
 - Có thể dùng branch `codex/` để triển khai riêng, nhưng tích hợp và push vào `dev`.
 - Người dùng tự merge `dev` qua `main`; agent không tự merge hoặc push `main`, trừ
   khi có yêu cầu mới rõ ràng thay thế quy ước này.

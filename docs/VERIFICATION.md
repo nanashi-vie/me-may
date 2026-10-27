@@ -194,5 +194,5 @@ ignored; migration info/history xác nhận version5, không thay gate recovery.
 - Neon trước cấp0admins, sau cấp1activeOWNER, user chọn credential trong root.env;
   operator command OWNER_ACCOUNT=created, không log identity/credential. Idempotent
   rerun trảalready_exists PASS, hash/account không bị ghi đè. Không migration/copydev hoặc triển khai phoneauth.
-- Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; chuẩn bị publish dev theo quy ước mới;
+- Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; postmerge devfe63882 cleanverify91total89PASS2skip/Python7PASS, deliver dev theo quy ước mới;
   chưa test đăng nhập Render thật vì chưa deploy dịch vụ.

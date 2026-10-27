@@ -586,3 +586,9 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Final Ruling: wrapper thêm --target local explicit để freshlocal setup vẫn tạo owner sau khi bỏbootstrap; guard loopback/me_may_dev và không sửa accountlocal có sẵn — chi phí là duy trì thêm một opsflag được test.
 - User27/10 yêu cầu từ giờ đưa code lên dev, user tự merge qua main. Áp dụng ngay cho task đang làm: không merge/push main. Lưu quy ước vào AGENTS/README/DEPLOYMENT/PROGRESS. Fetch origin/dev1b37c3e (PRmerge main4efec52); localdev2a73249, sẽ fastforward rồi tích hợp feature; main6044848 giữ nguyên.
 - Hoàn tất chuyển plan vào docs chuẩn/bằng chứng, xóa OWNER_ACCOUNT_PLAN hết vai trò. Secret/env/dump không stage; phoneauth sauMVP, không frontend/schema/APIchange. Task code/tests đã có evidence, next devintegration/postmergetests/push.
+
+### S021-C05 — dev integration và kiểm chứng cuối
+- Fastforward localdev2a73249→origin/dev1b37c3e, merge --no-ff featurecf72e3e→devfe63882 không conflict; tree khớp feature, giữ remote mergehistory. Main vẫn6044848, không merge/push main sau chỉ đạo mới.
+- Fresh postmerge dev cleanverify91total89PASS2cloudLiveSkipped/JAR PASS, Python7/7 PASS. Không frontend/schemachange nên không chạy lại frontend; commandNeoncreated/alreadyexists và startup/loginCSRF cùngcodea1f7acf đã kiểm chứng. Logs /tmp/me-may-fixed-owner-dev-verify.log và C02/C03.
+- AGENTS quy định task mới bắt đầu từ dev/codex-from-dev, deliver/pushdev; user tự mergemain. Phoneauth sauMVP. Markdownmax400/localLinks/diff/ignore/publiclogo PASS; secret .env/render.env/provisionlog không stage.
+- Đẩy code/log lên origin/dev theo yêu cầu mới; xác minh remoteSHA cuối. Không deployservice hoặc reset/updatepassword/accountlocal. User cần merge dev→main trước deploy bản bỏbootstrap, xóa BOOTSTRAP envRender cũ nếu đã nhập.
