@@ -25,7 +25,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.profiles.active=test", "spring.datasource.url=${TEST_DB_URL}",
-        "memay.bootstrap.enabled=false", "server.servlet.session.cookie.secure=false"
+        "server.servlet.session.cookie.secure=false"
 })
 @Import(AuthIntegrationTest.ShortSessionConfig.class)
 class AuthIntegrationTest {

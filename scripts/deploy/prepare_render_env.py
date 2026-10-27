@@ -10,7 +10,25 @@ ROOT = Path(__file__).resolve().parents[2]
 def read_env(path):
     values = {}
     for line in path.read_text().splitlines():
-        words = shlex.split(line, comments=True)
+        # A hash inside a value is literal; only unquoted word-boundary # starts a comment.
+        quote, escaped, boundary = None, False, True
+        for index, char in enumerate(line):
+            if escaped:
+                escaped, boundary = False, False
+                continue
+            if char == chr(92) and quote != "'":
+                escaped, boundary = True, False
+                continue
+            if quote:
+                if char == quote: quote = None
+                boundary = False
+            elif char in ("'", '"'):
+                quote, boundary = char, False
+            elif char == '#' and boundary:
+                line = line[:index]
+                break
+            else: boundary = char.isspace()
+        words = shlex.split(line, comments=False)
         if not words: continue
         if words[0] == 'export': words = words[1:]
         if len(words) != 1 or '=' not in words[0]: raise ValueError('Unsupported env assignment')
@@ -37,9 +55,9 @@ def render_settings(source):
         'SPRING_PROFILES_ACTIVE':'render', 'SERVER_ADDRESS':'0.0.0.0',
         'NEON_JDBC_URL':jdbc(pooled), 'NEON_JDBC_URL_UNPOOLED':jdbc(direct),
         'NEON_DB_USER':unquote(pooled.username), 'NEON_DB_PASSWORD':unquote(pooled.password),
-        'CLOUDINARY_NAMESPACE':'memay/online-test', 'BOOTSTRAP_OWNER_ENABLED':'false',
+        'CLOUDINARY_NAMESPACE':'memay/online-test',
     }
-    for key in ['CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET','CONTACT_ZALO_HOTLINE_URL','CONTACT_ZALO_GROUP_URL','BOOTSTRAP_OWNER_EMAIL','BOOTSTRAP_OWNER_PASSWORD']:
+    for key in ['CLOUDINARY_CLOUD_NAME','CLOUDINARY_API_KEY','CLOUDINARY_API_SECRET','CONTACT_ZALO_HOTLINE_URL','CONTACT_ZALO_GROUP_URL']:
         if source.get(key): result[key] = source[key]
     if any('\n' in v or '\r' in v for v in result.values()): raise ValueError('Multiline values are not supported')
     return result

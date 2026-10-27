@@ -180,3 +180,19 @@ Postmerge main9b87e6f: frontend91/91, Python3/3, backend88total86PASS2liveSkippe
 PASS; source publish GitHub. Không deploy Worker/Render; endpoint/DB credentials chỉ
 executor kiểm tra live, reviewer không mở secret. Logs /tmp/me-may-deploy-* và .local
 ignored; migration info/history xác nhận version5, không thay gate recovery.
+
+## Owner cố định — 27/10/2026
+
+- Command REDmissingclass→GREEN6tests create/idempotence/no-reset/no-elevate/disabled/
+  secondowner/validation/concurrency. Mutation bỏ lock cho2owner cùng lúc bị testRED,
+  khôi phục lock GREEN. Passwordunicode8emoji bị testRED, codepoint min16 GREEN.
+- Render startup giữ legacy bootstrap.enabled=true testREDautocreated→GREEN0admins;
+  cấp owner qua command rồi đăng nhập HTTP+CSRF thành công, Secure cookie giữ.
+- Backend cleanverify91total/89PASS/2cloudLiveSkipped/JAR PASS. Python7/7 gồm
+  không xuất ownersecret vào Render, explicitLocalguard và giữ literal# trong password
+  (RED truncation→GREEN), không diễn giải shell hoặc tự dùng BOOTSTRAP cũ.
+- Neon trước cấp0admins, sau cấp1activeOWNER, user chọn credential trong root.env;
+  operator command OWNER_ACCOUNT=created, không log identity/credential. Idempotent
+  rerun trảalready_exists PASS, hash/account không bị ghi đè. Không migration/copydev hoặc triển khai phoneauth.
+- Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; postmerge devfe63882 cleanverify91total89PASS2skip/Python7PASS, deliver dev theo quy ước mới;
+  chưa test đăng nhập Render thật vì chưa deploy dịch vụ.

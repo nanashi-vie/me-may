@@ -8,12 +8,14 @@ fi
 set -a
 source ../../.env
 set +a
-for key in DB_URL DB_USER DB_PASSWORD BOOTSTRAP_OWNER_EMAIL BOOTSTRAP_OWNER_PASSWORD; do
+for key in DB_URL DB_USER DB_PASSWORD; do
   if [[ -z "${!key:-}" ]]; then
     echo "Missing required local setting: $key" >&2
     exit 1
   fi
 done
+# Owner provisioning credentials belong only to the explicit operator command.
+unset OWNER_EMAIL OWNER_PASSWORD BOOTSTRAP_OWNER_EMAIL BOOTSTRAP_OWNER_PASSWORD BOOTSTRAP_OWNER_ENABLED
 export SPRING_PROFILES_ACTIVE="${SPRING_PROFILES_ACTIVE:-local}"
 if [[ $# -eq 0 ]]; then set -- spring-boot:run; fi
 exec ./mvnw "$@"

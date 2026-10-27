@@ -17,6 +17,15 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 - Bản spec/ADR được duyệt sau này ghi rõ quyết định nào thay thế master plan. Không âm thầm sửa phạm vi thông qua code hoặc skill.
 - Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `README.md`.
 
+## Git workflow — user chốt 27/10/2026
+
+- Mọi thay đổi code/tài liệu bàn giao được đưa lên branch `dev`.
+- Bắt đầu task mới từ `dev` đã cập nhật hoặc branch `codex/` tạo từ `dev`, không mặc định từ `main`.
+- Có thể dùng branch `codex/` để triển khai riêng, nhưng tích hợp và push vào `dev`.
+- Người dùng tự merge `dev` qua `main`; agent không tự merge hoặc push `main`, trừ
+  khi có yêu cầu mới rõ ràng thay thế quy ước này.
+- Giữ `dev` và `main`; chỉ dọn feature branch đã merge khi phù hợp yêu cầu cleanup.
+
 ## Các ràng buộc chính từ master plan
 
 - Angular + Spring Boot modular monolith. Không đổi sang React/Next.js theo mặc định của skill.

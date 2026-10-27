@@ -562,3 +562,38 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - git push origin main PASS4efec52→9b87e6f; user dùng Gitintegration main theo DEPLOYMENT. Không bấm deploy Cloudflare/Render hoặc tạo Renderresource. Checkpoint docs này push tiếp và đối chiếu remoteSHA cuối. Fetch thấy origin/dev external cập nhật2a73249→1b37c3e; không checkout/merge/reset hoặc xóa dev.
 - Plan/ledger rulings và finding đã chuyển đủ; DEPLOY_PLAN hết vai trò được xóa. Markdownmax400/linklocal/diff/ignore/publiclogo PASS. Neon verificationbranch đã xóa theo user, production.schema5 giữ0books/0media/0admins; secretsprivatefile0600 khôngtracked. BrowserQA/HTTPS8790/containerQA đều dừng; giữ flowlocal hiện có khi còn chạy.
 - Branch implementer tạo trong task được dọn sau merge theo yêu cầu dọn branch cũ, main/dev giữ. Bàn giao private .local/render.env để import Render, flag BOOTSTRAP_OWNER_ENABLED=false mặc định, user bật true lần đầu rồi tắt. Deployed auth/media/TLS/CPU/coldstart và backuprestore vẫn gate riêng, chưa chứng nhận MVPonline.
+
+## S021-C01 — 27/10/2026 — owner cố định, không startup bootstrap
+- User chốt auth sốđiệnthoại sauMVP; hiện tại muốn tài khoản cố định và không bootstrap tạo khi khởi động. Triển khai email/password hiện có, provisioning one-shot từ OWNER_EMAIL/PASSWORD private, không tự sinh hoặc dùng credentialsBOOTSTRAP cũ.
+- Đầu task main6044848 sạch; tạo branch codex/fixed-owner-account. Đã hỏi user thêm credentials mới vào root.env, chưa đọc/in values. OWNER_ACCOUNT_PLAN đăng ký trước code; giữ schema/login/session/CSRF và local data. Lệnh provision riêng, Render không cần ownersecret; account conflict không reset/elevate.
+- Dùng TDD/verification và review độc lập cuối. Chưa code/test/Neon mutation tại checkpoint; user đang bổ sung credential, phần code có thể làm độc lập.
+
+### S021-C02 — command/startup và owner thật
+- User đã thêm OWNER_EMAIL/PASSWORD; lần đầu policy chưa đạt, hỏi sửa và user xác nhận xong. Kiểm tra input chỉ boolean; không tự đổi/generate/copy BOOTSTRAP credentials.
+- REDcommand missingclass→GREEN5cases, thêm concurrency test và bỏlockmutation→RED2created, restorelock→GREEN6. Unicode8emoji RED vì UTF16length, đổi codePointCount min16 đồng nhấtPython. Transaction/lock/create-only/no-reset/no-elevate/disabled/secondOwner failclosed.
+- Render startup legacy bootstrap flagtrue REDaccounttựtạo→GREEN0; commandprovision rồi loginCSRF HTTP200/OWNER, cookieSecure giữ. Xóa OwnerBootstrap/test/config, localrun unset owner/bootstrap credential. Backend cleanverify91total89PASS2liveSkip/JAR PASS, logs /tmp/me-may-fixed-owner-*.
+- Pythonwrapper/envexport7/7: không carry ownersecret/BOOTSTRAP sang Render, localguard; phát hiện read_env cắt literal# password, RED→GREEN commentparser giữ hash trong value/quote và commentapostrophe. Render.env regenerate0600, root.env không sửa. PropertiesLauncher riêng không khởi tạoSpring.
+- Neon MCP trước0admins; create_owner command userauthorized OWNER_ACCOUNT=created; postcheck1activeOWNER. Không in email/password/hash, không schema migration hoặc sửa accountdev. Đang rerun idempotence rồi review/tài liệu/publish theo luồng chuẩn bị deploy hiện hành.
+
+### S021-C03 — idempotence Neon và review
+- Actual rerun create_owner.py trả OWNER_ACCOUNT=already_exists; đúng credential user vẫn khớp, không thay hash hoặc tạo account thứ hai. Neon tổng1admin/1activeOWNER. .local/render.env regenerated0600 loại OWNER/BOOTSTRAP, không sửa root.env hoặc localaccounts.
+- Code a1f7acf đã commit; đang review độc lập toàn branch, chưa merge/push. Không đổi schema/migration hoặc frontend/auth contract; testbackend91total89PASS2skip, Python7PASS; không chạy lại frontend không đổi.
+
+### S021-C04 — review và đổi workflow sang dev theo user
+- Fresh gpt-6-astra read-only6044848..a1f7acf:0Critical/Important/Minor. Reviewer chạy Python7PASS/diffcheck, kiểm tra JDBC/lock/no startup/secretboundary; không mở credential hoặc mutateDB/cloud/checkout. Không codefix/re-review.
+- Final Ruling: reviewer không đánh giá liveNeon identity/password/state — executor đã tạo bằng env user, postcount1owner và rerunmatchingpassword no-op — chi phí là review độc lập không chứng nhận secret/live state thời điểm khác.
+- Final Ruling: deployedRender/Workersauth/TLS và backuprestore chưa đánh giá — task trướcdeploy, giữ gateonline — chi phí là cần kiểm chứng sau userdeploy trước release.
+- Final Ruling: wrapper thêm --target local explicit để freshlocal setup vẫn tạo owner sau khi bỏbootstrap; guard loopback/me_may_dev và không sửa accountlocal có sẵn — chi phí là duy trì thêm một opsflag được test.
+- User27/10 yêu cầu từ giờ đưa code lên dev, user tự merge qua main. Áp dụng ngay cho task đang làm: không merge/push main. Lưu quy ước vào AGENTS/README/DEPLOYMENT/PROGRESS. Fetch origin/dev1b37c3e (PRmerge main4efec52); localdev2a73249, sẽ fastforward rồi tích hợp feature; main6044848 giữ nguyên.
+- Hoàn tất chuyển plan vào docs chuẩn/bằng chứng, xóa OWNER_ACCOUNT_PLAN hết vai trò. Secret/env/dump không stage; phoneauth sauMVP, không frontend/schema/APIchange. Task code/tests đã có evidence, next devintegration/postmergetests/push.
+
+### S021-C05 — dev integration và kiểm chứng cuối
+- Fastforward localdev2a73249→origin/dev1b37c3e, merge --no-ff featurecf72e3e→devfe63882 không conflict; tree khớp feature, giữ remote mergehistory. Main vẫn6044848, không merge/push main sau chỉ đạo mới.
+- Fresh postmerge dev cleanverify91total89PASS2cloudLiveSkipped/JAR PASS, Python7/7 PASS. Không frontend/schemachange nên không chạy lại frontend; commandNeoncreated/alreadyexists và startup/loginCSRF cùngcodea1f7acf đã kiểm chứng. Logs /tmp/me-may-fixed-owner-dev-verify.log và C02/C03.
+- AGENTS quy định task mới bắt đầu từ dev/codex-from-dev, deliver/pushdev; user tự mergemain. Phoneauth sauMVP. Markdownmax400/localLinks/diff/ignore/publiclogo PASS; secret .env/render.env/provisionlog không stage.
+- Đẩy code/log lên origin/dev theo yêu cầu mới; xác minh remoteSHA cuối. Không deployservice hoặc reset/updatepassword/accountlocal. User cần merge dev→main trước deploy bản bỏbootstrap, xóa BOOTSTRAP envRender cũ nếu đã nhập.
+
+### S021-C06 — đã publish dev, main không đổi
+- Push origin/dev thành công1b37c3e→d4b40a7; ls-remote xác nhận SHAdev trùng local và main vẫn6044848. ServerGitHub thông báo repo chuyển nanashi193/me-may→nanashi-vie/me-may; redirect hiện hoạt động, không tự đổi remoteconfig trong task này.
+- Checkpoint bàn giao này commit/pushdev cùng workflow; user tự merge dev→main. Không pushmain/deployservice, ownerNeon đã có1activeOWNER cố định theo env user, rerun không resetpassword. Root.env/privateRenderenv khôngtracked; review0findings và tests ở C04/C05.
+- Dọn featurebranch task đã merge và generated reviewledger sau khi chuyển đủ nội dung; giữ dev/main. Từ phiên sau bắt đầudev theo AGENTS, không lặp lại provisioning hoặc đổi credential.

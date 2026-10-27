@@ -14,7 +14,7 @@
 
 ### Phạm vi M1 local đã thực hiện
 
-Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, bootstrap Owner idempotent, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
+Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
 
 ## 0. Chốt quyết định và giới hạn
 
@@ -314,6 +314,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `DATA-01` BookCopy/Listing migrations và constraints; `DATA-02` BookMedia upload lifecycle; `DATA-03` AuditEvent/versioning.
 - `ADMIN-01` login + RBAC; `ADMIN-02` desktop book editor; `ADMIN-03` listing publication/status; `ADMIN-04` ba vị trí ảnh + thumbnail bìa trước; `ADMIN-05` taxonomy/collections.
 - `POST-MVP-IMPORT-01` CSV/Excel tạo sách mới thành nháp, mã trùng báo lỗi; chốt file/preview/lỗi sau MVP. Cập nhật sách có sẵn là mở rộng sau đó.
+- `POST-MVP-AUTH-PHONE`: user27/10 hoãn auth số điện thoại sauMVP; hiện tại owner cố định email/password, tạo riêng một lần, không startup bootstrap.
 - `POST-MVP-POLISH-01`: user25/10 có một số chỗ muốn chỉnh nhưng yêu cầu để sau MVP; chưa cung cấp chi tiết, không tự bịa ticket/triển khai trong M5.
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).

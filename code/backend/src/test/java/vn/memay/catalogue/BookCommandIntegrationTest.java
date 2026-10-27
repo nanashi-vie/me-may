@@ -9,7 +9,7 @@ import vn.memay.support.*;
 import java.util.List;
 import static vn.memay.support.BookFixtures.*;
 import static org.assertj.core.api.Assertions.*;
-@SpringBootTest(properties={"spring.profiles.active=test","memay.bootstrap.enabled=false"})
+@SpringBootTest(properties={"spring.profiles.active=test"})
 class BookCommandIntegrationTest {
  @DynamicPropertySource static void db(DynamicPropertyRegistry p){p.add("spring.datasource.url",()->PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL")));}
  @Autowired JdbcTemplate jdbc; @Autowired AdminUserRepository users; @Autowired BookCommandService commands;
