@@ -22,7 +22,7 @@ Cập nhật 27/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Git và môi trường
 
-- Agent bàn giao/push `dev`, user tự merge sang `main`. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
+- Kết quả kiểm chứng đã commit/push `dev` tại8eda99a; user tự merge sang `main`. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
 - M0/M1 local đã duyệt; M2 gate kỹ thuật và M3/M4 local có bằng chứng tại VERIFICATION. ImportCSV/Excel, phoneauth và chỉnh visual bổ sung để sauMVP.
 - DBdev/test/localservices giữ nguyên. .env/.local/dump/cookie không commit; asset public/logo tracked. Markdown≤400dòng trừ DEV_LOG.
 
