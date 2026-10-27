@@ -6,6 +6,8 @@ Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPL
 
 Neon cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway; tooling hiện derive và validate cùng endpoint nếu chưa đặt. Giữ `DB_URL`/`TEST_DB_URL` local. Profile Render đọc các biến JDBC riêng từ file private được sinh; `run-local.sh` vẫn dùng DB local. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
 
+Quy ước Git27/10: agent bàn giao trên `dev`; người dùng tự merge qua `main`.
+
 ## Chạy trên máy hiện tại
 
 Yêu cầu: Java 21, Node 22.12 trở lên thuộc nhánh 22 (máy hiện tại 22.19), npm và container `my-postgres` đang chạy ở localhost:5432. Maven Wrapper được lưu trong backend.

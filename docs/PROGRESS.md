@@ -1,23 +1,27 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C02 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
-## Đang làm — owner cố định
+## Bàn giao — owner cố định
 
-- Branch codex/fixed-owner-account từ main6044848; OWNER_ACCOUNT_PLAN đang thực thi.
-- Đã xóa startup bootstrap và tạo1owner cố định trên Neon từ OWNER_EMAIL/PASSWORD user đặt. Backend91total89PASS2liveSkip/Python7PASS, đang review và publish. Phone auth hoãn sauMVP.
+- Branch codex/fixed-owner-account từ main6044848; contract/cách chạy ở DEPLOYMENT và ARCHITECTURE.
+- Đã xóa startup bootstrap và tạo1owner cố định trên Neon từ OWNER_EMAIL/PASSWORD user đặt. Backend91total89PASS2liveSkip/Python7PASS, review0finding, đang tích hợp/publish dev theo yêu cầu mới. Phone auth hoãn sauMVP.
 
 ## Bàn giao — setup deploy và Neon migration
 
 - Đã merge main9b87e6f và publish GitHub; DEPLOYMENT là hướng dẫn dashboard/env/migration hiện hành.
 - Workers me-may/configonline/dry-run+HTTPSworkerd đạt; Render imagebuild/run512MB đạt, backend88total86PASS2liveSkip; frontend91/91.
-- Neon target đã migrate/validateV1–V5,0sách/ảnh/admin, giữ DBdev; branch thử đã xóa sau xác nhận. DEPLOYMENT hướng dẫn dashboard/env; review0Critical/0Important, current summaries đã được gộp và cập nhật, chưa deploy dịch vụ.
+- Neon target đã migrate/validateV1–V5,0sách/ảnh; owner cố định đã cấp27/10, giữ DBdev; branch thử đã xóa sau xác nhận. DEPLOYMENT hướng dẫn dashboard/env; review0Critical/0Important, current summaries đã được gộp và cập nhật, chưa deploy dịch vụ.
 
 ## Bàn giao — frontend Workers local
 
 - User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
 - SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
 - Đã merge main15e2446 và push GitHub26/10; postmerge frontend89/89, Workersbuild/SSR và backendverify87total85PASS2liveSkipped/JAR PASS. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
+
+## Git workflow
+
+- Từ27/10 agent chỉ bàn giao/push `dev`; user tự merge qua `main`. Quy tắc lưu tại AGENTS.
 
 ## Trạng thái
 

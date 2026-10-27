@@ -574,3 +574,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Render startup legacy bootstrap flagtrue REDaccounttựtạo→GREEN0; commandprovision rồi loginCSRF HTTP200/OWNER, cookieSecure giữ. Xóa OwnerBootstrap/test/config, localrun unset owner/bootstrap credential. Backend cleanverify91total89PASS2liveSkip/JAR PASS, logs /tmp/me-may-fixed-owner-*.
 - Pythonwrapper/envexport7/7: không carry ownersecret/BOOTSTRAP sang Render, localguard; phát hiện read_env cắt literal# password, RED→GREEN commentparser giữ hash trong value/quote và commentapostrophe. Render.env regenerate0600, root.env không sửa. PropertiesLauncher riêng không khởi tạoSpring.
 - Neon MCP trước0admins; create_owner command userauthorized OWNER_ACCOUNT=created; postcheck1activeOWNER. Không in email/password/hash, không schema migration hoặc sửa accountdev. Đang rerun idempotence rồi review/tài liệu/publish theo luồng chuẩn bị deploy hiện hành.
+
+### S021-C03 — idempotence Neon và review
+- Actual rerun create_owner.py trả OWNER_ACCOUNT=already_exists; đúng credential user vẫn khớp, không thay hash hoặc tạo account thứ hai. Neon tổng1admin/1activeOWNER. .local/render.env regenerated0600 loại OWNER/BOOTSTRAP, không sửa root.env hoặc localaccounts.
+- Code a1f7acf đã commit; đang review độc lập toàn branch, chưa merge/push. Không đổi schema/migration hoặc frontend/auth contract; testbackend91total89PASS2skip, Python7PASS; không chạy lại frontend không đổi.
+
+### S021-C04 — review và đổi workflow sang dev theo user
+- Fresh gpt-6-astra read-only6044848..a1f7acf:0Critical/Important/Minor. Reviewer chạy Python7PASS/diffcheck, kiểm tra JDBC/lock/no startup/secretboundary; không mở credential hoặc mutateDB/cloud/checkout. Không codefix/re-review.
+- Final Ruling: reviewer không đánh giá liveNeon identity/password/state — executor đã tạo bằng env user, postcount1owner và rerunmatchingpassword no-op — chi phí là review độc lập không chứng nhận secret/live state thời điểm khác.
+- Final Ruling: deployedRender/Workersauth/TLS và backuprestore chưa đánh giá — task trướcdeploy, giữ gateonline — chi phí là cần kiểm chứng sau userdeploy trước release.
+- Final Ruling: wrapper thêm --target local explicit để freshlocal setup vẫn tạo owner sau khi bỏbootstrap; guard loopback/me_may_dev và không sửa accountlocal có sẵn — chi phí là duy trì thêm một opsflag được test.
+- User27/10 yêu cầu từ giờ đưa code lên dev, user tự merge qua main. Áp dụng ngay cho task đang làm: không merge/push main. Lưu quy ước vào AGENTS/README/DEPLOYMENT/PROGRESS. Fetch origin/dev1b37c3e (PRmerge main4efec52); localdev2a73249, sẽ fastforward rồi tích hợp feature; main6044848 giữ nguyên.
+- Hoàn tất chuyển plan vào docs chuẩn/bằng chứng, xóa OWNER_ACCOUNT_PLAN hết vai trò. Secret/env/dump không stage; phoneauth sauMVP, không frontend/schema/APIchange. Task code/tests đã có evidence, next devintegration/postmergetests/push.

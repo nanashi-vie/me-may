@@ -4,6 +4,11 @@ Phạm vi đã chọn26/10/2026: AngularSSR trên Worker `me-may`, Spring Boot D
 trên Render `me-may-api`, PostgreSQL Neon đã migrate schema. User tự deploy hai
 service qua dashboard. Local DB_URL/TEST_DB_URL không đổi; không chuyển sách/ảnh dev.
 
+## Git workflow
+
+Code được agent bàn giao trên `dev`; user tự merge qua `main` khi sẵn sàng. Hai
+service production vẫn theo branch `main`, không tự đổi deployment sang dev.
+
 ## 1. Cloudflare Workers Git integration
 
 - Repository: `nanashi193/me-may`, production branch `main`.
