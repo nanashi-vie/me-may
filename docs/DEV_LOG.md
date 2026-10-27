@@ -592,3 +592,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Fresh postmerge dev cleanverify91total89PASS2cloudLiveSkipped/JAR PASS, Python7/7 PASS. Không frontend/schemachange nên không chạy lại frontend; commandNeoncreated/alreadyexists và startup/loginCSRF cùngcodea1f7acf đã kiểm chứng. Logs /tmp/me-may-fixed-owner-dev-verify.log và C02/C03.
 - AGENTS quy định task mới bắt đầu từ dev/codex-from-dev, deliver/pushdev; user tự mergemain. Phoneauth sauMVP. Markdownmax400/localLinks/diff/ignore/publiclogo PASS; secret .env/render.env/provisionlog không stage.
 - Đẩy code/log lên origin/dev theo yêu cầu mới; xác minh remoteSHA cuối. Không deployservice hoặc reset/updatepassword/accountlocal. User cần merge dev→main trước deploy bản bỏbootstrap, xóa BOOTSTRAP envRender cũ nếu đã nhập.
+
+### S021-C06 — đã publish dev, main không đổi
+- Push origin/dev thành công1b37c3e→d4b40a7; ls-remote xác nhận SHAdev trùng local và main vẫn6044848. ServerGitHub thông báo repo chuyển nanashi193/me-may→nanashi-vie/me-may; redirect hiện hoạt động, không tự đổi remoteconfig trong task này.
+- Checkpoint bàn giao này commit/pushdev cùng workflow; user tự merge dev→main. Không pushmain/deployservice, ownerNeon đã có1activeOWNER cố định theo env user, rerun không resetpassword. Root.env/privateRenderenv khôngtracked; review0findings và tests ở C04/C05.
+- Dọn featurebranch task đã merge và generated reviewledger sau khi chuyển đủ nội dung; giữ dev/main. Từ phiên sau bắt đầudev theo AGENTS, không lặp lại provisioning hoặc đổi credential.

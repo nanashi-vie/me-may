@@ -1,10 +1,10 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C05 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C06 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
 
 ## Bàn giao — owner cố định
 
-- Đã tích hợp vào devfe63882, main giữ6044848; contract/cách chạy ở DEPLOYMENT và ARCHITECTURE.
+- Đã push devd4b40a7, main giữ6044848; contract/cách chạy ở DEPLOYMENT và ARCHITECTURE.
 - Đã xóa startup bootstrap và tạo1owner cố định trên Neon từ OWNER_EMAIL/PASSWORD user đặt. Backend91total89PASS2liveSkip/Python7PASS, review0finding, postmergeverifyPASS và bàn giao qua dev theo yêu cầu mới. Phone auth hoãn sauMVP.
 
 ## Bàn giao — setup deploy và Neon migration
