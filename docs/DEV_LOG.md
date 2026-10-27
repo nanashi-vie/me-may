@@ -522,3 +522,67 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 ### S019-C03 — đã dọn feature branches, giữ dev
 - git push origin --delete feat/m1-local feat/m2-admin-catalogue PASS; git branch -d5feature/codex PASS, không force. Giữ localdev/origin dev2a73249 và main, không cập nhật/reset dev.
 - Không đổi product code/config/DB hoặc deploy; không chạy lại tests vì chỉ thao tác refs và tài liệu. Checkpoint được commit/push main; xác minh danh sách ref và SHA remote cuối.
+
+## S020-C01 — 26/10/2026 — setup Workers/Render và migrate Neon
+- User yêu cầu wrangler.jsonc online, Dockerfile Render và setup/migration Neon; quyền migrate Neon đã được cấp trong yêu cầu này. Tự deploy Worker/Render chưa được yêu cầu. Annotation1 về cấu hình local được xử lý trong task này.
+- Đầu task main4efec52 sạch; tạo codex/m5-deploy-setup. Giữ dev branch. Đọc current docs/config; Docker28.3.2 truy cập được ngoài sandbox. Neon raw pooled URL có sẵn, direct chưa đặt; không in secret. Domain hỏi async, đang chuẩn bị phần độc lập.
+- Phương án giữ stack/auth/Cloudinary; Worker same-origin proxy, Render profile riêng/Java21/nonroot, Flyway direct và schema-only initialization. DEPLOY_PLAN đăng ký trước code; không copy dữ liệu sách/ảnh dev. Tests/QA/review rồi chuyển tài liệu chuẩn.
+
+### S020-C02 — config và kiểm chứng trước target migration
+- User cung cấp tên Worker me-may/Render me-may-api, chưa có account subdomain. Workers nhận origin chỉ từ me-may.<account>.workers.dev HTTPS hoặc MEMAY_SITE_ORIGIN explicit, kiểm tra match và xóa untrusted x-forwarded trước Angular; engine allowedHosts mỗi request. RED2/91→GREEN91/91, build PASS; dry-run gzip421.23KiB, không publish.
+- HTTPSworkerd8790 Hostme-may.qa.workers.dev + malicious forwarding: HTTP200, SSRheading/canonical/hydration PASS. wrangler.jsonc auto custombuild, assets/no-store/SSR giữ. Local config riêng.
+- Render Java21 multi-stage/nonroot, profile render datasource pooled/Flywaydirect, cookieSecure/CSRF; bootstrap opt-in và namespace memay/online-test riêng. Test Render RED thiếu owner; test credentials ban đầu chưa override NEON_DB_USER gây auth fail, sửa wiringtest. Startup phát hiện namespace chỉ dev|test, thêm online-test sau RED; verify88total86PASS2liveSkipped/JAR PASS.
+- prepare-render-env Python3tests PASS (decodecredential/strictNeon/directsameDB/no localsettings), tạo .local/render.env0600; root.env không đổi. Flyway Maven plugin dùng env, schema public/cleanDisabled/no baseline.
+- Neon production public trống; neon_auth có sẵn ngoài app, không can thiệp. Tạo branch thử m5-migration-verification br-shiny-recipe-b44agos2; request compute suspend300 bị Freeplan412 trước tạo, retry giữ defaults thành công. Child Flyway V1–V5 migrate/validate/info PASS;5migrations/0books/0admins/0media. Direct endpoint derived đúng host từ API endpoint inventory, TLSverify-full/channelbindingRequire PASS.
+- Bắt đầu migrate target .env khớp production endpoint đã inventory, quyền từ user hiện hành. Không copy sách/ảnh/dev data. Docker final rebuild đang chạy; target migration/log+finalreview còn chờ. Credential child lưu private qua stdin echo-off, không argv/log/trackedfiles.
+
+### S020-C03 — target migration và Docker runtime
+- Target production supplied.env khớp inspected endpoint: Flyway V1–V5 migrate/validate/info PASS. MCP postcheck5migrations/version5,0books/0media/0admins/campaignDisabled. Không tạo owner hoặc copydev; neon_auth để nguyên. CLI helper chỉ Neon validatehost/direct, credentials env, logsprivate0600.
+- Docker finalimage build PASS; run mem512MB against verificationbranch, health200/UID10001/PORT10000/RAM271MiB PASS, không phải nghiệm thu Render thật. Testsbackend88total86PASS2liveSkip; frontend91/91. DEPLOYMENT hướng dẫn Cloudflare root/build/deploy và Renderenv/bootstrap, DBcommands/gates.
+- Giữ branch Neon thử do chưa có quyền xóa riêng; không gọi destructive MCP. Chưa deploy services hoặc publish code tại checkpoint. Bước tiếp: HTTPprobe đầy đủ, review độc lập và docs consolidation/publish theo luồng user đang chuẩn bị deploy GitHub.
+
+### S020-C04 — dọn branch thử được user duyệt
+- User xác nhận Xóa branch thử. Dừng container QA đang trỏ child rồi delete Neon br-shiny-recipe-b44agos2; production br-green-water-b4ny98q0 được giữ nguyên. Xóa hai generated credentialfile chỉ dành child; .local/render.env target vẫn giữ0600.
+- HTTPSworkerd fullprobe Home/howto/catalogue/wishlist/admin/API/unknown404/no-store/canonical + x-forwarded-host sai PASS; host không phải app bị400. Local8787 SSRchecker rerun để đối chiếu. Không deploy dịch vụ trong bước này.
+
+### S020-C05 — review độc lập và consolidation
+- Review gpt-6-astra read-only4efec52..47be225:0Critical/0Important/1Minor current summaries còn ghi Renderđềxuất/Neonchưamigrate. Đây là phần consolidation đã lên kế hoạch và bắt buộc theo AGENTS, hoàn tất cập nhật README/index/MASTER_PLAN/ARCHITECTURE/PROGRESS; không thay product hoặc viết test soi prose. Không còn minor deferred hoặc fixcode/re-review.
+- Final Ruling: deployedTLS/auth/media/WorkersCPUquota/Rendercoldstart chưa đánh giá — user tự deploy, local bằng chứng không thay online — chi phí là có thể phải chỉnh cấu hình/hiệu năng sau deploy.
+- Final Ruling: reviewer không mở credentials hoặc query lại Neon — executor đã đối chiếu API/endpoint, trực tiếp migrate/validate/postcounts và cleanupbranch — chi phí là review độc lập không chứng nhận trạng thái live/secret tại thời điểm khác.
+- Final Ruling: backup/restore vẫn gate online tiếp theo — hiện target mới chỉ schema/taxonomy, không suy migration thành nghiệm thu recovery — chi phí là chưa có bằng chứng khôi phục trước release.
+- LocalSSR8787 checker PASS; targetinfoonly rerun PASS sau deletechild, render.env0600. Tiếp kiểm tra browser và bàn giao/publish source cho Git dashboard theo mục tiêu user, không bấm deploy service.
+
+### S020-C06 — browser cuối và chuẩn bị publish
+- Chrome390 DNSmapping chỉ browser tới workerdlocalHTTPS: Homehydrate/save1/badge1/wishlist/select/enquiry canonicalHTTPS đúng, Escape/nooverflow PASS. CLI ban đầu registryDNS sandbox lỗi, elevated được; defaultChromium runtime mới chưa cài, dùng Chrome có sẵn thành công. Không coi lỗi tool là product, không hostmapping OS hoặc deploy cloud.
+- Đã chuyển đầy đủ plan vào DEPLOYMENT/ARCHITECTURE/masterplan, bằng chứngVERIFICATION/log; xóa DEPLOY_PLAN và linkactive hết vai trò. Còn gate deployedCPU/auth/media/TLS/coldstart/nativephone/backuprestore như đã ghi. Không minor deferred; summary finding được xử lý bằng consolidation bắt buộc.
+- Code47be225 đã commit, docs final commit tiếp; chuẩn bị merge/push main để user Gitintegration deploy theo luồng publish hiện hành. Không tự thay dev branch hoặc deploy Worker/Render. Secret .local/render.env0600 vẫn ignored; testbranchcred đã dọn, tempNeonbranch đã xóa theo user.
+
+### S020-C07 — merge và publish source cho dashboard
+- Commits47be225 code/setup và52eaa03 docs, merge --no-ff vào main9b87e6f không conflict; tree khớp feature. Fresh postmerge frontend91/91 (26files), Python3/3, backend88total86PASS2liveSkipped/JAR BUILD SUCCESS. Workersbuild/dryrun/Dockerimage không chạy lại vì sourcecode không đổi sau review; evidence C02–C06 vẫn cùng code47be225.
+- git push origin main PASS4efec52→9b87e6f; user dùng Gitintegration main theo DEPLOYMENT. Không bấm deploy Cloudflare/Render hoặc tạo Renderresource. Checkpoint docs này push tiếp và đối chiếu remoteSHA cuối. Fetch thấy origin/dev external cập nhật2a73249→1b37c3e; không checkout/merge/reset hoặc xóa dev.
+- Plan/ledger rulings và finding đã chuyển đủ; DEPLOY_PLAN hết vai trò được xóa. Markdownmax400/linklocal/diff/ignore/publiclogo PASS. Neon verificationbranch đã xóa theo user, production.schema5 giữ0books/0media/0admins; secretsprivatefile0600 khôngtracked. BrowserQA/HTTPS8790/containerQA đều dừng; giữ flowlocal hiện có khi còn chạy.
+- Branch implementer tạo trong task được dọn sau merge theo yêu cầu dọn branch cũ, main/dev giữ. Bàn giao private .local/render.env để import Render, flag BOOTSTRAP_OWNER_ENABLED=false mặc định, user bật true lần đầu rồi tắt. Deployed auth/media/TLS/CPU/coldstart và backuprestore vẫn gate riêng, chưa chứng nhận MVPonline.
+
+## S021-C01 — 27/10/2026 — owner cố định, không startup bootstrap
+- User chốt auth sốđiệnthoại sauMVP; hiện tại muốn tài khoản cố định và không bootstrap tạo khi khởi động. Triển khai email/password hiện có, provisioning one-shot từ OWNER_EMAIL/PASSWORD private, không tự sinh hoặc dùng credentialsBOOTSTRAP cũ.
+- Đầu task main6044848 sạch; tạo branch codex/fixed-owner-account. Đã hỏi user thêm credentials mới vào root.env, chưa đọc/in values. OWNER_ACCOUNT_PLAN đăng ký trước code; giữ schema/login/session/CSRF và local data. Lệnh provision riêng, Render không cần ownersecret; account conflict không reset/elevate.
+- Dùng TDD/verification và review độc lập cuối. Chưa code/test/Neon mutation tại checkpoint; user đang bổ sung credential, phần code có thể làm độc lập.
+
+### S021-C02 — command/startup và owner thật
+- User đã thêm OWNER_EMAIL/PASSWORD; lần đầu policy chưa đạt, hỏi sửa và user xác nhận xong. Kiểm tra input chỉ boolean; không tự đổi/generate/copy BOOTSTRAP credentials.
+- REDcommand missingclass→GREEN5cases, thêm concurrency test và bỏlockmutation→RED2created, restorelock→GREEN6. Unicode8emoji RED vì UTF16length, đổi codePointCount min16 đồng nhấtPython. Transaction/lock/create-only/no-reset/no-elevate/disabled/secondOwner failclosed.
+- Render startup legacy bootstrap flagtrue REDaccounttựtạo→GREEN0; commandprovision rồi loginCSRF HTTP200/OWNER, cookieSecure giữ. Xóa OwnerBootstrap/test/config, localrun unset owner/bootstrap credential. Backend cleanverify91total89PASS2liveSkip/JAR PASS, logs /tmp/me-may-fixed-owner-*.
+- Pythonwrapper/envexport7/7: không carry ownersecret/BOOTSTRAP sang Render, localguard; phát hiện read_env cắt literal# password, RED→GREEN commentparser giữ hash trong value/quote và commentapostrophe. Render.env regenerate0600, root.env không sửa. PropertiesLauncher riêng không khởi tạoSpring.
+- Neon MCP trước0admins; create_owner command userauthorized OWNER_ACCOUNT=created; postcheck1activeOWNER. Không in email/password/hash, không schema migration hoặc sửa accountdev. Đang rerun idempotence rồi review/tài liệu/publish theo luồng chuẩn bị deploy hiện hành.
+
+### S021-C03 — idempotence Neon và review
+- Actual rerun create_owner.py trả OWNER_ACCOUNT=already_exists; đúng credential user vẫn khớp, không thay hash hoặc tạo account thứ hai. Neon tổng1admin/1activeOWNER. .local/render.env regenerated0600 loại OWNER/BOOTSTRAP, không sửa root.env hoặc localaccounts.
+- Code a1f7acf đã commit; đang review độc lập toàn branch, chưa merge/push. Không đổi schema/migration hoặc frontend/auth contract; testbackend91total89PASS2skip, Python7PASS; không chạy lại frontend không đổi.
+
+### S021-C04 — review và đổi workflow sang dev theo user
+- Fresh gpt-6-astra read-only6044848..a1f7acf:0Critical/Important/Minor. Reviewer chạy Python7PASS/diffcheck, kiểm tra JDBC/lock/no startup/secretboundary; không mở credential hoặc mutateDB/cloud/checkout. Không codefix/re-review.
+- Final Ruling: reviewer không đánh giá liveNeon identity/password/state — executor đã tạo bằng env user, postcount1owner và rerunmatchingpassword no-op — chi phí là review độc lập không chứng nhận secret/live state thời điểm khác.
+- Final Ruling: deployedRender/Workersauth/TLS và backuprestore chưa đánh giá — task trướcdeploy, giữ gateonline — chi phí là cần kiểm chứng sau userdeploy trước release.
+- Final Ruling: wrapper thêm --target local explicit để freshlocal setup vẫn tạo owner sau khi bỏbootstrap; guard loopback/me_may_dev và không sửa accountlocal có sẵn — chi phí là duy trì thêm một opsflag được test.
+- User27/10 yêu cầu từ giờ đưa code lên dev, user tự merge qua main. Áp dụng ngay cho task đang làm: không merge/push main. Lưu quy ước vào AGENTS/README/DEPLOYMENT/PROGRESS. Fetch origin/dev1b37c3e (PRmerge main4efec52); localdev2a73249, sẽ fastforward rồi tích hợp feature; main6044848 giữ nguyên.
+- Hoàn tất chuyển plan vào docs chuẩn/bằng chứng, xóa OWNER_ACCOUNT_PLAN hết vai trò. Secret/env/dump không stage; phoneauth sauMVP, không frontend/schema/APIchange. Task code/tests đã có evidence, next devintegration/postmergetests/push.

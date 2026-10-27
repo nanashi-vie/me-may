@@ -149,3 +149,50 @@ Log /tmp/me-may-m4-*.log, fingerprint ignored `.local/m4-dev-{before,after}.txt`
   không chạy lại vì không thay backend, dữ liệu/schema hoặc contract nghiệp vụ.
 
 Review read-only cded8a7..4a0f463; reviewer tự probe SSR/privacy/404, không chạy lại suite/build/browser. Render/Neon và deployed CPU/quota/TLS/cookie vẫn ngoài scope, chưa được nghiệm thu.
+
+## Deploy setup Workers/Render/Neon — 26/10/2026
+
+- Frontend origin/forwarding RED2→GREEN91/91; Workers build and dry-run PASS,
+  bundle1789KiB/gzip421KiB. Không publish Worker. HTTPSworkerd8790 mô phỏng
+  me-may.qa.workers.dev + malicious forwarded headers: SSR/canonical/hydration200.
+- Python env generator3/3 PASS: percent-decoded credentials, trusted TLS/direct cùng
+  target, từ chối host/DB khác, không mang DB_URL/TEST_DB_URL/profilelocal sang Render.
+  .local/render.env0600, root.env không đổi; values không xuất chat/log tracked.
+- Render bootstrap regression REDmissingowner; testdatasource wiring sửa dùng DBtest,
+  startup phát hiện Cloudinary namespace online-test chưa hỗ trợ rồi thêm theo RED.
+  Backend verify88total/86PASS/2cloudLiveSkipped, JAR PASS; không chạy test vào Neon.
+- Docker multi-stage build PASS; run512MB với Neon verification branch: health200,
+  UID10001, PORT10000 hoạt động, RAM271MiB ở probe. Đây là local image, chưa Render.
+- Neon branch thử m5-migration-verification: Flyway12.4.0 V1–V5 migrate/validate/info
+  PASS. Target supplied .env đối chiếu APIendpoint, public trống trước migration;
+  directTLSverify-full/JVMtrust/channelbindingRequire; targetmigrate/validate/info PASS.
+  Sau migration5history/version5,0books/0media/0admins/saleDisabled; không copy dev.
+- Neon schema neon_auth có sẵn được giữ nguyên. Branch thử đã xóa sau xác nhận
+  user; không reset production hoặc bật NeonAuth cho app.
+- Chưa: userdeploy Worker/Render, customdomain/TLS/CPUquota/cold-start, login/ảnh thật
+  online/nativephone/in-app, backuprestore. Review47be225:0Critical/0Important; một finding current summaries cũ được giải quyết trong bước consolidation bắt buộc.
+
+- Chrome390 với DNSmapping browser-only me-may.qa.workers.dev→workerdHTTPS8790:
+  hydrate/save/badge/wishlist/select/enquiry đúng HTTPSorigin, no overflow/Escape PASS.
+  Không deploy hoặc gửi Zalo. Chromium mới chưa cài, dùng Chrome đã cài, không đổi app.
+
+Postmerge main9b87e6f: frontend91/91, Python3/3, backend88total86PASS2liveSkipped/JAR
+PASS; source publish GitHub. Không deploy Worker/Render; endpoint/DB credentials chỉ
+executor kiểm tra live, reviewer không mở secret. Logs /tmp/me-may-deploy-* và .local
+ignored; migration info/history xác nhận version5, không thay gate recovery.
+
+## Owner cố định — 27/10/2026
+
+- Command REDmissingclass→GREEN6tests create/idempotence/no-reset/no-elevate/disabled/
+  secondowner/validation/concurrency. Mutation bỏ lock cho2owner cùng lúc bị testRED,
+  khôi phục lock GREEN. Passwordunicode8emoji bị testRED, codepoint min16 GREEN.
+- Render startup giữ legacy bootstrap.enabled=true testREDautocreated→GREEN0admins;
+  cấp owner qua command rồi đăng nhập HTTP+CSRF thành công, Secure cookie giữ.
+- Backend cleanverify91total/89PASS/2cloudLiveSkipped/JAR PASS. Python7/7 gồm
+  không xuất ownersecret vào Render, explicitLocalguard và giữ literal# trong password
+  (RED truncation→GREEN), không diễn giải shell hoặc tự dùng BOOTSTRAP cũ.
+- Neon trước cấp0admins, sau cấp1activeOWNER, user chọn credential trong root.env;
+  operator command OWNER_ACCOUNT=created, không log identity/credential. Idempotent
+  rerun trảalready_exists PASS, hash/account không bị ghi đè. Không migration/copydev hoặc triển khai phoneauth.
+- Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; chuẩn bị publish dev theo quy ước mới;
+  chưa test đăng nhập Render thật vì chưa deploy dịch vụ.

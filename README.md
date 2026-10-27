@@ -1,8 +1,12 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (read-only connection PASS, chưa migration); backend Render vẫn là đề xuất, chưa thuê VPS/deploy. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
+M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (V1–V5 migrate/validate PASS); backend Render Docker đã chuẩn bị, hai service chưa deploy. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
 
-Neon chuẩn bị cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway, hiện chưa cung cấp. Giữ `DB_URL`/`TEST_DB_URL` local. App hiện chưa tự đọc các biến Neon này; không chạy `run-local.sh` để migrate Neon. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
+Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPLOYMENT](docs/DEPLOYMENT.md). Neon đã migrate/validate V1–V5; chưa deploy hai service.
+
+Neon cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway; tooling hiện derive và validate cùng endpoint nếu chưa đặt. Giữ `DB_URL`/`TEST_DB_URL` local. Profile Render đọc các biến JDBC riêng từ file private được sinh; `run-local.sh` vẫn dùng DB local. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
+
+Quy ước Git27/10: agent bàn giao trên `dev`; người dùng tự merge qua `main`.
 
 ## Chạy trên máy hiện tại
 
@@ -10,7 +14,7 @@ Yêu cầu: Java 21, Node 22.12 trở lên thuộc nhánh 22 (máy hiện tại 
 
 Hai database riêng đã được tạo: `me_may_dev` cho ứng dụng và `me_may_test` cho integration tests. Role local `me_may_app` chỉ sở hữu hai database này. Không sử dụng database dự án khác.
 
-Credential nằm trong `.env` tại root (Git ignored, mode 0600), gồm thông tin DB và `BOOTSTRAP_OWNER_EMAIL` / `BOOTSTRAP_OWNER_PASSWORD`. Xem file local bằng editor khi cần đăng nhập; không gửi mật khẩu vào chat hoặc commit. `.env.example` chỉ là mẫu cho máy mới, không phải credential đang hoạt động.
+Credential nằm trong `.env` tại root (Git ignored, mode 0600), gồm thông tin DB và `OWNER_EMAIL` / `OWNER_PASSWORD` (chỉ lệnh cấp owner dùng, không gửi vào runtime). Xem file local bằng editor khi cần đăng nhập; không gửi mật khẩu vào chat hoặc commit. `.env.example` chỉ là mẫu cho máy mới, không phải credential đang hoạt động.
 
 Terminal 1, từ root repo:
 
@@ -112,9 +116,9 @@ Cloudflare thực tế về CPU/quota/cold-start/domain/TLS/cookie Secure.
 | GET `/api/v1/admin/access` | Kiểm tra OWNER/STAFF, không chứa dữ liệu sách |
 | GET `/api/v1/admin/owner-access` | Kiểm tra OWNER; STAFF trả 403 |
 
-Không có đăng ký công khai. Owner local được bootstrap từ env, hash BCrypt; khởi động lại không reset mật khẩu và không nâng quyền một tài khoản Staff có sẵn. Không có user management UI ở M1; STAFF được kiểm chứng bằng fixture trong database test.
+Không có đăng ký công khai. Owner cố định được cấp bằng `python3 scripts/deploy/create_owner.py` cho Neon hoặc thêm `--target local` cho dev, hash BCrypt. Backend không tạo account khi startup; lệnh cấp không ghi đè password/nâng quyền hoặc tự tạo owner thứ hai. Không có user management UI ở M1; STAFF được kiểm chứng bằng fixture trong database test.
 
-Session mặc định 30 phút không hoạt động, in-memory (restart backend phải đăng nhập lại). Cookie HttpOnly/SameSite=Lax, Secure chỉ tắt ở profile local để dùng HTTP. Mặc định ngoài profile local là Secure=true và không bootstrap. Không có token quản trị trong localStorage hoặc Angular transfer cache.
+Session mặc định 30 phút không hoạt động, in-memory (restart backend phải đăng nhập lại). Cookie HttpOnly/SameSite=Lax, Secure chỉ tắt ở profile local để dùng HTTP. Mặc định ngoài profile local là Secure=true và không có startup bootstrap. Không có token quản trị trong localStorage hoặc Angular transfer cache.
 
 ## Cấu hình và ranh giới
 

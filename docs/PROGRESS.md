@@ -1,12 +1,27 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S019-C03 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C04 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+
+## Bàn giao — owner cố định
+
+- Branch codex/fixed-owner-account từ main6044848; contract/cách chạy ở DEPLOYMENT và ARCHITECTURE.
+- Đã xóa startup bootstrap và tạo1owner cố định trên Neon từ OWNER_EMAIL/PASSWORD user đặt. Backend91total89PASS2liveSkip/Python7PASS, review0finding, đang tích hợp/publish dev theo yêu cầu mới. Phone auth hoãn sauMVP.
+
+## Bàn giao — setup deploy và Neon migration
+
+- Đã merge main9b87e6f và publish GitHub; DEPLOYMENT là hướng dẫn dashboard/env/migration hiện hành.
+- Workers me-may/configonline/dry-run+HTTPSworkerd đạt; Render imagebuild/run512MB đạt, backend88total86PASS2liveSkip; frontend91/91.
+- Neon target đã migrate/validateV1–V5,0sách/ảnh; owner cố định đã cấp27/10, giữ DBdev; branch thử đã xóa sau xác nhận. DEPLOYMENT hướng dẫn dashboard/env; review0Critical/0Important, current summaries đã được gộp và cập nhật, chưa deploy dịch vụ.
 
 ## Bàn giao — frontend Workers local
 
 - User chọn chỉ frontend Workers local; branch codex/m5-workers-local từ main cded8a7.
 - SSR neutral/proxy/workerd8787 đã chạy; tests89/89, SSR/proxy/browser và Node compatibility PASS. Review độc lập0finding; plan đã gộp vào tài liệu chuẩn.
 - Đã merge main15e2446 và push GitHub26/10; postmerge frontend89/89, Workersbuild/SSR và backendverify87total85PASS2liveSkipped/JAR PASS. Agent không deploy hoặc thay Render/Neon; cấu hình Workers hiện có vẫn dành local.
+
+## Git workflow
+
+- Từ27/10 agent chỉ bàn giao/push `dev`; user tự merge qua `main`. Quy tắc lưu tại AGENTS.
 
 ## Trạng thái
 
@@ -34,13 +49,13 @@ Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md)
 
 - Pilot frontend4200/backend8080 phục vụ M4; QA4000/browser phiên này dừng sau bàn giao. [Quan tâm](http://127.0.0.1:4200/quan-tam), [Home](http://127.0.0.1:4200/), [admin sách](http://127.0.0.1:4200/admin/sach).
 - User đã thêm CONTACT_ZALO_HOTLINE_URL/CONTACT_ZALO_GROUP_URL vào .env; backend đã restart, cả hai link có trong cấu hình public. Chưa nghiệm thu mở native Zalo trên điện thoại; copy/thủ công đã kiểm chứng.
-- User đã chốt **Cloudflare Workers cho Angular SSR**, thay Pages; đã cung cấp Neon trong .env. Chuẩn hóa URL thô thành NEON_DATABASE_URL, pooled/TLS và read-only connection PASS PostgreSQL18.6/public0tables/noFlyway. DB_URL/TEST_DB_URL vẫn local; chưa migration/deploy. Render Free là đề xuất backend; chưa có VPS. SSR/auth/backup/restore vẫn gate môi trường thật.
+- User đã chốt **Cloudflare Workers cho Angular SSR**, thay Pages; đã cung cấp Neon trong .env. Chuẩn hóa URL thô thành NEON_DATABASE_URL, pooled/directTLS và FlywayV1–V5 migrate/validate PASS26/10. DB_URL/TEST_DB_URL vẫn local; Render Docker/Workers config đã chuẩn bị, chưa deploy services; chưa có VPS. SSR/auth/backup/restore vẫn gate môi trường thật.
 
 ## Tiếp theo
 
-1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; frontend Workers local đã triển khai; bước tiếp chốt backend Render đề xuất và deployed SSR gate. Credential không phải ủy quyền migrate/deploy.
+1. Publish main M3/M4 đã xong ở37f8919. User chốt Workers/Neon; frontend Workers local đã triển khai; bước tiếp userdeploy Worker/Render theo DEPLOYMENT và kiểm chứng online SSR/auth/CPU. Migration Neon đã được yêu cầu và hoàn tất; agent không tự deploy services.
 2. Tiệm thử public UX và cấu hình sale thật/linkZalo khi sẵn sàng; tiếp tục pilotM2 lên10–20 cuốn. Không xóa plan/spec còn gate chưa chuyển.
-3. Cần NEON_DATABASE_URL_UNPOOLED cho Flyway (hiện chưa có), tách datasource/migration config, chốt host/region/domain hoặc /api cùng origin/cookie/CSRF và Worker runtime/SSR/cold-start. Chưa có spec M5/lệnh deploy được duyệt. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
+3. Profile render đã tách pooled/directFlyway; direct URL derive/validate cùng Neon endpoint nếu chưa đặt. User deploy hai service rồi kiểm chứng /api/cookie/CSRF/cold-start/backuprestore. Usertest chưa bổ sung thiết bị/nativeZalo; giữ gate cụ thể. ImportCSV/Excel/chỉnh sửa sau MVP.
 
 ## Tài liệu và giới hạn
 

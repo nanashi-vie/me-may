@@ -132,3 +132,48 @@ describe('server origins', () => {
     }
   });
 });
+
+describe('deployed Worker origin boundary', () => {
+  it('accepts the named workers.dev origin without an account-specific build', async () => {
+    const online = {
+      ...env,
+      MEMAY_API_ORIGIN: 'https://me-may-api.onrender.com',
+      MEMAY_SITE_ORIGIN: undefined,
+      MEMAY_WORKER_NAME: 'me-may',
+    };
+    const response = await handleWorkerRequest(
+      new Request('https://me-may.account.workers.dev/cach-mua', {
+        headers: { 'x-forwarded-host': 'evil.example', 'x-forwarded-proto': 'http' },
+      }),
+      online,
+      async (req, context) => {
+        expect(context.MEMAY_SITE_ORIGIN).toBe('https://me-may.account.workers.dev');
+        expect(req.headers.get('x-forwarded-host')).toBeNull();
+        expect(req.headers.get('x-forwarded-proto')).toBeNull();
+        return new Response('SSR');
+      },
+    );
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe('SSR');
+  });
+  it('refuses spoofed origins instead of trusting arbitrary Host or forwarded headers', async () => {
+    for (const origin of [
+      'https://other.account.workers.dev',
+      'https://me-may.account.workers.dev.evil.example',
+      'http://me-may.account.workers.dev',
+    ]) {
+      const response = await handleWorkerRequest(
+        new Request(origin + '/cach-mua'),
+        { ...env, MEMAY_SITE_ORIGIN: undefined, MEMAY_WORKER_NAME: 'me-may' },
+        async () => new Response('unexpected'),
+      );
+      expect(response.status).toBe(400);
+    }
+    const response = await handleWorkerRequest(
+      new Request('https://evil.example/cach-mua'),
+      env,
+      async () => new Response('unexpected'),
+    );
+    expect(response.status).toBe(400);
+  });
+});

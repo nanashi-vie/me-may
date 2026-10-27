@@ -3,7 +3,9 @@ export interface ServerOrigins {
   MEMAY_API_ORIGIN: string;
   MEMAY_SITE_ORIGIN: string;
 }
-export interface WorkerEnvironment extends ServerOrigins {
+export interface WorkerEnvironment extends Omit<ServerOrigins, 'MEMAY_SITE_ORIGIN'> {
+  MEMAY_SITE_ORIGIN?: string;
+  MEMAY_WORKER_NAME?: string;
   ASSETS: { fetch(request: Request): Promise<Response> };
 }
 export function serverOrigins(value: ServerOrigins): ServerOrigins {
@@ -42,11 +44,32 @@ export async function handleWorkerRequest(
     if (privatePage) result.headers.set('X-Robots-Tag', 'noindex, nofollow, nosnippet');
     return result;
   };
+  let siteOrigin = env.MEMAY_SITE_ORIGIN;
+  if (!siteOrigin) {
+    const name = env.MEMAY_WORKER_NAME;
+    const labels = url.hostname.split('.');
+    if (
+      !name ||
+      !/^[a-z0-9-]+$/.test(name) ||
+      url.protocol !== 'https:' ||
+      url.port ||
+      labels.length !== 4 ||
+      labels[0] !== name ||
+      !/^[a-z0-9-]+$/.test(labels[1]) ||
+      labels.slice(2).join('.') !== 'workers.dev'
+    ) {
+      return noStore(new Response('Unrecognized site origin', { status: 400 }));
+    }
+    siteOrigin = url.origin;
+  }
   let origins: ServerOrigins;
   try {
-    origins = serverOrigins(env);
+    origins = serverOrigins({ ...env, MEMAY_SITE_ORIGIN: siteOrigin });
   } catch {
     return noStore(new Response('Invalid server configuration', { status: 503 }));
+  }
+  if (url.origin !== origins.MEMAY_SITE_ORIGIN) {
+    return noStore(new Response('Unrecognized site origin', { status: 400 }));
   }
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     try {
@@ -82,7 +105,16 @@ export async function handleWorkerRequest(
     return privatePage ? noStore(asset) : asset;
   }
   try {
-    return noStore((await render(request, origins)) ?? new Response('Not found', { status: 404 }));
+    // Cloudflare adds forwarding headers; the validated URL is the authoritative origin.
+    // Strip them before Angular validation so untrusted headers cannot force CSR fallback.
+    const headers = new Headers(request.headers);
+    for (const name of [...headers.keys()]) {
+      if (name.toLowerCase().startsWith('x-forwarded-')) headers.delete(name);
+    }
+    const renderRequest = new Request(request, { headers });
+    return noStore(
+      (await render(renderRequest, origins)) ?? new Response('Not found', { status: 404 }),
+    );
   } catch {
     return noStore(new Response('Service unavailable', { status: 503 }));
   }
