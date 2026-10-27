@@ -255,8 +255,19 @@ phải build/check runtime lại khi nâng Angular/Wrangler. Không cài framewo
 Production wrangler.jsonc dùng tên me-may/APIme-may-api.onrender.com; site origin
 chỉ derive từ đúng WorkerHTTPS host hoặc explicit custom origin. Per-request
 AngularAppEngine allowedHosts exact; x-forwarded headers bị bỏ để giữ SSR và origin.
-Render Docker Java21/nonroot/profile render, opt-in owner bootstrap không dùng
-profile local; datasource pooled/Flywaydirect/public/cleanDisabled. NamespaceCloudinary
+Render Docker Java21/nonroot/profile render, owner cấp riêng bằng one-shot command, không startup bootstrap hoặc
+profile local trên Render; datasource pooled/Flywaydirect/public/cleanDisabled. NamespaceCloudinary
 online-test tách dev/test. Migrations V1–V5 đã chạy và validate trên Neon target, không
 copy dữ liệu dev hoặc dùng neon_auth. User tự deploy; CPU/quota/auth/restore online
 vẫn là gate riêng. Local config và Node SSR giữ nguyên.
+
+### Owner cố định — 27/10/2026
+
+User hoãn auth sốđiệnthoại sauMVP. Giữ email/password/BCrypt12 và session/CSRF hiện có;
+xóa OwnerBootstrap cùng config local/render, không migration thay schema. Operator
+OwnerAccountCommand không là bean và chạy qua PropertiesLauncher riêng, JDBC direct,
+prepared statements/transaction/advisorylock. Create-only khi chưa có owner; cùng
+credential no-op, conflict/disabled/STAFF/owner khác fail closed, không reset/elevate.
+Wrapper dùng OWNER_EMAIL/PASSWORD private, không argv; run-local unset ownersecret,
+Render export loại toàn bộ owner/bootstrap fields. Lệnh local phải explicit và chỉ
+loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển khai ở bước này.

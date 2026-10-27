@@ -65,17 +65,34 @@ shell script để source. Nó chứa:
 - CLOUDINARY_CLOUD_NAME/API_KEY/API_SECRET nếu có trong root.env; namespace riêng
   `memay/online-test`, không dùng chung dev hoặc integration-test.
 - CONTACT_ZALO_HOTLINE_URL/GROUP_URL nếu có.
-- BOOTSTRAP_OWNER_EMAIL/PASSWORD lấy từ root.env, BOOTSTRAP_OWNER_ENABLED=false.
+- Không chứa OWNER_EMAIL/OWNER_PASSWORD hoặc BOOTSTRAP_*; Render không cần credential tạo tài khoản.
 
-### Tạo owner lần đầu
+### Owner cố định, tạo riêng một lần
 
-Trước lần deploy đầu, trên Render đổi **BOOTSTRAP_OWNER_ENABLED=true** và kiểm tra
-BOOTSTRAP_OWNER_EMAIL/PASSWORD (password16–72bytes). Profile render vẫn giữ cookie
-Secure/SameSiteLax/HttpOnly và CSRF. Khi deploy thành công, đăng nhập ở
-`https://me-may.<account>.workers.dev/admin/dang-nhap`; sau đó đặt flag false và
-xóa hai credential bootstrap khỏi env nếu muốn, redeploy. Bootstrap không reset
-password/account có sẵn và không nâng STAFF thành OWNER. Chưa tạo owner trên Neon
-trong bước migration schema; không bật profile local trên Render.
+Tài khoản owner được operator tạo trước deploy, không có startup bootstrap. Đặt
+`OWNER_EMAIL` và `OWNER_PASSWORD` trong root `.env` private; password tối thiểu16
+ký tự Unicode và tối đa72byte UTF-8. Nên quote giá trị có ký tự đặc biệt.
+
+```bash
+python3 scripts/deploy/create_owner.py
+```
+
+Lệnh build JAR mới rồi dùng operator entry point riêng (không mở Spring web server,
+không chạy migration/scheduler/media jobs), kết nối Neon directTLS. Chỉ thêm OWNER
+khi chưa có owner; chạy lại cùng credential là no-op. Từ chối account STAFF/disabled,
+password không khớp hoặc owner email khác; không reset password/nâng quyền tự động.
+Lock transaction bảo vệ khi hai lệnh chạy cùng lúc. Không ghi email/password ra stdout.
+
+Owner đã được tạo trên Neon27/10 bằng đúng OWNER_EMAIL/PASSWORD user đặt. Đăng nhập
+qua `/admin/dang-nhap` bằng credential đó; backend restart/redeploy giữ nguyên account.
+CookieSecure/HttpOnly/SameSiteLax và CSRF giữ nguyên. Nếu trước đây đã nhập BOOTSTRAP_*
+trên Render thì xóa các biến cũ; import lại `.local/render.env` mới (không có secret
+owner). Không đặt OWNER_PASSWORD vào Render/Cloudflare, image hoặc Git.
+
+DBlocal có owner cũ thì giữ nguyên. Máy local mới cần owner có thể dùng
+`python3 scripts/deploy/create_owner.py --target local`; chỉ cho phép loopback
+`me_may_dev`, không dùng với DB dự án khác. Không có public signup/đổi/quên mật khẩu
+trong task này; auth sốđiệnthoại để sauMVP.
 
 Free host có thể ngủ/restart, session in-memory mất và public timeout10s có thể ngắn
 hơn cold-start; khi vừa deploy hãy mở health endpoint Render trước rồi thử website.
@@ -89,7 +106,7 @@ cùng endpoint bằng cách bỏ -pooler và validate cùng host/database/role; 
 explicit; script từ chối nếu khác database/role. Không đổi DB_URL/TEST_DB_URL local.
 
 Đã migrate V1–V5 bằng Flyway12.4.0, schema **public**, validate tracking. Chỉ schema,
-taxonomy seed và campaign singleton tắt;0sách/0ảnh/0admin trong target khi bàn giao.
+taxonomy seed và campaign singleton tắt;0sách/0ảnh saumigration. Owner cố định đã được cấp riêng27/10.
 Schema neon_auth có sẵn thuộc dịch vụ khác, app không dùng hoặc thay đổi.
 
 Lệnh cho lần sau (root repo, Java21/Maven Wrapper, credentials ở ignored.env):

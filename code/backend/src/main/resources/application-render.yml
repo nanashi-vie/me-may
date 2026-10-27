@@ -21,7 +21,3 @@ server:
 memay:
   media:
     namespace: ${CLOUDINARY_NAMESPACE:memay/online-test}
-  bootstrap:
-    enabled: ${BOOTSTRAP_OWNER_ENABLED:false}
-    email: ${BOOTSTRAP_OWNER_EMAIL:}
-    password: ${BOOTSTRAP_OWNER_PASSWORD:}

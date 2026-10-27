@@ -12,7 +12,7 @@ Yêu cầu: Java 21, Node 22.12 trở lên thuộc nhánh 22 (máy hiện tại 
 
 Hai database riêng đã được tạo: `me_may_dev` cho ứng dụng và `me_may_test` cho integration tests. Role local `me_may_app` chỉ sở hữu hai database này. Không sử dụng database dự án khác.
 
-Credential nằm trong `.env` tại root (Git ignored, mode 0600), gồm thông tin DB và `BOOTSTRAP_OWNER_EMAIL` / `BOOTSTRAP_OWNER_PASSWORD`. Xem file local bằng editor khi cần đăng nhập; không gửi mật khẩu vào chat hoặc commit. `.env.example` chỉ là mẫu cho máy mới, không phải credential đang hoạt động.
+Credential nằm trong `.env` tại root (Git ignored, mode 0600), gồm thông tin DB và `OWNER_EMAIL` / `OWNER_PASSWORD` (chỉ lệnh cấp owner dùng, không gửi vào runtime). Xem file local bằng editor khi cần đăng nhập; không gửi mật khẩu vào chat hoặc commit. `.env.example` chỉ là mẫu cho máy mới, không phải credential đang hoạt động.
 
 Terminal 1, từ root repo:
 
@@ -114,9 +114,9 @@ Cloudflare thực tế về CPU/quota/cold-start/domain/TLS/cookie Secure.
 | GET `/api/v1/admin/access` | Kiểm tra OWNER/STAFF, không chứa dữ liệu sách |
 | GET `/api/v1/admin/owner-access` | Kiểm tra OWNER; STAFF trả 403 |
 
-Không có đăng ký công khai. Owner local được bootstrap từ env, hash BCrypt; khởi động lại không reset mật khẩu và không nâng quyền một tài khoản Staff có sẵn. Không có user management UI ở M1; STAFF được kiểm chứng bằng fixture trong database test.
+Không có đăng ký công khai. Owner cố định được cấp bằng `python3 scripts/deploy/create_owner.py` cho Neon hoặc thêm `--target local` cho dev, hash BCrypt. Backend không tạo account khi startup; lệnh cấp không ghi đè password/nâng quyền hoặc tự tạo owner thứ hai. Không có user management UI ở M1; STAFF được kiểm chứng bằng fixture trong database test.
 
-Session mặc định 30 phút không hoạt động, in-memory (restart backend phải đăng nhập lại). Cookie HttpOnly/SameSite=Lax, Secure chỉ tắt ở profile local để dùng HTTP. Mặc định ngoài profile local là Secure=true và không bootstrap. Không có token quản trị trong localStorage hoặc Angular transfer cache.
+Session mặc định 30 phút không hoạt động, in-memory (restart backend phải đăng nhập lại). Cookie HttpOnly/SameSite=Lax, Secure chỉ tắt ở profile local để dùng HTTP. Mặc định ngoài profile local là Secure=true và không có startup bootstrap. Không có token quản trị trong localStorage hoặc Angular transfer cache.
 
 ## Cấu hình và ranh giới
 

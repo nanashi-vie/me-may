@@ -1,6 +1,11 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật26/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S020-C07 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+Cập nhật27/10/2026 (Asia/Ho_Chi_Minh). Bắt đầu [chỉ mục](README.md), checkpoint S021-C02 cuối [DEV_LOG](DEV_LOG.md). Đối chiếu Git/process thực tế khi tiếp tục.
+
+## Đang làm — owner cố định
+
+- Branch codex/fixed-owner-account từ main6044848; OWNER_ACCOUNT_PLAN đang thực thi.
+- Đã xóa startup bootstrap và tạo1owner cố định trên Neon từ OWNER_EMAIL/PASSWORD user đặt. Backend91total89PASS2liveSkip/Python7PASS, đang review và publish. Phone auth hoãn sauMVP.
 
 ## Bàn giao — setup deploy và Neon migration
 

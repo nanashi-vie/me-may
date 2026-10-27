@@ -25,6 +25,8 @@ Cập nhật: 26/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [OWNER_ACCOUNT_PLAN](OWNER_ACCOUNT_PLAN.md): bỏ startup bootstrap, tạo owner cố định bằng lệnh riêng; phone auth hoãn sau MVP theo user27/10.
+
 - Workers/Render setup và Neon migration26/10 đã chuẩn bị; [DEPLOYMENT](DEPLOYMENT.md) là hướng dẫn hiện hành, VERIFICATION giữ bằng chứng. Chưa deploy services.
 
 - Frontend Workers local26/10 đã kiểm chứng; cách chạy ở [README root](../README.md#frontend-workers-local), runtime/proxy ở [ARCHITECTURE](ARCHITECTURE.md#frontend-workers-local--26102026), bằng chứng ở [VERIFICATION](VERIFICATION.md#frontend-workers-local--26102026).
