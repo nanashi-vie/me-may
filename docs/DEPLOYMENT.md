@@ -1,8 +1,8 @@
 # Deploy test — Workers + Render + Neon
 
 Phạm vi đã chọn26/10/2026: AngularSSR trên Worker `me-may`, Spring Boot Docker
-trên Render `me-may-api`, PostgreSQL Neon đã migrate schema. User tự deploy hai
-service qua dashboard. Local DB_URL/TEST_DB_URL không đổi; không chuyển sách/ảnh dev.
+trên Render `me-may-api`, PostgreSQL Neon đã migrate schema. User đã deploy hai
+service qua dashboard27/10; online smoke đạt, M5 chưa đóng. Local DB_URL/TEST_DB_URL không đổi; không chuyển sách/ảnh dev.
 
 ## Git workflow
 
@@ -25,7 +25,7 @@ preview URLs tắt, không SPA fallback. API origin dự kiến
 `https://me-may-api.onrender.com`; nếu Render cấp tên khác, sửa MEMAY_API_ORIGIN rồi
 redeploy. Backend chưa lên thì route cần dữ liệu có thể503; shell vẫn chạy.
 
-Chưa biết subdomain tài khoản: Worker chỉ nhận URL HTTPS
+URL đã xác minh: `https://me-may.dqhungg8357.workers.dev`. Worker chỉ nhận URL HTTPS
 `me-may.<account>.workers.dev` đúng mẫu, dùng origin đó cho SSR/canonical/enquiry.
 Khi gắn custom domain đặt `MEMAY_SITE_ORIGIN=https://domain-thật` trong config rồi
 redeploy; URL request phải khớp origin. Không wildcard allowed hosts. Forwarded
@@ -147,3 +147,40 @@ release khác hoặc provision Render/Cloudflare resources trong task code này.
 Nguồn đối chiếu: [Cloudflare Builds](https://developers.cloudflare.com/workers/ci-cd/builds/configuration/),
 [Render Docker](https://render.com/docs/docker),
 [Neon pooling](https://neon.com/docs/connect/connection-pooling).
+
+## 5. Kết quả online và bước chốt M5 — 27/10/2026
+
+- [Website](https://me-may.dqhungg8357.workers.dev), [admin](https://me-may.dqhungg8357.workers.dev/admin/dang-nhap), [API health](https://me-may-api.onrender.com/actuator/health).
+- Render Live `e264523`; Worker version `e4f62cc2`,100%Ready, nguồn build main.
+  Health/SSR/privacy/auth smoke đạt; chi tiết và giới hạn ở [VERIFICATION](VERIFICATION.md#m5-online--27102026).
+- Online chưa có sách/ảnh. Chủ đăng nhập bằng owner đã cấp; không provision lại.
+  Nhập10–20cuốn thật, đủ FRONT/BACK/INSIDE, kiểm preview rồi publish; không copy
+  DBdev/fixture vào online. Đánh dấu sold, kiểm URL cũ và wishlist cảnh báo; ẩn
+  listing, kiểm public API/detail/media không còn lộ. Ghi mã/kết quả, không ghi secrets.
+- Sau có dữ liệu, từ `code/frontend` chạy:
+  `node scripts/check-ssr.mjs https://me-may.dqhungg8357.workers.dev`.
+  Với catalogue rỗng, checker bỏ qua detail/OG/media; không dùng PASS đó để đóng gate.
+- Chủ thử Safari iPhone/Chrome Android và Facebook/Zalo in-app: tìm/lọc/back,
+  baảnh, wishlist/reload, chọn nhiều cuốn/copy và dán Zalo; fallback thủ công.
+  Không có cam kết tự gửi hoặc điền sẵn. User27/10 xác nhận chưa thử các bước này.
+
+### Recovery và rollout/rollback
+
+- Đã dump schema public từ Neon direct vào máy operator, restore vào database
+  scratch `me_may_m5_s022_restore` trong container local; không đè dev/test/Neon.
+  Artifact `.local/backups/S022-neon-online/` ignored/private; dump chứa account hash,
+  không chia sẻ/commit. Bản hiện tại0sách/0ảnh không chứng minh khôi phục dữ liệu pilot.
+- Trước mỗi thay đổi schema/release: backup direct bằng `pg_dump -Fc`, file0600,
+  kiểm manifest và restore vào scratch riêng; đối chiếu bảng/auth/audit/media refs
+  và sequence last_value/is_called. Chốt người phụ trách, lịch/retention và bản sao
+  ngoài host; chưa có lịch backup tự động hoặc chính sách recovery được nghiệm thu.
+- Media: giữ3ảnh nguồn theo mã sách ngoài Cloudinary; xác minh restore/upload lại
+  và cập nhật reference bằng workflow được duyệt. Chưa có ảnh online nên chưa drill.
+- Rollout: user merge dev→main, đối chiếu commit Render và Worker, health trước,
+  smoke SSR/auth/public detail/media sau. Lỗi: dừng nhập/sửa, ghi version và lỗi,
+  rollback application về **bản đã kiểm chứng tương thích schema**, rồi smoke lại.
+  Không tự rollback về bản bootstrap cũ6044848. Không sửa Flyway history hoặc
+  restore đè Neon khi chưa có kế hoạch/xác nhận cụ thể; DB migration ưu tiên forward fix.
+- Dashboard có rollback control không chứng minh rollback drill đã đạt. Production
+  VPS/Dokploy, role runtime tối thiểu/rate limit, LCP mobile/cold-start/quotas và
+  recovery DB/media vẫn cần kiểm chứng trước nghiệm thu release theo master plan.

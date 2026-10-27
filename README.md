@@ -1,8 +1,8 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (V1–V5 migrate/validate PASS); backend Render Docker đã chuẩn bị, hai service chưa deploy. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
+M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (V1–V5 migrate/validate PASS); user đã deploy Workers/Render27/10, online health/SSR/privacy/auth smoke đạt; M5 còn pilot/recovery/performance. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
 
-Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPLOYMENT](docs/DEPLOYMENT.md). Neon đã migrate/validate V1–V5; chưa deploy hai service.
+Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPLOYMENT](docs/DEPLOYMENT.md). Neon đã migrate/validate V1–V5; online catalogue hiện0sách/0ảnh, xem [kết quả M5](docs/VERIFICATION.md#m5-online--27102026).
 
 Neon cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway; tooling hiện derive và validate cùng endpoint nếu chưa đặt. Giữ `DB_URL`/`TEST_DB_URL` local. Profile Render đọc các biến JDBC riêng từ file private được sinh; `run-local.sh` vẫn dùng DB local. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
 

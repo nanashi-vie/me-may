@@ -196,3 +196,54 @@ ignored; migration info/history xác nhận version5, không thay gate recovery.
   rerun trảalready_exists PASS, hash/account không bị ghi đè. Không migration/copydev hoặc triển khai phoneauth.
 - Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; postmerge devfe63882 cleanverify91total89PASS2skip/Python7PASS, deliver dev theo quy ước mới;
   chưa test đăng nhập Render thật vì chưa deploy dịch vụ.
+
+## M5 online — 27/10/2026
+
+**Kết luận: online smoke đạt; M5/MVP chưa nghiệm thu đầy đủ.** User đã deploy
+Workers/Render/Neon và xác nhận chưa pilot trên điện thoại/in-app. Không thay
+production VPS/Dokploy hoặc bỏ gate master plan bằng kết quả deploy test.
+
+| Kiểm tra thực tế | Kết quả và giới hạn |
+|---|---|
+| Render deployment | Dashboard Live commit e264523, Docker Free; HTTPS health200/UP; actuator/env anonymous401 |
+| Workers deployment | me-may.dqhungg8357.workers.dev; version e4f62cc2,100%Ready, nguồn main; workers.dev enabled sau refresh dashboard |
+| SSR checker online | `node scripts/check-ssr.mjs https://me-may.dqhungg8357.workers.dev` từ code/frontend PASS: Home/Cách mua initialHTML/title/description/OG/canonical, unknown404, public routes/no-store, missing book/collection404 |
+| Private HTML | /quan-tam và3route admin noindex/no-store; SSR wishlist không chứa dữ liệu thiết bị |
+| Auth qua Worker | anonymous me/admin401; login thiếuCSRF403; owner login200/roleOWNER, me/owner-access/adminbooks200; cookie Secure/HttpOnly/SameSite=Lax; staleCSRF logout403, freshCSRF logout204, me401 |
+| Neon aggregate | 12bảngpublic; Flyway5success/version5;1activeOWNER;0book/0listing/0media/0audit. Chỉ SELECT, không copy dữ liệu dev hoặc provision lại |
+| Browser online | Home sau reload hiển thị catalogue rỗng; wishlist rỗng và cảnh báo không giữ sách/lưu trên thiết bị; Liên hệ có hotline/nhóm Zalo; không mở/gửi tin |
+| Workers dashboard24h |193invocations, CPU Time985µs, Errors0 tại lúc đọc; số tổng quan, không suy thành LCP/CPU mỗi route/quota load PASS |
+| Backup/restore | Direct Neon pg_dump18.4 -Fc --schema=public --no-owner --no-acl; dump private0600 trên máyoperator; restore scratch riêng,12table count/hash và 7sequence last_value/is_called khớp; source trước/sau không đổi |
+
+Backup `.local/backups/S022-neon-online/public-retry.dump`31099bytes; manifest
+`verification.json` ignored/private. Scratch `me_may_m5_s022_restore` giữ để kiểm tra,
+không phục vụ app, không đổi dev/test. Dump public không bao gồm schema neon_auth.
+Kết nối libpq dùng verify-full, trusted CA và channel_binding=require; conninfo có
+TLS. pg_stat_ssl trên backend Neon/MCP trảfalse chỉ mô tả phiên tại backend; không
+dùng trường đó để phủ nhận TLS mà conninfo phía client đã xác nhận. Không in credential hoặc account hash.
+
+Lần restore đầu gặp public schema đã tồn tại (createdb tạo mặc định), dừng trước
+khôi phục bảng. Đổi tên schema mặc định rỗng trong scratch rồi restore đạt; không
+hạ TLS hoặc chạy clean trên DB vận hành. Container thiếu CA bundle, cấp bản CA
+public từ máy để giữ verify-full. Python urllib mặc định bị Cloudflare1010;
+User-Agent thông thường chạy được. /actuator/env trên Worker404 vì không phải
+API proxy; kiểm trực tiếp Render401. Đây là chỉnh probe/môi trường, không sửa code.
+
+**Gate còn mở để đóng M5:**
+
+- Pilot10–20cuốn thật/đủ3ảnh, bộ50–100listing kiểm thử theoDoD; online CRUD/upload,
+  optimistic lock/audit/RBAC STAFF, publish/sold/ẩn/cache, detailSEO/OG/media và
+  wishlist nhiều cuốn chưa kiểm chứng. SSR checker bỏ qua detail/media khi items rỗng.
+- Safari iPhone/Android Chrome/Facebook/Zalo in-app, copy→mở→dán và fallback,
+  owner demo/thời gian nhập liệu chưa thử (user xác nhận).
+- Backup hiện chỉ skeleton/taxonomy/owner; chưa có restore dữ liệu/ảnh pilot,
+  lịch/retention/offhost policy, media recovery hoặc rollback drill. Checklist ở DEPLOYMENT.
+- Chưa lab mobile LCP≤2,5s/trang đại diện, cold-start có kiểm soát, quota/load,
+  role runtime tối thiểu/rate limit và review cấu hình secrets/dashboard đầy đủ.
+  Tab Home cũ báo chưa tải dữ liệu; sau warmup/reload bình thường, chưa quy nguyên nhân.
+- Không restart/deploy/rollback dịch vụ để ép outage; backend-down503 trước đây mới
+  có bằng chứng local. Không coi test online hiện tại là production VPS/Dokploy.
+
+Chỉ sửa tài liệu bàn giao trong phiên này; không đổi application/schema, không chạy
+lại unit/build vì không đổi source. Bằng chứng online mới ở bảng trên; các suite
+local trong checkpoint trước giữ nguyên ngày/code đã kiểm chứng.
