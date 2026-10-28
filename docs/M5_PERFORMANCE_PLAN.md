@@ -46,5 +46,5 @@
 ### Task 3: Verify/release handoff
 
 - [x] Build frontend Workers/backend, browser QA local bìa và wishlist 1 sách.
-- [ ] Cập nhật VERIFICATION/PROGRESS/DEV_LOG, ghi rõ online Lighthouse còn chờ user deploy/đo lại.
-- [ ] Review diff, chỉ commit thay đổi thuộc task lên `dev`; không push `main` hoặc deploy.
+- [x] Cập nhật VERIFICATION/PROGRESS/DEV_LOG, ghi rõ online Lighthouse còn chờ user deploy/đo lại.
+- [x] Review diff, commit/push code và docs lên `dev` tại 60c0404; không push `main` hoặc deploy.

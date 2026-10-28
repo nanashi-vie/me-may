@@ -22,7 +22,7 @@ Cập nhật 28/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Git và môi trường
 
-- `origin/main` đã merge origin fix ở f04adea; performance fix đang local trên `dev`, chưa commit/push ở checkpoint này. User tự merge `dev` sang `main` rồi deploy. `code/frontend/src/index.html` là thay đổi có sẵn của user, giữ riêng.
+- `origin/main` đã merge origin fix ở f04adea; performance fix đã commit/push `dev` ở 60c0404. User tự merge `dev` sang `main` rồi deploy. `code/frontend/src/index.html` là thay đổi có sẵn của user, giữ riêng.
 - M0/M1 local đã duyệt; M2 gate kỹ thuật và M3/M4 local có bằng chứng tại VERIFICATION. ImportCSV/Excel, phoneauth và chỉnh visual bổ sung để sauMVP.
 - DBdev/test/localservices giữ nguyên. .env/.local/dump/cookie không commit; asset public/logo tracked. Markdown≤400dòng trừ DEV_LOG.
 
