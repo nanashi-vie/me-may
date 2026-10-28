@@ -20,6 +20,9 @@ figure {
   background: #f7f5f0;
   padding: 1rem;
   min-width: 0;
+  aspect-ratio: 3 / 4;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 figure:first-child {
   grid-column: 1/-1;
@@ -27,8 +30,8 @@ figure:first-child {
 .gallery img {
   display: block;
   width: 100%;
-  height: auto;
-  max-height: 520px;
+  height: 100%;
+  min-height: 0;
   object-fit: contain;
 }
 figcaption {
@@ -124,9 +127,6 @@ dd {
   .detail-layout {
     grid-template-columns: 1fr;
     gap: 1.5rem;
-  }
-  .gallery img {
-    max-height: 390px;
   }
   .gallery {
     gap: 0.5rem;

@@ -285,18 +285,66 @@ smoke lại singlebook/multibook enquiry sau adminentry và directentry.
 | Form và lỗi | Thiếu1ảnh bị chặnpublish; ảnhsai/hỏng báo lỗi; ngắtmạng/lưuhoặc hếtsession không mất form;2tab sửa cùngcuốn không âmthầm ghiđè |
 | Thiết bị/context còn thiếu | Xác nhận SafariiPhone/ChromeAndroid/Facebook hoặcZaloin-app nào đã thử; mỗicontextchưa thử cần tìm/detail/wishlist/copyfallback/mởZalo. Không yêu cầu gửi tin thử hoặc lặp toàn bộ21cuốn |
 
-Các case user đã báo đạt được giữ; chỉ kiểm nhánh khác chưa có bằng chứng.
+Sau checklist này, user báo đã test xong các case chức năng còn lại; ghi nhận
+xác nhận đó, dù chưa có biên bản từng thiết bị/case để agent tự kiểm chứng.
+Không yêu cầu lặp lại21cuốn khi đang xử lý gate kỹ thuật.
+Các case user đã báo đạt được giữ; chỉ kiểm nhánh khác khi phát sinh lỗi.
 STAFF/RBAC,CSRF và race có testlocal trước đây; case userdesktop/mobile không thay
 cho kiểm bảo mật/lỗi. Bộ50–100listing/load theoDoD vẫn chưa chạy; dùng datasetQA
 riêng khi kiểm tải, không tạo sách bán giả chỉ để đủ số.
 
 ### Gate kỹ thuật agent/operator còn phải hoàn tất
 
-- Bảnbackup27/10 chỉ schema/owner; cần backup/restore bộsách mới kèm mediareference,
-  sourceảnh độc lập, kiểm phục hồi ảnh; lịch/retention/offhost và rollbackdrill.
+- Backup mới28/10 fileCustom0600 đã restore scratch local; user xác nhận đủ12bảng,
+  21sách/63media reference. Nguồn `input/books` đủ63JPG, đọc được, không trùng
+  checksum; manifest `.local/backups/media-input-20261028.sha256` quyền0600
+  verify63/63. `21a.jpg` upload authenticated vào namespace recovery cách ly,
+  metadata bytes/public_id khớp và cleanup xác nhận PASS. Còn lịch/retention,
+  bản sao off-host và rollback drill; dump/ảnh cùng máy chưa đạt backup độc lập.
 - Labmobile LCP≤2,5s/trangđạidiện có cấu hình đo; Rendercoldstart,quota/load;
   roleruntime tốithiểu/rateLimit và releasehạ tầng theo masterplan.
 - Smokeonline sau usermerge/deploy originfix. Không coi localbuild là đã sửa live.
+
+User chạy Lighthouse Mobile warm thủ công28/10, ba lần/route, ảnh tại ignored
+`output/`: Home score91/91/90, LCP0,9/0,9/1,0s, CLS0/0/0 — PASS;
+detail MM-000020 score51/49/52, LCP7,8/10,7/6,6s, CLS0,579 cả ba — FAIL;
+wishlist score99/92/100, LCP0,8/0,9/0,8s, CLS0,008/0,183/0,008 — median
+đạt nhưng có layout-shift outlier. Warm performance gate chưa đạt; chưa đo cold-start.
+Insights do user cung cấp 28/10: detail LCP element là ảnh FRONT; trong một lần
+đo TTFB860ms, image resource load2340ms, render delay30ms; image delivery báo
+ước tính tiết kiệm1313KiB cho trang, ảnh FRONT/BACK khoảng473–474KiB mỗi ảnh
+ở1280×1707 dù hiển thị nhỏ hơn. Layout shift0,579 gắn `main#main.wrap` và
+ảnh chưa giữ chỗ; source detail có width600/height740 khác tỉ lệ ảnh thực,
+CSS width100%/height:auto. Wishlist run CLS0,183 gắn footer; ảnh filmstrip
+cho thấy nội dung localStorage đến sau render ban đầu và footer di chuyển.
+`no-store` gây bfcache diagnostic nhưng là chủ ý bảo vệ trạng thái sách, không
+được bỏ cache policy chỉ để tăng điểm. Chưa có JSON trace nên thời gian LCP
+breakdown ảnh chụp không được suy là toàn bộ LCP7,8s.
+
+### Sửa gate performance — 28/10/2026, chưa đo lại online
+
+Theo lựa chọn của user, không ép camera chụp 4:3: giữ trọn ảnh nguồn trong
+`figure` tỉ lệ3:4 bằng `object-fit: contain`, cho ảnh đầu `fetchpriority=high`.
+Wishlist host dành tối thiểu100svh để footer không nhảy vào vùng nhìn khi danh
+sách từ localStorage hydrate. Frontend test RED2 case; sau sửa95/95 PASS.
+Playwright local viewport390px xem bìa MM-000001 đầy đủ trong khung và wishlist
+1sách không lỗi console; chưa kiểm ảnh ngang/wishlist nhiều sách bằng browser.
+
+API public vẫn xác thực sách `PUBLISHED`/media `ACTIVE`, trả JPEG `no-store`
+qua Worker/Render, nay đọc variant Cloudinary authenticated eager640px nén;
+admin preview1280px giữ nguyên. Khi variant cũ thiếu HTTP404, gateway fallback
+1280px; lỗi mạng/provider khác không gọi lần hai. Upload mới eager cả hai.
+Backend verify93run/0failure/0error/2live skipped; Workers build PASS.
+
+Backfill từ Custom dump mới: 63 ID media ACTIVE trong `memay/online-test`,
+Cloudinary explicit tạo variant640px thành công63/63; checkpoint riêng ignored
+`.local/backups/public-preview-backfill.done` mode0600, chạy lại dry-run báo
+pending0. Mỗi response trả eager bytes, quan sát 46–162KiB, không đổi ảnh gốc,
+DB hoặc public_id. Cloudinary explicit có thể tính quota kể cả chạy lại, vì
+vậy script bỏ qua ID đã checkpoint. Chưa có phép đo LCP/CLS mới trên URL online:
+user phải merge/deploy code rồi chạy Lighthouse Mobile3lần cho detail/wishlist,
+đối chiếu LCP≤2,5s và CLS≤0,1 ở từng lần; riêng bfcache no-store vẫn có thể
+được báo. Sau deploy cần kiểm ảnh ngang/dọc, ẩn/nháp và fallback ảnh cũ.
 
 M5 chưa đóng cho đến khi có bằng chứng các gate còn mở; không thay DoD hoặc ép
 người dùng tự kiểm các gate hạ tầng thay agent/operator.

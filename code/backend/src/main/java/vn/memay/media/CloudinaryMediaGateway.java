@@ -7,6 +7,7 @@ import java.util.*;
 import vn.memay.common.AdminApiException;
 public class CloudinaryMediaGateway implements MediaGateway {
  static final String PREVIEW="a_auto/c_limit,w_1280/fl_strip_profile,f_jpg";
+ static final String PUBLIC_PREVIEW="a_auto/c_limit,w_640/q_auto:good/fl_strip_profile,f_jpg";
  private final Cloudinary cloud;private final Uploader uploader;private final CloudinaryTransport transport;private final String namespace;
  public CloudinaryMediaGateway(String cloudName,String apiKey,String apiSecret,String namespace,CloudinaryTransport transport){
   if(!cloudName.matches("[a-zA-Z0-9_-]+")||!namespace.matches("memay/(dev|test|online-test)"))throw new IllegalArgumentException("Invalid media configuration");
@@ -17,15 +18,20 @@ public class CloudinaryMediaGateway implements MediaGateway {
    }
   });
  }
- static Map<String,Object> uploadOptions(String id){return Map.of("public_id",id,"resource_type","image","type","authenticated","overwrite",false,"unique_filename",false,"eager",List.of(new Transformation<>().rawTransformation(PREVIEW)));}
+ static Map<String,Object> uploadOptions(String id){return Map.of("public_id",id,"resource_type","image","type","authenticated","overwrite",false,"unique_filename",false,"eager",List.of(new Transformation<>().rawTransformation(PREVIEW),new Transformation<>().rawTransformation(PUBLIC_PREVIEW)));}
  static void validatePublicId(String id,String namespace){if(id==null||!id.matches(java.util.regex.Pattern.quote(namespace)+"/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"))throw new IllegalArgumentException("Invalid media key");}
  public UploadedMedia upload(String publicId,byte[] bytes){validatePublicId(publicId,namespace);try{
   Map result=uploader.upload(bytes,uploadOptions(publicId));if(!publicId.equals(result.get("public_id"))||!"authenticated".equals(result.get("type")))throw new IOException();
   return new UploadedMedia((String)result.get("asset_id"),publicId,(String)result.get("format"),((Number)result.get("bytes")).longValue(),((Number)result.get("width")).intValue(),((Number)result.get("height")).intValue());
  }catch(Exception e){throw failure();}}
  public InputStream openPreview(String publicId){validatePublicId(publicId,namespace);try{
-  String url=cloud.url().secure(true).signed(true).resourceType("image").type("authenticated").transformation(new Transformation<>().rawTransformation(PREVIEW)).format("jpg").generate(publicId);return transport.open(URI.create(url));
+  return transport.open(previewUrl(publicId,PREVIEW));
  }catch(Exception e){throw failure();}}
+ public InputStream openPublicPreview(String publicId){validatePublicId(publicId,namespace);try{
+  try{return transport.open(previewUrl(publicId,PUBLIC_PREVIEW));}
+  catch(CloudinaryTransport.MissingVariantException missingVariant){return transport.open(previewUrl(publicId,PREVIEW));}
+ }catch(Exception e){throw failure();}}
+ private URI previewUrl(String publicId,String transform){return URI.create(cloud.url().secure(true).signed(true).resourceType("image").type("authenticated").transformation(new Transformation<>().rawTransformation(transform)).format("jpg").generate(publicId));}
  public DeleteResult delete(String publicId){validatePublicId(publicId,namespace);try{var result=uploader.destroy(publicId,Map.of("resource_type","image","type","authenticated","invalidate",true));return switch(String.valueOf(result.get("result"))){case "ok"->DeleteResult.DELETED;case "not found"->DeleteResult.NOT_FOUND;default->throw new IOException();};}catch(Exception e){throw failure();}}
  private AdminApiException failure(){return new AdminApiException(502,"media_provider_error");}
 }

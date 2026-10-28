@@ -5,5 +5,6 @@ public interface MediaGateway {
  enum DeleteResult {DELETED,NOT_FOUND}
  UploadedMedia upload(String publicId,byte[] bytes);
  InputStream openPreview(String publicId);
+ default InputStream openPublicPreview(String publicId){return openPreview(publicId);}
  DeleteResult delete(String publicId);
 }

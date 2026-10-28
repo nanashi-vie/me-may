@@ -32,6 +32,10 @@ const book = (code = 'MM-000001', patch: Partial<PublicBook> = {}): PublicBook =
   ...patch,
 });
 describe('Wishlist selection and verified multi-book enquiry', () => {
+  it('reserves the mobile viewport before local wishlist data arrives', () => {
+    const { f } = setup();
+    expect(getComputedStyle(f.nativeElement).minHeight).toBe('100svh');
+  });
   const now = signal(Date.parse('2026-10-24T12:00:00Z'));
   function setup(
     codes = ['MM-000001', 'MM-000002', 'MM-000003'],

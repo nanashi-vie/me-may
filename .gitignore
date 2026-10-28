@@ -26,6 +26,7 @@ test-results/
 /input/
 .playwright-cli/
 output/playwright/
+/output/lighthouse/
 coverage/
 *.tsbuildinfo
 

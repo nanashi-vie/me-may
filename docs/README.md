@@ -25,6 +25,8 @@ Cập nhật: 28/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [M5_PERFORMANCE_PLAN](M5_PERFORMANCE_PLAN.md): sửa LCP/CLS detail và wishlist theo thiết kế user duyệt28/10; xóa plan sau khi chuyển đủ bằng chứng vào VERIFICATION/DEV_LOG.
+
 - Owner cố định27/10 đã cấp trên Neon; [DEPLOYMENT — tạo owner](DEPLOYMENT.md#owner-cố-định-tạo-riêng-một-lần) và ARCHITECTURE giữ contract. Phone auth hoãn sauMVP.
 
 - Workers/Render setup và Neon migration26/10 đã chuẩn bị; [DEPLOYMENT](DEPLOYMENT.md) là hướng dẫn hiện hành, VERIFICATION giữ bằng chứng. User đã deploy27/10; online smoke đạt, M5 còn pilot/recovery/performance.

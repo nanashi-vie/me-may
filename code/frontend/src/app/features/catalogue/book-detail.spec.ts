@@ -30,6 +30,29 @@ const a: PublicBook = {
   media: [],
 };
 describe('Detail refresh and public origin', () => {
+  it('reserves a portrait gallery frame while keeping the entire source visible', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({
+              ...a,
+              media: [{ role: 'FRONT', contentPath: '/cover.jpg', alt: 'Bìa sách' }],
+            }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const frame = h.routeNativeElement!.querySelector('figure') as HTMLElement;
+    const image = frame.querySelector('img') as HTMLImageElement;
+    expect(getComputedStyle(frame).aspectRatio).toBe('3/4');
+    expect(getComputedStyle(image).objectFit).toBe('contain');
+  });
   it('late refresh cannot replace a newly opened book', async () => {
     const retry = new Subject<PublicBook>(),
       next = new Subject<PublicBook>();

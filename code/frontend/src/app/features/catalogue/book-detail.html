@@ -14,8 +14,9 @@
             [src]="m.contentPath"
             [alt]="m.alt || b.title"
             [attr.loading]="$first ? 'eager' : 'lazy'"
+            [attr.fetchpriority]="$first ? 'high' : 'low'"
             width="600"
-            height="740"
+            height="800"
           />
           <figcaption>
             {{
