@@ -18,4 +18,12 @@
     "MEMAY_API_ORIGIN": "https://me-may-api.onrender.com",
     "MEMAY_WORKER_NAME": "me-may",
   },
+
+  "observability": {
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true,
+      "head_sampling_rate": 1,
+    },
+  },
 }
