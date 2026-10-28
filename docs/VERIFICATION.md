@@ -341,10 +341,28 @@ Cloudinary explicit tạo variant640px thành công63/63; checkpoint riêng igno
 `.local/backups/public-preview-backfill.done` mode0600, chạy lại dry-run báo
 pending0. Mỗi response trả eager bytes, quan sát 46–162KiB, không đổi ảnh gốc,
 DB hoặc public_id. Cloudinary explicit có thể tính quota kể cả chạy lại, vì
-vậy script bỏ qua ID đã checkpoint. Chưa có phép đo LCP/CLS mới trên URL online:
-user phải merge/deploy code rồi chạy Lighthouse Mobile3lần cho detail/wishlist,
-đối chiếu LCP≤2,5s và CLS≤0,1 ở từng lần; riêng bfcache no-store vẫn có thể
-được báo. Sau deploy cần kiểm ảnh ngang/dọc, ẩn/nháp và fallback ảnh cũ.
+vậy script bỏ qua ID đã checkpoint. Sau deploy cần đo Lighthouse Mobile3lần
+cho detail/wishlist, đối chiếu LCP≤2,5s và CLS≤0,1 ở từng lần; riêng bfcache
+no-store vẫn có thể được báo. Cần kiểm ảnh ngang/dọc, ẩn/nháp và fallback
+ảnh cũ. Kết quả detail mới nằm ở mục kế tiếp; wishlist chưa được gửi.
+
+### Lighthouse JSON sau deploy — 28/10/2026
+
+User cung cấp3 JSON tại `output/lighthouse/`, route detail MM-000019 lúc
+21:34–21:36 theo giờ Việt Nam. Kết quả từng lần: score60/52/62;
+FCP0,89/0,92/0,93s; LCP4,19/5,87/4,23s; CLS1,173/1,173/0,579;
+TTFB root document970/874/872ms. Median LCP4,23s/CLS1,173: gate FAIL.
+LCP element là FRONT `img`, có `loading=eager`/`fetchpriority=high` và hiện
+trong HTML đầu. FRONT138571bytes; BACK125518, INSIDE73935; image load
+duration trong insight khoảng1,21–1,30s. Ba request ảnh200, không có redirect
+document. `logo.jpg`255762bytes, insight đánh dấu gần toàn bộ là dư thừa.
+Layout-shifts báo `main#main.wrap` hai đợt 0,595+0,579 ở hai lần đầu, lần
+ba 0,579; khung ảnh ổn định chưa xử lý hết shift. TTFB lặp lại khoảng0,9s
+trong2phút, không đủ chứng minh cold-start Render; Worker SSR/Render/Neon và
+network đều có thể góp phần. So sánh LCP với số cũ MM-000020 chỉ định hướng,
+không phải A/B cùng route. Chưa đo cold-start sau >15phút idle hoặc so trực
+tiếp Render API với Worker. Cần trace layout shift và đo cùng route trước khi
+thay đổi tiếp; chưa kết luận nâng gói Render sẽ đạt gate.
 
 M5 chưa đóng cho đến khi có bằng chứng các gate còn mở; không thay DoD hoặc ép
 người dùng tự kiểm các gate hạ tầng thay agent/operator.
