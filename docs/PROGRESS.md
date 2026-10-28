@@ -20,6 +20,8 @@ LCP/CLS, mediaWebP+JPEG và2cỡ, chuẩn hóa upload, đánh giá cache), đồ
 bỏ hoàn toàn tạo nháp. Đã chốt chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem;
 user chọn upload ảnh tạm rồi tạo+đăng một lần. Thiết kế tại
 M5_COMPLETION_SPEC đang chờ user duyệt trước khi lập plan/triển khai.
+Bổ sung: chọn/thả nhiều ảnh cùng lúc và kéo đổi thứ tự ba vai trò ảnh;
+có nút sắp xếp tương đương cho bàn phím/mobile, giữ đúng ID khi upload async.
 
 1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; đã pushdev7d88358 và main merge f04adea. Sau deploy smoke lại single/multibook enquiry; chưa xác minh release live. Không tự deploy.
 2. User báo đã hoàn tất checklist chức năng ở VERIFICATION; nếu cần audit chi tiết mới xin kết quả từng thiết bị/case. Trước mắt tập trung gate kỹ thuật theo ưu tiên của user, không lặp pilot21cuốn.

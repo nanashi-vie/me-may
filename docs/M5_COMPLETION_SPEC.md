@@ -13,6 +13,8 @@ MASTER_PLAN sau khi được duyệt. Không thay các gate bảo mật/recovery
   ba ảnh rồi đăng ngay; chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem quản trị.
 - User chọn upload từng ảnh vào vùng tạm rồi tạo+đăng một lần. Tài nguyên
   upload tạm không phải BookCopy/Listing và không có trang public.
+- User bổ sung chọn nhiều ảnh cùng lúc, kéo file vào để upload và kéo đổi
+  thứ tự ảnh khi chọn sai; vẫn giữ đúng ba vai trò FRONT/BACK/INSIDE.
 - Tiếp tục Angular/Spring Boot/Cloudinary authenticated/Workers/Render/Neon.
   Không thêm order/checkout, AI pipeline, thư viện UI hoặc dịch vụ nền mới.
 - Gate performance vẫn mở: JSON sau deploy cho MM-000019 có median
@@ -29,9 +31,11 @@ Chi tiết cỡ ảnh, thời hạn vùng tạm và cách retry dưới đây l�
 
 ## 3. Luồng OWNER mới
 
-1. Mở Thêm sách: nhập thông tin và chọn FRONT/BACK/INSIDE trên cùng form.
-2. Ảnh được kiểm tra, chuẩn hóa và upload riêng; hiện preview/progress/lỗi
-   từng slot. Không tạo BookCopy, Listing, mã sách hoặc audit CREATE lúc này.
+1. Mở Thêm sách: nhập thông tin và chọn nhiều ảnh hoặc kéo file từ máy vào
+   vùng upload trên cùng form; xem preview rồi chỉnh lại thứ tự nếu cần.
+2. Ảnh được kiểm tra, chuẩn hóa và đưa vào hàng đợi upload riêng; hiện
+   preview/progress/lỗi từng ảnh. Không tạo BookCopy, Listing, mã sách hoặc
+   audit CREATE lúc này. Quy tắc chọn/thả/sắp xếp ở mục3.1.
 3. Nút **Đăng sách** chỉ khả dụng khi form hợp lệ, ba ảnh READY và đã xác
    nhận ảnh/tình trạng đúng cuốn thật. Backend kiểm lại toàn bộ điều kiện.
 4. Final request tạo BookCopy+ListingPUBLISHED, gắn đủ ba ảnh, cấp mã/slug,
@@ -46,6 +50,33 @@ Chi tiết cỡ ảnh, thời hạn vùng tạm và cách retry dưới đây l�
 xem/sửa/xóa. STAFF đọc được màn quản trị nhưng mọi endpoint ghi bị403,
 kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
 
+### 3.1. Chọn nhiều ảnh, kéo thả và sắp xếp
+
+- Nút chọn file hỗ trợ chọn1–3ảnh cùng lúc; vùng upload nhận một hoặc nhiều
+  file kéo từ máy vào. Hai cách dùng cùng validation, chuẩn hóa và hàng đợi.
+  Hiện hướng dẫn ngắn, trạng thái đang kéo vào và lỗi ngay tại vùng upload.
+- Ba thẻ ảnh có số thứ tự và nhãn rõ: **1.Bìa trước(FRONT)**,
+  **2.Mặt sau(BACK)**, **3.Trang nội dung(INSIDE)**. Thứ tự ban đầu theo
+  danh sách file nhận được; OWNER xem preview và kéo thẻ để đổi vị trí.
+  Không suy vai trò từ tên file hoặc thứ tự hoàn thành upload.
+- Có nút Đưa lên/Đưa xuống tương đương kéo đổi thứ tự, dùng được bằng bàn
+  phím và trên điện thoại. Sau đổi vị trí cập nhật nhãn/thứ tự và thông báo
+  cho công nghệ hỗ trợ; không bắt buộc thao tác kéo để hoàn tất form.
+- Có thể thêm từng đợt vào vị trí còn trống, xóa hoặc thay một ảnh. Tổng
+  không quá3ảnh; nếu đợt mới vượt số vị trí trống, báo rõ và không nhận
+  đợt đó. Không tự ghi đè ảnh đã chọn; thay ảnh cần thao tác Thay ảnh rõ.
+- Một lần chọn nhiều ảnh vẫn upload từng ảnh theo giới hạn concurrency
+  hiện có; không gộp cả bộ vào một multipart. Lỗi một ảnh không hủy các
+  ảnh hợp lệ; retry/xóa/thay xử lý theo ID ảnh riêng, không theo số vị trí.
+- Cho phép đổi thứ tự trong lúc đang chờ/đang upload. Kết quả async luôn
+  gắn đúng ID ảnh; kéo đổi thứ tự không upload lại ảnh đã READY. Final
+  gửi ánh xạ IDảnh→vai trò theo thứ tự mới nhất và khóa thao tác ảnh trong
+  lúc đang đăng để tránh giao diện đổi sau khi request đã gửi.
+- Trên màn sửa sách ẩn/công khai cũng cho sửa thứ tự: preview thay đổi trên
+  form, chỉ áp dụng sau Lưu thành công. Backend kiểm đúng ba ảnh thuộc
+  cuốn và đổi ánh xạ vai trò trong một transaction có version/audit; không
+  có trạng thái public tạm thiếu ảnh hoặc gán một ảnh vào hai vai trò.
+
 ## 4. Transaction, retry và vòng đời ảnh tạm
 
 - Phiên upload có ID khó đoán, gắn OWNER, ba slot và hạn24giờ. Lưu intent
@@ -55,6 +86,8 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
   Slot thay thế dùng asset mới rồi swap; thất bại giữ slot READY cũ.
 - Final khóa phiên, kiểm owner/hạn/ba slot, validation và confirmation rồi
   tạo aggregate/gắn ảnh/đánh dấu đã dùng trong cùng transaction DB.
+  Kiểm ánh xạ đủ ba vai trò khác nhau và ba IDảnh READY khác nhau thuộc
+  chính phiên đó; không nhận ID từ phiên khác hoặc ảnh đã bị xóa/thay.
 - Phiên final là khóa chống tạo trùng: retry cùng nội dung trả lại sách đã
   tạo; nội dung khác hoặc phiên đã dùng sai mục đích trả409. Không retry
   tạo ra mã/sách thứ hai khi client mất response.
@@ -131,6 +164,12 @@ Kiểm bắt buộc: STAFFghi403; thiếu trường/ảnh bị chặn; phiên �
 hết hạn/cleanup; lỗi từng slot/final; final lặp không tạo trùng; migration
 giữ mã/slug/ảnh/audit và không tựpublish; ẩn/hiện/SOLD/wishlist/FlashSale
 không hồi quy; media từng format/size đúng MIME và không lộ ảnh ẩn.
+
+UploadUI: chọn và thả một/nhiều file, thêm nhiều đợt, vượt3ảnh, file sai/
+quá lớn, lỗi một ảnh và retry; kéo đổi thứ tự trước/trong/sau upload vẫn
+gán đúng FRONT/BACK/INSIDE; đổi thứ tự bằng bàn phím/nút trên mobile;
+không upload lại ảnh READY; sửa thứ tự sách đã đăng áp dụng nguyên tử,
+conflict giữ nội dung form và ảnh public không thay trước khi Lưu thành công.
 
 Performance: LighthouseMobile warm3lần/route Home/detail/wishlist, cùng
 cấu hình và dữ liệu wishlist; mỗi lần LCP≤2,5s/CLS≤0,1. Báo observed và
