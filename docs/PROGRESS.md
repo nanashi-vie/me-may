@@ -17,7 +17,7 @@ Cập nhật 28/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; đã pushdev7d88358 và main merge f04adea. Sau deploy smoke lại single/multibook enquiry; chưa xác minh release live. Không tự deploy.
 2. User báo đã hoàn tất checklist chức năng ở VERIFICATION; nếu cần audit chi tiết mới xin kết quả từng thiết bị/case. Trước mắt tập trung gate kỹ thuật theo ưu tiên của user, không lặp pilot21cuốn.
-3. User đã chép dump DB +63ảnh+manifest lên Drive; cần giữ quyềnRestricted/chốt lịch-retention. Fix performance local: frontend95/95, backend93/93 (2 live skipped), Workersbuild PASS, Cloudinary variant63/63; browser local bìa/wishlist1sách PASS. Sau user merge/deploy, kiểm ảnh ngang và đo Lighthouse Mobile3lần/route; tiếp cold-start/quotas, rollback, rate limit và role runtime tối thiểu.
+3. User đã chép dump DB +63ảnh+manifest lên Drive; cần giữ quyềnRestricted/chốt lịch-retention. Fix performance local: frontend95/95, backend93run/0fail/2live skipped, Workersbuild PASS, Cloudinary variant63/63; browser local bìa/wishlist1sách PASS. Sau user merge/deploy, kiểm ảnh ngang và đo Lighthouse Mobile3lần/route; tiếp cold-start/quotas, rollback, rate limit và role runtime tối thiểu.
 4. Production VPS/Dokploy vẫn là gate hạ tầng riêng trong master plan. Không tự chuyển Render/Neon test thành nghiệm thu production.
 
 ## Git và môi trường

@@ -40,7 +40,7 @@
 **Files:** `code/backend/src/main/java/vn/memay/media/CloudinaryMediaGateway.java`, `MediaGateway.java`, `PublicCatalogueController.java`, tests tương ứng.
 
 - [x] RED: Test gateway fail vì thiếu biến thể 640px và phương thức public; API no-store đã có integration test.
-- [x] GREEN: Variant 640px, fallback chỉ trên HTTP 404, admin preview giữ 1280px; backend suite 93/93 gồm 2 live test skipped.
+- [x] GREEN: Variant 640px, fallback chỉ trên HTTP 404, admin preview giữ 1280px; backend suite 93 run, 0 fail, 2 live test skipped.
 - [x] Backfill 63 ID ACTIVE từ dump Neon mới bằng Cloudinary explicit; checkpoint private 63/63, không thay asset gốc.
 
 ### Task 3: Verify/release handoff
