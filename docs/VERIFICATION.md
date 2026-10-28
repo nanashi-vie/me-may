@@ -196,3 +196,107 @@ ignored; migration info/history xác nhận version5, không thay gate recovery.
   rerun trảalready_exists PASS, hash/account không bị ghi đè. Không migration/copydev hoặc triển khai phoneauth.
 - Render.env đã tạo lại0600 không OWNER/BOOTSTRAP fields. Reviewa1f7acf0Critical/Important/Minor; postmerge devfe63882 cleanverify91total89PASS2skip/Python7PASS, deliver dev theo quy ước mới;
   chưa test đăng nhập Render thật vì chưa deploy dịch vụ.
+
+## M5 online — 27/10/2026
+
+**Kết luận: online smoke đạt; M5/MVP chưa nghiệm thu đầy đủ.** User đã deploy
+Workers/Render/Neon và xác nhận chưa pilot trên điện thoại/in-app. Không thay
+production VPS/Dokploy hoặc bỏ gate master plan bằng kết quả deploy test.
+
+| Kiểm tra thực tế | Kết quả và giới hạn |
+|---|---|
+| Render deployment | Dashboard Live commit e264523, Docker Free; HTTPS health200/UP; actuator/env anonymous401 |
+| Workers deployment | me-may.dqhungg8357.workers.dev; version e4f62cc2,100%Ready, nguồn main; workers.dev enabled sau refresh dashboard |
+| SSR checker online | `node scripts/check-ssr.mjs https://me-may.dqhungg8357.workers.dev` từ code/frontend PASS: Home/Cách mua initialHTML/title/description/OG/canonical, unknown404, public routes/no-store, missing book/collection404 |
+| Private HTML | /quan-tam và3route admin noindex/no-store; SSR wishlist không chứa dữ liệu thiết bị |
+| Auth qua Worker | anonymous me/admin401; login thiếuCSRF403; owner login200/roleOWNER, me/owner-access/adminbooks200; cookie Secure/HttpOnly/SameSite=Lax; staleCSRF logout403, freshCSRF logout204, me401 |
+| Neon aggregate | 12bảngpublic; Flyway5success/version5;1activeOWNER;0book/0listing/0media/0audit. Chỉ SELECT, không copy dữ liệu dev hoặc provision lại |
+| Browser online | Home sau reload hiển thị catalogue rỗng; wishlist rỗng và cảnh báo không giữ sách/lưu trên thiết bị; Liên hệ có hotline/nhóm Zalo; không mở/gửi tin |
+| Workers dashboard24h |193invocations, CPU Time985µs, Errors0 tại lúc đọc; số tổng quan, không suy thành LCP/CPU mỗi route/quota load PASS |
+| Backup/restore | Direct Neon pg_dump18.4 -Fc --schema=public --no-owner --no-acl; dump private0600 trên máyoperator; restore scratch riêng,12table count/hash và 7sequence last_value/is_called khớp; source trước/sau không đổi |
+
+Backup `.local/backups/S022-neon-online/public-retry.dump`31099bytes; manifest
+`verification.json` ignored/private. Scratch `me_may_m5_s022_restore` giữ để kiểm tra,
+không phục vụ app, không đổi dev/test. Dump public không bao gồm schema neon_auth.
+Kết nối libpq dùng verify-full, trusted CA và channel_binding=require; conninfo có
+TLS. pg_stat_ssl trên backend Neon/MCP trảfalse chỉ mô tả phiên tại backend; không
+dùng trường đó để phủ nhận TLS mà conninfo phía client đã xác nhận. Không in credential hoặc account hash.
+
+Lần restore đầu gặp public schema đã tồn tại (createdb tạo mặc định), dừng trước
+khôi phục bảng. Đổi tên schema mặc định rỗng trong scratch rồi restore đạt; không
+hạ TLS hoặc chạy clean trên DB vận hành. Container thiếu CA bundle, cấp bản CA
+public từ máy để giữ verify-full. Python urllib mặc định bị Cloudflare1010;
+User-Agent thông thường chạy được. /actuator/env trên Worker404 vì không phải
+API proxy; kiểm trực tiếp Render401. Đây là chỉnh probe/môi trường, không sửa code.
+
+**Gate còn mở để đóng M5:**
+
+- Pilot10–20cuốn thật/đủ3ảnh, bộ50–100listing kiểm thử theoDoD; online CRUD/upload,
+  optimistic lock/audit/RBAC STAFF, publish/sold/ẩn/cache, detailSEO/OG/media và
+  wishlist nhiều cuốn chưa kiểm chứng. SSR checker bỏ qua detail/media khi items rỗng.
+- Safari iPhone/Android Chrome/Facebook/Zalo in-app, copy→mở→dán và fallback,
+  owner demo/thời gian nhập liệu chưa thử (user xác nhận).
+- Backup hiện chỉ skeleton/taxonomy/owner; chưa có restore dữ liệu/ảnh pilot,
+  lịch/retention/offhost policy, media recovery hoặc rollback drill. Checklist ở DEPLOYMENT.
+- Chưa lab mobile LCP≤2,5s/trang đại diện, cold-start có kiểm soát, quota/load,
+  role runtime tối thiểu/rate limit và review cấu hình secrets/dashboard đầy đủ.
+  Tab Home cũ báo chưa tải dữ liệu; sau warmup/reload bình thường, chưa quy nguyên nhân.
+- Không restart/deploy/rollback dịch vụ để ép outage; backend-down503 trước đây mới
+  có bằng chứng local. Không coi test online hiện tại là production VPS/Dokploy.
+
+Chỉ sửa tài liệu bàn giao trong phiên này; không đổi application/schema, không chạy
+lại unit/build vì không đổi source. Bằng chứng online mới ở bảng trên; các suite
+local trong checkpoint trước giữ nguyên ngày/code đã kiểm chứng.
+
+## M5 pilot và link hỏi sách — 28/10/2026
+
+**Bằng chứng người dùng:** publish20cuốn bằng desktop +1cuốn bằng điện thoại,
+thành công21/21; sao chép/mởZalo, ẩn sách và FlashSale chạy ổn. Ghi nhận pilot
+publish đạt, không yêu cầu nhập lại. Chưa suy thành sold/error/browsermatrix đạt;
+chưa có số đo thời gian nhập/tìm/sửa hoặc xác nhận loại browser/OS.
+
+**Kiểm tra agent:** onlineSSRchecker PASS gồm trang sách thật initialHTML/OG,
+publicimage/no-store và missing404; searchMM-000020 PASS, detail đủ FRONT/BACK/INSIDE,
+cả3ảnh load200/image/no-store. Public API hiện20cuốn,1trang,20AVAILABLE/0SOLD;
+không đọc/sửa dữ liệu admin hoặc suy tổng số sách từ projection public này.
+
+**Lỗi origin đã tái hiện:** fresh `/admin/dang-nhap` (CSR) → RouterLink về Home
+trên Workers làm canonical thành http://localhost:4200/. DirectSSRbook/wishlist
+có TransferState origin đúng; entryCSR không có key, sharedtoken dùng fallback
+localhost. Vì vậy lỗi cũng ảnh hưởng canonical/OG sau clientnavigation.
+
+Sửa `PUBLIC_SITE_ORIGIN`: ưu tiên SSRTransferState như cũ, khi thiếu dùng
+DOCUMENT.location.origin. Regression RED expectedWorkerOrigin receivedlocalhost;
+GREEN fullfrontend93/93(26files), Workersbuild PASS. Review độc lập read-only0finding,
+không chạy lại suite/network trong reviewer. Backend/schema không đổi.
+Browser WorkersQA8792: freshadmin→Home canonical đúng originQA, search/save/select/preparewishlist ra URL đúng127.0.0.1:8792/sach/mm-000020; không gửiZalo hoặc mutateDB.
+Bản sửa chưa deploy: user merge dev→main theo workflow rồi Cloudflare build/deploy;
+smoke lại singlebook/multibook enquiry sau adminentry và directentry.
+
+### Checklist người dùng còn cần xác nhận
+
+| Case | Kết quả cần thấy |
+|---|---|
+| Sau deploy bản sửa | Từ admin về public và mở trực tiếp trang sách/wishlist; nội dung hỏi1/nhiềucuốn chỉ có domainonline, mở link đúng sách |
+| SOLD và wishlist cũ | Lưu sách trước; Owner đánh dấu Hết hàng; mở/reload wishlist: cảnh báo hết hàng, không chọn hỏi mua; detailURL cũ còn tồn tại và CTA tư vấn sách tương đương |
+| Ẩn và wishlist cũ | Sách đã lưu rồi bị ẩn: không lộ thông tin cũ hoặc tiếp tục copy hỏi mua; khôngchỉ kiểm biến mất khỏi catalogue |
+| Wishlist bền trên cùng browser | Lưu2–3cuốn, xóa1, đóng/mở lại hoặc reload; còn đúng danh sách, chọnsubset và nội dung chỉ gồm cuốnđượcchọn/mã/giá/URL mới nhất |
+| Tìm/lọc/quay lại | Tên/mã, từngnhómtuổi, thểloại/binding, sort và backdetail giữfilters; next/prev khi có>20public. Hiện20 nên online chưa chạy nhánh trang2 |
+| Form và lỗi | Thiếu1ảnh bị chặnpublish; ảnhsai/hỏng báo lỗi; ngắtmạng/lưuhoặc hếtsession không mất form;2tab sửa cùngcuốn không âmthầm ghiđè |
+| Thiết bị/context còn thiếu | Xác nhận SafariiPhone/ChromeAndroid/Facebook hoặcZaloin-app nào đã thử; mỗicontextchưa thử cần tìm/detail/wishlist/copyfallback/mởZalo. Không yêu cầu gửi tin thử hoặc lặp toàn bộ21cuốn |
+
+Các case user đã báo đạt được giữ; chỉ kiểm nhánh khác chưa có bằng chứng.
+STAFF/RBAC,CSRF và race có testlocal trước đây; case userdesktop/mobile không thay
+cho kiểm bảo mật/lỗi. Bộ50–100listing/load theoDoD vẫn chưa chạy; dùng datasetQA
+riêng khi kiểm tải, không tạo sách bán giả chỉ để đủ số.
+
+### Gate kỹ thuật agent/operator còn phải hoàn tất
+
+- Bảnbackup27/10 chỉ schema/owner; cần backup/restore bộsách mới kèm mediareference,
+  sourceảnh độc lập, kiểm phục hồi ảnh; lịch/retention/offhost và rollbackdrill.
+- Labmobile LCP≤2,5s/trangđạidiện có cấu hình đo; Rendercoldstart,quota/load;
+  roleruntime tốithiểu/rateLimit và releasehạ tầng theo masterplan.
+- Smokeonline sau usermerge/deploy originfix. Không coi localbuild là đã sửa live.
+
+M5 chưa đóng cho đến khi có bằng chứng các gate còn mở; không thay DoD hoặc ép
+người dùng tự kiểm các gate hạ tầng thay agent/operator.

@@ -1,6 +1,6 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật 25/10/2026 | M3/M4 local được người dùng xác nhận đã test; chuẩn bị làm rõ M5**
+**Bản hiện hành | Cập nhật 28/10/2026 | User publish21/21; M5 còn originfix, case biên và recovery/performance**
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
@@ -8,7 +8,7 @@
 
 > **Điều chỉnh M1 đã được duyệt ngày 22/10/2026:** triển khai nền tảng local, dùng PostgreSQL container hiện có. Docker hóa ứng dụng, CI/CD và deploy Cloudflare/VPS chuyển sang giai đoạn sau. Chi tiết thực thi và trạng thái nằm ở [báo cáo kiểm tra M1](VERIFICATION.md) và [PROGRESS](PROGRESS.md).
 
-> **Điều chỉnh trước M5 ngày25/10/2026:** M3/M4 đã được user test và publish GitHub; chỉnh sửa còn lại để sau MVP. User **chốt Cloudflare Workers cho frontend để giữ SSR**, thay lựa chọn Pages trước đó, và cung cấp Neon qua .env. Ngày26/10 user chọn Render me-may-api; Docker/Workers config đã chuẩn bị, Neon V1–V5 migrate/validate đạt. Chưa deploy services; chưa thuê VPS. Production VPS/Dokploy và gate SEO/security/backup/restore giữ riêng, không coi test miễn phí là production.
+> **Điều chỉnh trước M5 ngày25/10/2026:** M3/M4 đã được user test và publish GitHub; chỉnh sửa còn lại để sau MVP. User **chốt Cloudflare Workers cho frontend để giữ SSR**, thay lựa chọn Pages trước đó, và cung cấp Neon qua .env. Ngày26/10 user chọn Render me-may-api; Docker/Workers config đã chuẩn bị, Neon V1–V5 migrate/validate đạt. Ngày27/10 user đã deploy; kiểm chứng health/SSR/privacy/auth online đạt. Ngày28/10 user xác nhận publish20desktop+1mobile thành công21/21, copy/mởZalo/ẩn/FlashSale ổn; agent kiểm online detail3ảnh/OG đạt. Originfix enquiry/canonical đang bàn giao dev; checklistcasebiên ở VERIFICATION. M5 chưa đóng; chưa thuê VPS. Production VPS/Dokploy và gate SEO/security/backup/restore giữ riêng, không coi test miễn phí là production.
 
 > **Baseline trước M2 được duyệt ngày 22/10/2026:** MVP nhập thủ công, lọc tuổi/thể loại, mỗi cuốn một thể loại, Picture book bắt buộc Paperback hoặc Hardcover, ba ảnh thật, giá và mức đọc tham khảo, liên hệ Zalo theo khả dụng. Import CSV/Excel là bước ngay sau MVP, không phải điều kiện ra mắt. Quyết định này thay thế các mặc định M0 tương ứng; chưa triển khai code M2.
 
@@ -319,7 +319,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
-Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; chờ chủ pilot10–20 cuốn thật, M3 local đã được duyệt độc lập; Người dùng đã duyệt bắt đầu M3 local23/10; pilot M2 hiện6 cuốn vẫn mở. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
+Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; user28/10 xác nhận publish21/21; ownerdemo/sold/error và sốđo pilot chưa đủ, M3 local đã được duyệt độc lập; Người dùng đã duyệt bắt đầu M3 local23/10; pilot publish M2 đã đủ số lượng; xem case chưa xác nhận ở VERIFICATION28/10. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
 
 ## 9. Definition of Done — nghiệm thu MVP
 
@@ -365,7 +365,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
 2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá tham khảo, ba ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
-4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; deployed gate còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
+4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; online smoke27/10 đạt, pilot/recovery/performance còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
 6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
 7. **Sau đó** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).

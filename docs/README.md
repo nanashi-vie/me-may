@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 26/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
+Cập nhật: 28/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
@@ -19,19 +19,19 @@ Cập nhật: 26/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
 | Tổ chức code hoặc khảo sát nguồn cũ | [ARCHITECTURE — layout](ARCHITECTURE.md#layout-dự-kiến), [trách nhiệm](ARCHITECTURE.md#trách-nhiệm-và-phụ-thuộc); chỉ đọc [khảo sát Web Shop](ARCHITECTURE.md#khảo-sát-khả-năng-tận-dụng-web-shop-cũ) khi cần tái sử dụng |
 | Staging/deploy, SEO/OG, bảo mật hạ tầng, backup/restore | [ARCHITECTURE — hạ tầng triển khai](ARCHITECTURE.md#hạ-tầng-triển-khai), [MASTER_PLAN — nghiệm thu MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp), [VERIFICATION — chưa kiểm chứng](VERIFICATION.md#chưa-kiểm-chứng--để-sau) |
-| Deploy Workers/Render và migrate Neon | [DEPLOYMENT — dashboard/env/commands](DEPLOYMENT.md), [VERIFICATION](VERIFICATION.md); source setup đã kiểm chứng, user tự deploy services |
-| Chuẩn bị M5 khi chưa có VPS | [MASTER_PLAN — Workers/Neon đã chốt](MASTER_PLAN.md), [ARCHITECTURE — SSR/runtime/Neon env](ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026); Workers/Render config và Neon V1–V5 đã chuẩn bị/kiểm chứng; chưa deploy services, còn online SSR/auth/restore gate |
+| Deploy Workers/Render và migrate Neon | [DEPLOYMENT — dashboard/env/commands](DEPLOYMENT.md), [VERIFICATION](VERIFICATION.md); source và online smoke đã kiểm chứng; xem gate còn mở trước nghiệm thu |
+| Kiểm chứng M5 online và gate còn mở | [MASTER_PLAN — Workers/Neon đã chốt](MASTER_PLAN.md), [ARCHITECTURE — SSR/runtime/Neon env](ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026); Workers/Render đã deploy27/10; SSR/auth/privacy và detail3ảnh thật đạt; userpublish21/21; xem checklist28/10 về origin/sold/wishlist/error/browser/recovery/performance |
 | Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
 
 ## Spec và plan đang thực thi
 
 - Owner cố định27/10 đã cấp trên Neon; [DEPLOYMENT — tạo owner](DEPLOYMENT.md#owner-cố-định-tạo-riêng-một-lần) và ARCHITECTURE giữ contract. Phone auth hoãn sauMVP.
 
-- Workers/Render setup và Neon migration26/10 đã chuẩn bị; [DEPLOYMENT](DEPLOYMENT.md) là hướng dẫn hiện hành, VERIFICATION giữ bằng chứng. Chưa deploy services.
+- Workers/Render setup và Neon migration26/10 đã chuẩn bị; [DEPLOYMENT](DEPLOYMENT.md) là hướng dẫn hiện hành, VERIFICATION giữ bằng chứng. User đã deploy27/10; online smoke đạt, M5 còn pilot/recovery/performance.
 
 - Frontend Workers local26/10 đã kiểm chứng; cách chạy ở [README root](../README.md#frontend-workers-local), runtime/proxy ở [ARCHITECTURE](ARCHITECTURE.md#frontend-workers-local--26102026), bằng chứng ở [VERIFICATION](VERIFICATION.md#frontend-workers-local--26102026).
 
-- M3/M4 local user xác nhận đã test xong25/10 và yêu cầu publish GitHub. Contract/UX/bằng chứng đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa. Frontend Workers local đã hoàn tất26/10; phần online M5 chưa triển khai.
+- M3/M4 local user xác nhận đã test xong25/10 và yêu cầu publish GitHub. Contract/UX/bằng chứng đã gộp vào tài liệu chuẩn, plan hết vai trò đã xóa. Frontend Workers local đã hoàn tất26/10; online M5 đã smoke-test27/10; chưa nghiệm thu đầy đủ.
 
 - [M2_SPEC](M2_SPEC.md): **đã được người dùng duyệt**, gồm contract dữ liệu/API/quyền/media và gate nghiệm thu local; không thay bằng fixture/wireframe cũ.
 - [M2_PLAN](M2_PLAN.md): **đã duyệt, thực thi tuần tự**, 11 task theo phụ thuộc; task1–10 xong, task11 còn pilot chủ tiệm; đọc cả spec và task liên quan. Tiến độ task/checkpoint ở PROGRESS/DEV_LOG.
@@ -46,7 +46,7 @@ Cập nhật: 26/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | [DESIGN](DESIGN.md) | Sitemap, quyền, Home và UX public/admin theo baseline trước M2 |
 | [DATA](DATA.md) | Field, phân loại/mức đọc, giới hạn fixture cũ và quy trình pilot thật |
 | [ARCHITECTURE](ARCHITECTURE.md) | Tổ chức code, chi tiết hạ tầng và bằng chứng khảo sát nguồn cũ |
-| [VERIFICATION](VERIFICATION.md) | Kiểm tra ứng dụng và giới hạn; chưa phải nghiệm thu production |
+| [VERIFICATION](VERIFICATION.md) | Kiểm tra local/online và giới hạn; M5 chưa chốt, chưa nghiệm thu production |
 | [DEV_LOG](DEV_LOG.md) | Checkpoint lịch sử nối tiếp; đọc theo mục liên quan, được miễn trần 400 dòng |
 
 ## Cập nhật và tài nguyên
