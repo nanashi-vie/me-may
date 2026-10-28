@@ -25,6 +25,8 @@ Cập nhật: 28/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đề xuất chờ duyệt**, mở rộng tối ưu media/LCP/CLS và bỏ tạo nháp, OWNER ghi/STAFF chỉ xem; chưa thay baseline cho đến khi user duyệt.
+
 - [M5_PERFORMANCE_PLAN](M5_PERFORMANCE_PLAN.md): sửa LCP/CLS detail và wishlist theo thiết kế user duyệt28/10; xóa plan sau khi chuyển đủ bằng chứng vào VERIFICATION/DEV_LOG.
 
 - Owner cố định27/10 đã cấp trên Neon; [DEPLOYMENT — tạo owner](DEPLOYMENT.md#owner-cố-định-tạo-riêng-một-lần) và ARCHITECTURE giữ contract. Phone auth hoãn sauMVP.

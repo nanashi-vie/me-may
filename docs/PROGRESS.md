@@ -15,6 +15,12 @@ Cập nhật 28/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Việc cần làm để đóng M5
 
+Đầu việc mới28/10: user yêu cầu tối ưu theo bảng P0/P1/P2 (logoWebP,
+LCP/CLS, mediaWebP+JPEG và2cỡ, chuẩn hóa upload, đánh giá cache), đồng thời
+bỏ hoàn toàn tạo nháp. Đã chốt chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem;
+user chọn upload ảnh tạm rồi tạo+đăng một lần. Thiết kế tại
+M5_COMPLETION_SPEC đang chờ user duyệt trước khi lập plan/triển khai.
+
 1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; đã pushdev7d88358 và main merge f04adea. Sau deploy smoke lại single/multibook enquiry; chưa xác minh release live. Không tự deploy.
 2. User báo đã hoàn tất checklist chức năng ở VERIFICATION; nếu cần audit chi tiết mới xin kết quả từng thiết bị/case. Trước mắt tập trung gate kỹ thuật theo ưu tiên của user, không lặp pilot21cuốn.
 3. User đã chép dump DB +63ảnh+manifest lên Drive; cần giữ quyềnRestricted/chốt lịch-retention. Fix performance đã lên online cho MM-000019 (HTML có fetchpriority=high, ảnh FRONT~139KB); báo cáo vẫn FAIL do LCP và CLS. Cần xác định layout shift của `main#main.wrap`, đo lại cùng mã MM-000020 và wishlist; tách warm TTFB khỏi cold-start Render bằng phép đo riêng trước khi cân nhắc nâng gói. Sau đó tiếp cold-start/quotas, rollback, rate limit và role runtime tối thiểu.
