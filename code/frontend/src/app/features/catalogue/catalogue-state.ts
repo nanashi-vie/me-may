@@ -40,7 +40,7 @@ export function bookTitle(b: PublicBook) {
     .join(' | ');
 }
 export function enquiryText(b: PublicBook, url: string) {
-  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}\nGiá tham khảo: ${formatPrice(b.priceVnd)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể. Liên hệ không giữ sách.`;
+  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}\nGiá tham khảo: ${formatPrice(b.priceVnd)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
 }
 export function countdown(ms: number) {
   const seconds = Math.max(0, Math.floor(ms / 1000));
