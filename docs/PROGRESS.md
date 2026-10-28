@@ -15,14 +15,14 @@ Cập nhật 28/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Việc cần làm để đóng M5
 
-1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; chuẩn bị publishdev; user mergemain/deploy rồi smoke lại single/multibook enquiry. Không tự deploy.
+1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; đã pushdev7d88358; user mergemain/deploy rồi smoke lại single/multibook enquiry. Không tự deploy.
 2. Các case người dùng còn cần xác nhận ở VERIFICATION/checklist28/10: sold→wishlistcũ, reload/addremove, tìm/lọc/back/phântrang, lỗi nhập/ảnh/network/phiên/conflict và browsermatrix. Copy/mởZalo đã usertest đạt, chỉ thử tiếp contextthiếtbị còn thiếu; không tự gửi tin.
 3. Hoàn tất recovery DB/media, chính sách backup ngoài host và rollback; đo lab mobile LCP≤2,5s/trang đại diện, cold-start/quotas; kiểm tra rate limit và role runtime tối thiểu trước release.
 4. Production VPS/Dokploy vẫn là gate hạ tầng riêng trong master plan. Không tự chuyển Render/Neon test thành nghiệm thu production.
 
 ## Git và môi trường
 
-- Phiên28/10 sửa origin trên `dev`, user tự merge sang `main`. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
+- Bản sửa origin và checklist28/10 đã push `dev` tại7d88358; user tự merge sang `main` rồi Cloudflare deploy. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
 - M0/M1 local đã duyệt; M2 gate kỹ thuật và M3/M4 local có bằng chứng tại VERIFICATION. ImportCSV/Excel, phoneauth và chỉnh visual bổ sung để sauMVP.
 - DBdev/test/localservices giữ nguyên. .env/.local/dump/cookie không commit; asset public/logo tracked. Markdown≤400dòng trừ DEV_LOG.
 
