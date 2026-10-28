@@ -1,28 +1,28 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 27/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S022 cuối [DEV_LOG](DEV_LOG.md); đối chiếu môi trường khi tiếp tục.
+Cập nhật 28/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S023 cuối [DEV_LOG](DEV_LOG.md); đối chiếu môi trường khi tiếp tục.
 
 ## M5 online — đang nghiệm thu, chưa chốt MVP
 
 - User đã deploy Workers/Render/Neon. Website: https://me-may.dqhungg8357.workers.dev; API: https://me-may-api.onrender.com. Render dashboard xác nhận Live commit e264523 (main đã merge dev).
-- Đã kiểm chứng online: health200/UP, initial HTML Home/Cách mua + metadata/canonical, public routes/no-store, missing404, wishlist/admin noindex/no-store. Script SSR PASS; nhánh detail/media thật không chạy vì catalogue rỗng.
+- Online checker28/10 PASS gồm detailinitialHTML/OG/publicimage/no-store/404/privacy; kiểm thêm MM-000020 đủ3ảnh FRONT/BACK/INSIDE và searchmã PASS. Public hiện20cuốn/1trang,20AVAILABLE/0SOLD; không suy thành tổng số sách trong admin.
 - OWNER đăng nhập qua Worker200, giữ phiên/quyền owner; cookie Secure/HttpOnly/SameSite=Lax, thiếu/stale CSRF403, logout204 rồi me401. API/admin anonymous401, Render actuator/env401. Không sửa tài khoản hoặc sách.
-- Neon public: Flyway5/version5, 1activeOWNER, 0book/0listing/0media/0audit. Không copy dữ liệu local. Browser xác minh Home rỗng, wishlist rỗng, link Zalo hotline/nhóm có cấu hình.
-- User xác nhận **chưa thử online trên điện thoại/in-app hoặc pilot10–20 cuốn thật**. M2 pilot vẫn mở; giữ M2_SPEC/M2_PLAN. M3/M4 local đã được user nghiệm thu trước đó.
+- Neon snapshot27/10 có schemaV5/1owner, chưa sách; user đã nhập sách online28/10. Không copydev, không sửa data thật trong QA. Snapshotbackup27/10 chỉ skeleton, chưa backup bộ21sách mới.
+- User28/10 xác nhận **publish20desktop+1mobile thành công21/21**, mởZalo/copy/ẩn/FlashSale ổn. Pilot publish đã đạt sốlượng; chưa xác nhận sold/stalewishlist, error/conflict, thiếtbị/browsermatrix hoặc thời gian nhập/sửa. Giữ M2_SPEC/M2_PLAN khi chưa chuyển đủ gate; không yêu cầu nhập lại21cuốn.
 - Cloudflare dashboard24h tại lúc đọc:193invocations, CPU Time985µs, Errors0; đây là số tổng quan, không phải đo tải/LCP/CPU theo route. Cold-start Render chưa đo có kiểm soát; tab cũ từng báo chưa tải dữ liệu, reload sau warmup chạy bình thường.
 
 - Backup Neon public vào file0600 trên máyoperator và restore scratch riêng đạt:12bảng count/hash,7sequence last_value/is_called khớp, source không đổi. Chưa có sách/ảnh hoặc policy backup định kỳ; xem giới hạn tại VERIFICATION.
 
 ## Việc cần làm để đóng M5
 
-1. Chủ tự nhập/publish10–20 cuốn thật với đủ3ảnh; chạy lại online SSR/detail/OG/media, tìm/lọc, sold/ẩn/cache và wishlist/enquiry. Bộ50–100listing kiểm thử theo DoD chưa có; không bịa dữ liệu bán thật.
-2. Thử iPhone Safari/Android Chrome/Facebook/Zalo in-app và copy→mở Zalo→dán; agent không tự gửi tin. Ghi thiết bị/kết quả và thời gian owner nhập/sửa.
+1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; chuẩn bị publishdev; user mergemain/deploy rồi smoke lại single/multibook enquiry. Không tự deploy.
+2. Các case người dùng còn cần xác nhận ở VERIFICATION/checklist28/10: sold→wishlistcũ, reload/addremove, tìm/lọc/back/phântrang, lỗi nhập/ảnh/network/phiên/conflict và browsermatrix. Copy/mởZalo đã usertest đạt, chỉ thử tiếp contextthiếtbị còn thiếu; không tự gửi tin.
 3. Hoàn tất recovery DB/media, chính sách backup ngoài host và rollback; đo lab mobile LCP≤2,5s/trang đại diện, cold-start/quotas; kiểm tra rate limit và role runtime tối thiểu trước release.
 4. Production VPS/Dokploy vẫn là gate hạ tầng riêng trong master plan. Không tự chuyển Render/Neon test thành nghiệm thu production.
 
 ## Git và môi trường
 
-- Kết quả kiểm chứng đã commit/push `dev` tại8eda99a; user tự merge sang `main`. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
+- Phiên28/10 sửa origin trên `dev`, user tự merge sang `main`. Không pushmain hoặc redeploy dịch vụ trong phiên kiểm tra.
 - M0/M1 local đã duyệt; M2 gate kỹ thuật và M3/M4 local có bằng chứng tại VERIFICATION. ImportCSV/Excel, phoneauth và chỉnh visual bổ sung để sauMVP.
 - DBdev/test/localservices giữ nguyên. .env/.local/dump/cookie không commit; asset public/logo tracked. Markdown≤400dòng trừ DEV_LOG.
 

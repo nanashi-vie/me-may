@@ -1,8 +1,8 @@
 # Mẹ Mây — Sách ngoại văn cho bé
 
-M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (V1–V5 migrate/validate PASS); user đã deploy Workers/Render27/10, online health/SSR/privacy/auth smoke đạt; M5 còn pilot/recovery/performance. Spring Boot4.1.1/Java21/Cloudinary giữ. Pilot M2 còn10–20cuốn; chỉnh sửa bổ sung và importer sau MVP.
+M3/M4 local được người dùng xác nhận test xong25/10/2026 và publish main. Trước M5 user chốt Cloudflare Workers cho Angular SSR, cung cấp Neon (V1–V5 migrate/validate PASS); user đã deploy Workers/Render27/10, online health/SSR/privacy/auth smoke đạt; M5 còn pilot/recovery/performance. Spring Boot4.1.1/Java21/Cloudinary giữ. User28/10 xác nhận publish21/21(20desktop+1mobile); casebiên/recovery/performance còn mở; chỉnh sửa bổ sung và importer sau MVP.
 
-Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPLOYMENT](docs/DEPLOYMENT.md). Neon đã migrate/validate V1–V5; online catalogue hiện0sách/0ảnh, xem [kết quả M5](docs/VERIFICATION.md#m5-online--27102026).
+Hướng dẫn deploy Workers/Render và migration đã chuẩn bị trong [DEPLOYMENT](docs/DEPLOYMENT.md). Neon đã migrate/validate V1–V5; online28/10 đã có20cuốn public, detail3ảnh/OG đạt; xem [checklist M5 hiện hành](docs/VERIFICATION.md#m5-pilot-và-link-hỏi-sách--28102026).
 
 Neon cho M5: `NEON_DATABASE_URL` trong root `.env` là pooled URL; `NEON_DATABASE_URL_UNPOOLED` dành direct URL cho Flyway; tooling hiện derive và validate cùng endpoint nếu chưa đặt. Giữ `DB_URL`/`TEST_DB_URL` local. Profile Render đọc các biến JDBC riêng từ file private được sinh; `run-local.sh` vẫn dùng DB local. Chi tiết trong [ARCHITECTURE](docs/ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026).
 
@@ -63,7 +63,7 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 - Mở preview nội dung đã lưu; Owner đối chiếu đúng mã, ba ảnh và tình trạng trước xuất bản. Còn hàng/Hết hàng độc lập Nháp/Công khai/Ẩn. Khôi phục sách ẩn về nháp để chỉnh lại.
 - Staff chỉ sửa nháp; Owner quản trị trạng thái và bộ sưu tập. Không có UI quản lý tài khoản; không tạo tài khoản demo trong dữ liệu vận hành.
 - Khi xung đột hoặc hết phiên, nội dung chưa lưu được giữ trong tab. Có đăng nhập lại ngay trên editor. Không tự gửi lại yêu cầu tạo nếu chưa rõ kết quả; mở danh sách ở tab khác để kiểm tra. Reload/đóng tab có thể mất nội dung chưa lưu.
-- Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. Chưa xác nhận pilot thì chưa nghiệm thu M2 hoặc chuyển M3.
+- Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. User28/10 đã xác nhận publish21/21; chưa có xác nhận đầy đủ case sold/error và thời gian nhập/tìm/sửa.
 
 Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
 

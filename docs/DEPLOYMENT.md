@@ -184,3 +184,14 @@ Nguồn đối chiếu: [Cloudflare Builds](https://developers.cloudflare.com/wo
 - Dashboard có rollback control không chứng minh rollback drill đã đạt. Production
   VPS/Dokploy, role runtime tối thiểu/rate limit, LCP mobile/cold-start/quotas và
   recovery DB/media vẫn cần kiểm chứng trước nghiệm thu release theo master plan.
+
+## 6. Pilot đã chạy và lỗi origin — 28/10/2026
+
+User xác nhận publish21/21(20desktop+1mobile),copy/mởZalo/ẩn/FlashSale ổn.
+OnlineSSR/detail/3ảnh thật đạt; checklist còn thiếu tại
+[VERIFICATION28/10](VERIFICATION.md#m5-pilot-và-link-hỏi-sách--28102026).
+Originfix dùng documentlocation khi entryadminCSR không có SSRTransferState;
+user merge dev→main rồi Workersbuild/deploy. Saudeploy thử entryadmin→public và
+entrypublictrực tiếp, enquiry1/nhiềucuốn/canonical dùng đúng domainWorkers/custom.
+Hardreload một lần để bỏ appbundle cũ; đây chỉ là smoke saufix, không phải cách né bug.
+Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không đổi.

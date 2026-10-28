@@ -1,9 +1,11 @@
 import { vi } from 'vitest';
+import { DOCUMENT } from '@angular/common';
+import { TransferState } from '@angular/core';
 import { PublicClock } from './public-clock';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
-import { PublicApi } from './public-api';
+import { PublicApi, PUBLIC_SITE_ORIGIN, PUBLIC_SITE_STATE } from './public-api';
 describe('Public catalogue HTTP', () => {
   it('looks up ordered book codes without credentials or transfer cache', () => {
     TestBed.configureTestingModule({
@@ -66,4 +68,24 @@ describe('Server time on direct entry', () => {
       vi.restoreAllMocks();
       http.verify();
     });
+});
+
+describe('Public links after client-rendered admin entry', () => {
+  it('uses the browser origin when the entry page has no SSR transfer state', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: TransferState, useValue: new TransferState() },
+        {
+          provide: DOCUMENT,
+          useValue: { location: new URL('https://me-may.dqhungg8357.workers.dev/admin') },
+        },
+      ],
+    });
+    expect(TestBed.inject(PUBLIC_SITE_ORIGIN)).toBe('https://me-may.dqhungg8357.workers.dev');
+  });
+
+  it('keeps the transferred origin when SSR supplied one', () => {
+    TestBed.inject(TransferState).set(PUBLIC_SITE_STATE, 'https://books.example');
+    expect(TestBed.inject(PUBLIC_SITE_ORIGIN)).toBe('https://books.example');
+  });
 });

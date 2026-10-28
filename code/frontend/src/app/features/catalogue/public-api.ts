@@ -1,3 +1,4 @@
+import { DOCUMENT } from '@angular/common';
 import { inject, Injectable, InjectionToken, TransferState, makeStateKey } from '@angular/core';
 import { Observable, tap, map } from 'rxjs';
 import { PublicClock } from './public-clock';
@@ -19,7 +20,11 @@ export const PUBLIC_API_ORIGIN = new InjectionToken<string>('Public backend orig
 export const PUBLIC_SITE_STATE = makeStateKey<string>('memay-public-site-origin');
 export const PUBLIC_SITE_ORIGIN = new InjectionToken<string>('Public site origin', {
   providedIn: 'root',
-  factory: () => inject(TransferState).get(PUBLIC_SITE_STATE, 'http://localhost:4200'),
+  factory: () =>
+    inject(TransferState).get(
+      PUBLIC_SITE_STATE,
+      inject(DOCUMENT).location?.origin ?? 'http://localhost:4200',
+    ),
 });
 @Injectable({ providedIn: 'root' })
 export class PublicApi {

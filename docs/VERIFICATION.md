@@ -247,3 +247,56 @@ API proxy; kiểm trực tiếp Render401. Đây là chỉnh probe/môi trườn
 Chỉ sửa tài liệu bàn giao trong phiên này; không đổi application/schema, không chạy
 lại unit/build vì không đổi source. Bằng chứng online mới ở bảng trên; các suite
 local trong checkpoint trước giữ nguyên ngày/code đã kiểm chứng.
+
+## M5 pilot và link hỏi sách — 28/10/2026
+
+**Bằng chứng người dùng:** publish20cuốn bằng desktop +1cuốn bằng điện thoại,
+thành công21/21; sao chép/mởZalo, ẩn sách và FlashSale chạy ổn. Ghi nhận pilot
+publish đạt, không yêu cầu nhập lại. Chưa suy thành sold/error/browsermatrix đạt;
+chưa có số đo thời gian nhập/tìm/sửa hoặc xác nhận loại browser/OS.
+
+**Kiểm tra agent:** onlineSSRchecker PASS gồm trang sách thật initialHTML/OG,
+publicimage/no-store và missing404; searchMM-000020 PASS, detail đủ FRONT/BACK/INSIDE,
+cả3ảnh load200/image/no-store. Public API hiện20cuốn,1trang,20AVAILABLE/0SOLD;
+không đọc/sửa dữ liệu admin hoặc suy tổng số sách từ projection public này.
+
+**Lỗi origin đã tái hiện:** fresh `/admin/dang-nhap` (CSR) → RouterLink về Home
+trên Workers làm canonical thành http://localhost:4200/. DirectSSRbook/wishlist
+có TransferState origin đúng; entryCSR không có key, sharedtoken dùng fallback
+localhost. Vì vậy lỗi cũng ảnh hưởng canonical/OG sau clientnavigation.
+
+Sửa `PUBLIC_SITE_ORIGIN`: ưu tiên SSRTransferState như cũ, khi thiếu dùng
+DOCUMENT.location.origin. Regression RED expectedWorkerOrigin receivedlocalhost;
+GREEN fullfrontend93/93(26files), Workersbuild PASS. Review độc lập read-only0finding,
+không chạy lại suite/network trong reviewer. Backend/schema không đổi.
+Browser WorkersQA8792: freshadmin→Home canonical đúng originQA, search/save/select/preparewishlist ra URL đúng127.0.0.1:8792/sach/mm-000020; không gửiZalo hoặc mutateDB.
+Bản sửa chưa deploy: user merge dev→main theo workflow rồi Cloudflare build/deploy;
+smoke lại singlebook/multibook enquiry sau adminentry và directentry.
+
+### Checklist người dùng còn cần xác nhận
+
+| Case | Kết quả cần thấy |
+|---|---|
+| Sau deploy bản sửa | Từ admin về public và mở trực tiếp trang sách/wishlist; nội dung hỏi1/nhiềucuốn chỉ có domainonline, mở link đúng sách |
+| SOLD và wishlist cũ | Lưu sách trước; Owner đánh dấu Hết hàng; mở/reload wishlist: cảnh báo hết hàng, không chọn hỏi mua; detailURL cũ còn tồn tại và CTA tư vấn sách tương đương |
+| Ẩn và wishlist cũ | Sách đã lưu rồi bị ẩn: không lộ thông tin cũ hoặc tiếp tục copy hỏi mua; khôngchỉ kiểm biến mất khỏi catalogue |
+| Wishlist bền trên cùng browser | Lưu2–3cuốn, xóa1, đóng/mở lại hoặc reload; còn đúng danh sách, chọnsubset và nội dung chỉ gồm cuốnđượcchọn/mã/giá/URL mới nhất |
+| Tìm/lọc/quay lại | Tên/mã, từngnhómtuổi, thểloại/binding, sort và backdetail giữfilters; next/prev khi có>20public. Hiện20 nên online chưa chạy nhánh trang2 |
+| Form và lỗi | Thiếu1ảnh bị chặnpublish; ảnhsai/hỏng báo lỗi; ngắtmạng/lưuhoặc hếtsession không mất form;2tab sửa cùngcuốn không âmthầm ghiđè |
+| Thiết bị/context còn thiếu | Xác nhận SafariiPhone/ChromeAndroid/Facebook hoặcZaloin-app nào đã thử; mỗicontextchưa thử cần tìm/detail/wishlist/copyfallback/mởZalo. Không yêu cầu gửi tin thử hoặc lặp toàn bộ21cuốn |
+
+Các case user đã báo đạt được giữ; chỉ kiểm nhánh khác chưa có bằng chứng.
+STAFF/RBAC,CSRF và race có testlocal trước đây; case userdesktop/mobile không thay
+cho kiểm bảo mật/lỗi. Bộ50–100listing/load theoDoD vẫn chưa chạy; dùng datasetQA
+riêng khi kiểm tải, không tạo sách bán giả chỉ để đủ số.
+
+### Gate kỹ thuật agent/operator còn phải hoàn tất
+
+- Bảnbackup27/10 chỉ schema/owner; cần backup/restore bộsách mới kèm mediareference,
+  sourceảnh độc lập, kiểm phục hồi ảnh; lịch/retention/offhost và rollbackdrill.
+- Labmobile LCP≤2,5s/trangđạidiện có cấu hình đo; Rendercoldstart,quota/load;
+  roleruntime tốithiểu/rateLimit và releasehạ tầng theo masterplan.
+- Smokeonline sau usermerge/deploy originfix. Không coi localbuild là đã sửa live.
+
+M5 chưa đóng cho đến khi có bằng chứng các gate còn mở; không thay DoD hoặc ép
+người dùng tự kiểm các gate hạ tầng thay agent/operator.
