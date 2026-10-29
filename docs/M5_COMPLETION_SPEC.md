@@ -1,7 +1,7 @@
 # M5 — hiệu năng và tạo sách không có nháp
 
-Trạng thái: **đề xuất, chờ user duyệt**. Cập nhật29/10/2026, Asia/Ho_Chi_Minh.
-Sau khi được duyệt, thay thế các quyết định DRAFT/quyền ghi STAFF, một mức
+Trạng thái: **đã được user duyệt ngày29/10/2026**. Cập nhật29/10/2026, Asia/Ho_Chi_Minh.
+Spec được duyệt thay thế các quyết định DRAFT/quyền ghi STAFF, một mức
 giá, đúng ba ảnh và loại trọng lượng khỏi MVP trong M2_SPEC, DATA, DESIGN
 và MASTER_PLAN. Không thay các gate bảo mật/recovery/SEO M5.
 
@@ -128,7 +128,7 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
 
 Yêu cầu chủ tiệm: có field **Trọng lượng sách**, nhập giá theo khoảng,
 ví dụ **20.000 - 30.000 VNĐ**. Các chi tiết dưới đây là đề xuất kỹ thuật
-chờ duyệt cùng spec, không phải xác nhận đã triển khai.
+đã được duyệt cùng spec, chưa phải xác nhận đã triển khai.
 
 - Đề xuất `weight_g` thuộc BookCopy: nhãn **Trọng lượng sách (g)**, nhập
   số nguyên gram >0, ví dụ250g. Bắt buộc với sách tạo mới; không suy từ
@@ -232,5 +232,5 @@ simulated theo report, không cộng/trừ các loại timing khác nhau.
 Coldstart/rollback/quota/security M5 vẫn là gate riêng còn phải hoàn tất.
 
 Tài liệu: cập nhật baseline M2_SPEC/master/design/data/architecture và hướng
-dẫn admin trong cùng thay đổi. Plan mới chỉ viết sau khi spec này được duyệt;
+dẫn admin trong cùng thay đổi. Triển khai theo [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md);
 gộp bằng chứng/tài liệu rồi xóa spec/plan hết vai trò theo AGENTS.
