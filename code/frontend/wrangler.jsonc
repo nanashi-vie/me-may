@@ -26,6 +26,7 @@
       "head_sampling_rate": 1,
     },
   },
+  "preview_urls": true,
   "previews": {
     "vars": {
       "MEMAY_API_ORIGIN": "http://127.0.0.1:8080",
