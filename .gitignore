@@ -53,3 +53,5 @@ __screenshots__/
 
 # Python deployment tooling cache.
 __pycache__/
+
+/output/playwright/

@@ -366,3 +366,7 @@ thay đổi tiếp; chưa kết luận nâng gói Render sẽ đạt gate.
 
 M5 chưa đóng cho đến khi có bằng chứng các gate còn mở; không thay DoD hoặc ép
 người dùng tự kiểm các gate hạ tầng thay agent/operator.
+
+### M5 task1 — 29/10/2026, local SSR/hydration
+- RED2regression→GREEN frontend97/97; builtSSR PASS. Browser390px localMM-000001, clientdetailAPI chậm1500ms: trước có2shift0,6000/0,5838 trỏmain/footer; sau giữ SSRbook khi revalidate, không shift, observedLCP440ms/TTFB189,5ms. Không phải Lighthouse simulated hoặc bằng chứng online.
+- Publicdetail seed từ SSR và xác minh lại no-store, khóa hỏi mua/copy trong lúc chờ; 404 bỏ sách cũ. Header luôn dành chỗ count. LogoWebP208×208/10142B, đã xem ảnh thật, giữlogo.jpg nguồn. OnlineMM-000020 trả503 trong lần thử, gateLighthouse vẫn mở; không quy lỗi này cho sourcefix.

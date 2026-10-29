@@ -14,8 +14,8 @@ Cloudinary I/O ở ngoài transaction DB. Không thêm framework hoặc dịch v
 Cloudinary authenticated, Workers/Render/Neon; Vitest/JUnit.
 
 **Spec:** [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md), user duyệt29/10/2026.
-**Trạng thái:** Kế hoạch đã lập, chờ review trước code theo writing-plans.
-**Execution đề xuất:** Native, agent thực hiện tuần tự trong chat hiện tại.
+**Trạng thái:** User duyệt kế hoạch và chọn thực hiện tuần tự29/10/2026.
+**Execution:** Native, agent thực hiện tuần tự trong chat hiện tại.
 **Git:** dev d55d611 lúc bắt đầu; mọi commit/push vào dev, user merge main.
 
 ## Global Constraints
@@ -63,7 +63,7 @@ Online detail vẫn FAIL theo3JSON cũ; cần trace mới để chọn fix cụ 
   wishlist và admin flash-sale: contract giá và quyền xuyên các màn hình.
 - Flyway hiện V1–V5; chỉ thêm migration mới, không sửa checksum đã deploy.
 
-## Task 1 — Trace hiệu năng, logo và layout ổn định
+### Task 1: Trace hiệu năng, logo và layout ổn định
 
 **Files:** Sửa public-layout.ts, catalogue/book-detail.html/.scss/.spec.ts,
 wishlist/wishlist-page.scss/.spec.ts; tạo `code/frontend/public/logo.webp`.
@@ -72,18 +72,18 @@ Sửa `docs/VERIFICATION.md` với phép đo/tái hiện. Giữ logo.jpg nguồn
 **Interfaces:** Giữ API hiện tại; không đổi shape sách ở task này.
 Đầu ra: header/logo có dimensions, detail/wishlist không shift khi hydrate.
 
-- [ ] Trace browser thật trên MM-000020 cố định: ghi LCPelement/TTFB/mediawait/
+- [x] Trace browser thật trên MM-000020 cố định: ghi LCPelement/TTFB/mediawait/
   download/render và LayoutShift sources, fresh SSR rồi clientnavigation.
-- [ ] Đo wishlist rỗng/3cuốn, ảnh ngang/dọc, viewport390 và laptop; giữ trace
+- [x] Đo wishlist rỗng/3cuốn, ảnh ngang/dọc, viewport390 và laptop; giữ trace
   trong ignored output, ghi nguyên nhân tái hiện trước khi chọn CSS/hydration fix.
-- [ ] RED: thêm regression tại điểm gây shift đã tái hiện; chạy `npm test`
+- [x] RED: thêm regression tại điểm gây shift đã tái hiện; chạy `npm test`
   trong code/frontend, xác nhận failure do hành vi cần sửa.
-- [ ] Tạo logo208×208 bằng công cụ ảnh sẵn có, kiểm bytes/ảnh thật; cập nhật
+- [x] Tạo logo208×208 bằng công cụ ảnh sẵn có, kiểm bytes/ảnh thật; cập nhật
   src/dimensions/header spacing và fix layout đã có trace, không đổi nhận diện.
-- [ ] GREEN: `npm test` và browser cùng kịch bản; ghi observed/simulated riêng.
-- [ ] Commit code+VERIFICATION/PROGRESS/DEV_LOG trên dev, không kết luận gateonline.
+- [x] GREEN: `npm test` và browser cùng kịch bản; ghi observed/simulated riêng.
+- [x] Commit code+VERIFICATION/PROGRESS/DEV_LOG trên dev, không kết luận gateonline.
 
-## Task 2 — Media320/640 WebP/JPEG và chuẩn hóa nguồn upload
+### Task 2: Media320/640 WebP/JPEG và chuẩn hóa nguồn upload
 
 **Files:** Sửa media/MediaGateway.java, CloudinaryMediaGateway.java,
 ImageValidator.java, PublicCatalogueController.java; catalogue public.models.ts,
@@ -111,7 +111,7 @@ Giữ overload/URL không query tương đương JPEG640; preview admin1280.
 - [ ] Ghi quyết định cache: giữ no-store; lợi ích cache chưa chứng minh được
   invalidation/ẩn ngay thì không bật. Commit cùng docs bàn giao.
 
-## Task 3 — Khoảng giá/trọng lượng/sáu role xuyên backend và public
+### Task 3: Khoảng giá/trọng lượng/sáu role xuyên backend và public
 
 **Files:** Tạo `db/migration/V6__book_fields_and_media_roles.sql`.
 Sửa catalogue/BookCopy.java, BookDtos.java, BookMapper.java, BookValidation.java,
@@ -141,7 +141,7 @@ MediaRole=FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3.
 - [ ] GREEN và browser so sánh cùng dữ liệu; update test fixture/old assertion
   vì contract đổi, giữ regression privacy/lookup/timing; commit code+docs.
 
-## Task 4 — Phiên upload riêng tư và cleanup an toàn
+### Task 4: Phiên upload riêng tư và cleanup an toàn
 
 **Files:** Tạo V7__temporary_media_sessions.sql, media/UploadSessionDtos.java,
 UploadSessionController.java, UploadSessionService.java,
@@ -167,7 +167,7 @@ media có UPLOADING/READY/DELETE_PENDING, storagePublicId unique, owner-bound.
 - [ ] GREEN cả MediaCleanupIntegrationTest; xác minh DB không có sách/mã mới
   chỉ do upload. Commit migration/service/tests+docs, chưa bật UI tạo mới.
 
-## Task 5 — Final tạoPUBLISHED, OWNER-only và bỏDRAFT
+### Task 5: Final tạoPUBLISHED, OWNER-only và bỏDRAFT
 
 **Files:** Tạo V8__retire_draft.sql; sửa AdminBookController, BookCommandService,
 BookStatusService, BookAccess, BookDtos, BookValidation, BookQueryService,
@@ -197,7 +197,7 @@ PUT sách thêm mapping reorder theo mediaID/version; publication chỉPUBLISHED
   sách cũ weightnull vẫn public nhưng OWNER lưusửa/hiệnlại phải bổ sung.
 - [ ] GREEN fullbackend; commit cùng migration/tests/docs. Không chạy V6–V8 online.
 
-## Task 6 — Editor mới, multi-upload/reorder và STAFF chỉ xem
+### Task 6: Editor mới, multi-upload/reorder và STAFF chỉ xem
 
 **Files:** Sửa admin/books/book-api.ts, book-editor.ts/.html, book-form.ts,
 book-media-panel.ts, book-status-actions.ts, book-list.ts/.html và tests;
@@ -221,7 +221,7 @@ BookApi có createSession/uploadTemporary/finalize/reorder theo task4–5.
 - [ ] GREEN fullfrontend; browser OWNER tạo2/6ảnh, edit/reorder/ẩn/hiện/SOLD;
   STAFF readonly, expired/concurrentedit/keyboard390px/laptop; commit+docs.
 
-## Task 7 — Regression, tài liệu baseline và bàn giao release
+### Task 7: Regression, tài liệu baseline và bàn giao release
 
 **Files:** docs/MASTER_PLAN/DATA/DESIGN/ARCHITECTURE/M2_SPEC/VERIFICATION,
 DEPLOYMENT/PROGRESS/DEV_LOG/README và rootREADME; scripts/check-ssr.mjs nếu

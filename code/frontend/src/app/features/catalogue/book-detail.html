@@ -94,7 +94,7 @@
       </dl>
       <div class="contact-actions">
         <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
-        <button (click)="contact.open()">
+        <button [disabled]="verifying()" (click)="contact.open()">
           {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
         </button>
         @if (config()?.groupUrl) {
@@ -109,6 +109,7 @@
       <app-contact-dialog
         #contact
         [book]="b"
+        [busy]="verifying()"
         [config]="config()"
         [url]="origin + '/sach/' + b.slug"
       />

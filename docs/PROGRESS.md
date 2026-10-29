@@ -20,14 +20,15 @@ LCP/CLS, mediaWebP+JPEG và2cỡ, chuẩn hóa upload, đánh giá cache), đồ
 bỏ hoàn toàn tạo nháp. Đã chốt chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem;
 user chọn upload ảnh tạm rồi tạo+đăng một lần. User duyệt spec ngày29/10.
 Đã lập [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md),7task thay plan cũ;
-chờ review kế hoạch theo writing-plans trước sửa code. Đề xuất Native, thực
-hiện tuần tự trong chat này. Baseline mới: frontend95/95PASS; backend
+user đã duyệt và chọn Native thực hiện tuần tự trong chat này.
+Task1 local đạt: frontend97/97/builtSSR/browser390+laptop, fixhydration
+CLS; logoWebP10KB. Đang task2 media320/640WebP/JPEG+normalize; task3–7 chờ. Baseline mới: frontend95/95PASS; backend
 verify93run/0failure/0error/2live skippedPASS sau rerun ngoài sandbox.
 Bổ sung29/10: trọng lượng sách (đề xuất gram), khoảng giá từ–đến và giữ
 nguyên chú thích giá. Chọn/thả2–6ảnh, bìa/lưng bắt buộc, thứ tự mặc định
 bìa/lưng/gáy/nội dung1/nội dung2/nội dung3; các vai trò sau bìa/lưng tùy
 chọn. Có kéo sắp xếp/nút bàn phím/mobile, giữ ID khi upload async.
-Spec đã duyệt; plan chờ review, chưa đổi app/schema/data online.
+Spec/plan đã duyệt, đang thực thi; chưa migrate/deploy/data online.
 
 1. Fixorigin enquiry/canonical: đã tái hiện entryadminCSR→public không có TransferState, tokenfallbacklocalhost; sửa dùng documentlocationorigin, regression93/93PASS/WorkersbuildPASS, review0finding. BrowserQA admin→public→enquiry/canonical đúngorigin8792PASS; đã pushdev7d88358 và main merge f04adea. Sau deploy smoke lại single/multibook enquiry; chưa xác minh release live. Không tự deploy.
 2. User báo đã hoàn tất checklist chức năng ở VERIFICATION; nếu cần audit chi tiết mới xin kết quả từng thiết bị/case. Trước mắt tập trung gate kỹ thuật theo ưu tiên của user, không lặp pilot21cuốn.

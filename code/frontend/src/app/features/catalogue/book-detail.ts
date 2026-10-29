@@ -1,4 +1,5 @@
-import { Component, RESPONSE_INIT, inject, signal, effect } from '@angular/core';
+import { Component, RESPONSE_INIT, inject, signal, effect, TransferState, makeStateKey, PLATFORM_ID } from '@angular/core';
+import { isPlatformServer } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, switchMap, combineLatest, Subject, startWith } from 'rxjs';
@@ -32,6 +33,10 @@ export class BookDetail {
   readonly origin = inject(PUBLIC_SITE_ORIGIN);
   readonly book = signal<PublicBook | null>(null);
   readonly loading = signal(true);
+  readonly verifying = signal(false);
+  private readonly state = inject(TransferState);
+  private readonly server = isPlatformServer(inject(PLATFORM_ID));
+  private readonly stateKey = makeStateKey<PublicBook | null>('memay-detail-book');
   readonly error = signal(0);
   readonly config = signal<ContactConfig | null>(null);
   private readonly refreshRequests = new Subject<void>();
@@ -43,6 +48,9 @@ export class BookDetail {
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
   constructor() {
+    const initial = this.state.get(this.stateKey, null);
+    this.state.remove(this.stateKey);
+    if (initial?.slug === this.route.snapshot.paramMap.get('slug')) this.accept(initial);
     this.api
       .contact()
       .pipe(takeUntilDestroyed())
@@ -50,7 +58,8 @@ export class BookDetail {
     combineLatest([this.route.paramMap, this.refreshRequests.pipe(startWith(undefined))])
       .pipe(
         switchMap(([p]) => {
-          this.loading.set(true);
+          this.loading.set(!this.book() || this.book()?.slug !== p.get('slug'));
+          this.verifying.set(true);
           this.error.set(0);
           return this.api.detail(p.get('slug')!).pipe(
             map((b) => ({ b, error: 0 })),
@@ -78,6 +87,8 @@ export class BookDetail {
   }
   accept(b: PublicBook | null, error = 0) {
     this.loading.set(false);
+    this.verifying.set(false);
+    if (this.server && b) this.state.set(this.stateKey, b);
     this.error.set(error);
     this.book.set(b);
     if (error) {

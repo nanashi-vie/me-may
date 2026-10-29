@@ -27,7 +27,7 @@ Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 - [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đã được user duyệt29/10**, tối ưu media/LCP/CLS, bỏ nháp, OWNER ghi/STAFF đọc, trọng lượng,2–6ảnh và khoảng giá giữ chú thích. Thay các quyết định baseline tương ứng; chưa coi là đã triển khai.
 
-- [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md): kế hoạch7task thay plan hiệu năng cũ; đã giữ code/bằng chứng60c0404 và các gate trace/Lighthouse còn mở. Đang review kế hoạch trước code theo writing-plans.
+- [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md): kế hoạch7task thay plan hiệu năng cũ; đã giữ code/bằng chứng60c0404 và các gate trace/Lighthouse còn mở. User đã duyệt, đang thực thi tuần tự từ task1.
 
 - Owner cố định27/10 đã cấp trên Neon; [DEPLOYMENT — tạo owner](DEPLOYMENT.md#owner-cố-định-tạo-riêng-một-lần) và ARCHITECTURE giữ contract. Phone auth hoãn sauMVP.
 
