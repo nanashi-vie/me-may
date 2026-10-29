@@ -8,7 +8,7 @@ Pilot M0 thật cần 10–20 cuốn do chủ chọn. Chưa có dữ liệu th�
 
 Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế trước đây, **chưa chuyển sang baseline trước M2**: các cột `format`, `age_min/age_max`, trạng thái HELD hoặc nhiều loại ảnh cũ không phải contract nhập liệu hiện hành. Không đưa fixture này thẳng vào production. MVP nhập thủ công; CSV/Excel tạo mới thành nháp là bước ngay sau MVP, chưa có định dạng importer được duyệt.
 
-## Field nhập liệu baseline trước M2
+## Field nhập liệu hiện hành sau M5
 
 | Field | Nơi thuộc về | Yêu cầu và kiểm tra |
 |---|---|---|
@@ -23,15 +23,16 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | condition_note | BookCopy | Mô tả thực tế bắt buộc để publish, nêu lỗi nhìn thấy và phần chưa kiểm tra |
 | availability | BookCopy | AVAILABLE (Còn hàng) / SOLD (Hết hàng), do người có quyền đổi; không có Đang giữ trong MVP |
 | slug | Listing | Duy nhất, ổn định; chứa code khi cần tránh trùng tên |
-| price_vnd | Listing | Một mức giá tham khảo, số nguyên VND >0 khi publish, không suy từ ảnh; hiển thị “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” |
+| price_min_vnd, price_max_vnd | Listing | Hai đầu khoảng giá nguyên VND 1..999999999999, min≤max (cho bằng nhau), không suy từ ảnh; hiển thị “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” |
+| weight_g | BookCopy | Gram nguyên dương, tối đa 9007199254740991; bắt buộc tạo/lưu sửa/hiện lại. Sách cũ null không tự ẩn; public bỏ trường chưa biết |
 | description | Listing | Nội dung giới thiệu theo dữ liệu có; không tự gán chứng chỉ/reading level |
-| publication_status | Listing | DRAFT / PUBLISHED / ARCHIVED; độc lập availability |
+| publication_status | Listing | PUBLISHED / ARCHIVED; độc lập availability |
 | age_groups | Mapping listing | Chọn nhiều nhóm trong 0–3 / 4–6 / 7–9 / 10+; để trống nếu chưa xác định, không tự suy từ mức đọc |
 | reading_level | Listing | Một trong Pre A1 / A1 / A2 / B1 / B2 / C1 / C2 hoặc chưa xác định; nhãn Cambridge theo bảng bên dưới |
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
-| ảnh FRONT / BACK / INSIDE | BookMedia | Đủ đúng ba ảnh thật trước publish: bìa trước, mặt sau, một trang nội dung; bìa trước là thumbnail; fixture không có ảnh |
-| media type/order/alt | BookMedia | Ba vai trò cố định FRONT/BACK/INSIDE, mỗi vai trò một ảnh public; metadata từng ảnh, không gom URL thành chuỗi. Tình trạng/lỗi nằm trong condition_note; ảnh/video bổ sung trao đổi qua Zalo |
+| ảnh 2–6 vai trò | BookMedia | FRONT/BACK bắt buộc; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 tùy chọn; bìa trước là thumbnail; fixture không có ảnh |
+| media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, mỗi vai trò tối đa một ảnh public; metadata từng ảnh, không gom URL thành chuỗi. Tình trạng/lỗi nằm trong condition_note; ảnh/video bổ sung trao đổi qua Zalo |
 | source_ref | BookMedia | Tùy chọn, tham chiếu nguồn ảnh nội bộ không chứa dữ liệu khách; không public mặc định |
 | version/timestamps/actor | Server/audit | Server quản lý khi triển khai, không tin giá trị client tự gửi làm audit |
 
@@ -56,12 +57,12 @@ Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. �
 ## Ca dữ liệu cần review
 
 - Hai cuốn cùng tên, cùng ISBN nhưng khác code/giá/lỗi.
-- Cuốn còn hàng/hết hàng; published/nháp/lưu trữ độc lập. Không nhập trạng thái HELD từ fixture cũ vào baseline MVP.
-- Thiếu ISBN/author/publisher; không chặn nhập nháp.
+- Cuốn còn hàng/hết hàng; published/lưu trữ độc lập. Không nhập trạng thái HELD từ fixture cũ vào baseline MVP.
+- Thiếu ISBN/author/publisher; không chặn tạo sách khi đủ trường bắt buộc.
 - Tên dài, thiếu NXB/tác giả không tạo dấu phân cách thừa; dữ liệu tiếng Việt/Anh; tuổi chưa xác định hoặc gán nhiều nhóm.
 - Mỗi cuốn đúng một thể loại; Picture book thiếu kiểu bìa hoặc dùng “Tất cả” bị từ chối; Paperback và Hardcover đều xuất hiện ở bộ lọc “Tất cả”.
 - Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; không yêu cầu căn cứ, không suy mức đọc từ tuổi/thể loại.
-- Thiếu bất kỳ ảnh FRONT/BACK/INSIDE, lỗi chưa xác minh hoặc giá nháp rỗng: không cho publish thật; không bắt có mức đọc/link video.
+- Thiếu FRONT/BACK, trọng lượng, lỗi chưa xác minh hoặc khoảng giá rỗng: không cho publish thật; không bắt có mức đọc/link video.
 - Cuốn đang ở wishlist rồi bị sold hoặc ẩn.
 
 ## Import ngay sau MVP
@@ -70,10 +71,10 @@ MVP chỉ nhập thủ công qua admin. Bước tiếp theo ngay sau MVP hỗ tr
 
 ## Quy trình pilot thật và đầu ra cần ghi
 
-Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách/trọng lượng hoặc tạo module quản lý đơn từ ảnh này.
+Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách; trọng lượng gram là field M5, không suy từ bảng cũ hoặc tạo module quản lý đơn từ ảnh này.
 
 1. Chủ chọn 10–20 cuốn và xác nhận giá tham khảo; website tự sinh mã khi tạo cuốn, tiệm dùng mã đó để nhận diện đúng vật thể.
-2. Chuẩn bị đủ ba ảnh bìa trước/mặt sau/một trang nội dung và mô tả lỗi đúng từng cuốn; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
+2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng và mô tả lỗi đúng từng cuốn; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
 3. Điền mẫu field, để trống dữ liệu chưa biết; ghi riêng các ảnh và thứ tự cần có.
 4. Một người kiểm tra lại mã/giá/ảnh/tình trạng với cuốn thật.
 5. Ghi thời gian nhập mỗi cuốn, field khó hiểu và thiếu sót ảnh; không đặt mục tiêu tốc độ khi chưa đo.
@@ -83,6 +84,6 @@ M0 đã được duyệt về phạm vi/UX; pilot thật vẫn chưa đạt cho 
 
 ## Flash Sale M3
 
-Một giá tham khảo trên listing được giữ làm giá gốc. `flash_sale` singleton lưu enabled/starts_at/ends_at/version; `flash_sale_item` gắn listing và sale_price_vnd. OWNER quản lý thủ công, audit và optimistic version; không import hoặc ghi số đã bán.
+Khoảng giá tham khảo trên listing được giữ làm giá gốc; sale là một số nguyên thấp hơn giá từ, không hiển thị % giảm. `flash_sale` singleton lưu enabled/starts_at/ends_at/version; `flash_sale_item` gắn listing và sale_price_vnd. OWNER quản lý thủ công, audit và optimistic version; không import hoặc ghi số đã bán.
 
-Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED, AVAILABLE và giá sale thấp hơn giá tham khảo. Hết hạn/sold/ẩn/giá không còn hợp lệ thì không trả nhãn giảm giá. Giá gốc lấy giá tham khảo hiện tại, không phải snapshot cố định lúc tạo campaign.
+Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED, AVAILABLE và giá sale thấp hơn giá từ. Hết hạn/sold/ẩn/giá không còn hợp lệ thì không trả nhãn giảm giá. Giá gốc lấy giá tham khảo hiện tại, không phải snapshot cố định lúc tạo campaign.

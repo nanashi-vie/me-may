@@ -370,3 +370,11 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 ### M5 task1 — 29/10/2026, local SSR/hydration
 - RED2regression→GREEN frontend97/97; builtSSR PASS. Browser390px localMM-000001, clientdetailAPI chậm1500ms: trước có2shift0,6000/0,5838 trỏmain/footer; sau giữ SSRbook khi revalidate, không shift, observedLCP440ms/TTFB189,5ms. Không phải Lighthouse simulated hoặc bằng chứng online.
 - Publicdetail seed từ SSR và xác minh lại no-store, khóa hỏi mua/copy trong lúc chờ; 404 bỏ sách cũ. Header luôn dành chỗ count. LogoWebP208×208/10142B, đã xem ảnh thật, giữlogo.jpg nguồn. OnlineMM-000020 trả503 trong lần thử, gateLighthouse vẫn mở; không quy lỗi này cho sourcefix.
+
+## M5 completion local — 29/10/2026
+
+- V6–V9 và API final/ảnh tạm/OWNER-only đã triển khai trên dev, chưa migrateonline. Backendcleanverify107run/0failure/0error/3live skipped; frontend trước review105/105. Kết quả sau review xem checkpoint S024 cuối DEV_LOG.
+- Scratch DB riêng/namespace memay/test: OWNER tạo2và6ảnh, reorder khiupload và sauđăng giữID/no-reupload, metadata nội bộ khônglộ public, giá20k–30k/55k–75k và250g/420g đúng; ẩn404/hiệnlại giữpublishedAt/SOLDPASS. STAFFreadonly+directPOST403;390px khôngoverflow.
+- Sessionexpire giữform/file, renew3ảnhREADY; final mấtresponse saucommit, count2→3→retryvẫn3/cùngIDPASS. Dữliệu/credentialQA giảlập, khôngsửa sách/tài khoảnthật.
+- Trace local fixedMM1+delay1500ms tái hiện2shift0,6000/0,5838, saufix khôngshift/LCPobserved440ms. Đây không phải Lighthouse. Logo208WebP10142B; chuẩn hóaalpha/EXIFvàlive4variant isolated+cleanupPASS.
+- Backfill63ACTIVE ảnh thật mới dryrun/pending63, chưaapplyv2. OnlineMM20 trả503 trongphiên, gateLighthouse/coldstart/rollback/quota/security/runtimeleastprivilege/offhostretention/productionVPS cònmở; user không cần nhập lại pilot21cuốn.

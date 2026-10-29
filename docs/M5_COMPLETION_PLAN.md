@@ -208,17 +208,17 @@ Sửa core/auth/admin-http.ts nếu cần progress events, giữ CSRF lifecycle 
 id là client UUID ổn định; mapping final dùng mediaId server, không dùng arrayindex.
 BookApi có createSession/uploadTemporary/finalize/reorder theo task4–5.
 
-- [ ] RED chọn/thả1–6file, nhiềuđợt, overflow rejectcảđợt và không ghiđè;
+- [x] RED chọn/thả1–6file, nhiềuđợt, overflow rejectcảđợt và không ghiđè;
   mặc định bìa/lưng/gáy/nộidung1–3, cho bỏ qua optionalrole và2ảnh đủđăng.
-- [ ] RED reorder trong upload async/retry/remove/replace: response gắn đúngID,
+- [x] RED reorder trong upload async/retry/remove/replace: response gắn đúngID,
   không upload lạiREADY, không rò objectURL, concurrency giữ giới hạn hiện có.
-- [ ] RED keyboard Đưalên/xuống/mobile và liveannouncement; STAFF không có thao
+- [x] RED keyboard Đưalên/xuống/mobile và liveannouncement; STAFF không có thao
   tácghi; bỏLưunháp/filterNháp; Đăngsách khóa khi pending/finalbusy/invalid.
-- [ ] RED sessionexpired/loginexpired/409/providerfail: giữform và ảnh còn hợp lệ,
+- [x] RED sessionexpired/loginexpired/409/providerfail: giữform và ảnh còn hợp lệ,
   retryfinal dùng cùngsession/payload, không tự tạo thêm khi chưa rõ response.
-- [ ] Chạy npm test RED; implement UI/API; confirmation ảnh/tình trạng đúng cuốn,
+- [x] Chạy npm test RED; implement UI/API; confirmation ảnh/tình trạng đúng cuốn,
   cảnh báo rờiform, không lưu nháp/localStorage hoặc hứa phục hồi sau reload.
-- [ ] GREEN fullfrontend; browser OWNER tạo2/6ảnh, edit/reorder/ẩn/hiện/SOLD;
+- [x] GREEN fullfrontend; browser OWNER tạo2/6ảnh, edit/reorder/ẩn/hiện/SOLD;
   STAFF readonly, expired/concurrentedit/keyboard390px/laptop; commit+docs.
 
 ### Task 7: Regression, tài liệu baseline và bàn giao release
@@ -227,24 +227,28 @@ BookApi có createSession/uploadTemporary/finalize/reorder theo task4–5.
 DEPLOYMENT/PROGRESS/DEV_LOG/README và rootREADME; scripts/check-ssr.mjs nếu
 assert media role/giá đang cố định. Không sửa fixture synthetic thành data thật.
 
-**Interfaces:** Baseline phản ánh đúng contract đã triển khai và migration V6–V8;
+**Interfaces:** Baseline phản ánh đúng contract đã triển khai và migration V6–V9;
 runbook có backup/counts/fingerprint/dryrun/rollback trước userdeploy.
 
-- [ ] Chạy frontend npm test, backend `bash code/backend/run-local.sh -B -ntp
+- [x] Chạy frontend npm test, backend `bash code/backend/run-local.sh -B -ntp
   verify`, Workers `npm run build:workers` (lệnh một dòng, cwd tương ứng).
 - [ ] Browser+SSR local:2/6ảnh, ngang/dọc, wishlist0/3cuốn/hidden/SOLD/giáthayđổi,
   expiry sale/foreground/multitab/preparecopy không dùngtextcũ; enquiry đúngorigin.
-- [ ] `node scripts/check-ssr.mjs <QAorigin>` và `npm run check:workers:proxy`;
+- [x] `node scripts/check-ssr.mjs <QAorigin>` và `npm run check:workers:proxy`;
   kiểm privateJSON/no-store/cookie/CSRF và media4variant không lộ hidden/temp.
-- [ ] Chuyển đủ baseline đã thay và bằng chứng sang tài liệu chuẩn; bỏ plan
+- [x] Chuyển đủ baseline đã thay và bằng chứng sang tài liệu chuẩn; bỏ plan
   hếtvai trò chỉ khi còn đủ gate/nghiệmthu, ≤400dòng và linklocal/diff/ignorePASS.
-- [ ] Review diff theo spec và rủi ro concurrency/privacy; commit/push dev,
+- [x] Review diff theo spec và rủi ro concurrency/privacy; commit/push dev,
   ghi commit/migration/limitation; user merge main và deploy theo runbook.
 - [ ] Sau deploy có phép: smoke origin/media/quyền/giá và Lighthousewarm3lần/
   Home/detailMM-000020/wishlist cùng dữliệu; coldstart đo riêng. Chỉ đóng gate
   khi có output đạt, không lấy unittest hoặc score cũ thay bằng chứng online.
 - [ ] Recovery/quota/rollback/ratelimit/runtimeleastprivilege/offhostretention
   tiếp theo VERIFICATION; không bắt chủ nhập lại pilot21cuốn đã xác nhận.
+
+Ghi nhận29/10: kiểm tra local chính và review đã đạt; không lặp toàn bộ pilot/M4
+trên thiết bị thật. Dòng browser tổng hợp còn mở cho phần smoke sau deploy,
+Lighthouse và các gate vận hành chưa được thay bằng unit/local QA.
 
 ## Coverage và bàn giao lúc lập plan
 

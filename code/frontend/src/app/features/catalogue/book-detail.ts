@@ -1,5 +1,15 @@
-import { bookPrice } from './catalogue-state';
-import { Component, RESPONSE_INIT, inject, signal, effect, TransferState, makeStateKey, PLATFORM_ID } from '@angular/core';
+import { bookPrice, enquiryText } from './catalogue-state';
+import { firstValueFrom } from 'rxjs';
+import {
+  Component,
+  RESPONSE_INIT,
+  inject,
+  signal,
+  effect,
+  TransferState,
+  makeStateKey,
+  PLATFORM_ID,
+} from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -17,7 +27,9 @@ import {
   READING_LABELS,
   PRICE_NOTE,
   READING_NOTE,
-  formatPrice, formatPriceRange, MEDIA_LABELS,
+  formatPrice,
+  formatPriceRange,
+  MEDIA_LABELS,
 } from '../admin/books/book-copy';
 @Component({
   selector: 'app-book-detail',
@@ -27,6 +39,16 @@ import {
 })
 export class BookDetail {
   readonly api = inject(PublicApi);
+  readonly verifyContact = async () => {
+    const current = this.book();
+    if (!current) return '';
+    const fresh = await firstValueFrom(this.api.detail(current.slug));
+    return enquiryText(
+      effectiveBook(fresh, this.clock.now() || Date.now()),
+      this.origin + '/sach/' + fresh.slug,
+    );
+  };
+
   readonly clock = inject(PublicClock);
   private readonly route = inject(ActivatedRoute);
   private readonly meta = inject(PageMetadata);
@@ -45,7 +67,7 @@ export class BookDetail {
   readonly title = bookTitle;
   readonly price = bookPrice;
   readonly range = formatPriceRange;
-  readonly mediaLabels: Record<string,string> = MEDIA_LABELS;
+  readonly mediaLabels: Record<string, string> = MEDIA_LABELS;
   readonly ages = AGE_LABELS;
   readonly levels = READING_LABELS;
   readonly priceNote = PRICE_NOTE;

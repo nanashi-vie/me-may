@@ -35,16 +35,16 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Bước ngay sau MVP | **Import CSV/Excel tạo sách mới thành nháp** | Mã trùng báo lỗi, không ghi đè; chưa đặc tả định dạng file |
 | Mở rộng sau đó | Import cập nhật sách; giỏ hàng/đặt hàng → thanh toán/giao vận → AI số hóa/đối soát | Mỗi bước cần đặc tả riêng |
 
-### 0.1. Quy tắc MVP đã chốt trước M2
+### 0.1. Quy tắc MVP hiện hành (M5 duyệt 29/10/2026)
 
-1. **Có một mức giá tham khảo cho mỗi cuốn được xuất bản**, số nguyên VND > 0; nếu thiếu giá, giữ nháp. Kèm ghi chú “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Không tự suy ra giá từ ảnh/Excel; giá chốt do tiệm xác nhận ngoài web.
-2. **Chủ tiệm duyệt tập sách đăng bằng quyền xuất bản** (`OWNER`); nhân viên (`STAFF`) tạo/sửa nháp. Trường hợp chủ trực tiếp đăng, không buộc đi qua bước duyệt thừa. Đây là lựa chọn kỹ thuật mặc định, không phải khẳng định tất cả công việc ở tiệm đều cần phê duyệt.
+1. **Giá tham khảo là khoảng từ–đến**, hai số nguyên VND 1..999999999999, từ ≤ đến; bằng nhau hiển thị một giá. Kèm ghi chú “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Không tự suy ra giá từ ảnh/Excel; giá chốt do tiệm xác nhận ngoài web.
+2. **Chủ tiệm duyệt tập sách đăng bằng quyền xuất bản** (`OWNER`); nhân viên (`STAFF`) chỉ đọc quản trị; OWNER thực hiện mọi ghi. Không có tạo/lưu nháp. Trường hợp chủ trực tiếp đăng, không buộc đi qua bước duyệt thừa. Đây là lựa chọn kỹ thuật mặc định, không phải khẳng định tất cả công việc ở tiệm đều cần phê duyệt.
 3. **Wishlist lưu trong trình duyệt** (localStorage) và không cần tài khoản; nó chỉ tồn tại trong cùng trình duyệt/thiết bị, có thể mất khi xóa dữ liệu hoặc dùng ẩn danh. Khi mở danh sách, đọc trạng thái mới nhất từ server; không tự động gửi dữ liệu cho tiệm.
 4. **Liên hệ theo khả dụng:** còn hàng dùng “Liên hệ”; hết hàng dùng “Tư vấn sách tương đương”. Cùng mở Zalo hotline cá nhân có zBusiness; chuẩn bị mục đích hỏi, mã, tên, giá tham khảo và URL. Chỉ cam kết điền sẵn sau kiểm chứng; MVP chấp nhận sao chép → mở Zalo → khách dán/gửi, có copy thủ công nếu clipboard lỗi. Nút cộng đồng mở link nhóm Zalo riêng.
 5. **Tình trạng khả dụng** quản lý thủ công, chỉ `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng); không có trạng thái Đang giữ trong MVP. Dữ liệu website có thể trễ so với Page/livestream.
 6. **Sách hết hàng** tiếp tục có trang chi tiết hiển thị “Hết hàng” để giữ link cũ, mặc định không ưu tiên trong danh sách. Chủ vẫn có thể ẩn riêng mục đăng.
 7. **Tuổi/thể loại và mức đọc** do chủ chọn thủ công theo mục 3.1; độc lập với nhau. Không tự suy mức đọc từ tuổi/thể loại hoặc tự gán tuổi khi thiếu căn cứ. Mức đọc không bắt buộc để xuất bản.
-8. **Nhập thủ công trong MVP**, đủ ba ảnh thật (bìa trước, mặt sau, một trang nội dung) mới được xuất bản; tình trạng/lỗi vẫn mô tả bằng chữ. Import CSV/Excel triển khai ngay sau MVP.
+8. **Nhập thủ công trong MVP**, 2–6 ảnh thật, bắt buộc bìa và lưng mới được xuất bản; tình trạng/lỗi vẫn mô tả bằng chữ. Import CSV/Excel triển khai ngay sau MVP.
 
 Các quy tắc trên là baseline MVP đã duyệt; không suy thêm cam kết về chính sách giao hàng, hoàn trả hay thời hạn giữ sách. Nội dung chính sách chỉ công bố khi tiệm cung cấp nội dung hợp lệ.
 
@@ -71,7 +71,7 @@ Home lấy bố cục từ ảnh `docs/assets/nxbkimdong.com.vn.png` do người
 | Home | `/` | Header/search, menu danh mục, banner ngang lớn, các hàng sách/bộ sưu tập và banner xen kẽ theo ảnh tham khảo người dùng; xem DESIGN.md |
 | Catalogue | `/sach` | Grid, search, filter, sort, pagination; URL giữ filter |
 | Collection | `/bo-suu-tap/:slug` | Tập sách chủ/nhân viên biên tập |
-| Detail | `/sach/:slug` | Ba ảnh thật, tiêu đề ghép, giá tham khảo/mã/tình trạng, mô tả, mức đọc, link video đọc sách, trái tim và CTA Zalo |
+| Detail | `/sach/:slug` | 2–6 ảnh thật, trọng lượng gram, tiêu đề ghép, giá tham khảo/mã/tình trạng, mô tả, mức đọc, link video đọc sách, trái tim và CTA Zalo |
 | Wishlist | `/quan-tam` | Danh sách lưu trên thiết bị; xóa sách; refresh trạng thái; copy danh sách |
 | About/How to buy | `/gioi-thieu`, `/cach-mua`, `/lien-he` | Nội dung và link thật do tiệm cung cấp |
 | Admin | `/admin/...` | Login, dashboard thao tác, danh sách sản phẩm, editor, media, taxonomy |
@@ -100,9 +100,9 @@ Quy tắc sản phẩm: thao tác thêm danh sách không gọi `POST /orders`, 
 
 ```mermaid
 flowchart TD
-  A[Chủ chọn cuốn đưa lên web] --> B[Nhân viên hoặc chủ nhập dữ liệu + ảnh]
-  B --> C[Nháp / kiểm tra ảnh và giá]
-  C --> D[Chủ quyết định xuất bản]
+  A[Chủ chọn cuốn đưa lên web] --> B[Chủ nhập dữ liệu + ảnh tạm]
+  B --> C[Kiểm tra ảnh, trọng lượng và khoảng giá]
+  C --> D[Chủ xác nhận và tạo sách công khai một lần]
   D --> E[Listing công khai]
   E --> F[Tiệm chốt mua ngoài website]
   F --> G[Người phụ trách cập nhật còn hàng/hết hàng]
@@ -120,7 +120,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 - Search theo tên/mã, case-insensitive; hỗ trợ tiếng Việt không dấu nếu có thể thực hiện bằng PostgreSQL unaccent hoặc giải pháp tương đương; chỉ công khai published listing.
 - Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa nằm trong Picture book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
 - Mã sách/slug ổn định; HTML ban đầu cho trang sách/danh sách có SEO title/description/canonical/OG image bằng giải pháp render được **kiểm chứng trên Cloudflare** (SSR hoặc SSG với cập nhật phù hợp).
-- Detail chỉ hiển thị ba ảnh thật của đúng cuốn: FRONT / BACK / INSIDE; đủ cả ba và kiểm tra tình trạng/lỗi trước xuất bản. Ảnh/video bổ sung trao đổi qua Zalo, không xây gallery ảnh lỗi riêng trong MVP.
+- Detail hiển thị 2–6 ảnh thật: FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3; FRONT/BACK bắt buộc, các vai trò còn lại tùy chọn, mỗi vai trò tối đa một ảnh. Kiểm tra tình trạng/lỗi trước đăng. Ảnh/video bổ sung trao đổi qua Zalo, không xây gallery ảnh lỗi riêng trong MVP.
 - Tiêu đề ghép `Tên | NXB | Tác giả | Độ tuổi`, lưu các trường riêng và bỏ phần thiếu/dấu phân cách thừa. Có mô tả, tình trạng/lỗi, độ tuổi, mức đọc tham khảo, link video đọc sách tùy chọn và giá tham khảo.
 - Trái tim wishlist; “Liên hệ” khi còn hàng / “Tư vấn sách tương đương” khi hết hàng; “Tham gia cộng đồng để nhận thông tin ưu đãi” mở nhóm Zalo. Chuẩn bị nội dung/copy theo mục 0.1; không tự gửi, không giữ hàng; tiệm xác nhận giá và khả dụng. Link hotline và nhóm thật là đầu vào trước nghiệm thu.
 
@@ -132,7 +132,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 - Không giới thiệu là giỏ hàng, không có số lượng, không cộng phí ship, không tạo đơn.
 
 **Admin**
-- Owner/Staff login. `STAFF`: tạo, sửa nháp; `OWNER`: quản lý người dùng và xuất bản/ẩn (quy tắc đề xuất có thể cấu hình sau).
+- Owner/Staff login. `STAFF`: chỉ đọc; `OWNER`: mọi thao tác ghi. Upload tạm 24 giờ không tạo BookCopy/Listing/mã; final xác nhận tạo PUBLISHED nguyên tử và retry cùng payload trả cùng sách.
 - Nhập thủ công cuốn + listing; ba vị trí ảnh bìa trước/mặt sau/trang nội dung, thay ảnh và alt text; bìa trước làm thumbnail. Ghi chú tình trạng/lỗi bằng chữ, không có importer trong MVP.
 - Cập nhật giá/trạng thái; tìm theo code; xem trước/ẩn/khôi phục; audit giá/trạng thái và người chỉnh sửa.
 - Taxonomy tuổi/thể loại/mức đọc theo mục 3.1 và bộ sưu tập biên tập; không làm CMS tổng quát hoặc thêm bộ lọc chủ đề.
@@ -150,7 +150,7 @@ Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/
 ### Flash Sale bổ sung M3 (duyệt 23/10/2026)
 
 - Home có section Flash Sale ngay dưới banner, theo mẫu người dùng: nền đỏ cam, thanh tiêu đề/countdown, thẻ sách và Xem tất cả. Chỉ hiện khi đợt đang có hiệu lực và có sách hợp lệ; không tạo sale/số đã bán giả.
-- Một campaign do OWNER quản lý: bật/tắt, bắt đầu/kết thúc theo giờ Việt Nam, tối đa50 mã sách và giá sale nguyên VND từng cuốn. Giá gốc là giá tham khảo hiện tại; giá sale phải thấp hơn giá gốc.
+- Một campaign do OWNER quản lý: bật/tắt, bắt đầu/kết thúc theo giờ Việt Nam, tối đa50 mã sách và giá sale nguyên VND từng cuốn. Giá gốc là khoảng tham khảo hiện tại; giá sale phải thấp hơn giá từ. Hiển thị khoảng gốc và giá sale, không tính % giảm.
 - Hiệu lực theo giờ database `[start,end)`, chỉ sách PUBLISHED/AVAILABLE; hết hạn, sold, ẩn hoặc giá gốc giảm xuống không còn giảm giá thì public dùng giá tham khảo. Catalogue sort/detail/nội dung hỏi dùng cùng giá hiệu lực.
 - Campaign có version/audit độc lập, không tạo order/quantity hoặc số bán; STAFF không sửa. Không có campaign trong dữ liệu tiệm cho đến khi OWNER chủ động cấu hình.
 
@@ -190,9 +190,9 @@ erDiagram
 
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
-| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
-| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_vnd` (giá tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M2 tạo cuốn + listing nháp cùng giao dịch; dùng version của BookCopy cho cả aggregate |
-| `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/INSIDE), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
+| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `weight_g`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
+| `Listing` | `id`, `book_copy_id` unique, `slug`, `price_min_vnd`, `price_max_vnd` (khoảng tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M5 final tạo cuốn + listing công khai + media cùng giao dịch; dùng version của BookCopy cho cả aggregate |
+| `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
 | `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |
 | `AdminUser` | `id`, credential hash, `role`, `active` | RBAC và audit |
 | `AuditEvent` | actor, target ID, field, before/after (hạn chế thông tin nhạy cảm), timestamp | Reconstruct lịch sử chỉnh giá/trạng thái, provenance |
@@ -200,10 +200,10 @@ erDiagram
 **Các bất biến:**
 - `book_code` do website tự sinh tăng dần, bất biến và không tái sử dụng; dùng để dán nhãn/trao đổi với tiệm, không lấy từ tên sách hoặc TikTok ID của khách. Tiệm hiện chưa quản lý bằng mã. ISBN không bắt buộc và **không duy nhất cho cuốn vật lý**.
 - Public DTO chỉ trả các bản ghi công khai; không lộ nháp/lưu trữ qua URL, sitemap, API hay preview do web kiểm soát.
-- `publication_status` (DRAFT / PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
-- Giá tham khảo kiểu **số nguyên VND**, trước xuất bản bắt buộc > 0, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
+- `publication_status` (PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Không dùng nhãn “đẹp” làm thay thế ghi chú lỗi.
+- Khoảng giá tham khảo gồm **hai số nguyên VND**, 1..999999999999 và min≤max, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
 - Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc do tiệm chọn thủ công, không yêu cầu trường căn cứ.
-- Xuất bản cần tên, mã, thể loại, giá, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE; ghi chú lỗi không được bỏ vì giới hạn ảnh. Schema chi tiết, validation và mapping sẽ chốt trong technical spec M2.
+- Xuất bản cần tên, mã, thể loại, khoảng giá, trọng lượng gram nguyên dương, condition note và 2–6 ảnh thật có FRONT/BACK; ghi chú lỗi không được bỏ vì giới hạn ảnh. Schema chi tiết, validation và mapping sẽ chốt trong technical spec M2.
 - `optimistic locking` (`version`/ETag) tránh người thứ hai ghi đè form đang cũ.
 - Nếu triển khai C về sau, `OrderItem` tham chiếu ID cuốn và **snapshot mã/tên/giá**; transaction/lock chỉ bảo vệ cập nhật trong web, không thể bảo vệ dữ liệu Facebook chưa đồng bộ.
 
@@ -300,13 +300,13 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | **M0 – scope/data/UX (3–5 ngày)** | Chốt phạm vi từ tài liệu này, 10–20 cuốn thí điểm, field schema, wireframes public mobile/admin desktop, định dạng wishlist | Sitemap, design wireframes, fixture data, checklist | Không còn trường dữ liệu bắt buộc khó nhập; CTA rõ |
 | **M1 – foundation (4–6 ngày, ước lượng cần hiệu chỉnh)** | Monorepo, Cloudflare Workers Assets FE, spike SEO/SSR/SSG, Spring Boot Docker trên Dokploy/VPS, PostgreSQL private JDBC/Flyway, auth/RBAC, Cloudinary adapter, CI | Local và staging chạy end-to-end; có bằng chứng HTML metadata/link preview, kết nối DB nội bộ | Không rò draft; login role hoạt động; **chọn xong chiến lược SEO và Cloudflare** |
 | **M2 – admin catalogue (6–9 ngày)** | BookCopy/Listing CRUD thủ công, ba vai trò ảnh, tuổi/thể loại/kiểu bìa/mức đọc, publish/status, optimistic locking/audit | Admin desktop nhập thật 10–20 cuốn | Chủ tự tìm, sửa, publish, đánh dấu sold được |
-| **M3 – customer UX (6–9 ngày)** | Home/catalogue, lọc tuổi/thể loại, search/sort, detail ba ảnh/giá tham khảo, SEO/SSR/OG, CTA Zalo + nhóm, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
+| **M3 – customer UX (6–9 ngày)** | Home/catalogue, lọc tuổi/thể loại, search/sort, detail 2–6 ảnh/giá khoảng, SEO/SSR/OG, CTA Zalo + nhóm, responsive | Public mobile có metadata/link chia sẻ chuẩn | Dữ liệu trả đúng từng cuốn, tìm theo mã đúng |
 | **M4 – wishlist + polish (3–5 ngày)** | Local wishlist, copy multi-book enquiry, cập nhật sold, empty states, accessibility | A+B end-to-end trên điện thoại | Không tạo order, đã bán được cảnh báo |
 | **M5 – hardening/pilot/test online; release tách gate hạ tầng** | Spike Angular SSR trên Workers; backend Render Docker + Neon V1–V5 test; QA iOS/Android/in-app, cookie/CSRF/HTTPS, SEO/cache, backup/restore/rollback, performance/owner demo | Test end-to-end theo hạ tầng có thật; production VPS chưa thuê nên chưa nghiệm thu | Không cắt gate an toàn/SEO/khôi phục; không coi deployment test là release production |
 
 **Ngay sau M5/MVP:** import CSV/Excel tạo mới thành nháp theo mục 7; không đưa importer vào gate M2 hoặc M5.
 
-**Quy tắc ưu tiên khi trễ:** cắt collection đẹp/recommendations trước; không cắt ba ảnh bắt buộc hoặc link video đọc sách tùy chọn; không cắt khả năng phân biệt từng cuốn, cập nhật sold, backup, quyền admin và luồng hỏi mua. Không đưa `Order` vào làm đường tắt.
+**Quy tắc ưu tiên khi trễ:** cắt collection đẹp/recommendations trước; không cắt hai ảnh bìa/lưng bắt buộc hoặc link video đọc sách tùy chọn; không cắt khả năng phân biệt từng cuốn, cập nhật sold, backup, quyền admin và luồng hỏi mua. Không đưa `Order` vào làm đường tắt.
 
 ### 8.1. Backlog mở ticket ngay
 
@@ -326,14 +326,14 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 - [ ] Chủ chọn một bộ **50–100 listing kiểm thử** (có thể có subset 10–20 ảnh thật cho pilot), cùng tên nhưng khác bản cuốn vẫn có mã/ảnh/giá/tình trạng khác.
 - [ ] Customer ở iPhone Safari và Android Chrome tìm theo tên/mã, lọc tuổi/thể loại và quay lại detail không mất filters; không có bộ lọc giá/chủ đề/khả dụng/mức đọc. Cuốn gán nhiều nhóm tuổi được tìm thấy theo từng nhóm.
 - [ ] Một thể loại/cuốn; Picture book bắt buộc Paperback hoặc Hardcover, không lưu “Tất cả”; lọc “Tất cả” lấy cả hai kiểu.
-- [ ] Đủ đúng ba ảnh thật FRONT/BACK/INSIDE mới xuất bản; detail chỉ hiện ba ảnh, mô tả tình trạng/lỗi rõ; thiếu một ảnh bị chặn publish và giữ dữ liệu đang nhập.
+- [ ] Đủ 2–6 ảnh thật, FRONT/BACK bắt buộc mới đăng; detail hiện các vai trò đã có, mô tả tình trạng/lỗi rõ; thiếu ảnh bắt buộc bị chặn đăng và giữ dữ liệu đang nhập.
 - [ ] Tiêu đề ghép không có dấu phân cách thừa; giá tham khảo và ghi chú đúng. Bảy mức đọc đúng thứ tự, Flyers/Key chung A2, chú thích gợi ý của tiệm; “Chưa xác định” không chặn publish và ẩn trường. Link video đọc sách tùy chọn, không bịa thông tin thiếu.
 - [ ] Add/remove wishlist, reopen cùng browser còn danh sách; khác máy/ẩn danh không bị hứa đồng bộ; sách sold hiển thị cảnh báo.
 - [ ] Trái tim wishlist; còn hàng “Liên hệ”, hết hàng “Tư vấn sách tương đương”; nội dung có mục đích, mã/tên/giá tham khảo/URL. Hotline Zalo và nhóm cộng đồng đúng link tiệm cung cấp; không tự gửi tin.
 - [ ] Luồng sao chép → mở Zalo → dán/gửi và copy thủ công khi clipboard lỗi được thử trên desktop, mobile và in-app browser; điền sẵn chỉ cam kết nếu kiểm chứng được trên tài khoản hotline cá nhân zBusiness. Wishlist nhiều cuốn copy thông tin chính xác.
 - [ ] MVP nhập thủ công; import CSV/Excel không phải điều kiện nghiệm thu. Khả dụng chỉ Còn hàng/Hết hàng, độc lập publication.
 - [ ] Customer click không tạo `order`, không đổi `availability`, không làm giữ chỗ.
-- [ ] Admin trên laptop/desktop tạo nháp, upload, xem trước, xuất bản/ẩn, đổi giá/trạng thái; role staff không tự publish nếu không có quyền.
+- [ ] Admin trên laptop/desktop upload tạm, nhập trọng lượng/khoảng giá, xác nhận đăng, sửa/ẩn/hiện/hết hàng; STAFF chỉ xem, API ghi trả403.
 - [ ] Nháp/ẩn không lộ public API, sitemap và chi tiết URL; XSS/file upload/authorization được kiểm thử; concurrent edit không ghi đè âm thầm.
 - [ ] Title, description, canonical, OG image theo listing ở initial HTML; 404 thật; URL chia sẻ vẫn tồn tại sau sold (trừ khi chủ archive).
 - [ ] LCP mục tiêu **≤2,5 giây trong lab mobile có cấu hình đo được** trên trang đại diện; ảnh responsive/compression/lazy loading; ghi số đo chứ không tuyên bố đã đạt trước test.
@@ -364,7 +364,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
 2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
-3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, giá tham khảo, ba ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
+3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, khoảng giá, trọng lượng, 2–6 ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
 4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; online smoke27/10 đạt, pilot/recovery/performance còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
 6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.

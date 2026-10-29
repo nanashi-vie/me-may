@@ -22,6 +22,7 @@ export interface UploadItem {
   sourceRef: string;
   storedAlt: string;
   storedSource: string;
+  uploadRole?: MediaRole;
   prepared?: Blob;
   previous?: UploadItem;
   uncertain?: boolean;
@@ -203,6 +204,10 @@ export class BookUploadQueue {
     if (this.locked() || this.expired()) return;
     const r = this.rows().find((r) => r.id === id);
     if (!r || r.state !== 'error') return;
+    if (this.persisted() && r.uncertain) {
+      void this.reconcile(r);
+      return;
+    }
     this.patch(id, { state: 'queued', error: '' });
     this.paused.set(false);
     void this.pump();
@@ -210,7 +215,8 @@ export class BookUploadQueue {
   canRemove(row: UploadItem) {
     const b = this.persisted();
     if (!b) return !row.uncertain;
-    if (row.state !== 'READY') return false;
+    if (row.state !== 'READY')
+      return row.state === 'error' && !row.mediaId && !row.previous && !row.uncertain;
     if (b.publication !== 'PUBLISHED') return true;
     const original = b.media.find((m) => m.id === row.mediaId)?.role;
     return !['FRONT', 'BACK'].includes(original ?? '') && !['FRONT', 'BACK'].includes(row.role);
@@ -295,6 +301,7 @@ export class BookUploadQueue {
               existing?.role ??
               MEDIA_ROLES.find((role) => !book.media.some((m) => m.role === role));
             if (!role) throw Error('Sách đã có đủ 6 ảnh.');
+            this.patch(id, { uploadRole: role });
             const saved = await firstValueFrom(
               this.api.upload(book.id, role, book.version, body).pipe(
                 tap(progress),
@@ -348,6 +355,61 @@ export class BookUploadQueue {
       }
     } finally {
       this.processing.set(false);
+    }
+  }
+  private async reconcile(row: UploadItem) {
+    const before = this.persisted()!;
+    this.patch(row.id, { state: 'uploading', error: '' });
+    try {
+      const current = await firstValueFrom(this.api.get(before.id));
+      if (current.version === before.version) {
+        this.patch(row.id, { state: 'queued', uncertain: false });
+        void this.pump();
+        return;
+      }
+      const content = (b: BookDetail) => {
+        const { media, version, updatedAt, ...rest } = b;
+        return JSON.stringify(rest);
+      };
+      const image = current.media.find((m) => m.role === row.uploadRole);
+      const othersUnchanged = before.media
+        .filter((m) => m.role !== row.uploadRole)
+        .every((m) => current.media.some((n) => JSON.stringify(n) === JSON.stringify(m)));
+      if (
+        !image ||
+        current.version !== before.version + 1 ||
+        content(current) !== content(before) ||
+        !othersUnchanged ||
+        current.media.length !== before.media.length + (row.previous ? 0 : 1) ||
+        image.id === row.mediaId
+      )
+        throw new Error(
+          'Bản đã lưu có thay đổi khác. Giữ nguyên nội dung; mở bản đã lưu để đối chiếu trước khi tải lại.',
+        );
+      this.revoke(row.preview);
+      if (row.previous) this.revoke(row.previous.preview);
+      this.updateBook(current);
+      this.patch(row.id, {
+        state: 'READY',
+        mediaId: image.id,
+        preview: image.contentPath + '?v=' + current.version,
+        previous: undefined,
+        uncertain: false,
+        progress: 100,
+        alt: image.alt ?? '',
+        sourceRef: image.sourceRef ?? '',
+        storedAlt: image.alt ?? '',
+        storedSource: image.sourceRef ?? '',
+      });
+    } catch (e) {
+      this.patch(row.id, {
+        state: 'error',
+        uncertain: true,
+        error:
+          e instanceof Error
+            ? e.message
+            : 'Chưa đối chiếu được ảnh đã lưu. Thử lại để kiểm tra kết quả.',
+      });
     }
   }
   private report(e: unknown, id?: string) {

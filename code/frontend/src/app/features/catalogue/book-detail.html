@@ -117,6 +117,7 @@
       <app-contact-dialog
         #contact
         [book]="b"
+        [verifyText]="verifyContact"
         [busy]="verifying()"
         [config]="config()"
         [url]="origin + '/sach/' + b.slug"

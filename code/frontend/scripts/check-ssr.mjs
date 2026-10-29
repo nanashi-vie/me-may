@@ -31,7 +31,7 @@ const wishlistHtml = await wishlist.text();
 assert.ok(wishlistHtml.includes('<title>Danh sách quan tâm | Mẹ Mây</title>'));
 assert.ok(wishlistHtml.includes('Đang mở danh sách trên thiết bị'));
 assert.ok(
-  !wishlistHtml.includes('Số cuốn đã lưu'),
+  !/<span[^>]*aria-label="Số cuốn đã lưu"(?![^>]*visibility:\s*hidden)[^>]*>/.test(wishlistHtml),
   'SSR must not pretend to know the device count',
 );
 assert.ok(!/MM-\d{6,}/.test(wishlistHtml), 'SSR wishlist must not contain saved book data');
@@ -83,6 +83,20 @@ if (books.items.length) {
   assert.match(image.headers.get('cache-control') ?? '', /no-store/);
   assert.match(image.headers.get('content-type') ?? '', /image\/jpeg/);
   console.log('PASS public image delivery');
+  assert.ok(!JSON.stringify(b).includes('sourceRef'), 'Public DTO must not expose source metadata');
+  assert.ok(b.media.length >= 2 && b.media.length <= 6);
+  for (const width of [320, 640]) for (const format of ['jpg', 'webp']) {
+    const url = new URL(b.media[0].contentPath, origin);
+    url.searchParams.set('size', String(width)); url.searchParams.set('format', format);
+    const variant = await fetch(url);
+    assert.equal(variant.status, 200, url.pathname + url.search);
+    assert.match(variant.headers.get('cache-control') ?? '', /no-store/);
+    const bytes = Buffer.from(await variant.arrayBuffer());
+    assert.match(variant.headers.get('content-type') ?? '', format === 'jpg' ? /image\/jpeg/ : /image\/webp/);
+    if (format === 'jpg') assert.equal(bytes.subarray(0,3).toString('hex'), 'ffd8ff');
+    else { assert.equal(bytes.subarray(0,4).toString(), 'RIFF'); assert.equal(bytes.subarray(8,12).toString(), 'WEBP'); }
+  }
+  console.log('PASS M5 four media variants/MIME/magic/no-store/2–6 photos/private metadata');
 }
 for (const path of ['/sach/not-a-book', '/bo-suu-tap/not-a-collection']) {
   const r = await fetch(new URL(path, origin));

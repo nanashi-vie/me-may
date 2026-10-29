@@ -199,3 +199,12 @@ Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không 
 ### Gate release M5 media mới
 - Trước deployfrontendpicture, tạo và verifyđủ320/640×jpg/webp trên mọi ACTIVE media bằng scripts/deploy/backfill_public_media.py, dryrun/expectedcount rồi thử1asset cókiểmsoát. Checkpointmới .local/backups/public-variants-v2.done, không dùng checkpoint640JPEGcũ. Chưa chạy applyassetbánthật trong task2; thiếuWebP cóthể làm picturekhôngtải dùJPEGcũvẫnđược.
 - Backendphải deploycontractvariants trướcfrontend; giữbackups/rollback/gateonline như checklist hiện hành. Không coi liveprobe một assetmemay/test là backfillđãxong.
+
+### Rollout contract M5 (chưa chạy online)
+
+1. Tạm dừng ghi; chụp backup DB/media/manifest mới và kiểm restore scratch. Ghi schema/version/counts book/listing/media/audit, giá/ID/asset/published_at fingerprint, sequence high-water mark; giữ bản release cũ.
+2. Thử nâng V5→V9 trên scratch từ backup: giá cũ→hai đầu bằng nhau, INSIDE→INSIDE_1, DRAFT→ARCHIVED, weight cũ null; không mất asset hoặc tựẩn sách công khai. Đối chiếu audit/counts/fingerprint sau nâng.
+3. Deploy backend V6–V9 trước frontend đồng bộ contract; không cho frontend cũ ghi vào API mới. Chạy backfill4variant với expectedcount và checkpointv2 ở gate trên, verify response MIME/magic/dimensions.
+4. Deploy frontend sau backend/backfill; smoke OWNER tạo2/6ảnh/sửa/reorder/ẩn/hiện/SOLD và STAFF403, giá khoảng/weight/ảnh public/no-store. Không ghi synthetic QA vào catalogue bán thật.
+5. Migration không có down tự động. Nếu lỗi contract/data: dừng ghi, rollback app cùng DB backup đã xác minh và đối chiếu mọi ghi mới trước mở lại; không restore đè khi còn ghi hoặc reset sequence mù quáng. Rollback drill vẫn là gate chưa đạt.
+6. Đo lại Mobile Lighthouse3lần mỗi Home/detailMM-000020/wishlist cùng dữliệu, từngrun LCP≤2,5s/CLS≤0,1; coldstart riêng. Local test không thay kết quả online. User thực hiện merge main/deploy; phiên này không triển khai online.

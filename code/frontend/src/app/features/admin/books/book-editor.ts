@@ -251,11 +251,13 @@ export class BookEditor {
       this.error.set(
         'Phiên đã hết hạn. Đăng nhập lại bên dưới; nội dung đang sửa được giữ trên màn hình.',
       );
-    } else if (e.status === 410)
+    } else if (e.status === 410) {
+      this.photos.expired.set(true);
+      this.photos.paused.set(true);
       this.error.set(
         'Phiên ảnh đã hết hạn. Tạo lại phiên ảnh bên dưới; thông tin sách vẫn được giữ.',
       );
-    else if (e.status === 409)
+    } else if (e.status === 409)
       this.error.set(
         'Dữ liệu đã thay đổi ở nơi khác. Nội dung đang sửa vẫn được giữ; mở bản đã lưu ở tab khác để đối chiếu.',
       );

@@ -13,7 +13,7 @@ Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Đầu việc | File/mục cần đọc |
 |---|---|
 | Chốt hoặc thay đổi phạm vi | [MASTER_PLAN — quyết định](MASTER_PLAN.md#0-chốt-quyết-định-và-giới-hạn), [MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket), [milestones](MASTER_PLAN.md#8-kế-hoạch-triển-khai-theo-milestones-1-full-stack-developer) |
-| M2: nhập sách, taxonomy, publication, media | Đọc [M2_SPEC — đã duyệt](M2_SPEC.md) cùng [M2_PLAN — đang thực thi](M2_PLAN.md); đối chiếu [DATA — field](DATA.md#field-nhập-liệu-baseline-trước-m2), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop) khi cần |
+| M2: nhập sách, taxonomy, publication, media | Đọc [M2_SPEC — đã duyệt](M2_SPEC.md) cùng [M2_PLAN — đang thực thi](M2_PLAN.md); đối chiếu [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop) khi cần |
 | M3: Home/catalogue/detail, bộ lọc, Flash Sale và liên hệ | [ARCHITECTURE — contract public](ARCHITECTURE.md#public-m3--contract-đã-triển-khai), [DESIGN — Home](DESIGN.md#home-theo-mẫu-nxb-kim-đồng), [catalogue](DESIGN.md#catalogue--collection--khách-mobile), [detail](DESIGN.md#chi-tiết-cuốn--khách-mobile); bằng chứng ở VERIFICATION |
 | M4: wishlist và nội dung hỏi sách | [DESIGN — danh sách quan tâm](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [ARCHITECTURE — contract/lifecycle](ARCHITECTURE.md#wishlist-m4-local), [VERIFICATION — bằng chứng M4](VERIFICATION.md#m4-local--wishlist-và-hỏi-mua-nhiều-cuốn), [README root — sử dụng](../README.md#wishlist-m4-local) |
 | Sửa foundation M1, chạy local hoặc kiểm tra auth | [README root — chạy local](../README.md#chạy-trên-máy-hiện-tại), [auth/API](../README.md#authapi-m1), [VERIFICATION — kết quả/giới hạn](VERIFICATION.md) |
@@ -25,9 +25,9 @@ Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
-- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đã được user duyệt29/10**, tối ưu media/LCP/CLS, bỏ nháp, OWNER ghi/STAFF đọc, trọng lượng,2–6ảnh và khoảng giá giữ chú thích. Thay các quyết định baseline tương ứng; chưa coi là đã triển khai.
+- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đã được user duyệt29/10**, tối ưu media/LCP/CLS, bỏ nháp, OWNER ghi/STAFF đọc, trọng lượng,2–6ảnh và khoảng giá giữ chú thích. Thay các quyết định baseline tương ứng; task1–6 đã triển khai local, gate online còn mở.
 
-- [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md): kế hoạch7task thay plan hiệu năng cũ; đã giữ code/bằng chứng60c0404 và các gate trace/Lighthouse còn mở. User đã duyệt, đang thực thi tuần tự từ task1.
+- [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md): kế hoạch7task thay plan hiệu năng cũ; đã giữ code/bằng chứng60c0404 và các gate trace/Lighthouse còn mở. User đã duyệt; task1–6 local đạt, task7 regression/review/bàn giao và gate online còn mở.
 
 - Owner cố định27/10 đã cấp trên Neon; [DEPLOYMENT — tạo owner](DEPLOYMENT.md#owner-cố-định-tạo-riêng-một-lần) và ARCHITECTURE giữ contract. Phone auth hoãn sauMVP.
 

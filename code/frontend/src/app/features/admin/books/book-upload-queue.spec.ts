@@ -148,4 +148,57 @@ describe('book photo queue', () => {
     ]);
     expect(q.dirty()).toBe(true);
   });
+  it('allows discarding a failed unattached edit image without blocking existing edits', async () => {
+    const { q } = setup();
+    q.configure(testBook());
+    q.add([new File(['invalid'], 'bad.jpg', { type: 'image/jpeg' })]);
+    await vi.waitFor(() => expect(q.rows().some((r) => r.state === 'error')).toBe(true));
+    const row = q.rows().find((r) => r.state === 'error')!;
+    expect(q.canRemove(row)).toBe(true);
+    await q.remove(row.id);
+    expect(q.pending()).toBe(false);
+  });
+  it('reconciles a committed edit replacement after a lost response without uploading twice', async () => {
+    const response = new Subject<any>();
+    const book = {
+      ...testBook(),
+      media: [
+        { id: 'old', role: 'FRONT' as const, alt: 'A', sourceRef: null, contentPath: '/a' },
+        { id: 'back', role: 'BACK' as const, alt: 'B', sourceRef: null, contentPath: '/b' },
+      ],
+    };
+    const current = {
+      ...book,
+      version: book.version + 1,
+      media: [{ ...book.media[0], id: 'new', contentPath: '/new' }, book.media[1]],
+    };
+    const api = {
+      upload: vi.fn(() => response),
+      get: vi.fn(() => of(current)),
+      cancelSession: () => of(null),
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        BookUploadQueue,
+        { provide: BookApi, useValue: api },
+        { provide: PREPARE_BOOK_IMAGE, useValue: async (f: File) => f },
+      ],
+    });
+    const q = TestBed.inject(BookUploadQueue);
+    q.configure(book);
+    q.replace(q.sorted()[0].id, photo());
+    await vi.waitFor(() => expect(api.upload).toHaveBeenCalledTimes(1));
+    const id = q.sorted()[0].id;
+    q.step(id, 1);
+    response.error(new HttpErrorResponse({ status: 0 }));
+    await vi.waitFor(() => expect(q.pending()).toBe(true));
+    q.retry(id);
+    await vi.waitFor(() => expect(q.pending()).toBe(false));
+    expect(api.upload).toHaveBeenCalledTimes(1);
+    expect(api.get).toHaveBeenCalled();
+    expect(q.assignments()).toEqual([
+      { mediaId: 'back', role: 'FRONT' },
+      { mediaId: 'new', role: 'BACK' },
+    ]);
+  });
 });

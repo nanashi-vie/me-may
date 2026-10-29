@@ -16,7 +16,9 @@ const book: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Thực tế',
-  priceMinVnd: 20000, priceMaxVnd:20000, weightG:250,
+  priceMinVnd: 20000,
+  priceMaxVnd: 20000,
+  weightG: 250,
   salePriceVnd: null,
   saleEndsAt: null,
   description: null,
@@ -44,6 +46,23 @@ describe('Contact copy fallback', () => {
       f.detectChanges();
       expect(f.componentInstance.message()).not.toContain('Đã sao chép');
     });
+
+  it('revalidates before copying and clears stale text on verification failure', async () => {
+    const f = TestBed.createComponent(ContactDialog);
+    f.componentRef.setInput('preparedText', 'old price');
+    const verify = vi.fn().mockResolvedValue('fresh price');
+    f.componentRef.setInput('verifyText', verify);
+    f.detectChanges();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    await f.componentInstance.copy();
+    expect(verify).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith('fresh price');
+    verify.mockRejectedValue(new Error('network'));
+    await f.componentInstance.copy();
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(f.componentInstance.text()).toBe('');
+  });
   it('preserves selectable enquiry when clipboard fails', async () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', book);
@@ -64,7 +83,10 @@ describe('Contact copy fallback', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceMinVnd:20000,priceMaxVnd:20000,weightG:250,salePriceVnd:7000,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      weightG: 250,
+      salePriceVnd: 7000,
       saleEndsAt: '2000-01-01T00:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
@@ -82,7 +104,10 @@ describe('Enquiry uses server clock', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceMinVnd:20000,priceMaxVnd:20000,weightG:250,salePriceVnd:7000,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      weightG: 250,
+      salePriceVnd: 7000,
       saleEndsAt: '2026-10-23T13:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
