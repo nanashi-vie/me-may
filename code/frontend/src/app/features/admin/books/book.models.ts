@@ -1,4 +1,4 @@
-export type Publication = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
+export type Publication = 'PUBLISHED' | 'ARCHIVED';
 export type Availability = 'AVAILABLE' | 'SOLD';
 export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3';
 export type Binding = 'PAPERBACK' | 'HARDCOVER';
@@ -121,3 +121,8 @@ export interface AdminApiError {
   fieldErrors?: Record<string, string[]>;
   currentVersion?: number;
 }
+
+export interface MediaAssignment { mediaId: string; role: MediaRole; }
+export interface BookCreate { write: BookWrite; uploadSessionId: string; media: MediaAssignment[]; confirmedActualCopy: boolean; }
+export interface TemporaryMedia { id: string; state: 'READY' | 'UPLOADING'; alt: string | null; sourceRef: string | null; width: number | null; height: number | null; contentPath: string; }
+export interface UploadSession { id: string; state: string; expiresAt: string; media: TemporaryMedia[]; }

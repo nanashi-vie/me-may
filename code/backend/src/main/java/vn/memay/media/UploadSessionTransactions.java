@@ -49,8 +49,18 @@ public class UploadSessionTransactions {
   value=vn.memay.catalogue.BookValidation.trim(value);
   if(value!=null&&value.length()>max)throw AdminApiException.field(field,"Tối đa "+max+" ký tự");return value;
  }
- @Transactional public Intent begin(UUID session,AdminUser actor,UUID replace,String alt,String sourceRef) {
+ @Transactional public Intent begin(UUID session,AdminUser actor,UUID replace,String alt,String sourceRef,UUID requestKey,String fingerprint) {
   lock(session,actor,true);
+  if(requestKey!=null) {
+   var previous=jdbc.queryForList("select * from temporary_media where session_id=? and request_key=? and state in ('UPLOADING','READY')",session,requestKey);
+   if(!previous.isEmpty()) {
+    var p=previous.getFirst();
+    if(!fingerprint.equals(p.get("request_fingerprint")))throw new AdminApiException(409,"image_request_changed");
+    if(!p.get("state").equals("READY"))throw new AdminApiException(409,"upload_in_progress");
+    UUID id=(UUID)p.get("id");
+    return new Intent(id,session,p.get("storage_public_id").toString(),view(session).media().stream().filter(m->m.id().equals(id.toString())).findFirst().orElseThrow());
+   }
+  }
   long count=jdbc.queryForObject("select count(*) from temporary_media where session_id=? and state in ('READY','UPLOADING')",Long.class,session);
   if(replace!=null) {
    if(!Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from temporary_media where id=? and session_id=? and state='READY')",Boolean.class,replace,session)))throw new AdminApiException(404,"not_found");
@@ -59,7 +69,8 @@ public class UploadSessionTransactions {
   if(count>=(replace==null?6:7))throw new AdminApiException(409,"media_limit");
   UUID id=UUID.randomUUID();Instant now=clock.instant();String key=namespace+"/"+id;
   jdbc.update("insert into temporary_media(id,session_id,state,storage_public_id,replaces_id,alt,source_ref,created_at,updated_at,delete_after) values(?,?,'UPLOADING',?,?,?,?,?,?,?)",id,session,key,replace,text("alt",alt,300),text("sourceRef",sourceRef,500),Timestamp.from(now),Timestamp.from(now),Timestamp.from(now.plusSeconds(3600)));
-  return new Intent(id,session,key);
+  jdbc.update("update temporary_media set request_key=?,request_fingerprint=? where id=?",requestKey,fingerprint,id);
+  return new Intent(id,session,key,null);
  }
  @Transactional public TemporaryMedia ready(Intent intent,AdminUser actor,MediaGateway.UploadedMedia uploaded) {
   lock(intent.sessionId(),actor,true);
@@ -77,6 +88,11 @@ public class UploadSessionTransactions {
  @Transactional public String contentKey(UUID session,UUID media,AdminUser actor) {
   lock(session,actor,true);var keys=jdbc.queryForList("select storage_public_id from temporary_media where id=? and session_id=? and state='READY'",String.class,media,session);
   if(keys.isEmpty())throw new AdminApiException(404,"not_found");return keys.getFirst();
+ }
+ @Transactional public TemporaryMedia metadata(UUID session,UUID media,AdminUser actor,String alt,String sourceRef) {
+  lock(session,actor,true);
+  if(jdbc.update("update temporary_media set alt=?,source_ref=?,updated_at=? where id=? and session_id=? and state='READY'",text("alt",alt,300),text("sourceRef",sourceRef,500),Timestamp.from(clock.instant()),media,session)!=1)throw new AdminApiException(404,"not_found");
+  return view(session).media().stream().filter(m->m.id().equals(media.toString())).findFirst().orElseThrow();
  }
  @Transactional public void remove(UUID session,UUID media,AdminUser actor) {
   lock(session,actor,true);

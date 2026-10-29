@@ -6,7 +6,7 @@
 }
 @if (book(); as b) {
   @if (incomplete()) {
-    <p class="error">Bản nháp / chưa đủ điều kiện xuất bản.</p>
+    <p class="error">Sách này chưa đủ điều kiện xuất bản.</p>
   }
   <h1>{{ title() || 'Chưa có tên sách' }}</h1>
   <p class="muted">

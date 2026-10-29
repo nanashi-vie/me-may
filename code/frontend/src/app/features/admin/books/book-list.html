@@ -3,14 +3,13 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a>
+  @if(auth.user()?.role === 'OWNER') { <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a> }
 </div>
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label>Tên hoặc mã sách<input formControlName="q" maxlength="200" type="search" /></label
   ><label
     >Xuất bản<select formControlName="publication">
       <option value="">Tất cả</option>
-      <option value="DRAFT">Nháp</option>
       <option value="PUBLISHED">Công khai</option>
       <option value="ARCHIVED">Ẩn</option>
     </select></label

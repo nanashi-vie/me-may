@@ -29,4 +29,11 @@ class UploadSessionApiTest extends MediaTestSupport {
   jdbc.update("update upload_session set created_at=current_timestamp-interval '2 days',expires_at=current_timestamp-interval '1 second' where id=?",UUID.fromString(id));
   assertThat(api.upload(base+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(410);
  }
+ @Test void retryingTheSameImageRequestReusesReadyMediaAndRejectsDifferentBytes()throws Exception {
+  var api=new AdminHttpClient(port);api.login("owner@catalogue.test");String id=tree(api.send("POST","/api/v1/admin/upload-sessions","{}",true)).path("id").asString();
+  String path="/api/v1/admin/upload-sessions/"+id+"/media?requestKey="+UUID.randomUUID();
+  var a=api.upload(path,0,ImageValidatorTest.image("jpeg"),true);var b=api.upload(path,0,ImageValidatorTest.image("jpeg"),true);
+  assertThat(a.statusCode()).isEqualTo(201);assertThat(b.statusCode()).isEqualTo(201);assertThat(tree(a).path("id").asString()).isEqualTo(tree(b).path("id").asString());assertThat(fake.uploads.get()).isEqualTo(1);
+  assertThat(api.upload(path,0,ImageValidatorTest.image("png"),true).statusCode()).isEqualTo(409);
+ }
 }

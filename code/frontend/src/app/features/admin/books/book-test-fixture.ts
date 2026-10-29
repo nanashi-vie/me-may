@@ -7,7 +7,7 @@ export function testBook(): BookDetail {
     bookCode: 'MM-000001',
     slug: 'mm-000001',
     version: 0,
-    publication: 'DRAFT',
+    publication: 'ARCHIVED',
     availability: 'AVAILABLE',
     publishedAt: null,
     createdAt: '2026-10-22T00:00:00Z',

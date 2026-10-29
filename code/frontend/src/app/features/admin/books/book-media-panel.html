@@ -1,63 +1,175 @@
-<section>
-  <h2>Ba ảnh thật của cuốn sách</h2>
+<section aria-labelledby="photo-heading">
+  <h2 id="photo-heading">Ảnh thật của cuốn sách</h2>
   <p>
-    JPEG hoặc PNG, tối đa 10 MiB / 25 megapixel mỗi ảnh. Đối chiếu đúng mã {{ book().bookCode }}.
-    Ảnh mới chỉ thay ảnh cũ sau khi lưu thành công.
+    Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
+    nội dung 3.
   </p>
-  @if (dirty()) {
-    <p class="error">Lưu nội dung sách trước khi chỉnh ảnh.</p>
-  }
-  @if (error()) {
-    <p class="error" role="alert">{{ error() }}</p>
-  }
-  <fieldset [disabled]="dirty() || disabled() || busy()">
-    <legend class="sr-only">Ảnh và thông tin ảnh</legend>
-    <div class="photo-grid">
-      @for (role of roles; track role) {
-        <div class="photo-slot">
-          <h3>{{ labels[role] }}</h3>
-          @if (image(role); as img) {
-            <img [src]="img.contentPath + '?v=' + book().version" [alt]="img.alt || labels[role]" />
-          } @else {
-            <div class="empty-photo">Chưa có ảnh</div>
-          }
-          <label
-            >Chọn {{ image(role) ? 'ảnh thay thế' : 'ảnh'
-            }}<input type="file" accept="image/jpeg,image/png" (change)="select(role, $event)"
-          /></label>
-          @if (selected()[role]; as file) {
-            <small>Đã chọn: {{ file.name }}</small>
-          }
-          <label
-            >Mô tả ảnh<input
-              [value]="alt(role)"
-              maxlength="300"
-              (input)="setAlt(role, $any($event.target).value)" /></label
-          ><label
-            >Nguồn / ghi chú nội bộ<input
-              [value]="source(role)"
-              maxlength="500"
-              (input)="setSource(role, $any($event.target).value)"
-          /></label>
-          @if (image(role)) {
-            <div class="actions">
-              <button class="secondary" type="button" (click)="saveMetadata(role)">
-                Lưu thông tin ảnh
-              </button>
-              @if (book().publication !== 'PUBLISHED') {
-                <button class="secondary" type="button" (click)="remove(role)">Gỡ ảnh</button>
-              }
-            </div>
-          }
-        </div>
-      }
+  @if (!readonly()) {
+    <div
+      class="drop-zone"
+      [class.dragging]="dragging()"
+      (dragover)="over($event)"
+      (dragleave)="dragging.set(false)"
+      (drop)="dropFiles($event)"
+    >
+      <label
+        >Chọn nhiều ảnh hoặc kéo file vào đây<input
+          type="file"
+          multiple
+          accept="image/jpeg,image/png"
+          [disabled]="disabled()"
+          (change)="select($event)"
+      /></label>
+      <small
+        >JPEG/PNG tối đa 10 MB / 25 megapixel. Ảnh lớn hơn 5 MB sẽ được cảnh báo; ảnh được xoay đúng
+        chiều và thu gọn trước khi tải.</small
+      >
     </div>
-    <button type="button" (click)="uploadFiles()">Tải các ảnh đã chọn</button>
-  </fieldset>
-  @if (busy()) {
+  }
+  @if (photos.error()) {
+    <p class="error" role="alert">{{ photos.error() }}</p>
+  }
+  @if (photos.expired() && !readonly()) {
+    <button
+      type="button"
+      class="secondary"
+      [disabled]="disabled() || photos.processing()"
+      (click)="photos.renew()"
+    >
+      Tạo lại phiên ảnh, giữ các file đã chọn
+    </button>
+  }
+  <p role="status" aria-live="polite">{{ photos.announcement() }}</p>
+  <div class="photo-grid">
+    @for (row of photos.sorted(); track row.id; let i = $index) {
+      <article
+        class="photo-slot"
+        [draggable]="!disabled() && !readonly()"
+        (dragstart)="start($event, row.id)"
+        (dragover)="$event.preventDefault()"
+        (drop)="dropCard($event, row.id)"
+      >
+        <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
+        @if (row.preview) {
+          <img
+            [src]="row.state === 'error' && row.previous ? row.previous.preview : row.preview"
+            [alt]="row.alt || labels[row.role]"
+            width="240"
+            height="320"
+          />
+        }
+        @if (row.file) {
+          <small>{{ row.file.name }}</small>
+        }
+        @if (row.large) {
+          <p class="warning">Ảnh nguồn lớn hơn 5 MB, đang dùng bản thu gọn.</p>
+        }
+        <p role="status">
+          {{
+            row.state === 'READY'
+              ? 'Đã tải ảnh'
+              : row.state === 'error'
+                ? 'Chưa tải được ảnh'
+                : row.state === 'preparing'
+                  ? 'Đang xử lý ảnh…'
+                  : row.state === 'queued'
+                    ? 'Đang chờ tải…'
+                    : 'Đang tải ảnh…'
+          }}
+        </p>
+        @if (row.state === 'uploading') {
+          <progress
+            [value]="row.progress"
+            max="100"
+            [attr.aria-label]="'Tiến trình tải ' + labels[row.role]"
+          ></progress>
+        }
+        @if (row.error) {
+          <p class="error" role="alert">{{ row.error }}</p>
+        }
+        @if (!readonly()) {
+          <fieldset [disabled]="disabled()">
+            <label
+              >Vai trò ảnh<select
+                [value]="row.role"
+                (change)="photos.assignRole(row.id, $any($event.target).value)"
+              >
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ labels[role] }}</option>
+                }
+              </select></label
+            >
+            <div class="actions">
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="i === 0"
+                (click)="photos.step(row.id, -1)"
+                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' lên'"
+              >
+                Đưa lên
+              </button>
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="i === photos.rows().length - 1"
+                (click)="photos.step(row.id, 1)"
+                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' xuống'"
+              >
+                Đưa xuống
+              </button>
+              <button
+                type="button"
+                class="secondary"
+                [disabled]="!photos.canRemove(row)"
+                (click)="photos.remove(row.id)"
+              >
+                Gỡ ảnh
+              </button>
+            </div>
+            @if (row.state === 'error') {
+              <button type="button" [disabled]="photos.expired()" (click)="photos.retry(row.id)">
+                Thử lại ảnh này
+              </button>
+            }
+            @if (row.previous && row.state === 'error' && !row.uncertain) {
+              <button type="button" class="secondary" (click)="photos.keepPrevious(row.id)">
+                Giữ ảnh cũ
+              </button>
+            }
+            <label
+              >Thay ảnh<input
+                type="file"
+                accept="image/jpeg,image/png"
+                [disabled]="row.state !== 'READY'"
+                (change)="replace(row.id, $event)"
+            /></label>
+            <details>
+              <summary>Mô tả và nguồn ảnh</summary>
+              <label
+                >Mô tả ảnh<input
+                  [value]="row.alt"
+                  maxlength="300"
+                  [disabled]="row.state !== 'READY'"
+                  (input)="photos.setMetadata(row.id, 'alt', $any($event.target).value)"
+              /></label>
+              <label
+                >Nguồn / ghi chú nội bộ<input
+                  [value]="row.sourceRef"
+                  maxlength="500"
+                  [disabled]="row.state !== 'READY'"
+                  (input)="photos.setMetadata(row.id, 'sourceRef', $any($event.target).value)"
+              /></label>
+            </details>
+          </fieldset>
+        }
+      </article>
+    }
+  </div>
+  @if (photos.persisted() && photos.dirty()) {
     <p role="status">
-      {{ uploadingRole() ? labels[uploadingRole()!] : '' }} · Đang xử lý… {{ progress() }}%
+      Thứ tự và thông tin ảnh đang sửa sẽ áp dụng khi chọn Lưu thay đổi. Ảnh tải mới được lưu riêng
+      từng ảnh.
     </p>
-    <progress [value]="progress()" max="100" aria-label="Tiến trình tải ảnh"></progress>
   }
 </section>

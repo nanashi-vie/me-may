@@ -12,17 +12,14 @@ import { Availability, BookDetail, Publication } from './book.models';
           <p>Lưu nội dung trước khi đổi trạng thái.</p>
         }
         <div class="buttons">
-          @if (book().publication === 'DRAFT') {
-            <button (click)="choose('PUBLISHED')" [disabled]="locked()">Xuất bản</button>
-          }
           @if (book().publication === 'PUBLISHED') {
             <button class="secondary" (click)="choose('ARCHIVED')" [disabled]="locked()">
               Ẩn sách
             </button>
           }
           @if (book().publication === 'ARCHIVED') {
-            <button class="secondary" (click)="choose('DRAFT')" [disabled]="locked()">
-              Khôi phục nháp
+            <button class="secondary" (click)="choose('PUBLISHED')" [disabled]="locked()">
+              Hiện sách
             </button>
           }
           <button
@@ -47,7 +44,7 @@ import { Availability, BookDetail, Publication } from './book.models';
             type="checkbox"
             [checked]="confirmed()"
             (change)="confirmed.set($any($event.target).checked)"
-          />Tôi đã đối chiếu đủ ba ảnh và tình trạng với đúng cuốn sách này.</label
+          />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng với đúng cuốn sách này.</label
         >
       }
       @if (error()) {
@@ -114,11 +111,10 @@ export class BookStatusActions {
       {
         PUBLISHED: 'xuất bản',
         ARCHIVED: 'ẩn sách',
-        DRAFT: 'khôi phục nháp',
         SOLD: 'hết hàng',
         AVAILABLE: 'còn hàng',
       } as const
-    )[this.pending() ?? 'DRAFT'];
+    )[this.pending() ?? 'ARCHIVED'];
   }
   choose(action: Publication | Availability) {
     if (this.locked()) return;
