@@ -156,15 +156,15 @@ String alt,String sourceRef): TemporaryMedia`; ảnh trả ID/trạng thái/dime
 Session có OPEN/CONSUMED/CANCELLED, createdAt/expiresAt/ownerId/bookId;
 media có UPLOADING/READY/DELETE_PENDING, storagePublicId unique, owner-bound.
 
-- [ ] RED anonymous401/STAFF403/ownerkhác404, GETcontent no-store không SSRcache;
+- [x] RED anonymous401/STAFF403/ownerkhác404, GETcontent no-store không SSRcache;
   tối đa6ảnh còn sử dụng, ảnh lỗi không mất READY cũ, expiredsession khôngupload.
-- [ ] RED provider timeout/restart sau intent hoặc sau upload: cleanup retry
+- [x] RED provider timeout/restart sau intent hoặc sau upload: cleanup retry
   được, không cần BookCopy/Listing/code/auditCREATE trước final.
-- [ ] RED cleanup cạnh tranh attach: chỉ claim trong transaction có rowlock,
+- [x] RED cleanup cạnh tranh attach: chỉ claim trong transaction có rowlock,
   không xóa session CONSUMED/media đã gắn; upload xong sau expiry phải cleanup.
-- [ ] Chạy targeted UploadSessionApiTest/UploadSessionIntegrationTest RED;
+- [x] Chạy targeted UploadSessionApiTest/UploadSessionIntegrationTest RED;
   implement intent→cloudoutsideDB→READY, dùng clock/testfake hiện có.
-- [ ] GREEN cả MediaCleanupIntegrationTest; xác minh DB không có sách/mã mới
+- [x] GREEN cả MediaCleanupIntegrationTest; xác minh DB không có sách/mã mới
   chỉ do upload. Commit migration/service/tests+docs, chưa bật UI tạo mới.
 
 ### Task 5: Final tạoPUBLISHED, OWNER-only và bỏDRAFT

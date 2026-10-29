@@ -24,7 +24,8 @@ user đã duyệt và chọn Native thực hiện tuần tự trong chat này.
 Task1 local đạt: frontend97/97/builtSSR/browser390+laptop, fixhydration
 CLS; logoWebP10KB. Task2local media4variant/normalize/frontend100/100/backendverifyđạt,
 live1assettest+cleanupPASS; chưabackfill63ảnhbánthật. Task3 V6/fields/roles/giá local đạt98backend/102frontend; browserfields
-để QA tíchhợp task6/7. Đangtask4 phiênảnh tạm vàcleanup. Baseline mới: frontend95/95PASS; backend
+để QA tíchhợp task6/7. Task4 V7/phiênảnh/cleanup đạt102backend, chưaUI.
+Đangtask5 finalPUBLISHED/idempotency/OWNER-only/bỏDRAFT. Baseline mới: frontend95/95PASS; backend
 verify93run/0failure/0error/2live skippedPASS sau rerun ngoài sandbox.
 Bổ sung29/10: trọng lượng sách (đề xuất gram), khoảng giá từ–đến và giữ
 nguyên chú thích giá. Chọn/thả2–6ảnh, bìa/lưng bắt buộc, thứ tự mặc định
