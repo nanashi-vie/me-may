@@ -24,4 +24,17 @@ class M5MigrationTest {
    assertThatThrownBy(()->jdbc.update("update listing set price_min_vnd=30000,price_max_vnd=20000")).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
   } finally { PgTestData.jdbc().execute("drop schema if exists "+schema+" cascade"); }
  }
+ @Test void retiresOnlyLegacyDraftWhilePreservingHistoricalAuditAndPublishedBooks() {
+  String schema="m5state_"+UUID.randomUUID().toString().replace("-","");var jdbc=PgTestData.jdbc(schema);
+  var config=Flyway.configure().dataSource(PgTestData.requireTestJdbcUrl(System.getenv("TEST_DB_URL")),System.getenv("DB_USER"),System.getenv("DB_PASSWORD")).schemas(schema).defaultSchema(schema);
+  try {
+   config.target("7").load().migrate();jdbc.update("insert into admin_user(id,email,password_hash,role) values(1,'history@test.example','hash','OWNER')");
+   jdbc.update("insert into book_copy(id,book_code) values(1,'MM-000001'),(2,'MM-000002')");
+   jdbc.update("insert into listing(book_copy_id,slug,publication_status) values(1,'mm-000001','DRAFT'),(2,'mm-000002','PUBLISHED')");
+   jdbc.update("insert into audit_event(actor_id,target_type,target_id,action,after_data,aggregate_version) values(1,'BOOK',1,'CREATE','{\"publication\":\"DRAFT\"}',0)");
+   config.target(org.flywaydb.core.api.MigrationVersion.LATEST).load().migrate();
+   assertThat(jdbc.queryForObject("select publication_status from listing where book_copy_id=1",String.class)).isEqualTo("ARCHIVED");assertThat(jdbc.queryForObject("select publication_status from listing where book_copy_id=2",String.class)).isEqualTo("PUBLISHED");
+   assertThat(jdbc.queryForObject("select after_data->>'publication' from audit_event",String.class)).isEqualTo("DRAFT");assertThat(jdbc.queryForObject("select weight_g from book_copy where id=2",Long.class)).isNull();
+  }finally{PgTestData.jdbc().execute("drop schema if exists "+schema+" cascade");}
+ }
 }

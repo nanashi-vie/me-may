@@ -33,8 +33,8 @@ public class AdminBookController {
     }
 
     @PostMapping
-    public ResponseEntity<BookDetail> create(Authentication a, @RequestBody BookWrite body) {
-        var result = commands.create(actors.current(a), body);
+    public ResponseEntity<BookDetail> create(Authentication a, @RequestBody BookCreate body) {
+        var result = commands.createPublished(actors.current(a), body);
         return ResponseEntity.created(URI.create("/api/v1/admin/books/" + result.id())).body(result);
     }
 
@@ -45,7 +45,7 @@ public class AdminBookController {
 
     @PutMapping("/{id}")
     public BookDetail update(Authentication a, @PathVariable long id, @Valid @RequestBody BookUpdate body) {
-        return commands.update(id, body.version(), actors.current(a), body.write());
+        return commands.update(id, body.version(), actors.current(a), body.write(), body.media());
     }
 
     @PatchMapping("/{id}/publication")

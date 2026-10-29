@@ -17,7 +17,7 @@ class BookStatusIntegrationTest extends CatalogueTestSupport {
   var b=ready();long id=Long.parseLong(b.id());var pub=statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true);
   var sold=statuses.availability(id,pub.version(),owner,Availability.SOLD);assertThat(sold.publication()).isEqualTo(Publication.PUBLISHED);
   var hidden=statuses.publication(id,sold.version(),owner,Publication.ARCHIVED,false);assertThat(hidden.availability()).isEqualTo(Availability.SOLD);
-  var draft=statuses.publication(id,hidden.version(),owner,Publication.DRAFT,false);var again=statuses.publication(id,draft.version(),owner,Publication.PUBLISHED,true);
+  var draft=statuses.publication(id,hidden.version(),owner,Publication.ARCHIVED,false);var again=statuses.publication(id,draft.version(),owner,Publication.PUBLISHED,true);
   assertThat(again.bookCode()).isEqualTo(b.bookCode());assertThat(again.publishedAt()).isEqualTo(pub.publishedAt());
   var same=statuses.publication(id,again.version(),owner,Publication.PUBLISHED,false);assertThat(same.version()).isEqualTo(again.version());
  }

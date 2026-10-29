@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 class MediaPrivacyApiTest extends MediaTestSupport {
  @Value("${local.server.port}")int port;
  @Test void streamIsAuthenticatedAndDoesNotRedirectOrLeakCloudKey()throws Exception{
-  var b=commands.create(owner,BookFixtures.draft("A"));var uploaded=media.upload(Long.parseLong(b.id()),MediaDtos.MediaRole.FRONT,b.version(),owner,ImageValidatorTest.image("jpeg"),null,"internal-source");String path="/api/v1/admin/books/"+b.id()+"/media/FRONT/content";
+  var b=seed(owner,BookFixtures.draft("A"));var uploaded=media.upload(Long.parseLong(b.id()),MediaDtos.MediaRole.FRONT,b.version(),owner,ImageValidatorTest.image("jpeg"),null,"internal-source");String path="/api/v1/admin/books/"+b.id()+"/media/FRONT/content";
   var api=new AdminHttpClient(port);assertThat(api.send("GET",path,null,false).statusCode()).isEqualTo(401);api.login("owner@catalogue.test");var response=api.send("GET",path,null,false);assertThat(response.statusCode()).isEqualTo(200);assertThat(response.headers().firstValue("content-type").orElse("")).isEqualTo("image/jpeg");assertThat(response.headers().firstValue("cache-control").orElse("")).contains("no-store");assertThat(response.headers().firstValue("x-content-type-options").orElse("")).isEqualTo("nosniff");assertThat(response.headers().firstValue("location")).isEmpty();assertThat(json(uploaded)).doesNotContain("storagePublicId","cloudinary","memay/test");
  }
  @Test void metadataRequiresVersionAndStaffCannotMutatePublishedMedia()throws Exception{
@@ -20,7 +20,7 @@ class MediaPrivacyApiTest extends MediaTestSupport {
   assertThat(api.send("DELETE",path+"?version="+published,null,true).statusCode()).isEqualTo(409);api.login("staff@catalogue.test");assertThat(api.send("PATCH",path,json(Map.of("version",published,"alt","B")),true).statusCode()).isEqualTo(403);assertThat(fake.uploads.get()).isZero();
  }
  @Test void uploadErrorsAndCsrfCannotReachProvider()throws Exception{
-  var b=commands.create(owner,BookFixtures.draft("A"));var api=new AdminHttpClient(port);api.login("owner@catalogue.test");String path="/api/v1/admin/books/"+b.id()+"/media/FRONT";
+  var b=seed(owner,BookFixtures.draft("A"));var api=new AdminHttpClient(port);api.login("owner@catalogue.test");String path="/api/v1/admin/books/"+b.id()+"/media/FRONT";
   assertThat(api.upload(path,b.version(),ImageValidatorTest.image("png"),false).statusCode()).isEqualTo(403);
   assertThat(api.upload(path,b.version(),"<svg/>".getBytes(),true).statusCode()).isEqualTo(415);
   var tooLarge=api.upload(path,b.version(),new byte[10*1024*1024+1],true);assertThat(tooLarge.statusCode()).isEqualTo(413);assertThat(tree(tooLarge).path("error").asString()).isEqualTo("image_too_large");

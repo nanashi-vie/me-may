@@ -181,21 +181,21 @@ UUID uploadSessionId,List<MediaAssignment> media,boolean confirmedActualCopy)`.
 `createPublished(AdminUser,BookCreate): BookDetail` khóa session, chống tạo trùng.
 PUT sách thêm mapping reorder theo mediaID/version; publication chỉPUBLISHED/ARCHIVED.
 
-- [ ] RED final2ảnh FRONT/BACK hoặc6ảnh READY thành công, thiếuảnh/requiredfield/
+- [x] RED final2ảnh FRONT/BACK hoặc6ảnh READY thành công, thiếuảnh/requiredfield/
   confirmation/weight/giá bịchặn, foreignID/duplicaterole/id/expired bịchặn.
-- [ ] RED doubleclick/concurrentfinal/lostresponse: chỉ1sách/slug/CREATE/PUBLISHED,
+- [x] RED doubleclick/concurrentfinal/lostresponse: chỉ1sách/slug/CREATE/PUBLISHED,
   cùng normalizedpayload trả cùngbook; khácpayload409; lưu requestfingerprint.
-- [ ] RED final failure rollback không có aggregate nửa chừng; sessionREADY retry;
+- [x] RED final failure rollback không có aggregate nửa chừng; sessionREADY retry;
   final recheck OWNER active, CSRF/quyền sau I/O, không trust client.
-- [ ] RED STAFF mọi endpoint ghi403 gồm create/update/media/status/taxonomy/
+- [x] RED STAFF mọi endpoint ghi403 gồm create/update/media/status/taxonomy/
   collection/sale/config/user; đọc vẫnđược; backend guard kể cả gọiAPI trực tiếp.
-- [ ] RED migration DRAFT→ARCHIVED giữdata/audit; PUBLISHED↔ARCHIVED trực tiếp,
+- [x] RED migration DRAFT→ARCHIVED giữdata/audit; PUBLISHED↔ARCHIVED trực tiếp,
   published_at đầu tiên giữ nguyên, không tựpublish; DRAFT request bịreject.
-- [ ] RED reorder media nguyên tử/version/audit; conflict409 giữ publicmappingcũ,
+- [x] RED reorder media nguyên tử/version/audit; conflict409 giữ publicmappingcũ,
   không tạm thiếu FRONT/BACK hoặc đổi IDảnh; không buộc đủ6ảnh.
-- [ ] Chạy targeted RED, implement final/guards/state transition, bỏ API tạoDRAFT;
+- [x] Chạy targeted RED, implement final/guards/state transition, bỏ API tạoDRAFT;
   sách cũ weightnull vẫn public nhưng OWNER lưusửa/hiệnlại phải bổ sung.
-- [ ] GREEN fullbackend; commit cùng migration/tests/docs. Không chạy V6–V8 online.
+- [x] GREEN fullbackend; commit cùng migration/tests/docs. Không chạy V6–V8 online.
 
 ### Task 6: Editor mới, multi-upload/reorder và STAFF chỉ xem
 

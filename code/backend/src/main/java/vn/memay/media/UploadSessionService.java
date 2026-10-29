@@ -15,7 +15,7 @@ public class UploadSessionService {
   try(var lease=limiter.acquire(actor.getId())) {
    var intent=transactions.begin(id,actor,replace,alt,sourceRef);
    try {return transactions.ready(intent,actor,gateway.upload(intent.publicId(),file));}
-   catch(RuntimeException e){transactions.failed(intent.id());throw e;}
+   catch(RuntimeException e){try{transactions.failed(intent.id());}catch(RuntimeException cleanup){org.slf4j.LoggerFactory.getLogger(UploadSessionService.class).warn("Temporary upload awaiting recovery: {}",intent.id());}throw e;}
   }
  }
  public InputStream content(UUID session,UUID media,AdminUser actor){return gateway.openPreview(transactions.contentKey(session,media,actor));}

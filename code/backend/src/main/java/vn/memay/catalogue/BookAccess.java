@@ -8,8 +8,7 @@ import vn.memay.catalogue.BookDtos.Publication;
 @Component
 public class BookAccess {
     public void requireWritable(AdminUser actor, Publication state) {
-        if (actor.getRole() != AdminUser.Role.OWNER && state != Publication.DRAFT)
-            throw new AdminApiException(403, "forbidden");
+        requireOwner(actor);
     }
 
     public void requireOwner(AdminUser actor) {

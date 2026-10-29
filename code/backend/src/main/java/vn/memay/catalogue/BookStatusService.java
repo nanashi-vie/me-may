@@ -45,15 +45,15 @@ public class BookStatusService {
             throw AdminApiException.field("status", "Chọn trạng thái");
         if (target == l.publicationStatus)
             return before;
-        boolean valid = (l.publicationStatus == Publication.DRAFT && target == Publication.PUBLISHED)
-                || (l.publicationStatus == Publication.PUBLISHED && target == Publication.ARCHIVED)
-                || (l.publicationStatus == Publication.ARCHIVED && target == Publication.DRAFT);
+        boolean valid = (l.publicationStatus == Publication.ARCHIVED && target == Publication.PUBLISHED)
+                || (l.publicationStatus == Publication.PUBLISHED && target == Publication.ARCHIVED);
         if (!valid)
             throw new AdminApiException(409, "transition_conflict");
         if (target == Publication.PUBLISHED) {
             if (!confirmedActualCopy)
                 throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
             validation.validatePublished(before);
+            validation.validateWrite(mapper.write(before));
             if (l.publishedAt == null)
                 l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         }

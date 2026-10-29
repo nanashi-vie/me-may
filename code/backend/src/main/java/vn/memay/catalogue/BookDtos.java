@@ -6,7 +6,7 @@ import vn.memay.media.MediaDtos.MediaRole;
 
 public final class BookDtos {
     public enum Publication {
-        DRAFT, PUBLISHED, ARCHIVED
+        PUBLISHED, ARCHIVED
     }
 
     public enum Availability {
@@ -18,11 +18,14 @@ public final class BookDtos {
             List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds) {
     }
 
+    public record MediaAssignment(java.util.UUID mediaId, MediaRole role) {}
+    public record BookCreate(BookWrite write, java.util.UUID uploadSessionId, List<MediaAssignment> media, boolean confirmedActualCopy) {}
+
     public record BookUpdate(
             @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,
             String title, String isbn, String publisher, String author, String language, String binding,
             String conditionGrade, String conditionNote, Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String categoryCode,
-            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds) {
+            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds, List<MediaAssignment> media) {
         public BookWrite write() {
             return new BookWrite(title, isbn, publisher, author, language, binding, conditionGrade, conditionNote,
                     priceMinVnd, priceMaxVnd, weightG, description, categoryCode, ageGroups, readingLevel, readingVideoUrl, collectionIds);

@@ -16,7 +16,7 @@ class BookRaceIntegrationTest extends CatalogueTestSupport {
   }
  }
  @Test void twoVersionsHaveOneWinner()throws Exception{
-  var b=commands.create(owner,BookFixtures.draft("Start"));long id=Long.parseLong(b.id());
+  var b=seed(owner,BookFixtures.draft("Start"));long id=Long.parseLong(b.id());
   assertThat(race(()->commands.update(id,b.version(),owner,BookFixtures.draft("First")),()->commands.update(id,b.version(),owner,BookFixtures.draft("Second")))).isEqualTo(1);
   assertThat(jdbc.queryForObject("select count(*) from audit_event where target_id=?",Integer.class,id)).isEqualTo(2);
  }

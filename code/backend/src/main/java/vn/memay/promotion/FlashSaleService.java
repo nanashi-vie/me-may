@@ -38,7 +38,6 @@ public class FlashSaleService {
 
     @Transactional(readOnly = true)
     public Campaign get(AdminUser actor) {
-        access.requireOwner(actor);
         return current();
     }
 

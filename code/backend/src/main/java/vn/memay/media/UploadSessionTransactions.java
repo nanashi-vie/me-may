@@ -18,7 +18,7 @@ public class UploadSessionTransactions {
   this.jdbc=jdbc;this.clock=clock;this.namespace=namespace;
  }
  public void requireOwner(AdminUser actor) {
-  var roles=jdbc.queryForList("select role from admin_user where id=? and active",String.class,actor.getId());
+  var roles=jdbc.queryForList("select role from admin_user where id=? and active for share",String.class,actor.getId());
   if(roles.isEmpty())throw new AdminApiException(401,"unauthorized");
   if(!roles.getFirst().equals("OWNER"))throw new AdminApiException(403,"forbidden");
  }

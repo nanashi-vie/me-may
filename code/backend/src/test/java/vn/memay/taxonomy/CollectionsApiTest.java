@@ -21,10 +21,11 @@ class CollectionsApiTest extends CatalogueTestSupport {
  @Test void inactiveCollectionsKeepOldAssignmentsButRejectNewOnes()throws Exception{
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");
   var c=tree(api.send("POST","/api/v1/admin/collections",json(Map.of("name","C","slug","c","sortOrder",0,"active",true)),true));String id=c.path("id").asString();
-  var w=BookFixtures.write("A",null,null,null,null,null,List.of(),List.of(id));var b=commands.create(owner,w);
+  var w=BookFixtures.write("A",null,null,null,null,null,List.of(),List.of(id));var b=seed(owner,w);
   api.send("PUT","/api/v1/admin/collections/"+id,json(Map.of("version",c.path("version").asLong(),"name","C","sortOrder",0,"active",false)),true);
   assertThatCode(()->commands.update(Long.parseLong(b.id()),b.version(),owner,w)).doesNotThrowAnyException();
-  assertThatThrownBy(()->commands.create(owner,w)).isInstanceOf(vn.memay.common.AdminApiException.class);
-  assertThat(jdbc.queryForObject("select count(*) from book_copy",Integer.class)).isEqualTo(1);
+  var other=seed(owner,BookFixtures.draft("Other legacy"));
+  assertThatThrownBy(()->commands.update(Long.parseLong(other.id()),other.version(),owner,w)).isInstanceOf(vn.memay.common.AdminApiException.class);
+  assertThat(jdbc.queryForObject("select count(*) from book_copy",Integer.class)).isEqualTo(2);
  }
 }

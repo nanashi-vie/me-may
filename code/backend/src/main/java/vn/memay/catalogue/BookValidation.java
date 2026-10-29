@@ -42,7 +42,7 @@ public class BookValidation {
         return values;
     }
 
-    public void validateDraft(BookWrite w) {
+    public void validateWrite(BookWrite w) {
         text("title", w.title(), 300);
         text("isbn", w.isbn(), 32);
         text("publisher", w.publisher(), 200);
