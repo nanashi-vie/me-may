@@ -26,4 +26,10 @@
       "head_sampling_rate": 1,
     },
   },
+  "previews": {
+    "vars": {
+      "MEMAY_API_ORIGIN": "http://127.0.0.1:8080",
+      "MEMAY_WORKER_NAME": "ttp://127.0.0.1:8787",
+    },
+  },
 }
