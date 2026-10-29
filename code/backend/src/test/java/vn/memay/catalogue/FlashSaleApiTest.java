@@ -14,20 +14,20 @@ class FlashSaleApiTest extends CatalogueTestSupport {
  @Test void activeSaleChangesDetailListAndFlashPricesAndStopsOnExpiry()throws Exception{
   var b=published();var r=api.send("PUT","/api/v1/admin/flash-sale",json(sale(0,b.bookCode(),7000)),true);assertThat(r.statusCode()).isEqualTo(200);
   for(String path:List.of("/api/v1/books/"+b.slug(),"/api/v1/books","/api/v1/flash-sale","/api/v1/books/lookup?code="+b.bookCode())){
-   var data=anon.send("GET",path,null,false);assertThat(data.statusCode()).isEqualTo(200);assertThat(data.body()).contains("\"priceVnd\":7000","\"originalPriceVnd\":10000").doesNotContain("storagePublicId","sourceRef");
+   var data=anon.send("GET",path,null,false);assertThat(data.statusCode()).isEqualTo(200);assertThat(data.body()).contains("\"salePriceVnd\":7000","\"priceMinVnd\":10000","\"priceMaxVnd\":10000").doesNotContain("storagePublicId","sourceRef");
   }
   jdbc.update("update flash_sale set ends_at=current_timestamp-interval '1 second',starts_at=current_timestamp-interval '1 hour'");
-  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceVnd").asLong()).isEqualTo(10000);
-  assertThat(tree(anon.send("GET","/api/v1/books/lookup?code="+b.bookCode(),null,false)).get(0).path("priceVnd").asLong()).isEqualTo(10000);
+  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceMinVnd").asLong()).isEqualTo(10000);
+  assertThat(tree(anon.send("GET","/api/v1/books/lookup?code="+b.bookCode(),null,false)).get(0).path("priceMinVnd").asLong()).isEqualTo(10000);
   assertThat(tree(anon.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isZero();
  }
  @Test void soldHiddenOrInvalidDiscountNeverShowsSale()throws Exception{
   var b=published();assertThat(api.send("PUT","/api/v1/admin/flash-sale",json(sale(0,b.bookCode(),7000)),true).statusCode()).isEqualTo(200);
   jdbc.update("update book_copy set availability='SOLD' where id=?",Long.parseLong(b.id()));
-  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceVnd").asLong()).isEqualTo(10000);
+  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceMinVnd").asLong()).isEqualTo(10000);
   assertThat(tree(anon.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isZero();
-  jdbc.update("update book_copy set availability='AVAILABLE' where id=?",Long.parseLong(b.id()));jdbc.update("update listing set price_vnd=6000 where book_copy_id=?",Long.parseLong(b.id()));
-  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceVnd").asLong()).isEqualTo(6000);
+  jdbc.update("update book_copy set availability='AVAILABLE' where id=?",Long.parseLong(b.id()));jdbc.update("update listing set price_min_vnd=6000 where book_copy_id=?",Long.parseLong(b.id()));
+  assertThat(tree(anon.send("GET","/api/v1/books/"+b.slug(),null,false)).path("priceMinVnd").asLong()).isEqualTo(6000);
   jdbc.update("update listing set publication_status='ARCHIVED' where book_copy_id=?",Long.parseLong(b.id()));assertThat(tree(anon.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isZero();
  }
  @Test void canDisableCampaignAfterBookSells()throws Exception{

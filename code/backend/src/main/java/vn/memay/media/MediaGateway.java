@@ -18,5 +18,9 @@ public interface MediaGateway {
         return openPreview(publicId);
     }
 
+    default InputStream openPublicPreview(String publicId, int width, String format) {
+        return openPublicPreview(publicId);
+    }
+
     DeleteResult delete(String publicId);
 }

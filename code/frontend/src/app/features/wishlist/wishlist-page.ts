@@ -1,3 +1,5 @@
+import { firstValueFrom } from 'rxjs';
+import { bookPrice } from '../catalogue/catalogue-state';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -51,8 +53,28 @@ export class WishlistPage {
       : this.notice(),
   );
   readonly config = signal<ContactConfig | null>(null);
-  readonly price = formatPrice;
+  readonly price = bookPrice;
   private readonly prepared = signal<PublicBook[]>([]);
+  readonly verifyEnquiry = async () => {
+    const codes = this.selected().filter((code) => this.store.codes().includes(code));
+    if (!codes.length) return '';
+    const fresh = await firstValueFrom(this.api.lookup(codes));
+    const books = codes
+      .map((code) => fresh.find((b) => b.bookCode === code))
+      .filter((b): b is PublicBook => !!b && this.eligible(b, this.clock.now()));
+    if (!books.length) return '';
+    return (
+      'Tôi muốn hỏi mua các cuốn sách sau:\n' +
+      books
+        .map(
+          (b) =>
+            `${b.bookCode} | ${b.title} | ${bookPrice(effectiveBook(b, this.clock.now()))} | ${this.origin}/sach/${b.slug}`,
+        )
+        .join('\n') +
+      '\nNhờ tiệm xác nhận còn sách và giá cụ thể. Liên hệ không giữ sách.'
+    );
+  };
+
   private readonly enquiryMode = signal(false);
   private readonly requests = new Subject<LookupRequest>();
   private readonly expired = new Set<string>();
@@ -87,10 +109,7 @@ export class WishlistPage {
     return (
       'Tôi muốn hỏi mua các cuốn sách sau:\n' +
       books
-        .map(
-          (b) =>
-            `${b.bookCode} | ${b.title} | ${formatPrice(b.priceVnd)} | ${this.origin}/sach/${b.slug}`,
-        )
+        .map((b) => `${b.bookCode} | ${b.title} | ${bookPrice(b)} | ${this.origin}/sach/${b.slug}`)
         .join('\n') +
       '\nNhờ tiệm xác nhận còn sách và giá cụ thể. Liên hệ không giữ sách.'
     );
@@ -157,8 +176,10 @@ export class WishlistPage {
   private eligible(book: PublicBook, now = this.clock.now()) {
     return (
       book.availability === 'AVAILABLE' &&
-      book.priceVnd !== null &&
-      book.priceVnd > 0 &&
+      book.priceMinVnd !== null &&
+      book.priceMinVnd > 0 &&
+      book.priceMaxVnd !== null &&
+      book.priceMaxVnd >= book.priceMinVnd &&
       (!book.saleEndsAt || now < Date.parse(book.saleEndsAt))
     );
   }

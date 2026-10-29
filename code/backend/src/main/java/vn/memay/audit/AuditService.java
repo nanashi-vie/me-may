@@ -20,7 +20,7 @@ public class AuditService {
     }
 
     private static final Set<String> FIELDS = Set.of("bookCode", "title", "isbn", "publisher", "author", "language",
-            "binding", "conditionGrade", "conditionNote", "priceVnd", "description", "categoryCode", "ageGroups",
+            "binding", "conditionGrade", "conditionNote", "priceMinVnd", "priceMaxVnd", "weightG", "description", "categoryCode", "ageGroups",
             "readingLevel", "readingVideoUrl", "collectionIds", "publication", "availability", "media",
             "confirmedActualCopy", "name", "slug", "sortOrder", "active", "enabled", "startsAt", "endsAt", "items");
 

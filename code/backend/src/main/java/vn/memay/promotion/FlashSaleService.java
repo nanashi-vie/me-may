@@ -38,7 +38,6 @@ public class FlashSaleService {
 
     @Transactional(readOnly = true)
     public Campaign get(AdminUser actor) {
-        access.requireOwner(actor);
         return current();
     }
 
@@ -72,14 +71,14 @@ public class FlashSaleService {
                     || item.salePriceVnd() == null || item.salePriceVnd() < 1 || item.salePriceVnd() > 999999999999L)
                 throw AdminApiException.field("items", "Mã trùng hoặc giá không hợp lệ");
             var rows = jdbc.queryForList(
-                    "select l.id,l.price_vnd,l.publication_status,b.availability from listing l join book_copy b on b.id=l.book_copy_id where lower(b.book_code)=lower(?)",
+                    "select l.id,l.price_min_vnd,l.publication_status,b.availability from listing l join book_copy b on b.id=l.book_copy_id where lower(b.book_code)=lower(?)",
                     item.bookCode().trim());
             if (rows.isEmpty())
                 throw AdminApiException.field("items", "Không tìm thấy mã " + item.bookCode());
             var row = rows.getFirst();
             if (w.enabled() && (!"PUBLISHED".equals(row.get("publication_status"))
-                    || !"AVAILABLE".equals(row.get("availability")) || row.get("price_vnd") == null
-                    || item.salePriceVnd() >= ((Number) row.get("price_vnd")).longValue()))
+                    || !"AVAILABLE".equals(row.get("availability")) || row.get("price_min_vnd") == null
+                    || item.salePriceVnd() >= ((Number) row.get("price_min_vnd")).longValue()))
                 throw AdminApiException.field("items", "Sách phải công khai/còn hàng, giá sale thấp hơn giá tham khảo");
             ids.add(((Number) row.get("id")).longValue());
         }
@@ -103,7 +102,7 @@ public class FlashSaleService {
         if (!c.enabled() || now.isBefore(c.startsAt()) || !now.isBefore(c.endsAt()))
             return new PublicSale(now, null, List.of());
         var slugs = jdbc.queryForList(
-                "select l.slug from flash_sale_item f join listing l on l.id=f.listing_id join book_copy b on b.id=l.book_copy_id where l.publication_status='PUBLISHED' and b.availability='AVAILABLE' and f.sale_price_vnd<l.price_vnd order by b.id desc",
+                "select l.slug from flash_sale_item f join listing l on l.id=f.listing_id join book_copy b on b.id=l.book_copy_id where l.publication_status='PUBLISHED' and b.availability='AVAILABLE' and f.sale_price_vnd<l.price_min_vnd order by b.id desc",
                 String.class);
         return new PublicSale(now, c.endsAt(), slugs.stream().map(catalogue::detail).toList());
     }

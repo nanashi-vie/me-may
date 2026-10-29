@@ -16,8 +16,10 @@ const book: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Thực tế',
-  priceVnd: 20000,
-  originalPriceVnd: null,
+  priceMinVnd: 20000,
+  priceMaxVnd: 20000,
+  weightG: 250,
+  salePriceVnd: null,
   saleEndsAt: null,
   description: null,
   readingLevel: null,
@@ -44,6 +46,23 @@ describe('Contact copy fallback', () => {
       f.detectChanges();
       expect(f.componentInstance.message()).not.toContain('Đã sao chép');
     });
+
+  it('revalidates before copying and clears stale text on verification failure', async () => {
+    const f = TestBed.createComponent(ContactDialog);
+    f.componentRef.setInput('preparedText', 'old price');
+    const verify = vi.fn().mockResolvedValue('fresh price');
+    f.componentRef.setInput('verifyText', verify);
+    f.detectChanges();
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+    await f.componentInstance.copy();
+    expect(verify).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith('fresh price');
+    verify.mockRejectedValue(new Error('network'));
+    await f.componentInstance.copy();
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(f.componentInstance.text()).toBe('');
+  });
   it('preserves selectable enquiry when clipboard fails', async () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', book);
@@ -57,15 +76,17 @@ describe('Contact copy fallback', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('thủ công');
     expect(f.nativeElement.querySelector('textarea').value).toContain('MM-000001');
-    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 ₫');
+    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 VNĐ');
     expect(f.nativeElement.textContent).toContain('chưa được cấu hình');
   });
   it('does not copy expired discount as a current price', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceVnd: 7000,
-      originalPriceVnd: 20000,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      weightG: 250,
+      salePriceVnd: 7000,
       saleEndsAt: '2000-01-01T00:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
@@ -83,8 +104,10 @@ describe('Enquiry uses server clock', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceVnd: 7000,
-      originalPriceVnd: 20000,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      weightG: 250,
+      salePriceVnd: 7000,
       saleEndsAt: '2026-10-23T13:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');

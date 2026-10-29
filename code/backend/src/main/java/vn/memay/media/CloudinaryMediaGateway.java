@@ -9,7 +9,12 @@ import vn.memay.common.AdminApiException;
 
 public class CloudinaryMediaGateway implements MediaGateway {
     static final String PREVIEW = "a_auto/c_limit,w_1280/fl_strip_profile,f_jpg";
-    static final String PUBLIC_PREVIEW = "a_auto/c_limit,w_640/q_auto:good/fl_strip_profile,f_jpg";
+    static final String PUBLIC_PREVIEW = publicTransform(640, "jpg");
+    static String publicTransform(int width, String format) {
+        if ((width != 320 && width != 640) || !List.of("jpg", "webp").contains(format))
+            throw new IllegalArgumentException("Invalid media variant");
+        return "a_auto/c_limit,w_" + width + "/q_auto:good/fl_strip_profile,f_" + format;
+    }
     private final Cloudinary cloud;
     private final Uploader uploader;
     private final CloudinaryTransport transport;
@@ -33,9 +38,12 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     static Map<String, Object> uploadOptions(String id) {
+        var eager = new ArrayList<Transformation<?>>();
+        eager.add(new Transformation<>().rawTransformation(PREVIEW));
+        for (int width : List.of(320, 640)) for (String format : List.of("jpg", "webp"))
+            eager.add(new Transformation<>().rawTransformation(publicTransform(width, format)));
         return Map.of("public_id", id, "resource_type", "image", "type", "authenticated", "overwrite", false,
-                "unique_filename", false, "eager", List.of(new Transformation<>().rawTransformation(PREVIEW),
-                        new Transformation<>().rawTransformation(PUBLIC_PREVIEW)));
+                "unique_filename", false, "eager", eager);
     }
 
     static void validatePublicId(String id, String namespace) {
@@ -68,11 +76,17 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     public InputStream openPublicPreview(String publicId) {
+        return openPublicPreview(publicId, 640, "jpg");
+    }
+
+    public InputStream openPublicPreview(String publicId, int width, String format) {
+        String transform = publicTransform(width, format);
         validatePublicId(publicId, namespace);
         try {
             try {
-                return transport.open(previewUrl(publicId, PUBLIC_PREVIEW));
+                return transport.open(previewUrl(publicId, transform, format));
             } catch (CloudinaryTransport.MissingVariantException missingVariant) {
+                if (width != 640 || !format.equals("jpg")) throw missingVariant;
                 return transport.open(previewUrl(publicId, PREVIEW));
             }
         } catch (Exception e) {
@@ -81,8 +95,11 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     private URI previewUrl(String publicId, String transform) {
+        return previewUrl(publicId, transform, "jpg");
+    }
+    private URI previewUrl(String publicId, String transform, String format) {
         return URI.create(cloud.url().secure(true).signed(true).resourceType("image").type("authenticated")
-                .transformation(new Transformation<>().rawTransformation(transform)).format("jpg").generate(publicId));
+                .transformation(new Transformation<>().rawTransformation(transform)).format(format).generate(publicId));
     }
 
     public DeleteResult delete(String publicId) {

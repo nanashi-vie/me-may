@@ -59,8 +59,8 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 
 - Đăng nhập Owner rồi mở [Quản lý sách](http://127.0.0.1:4200/admin/sach). Tạo tại `/admin/sach/moi`; lưu nháp trước để nhận mã tự sinh và thêm ảnh. Mã không sửa hoặc tái sử dụng; số có thể khuyết.
 - Mỗi cuốn một thể loại, nhiều nhóm tuổi. Picture book chọn Paperback hoặc Hardcover. Mức đọc có thể chưa xác định; khi chọn mức phải ghi căn cứ nội bộ.
-- Nhập giá nguyên VND, ghi tình trạng/lỗi; tải đủ ba ảnh thật bìa trước/mặt sau/trang nội dung, JPEG/PNG <=10 MiB và 25 MP. Lưu nội dung trước khi chỉnh ảnh; ảnh được tải tuần tự theo version mới.
-- Mở preview nội dung đã lưu; Owner đối chiếu đúng mã, ba ảnh và tình trạng trước xuất bản. Còn hàng/Hết hàng độc lập Nháp/Công khai/Ẩn. Khôi phục sách ẩn về nháp để chỉnh lại.
+- OWNER nhập khoảng giá từ–đến nguyên VND, trọng lượng gram dương và tình trạng/lỗi; chọn/thả 2–6 ảnh thật (bìa/lưng bắt buộc; gáy/nội dung1–3 tùy chọn), JPEG/PNG <=10 MiB và 25 MP. Lưu nội dung trước khi chỉnh ảnh; ảnh được tải tuần tự theo version mới.
+- Ảnh mới dùng phiên tạm24giờ; chưa sinh sách/mã trước khi xác nhận Đăng sách. Final nguyên tử và retry cùng payload trả cùng sách. STAFF chỉ đọc. Còn hàng/Hết hàng độc lập Công khai/Ẩn; ẩn↔hiện trực tiếp, không có Nháp.
 - Staff chỉ sửa nháp; Owner quản trị trạng thái và bộ sưu tập. Không có UI quản lý tài khoản; không tạo tài khoản demo trong dữ liệu vận hành.
 - Khi xung đột hoặc hết phiên, nội dung chưa lưu được giữ trong tab. Có đăng nhập lại ngay trên editor. Không tự gửi lại yêu cầu tạo nếu chưa rõ kết quả; mở danh sách ở tab khác để kiểm tra. Reload/đóng tab có thể mất nội dung chưa lưu.
 - Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. User28/10 đã xác nhận publish21/21; chưa có xác nhận đầy đủ case sold/error và thời gian nhập/tìm/sửa.
@@ -138,8 +138,8 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 
 - Public: `/`, `/sach`, `/sach/:slug`, `/bo-suu-tap/:slug`, `/flash-sale`, `/cach-mua`, `/lien-he`, `/quan-tam`. Không cần tài khoản.
 - API GET `/api/v1/books` có q/category/binding/age(repeated)/sort/page0-based,20 cuốn/trang; sort newest/price_asc/price_desc. Public chỉ PUBLISHED, gồm AVAILABLE/SOLD; không có lọc availability/giá/mức đọc.
-- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|INSIDE}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3 local.
-- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50 cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn reference trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
+- GET `/api/v1/books/{slug}`, `/books/{slug}/media/{FRONT|BACK|SPINE|INSIDE_1|INSIDE_2|INSIDE_3}`, `/taxonomy`, `/collections`, `/collections/{slug}`, `/home`, `/flash-sale`, `/contact`. API/HTML/media public no-store trongM3 local.
+- OWNER mở `/admin/flash-sale`: một campaign bật/tắt, giờ Việt Nam UTC+7, mã sách+giá sale; tối đa50 cuốn. Giá gốc lấy giá tham khảo hiện tại; chỉ sách công khai/còn hàng/sale thấp hơn giá từ, giữ khoảng gốc và không % giảm trong [start,end). Campaign version/audit, STAFF không sửa. Không số đã bán/order.
 - Link video optional; trường căn cứ đã bỏ qua migrationV4, audit lịch sử vẫn giữ. MigrationV5 thêm campaign mặc định tắt, không tạo sale thật tự động.
 - Thêm `CONTACT_ZALO_HOTLINE_URL` và `CONTACT_ZALO_GROUP_URL` vào root`.env`, dùng HTTPS zalo.me; restart backend sau đổi. Thiếu cấu hình hiện đang cập nhật; dialog luôn có copy/thủ công, không tự gửi.
 - SSR backend origin server-only `MEMAY_API_ORIGIN` mặc định http://127.0.0.1:8080; canonical/enquiry origin `MEMAY_SITE_ORIGIN` mặc định http://localhost:4200. M3 chỉ chốt local; cấu hình origin browser/deployment cần spike Cloudflare riêng trước phát hành.

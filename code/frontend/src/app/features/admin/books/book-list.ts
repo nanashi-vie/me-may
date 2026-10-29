@@ -1,4 +1,5 @@
-import { formatPrice } from './book-copy';
+import {AuthService} from '../../../core/auth/auth.service';
+import { formatPriceRange } from './book-copy';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -14,7 +15,8 @@ import { AVAILABILITY_LABELS, PUBLICATION_LABELS } from './book-copy';
   styleUrl: './book-list.scss',
 })
 export class BookList {
-  readonly price = formatPrice;
+  readonly auth=inject(AuthService);
+  readonly price = formatPriceRange;
   private readonly api = inject(BookApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -42,7 +44,7 @@ export class BookList {
       const filter: BookFilter = {
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
-        publication: ['DRAFT', 'PUBLISHED', 'ARCHIVED'].includes(publication ?? '')
+        publication: ['PUBLISHED', 'ARCHIVED'].includes(publication ?? '')
           ? (publication as Publication)
           : undefined,
         availability: ['AVAILABLE', 'SOLD'].includes(availability ?? '')

@@ -40,7 +40,7 @@ describe('Owner actions', () => {
     expect(availability).toHaveBeenCalledWith('1', 4, 'SOLD');
     f.componentInstance.execute('ARCHIVED', false);
     expect(publication).toHaveBeenCalledWith('1', 4, 'ARCHIVED', false);
-    f.componentInstance.execute('DRAFT', false);
-    expect(publication).toHaveBeenCalledWith('1', 4, 'DRAFT', false);
+    f.componentInstance.execute('ARCHIVED', false);
+    expect(publication).toHaveBeenCalledWith('1', 4, 'ARCHIVED', false);
   });
 });

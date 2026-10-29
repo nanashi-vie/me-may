@@ -27,6 +27,8 @@ public class BookCopy {
     public String conditionGrade;
     @Column(length = 4000)
     public String conditionNote;
+    @Column(name="weight_g")
+    public Long weightG;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     public BookDtos.Availability availability;

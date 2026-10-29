@@ -9,7 +9,7 @@ public final class PublicCatalogueDtos {
 
     public record Book(String id, String bookCode, String slug, String title, String publisher, String author,
             List<String> ageGroups, String categoryCode, String binding, String conditionGrade, String conditionNote,
-            Long priceVnd, Long originalPriceVnd, Instant saleEndsAt, String description, String readingLevel,
+            Long priceMinVnd, Long priceMaxVnd, Long salePriceVnd, Instant saleEndsAt, Long weightG, String description, String readingLevel,
             String readingVideoUrl, String availability, List<Media> media) {
     }
 

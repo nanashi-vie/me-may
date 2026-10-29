@@ -20,8 +20,7 @@ const book: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Thực tế',
-  priceVnd: 7000,
-  originalPriceVnd: 10000,
+  priceMinVnd:10000,priceMaxVnd:10000,weightG:250,salePriceVnd:7000,
   saleEndsAt: '2026-10-23T13:00:00Z',
   description: null,
   readingLevel: null,
@@ -58,14 +57,14 @@ describe('Public catalogue state', () => {
     expect(bookTitle(book)).toBe('A book | Author | 4–6');
   });
   it('uses actual purpose and confirmed price for enquiry', () => {
-    expect(enquiryText(book, 'http://localhost:4200/sach/mm-000001')).toContain('7.000 ₫');
+    expect(enquiryText(book, 'http://localhost:4200/sach/mm-000001')).toContain('7.000 VNĐ');
     expect(
       enquiryText({ ...book, availability: 'SOLD' }, 'http://localhost:4200/sach/mm-000001'),
     ).toContain('sách tương đương');
   });
   it('does not claim sale prices after expiry while awaiting server refresh', () => {
-    expect(effectiveBook(book, Date.parse('2026-10-23T13:00:00Z')).priceVnd).toBeNull();
-    expect(effectiveBook(book, Date.parse('2026-10-23T12:00:00Z')).priceVnd).toBe(7000);
+    expect(effectiveBook(book, Date.parse('2026-10-23T13:00:00Z')).priceMinVnd).toBeNull();
+    expect(effectiveBook(book, Date.parse('2026-10-23T12:00:00Z')).salePriceVnd).toBe(7000);
     expect(countdown(90061000)).toBe('25:01:01');
     expect(countdown(-1)).toBe('00:00:00');
   });

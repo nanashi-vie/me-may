@@ -25,7 +25,7 @@ import { enquiryText, effectiveBook } from './catalogue-state';
       }}
     </h2>
     <p>Sao chép nội dung, mở Zalo rồi dán và gửi cho tiệm. Liên hệ không giữ sách.</p>
-    @if (busy()) {
+    @if (busy() || checking()) {
       <p role="status">Đang xác nhận lại giá và tình trạng…</p>
     }
     <p role="status">{{ notice() }}</p>
@@ -39,7 +39,12 @@ import { enquiryText, effectiveBook } from './catalogue-state';
     </label>
     <p role="status">{{ message() }}</p>
     <div class="actions">
-      <button [disabled]="busy() || !text()" (click)="copy()">Sao chép nội dung</button>
+      <button
+        [disabled]="busy() || checking() || (!text() && verified() === null)"
+        (click)="copy()"
+      >
+        Sao chép nội dung
+      </button>
       @if (config()?.hotlineUrl) {
         <a
           class="button secondary"
@@ -79,6 +84,9 @@ export class ContactDialog {
   @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
   readonly book = input<PublicBook | null>(null);
   readonly preparedText = input<string | null>(null);
+  readonly verifyText = input<(() => Promise<string>) | null>(null);
+  readonly checking = signal(false);
+  readonly verified = signal<string | null>(null);
   readonly busy = input(false);
   readonly notice = input('');
   readonly config = input<ContactConfig | null>(null);
@@ -91,12 +99,15 @@ export class ContactDialog {
     effect(() => {
       const text = this.preparedText();
       this.busy();
+      this.book();
+      this.verified.set(null);
       if (text !== null) this.message.set('');
     });
   }
   open(returnFocus?: HTMLElement | null) {
     this.returnFocus = returnFocus ?? (this.document.activeElement as HTMLElement | null);
     this.message.set('');
+    this.verified.set(null);
     this.dialog.nativeElement.showModal();
   }
   onClose() {
@@ -106,7 +117,8 @@ export class ContactDialog {
   }
   private readonly clock = inject(PublicClock);
   text() {
-    if (this.busy()) return '';
+    if (this.busy() || this.checking()) return '';
+    if (this.verified() !== null) return this.verified()!;
     if (this.preparedText() !== null) return this.preparedText()!;
     const book = this.book();
     return book ? enquiryText(effectiveBook(book, this.clock.now() || Date.now()), this.url()) : '';
@@ -115,7 +127,23 @@ export class ContactDialog {
     (event.target as HTMLTextAreaElement).select();
   }
   async copy() {
-    const text = this.text();
+    if (this.busy() || this.checking()) return;
+    let text = this.text();
+    const verify = this.verifyText();
+    if (verify) {
+      this.checking.set(true);
+      try {
+        text = await verify();
+        this.verified.set(text);
+        this.message.set(text ? '' : 'Các cuốn đã chọn không còn sẵn hoặc không còn hiển thị.');
+      } catch {
+        this.verified.set('');
+        this.message.set('Chưa xác nhận được giá và tình trạng. Thử sao chép lại khi có mạng.');
+        return;
+      } finally {
+        this.checking.set(false);
+      }
+    }
     if (!text || this.busy()) return;
     try {
       const clipboard = this.document.defaultView?.navigator.clipboard;

@@ -24,7 +24,7 @@ public class BookValidation {
         if (w == null)
             throw AdminApiException.field("body", "Thiếu nội dung");
         return new BookWrite(trim(w.title()), trim(w.isbn()), trim(w.publisher()), trim(w.author()), trim(w.language()),
-                trim(w.binding()), trim(w.conditionGrade()), trim(w.conditionNote()), w.priceVnd(),
+                trim(w.binding()), trim(w.conditionGrade()), trim(w.conditionNote()), w.priceMinVnd(), w.priceMaxVnd(), w.weightG(),
                 trim(w.description()), trim(w.categoryCode()),
                 ordered(w.ageGroups(), Comparator.comparingInt(AGES::indexOf)), trim(w.readingLevel()),
                 trim(w.readingVideoUrl()), ordered(w.collectionIds(), Comparator.comparing(java.math.BigInteger::new)));
@@ -42,7 +42,7 @@ public class BookValidation {
         return values;
     }
 
-    public void validateDraft(BookWrite w) {
+    public void validateWrite(BookWrite w) {
         text("title", w.title(), 300);
         text("isbn", w.isbn(), 32);
         text("publisher", w.publisher(), 200);
@@ -58,8 +58,15 @@ public class BookValidation {
             throw AdminApiException.field("binding", "Chỉ dùng cho Picture book");
         if (w.conditionGrade() != null && !List.of("VERY_GOOD", "GOOD", "FAIR").contains(w.conditionGrade()))
             throw AdminApiException.field("conditionGrade", "Không hợp lệ");
-        if (w.priceVnd() != null && (w.priceVnd() < 1 || w.priceVnd() > 999999999999L))
-            throw AdminApiException.field("priceVnd", "Giá nguyên VND phải lớn hơn 0");
+        if (w.priceMinVnd() != null && (w.priceMinVnd() < 1 || w.priceMinVnd() > 999999999999L))
+            throw AdminApiException.field("priceMinVnd", "Giá nguyên VND phải lớn hơn 0");
+        if (w.priceMaxVnd() != null && (w.priceMaxVnd() < 1 || w.priceMaxVnd() > 999999999999L))
+            throw AdminApiException.field("priceMaxVnd", "Giá nguyên VND phải lớn hơn 0");
+        if ((w.priceMinVnd() == null) != (w.priceMaxVnd() == null) ||
+                w.priceMinVnd() != null && w.priceMinVnd() > w.priceMaxVnd())
+            throw AdminApiException.field("priceMaxVnd", "Nhập đủ hai đầu khoảng giá và giá đến không nhỏ hơn giá từ");
+        if (w.weightG() == null || w.weightG() < 1 || w.weightG() > 9007199254740991L)
+            throw AdminApiException.field("weightG", "Nhập trọng lượng nguyên gram lớn hơn 0");
         if (w.ageGroups().size() > 4 || w.ageGroups().stream().anyMatch(Objects::isNull)
                 || new HashSet<>(w.ageGroups()).size() != w.ageGroups().size() || !AGES.containsAll(w.ageGroups()))
             throw AdminApiException.field("ageGroups", "Nhóm tuổi không hợp lệ hoặc trùng");
@@ -87,12 +94,15 @@ public class BookValidation {
             throw AdminApiException.field("title", "Nhập tên sách");
         if (b.categoryCode() == null)
             throw AdminApiException.field("categoryCode", "Chọn thể loại");
-        if (b.priceVnd() == null)
-            throw AdminApiException.field("priceVnd", "Nhập giá tham khảo");
+        if (b.weightG() == null || b.weightG() < 1)
+            throw AdminApiException.field("weightG", "Nhập trọng lượng sách (g)");
+        if (b.priceMinVnd() == null || b.priceMaxVnd() == null)
+            throw AdminApiException.field("priceMinVnd", "Nhập giá tham khảo");
         if (trim(b.conditionNote()) == null)
             throw AdminApiException.field("conditionNote", "Mô tả tình trạng thực tế");
-        if (b.media().size() != 3 || !new HashSet<>(b.media().stream().map(BookDtos.MediaView::role).toList())
-                .equals(java.util.EnumSet.allOf(vn.memay.media.MediaDtos.MediaRole.class)))
-            throw AdminApiException.field("media", "Cần đủ bìa trước, mặt sau và một trang nội dung");
+        var roles = b.media().stream().map(BookDtos.MediaView::role).toList();
+        if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
+                || !roles.containsAll(List.of(vn.memay.media.MediaDtos.MediaRole.FRONT, vn.memay.media.MediaDtos.MediaRole.BACK)))
+            throw AdminApiException.field("media", "Cần từ 2 đến 6 ảnh, bắt buộc bìa và lưng");
     }
 }

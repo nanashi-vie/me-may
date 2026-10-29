@@ -95,19 +95,22 @@ public class PublicCatalogueController {
     }
 
     @GetMapping("/books/{slug}/media/{role}")
-    public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role) {
+    public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
+            @RequestParam(defaultValue="640") int size, @RequestParam(defaultValue="jpg") String format) {
+        if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
+            throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
         var keys = jdbc.queryForList(
                 "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=?",
                 String.class, slug, role.name());
         if (keys.isEmpty())
             throw new AdminApiException(404, "not_found");
-        var input = media.openPublicPreview(keys.getFirst());
+        var input = media.openPublicPreview(keys.getFirst(), size, format);
         StreamingResponseBody body = output -> {
             try (input) {
                 input.transferTo(output);
             }
         };
-        return ResponseEntity.ok().header("Content-Type", "image/jpeg").header("Cache-Control", "no-store")
+        return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg").header("Cache-Control", "no-store")
                 .header("X-Content-Type-Options", "nosniff").body(body);
     }
 }

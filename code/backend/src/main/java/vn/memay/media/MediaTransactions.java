@@ -64,11 +64,7 @@ public class MediaTransactions {
 
     private String alt(String value, MediaRole role, String code) {
         value = text("alt", value, 300);
-        return value != null ? value : switch (role) {
-            case FRONT -> "Bìa trước ";
-            case BACK -> "Mặt sau ";
-            case INSIDE -> "Trang nội dung ";
-        } + code;
+        return value != null ? value : role.label() + " " + code;
     }
 
     @Transactional
@@ -157,7 +153,7 @@ public class MediaTransactions {
     public BookDetail remove(long bookId, MediaRole role, long version, AdminUser actor) {
         var b = book(bookId, version, actor);
         var l = listings.findByBookCopyId(bookId).orElseThrow();
-        if (l.publicationStatus == Publication.PUBLISHED)
+        if (l.publicationStatus == Publication.PUBLISHED && (role == MediaRole.FRONT || role == MediaRole.BACK))
             throw new AdminApiException(409, "publication_requires_media");
         var before = mapper.detail(b, l);
         var m = active(bookId, role);

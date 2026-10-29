@@ -8,22 +8,24 @@ import { CollectionApi } from '../collections/collection-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BookDetail } from './book.models';
 import { HttpErrorResponse } from '@angular/common/http';
-const draft = {
-  id: '1',
-  bookCode: 'MM-000001',
-  slug: 'mm-000001',
-  version: 0,
-  publication: 'DRAFT',
-  availability: 'AVAILABLE',
-  media: [],
-  ageGroups: [],
-  collectionIds: [],
-} as unknown as BookDetail;
-describe('BookEditor safe saves', () => {
-  let create: ReturnType<typeof vi.fn>, update: ReturnType<typeof vi.fn>;
+import { testBook } from './book-test-fixture';
+import { UploadItem } from './book-upload-queue';
+const saved = {
+  ...testBook(),
+  publication: 'PUBLISHED',
+  title: 'New',
+  categoryCode: 'BOARD_BOOK',
+  conditionNote: 'Actual',
+  weightG: 250,
+  priceMinVnd: 20000,
+  priceMaxVnd: 30000,
+} as BookDetail;
+describe('BookEditor safe final saves', () => {
+  let create: ReturnType<typeof vi.fn>, update: ReturnType<typeof vi.fn>, role: string;
   beforeEach(() => {
-    create = vi.fn(() => of(draft));
-    update = vi.fn(() => of(draft));
+    role = 'OWNER';
+    create = vi.fn(() => of(saved));
+    update = vi.fn(() => of(saved));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -33,108 +35,144 @@ describe('BookEditor safe saves', () => {
           useValue: {
             create,
             update,
+            cancelSession: () => of(null),
             get: () => throwError(() => new HttpErrorResponse({ status: 404 })),
             taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
           },
         },
         { provide: CollectionApi, useValue: { list: () => of([]) } },
-        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
+        { provide: AuthService, useValue: { user: () => ({ role }) } },
       ],
     });
   });
   function editor() {
     return TestBed.createComponent(BookEditor).componentInstance;
   }
-  it('createsThenNavigatesToEditor and prevents double click', () => {
+  function ready(e: BookEditor) {
+    e.form.patchValue({
+      title: 'New',
+      conditionNote: 'Actual',
+      categoryCode: 'BOARD_BOOK',
+      weightG: 250,
+      priceMinVnd: 20000,
+      priceMaxVnd: 30000,
+    });
+    e.photos.sessionId.set('session');
+    e.photos.rows.set(
+      ['FRONT', 'BACK'].map(
+        (role, i) =>
+          ({
+            id: 'client' + i,
+            role,
+            mediaId: 'server' + i,
+            state: 'READY',
+            file: null,
+            preview: '',
+            progress: 100,
+            error: '',
+            alt: '',
+            sourceRef: '',
+            storedAlt: '',
+            storedSource: '',
+          }) as UploadItem,
+      ),
+    );
+    e.confirmed.set(true);
+  }
+  it('posts a complete final request once and opens the saved book', async () => {
     const pending = new Subject<BookDetail>();
     create.mockReturnValue(pending);
     const e = editor();
+    ready(e);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    e.saveDraft();
-    e.saveDraft();
+    await e.save();
+    await e.save();
     expect(create).toHaveBeenCalledTimes(1);
-    pending.next(draft);
-    expect(navigate).toHaveBeenCalledWith(['/admin/sach', '1']);
+    expect(create.mock.calls[0][0]).toMatchObject({
+      uploadSessionId: 'session',
+      confirmedActualCopy: true,
+      media: [
+        { mediaId: 'server0', role: 'FRONT' },
+        { mediaId: 'server1', role: 'BACK' },
+      ],
+      write: { priceMinVnd: 20000, priceMaxVnd: 30000, weightG: 250 },
+    });
+    pending.next(saved);
+    expect(navigate).toHaveBeenCalledWith(['/admin/sach', saved.id]);
   });
-  it('lostCreateResponseDoesNotPostAgain', () => {
+  it('retries the identical final payload after a lost response and preserves fields', async () => {
     create.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 0 })));
     const e = editor();
-    e.form.controls.title.setValue('Nội dung cần giữ');
+    ready(e);
     e.form.markAsDirty();
-    e.saveDraft();
-    e.saveDraft();
+    await e.save();
+    const original = create.mock.calls[0][0];
+    await e.save();
     expect(create).toHaveBeenCalledTimes(1);
-    expect(e.form.controls.title.value).toBe('Nội dung cần giữ');
     expect(e.createUncertain()).toBe(true);
+    expect(e.photos.locked()).toBe(true);
+    e.retryCreate();
+    expect(create).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls[1][0]).toBe(original);
+    expect(e.form.controls.title.value).toBe('New');
   });
-  it('conflictPreservesDirtyForm and sessionExpiryKeepsFormInMemory', () => {
+  it('requires actual-copy confirmation and ready front/back; staff cannot write', async () => {
     const e = editor();
-    e.accept(draft);
-    e.form.controls.title.setValue('Chỉnh sửa');
+    ready(e);
+    e.confirmed.set(false);
+    await e.save();
+    expect(create).not.toHaveBeenCalled();
+    e.confirmed.set(true);
+    e.photos.rows.update((r) => r.slice(0, 1));
+    await e.save();
+    expect(create).not.toHaveBeenCalled();
+    role = 'STAFF';
+    const staff = editor();
+    ready(staff);
+    await staff.save();
+    expect(create).not.toHaveBeenCalled();
+  });
+  it('preserves dirty content on a conflict and expired login', async () => {
+    const e = editor();
+    e.accept(saved);
+    e.form.controls.title.setValue('Changed');
     e.form.markAsDirty();
     update.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
-    e.saveDraft();
+    await e.save();
     expect(e.form.dirty).toBe(true);
-    expect(e.form.controls.title.value).toBe('Chỉnh sửa');
+    expect(e.form.controls.title.value).toBe('Changed');
     update.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
-    e.saveDraft();
+    await e.save();
     expect(e.needsLogin()).toBe(true);
-    expect(e.form.controls.title.value).toBe('Chỉnh sửa');
   });
-  it('leavingDirtyFormWarns', () => {
-    const e = editor();
-    e.form.markAsDirty();
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    expect(e.canLeave()).toBe(false);
-    expect(confirm).toHaveBeenCalled();
-  });
-  it('inactiveCollectionCanBeKeptOrRemoved', () => {
-    const e = editor();
-    e.accept({ ...draft, collectionIds: ['old'] });
-    e.collections.set([
-      {
-        id: 'old',
-        name: 'Old',
-        slug: 'old',
-        sortOrder: 0,
-        active: false,
-        version: 0,
-        createdAt: '',
-        updatedAt: '',
-      },
-      {
-        id: 'other',
-        name: 'Other',
-        slug: 'other',
-        sortOrder: 1,
-        active: false,
-        version: 0,
-        createdAt: '',
-        updatedAt: '',
-      },
-    ]);
-    expect(e.availableCollections().map((c) => c.id)).toEqual(['old']);
-    e.toggleCollection('old', false);
-    expect(e.form.controls.collectionIds.value).toEqual([]);
-  });
-  it('failedExistingLoadNeverCreatesAnotherBook', () => {
+  it('never creates a new book when an existing route failed to load', async () => {
     (TestBed.inject(ActivatedRoute).snapshot.paramMap as unknown as Map<string, string>).set(
       'id',
       'missing',
     );
     const e = editor();
     e.ngOnInit();
-    e.saveDraft();
+    ready(e);
+    await e.save();
     expect(create).not.toHaveBeenCalled();
   });
-  it('mediaPendingChangesParticipateInNavigationAndUnloadGuard', () => {
+  it('warns before leaving unsaved text or photos', () => {
     const e = editor();
-    e.accept(draft);
-    e.mediaDirty.set(true);
+    ready(e);
     vi.spyOn(window, 'confirm').mockReturnValue(false);
     expect(e.canLeave()).toBe(false);
     const event = new Event('beforeunload', { cancelable: true });
     e.beforeUnload(event as BeforeUnloadEvent);
     expect(event.defaultPrevented).toBe(true);
+  });
+  it('exposes photo renewal when the final request expires after images were ready', async () => {
+    create.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 410 })));
+    const e = editor();
+    ready(e);
+    await e.save();
+    expect(e.photos.expired()).toBe(true);
+    expect(e.photos.paused()).toBe(true);
+    expect(e.form.controls.title.value).toBe('New');
+    expect(e.createUncertain()).toBe(false);
   });
 });

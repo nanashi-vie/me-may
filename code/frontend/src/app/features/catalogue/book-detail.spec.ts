@@ -20,8 +20,8 @@ const a: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Actual',
-  priceVnd: 10000,
-  originalPriceVnd: null,
+  priceMinVnd: 10000, priceMaxVnd:10000, weightG:250,
+  salePriceVnd: null,
   saleEndsAt: null,
   description: null,
   readingLevel: null,
@@ -52,6 +52,39 @@ describe('Detail refresh and public origin', () => {
     const image = frame.querySelector('img') as HTMLImageElement;
     expect(getComputedStyle(frame).aspectRatio).toBe('3/4');
     expect(getComputedStyle(image).objectFit).toBe('contain');
+  });
+  it('keeps the SSR book visible while verifying fresh data, then removes a hidden book', async () => {
+    const fresh = new Subject<PublicBook>();
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+      { provide: PublicApi, useValue: { detail: () => fresh, contact: () => of({hotlineUrl:null,groupUrl:null}) } },
+    ] });
+    TestBed.inject(TransferState).set(makeStateKey<PublicBook | null>('memay-detail-book'), a);
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    expect(h.routeNativeElement!.querySelector('h1')?.textContent).toContain('First');
+    expect(h.routeNativeElement!.querySelector('.loading')).toBeNull();
+    expect(h.routeNativeElement!.querySelector<HTMLButtonElement>('.contact-actions > button')?.disabled).toBe(true);
+    fresh.error({ status: 404 });
+    h.detectChanges();
+    expect(c.book()).toBeNull();
+    expect(h.routeNativeElement!.textContent).not.toContain('First');
+    expect(TestBed.inject(TransferState).hasKey(makeStateKey('memay-detail-book'))).toBe(false);
+  });
+  it('retains the same gallery during refresh and applies the new price', async () => {
+    const fresh = new Subject<PublicBook>();
+    const detail = vi.fn().mockReturnValueOnce(of(a)).mockReturnValueOnce(fresh);
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+      { provide: PublicApi, useValue: { detail, contact: () => of({hotlineUrl:null,groupUrl:null}) } },
+    ] });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const heading = h.routeNativeElement!.querySelector('h1');
+    c.refresh(); h.detectChanges();
+    expect(h.routeNativeElement!.querySelector('h1')).toBe(heading);
+    fresh.next({ ...a, priceMinVnd: 30000, priceMaxVnd:30000, weightG:250 }); h.detectChanges();
+    expect(c.book()?.priceMinVnd).toBe(30000);
   });
   it('late refresh cannot replace a newly opened book', async () => {
     const retry = new Subject<PublicBook>(),

@@ -271,3 +271,14 @@ credential no-op, conflict/disabled/STAFF/owner khác fail closed, không reset/
 Wrapper dùng OWNER_EMAIL/PASSWORD private, không argv; run-local unset ownersecret,
 Render export loại toàn bộ owner/bootstrap fields. Lệnh local phải explicit và chỉ
 loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển khai ở bước này.
+
+### M5 media — triển khai local29/10
+- Public media nhận allowlist size320/640 và formatjpg/webp; URL cũ mặc địnhJPEG640, chỉ JPEG640thiếuvariant mới fallback1280. WebP thiếuvariant không trảJPEG dưới MIMEWebP; cần backfill đủ4variant trước releasefrontendpicture. Adminpreview1280 giữ nguyên, tất cả vẫn authenticated/no-store, không lộsignedURL.
+- Quyết định cache: tiếp tục no-store, chưa chứng minh được invalidationẩn/thayảnh/tempmedia để bậtcache antoàn. Scriptbackfill checkpointmới public-variants-v2.done, không dùng checkpointJPEG640cũ để bỏqua4variantmới.
+
+### M5 aggregate và media tạm — local29/10
+
+- V6 đổi giá thành min/max, thêm weight_g và INSIDE→INSIDE_1; V7 thêm upload_session/temporary_media; V8 DRAFT→ARCHIVED; V9 thêm request_key/fingerprint ảnh tạm. Không sửa checksum V1–V5. Dữ liệu cũ giữ ID/asset/giá và published_at; nullweight không tựẩn.
+- OWNER mọi ghi, STAFF đọc. Phiên24giờ, intent→provider ngoài transaction→READY; final khóa phiên/kiểm owner/expiry, attachmedia+tạoPUBLISHED+audit+consume cùngtransaction. Cùngnormalizedpayload retry trảcùngbook; khác409. Cleanup cùngsessionlock, UPLOADING/ambiguous giữgrace1giờ.
+- Reorder theo mediaID/version, tất cả mapping/audit nguyên tử. QueueclientID riêngserverID, uploadtuần tự, metadata lưu trước final; retry ảnh tạm dùngrequestKey/hash để không chiếm thêm slot khi mấtresponse.
+- Public detail seed dữ liệu publicSSR trong TransferState riêng; luôn revalidate no-store, giữ DOM khi cùngslug, khóa contact đến dữliệumới. Admin/wishlist vẫn không transfercache. Logo WebP208; favicon dùng cùngasset.

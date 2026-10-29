@@ -11,7 +11,7 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
     <div class="utility">Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn</div>
     <header class="site-header wrap">
       <a routerLink="/" class="brand" aria-label="Mẹ Mây — Trang chủ"
-        ><img src="/logo.jpg" alt="" width="72" height="72" /><span class="brand-name"
+        ><img src="/logo.webp" alt="" width="72" height="72" /><span class="brand-name"
           >Mẹ Mây<small>Sách ngoại văn cho bé</small></span
         ></a
       >
@@ -28,11 +28,10 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
       <div class="header-links">
         <a class="header-contact" routerLink="/quan-tam"
           >♡ Quan tâm
-          @if (wishlist.ready()) {
-            <span class="wishlist-count" aria-label="Số cuốn đã lưu">{{
-              wishlist.codes().length
+          <span class="wishlist-count" aria-label="Số cuốn đã lưu"
+            [style.visibility]="wishlist.ready() ? 'visible' : 'hidden'">{{
+              wishlist.ready() ? wishlist.codes().length : 0
             }}</span>
-          }
         </a>
         <a class="header-contact" routerLink="/lien-he">Nhắn tiệm ↗</a>
       </div>
@@ -126,7 +125,7 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
     }
     .wishlist-count {
       display: inline-block;
-      min-width: 1.4em;
+      width: 2.3em;
       text-align: center;
       background: var(--red);
       color: white;

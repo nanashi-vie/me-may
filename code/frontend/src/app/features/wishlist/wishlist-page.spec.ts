@@ -21,8 +21,10 @@ const book = (code = 'MM-000001', patch: Partial<PublicBook> = {}): PublicBook =
   binding: null,
   conditionGrade: null,
   conditionNote: 'Ảnh thật',
-  priceVnd: 20000,
-  originalPriceVnd: null,
+  priceMinVnd: 20000,
+  priceMaxVnd: 20000,
+  weightG: 250,
+  salePriceVnd: null,
   saleEndsAt: null,
   description: null,
   readingLevel: null,
@@ -69,6 +71,23 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     localStorage.clear();
     now.set(Date.parse('2026-10-24T12:00:00Z'));
   });
+  it('looks up again at copy time and removes newly sold or hidden books and old prices', async () => {
+    const { c, lookup } = setup(['MM-000001', 'MM-000002'], [book(), book('MM-000002')]);
+    c.selectAll();
+    c.prepare();
+    lookup.mockReturnValueOnce(
+      of([
+        book('MM-000001', { priceMinVnd: 30000, priceMaxVnd: 40000 }),
+        book('MM-000002', { availability: 'SOLD' }),
+      ]),
+    );
+    const text = await c.verifyEnquiry();
+    expect(text).toContain('30.000 - 40.000 VNĐ');
+    expect(text).not.toContain('20.000');
+    expect(text).not.toContain('MM-000002');
+    lookup.mockReturnValueOnce(of([]));
+    expect(await c.verifyEnquiry()).toBe('');
+  });
   it('remembers the Prepare opener before async verification disables it', () => {
     const { f, c, lookup } = setup();
     c.selectAll();
@@ -99,7 +118,12 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     });
     await c.dialog.copy();
     expect(c.dialog.message()).toContain('Đã sao chép');
-    lookup.mockReturnValueOnce(of([book(undefined, { priceVnd: 15000 }), book('MM-000002')]));
+    lookup.mockReturnValueOnce(
+      of([
+        book(undefined, { priceMinVnd: 15000, priceMaxVnd: 15000, weightG: 250 }),
+        book('MM-000002'),
+      ]),
+    );
     c.refresh();
     f.detectChanges();
     expect(c.dialog.message()).not.toContain('Đã sao chép');
@@ -137,13 +161,15 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
   it('keeps the rest saved and copies only selected codes with fresh prices/canonical URLs', async () => {
     const { f, c, lookup, store } = setup(['MM-000001', 'MM-000002'], [book(), book('MM-000002')]);
     c.toggleSelection('MM-000001', true);
-    lookup.mockReturnValueOnce(of([book(undefined, { priceVnd: 17000 })]));
+    lookup.mockReturnValueOnce(
+      of([book(undefined, { priceMinVnd: 17000, priceMaxVnd: 18000, weightG: 250 })]),
+    );
     c.prepare();
     f.detectChanges();
     expect(lookup).toHaveBeenLastCalledWith(['MM-000001']);
     const text = (f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value;
     expect(text).toContain(
-      'MM-000001 | Moon MM-000001 | 17.000 ₫ | https://memay.example/sach/mm-000001',
+      'MM-000001 | Moon MM-000001 | 17.000 - 18.000 VNĐ | https://memay.example/sach/mm-000001',
     );
     expect(text).not.toContain('MM-000002');
     expect(text).toContain('xác nhận');
@@ -151,12 +177,14 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     await c.dialog.copy();
-    expect(writeText).toHaveBeenCalledWith(text);
+    expect(writeText).toHaveBeenCalledWith(text.replace('17.000 - 18.000 VNĐ', '20.000 VNĐ'));
     writeText.mockRejectedValueOnce(Error('denied'));
     await c.dialog.copy();
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('thủ công');
-    expect((f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(text);
+    expect((f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
+      text.replace('17.000 - 18.000 VNĐ', '20.000 VNĐ'),
+    );
   });
   it('revalidation removes newly sold and hidden selections and explains exclusion', () => {
     const { f, c, lookup } = setup(['MM-000001', 'MM-000002'], [book(), book('MM-000002')]);
@@ -228,15 +256,17 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     expect(c.enquiry()).toBe('');
     const count = lookup.mock.calls.length;
     f.destroy();
-    pending.next([book(undefined, { priceVnd: 999 })]);
+    pending.next([book(undefined, { priceMinVnd: 999, priceMaxVnd: 999, weightG: 250 })]);
     document.dispatchEvent(new Event('visibilitychange'));
     expect(lookup.mock.calls.length).toBe(count);
     expect(c.enquiry()).toBe('');
   });
   it('clears the expired sale before refresh and requires confirmed current prices', () => {
     const sale = book(undefined, {
-      priceVnd: 7000,
-      originalPriceVnd: 20000,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      weightG: 250,
+      salePriceVnd: 7000,
       saleEndsAt: '2026-10-24T12:00:01Z',
     });
     const { f, c, lookup } = setup(['MM-000001'], [sale]);

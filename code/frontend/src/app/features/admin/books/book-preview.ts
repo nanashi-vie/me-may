@@ -1,4 +1,4 @@
-import { formatPrice } from './book-copy';
+import { formatPriceRange } from './book-copy';
 import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -13,7 +13,7 @@ import { PageMetadata } from '../../../core/page-metadata';
   styleUrl: './book-preview.scss',
 })
 export class BookPreview {
-  readonly price = formatPrice;
+  readonly price = formatPriceRange;
   private readonly api = inject(BookApi);
   private readonly route = inject(ActivatedRoute);
   readonly book = signal<PreviewBook | null>(null);
@@ -35,10 +35,10 @@ export class BookPreview {
       !b ||
       !b.title ||
       !b.categoryCode ||
-      !b.priceVnd ||
+      !b.priceMinVnd || !b.priceMaxVnd || !b.weightG ||
       !b.conditionNote ||
       (b.categoryCode === 'PICTURE_BOOK' && !b.binding) ||
-      b.media.length !== 3
+      b.media.length < 2 || b.media.length > 6 || !['FRONT','BACK'].every(role => b.media.some(m => m.role === role))
     );
   });
   constructor() {

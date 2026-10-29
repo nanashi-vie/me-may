@@ -9,7 +9,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/` | Home nhiều hàng sách | Tìm kiếm, mở nhóm, xem cuốn |
 | `/sach` | Catalogue đầy đủ | Tìm/lọc/sắp xếp/phân trang; filter lưu URL |
 | `/bo-suu-tap/:slug` | Nhóm biên tập | Duyệt các cuốn thuộc nhóm |
-| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem ba ảnh và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
+| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–6 ảnh, trọng lượng và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
 | `/gioi-thieu`, `/cach-mua`, `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
@@ -23,24 +23,25 @@ Các tên route là thiết kế, chưa khóa OpenAPI hoặc cấu trúc control
 
 Khách vào Home → mở nhóm/tìm kiếm → chi tiết cuốn → thêm quan tâm hoặc sao chép thông tin sách → Zalo hotline cá nhân có zBusiness → cửa hàng xác nhận và chốt. Bấm liên hệ không giữ sách hoặc thay đổi khả dụng.
 
-Quản trị tạo nháp → nhập dữ liệu/ảnh thật → preview → Owner xuất bản → người có quyền cập nhật sold sau khi chốt ngoài web. Cùng tên vẫn có mã và trang riêng cho từng cuốn.
+Owner nhập dữ liệu/ảnh tạm → kiểm tra trọng lượng/khoảng giá/ảnh → xác nhận tạo và đăng một lần → người có quyền cập nhật sold sau khi chốt ngoài web. Cùng tên vẫn có mã và trang riêng cho từng cuốn.
 
 Danh sách quan tâm đọc lại trạng thái từ API khi mở; nếu API lỗi, ghi “Chưa kiểm tra được tình trạng” thay vì coi cache là còn hàng. Cuốn đã bán được cảnh báo; cuốn ẩn/không tìm thấy hiển thị không còn công khai, không lộ lại dữ liệu nháp. Chỉ sao chép thông tin công khai đã xác nhận, kèm lưu ý không giữ sách.
 
-Publication: `DRAFT` / `PUBLISHED` / `ARCHIVED`; availability: `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng). Hai nhóm độc lập. SOLD không tự archive; trang chi tiết vẫn tồn tại nếu còn published. Không có Đang giữ trong MVP.
+Publication: `PUBLISHED` / `ARCHIVED`; availability: `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng). Hai nhóm độc lập. SOLD không tự archive; trang chi tiết vẫn tồn tại nếu còn published. Không có Đang giữ trong MVP.
 
 ## Quyền thiết kế M0
 
 | Thao tác | STAFF | OWNER |
 |---|---|---|
-| Xem quản trị, tạo/sửa nháp và ảnh nháp | Có | Có |
-| Preview nháp được bảo vệ | Có | Có |
+| Xem quản trị và ảnh đã lưu | Có | Có |
+| Tạo/sửa sách và ảnh tạm | Không | Có |
+| Preview được bảo vệ | Có | Có |
 | Xuất bản/ẩn/khôi phục listing | Không | Có |
 | Đổi giá/nội dung/ảnh/khả dụng của cuốn đang công khai | Không | Có |
 | Sửa taxonomy/bộ sưu tập/thông tin liên hệ | Không | Có |
 | Quản lý tài khoản | Không | Có |
 
-Mặc định này làm rõ ranh giới “Staff nhập nháp” trong master plan; nếu cần nhân viên đánh dấu sold, bổ sung quyền riêng qua quyết định được ghi lại. Không mở rộng quyền qua UI đơn thuần.
+M5 thay quyền Staff nhập nháp bằng STAFF chỉ đọc; mọi ghi do OWNER thực hiện. Không mở rộng quyền qua UI đơn thuần.
 
 
 ## Home theo mẫu NXB Kim Đồng
@@ -63,7 +64,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 2. **Header:** logo Mẹ Mây (asset mới: `code/frontend/public/logo.jpg`, chưa tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
 3. **Navigation:** Tất cả sách, Sách mới đăng, Theo độ tuổi, Theo loại sách, Bộ sưu tập, Cách mua. Dropdown phải thao tác được bằng bàn phím/touch khi triển khai.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
-5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có giá gốc/giá sale/% giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
+5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có khoảng giá gốc/giá sale, không % giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
 6. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
 6. **Board books cho bé nhỏ:** hàng 5 cuốn hoặc ít hơn nếu thiếu; tên nhóm chỉ xuất hiện khi có nội dung công khai.
 7. **Banner nhóm 1:** giới thiệu “Cùng bé đọc mỗi ngày” bằng nội dung/asset Mẹ Mây; link tới bộ sưu tập thật.
@@ -114,7 +115,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → gallery ba ảnh (bìa trước, mặt sau, một trang nội dung) → tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã → giá tham khảo và khả dụng → mô tả/tình trạng/lỗi → độ tuổi, mức đọc tham khảo và link video đọc sách → trái tim wishlist và các CTA Zalo. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa. Trên desktop gallery và thông tin thành hai cột; mobile một cột, vùng CTA không che nội dung.
+Breadcrumb → gallery 2–6 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn) → tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã → giá tham khảo và khả dụng → mô tả/tình trạng/lỗi → độ tuổi, mức đọc tham khảo và link video đọc sách → trái tim wishlist và các CTA Zalo. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa. Trên desktop gallery và thông tin thành hai cột; mobile một cột, vùng CTA không che nội dung.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -127,7 +128,7 @@ Các nút trên detail:
 
 Hai nút tư vấn dùng chung hotline Zalo cá nhân có zBusiness. Nội dung soạn sẵn gồm mục đích hỏi, mã, tên, giá tham khảo và URL; hết hàng đổi mục đích thành hỏi sách tương đương. Chỉ dùng điền sẵn khi đã kiểm chứng được với kênh thực tế. Phương án MVP: mở hướng dẫn với nội dung đã soạn, nút “Sao chép” và “Mở Zalo”; khách dán rồi gửi. Clipboard thất bại có ô văn bản chọn/copy thủ công. Không tự gửi tin, không tự giữ sách; thiếu link hotline/nhóm thật phải được giải quyết trước nghiệm thu.
 
-Chỉ ba ảnh public; ảnh/video thực tế bổ sung trao đổi qua Zalo. Mô tả tình trạng/lỗi phải dễ thấy, không có ảnh lỗi không có nghĩa không có lỗi. Không bịa ISBN/tuổi/author. Khi archived, public URL không trả chi tiết cuốn; public preview không dùng endpoint admin.
+Tối đa sáu ảnh public; ảnh/video thực tế bổ sung trao đổi qua Zalo. Mô tả tình trạng/lỗi phải dễ thấy, không có ảnh lỗi không có nghĩa không có lỗi. Không bịa ISBN/tuổi/author. Khi archived, public URL không trả chi tiết cuốn; public preview không dùng endpoint admin.
 
 ## Danh sách quan tâm — khách mobile
 
@@ -151,13 +152,13 @@ Sidebar nhỏ: Sách, Bộ sưu tập, Danh mục, Tài khoản (Owner), Cấu h
 
 MVP chỉ nhập thủ công, không có nút import CSV/Excel. Import là bước ngay sau MVP: tạo mới thành nháp, mã trùng báo lỗi, không ghi đè; file mẫu/preview/lỗi sẽ đặc tả riêng. Cập nhật sách đang có qua import để giai đoạn sau.
 
-Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng control rõ ràng, cập nhật server thành công mới báo thành công; network error giữ nguyên trạng thái đã xác nhận trước đó. STAFF không có control xuất bản hoặc đổi sách đang công khai. Backend từ chối request vượt quyền kể cả tự gọi API.
+Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng control rõ ràng, cập nhật server thành công mới báo thành công; network error giữ nguyên trạng thái đã xác nhận trước đó. STAFF không có control tạo hoặc sửa sách, ảnh, trạng thái. Backend từ chối request vượt quyền kể cả tự gọi API.
 
 ## Editor — desktop
 
-Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → ba vị trí upload FRONT/BACK/INSIDE, alt text, bìa trước làm thumbnail → listing mô tả + giá tham khảo + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, lưu nháp/preview/xuất bản theo quyền.
+Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → chọn/thả nhiều file 2–6 ảnh, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → trọng lượng gram + listing mô tả + khoảng giá từ–đến + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, Đăng sách một lần sau xác nhận; sửa/preview/ẩn/hiện theo quyền.
 
-Mã bất biến sau khi tạo. Lưu nháp cho phép thiếu field xuất bản; publish yêu cầu tên, mã, giá tham khảo nguyên >0, một thể loại, đúng một kiểu bìa nếu Picture book, condition note và đủ ba ảnh thật FRONT/BACK/INSIDE đã kiểm tra. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, condition note và 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ## Trạng thái UX dùng chung
 
@@ -165,6 +166,6 @@ Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit
 
 ## Trạng thái triển khai M3 local
 
-Home/catalogue/collection/detail đã nối API, ba ảnh thật, metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
+Home/catalogue/collection/detail đã nối API, gallery 2–6 ảnh thật (M5), metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
 
 Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.
