@@ -1,3 +1,4 @@
+import { bookPrice } from '../catalogue/catalogue-state';
 import { DOCUMENT } from '@angular/common';
 import {
   Component,
@@ -51,7 +52,7 @@ export class WishlistPage {
       : this.notice(),
   );
   readonly config = signal<ContactConfig | null>(null);
-  readonly price = formatPrice;
+  readonly price = bookPrice;
   private readonly prepared = signal<PublicBook[]>([]);
   private readonly enquiryMode = signal(false);
   private readonly requests = new Subject<LookupRequest>();
@@ -89,7 +90,7 @@ export class WishlistPage {
       books
         .map(
           (b) =>
-            `${b.bookCode} | ${b.title} | ${formatPrice(b.priceVnd)} | ${this.origin}/sach/${b.slug}`,
+            `${b.bookCode} | ${b.title} | ${bookPrice(b)} | ${this.origin}/sach/${b.slug}`,
         )
         .join('\n') +
       '\nNhờ tiệm xác nhận còn sách và giá cụ thể. Liên hệ không giữ sách.'
@@ -157,8 +158,9 @@ export class WishlistPage {
   private eligible(book: PublicBook, now = this.clock.now()) {
     return (
       book.availability === 'AVAILABLE' &&
-      book.priceVnd !== null &&
-      book.priceVnd > 0 &&
+      book.priceMinVnd !== null &&
+      book.priceMinVnd > 0 &&
+      book.priceMaxVnd !== null && book.priceMaxVnd >= book.priceMinVnd &&
       (!book.saleEndsAt || now < Date.parse(book.saleEndsAt))
     );
   }

@@ -1,6 +1,6 @@
 import { ParamMap, Params } from '@angular/router';
 import { CatalogueFilter, PublicBook } from './public.models';
-import { AGE_LABELS, formatPrice } from '../admin/books/book-copy';
+import { AGE_LABELS, formatPrice, formatPriceRange } from '../admin/books/book-copy';
 const categories = [
   'BOARD_BOOK',
   'PICTURE_BOOK',
@@ -40,7 +40,7 @@ export function bookTitle(b: PublicBook) {
     .join(' | ');
 }
 export function enquiryText(b: PublicBook, url: string) {
-  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}\nGiá tham khảo: ${formatPrice(b.priceVnd)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
+  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}\nGiá tham khảo: ${bookPrice(b)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
 }
 export function countdown(ms: number) {
   const seconds = Math.max(0, Math.floor(ms / 1000));
@@ -50,6 +50,8 @@ export function countdown(ms: number) {
 }
 export function effectiveBook(b: PublicBook, now: number): PublicBook {
   return b.saleEndsAt && now >= Date.parse(b.saleEndsAt)
-    ? { ...b, priceVnd: null, originalPriceVnd: null }
+    ? { ...b, priceMinVnd: null, priceMaxVnd: null, salePriceVnd: null }
     : b;
 }
+
+export function bookPrice(b: PublicBook) { return b.salePriceVnd !== null ? formatPrice(b.salePriceVnd) : formatPriceRange(b.priceMinVnd,b.priceMaxVnd); }

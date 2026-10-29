@@ -19,13 +19,13 @@ describe('Book form', () => {
   it('sends only current fields and allows blank optional video', () => {
     const f = buildBookForm();
     expect(Object.keys(toBookWrite(f))).not.toContain('readingLevelBasis');
-    expect(Object.keys(toBookWrite(f))).toHaveLength(15);
+    expect(Object.keys(toBookWrite(f))).toHaveLength(17);
     expect(toBookWrite(f).readingVideoUrl).toBeNull();
     f.controls.readingVideoUrl.setValue('http://example.com');
     expect(f.invalid).toBe(true);
     f.controls.readingVideoUrl.setValue('https://example.com/read');
     expect(f.valid).toBe(true);
-    f.controls.priceVnd.setValue(1.5);
+    f.controls.priceMinVnd.setValue(1.5);
     expect(f.invalid).toBe(true);
   });
 });

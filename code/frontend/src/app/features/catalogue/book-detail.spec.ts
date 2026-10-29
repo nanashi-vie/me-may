@@ -20,8 +20,8 @@ const a: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Actual',
-  priceVnd: 10000,
-  originalPriceVnd: null,
+  priceMinVnd: 10000, priceMaxVnd:10000, weightG:250,
+  salePriceVnd: null,
   saleEndsAt: null,
   description: null,
   readingLevel: null,
@@ -83,8 +83,8 @@ describe('Detail refresh and public origin', () => {
     const heading = h.routeNativeElement!.querySelector('h1');
     c.refresh(); h.detectChanges();
     expect(h.routeNativeElement!.querySelector('h1')).toBe(heading);
-    fresh.next({ ...a, priceVnd: 30000 }); h.detectChanges();
-    expect(c.book()?.priceVnd).toBe(30000);
+    fresh.next({ ...a, priceMinVnd: 30000, priceMaxVnd:30000, weightG:250 }); h.detectChanges();
+    expect(c.book()?.priceMinVnd).toBe(30000);
   });
   it('late refresh cannot replace a newly opened book', async () => {
     const retry = new Subject<PublicBook>(),

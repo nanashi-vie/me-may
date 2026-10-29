@@ -62,14 +62,16 @@
         </fieldset>
       }
       <label
-        >Giá tham khảo (VND)<input
+        >Giá từ (VNĐ)<input
           type="number"
-          formControlName="priceVnd"
+          formControlName="priceMinVnd"
           min="1"
           max="999999999999"
           step="1"
         /><small>{{ priceNote }}</small></label
-      ><label
+      ><label>Giá đến (VNĐ)<input type="number" formControlName="priceMaxVnd" min="1" max="999999999999" step="1" /></label>
+      <label>Trọng lượng sách (g)<input type="number" formControlName="weightG" min="1" step="1" /><small>{{book()?.weightG == null ? 'Chưa cập nhật' : ''}}</small></label>
+      <label
         >Đánh giá tình trạng<select formControlName="conditionGrade">
           <option [ngValue]="null">Chưa đánh giá</option>
           <option value="VERY_GOOD">Rất tốt</option>

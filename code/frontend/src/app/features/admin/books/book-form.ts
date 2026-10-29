@@ -12,9 +12,19 @@ export function buildBookForm() {
       binding: new FormControl<Binding | null>(null),
       conditionGrade: new FormControl<BookWrite['conditionGrade']>(null),
       conditionNote: text(4000),
-      priceVnd: new FormControl<number | null>(null, [
+      priceMinVnd: new FormControl<number | null>(null, [
         Validators.min(1),
         Validators.max(999999999999),
+        (c) => (c.value === null || Number.isSafeInteger(c.value) ? null : { integer: true }),
+      ]),
+      priceMaxVnd: new FormControl<number | null>(null, [
+        Validators.min(1),
+        Validators.max(999999999999),
+        (c) => (c.value === null || Number.isSafeInteger(c.value) ? null : { integer: true }),
+      ]),
+      weightG: new FormControl<number | null>(null, [
+        Validators.min(1),
+        Validators.max(Number.MAX_SAFE_INTEGER),
         (c) => (c.value === null || Number.isSafeInteger(c.value) ? null : { integer: true }),
       ]),
       description: text(10000),
@@ -28,6 +38,7 @@ export function buildBookForm() {
       validators: (group: AbstractControl) => {
         const w = group.value as BookWrite;
         const errors: Record<string, boolean> = {};
+        if ((w.priceMinVnd === null) !== (w.priceMaxVnd === null) || (w.priceMinVnd !== null && w.priceMaxVnd !== null && w.priceMinVnd > w.priceMaxVnd)) errors['priceMaxVnd'] = true;
         if (w.categoryCode === 'PICTURE_BOOK' && !w.binding) errors['binding'] = true;
         if (w.readingVideoUrl?.trim()) {
           try {

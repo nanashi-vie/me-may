@@ -43,8 +43,8 @@ class BookCommandIntegrationTest {
  }
  @Test void noOpDoesNotBumpVersion(){var a=commands.create(owner,draft("A"));var b=commands.update(Long.parseLong(a.id()),a.version(),owner,draft("A"));assertThat(b.version()).isEqualTo(a.version());assertThat(jdbc.queryForObject("select count(*) from audit_event",Integer.class)).isEqualTo(1);}
  @Test void rejectsInvalidPriceLevelAndLink(){
-  for(Long price:new Long[]{0L,-1L,1000000000000L}) assertThatThrownBy(()->commands.create(owner,write("A",null,null,price,null,null,List.of(),List.of()))).hasMessageContaining("priceVnd");
-  assertThat(commands.create(owner,write("A",null,null,999999999999L,null,null,List.of(),List.of())).priceVnd()).isEqualTo(999999999999L);
+  for(Long price:new Long[]{0L,-1L,1000000000000L}) assertThatThrownBy(()->commands.create(owner,write("A",null,null,price,null,null,List.of(),List.of()))).hasMessageContaining("priceMinVnd");
+  assertThat(commands.create(owner,write("A",null,null,999999999999L,null,null,List.of(),List.of())).priceMinVnd()).isEqualTo(999999999999L);
   assertThat(commands.create(owner,write("A",null,null,1L,"A1",null,List.of(),List.of())).readingLevel()).isEqualTo("A1");
  }
 }

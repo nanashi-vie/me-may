@@ -64,10 +64,10 @@ public class BookQueryService {
         args.add(filter.size());
         args.add((long) filter.page() * filter.size());
         var items = jdbc.query(
-                "select b.id,b.book_code,b.title,l.price_vnd,l.publication_status,b.availability,b.version,b.updated_at,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
+                "select b.id,b.book_code,b.title,l.price_min_vnd,l.price_max_vnd,l.publication_status,b.availability,b.version,b.updated_at,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
                         + where + " order by b.updated_at desc,b.id desc limit ? offset ?",
                 (r, n) -> new BookSummary(r.getString("id"), r.getString("book_code"), r.getString("title"),
-                        r.getObject("price_vnd", Long.class), Publication.valueOf(r.getString("publication_status")),
+                        r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class), Publication.valueOf(r.getString("publication_status")),
                         Availability.valueOf(r.getString("availability")), r.getLong("version"),
                         r.getTimestamp("updated_at").toInstant(),
                         r.getBoolean("has_front") ? "/api/v1/admin/books/" + r.getString("id") + "/media/FRONT/content"
@@ -80,7 +80,7 @@ public class BookQueryService {
     public PreviewBook preview(long id, AdminUser actor) {
         var b = detail(id, actor);
         return new PreviewBook(b.bookCode(), b.slug(), b.title(), b.publisher(), b.author(), b.ageGroups(),
-                b.categoryCode(), b.binding(), b.conditionGrade(), b.conditionNote(), b.priceVnd(), b.description(),
+                b.categoryCode(), b.binding(), b.conditionGrade(), b.conditionNote(), b.priceMinVnd(), b.priceMaxVnd(), b.weightG(), b.description(),
                 b.readingLevel(), b.readingVideoUrl(), b.availability(),
                 b.media().stream().map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList());
     }

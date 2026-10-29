@@ -18,7 +18,7 @@ class AdminBooksApiTest extends CatalogueTestSupport {
  }
  @Test void forgedBookCodeOrActorReturns400()throws Exception{
   for(String key:List.of("bookCode","actor","publication","unexpected"))assertThat(api.send("POST","/api/v1/admin/books",json(Map.of(key,"forged")),true).statusCode()).isEqualTo(400);
-  assertThat(api.send("POST","/api/v1/admin/books","{\"priceVnd\":1.5}",true).statusCode()).isEqualTo(400);
+  assertThat(api.send("POST","/api/v1/admin/books","{\"priceMinVnd\":1.5}",true).statusCode()).isEqualTo(400);
   assertThat(jdbc.queryForObject("select count(*) from book_copy",Integer.class)).isZero();
  }
  @Test void previewDoesNotLeakInternalFields()throws Exception{
@@ -54,7 +54,7 @@ class AdminBooksApiTest extends CatalogueTestSupport {
   assertThat(api.send("GET","/api/v1/admin/books/999999999",null,false).statusCode()).isEqualTo(404);
  }
  @Test void jsonNumbersCannotBeCoercedFromStrings()throws Exception{
-  assertThat(api.send("POST","/api/v1/admin/books",json(Map.of("priceVnd","1000")),true).statusCode()).isEqualTo(400);
+  assertThat(api.send("POST","/api/v1/admin/books",json(Map.of("priceMinVnd","1000")),true).statusCode()).isEqualTo(400);
   var b=commands.create(owner,BookFixtures.draft("A"));assertThat(api.send("PATCH","/api/v1/admin/books/"+b.id()+"/availability",json(Map.of("version","0","availability","SOLD")),true).statusCode()).isEqualTo(400);
  }
 }

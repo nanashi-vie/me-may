@@ -1,4 +1,4 @@
-import { formatPrice } from './book-copy';
+import { formatPriceRange } from './book-copy';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -14,7 +14,7 @@ import { AVAILABILITY_LABELS, PUBLICATION_LABELS } from './book-copy';
   styleUrl: './book-list.scss',
 })
 export class BookList {
-  readonly price = formatPrice;
+  readonly price = formatPriceRange;
   private readonly api = inject(BookApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

@@ -1,6 +1,7 @@
 import { Component, inject, input, output, signal } from '@angular/core';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 import { from, concatMap, filter, tap, finalize } from 'rxjs';
+import { MEDIA_ROLES, MEDIA_LABELS } from './book-copy';
 import { BookApi } from './book-api';
 import { BookDetail, MediaRole } from './book.models';
 @Component({
@@ -17,8 +18,8 @@ export class BookMediaPanel {
   readonly busyChange = output<boolean>();
   readonly pendingChange = output<boolean>();
   private readonly api = inject(BookApi);
-  readonly roles: MediaRole[] = ['FRONT', 'BACK', 'INSIDE'];
-  readonly labels = { FRONT: 'Bìa trước', BACK: 'Mặt sau', INSIDE: 'Một trang nội dung' };
+  readonly roles: MediaRole[] = [...MEDIA_ROLES];
+  readonly labels = MEDIA_LABELS;
   readonly busy = signal(false);
   readonly error = signal('');
   readonly progress = signal(0);

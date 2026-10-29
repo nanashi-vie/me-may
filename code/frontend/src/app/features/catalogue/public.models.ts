@@ -20,8 +20,10 @@ export interface PublicBook {
   binding: Binding | null;
   conditionGrade: string | null;
   conditionNote: string;
-  priceVnd: number | null;
-  originalPriceVnd: number | null;
+  priceMinVnd: number | null;
+  priceMaxVnd: number | null;
+  salePriceVnd: number | null;
+  weightG: number | null;
   saleEndsAt: string | null;
   description: string | null;
   readingLevel: ReadingLevel | null;

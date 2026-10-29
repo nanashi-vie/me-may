@@ -13,7 +13,8 @@ public class Listing {
     public Long bookCopyId;
     @Column(nullable = false, unique = true, length = 80, updatable = false)
     public String slug;
-    public Long priceVnd;
+    public Long priceMinVnd;
+    public Long priceMaxVnd;
     @Column(length = 10000)
     public String description;
     public Long categoryId;

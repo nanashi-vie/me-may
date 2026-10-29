@@ -127,18 +127,18 @@ public có cả khoảng gốc và `salePriceVnd/saleEndsAt` khi sale hợp lệ
 MediaRole=FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3.
 `formatPriceRange(min: number|null,max: number|null): string` dùng mọi nơi.
 
-- [ ] RED migration trên scratch V5 có PUBLISHED/DRAFT, giá và media cũ:
+- [x] RED migration trên scratch V5 có PUBLISHED/DRAFT, giá và media cũ:
   nângV6 giữ ID/slug/audit/asset, giá đơn→hai đầu bằng nhau, INSIDE→INSIDE_1,
   weightGnull và không đổi trạng thái ở task này. Không sửa migrationV1–V5.
-- [ ] RED API/form: giá20k–30k và20k–20k hợp lệ; thiếuđầu/đảo/float/0/âm bịchặn;
+- [x] RED API/form: giá20k–30k và20k–20k hợp lệ; thiếuđầu/đảo/float/0/âm bịchặn;
   weightG250 hợp lệ, null cho sách cũ đọc được, inputmới thiếu/float/0 bịchặn.
-- [ ] RED publicsort: min rồi max cùng chiều, code làm tie-break; sale thấp hơn
+- [x] RED publicsort: min rồi max cùng chiều, code làm tie-break; sale thấp hơn
   min mới hiện, hết hạn/hidden/SOLD không sale, không %giảm từ khoảng.
-- [ ] Run targeted M5MigrationTest/BookCommandIntegrationTest/PublicCatalogueApiTest/
+- [x] Run targeted M5MigrationTest/BookCommandIntegrationTest/PublicCatalogueApiTest/
   FlashSaleApiTest và frontend npm test; ghi RED, triển khai field/mapping/check.
-- [ ] Đổi mọi consumer trong cùng task: detail/card/home/collection/preview/list/
+- [x] Đổi mọi consumer trong cùng task: detail/card/home/collection/preview/list/
   wishlist/enquiry/metadata; giữ priceNote y nguyên, không chọn một đầu làm giáchốt.
-- [ ] GREEN và browser so sánh cùng dữ liệu; update test fixture/old assertion
+- [x] GREEN API/schema/frontend; browser tích hợp chuyển task6/7 theo ledger để migrate scratch một lần; update test fixture/old assertion
   vì contract đổi, giữ regression privacy/lookup/timing; commit code+docs.
 
 ### Task 4: Phiên upload riêng tư và cleanup an toàn

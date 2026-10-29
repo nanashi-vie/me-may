@@ -70,7 +70,7 @@
               <h2>
                 <a [routerLink]="['/sach', b.slug]">{{ b.title }}</a>
               </h2>
-              <p class="price">{{ price(b.priceVnd) }}</p>
+              <p class="price">{{ price(b) }}</p>
               <p class="stock" [class.sold]="b.availability === 'SOLD'">
                 {{
                   b.availability === 'SOLD'

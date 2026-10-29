@@ -1,3 +1,4 @@
+import { bookPrice } from './catalogue-state';
 import { Component, RESPONSE_INIT, inject, signal, effect, TransferState, makeStateKey, PLATFORM_ID } from '@angular/core';
 import { isPlatformServer } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -16,7 +17,7 @@ import {
   READING_LABELS,
   PRICE_NOTE,
   READING_NOTE,
-  formatPrice,
+  formatPrice, formatPriceRange, MEDIA_LABELS,
 } from '../admin/books/book-copy';
 @Component({
   selector: 'app-book-detail',
@@ -42,7 +43,9 @@ export class BookDetail {
   private readonly refreshRequests = new Subject<void>();
   private expiredSlug = '';
   readonly title = bookTitle;
-  readonly price = formatPrice;
+  readonly price = bookPrice;
+  readonly range = formatPriceRange;
+  readonly mediaLabels: Record<string,string> = MEDIA_LABELS;
   readonly ages = AGE_LABELS;
   readonly levels = READING_LABELS;
   readonly priceNote = PRICE_NOTE;

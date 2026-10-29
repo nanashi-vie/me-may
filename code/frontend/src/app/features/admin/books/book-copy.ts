@@ -16,5 +16,12 @@ export const READING_LABELS = {
 
 const vndFormat = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 export function formatPrice(value: number | null): string {
-  return value === null ? '—' : vndFormat.format(value) + ' ₫';
+  return value === null ? '—' : vndFormat.format(value) + ' VNĐ';
+}
+
+export const MEDIA_ROLES = ['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3'] as const;
+export const MEDIA_LABELS = { FRONT:'Bìa', BACK:'Lưng', SPINE:'Gáy', INSIDE_1:'Nội dung 1', INSIDE_2:'Nội dung 2', INSIDE_3:'Nội dung 3' };
+export function formatPriceRange(min: number | null, max: number | null): string {
+  if (min === null || max === null) return '—';
+  return (min === max ? vndFormat.format(min) : vndFormat.format(min) + ' - ' + vndFormat.format(max)) + ' VNĐ';
 }

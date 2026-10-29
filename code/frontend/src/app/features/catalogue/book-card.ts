@@ -1,7 +1,8 @@
+import { bookPrice } from './catalogue-state';
 import { Component, input, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PublicBook } from './public.models';
-import { formatPrice } from '../admin/books/book-copy';
+import { formatPrice, formatPriceRange } from '../admin/books/book-copy';
 import { effectiveBook } from './catalogue-state';
 import { WishlistButton } from '../wishlist/wishlist-button';
 @Component({
@@ -31,15 +32,13 @@ import { WishlistButton } from '../wishlist/wishlist-button';
       <a [routerLink]="['/sach', book().slug]">{{ book().title }}</a>
     </h3>
     <p class="price">
-      {{ price(current().priceVnd) }}
-      @if (discount()) {
-        <span class="discount">−{{ discount() }}%</span>
-      }
+      {{ price(current()) }}
+
     </p>
-    @if (current().originalPriceVnd) {
-      <del>{{ price(current().originalPriceVnd) }}</del>
+    @if (current().salePriceVnd) {
+      <del>{{ range(book().priceMinVnd,book().priceMaxVnd) }}</del>
     }
-    @if (current().priceVnd === null) {
+    @if (current().priceMinVnd === null) {
       <small>Đang chờ xác nhận giá</small>
     }
     <span class="stock" [class.sold]="book().availability === 'SOLD'">{{
@@ -131,11 +130,6 @@ export class BookCard {
   readonly now = input(0);
   readonly current = computed(() => effectiveBook(this.book(), this.now()));
   readonly front = computed(() => this.book().media.find((m) => m.role === 'FRONT'));
-  readonly discount = computed(() => {
-    const b = this.current();
-    return b.originalPriceVnd && b.priceVnd
-      ? Math.floor((1 - b.priceVnd / b.originalPriceVnd) * 100)
-      : 0;
-  });
-  readonly price = formatPrice;
+  readonly range = formatPriceRange;
+  readonly price = bookPrice;
 }

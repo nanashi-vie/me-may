@@ -58,7 +58,7 @@
               ><small>{{ book.bookCode }}</small>
             </td>
             <td>
-              {{ price(book.priceVnd) }}
+              {{ price(book.priceMinVnd,book.priceMaxVnd) }}
             </td>
             <td>{{ labels[book.publication] }}</td>
             <td>{{ availabilityLabels[book.availability] }}</td>

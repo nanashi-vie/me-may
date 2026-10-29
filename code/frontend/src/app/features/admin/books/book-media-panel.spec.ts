@@ -17,10 +17,10 @@ describe('BookMediaPanel', () => {
     f.componentInstance.uploadFiles({
       FRONT: new File(['a'], 'front.jpg'),
       BACK: new File(['b'], 'back.jpg'),
-      INSIDE: new File(['c'], 'inside.jpg'),
+      INSIDE_1: new File(['c'], 'inside.jpg'),
     });
     expect(upload.mock.calls.map((c) => c[2])).toEqual([0, 1, 2]);
-    expect(f.componentInstance.roles).toEqual(['FRONT', 'BACK', 'INSIDE']);
+    expect(f.componentInstance.roles).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3']);
   });
   it('dirtyFormBlocksUpload and replacementFailureKeepsOldPreview', () => {
     const upload = vi.fn(() => throwError(() => ({ status: 502 })));

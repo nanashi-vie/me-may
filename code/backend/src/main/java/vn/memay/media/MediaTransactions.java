@@ -67,7 +67,10 @@ public class MediaTransactions {
         return value != null ? value : switch (role) {
             case FRONT -> "Bìa trước ";
             case BACK -> "Mặt sau ";
-            case INSIDE -> "Trang nội dung ";
+            case SPINE -> "Gáy ";
+            case INSIDE_1 -> "Nội dung 1 ";
+            case INSIDE_2 -> "Nội dung 2 ";
+            case INSIDE_3 -> "Nội dung 3 ";
         } + code;
     }
 

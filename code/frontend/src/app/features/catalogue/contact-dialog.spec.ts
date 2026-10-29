@@ -16,8 +16,8 @@ const book: PublicBook = {
   binding: null,
   conditionGrade: null,
   conditionNote: 'Thực tế',
-  priceVnd: 20000,
-  originalPriceVnd: null,
+  priceMinVnd: 20000, priceMaxVnd:20000, weightG:250,
+  salePriceVnd: null,
   saleEndsAt: null,
   description: null,
   readingLevel: null,
@@ -57,15 +57,14 @@ describe('Contact copy fallback', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('thủ công');
     expect(f.nativeElement.querySelector('textarea').value).toContain('MM-000001');
-    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 ₫');
+    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 VNĐ');
     expect(f.nativeElement.textContent).toContain('chưa được cấu hình');
   });
   it('does not copy expired discount as a current price', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceVnd: 7000,
-      originalPriceVnd: 20000,
+      priceMinVnd:20000,priceMaxVnd:20000,weightG:250,salePriceVnd:7000,
       saleEndsAt: '2000-01-01T00:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');
@@ -83,8 +82,7 @@ describe('Enquiry uses server clock', () => {
     const f = TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book', {
       ...book,
-      priceVnd: 7000,
-      originalPriceVnd: 20000,
+      priceMinVnd:20000,priceMaxVnd:20000,weightG:250,salePriceVnd:7000,
       saleEndsAt: '2026-10-23T13:00:00Z',
     });
     f.componentRef.setInput('url', 'http://localhost:4200/sach/mm-000001');

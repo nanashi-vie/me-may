@@ -100,7 +100,9 @@ public class BookCommandService {
         b.binding = w.binding();
         b.conditionGrade = w.conditionGrade();
         b.conditionNote = w.conditionNote();
-        l.priceVnd = w.priceVnd();
+        l.priceMinVnd = w.priceMinVnd();
+        l.priceMaxVnd = w.priceMaxVnd();
+        b.weightG = w.weightG();
         l.description = w.description();
         l.categoryId = w.categoryCode() == null ? null
                 : categories.findByCode(w.categoryCode())

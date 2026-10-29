@@ -33,14 +33,14 @@ public class BookMapper {
                         m.alt, m.sourceRef, "/api/v1/admin/books/" + b.id + "/media/" + m.role + "/content"))
                 .toList();
         return new BookDetail(b.id.toString(), b.bookCode, l.slug, b.version, b.title, b.isbn, b.publisher, b.author,
-                b.language, b.binding, b.conditionGrade, b.conditionNote, l.priceVnd, l.description, category, ages,
+                b.language, b.binding, b.conditionGrade, b.conditionNote, l.priceMinVnd, l.priceMaxVnd, b.weightG, l.description, category, ages,
                 l.readingLevel, l.readingVideoUrl, cols, l.publicationStatus, b.availability, l.publishedAt,
                 b.createdAt, b.updatedAt, images);
     }
 
     public BookWrite write(BookDetail d) {
         return new BookWrite(d.title(), d.isbn(), d.publisher(), d.author(), d.language(), d.binding(),
-                d.conditionGrade(), d.conditionNote(), d.priceVnd(), d.description(), d.categoryCode(), d.ageGroups(),
+                d.conditionGrade(), d.conditionNote(), d.priceMinVnd(), d.priceMaxVnd(), d.weightG(), d.description(), d.categoryCode(), d.ageGroups(),
                 d.readingLevel(), d.readingVideoUrl(), d.collectionIds());
     }
 }

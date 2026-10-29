@@ -18,6 +18,7 @@
     }
   </div>
   <div class="preview-text">
+    @if (b.weightG !== null) { <p>Trọng lượng sách: {{b.weightG}} g</p> }
     @if (b.description) {
       <h2>Mô tả</h2>
       <p>{{ b.description }}</p>
@@ -40,8 +41,8 @@
         >
       </p>
     }
-    @if (b.priceVnd !== null) {
-      <p class="price">{{ price(b.priceVnd) }}</p>
+    @if (b.priceMinVnd !== null) {
+      <p class="price">{{ price(b.priceMinVnd,b.priceMaxVnd) }}</p>
       <small>{{ priceNote }}</small>
     }
   </div>

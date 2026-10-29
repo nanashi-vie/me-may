@@ -1,6 +1,6 @@
 export type Publication = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 export type Availability = 'AVAILABLE' | 'SOLD';
-export type MediaRole = 'FRONT' | 'BACK' | 'INSIDE';
+export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3';
 export type Binding = 'PAPERBACK' | 'HARDCOVER';
 export type CategoryCode =
   | 'BOARD_BOOK'
@@ -20,7 +20,9 @@ export interface BookWrite {
   binding: Binding | null;
   conditionGrade: 'VERY_GOOD' | 'GOOD' | 'FAIR' | null;
   conditionNote: string | null;
-  priceVnd: number | null;
+  priceMinVnd: number | null;
+  priceMaxVnd: number | null;
+  weightG: number | null;
   description: string | null;
   categoryCode: CategoryCode | null;
   ageGroups: AgeGroup[];
@@ -51,7 +53,8 @@ export interface BookSummary {
   id: string;
   bookCode: string;
   title: string | null;
-  priceVnd: number | null;
+  priceMinVnd: number | null;
+  priceMaxVnd: number | null;
   publication: Publication;
   availability: Availability;
   version: number;
@@ -83,7 +86,9 @@ export interface PreviewBook {
   binding: Binding | null;
   conditionGrade: string | null;
   conditionNote: string | null;
-  priceVnd: number | null;
+  priceMinVnd: number | null;
+  priceMaxVnd: number | null;
+  weightG: number | null;
   description: string | null;
   readingLevel: ReadingLevel | null;
   readingVideoUrl: string | null;
