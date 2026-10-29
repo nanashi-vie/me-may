@@ -1,8 +1,9 @@
 # M5 — hiệu năng và tạo sách không có nháp
 
-Trạng thái: **đề xuất, chờ user duyệt**. Ngày28/10/2026, Asia/Ho_Chi_Minh.
-Thay thế các quyết định DRAFT/quyền ghi STAFF trong M2_SPEC, DESIGN và
-MASTER_PLAN sau khi được duyệt. Không thay các gate bảo mật/recovery/SEO M5.
+Trạng thái: **đề xuất, chờ user duyệt**. Cập nhật29/10/2026, Asia/Ho_Chi_Minh.
+Sau khi được duyệt, thay thế các quyết định DRAFT/quyền ghi STAFF, một mức
+giá, đúng ba ảnh và loại trọng lượng khỏi MVP trong M2_SPEC, DATA, DESIGN
+và MASTER_PLAN. Không thay các gate bảo mật/recovery/SEO M5.
 
 ## 1. Mục tiêu và nguồn quyết định
 
@@ -10,11 +11,13 @@ MASTER_PLAN sau khi được duyệt. Không thay các gate bảo mật/recovery
   chờ; mediaWebP có JPEGfallback; hai cỡ ảnh public; dimensions/CLS; chuẩn hóa
   upload/cảnh báo ảnh lớn; đánh giá cache ảnh public có kiểm soát.
 - User yêu cầu bỏ hoàn toàn việc tạo nháp. Đã xác nhận nhập đủ thông tin và
-  ba ảnh rồi đăng ngay; chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem quản trị.
+  ảnh bắt buộc rồi đăng ngay; chỉ OWNER thêm/sửa/đăng, STAFF chỉ xem quản trị.
 - User chọn upload từng ảnh vào vùng tạm rồi tạo+đăng một lần. Tài nguyên
   upload tạm không phải BookCopy/Listing và không có trang public.
 - User bổ sung chọn nhiều ảnh cùng lúc, kéo file vào để upload và kéo đổi
-  thứ tự ảnh khi chọn sai; vẫn giữ đúng ba vai trò FRONT/BACK/INSIDE.
+  thứ tự ảnh khi chọn sai; yêu cầu mới29/10 thay giới hạn ba ảnh bằng2–6ảnh.
+- Chủ tiệm yêu cầu thêm trọng lượng sách, giá nhập theo khoảng và giữ
+  nguyên chú thích giá; chi tiết field/validation và dữ liệu cũ ở mục5.1.
 - Tiếp tục Angular/Spring Boot/Cloudinary authenticated/Workers/Render/Neon.
   Không thêm order/checkout, AI pipeline, thư viện UI hoặc dịch vụ nền mới.
 - Gate performance vẫn mở: JSON sau deploy cho MM-000019 có median
@@ -25,7 +28,7 @@ MASTER_PLAN sau khi được duyệt. Không thay các gate bảo mật/recovery
 | Phương án | Đánh đổi | Quyết định |
 |---|---|---|
 | Upload từng ảnh tạm, final tạo+đăng | Có vòng đời ảnh tạm/cleanup; thử lại đúng ảnh lỗi, request nhỏ, không cần sách nháp | User chọn |
-| Gửi form và ba ảnh trong một multipart | Ít bước API; phải gửi lại cả bộ khi lỗi, dễ vượt multipart11MB và Worker70s hiện tại | Không chọn |
+| Gửi form và cả bộ ảnh trong một multipart | Ít bước API; phải gửi lại cả bộ khi lỗi, dễ vượt multipart11MB và Worker70s hiện tại | Không chọn |
 
 Chi tiết cỡ ảnh, thời hạn vùng tạm và cách retry dưới đây là đề xuất của agent.
 
@@ -36,9 +39,9 @@ Chi tiết cỡ ảnh, thời hạn vùng tạm và cách retry dưới đây l�
 2. Ảnh được kiểm tra, chuẩn hóa và đưa vào hàng đợi upload riêng; hiện
    preview/progress/lỗi từng ảnh. Không tạo BookCopy, Listing, mã sách hoặc
    audit CREATE lúc này. Quy tắc chọn/thả/sắp xếp ở mục3.1.
-3. Nút **Đăng sách** chỉ khả dụng khi form hợp lệ, ba ảnh READY và đã xác
-   nhận ảnh/tình trạng đúng cuốn thật. Backend kiểm lại toàn bộ điều kiện.
-4. Final request tạo BookCopy+ListingPUBLISHED, gắn đủ ba ảnh, cấp mã/slug,
+3. Nút **Đăng sách** chỉ khả dụng khi form hợp lệ, đủ2–6ảnh READY,
+   có bìa/lưng và đã xác nhận ảnh/tình trạng đúng cuốn thật. Backend kiểm lại toàn bộ điều kiện.
+4. Final request tạo BookCopy+ListingPUBLISHED, gắn toàn bộ ảnh đã chọn, cấp mã/slug,
    set availabilityAVAILABLE/published_at và audit trong một transaction.
 5. Thành công mở trang quản trị cuốn vừa tạo. Không còn nút Lưu nháp,
    bộ lọc Nháp hoặc chuyển trạng thái qua DRAFT trong luồng mới.
@@ -52,18 +55,24 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
 
 ### 3.1. Chọn nhiều ảnh, kéo thả và sắp xếp
 
-- Nút chọn file hỗ trợ chọn1–3ảnh cùng lúc; vùng upload nhận một hoặc nhiều
+- Nút chọn file hỗ trợ chọn1–6ảnh cùng lúc; vùng upload nhận một hoặc nhiều
   file kéo từ máy vào. Hai cách dùng cùng validation, chuẩn hóa và hàng đợi.
   Hiện hướng dẫn ngắn, trạng thái đang kéo vào và lỗi ngay tại vùng upload.
-- Ba thẻ ảnh có số thứ tự và nhãn rõ: **1.Bìa trước(FRONT)**,
-  **2.Mặt sau(BACK)**, **3.Trang nội dung(INSIDE)**. Thứ tự ban đầu theo
-  danh sách file nhận được; OWNER xem preview và kéo thẻ để đổi vị trí.
-  Không suy vai trò từ tên file hoặc thứ tự hoàn thành upload.
+- Sáu vị trí có số thứ tự/nhãn mặc định: **1.Bìa(FRONT)**,
+  **2.Lưng(BACK)**, **3.Gáy(SPINE)**, **4.Nội dung1(INSIDE_1)**,
+  **5.Nội dung2(INSIDE_2)**, **6.Nội dung3(INSIDE_3)**.
+  Bìa/lưng bắt buộc; gáy và nội dung1–3 có thể thiếu để đáp ứng tối thiểu
+  hai ảnh. Nội dung2/3 là các ảnh bổ sung tùy chọn theo yêu cầu chủ tiệm.
+- Tự gán ảnh theo thứ tự file nhận được vào các vị trí trống theo danh sách
+  trên; OWNER xem preview, kéo đổi vị trí hoặc chọn vị trí để bỏ qua một
+  vai trò tùy chọn (ví dụ không có gáy nhưng có nội dung1). Không suy vai
+  trò từ tên file hoặc thứ tự hoàn thành upload. Public giữ đúng thứ tự
+  vai trò và bỏ qua vị trí trống; FRONT luôn làm thumbnail.
 - Có nút Đưa lên/Đưa xuống tương đương kéo đổi thứ tự, dùng được bằng bàn
   phím và trên điện thoại. Sau đổi vị trí cập nhật nhãn/thứ tự và thông báo
   cho công nghệ hỗ trợ; không bắt buộc thao tác kéo để hoàn tất form.
 - Có thể thêm từng đợt vào vị trí còn trống, xóa hoặc thay một ảnh. Tổng
-  không quá3ảnh; nếu đợt mới vượt số vị trí trống, báo rõ và không nhận
+  không quá6ảnh; nếu đợt mới vượt số vị trí trống, báo rõ và không nhận
   đợt đó. Không tự ghi đè ảnh đã chọn; thay ảnh cần thao tác Thay ảnh rõ.
 - Một lần chọn nhiều ảnh vẫn upload từng ảnh theo giới hạn concurrency
   hiện có; không gộp cả bộ vào một multipart. Lỗi một ảnh không hủy các
@@ -73,21 +82,23 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
   gửi ánh xạ IDảnh→vai trò theo thứ tự mới nhất và khóa thao tác ảnh trong
   lúc đang đăng để tránh giao diện đổi sau khi request đã gửi.
 - Trên màn sửa sách ẩn/công khai cũng cho sửa thứ tự: preview thay đổi trên
-  form, chỉ áp dụng sau Lưu thành công. Backend kiểm đúng ba ảnh thuộc
-  cuốn và đổi ánh xạ vai trò trong một transaction có version/audit; không
-  có trạng thái public tạm thiếu ảnh hoặc gán một ảnh vào hai vai trò.
+  form, chỉ áp dụng sau Lưu thành công. Backend kiểm2–6ảnh hợp lệ thuộc
+  cuốn, đủ bìa/lưng và không trùng vai trò. Đổi ánh xạ trong một transaction
+  có version/audit; không có trạng thái public tạm thiếu ảnh hoặc gán một
+  ảnh vào hai vai trò.
 
 ## 4. Transaction, retry và vòng đời ảnh tạm
 
-- Phiên upload có ID khó đoán, gắn OWNER, ba slot và hạn24giờ. Lưu intent
+- Phiên upload có ID khó đoán, gắn OWNER, tối đa sáu slot và hạn24giờ. Lưu intent
   trước gọi Cloudinary để có đường cleanup kể cả process bị dừng.
 - Upload qua backend như hiện tại; không đưa provider secret/signedURL ra
   client; giữ CSRF, giới hạn upload/concurrency và kiểm owner tại backend.
   Slot thay thế dùng asset mới rồi swap; thất bại giữ slot READY cũ.
-- Final khóa phiên, kiểm owner/hạn/ba slot, validation và confirmation rồi
+- Final khóa phiên, kiểm owner/hạn/các slot đã chọn, validation và confirmation rồi
   tạo aggregate/gắn ảnh/đánh dấu đã dùng trong cùng transaction DB.
-  Kiểm ánh xạ đủ ba vai trò khác nhau và ba IDảnh READY khác nhau thuộc
-  chính phiên đó; không nhận ID từ phiên khác hoặc ảnh đã bị xóa/thay.
+  Kiểm2–6IDảnh READY khác nhau, đủ FRONT/BACK, vai trò thuộc allowlist
+  và không trùng nhau, tất cả thuộc chính phiên đó; không nhận ID từ phiên
+  khác hoặc ảnh đã bị xóa/thay.
 - Phiên final là khóa chống tạo trùng: retry cùng nội dung trả lại sách đã
   tạo; nội dung khác hoặc phiên đã dùng sai mục đích trả409. Không retry
   tạo ra mã/sách thứ hai khi client mất response.
@@ -108,10 +119,45 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
   chỉ được hiện công khai khi đủ điều kiện. Không gọi các bản này là nháp.
 - API không nhận trạng tháiDRAFT; bỏ enum/check/filter/action đang dùng nó.
   Audit JSON lịch sử giữ nguyên giá trị cũ để không sửa lịch sử.
-- Sách PUBLISHED luôn giữ trường bắt buộc và đủ ba ảnh; thay ảnh nguyên tử,
+- Sách PUBLISHED luôn giữ trường bắt buộc và2–6ảnh, đủ bìa/lưng; thay ảnh nguyên tử,
   cập nhật version/audit, conflict409 như hiện tại. Sách ẩn không lộ public.
 - Import sau MVP phải theo luồng mới khi được đặc tả; không giữ yêu cầu
   “import tạo nháp” trái quyết định mới trong baseline tài liệu.
+
+### 5.1. Trọng lượng và khoảng giá — bổ sung29/10
+
+Yêu cầu chủ tiệm: có field **Trọng lượng sách**, nhập giá theo khoảng,
+ví dụ **20.000 - 30.000 VNĐ**. Các chi tiết dưới đây là đề xuất kỹ thuật
+chờ duyệt cùng spec, không phải xác nhận đã triển khai.
+
+- Đề xuất `weight_g` thuộc BookCopy: nhãn **Trọng lượng sách (g)**, nhập
+  số nguyên gram >0, ví dụ250g. Bắt buộc với sách tạo mới; không suy từ
+  ảnh hoặc tự điền0. Public detail hiển thị trọng lượng khi có; không phát
+  sinh tính phí vận chuyển, đơn hàng hoặc checkout.
+- Listing thay một `price_vnd` bằng `price_min_vnd` và `price_max_vnd`.
+  Form có hai ô bắt buộc **Giá từ (VNĐ)** và **Giá đến (VNĐ)**; mỗi giá là
+  số nguyên1..999999999999 VND, giá từ≤giá đến. Backend kiểm tương tự;
+  không lưu chuỗi đã format hoặc số thập phân. Cho phép hai đầu bằng nhau.
+- Home/catalogue/collection/detail/wishlist, nội dung hỏi mua và metadata
+  có giá đều dùng dữ liệu mới nhất của cả khoảng; hiển thị theo vi-VN như
+  **20.000 - 30.000 VNĐ**, không tự chọn một đầu làm giá chốt. Khi hai đầu
+  bằng nhau có thể hiển thị một giá. Không thêm bộ lọc giá trong phạm vi này.
+- Giữ nguyên dòng **“Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.”**
+  ở vị trí chú thích giá hiện tại; khoảng giá vẫn là giá tham khảo.
+- Đề xuất sort giá tăng/giảm dùng giá từ làm khóa chính, giá đến làm khóa
+  phụ rồi mã cuốn để phân trang ổn định. Flash Sale giữ giá sale đơn hiện
+  có nhưng chỉ hợp lệ khi thấp hơn giá từ; hiển thị khoảng gốc và giá sale,
+  không tính một % giảm duy nhất từ khoảng. API không phát số % gây hiểu
+  nhầm; rà lại campaign hiện có khi migrate, không tự sửa giá sale của tiệm.
+- Migration sách cũ: sao chép giá đơn sang cả hai đầu để giữ nguyên giá
+  tham khảo, không tự tạo biên độ. Trọng lượng cũ để null, hiển thị
+  **Chưa cập nhật** trong admin, không bịa số; không tự ẩn sách đang đăng.
+  Đề xuất yêu cầu bổ sung khi OWNER lưu sửa/hiện lại, audit/version như cũ.
+- Migration media: giữ FRONT/BACK; ánh xạ INSIDE cũ sang INSIDE_1, không
+  đổi thành SPINE chỉ vì đang đứng thứ3. Không đổi ID/asset hay yêu cầu
+  nhập lại sách cũ. Sửa role/check/index/API để nhận sáu vai trò, mỗi vai
+  trò tối đa một ảnh ACTIVE; còn UPLOADING/DELETE_PENDING không tính vào
+  số ảnh hợp lệ. Giữ thứ tự và alt theo vai trò trên admin/public.
 
 ## 6. Logo, media và upload
 
@@ -156,7 +202,8 @@ kể cả tự gọi API. Login/logout/session hoạt động như hiện tại.
 
 1. Tái hiện LCP/CLS, tối ưu logo và sửa nguyên nhân layout/hydration.
 2. Làm media2cỡ/WebP/JPEG và chuẩn hóa upload, kiểm provider nhỏ trước.
-3. Luồng ảnh tạm→tạoPUBLISHED, quyềnOWNER và migration bỏDRAFT.
+3. Luồng ảnh tạm2–6ảnh→tạoPUBLISHED, trọng lượng/khoảng giá, quyềnOWNER
+   và migration bỏDRAFT/giá đơn/role ảnh cũ.
 4. Regression frontend/backend, Workersbuild, browser QA và handoffdev.
    User merge sangmain/deploy; không tự deploy hoặc migrate DBonline.
 
@@ -165,11 +212,19 @@ hết hạn/cleanup; lỗi từng slot/final; final lặp không tạo trùng; m
 giữ mã/slug/ảnh/audit và không tựpublish; ẩn/hiện/SOLD/wishlist/FlashSale
 không hồi quy; media từng format/size đúng MIME và không lộ ảnh ẩn.
 
-UploadUI: chọn và thả một/nhiều file, thêm nhiều đợt, vượt3ảnh, file sai/
+UploadUI: chọn và thả một/nhiều file, thêm nhiều đợt, vượt6ảnh, file sai/
 quá lớn, lỗi một ảnh và retry; kéo đổi thứ tự trước/trong/sau upload vẫn
-gán đúng FRONT/BACK/INSIDE; đổi thứ tự bằng bàn phím/nút trên mobile;
+gán đúng sáu vai trò theo thứ tự mặc định; đổi thứ tự bằng bàn phím/nút trên mobile;
 không upload lại ảnh READY; sửa thứ tự sách đã đăng áp dụng nguyên tử,
 conflict giữ nội dung form và ảnh public không thay trước khi Lưu thành công.
+
+Dữ liệu/ảnh: đăng được với2ảnh bìa/lưng và với6ảnh; thiếu bìa hoặc lưng,
+chỉ1ảnh, vượt6ảnh, trùng vai trò/ID hoặc ảnh chưaREADY đều bị chặn. Bộ3ảnh
+cũ vẫn là bìa/lưng/nội dung1; bộ2ảnh không phải thêm gáy/nội dung để đăng.
+Trọng lượng mới thiếu/0/âm/thập phân bị chặn; sách cũ null không tự bị ẩn.
+Khoảng giá thiếu một đầu/đảo đầu/0/âm/thập phân bị chặn; hai đầu bằng nhau
+hợp lệ; format và chú thích đúng trên public, wishlist và nội dung hỏi mua.
+Kiểm sort/phân trang, Flash Sale, dữ liệu cũ và version conflict sau migration.
 
 Performance: LighthouseMobile warm3lần/route Home/detail/wishlist, cùng
 cấu hình và dữ liệu wishlist; mỗi lần LCP≤2,5s/CLS≤0,1. Báo observed và

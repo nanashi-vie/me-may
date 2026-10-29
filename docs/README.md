@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 28/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
+Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
@@ -25,7 +25,7 @@ Cập nhật: 28/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
-- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đề xuất chờ duyệt**, mở rộng tối ưu media/LCP/CLS và bỏ tạo nháp, OWNER ghi/STAFF chỉ xem; chưa thay baseline cho đến khi user duyệt.
+- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đề xuất chờ duyệt**, mở rộng tối ưu media/LCP/CLS và bỏ tạo nháp, OWNER ghi/STAFF chỉ xem; bổ sung29/10 trọng lượng,2–6ảnh theo vai trò và khoảng giá giữ chú thích; chưa thay baseline cho đến khi user duyệt.
 
 - [M5_PERFORMANCE_PLAN](M5_PERFORMANCE_PLAN.md): sửa LCP/CLS detail và wishlist theo thiết kế user duyệt28/10; xóa plan sau khi chuyển đủ bằng chứng vào VERIFICATION/DEV_LOG.
 
