@@ -1,4 +1,4 @@
-"""Create the smaller authenticated public preview for existing media.
+"""Create all four authenticated public variants for existing media.
 
 Dry run by default. Example:
   python3 scripts/deploy/backfill_public_media.py --dump .local/backups/dump-neondb-202610281743.dump
@@ -17,7 +17,8 @@ import urllib.parse
 import urllib.request
 
 
-PUBLIC_PREVIEW = "a_auto/c_limit,w_640/q_auto:good/fl_strip_profile,f_jpg"
+PUBLIC_VARIANTS = [f"a_auto/c_limit,w_{width}/q_auto:good/fl_strip_profile,f_{fmt}"
+                   for width in (320, 640) for fmt in ("jpg", "webp")]
 KEY_PATTERN = re.compile(r"memay/online-test/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\Z")
 
 
@@ -61,21 +62,21 @@ def checkpoint(path: Path) -> set[str]:
 
 def explicit(cloud: str, key: str, secret: str, public_id: str) -> int:
     url = f"https://api.cloudinary.com/v1_1/{cloud}/image/explicit"
-    body = urllib.parse.urlencode({"public_id": public_id, "type": "authenticated", "eager": PUBLIC_PREVIEW}).encode()
+    body = urllib.parse.urlencode({"public_id": public_id, "type": "authenticated", "eager": "|".join(PUBLIC_VARIANTS)}).encode()
     authorization = base64.b64encode(f"{key}:{secret}".encode()).decode()
     request = urllib.request.Request(url, body, {"Authorization": "Basic " + authorization, "Content-Type": "application/x-www-form-urlencoded"})
     with urllib.request.urlopen(request, timeout=60) as response:
         result = json.load(response)
-    if result.get("public_id") != public_id or result.get("type") != "authenticated" or not result.get("eager"):
+    if result.get("public_id") != public_id or result.get("type") != "authenticated" or len(result.get("eager", [])) != 4:
         raise ValueError("Unexpected Cloudinary explicit response")
-    return int(result["eager"][0]["bytes"])
+    return sum(int(variant["bytes"]) for variant in result["eager"])
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dump", type=Path, required=True)
     parser.add_argument("--env", type=Path, default=Path(".env"))
-    parser.add_argument("--checkpoint", type=Path, default=Path(".local/backups/public-preview-backfill.done"))
+    parser.add_argument("--checkpoint", type=Path, default=Path(".local/backups/public-variants-v2.done"))
     parser.add_argument("--expected-count", type=int)
     parser.add_argument("--max-items", type=int)
     parser.add_argument("--apply", action="store_true")
@@ -88,6 +89,7 @@ def main() -> None:
         raise ValueError("Checkpoint contains IDs outside dump")
     pending = [key for key in keys if key not in done]
     print(f"Active IDs: {len(keys)}; completed: {len(done)}; pending: {len(pending)}")
+    print("Variants: " + " | ".join(PUBLIC_VARIANTS))
     if not args.apply:
         print("Dry run only; use --apply --expected-count to create variants")
         return

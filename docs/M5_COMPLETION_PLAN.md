@@ -96,19 +96,19 @@ String format): InputStream`, width allowlist320/640, format webp/jpg.
 Giữ overload/URL không query tương đương JPEG640; preview admin1280.
 `prepareImage(file: File): Promise<Blob>` kiểm source trước tạo JPEG chuẩn hóa.
 
-- [ ] RED gateway/controller:320/640×webp/jpg đúng MIME/nosniff/no-store;
+- [x] RED gateway/controller:320/640×webp/jpg đúng MIME/nosniff/no-store;
   size/format sai bị400, ảnh ẩn/thiếu404, URL không lộ provider.
-- [ ] RED normalize: PNGalpha→trắng, EXIFđúng chiều, cạnh≤2560, không upscale;
+- [x] RED normalize: PNGalpha→trắng, EXIFđúng chiều, cạnh≤2560, không upscale;
   >10MB/25MP reject trước resize, >5MB có cảnh báo, ảnh lỗi không vào queue.
-- [ ] Run targeted `bash code/backend/run-local.sh -B -ntp
+- [x] Run targeted `bash code/backend/run-local.sh -B -ntp
   -Dtest=CloudinaryMediaGatewayTest,ImageValidatorTest,PublicMediaApiTest test`
   (lệnh một dòng ở root) và frontend `npm test`; xác nhận RED.
-- [ ] Implement allowlist/transform eager và picture/srcset/sizes; FRONT eager/
+- [x] Implement allowlist/transform eager và picture/srcset/sizes; FRONT eager/
   fetchpriorityhigh, các ảnh sau lazy, contain và dimensions ổn định.
-- [ ] Chạy GREEN; test fallback chỉ khi missingvariant404, không che providererror.
-- [ ] Script có dry-run/checkpoint và liệt kê đủ4variant; thử namespace test
+- [x] Chạy GREEN; test fallback chỉ khi missingvariant404, không che providererror.
+- [x] Script có dry-run/checkpoint và liệt kê đủ4variant; thử namespace test
   cách ly khi được phép; chưa backfill asset thật. Ghi bytes/độ rõ và quota.
-- [ ] Ghi quyết định cache: giữ no-store; lợi ích cache chưa chứng minh được
+- [x] Ghi quyết định cache: giữ no-store; lợi ích cache chưa chứng minh được
   invalidation/ẩn ngay thì không bật. Commit cùng docs bàn giao.
 
 ### Task 3: Khoảng giá/trọng lượng/sáu role xuyên backend và public

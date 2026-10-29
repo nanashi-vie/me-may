@@ -271,3 +271,7 @@ credential no-op, conflict/disabled/STAFF/owner khác fail closed, không reset/
 Wrapper dùng OWNER_EMAIL/PASSWORD private, không argv; run-local unset ownersecret,
 Render export loại toàn bộ owner/bootstrap fields. Lệnh local phải explicit và chỉ
 loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển khai ở bước này.
+
+### M5 media — triển khai local29/10
+- Public media nhận allowlist size320/640 và formatjpg/webp; URL cũ mặc địnhJPEG640, chỉ JPEG640thiếuvariant mới fallback1280. WebP thiếuvariant không trảJPEG dưới MIMEWebP; cần backfill đủ4variant trước releasefrontendpicture. Adminpreview1280 giữ nguyên, tất cả vẫn authenticated/no-store, không lộsignedURL.
+- Quyết định cache: tiếp tục no-store, chưa chứng minh được invalidationẩn/thayảnh/tempmedia để bậtcache antoàn. Scriptbackfill checkpointmới public-variants-v2.done, không dùng checkpointJPEG640cũ để bỏqua4variantmới.

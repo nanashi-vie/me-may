@@ -3,7 +3,7 @@ import org.junit.jupiter.api.Test;
 import java.util.*;
 import static org.assertj.core.api.Assertions.*;
 class CloudinaryMediaGatewayTest {
- @Test void privateOptionsAndPreviewAreConsistent(){var options=CloudinaryMediaGateway.uploadOptions("memay/test/"+UUID.randomUUID());assertThat(options).containsEntry("resource_type","image").containsEntry("type","authenticated").containsEntry("overwrite",false);assertThat(options.get("eager").toString()).contains("c_limit","w_1280","w_640","q_auto:good","a_auto","fl_strip_profile","f_jpg");}
+ @Test void privateOptionsAndPreviewAreConsistent(){var options=CloudinaryMediaGateway.uploadOptions("memay/test/"+UUID.randomUUID());assertThat(options).containsEntry("resource_type","image").containsEntry("type","authenticated").containsEntry("overwrite",false);assertThat(options.get("eager").toString()).contains("c_limit","w_1280","w_320","w_640","f_webp","q_auto:good","a_auto","fl_strip_profile","f_jpg");}
  @Test void remoteAndOutOfNamespaceKeysAreRejected(){for(var id:List.of("https://example.com/x","memay/test/../foo","memay/production/x"))assertThatThrownBy(()->CloudinaryMediaGateway.validatePublicId(id,"memay/test")).isInstanceOf(IllegalArgumentException.class);}
  @Test void unavailableGatewayReturns503(){assertThatThrownBy(()->new UnconfiguredMediaGateway().upload("x",new byte[0])).isInstanceOfSatisfying(vn.memay.common.AdminApiException.class,e->assertThat(e.status).isEqualTo(503));}
  @Test void adapterSignsPrivateUploadsAndNeverReturnsCloudUrls()throws Exception{

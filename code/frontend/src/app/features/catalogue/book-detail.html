@@ -10,14 +10,21 @@
     <section class="gallery" aria-label="Ba ảnh thật của cuốn sách">
       @for (m of b.media; track m.role) {
         <figure>
+          <picture>
+            <source type="image/webp"
+              [attr.srcset]="m.contentPath + '?size=320&format=webp 320w, ' + m.contentPath + '?size=640&format=webp 640w'"
+              sizes="(max-width: 720px) 90vw, 576px" />
           <img
             [src]="m.contentPath"
+            [attr.srcset]="m.contentPath + '?size=320&format=jpg 320w, ' + m.contentPath + '?size=640&format=jpg 640w'"
+            sizes="(max-width: 720px) 90vw, 576px"
             [alt]="m.alt || b.title"
             [attr.loading]="$first ? 'eager' : 'lazy'"
             [attr.fetchpriority]="$first ? 'high' : 'low'"
             width="600"
             height="800"
           />
+          </picture>
           <figcaption>
             {{
               m.role === 'FRONT' ? 'Bìa trước' : m.role === 'BACK' ? 'Mặt sau' : 'Trang nội dung'

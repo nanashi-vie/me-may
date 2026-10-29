@@ -10,13 +10,20 @@ import { WishlistButton } from '../wishlist/wishlist-button';
   template: ` <article class="book-card">
     <a [routerLink]="['/sach', book().slug]" class="cover-link" tabindex="-1" aria-hidden="true">
       @if (front()) {
+        <picture>
+          <source type="image/webp"
+            [attr.srcset]="front()!.contentPath + '?size=320&format=webp 320w, ' + front()!.contentPath + '?size=640&format=webp 640w'"
+            sizes="(max-width: 480px) 45vw, 240px" />
         <img
           [src]="front()!.contentPath"
+          [attr.srcset]="front()!.contentPath + '?size=320&format=jpg 320w, ' + front()!.contentPath + '?size=640&format=jpg 640w'"
+          sizes="(max-width: 480px) 45vw, 240px"
           [alt]="front()!.alt || book().title"
           loading="lazy"
           width="240"
           height="300"
         />
+        </picture>
       }
     </a>
     <p class="book-code">{{ book().bookCode }}</p>
@@ -59,6 +66,7 @@ import { WishlistButton } from '../wishlist/wishlist-button';
       aspect-ratio: 4/5;
       background: #faf8f4;
     }
+    picture { display: block; width: 100%; height: 100%; min-height: 0; }
     .cover-link img {
       width: 100%;
       height: 100%;

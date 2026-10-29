@@ -22,7 +22,8 @@ user chọn upload ảnh tạm rồi tạo+đăng một lần. User duyệt spec
 Đã lập [M5_COMPLETION_PLAN](M5_COMPLETION_PLAN.md),7task thay plan cũ;
 user đã duyệt và chọn Native thực hiện tuần tự trong chat này.
 Task1 local đạt: frontend97/97/builtSSR/browser390+laptop, fixhydration
-CLS; logoWebP10KB. Đang task2 media320/640WebP/JPEG+normalize; task3–7 chờ. Baseline mới: frontend95/95PASS; backend
+CLS; logoWebP10KB. Task2local media4variant/normalize/frontend100/100/backendverifyđạt,
+live1assettest+cleanupPASS; chưabackfill63ảnhbánthật. Đangtask3 fields/roles/giá. Baseline mới: frontend95/95PASS; backend
 verify93run/0failure/0error/2live skippedPASS sau rerun ngoài sandbox.
 Bổ sung29/10: trọng lượng sách (đề xuất gram), khoảng giá từ–đến và giữ
 nguyên chú thích giá. Chọn/thả2–6ảnh, bìa/lưng bắt buộc, thứ tự mặc định

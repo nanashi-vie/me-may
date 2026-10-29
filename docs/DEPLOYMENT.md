@@ -195,3 +195,7 @@ user merge dev→main rồi Workersbuild/deploy. Saudeploy thử entryadmin→pu
 entrypublictrực tiếp, enquiry1/nhiềucuốn/canonical dùng đúng domainWorkers/custom.
 Hardreload một lần để bỏ appbundle cũ; đây chỉ là smoke saufix, không phải cách né bug.
 Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không đổi.
+
+### Gate release M5 media mới
+- Trước deployfrontendpicture, tạo và verifyđủ320/640×jpg/webp trên mọi ACTIVE media bằng scripts/deploy/backfill_public_media.py, dryrun/expectedcount rồi thử1asset cókiểmsoát. Checkpointmới .local/backups/public-variants-v2.done, không dùng checkpoint640JPEGcũ. Chưa chạy applyassetbánthật trong task2; thiếuWebP cóthể làm picturekhôngtải dùJPEGcũvẫnđược.
+- Backendphải deploycontractvariants trướcfrontend; giữbackups/rollback/gateonline như checklist hiện hành. Không coi liveprobe một assetmemay/test là backfillđãxong.
