@@ -1,5 +1,5 @@
 import { ParamMap, Params } from '@angular/router';
-import { CatalogueFilter, PublicBook } from './public.models';
+import { CatalogueFilter, PublicBook, PublicVariant } from './public.models';
 import { AGE_LABELS, formatPrice, formatPriceRange } from '../admin/books/book-copy';
 const categories = [
   'BOARD_BOOK',
@@ -39,8 +39,8 @@ export function bookTitle(b: PublicBook) {
     .filter(Boolean)
     .join(' | ');
 }
-export function enquiryText(b: PublicBook, url: string) {
-  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}\nGiá tham khảo: ${bookPrice(b)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
+export function enquiryText(b: PublicBook, url: string, variant?: PublicVariant) {
+  return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}${variant?.available && variant.name && b.availability !== 'SOLD' ? '\nBiến thể: ' + variant.name : ''}\nGiá tham khảo: ${bookPrice(b)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
 }
 export function countdown(ms: number) {
   const seconds = Math.max(0, Math.floor(ms / 1000));

@@ -72,3 +72,5 @@ small {
 .variant-row { display:flex; gap:1rem; align-items:end; flex-wrap:wrap; margin-block: .75rem; }
 .variant-row label { flex:1 1 180px; min-width:0; }
 .stock-editor small { display:block; margin-bottom:1rem; }
+
+.stock-editor button { width:auto; }

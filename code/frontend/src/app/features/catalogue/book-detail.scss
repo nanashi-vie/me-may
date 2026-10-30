@@ -147,3 +147,10 @@ dd {
     grid-template-columns: 1fr 1.6fr;
   }
 }
+
+.variant-selector { margin-block: 1.5rem; min-width:0; }
+.variant-selector label { display:inline-flex; align-items:center; gap:.5rem; border:1px solid var(--line); padding:.7rem; margin: .3rem .5rem .3rem 0; max-width:100%; overflow-wrap:anywhere; }
+.variant-selector input { width:auto; margin:0; flex-shrink:0; }
+.variant-selector label:has(input:checked) { border-color:var(--red); }
+.variant-selector .unavailable { color:var(--muted); }
+.variant-selector small { display:block; }

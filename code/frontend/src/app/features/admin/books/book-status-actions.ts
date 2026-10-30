@@ -37,7 +37,7 @@ import { BookDetail, Publication } from './book.models';
             type="checkbox"
             [checked]="confirmed()"
             (change)="confirmed.set($any($event.target).checked)"
-          />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng với đúng cuốn sách này.</label
+          />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng cho sách và các biến thể này.</label
         >
       }
       @if (error()) {

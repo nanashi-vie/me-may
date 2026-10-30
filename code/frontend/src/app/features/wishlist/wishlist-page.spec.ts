@@ -30,6 +30,7 @@ const book = (code = 'MM-000001', patch: Partial<PublicBook> = {}): PublicBook =
   readingLevel: null,
   readingVideoUrl: null,
   availability: 'AVAILABLE',
+  variants: [{id:'default',name:null,available:true}],
   media: [],
   ...patch,
 });

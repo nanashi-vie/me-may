@@ -7,7 +7,7 @@
     <a routerLink="/">Trang chủ</a> / <a routerLink="/sach">Sách</a> / {{ b.bookCode }}
   </p>
   <div class="detail-layout">
-    <section class="gallery" aria-label="Ảnh thật của cuốn sách">
+    <section class="gallery" aria-label="Bộ ảnh chung của sách">
       @for (m of b.media; track m.role) {
         <figure>
           <picture>
@@ -34,7 +34,7 @@
       }
     </section>
     <article>
-      <p class="eyebrow">Ảnh thật · Đúng từng cuốn</p>
+      <p class="eyebrow">Ảnh sách · Tình trạng theo biến thể</p>
       <h1>{{ title(b) }}</h1>
       <p class="code">
         Mã sách <strong>{{ b.bookCode }}</strong>
@@ -100,9 +100,23 @@
           </dd>
         }
       </dl>
+      @if (b.variants.length > 1 || b.variants[0]?.name) {
+        <fieldset class="variant-selector">
+          <legend>Chọn tình trạng</legend>
+          @for (v of b.variants; track v.id) {
+            <label [class.unavailable]="!v.available">
+              <input type="radio" name="book-variant" [value]="v.id" [checked]="selectedVariantId() === v.id"
+                [disabled]="!v.available || verifying()" (change)="selectVariant(v.id)" />
+              {{ v.name }} {{ v.available ? '' : '· Hết hàng' }}
+            </label>
+          }
+          <small>Các biến thể dùng chung khoảng giá và bộ ảnh. Tiệm xác nhận tình trạng cụ thể khi liên hệ.</small>
+        </fieldset>
+      }
+      @if (variantNotice()) { <p role="status">{{ variantNotice() }}</p> }
       <div class="contact-actions">
         <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
-        <button [disabled]="verifying()" (click)="contact.open()">
+        <button [disabled]="!canContact()" (click)="contact.open()">
           {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
         </button>
         @if (config()?.groupUrl) {
@@ -115,6 +129,7 @@
         <small>Tiệm xác nhận tình trạng và giá qua Zalo. Liên hệ không giữ sách.</small>
       </div>
       <app-contact-dialog
+        [variant]="selectedVariant()"
         #contact
         [book]="b"
         [verifyText]="verifyContact"
