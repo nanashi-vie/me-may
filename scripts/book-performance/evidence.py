@@ -7,7 +7,7 @@ import math
 from pathlib import Path
 import re
 import statistics
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, parse_qs
 
 
 def number(value):
@@ -41,6 +41,14 @@ def sanitize_har(data: dict) -> dict:
             clean['startedDateTime'] = stamp.isoformat()
         except (ValueError, TypeError):
             pass
+        query = parse_qs(urlsplit(str(request.get('url', ''))).query)
+        variant = {}
+        if query.get('size') in (['320'], ['640'], ['1280']):
+            variant['size'] = int(query['size'][0])
+        if query.get('format') in (['jpg'], ['webp']):
+            variant['format'] = query['format'][0]
+        if variant:
+            clean['request']['mediaVariant'] = variant
         entries.append(clean)
     return {'log': {'version': '1.2', 'creator': {'name': 'metadata-only', 'version': '1'}, 'entries': entries}}
 

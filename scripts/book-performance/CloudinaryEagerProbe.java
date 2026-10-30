@@ -20,7 +20,7 @@ public class CloudinaryEagerProbe {
     }
     return;
    }
-   if(args.length!=3 || !args[0].equals("probe"))throw new IllegalArgumentException("usage OR probe SOURCE NEW_LEDGER");
+   if(args.length!=3 || !Set.of("probe","legacy").contains(args[0]))throw new IllegalArgumentException("usage OR probe/legacy SOURCE NEW_LEDGER");
    var file=Path.of(args[1]);byte[] bytes=Files.readAllBytes(file);
    new ImageValidator().validate(bytes);
    // Isolated provider probe uses the same decoded content, Java JPEG encoder at0.85.
@@ -37,8 +37,19 @@ public class CloudinaryEagerProbe {
    String id=namespace+"/"+UUID.randomUUID();
    var ledger=Path.of(args[2]);Files.writeString(ledger,id+"\n",StandardOpenOption.CREATE_NEW);
    var options=new HashMap<String,Object>(CloudinaryMediaGateway.uploadOptions(id));var eager=options.remove("eager");
+   if(args[0].equals("legacy"))options.put("eager",List.of(new com.cloudinary.Transformation<>().rawTransformation(CloudinaryMediaGateway.PREVIEW)));
    long start=System.nanoTime();cloud.uploader().upload(bytes,options);
    System.out.println("upload_only_ms="+(System.nanoTime()-start)/1_000_000.0);
+   if(args[0].equals("legacy")) {
+    try(var transport=new DeadlineCloudinaryTransport(tools.jackson.databind.json.JsonMapper.builder().build())) {
+     var gateway=new CloudinaryMediaGateway(System.getenv("CLOUDINARY_CLOUD_NAME"),System.getenv("CLOUDINARY_API_KEY"),System.getenv("CLOUDINARY_API_SECRET"),namespace,transport);
+     try(var stream=gateway.openAdminPreview(id,320)) {var preview=javax.imageio.ImageIO.read(stream);System.out.println("legacy_fallback_width="+preview.getWidth());}
+    } finally {
+     cloud.uploader().destroy(id,Map.of("type","authenticated","resource_type","image","invalidate",true));
+     Files.writeString(ledger,"deleted\n",StandardOpenOption.APPEND);
+    }
+    return;
+   }
    start=System.nanoTime();var result=cloud.uploader().explicit(id,Map.of("type","authenticated","resource_type","image","eager",eager));
    System.out.println("explicit_eager_ms="+(System.nanoTime()-start)/1_000_000.0);
    System.out.println("derived_count="+((List<?>)result.get("eager")).size());

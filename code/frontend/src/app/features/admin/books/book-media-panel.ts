@@ -16,6 +16,8 @@ export class BookMediaPanel {
   readonly viewer = viewChild<ElementRef<HTMLDialogElement>>('viewer');
   readonly selectedPhoto = signal<{src:string;alt:string}|null>(null);
   readonly viewerFailed = signal(false);
+  readonly previewLoaded=signal<Record<string,boolean>>({});
+  readonly viewerLoaded=signal(false);
   readonly failedPreviews = signal<Record<string,boolean>>({});
   readonly previewRetries = signal<Record<string,number>>({});
   private opener:HTMLElement|null=null;
@@ -29,7 +31,7 @@ export class BookMediaPanel {
   }
   openPhoto(row:UploadItem,event:Event) {
     this.opener=event.currentTarget as HTMLElement;
-    this.viewerFailed.set(false);
+    this.viewerFailed.set(false);this.viewerLoaded.set(false);
     this.selectedPhoto.set({src:this.preview(row),alt:row.alt||this.labels[row.role]});
     this.viewer()?.nativeElement.showModal();
   }
@@ -39,14 +41,16 @@ export class BookMediaPanel {
     this.opener?.focus();
     this.opener=null;
   }
+  previewReady(id:string){this.previewLoaded.update(values=>({...values,[id]:true}));}
   retryPreview(row:UploadItem) {
+    this.previewLoaded.update(values=>({...values,[row.id]:false}));
     this.failedPreviews.update(values=>({...values,[row.id]:false}));
     this.previewRetries.update(values=>({...values,[row.id]:(values[row.id]??0)+1}));
   }
   retryLargePhoto() {
     const photo=this.selectedPhoto();if(!photo)return;
     const src=photo.src;
-    this.viewerFailed.set(false);
+    this.viewerFailed.set(false);this.viewerLoaded.set(false);
     this.selectedPhoto.set({...photo,src:src.startsWith('/api/v1/admin/')?src+(src.includes('?')?'&':'?')+'previewRetry='+Date.now():src});
   }
   previewFailed(id:string) {this.failedPreviews.update(values=>({...values,[id]:true}));}

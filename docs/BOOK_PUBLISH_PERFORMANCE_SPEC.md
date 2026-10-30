@@ -1,6 +1,8 @@
 # Hiệu năng nhập và xuất bản sách
 
-Trạng thái: **user đã duyệt**, 30/10/2026, Asia/Ho_Chi_Minh.
+Trạng thái: **user đã duyệt; code/local đã kiểm chứng, gate online còn mở**, 30/10/2026, Asia/Ho_Chi_Minh.
+Dấu checkbox trong spec giữ tiêu chí; trạng thái chi tiết và gate chưa chạy ở
+[VERIFICATION hiệu năng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md) và plan đã cập nhật.
 Nguồn: checklist P0/P1/P2 và baseline người dùng cung cấp trong chat.
 Phạm vi mới này không thay nghiệm thu SEO/recovery/bảo mật M5.
 

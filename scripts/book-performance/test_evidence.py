@@ -35,6 +35,12 @@ class EvidenceTest(unittest.TestCase):
         self.assertNotIn('p95', json.dumps(result))
         self.assertEqual(len(result['groups']), 3)
 
+    def test_keeps_only_allowlisted_media_variant_metadata(self):
+        source = {'log': {'entries': [{'request': {'method': 'GET', 'url': 'https://example/api/v1/admin/books/1/media/FRONT/content?size=320&format=jpg&v=SECRET'}, 'response': {'status': 200}}]}}
+        clean = sanitize_har(source)
+        self.assertEqual(clean['log']['entries'][0]['request']['mediaVariant'], {'size': 320, 'format': 'jpg'})
+        self.assertNotIn('SECRET', json.dumps(clean))
+
     def test_unknown_values_are_not_zero_or_secret(self):
         clean = sanitize_har({'log': {'entries': [{'time': 'SECRET', 'startedDateTime': 'SECRET',
             'request': {'method': 'SECRET', 'url': 'https://x/api/v1/admin/books/42/media/FRONT/content?secret=SECRET'},

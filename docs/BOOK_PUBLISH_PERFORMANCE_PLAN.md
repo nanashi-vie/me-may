@@ -8,7 +8,7 @@ Dùng JPEG320 hiện có cho grid, handoff BookDetail một lần, cache metadat
 audit theo nhu cầu và prefetch chuẩn hóa một ảnh. Query/parallel upload có gate đo.
 **Tech Stack:** Angular21/RxJS, Spring Boot4/Java21, PostgreSQL, Cloudinary, Pythonstdlib.
 **Spec:** [BOOK_PUBLISH_PERFORMANCE_SPEC](BOOK_PUBLISH_PERFORMANCE_SPEC.md), user duyệt30/10.
-**Status:** User đã duyệt; đang thực thi tuần tự từ30/10/2026.
+**Status:** Code/local đã kiểm chứng; bằng chứng và gate online ở BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md.
 **Execution:** Native/tuần tự trong phiên theo phương thức đã dùng; code/commit/pushdev.
 
 ## Global Constraints
@@ -49,18 +49,18 @@ audit theo nhu cầu và prefetch chuẩn hóa một ảnh. Query/parallel uploa
 CLI `python3 scripts/book-performance/evidence.py sanitize INPUT OUTPUT` và
 `... summarize INPUT OUTPUT`; đầu ra chỉmetadata allowlist, median/min/max/count.
 
-- [ ] Viết `test_sanitize_strips_secrets`: fixture có Cookie/Set-Cookie/CSRF,
+- [x] Viết `test_sanitize_strips_secrets`: fixture có Cookie/Set-Cookie/CSRF,
   Authorization, multipart, responsebody, signedURL/query/sourceRef; serialized
   output không chứa secret giả, headers/body/query; giữ method/status/timings/bytes.
-- [ ] Viết `test_summary_preserves_workloads_and_cold`: durations[1,2,3,4,100]
+- [x] Viết `test_summary_preserves_workloads_and_cold`: durations[1,2,3,4,100]
   warm2ảnh→median3/min1/max100/count5, không p95; cold1000/workload6 không trộn vào.
   Thiếu timing giữunknown/-1 đúng HAR, không đổi thành0; URL chỉgiữroute allowlist.
-- [ ] Chạy `python3 -m unittest discover -s scripts/book-performance -p 'test_*.py'`
+- [x] Chạy `python3 -m unittest discover -s scripts/book-performance -p 'test_*.py'`
   trước implementation→FAIL missinginterface; viết parserstdlib, chạy lại→PASS.
-- [ ] README ghi manifest ảnh/hash/bytes, revision/runtime, lịch rate-limit,
+- [x] README ghi manifest ảnh/hash/bytes, revision/runtime, lịch rate-limit,
   cách capture bằng PlaywrightCLI/DevTools và phép đo browser+backend; không tự
   mở network endpoint từ URL trong HAR. Output mặc định `.local/book-performance/`.
-- [ ] Kiểm raw/secrets không tracked, cập nhật DEV_LOG/PROGRESS; commit `test(perf): add safe benchmark evidence tools`.
+- [x] Kiểm raw/secrets không tracked, cập nhật DEV_LOG/PROGRESS; commit `test(perf): add safe benchmark evidence tools`.
 
 ### Task 2 — Timings backend và frontend opt-in
 
@@ -81,22 +81,22 @@ Frontend `BookPerformance.record(event: {phase: string; item: string; durationMs
 sourceBytes?: number; outputBytes?: number}): void`; memorybuffer bounded1000,
 opt-in qua InjectionToken `BOOK_PERFORMANCE_ENABLED` defaultfalse, không export tênfile/blob/PII.
 
-- [ ] RED tests `disabledDoesNotRecord`, `recordsFailureAndClearsThreadContext`,
+- [x] RED tests `disabledDoesNotRecord`, `recordsFailureAndClearsThreadContext`,
   `streamUsesCapturedTraceWithoutLeakingNextRequest`, `neverLogsSqlOrCredentials`.
   Test JDBC fake delegate: getConnection/execute success/failure/batch/count,
   unwrap/isWrapperFor/close delegate đúng; countexecution, không logstatement text.
-- [ ] Run `bash run-local.sh -B -ntp -Dtest=PerformanceTimingsTest,PerformanceTimingFilterTest,PerformanceDataSourceConfigurationTest test`
+- [x] Run `bash run-local.sh -B -ntp -Dtest=PerformanceTimingsTest,PerformanceTimingFilterTest,PerformanceDataSourceConfigurationTest test`
   tại backend→FAIL missingclasses; implement stdlib/Spring có sẵn, rerun→PASS.
   DataSource opt-in wrapper đo acquisition/execute metadata-only, không đổi pool/lifecycle.
-- [ ] Đặt measure quanh proxied createPublished/begin/ready để tính commit;
+- [x] Đặt measure quanh proxied createPublished/begin/ready để tính commit;
   phase validation/fingerprint/mapping/provider; đo content authorization,
   provideropen và transferTo riêng. Async filter cleanup đúng completion/error;
   không hứa precise lockwait, không log exceptionmessage chứaproviderURL.
-- [ ] Frontend RED test metrics không chứafile name, disabled/buffer bound,
+- [x] Frontend RED test metrics không chứafile name, disabled/buffer bound,
   táchqueuetime/preptime với performance.now và source/outputbytes; implement,
   `npm test -- --include=src/app/features/admin/books/book-performance.spec.ts`→PASS.
   Nếu AngularCLI không nhận include dùng `npm test` thay, ghi lệnh thực tế.
-- [ ] Integration smoke xác nhận logphase và disabled không thêm output;
+- [x] Integration smoke xác nhận logphase và disabled không thêm output;
   cập nhật logs; commit `feat(perf): measure book upload and publish phases`.
 
 ### Task 3 — Baseline trước tối ưu
@@ -108,18 +108,18 @@ Task1 README ghi quy trình; rawtiming/HAR/manifests/ledger đểignored.
 **Interfaces:** Record nhómrequest + run/workload/environment/revision/warmstate;
 summary Task1 nhận các trường đó. Baseline sản phẩm là commitTask2.
 
-- [ ] Khởi động QA DB/media/tài khoản riêng bằng cấu hìnhlocal ignored; xác minh
+- [x] Khởi động QA DB/media/tài khoản riêng bằng cấu hìnhlocal ignored; xác minh
   namespace và DB trước ghi. Dùng bộảnhQA cốđịnh gồm ngang/dọc; ghiSHA256/bytes.
-- [ ] Capture local warm5vòng2ảnh và5vòng6ảnh cùng thao tác chọn→đăng→editor
+- [x] Capture local warm5vòng2ảnh và5vòng6ảnh cùng thao tác chọn→đăng→editor
   dùng được/firstimage. Theo dõi limiter, chia đợt và tổngattempt, không nới limit.
   Capture editupload/preview/taxonomy/collections/audit/CSRF, concurrency và status.
-- [ ] Đọc timings và querycounts, ghi expectedbottleneck theo bằngchứng.
+- [x] Đọc timings và querycounts, ghi expectedbottleneck theo bằngchứng.
   Đo Cloudinarycombined; đốichứng upload-only→explicit eager chỉassetQA nếu quota
   đủ, kiểm5derived vàledger, không coi chênh lệch là exact decomposition.
-- [ ] RenderQA: chỉ đo khi user deploy đúngrevision/cấu hìnhcáchly; warm5vòng
+- [ ] **Gate online còn mở:** RenderQA: chỉ đo khi user deploy đúngrevision/cấu hìnhcáchly; warm5vòng
   vàcold cóloglifecycle riêng, không restartprod. Thiếu môi trường ghi NOT RUN,
   tiếp tục local có nhãn rõ, giữ baseline online user như reference chưa controlled.
-- [ ] SanitizeHAR/test fixturePASS, đọc lại output khôngsecret; logevidence paths,
+- [x] SanitizeHAR/test fixturePASS, đọc lại output khôngsecret; logevidence paths,
   health/quotas available hoặc unknown; commit `docs(perf): record controlled entry baseline`.
 
 ### Task 4 — Thumbnail quản trị và viewer1280
@@ -132,17 +132,17 @@ create `book-media-panel.spec.ts`; check `book-preview.html` consumers.
 `content(..., int width)` overloads services. `?size=320|1280`, absent→1280;
 invalid→400, jpgonly. Queue keeps largepreviewpath, grid appends size320 safely.
 
-- [ ] RED gateway tests 320usesexistingtransform/default1280, missing320→1280;
+- [x] RED gateway tests 320usesexistingtransform/default1280, missing320→1280;
   401/403/timeout/5xx khôngfallback; invalidsize khôngprovidercall.
   Integration persisted/temporary OWNER/STAFF/foreignsession/anonymous/hiddenpublic,
   image/jpeg/no-store/nosniff vàkhôngsignedURL. Run backend focused→RED.
-- [ ] Implement gateway overload vàcontrollerallowlist, giữ URL/default cũ,
+- [x] Implement gateway overload vàcontrollerallowlist, giữ URL/default cũ,
   không đổi eager list; focusedtests→PASS.
-- [ ] RED UItest grid URL320 vàlazy/async/contain/stableframe; blob khôngfetchserver.
+- [x] RED UItest grid URL320 vàlazy/async/contain/stableframe; blob khôngfetchserver.
   Button mởviewer dùng1280 theo thao tác, dialogEscape/close/focustrap/restorefocus,
   errorretry độc lập upload. Implement native `<dialog>` khôngdependency;
   `npm test`→PASS; browser kiểmngang/dọc/chữnhỏ/ảnhcũ/keyboard.
-- [ ] Đo bytes/GETcontent5lượt so baselineTask3, phân biệt providerCDN hitstate;
+- [x] Đo bytes/GETcontent5lượt so baselineTask3, phân biệt providerCDN hitstate;
   cập nhậtlogs; commit `perf(admin): load protected thumbnails in photo grid`.
 
 ### Task 5 — Publish handoff, metadata cache và audit theo nhu cầu
@@ -158,20 +158,20 @@ extend `book-editor.spec.ts`/`book-audit-panel.spec.ts`.
 `BookDetailHandoff.put(book: BookDetail): void`, `take(id: string): BookDetail|null`,
 `clear(): void`; TTL10000ms, epochmatch, singleuse; khôngrouterstate/localStorage.
 
-- [ ] RED cache tests dedupe concurrent/subsequent, TTL, errorretry, invalidate
+- [x] RED cache tests dedupe concurrent/subsequent, TTL, errorretry, invalidate
   aftercollectionwrite, 401/logout/identitychange, staleinflight cannotrepopulate.
   REDhandoff tests sameID/epoch/singleuse/expiry/wrongID, logoutwhilePOSTresponse
   arriving cannotseed; refresh/deeplink vẫnGET. `npm test`→RED.
-- [ ] Implement sharedmemorycache, wrap AdminHttp GET/mutate/upload401 invalidation;
+- [x] Implement sharedmemorycache, wrap AdminHttp GET/mutate/upload401 invalidation;
   khôngcacheauth/media. Collectionwrite success invalidate trước subscriber;
   editor có nút refreshmetadata, giữ inactivecollection đang thuộc sách.
-- [ ] POSTsuccess put seed rồinavigate; editor take seed trướcGET. Response chỉ
+- [x] POSTsuccess put seed rồinavigate; editor take seed trướcGET. Response chỉ
   dùng trong auth epoch khởiđầu; seed consumed/cleared đúng. Giữserver version,
   current form không bị response từ requestcũ đè. Run tests→PASS.
-- [ ] REDaudit tests closed→zeroGET, open→oneGET, versionchangeclosed→staleonly,
+- [x] REDaudit tests closed→zeroGET, open→oneGET, versionchangeclosed→staleonly,
   openstale→freshpage0, rapidbookchange/destroy khôngapplyresponsecũ. Implement
   detailstoggle + cancel subscription, không dùng ngOnChanges fetch vôđiềukiện.
-- [ ] UI phân biệt đangđăng/đãđăng vàảnh/auditloaderror. Lostresponse giữpayload
+- [x] UI phân biệt đangđăng/đãđăng vàảnh/auditloaderror. Lostresponse giữpayload
   vàsession retry; browserPOST201→edit khôngGETbooktrùng/taxonomycollections
   chỉreusekhihợp lệ/auditclosed zero. FullfrontendPASS; commit `perf(admin): reuse publish response and defer reference reads`.
 
@@ -184,13 +184,13 @@ internal `prepareValidatedImage(file: File, info: SourceImageInfo): Promise<Blob
 chỉ dùng sau `sourceImageInfo` cùngFile. Queue mộtdecode, mộtpreparedlookahead;
 edit vàtemporary vẫn mộtupload; metricsTask2 dùng cácpha thực tế.
 
-- [ ] REDtests uploadAunresolved thìprepareB completes, khôngprepareC;
+- [x] REDtests uploadAunresolved thìprepareB completes, khôngprepareC;
   Berror khôngblockA/ảnhkhác, retry khôngnormalize lạiblobđãchuẩnhóa;
   remove/replace/renew/expire/destroy lúcBprepare→khônguploadrowma/mấtảnhcũ.
   Maxdecoded1/preparedlookahead1; finalready vẫnđủảnh/role.
-- [ ] Đo sourceImageInfo lặp baseline rồi implement chỉread1lần trongqueue,
+- [x] Đo sourceImageInfo lặp baseline rồi implement chỉread1lần trongqueue,
   standaloneprepare vẫnrejectempty/invalid/>10MB/>25MP. KhôngđổiEXIF/alpha/quality.
-- [ ] `npm test`→PASS; browser2/6ảnh, errorretry/removeprefetch/cancel;
+- [x] `npm test`→PASS; browser2/6ảnh, errorretry/removeprefetch/cancel;
   đo5vòng đốibaseline, báo overlap/thờigian khôngcộngrequest. Commit `perf(admin): prepare next photo during upload`.
 
 ### Task 7 — Giảm database round trips đã được đo
@@ -202,15 +202,15 @@ thay vì map detail ngay; record `CreatedAggregate(BookCopy book, Listing listin
 chỉđổi nếuTask3 xácnhận mapperdetail dư.
 Khôngđổi BookDetail/BookCreate/public DTO hoặccontract validation.
 
-- [ ] Dùng countersTask2 xác địnhquery lặp createAggregate/validatePublished/result,
+- [x] Dùng countersTask2 xác địnhquery lặp createAggregate/validatePublished/result,
   collectionvalidationperID vàmapper; ghi count2/6ảnh. Nếu khôngđángkể ghi
   khôngsửa cùngbằngchứng, khôngthêmSQL/indexđể tick ô.
-- [ ] Nếu mapperdư: RED `publishMapsOnlyRequiredSnapshots` asserts one mapper
+- [x] Nếu mapperdư: RED `publishMapsOnlyRequiredSnapshots` asserts one mapper
   detail sau mediaattached, dùng snapshot validation trước publication và final
   immutable copy với publishedAt/status đúng; auditCREATE/PUBLISHED vẫnđủ.
   Nếu collectionN+1: REDquerycount khôngtăngtheosốcollection; batchreadvalidate
   active/previousinactive/unknownIDs, không nhânhàngmedia×variants.
-- [ ] Run focused tests→RED; minimalfix theo query đãđo; rerun→PASS.
+- [x] Run focused tests→RED; minimalfix theo query đãđo; rerun→PASS.
   Finalizationretry/changedpayload409/parallelfinal/rollback/stableIDs/audit/
   hidden/SOLD/FlashSale vàupdateversion regressionpass. Đoquerycounts/elapsed5vòng;
   commit `perf(catalogue): reduce measured publish round trips` nếu cócodechange.
@@ -222,12 +222,12 @@ extend `media/BookCreateFinalizationTest.java`/uploadsessionintegrationtests.
 **Interfaces:** editconcurrency1; temporarymax2 chỉbật sau kiểmcap/sessionrace,
 UI role vẫntheohàngđợi, mediaID/requestKeyổnđịnh. Khôngtănglimiter/backendpool.
 
-- [ ] DựaTask3/6 đo upload cònchiếmchính, kiểmmemory/providerquota vàDBlocks.
+- [x] DựaTask3/6 đo upload cònchiếmchính, kiểmmemory/providerquota vàDBlocks.
   Nếu khôngđủlợi/điềukiện, giữ1, ghi lýdo vàTask8 hoànthànhđánhgiá.
-- [ ] Nếu thử: RED outofordercompletion giữroles, lostresponse retry cùngkey,
+- [ ] **Không áp dụng: giữ upload1.** Nếu thử: RED outofordercompletion giữroles, lostresponse retry cùngkey,
   twoexpire/replace/removecancel/finalduringupload khôngduplicate/overflow6;
   editversionchain luônserial. Implementmax2 bounded; focusedfrontend/backendPASS.
-- [ ] A/B5vòngQA cùng2/6ảnh vàmanifest, cùngratebudget; giữthayđổi chỉkhi
+- [ ] **Không áp dụng: giữ upload1.** A/B5vòngQA cùng2/6ảnh vàmanifest, cùngratebudget; giữthayđổi chỉkhi
   cải thiệnelapsed khôngtănglỗi. KhôngkếtluậnRender nếu chỉchạyLocal.
   Commit result hoặcdecision `perf(admin): bound temporary photo uploads`.
 
@@ -236,20 +236,20 @@ UI role vẫntheohàngđợi, mediaID/requestKeyổnđịnh. Khôngtănglimiter/
 **Files:** Spec/plan/evidence; docs/{README,PROGRESS,DEV_LOG,ARCHITECTURE,DESIGN,DEPLOYMENT}.md;
 rootREADME khi đổi env/chạylocal. Khônggộp gateonline chưađạt thànhPASS.
 
-- [ ] Root `bash code/backend/run-local.sh -B -ntp clean verify`→0failure/error,
+- [x] Root `bash code/backend/run-local.sh -B -ntp clean verify`→0failure/error,
   liveprovider skip ghi rõ. Frontend `npm test`, `npm run build`,
   `npm run build:workers`, `npm run check:workers:proxy`→PASS.
-- [ ] Browser2/3/4/5/6ảnh, ngang/dọc/ảnhcũ, viewerlớn/keyboard,lazy/layout,
+- [x] Browser2/3/4/5/6ảnh, ngang/dọc/ảnhcũ, viewerlớn/keyboard,lazy/layout,
   OWNER/STAFF/anonymous/temporaryforeign/HIDDEN/ARCHIVED, metadatarefresh,
   lostpublishresponse/retry/refresh/multitab409/replacedeletecleanup đúngledger.
-- [ ] Đo lại5vòng/2và6ảnh trêntừngmôitrườngđãđobaseline, reportquery/bytes/
+- [x] Đo lại5vòng/2và6ảnh trêntừngmôitrườngđãđobaseline, reportquery/bytes/
   requestcount/median/min/max/elapsed/coldriêng. SanitizeHAR, verifysecretfixture;
   Cloudinaryusage/Neonquota/health/logs ghiobservedhoặcNOTRUN.
-- [ ] RenderQA cầnuserdeploy theo workflow. Nếu vẫnchậm, VPSQA cósẵn mớiso
+- [ ] **Gate online còn mở:** RenderQA cầnuserdeploy theo workflow. Nếu vẫnchậm, VPSQA cósẵn mớiso
   cùngrevision/workload; thiếuhost/permission ghiopen gate, khôngmua/deploytựđộng.
-- [ ] Wholebranchfreshreview theo executing-plans; fixfindings córegression,
+- [x] Wholebranchfreshreview theo executing-plans; fixfindings córegression,
   rerunaffectedchecks. CleanupchỉassetQAledger/crosscheckDB; dừngprocessQA.
-- [ ] Gộpcontract/evidencehiệnhành, link/line≤400/ignore/diffcheckPASS; chỉretire
+- [x] Gộpcontract/evidencehiệnhành, link/line≤400/ignore/diffcheckPASS; chỉretire
   spec/plan khi chuyểnđủtiêuchívàgatecònmở. Commit/pushdev, kiểmremote/status;
   báo kếtquả vàgiớihạnonline, khôngclaimMVPchốtxong.
 

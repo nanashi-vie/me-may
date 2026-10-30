@@ -14,6 +14,8 @@ describe('BookMediaPanel protected thumbnails',()=>{
   const root=fixture.nativeElement as HTMLElement;const image=root.querySelector('.photo-slot img')!;
   expect(image.getAttribute('src')).toContain('size=320');
   expect(image.getAttribute('loading')).toBe('lazy');expect(image.getAttribute('decoding')).toBe('async');
+  expect(root.textContent).toContain('Đang tải ảnh xem trước');
+  image.dispatchEvent(new Event('load'));fixture.detectChanges();expect(root.textContent).not.toContain('Đang tải ảnh xem trước');
   expect(root.querySelector('dialog img')).toBeNull();
   const dialog=root.querySelector('dialog') as HTMLDialogElement;
   dialog.showModal=()=>dialog.setAttribute('open','');dialog.close=()=>dialog.removeAttribute('open');

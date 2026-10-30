@@ -220,3 +220,20 @@ Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không 
   STAFF403 và retry không nhân sách/tồn; không nhập synthetic vào catalogue bán thật.
 - Rollback phải phối hợp app/DB theo bước5 ở trên, không chỉ hạ frontend về contract cũ.
   Giữ gate backfill4variant ảnh, Lighthouse/cold-start và vận hành M5 chưa đạt.
+
+## Gate đo hiệu năng nhập sách
+
+Codehiện hành giữauthenticated/eagersync/no-store; khôngcần migration mới
+cho tốiưu này. Usermerge/deploy theo workflowdev→main nhưcũ.
+Muốn nghiệmthu5lượt Renderwarm cần serviceQA vớiDBQA/media namespacecáchly,
+cùngrevisionfrontend/backend vàảnhworkload trong evidence, không đổi DBservice
+đang bán. Agentchưa deploy/tạoservice hoặc migrateonline trong phiên30/10.
+
+Bật `MEMAY_PERFORMANCE_ENABLED=true` trênQA khiđo; mặcđịnhfalse khi chạy thường.
+FrontendQA opt-in bằng sessionStorage key `memay-performance=1` trước reload,
+xóa key sau đo; chỉghi numericmetadata/UserTiming, khônglưu form/secret.
+Giữ limiter4inflight/30attempt10phút, chiađợt cho5vòng2và6ảnh; warm-up riêng,
+first-hit/coldRender/Neonresume cólog xácnhận vàkhông trộn với warm.
+So before/after cùngmôitrường/revisionworkload, giữ HARđãlọc, querycount vàbytes;
+khôngđánhdấu hoànthànhonline từ sốđolocal. VPSchỉđối chứng nếuđãcó vàvẫnchậm.
+Bằngchứng: [BOOK_PUBLISH_PERFORMANCE_VERIFICATION](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).

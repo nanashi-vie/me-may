@@ -47,6 +47,7 @@
       >
         <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
         @if (row.preview) {
+          <div class="preview-wrap">
           @defer (on viewport) {
           <img
             [src]="thumbnail(row)"
@@ -56,8 +57,11 @@
             loading="lazy"
             decoding="async"
             (error)="previewFailed(row.id)"
+            (load)="previewReady(row.id)"
           />
+          @if(!previewLoaded()[row.id] && !failedPreviews()[row.id]){<p class="preview-loading" role="status">Đang tải ảnh xem trước…</p>}
           } @placeholder {<div class="photo-placeholder" aria-hidden="true"></div>}
+          </div>
           <button type="button" class="secondary view-photo" (click)="openPhoto(row,$event)">Xem ảnh lớn</button>
           @if (failedPreviews()[row.id]) {
             <p role="status">Chưa tải được ảnh xem trước.</p>
@@ -159,7 +163,8 @@
       <button type="button" (click)="closePhoto()" autofocus>Đóng ảnh</button>
     </div>
     @if(selectedPhoto();as photo) {
-      <img class="large-photo" [src]="photo.src" [alt]="photo.alt" decoding="async" (error)="viewerFailed.set(true)" />
+      <img class="large-photo" [src]="photo.src" [alt]="photo.alt" decoding="async" (error)="viewerFailed.set(true)" (load)="viewerLoaded.set(true)" />
+      @if(!viewerLoaded() && !viewerFailed()){<p class="viewer-loading" role="status">Đang tải ảnh chi tiết…</p>}
       @if(viewerFailed()) {
         <p role="status">Chưa tải được ảnh chi tiết.</p>
         <button type="button" class="secondary" (click)="retryLargePhoto()">Tải lại ảnh chi tiết</button>

@@ -304,3 +304,22 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
   Catalogue/sale/lookup dựa availability đã đồng bộ; không join biến thể làm nhân card/count.
 - Default ngôn ngữ ở form mới; CVA VND giữ numericmodel/validation/caret. Grade mới
   HIGH_FRESHNESS/MINOR_FLAWS; legacy VERY_GOOD/GOOD/FAIR giữ nguyên, không tự đổi ý nghĩa.
+
+## Hiệu năng nhập và xuất bản —30/10
+
+- Admin persisted/temporary media nhận `?size=320|1280`, mặc định1280;
+  JPEG320 dùng eager hiện có. Fallback1280 chỉ khi provider báo thiếuvariant;
+  auth/no-store/nosniff/MIME/khôngredirect giữ nguyên, không lộ signedURL.
+- Eager vẫn5bản đồng bộ. Queue mộtdecode, mộtpreparedlookahead, uploadserial;
+  edit giữ chuỗi version/idempotency. Không chạy provider khi giữ transactionlock.
+- Finalcreate giữentities để gắnmedia, mapdetail1lần rồi immutablecopy publication;
+ 9DBexecutions được bỏ trong workloadQA, auditCREATE/PUBLISHED vàretry giữ nguyên.
+- Taxonomy/collections cachememory60s/dedupe; invalidation theo auth epoch,
+  collectionswrite vàmanualrefresh. Lỗi khôngcache, stale response/replay bịchặn.
+  POSTdetail handoff10s/single-use/đúngID+epoch, khônghistory/localStorage;
+  deep-link/refresh luônGETserver. Audit chỉfetch khi mở, versionđổi đánhdấustale.
+- `MEMAY_PERFORMANCE_ENABLED` defaultfalse: request/phase/counters metadata-only;
+  datasource proxy đo acquisition/execution, transaction đượcđo ngoài proxy để
+  gồmcommit. Không gọi đó là exactlockwait hoặc thời gianNeon riêng.
+  Asyncstream dùngcapturedtrace; terminalstreamerror không bịHTTP200 hạthànhok.
+- Bằngchứng vàgiớihạn: [hiệu năng nhập sách](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).

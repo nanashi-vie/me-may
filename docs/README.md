@@ -27,8 +27,8 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 ## Spec và plan đang thực thi
 
 - [BOOK_PUBLISH_PERFORMANCE_SPEC](BOOK_PUBLISH_PERFORMANCE_SPEC.md): user duyệt30/10;
-  [BOOK_PUBLISH_PERFORMANCE_PLAN](BOOK_PUBLISH_PERFORMANCE_PLAN.md) chờ review,
-  triển khai Native/tuần tự. Chưa sửa code hoặc có baseline5vòng warm.
+  [BOOK_PUBLISH_PERFORMANCE_PLAN](BOOK_PUBLISH_PERFORMANCE_PLAN.md) đã triển khai code/local,
+  giữ để theo gate RenderQA/Neon còn mở. Đã đủ5vònglocal2/6ảnh trước/sau;
   Không thay gate M5 hoặc tự cấp quyền deploy.
   Baseline và kết quả đo: [BOOK_PUBLISH_PERFORMANCE_VERIFICATION](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).
 
