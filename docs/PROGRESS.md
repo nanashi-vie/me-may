@@ -30,6 +30,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Git và bàn giao
 
+- Nhập sách30/10: source và tài liệu đã push origin/dev tới ec5286b; checkout sạch sau push. Bản ghi bàn giao cuối đi cùng commit tiếp theo. Workspace QA riêng đã dọn; giữ screenshot ignored và DB scratch đã ẩn sách, không còn media.
 - Chỉ commit/push dev; user tự merge main và deploy. Tasks1–6:4a0683f..19c0138; commit sửa review/task7 ghi ở checkpoint cuối DEV_LOG.
 - Online theo release cũ: Workers https://me-may.dqhungg8357.workers.dev, API https://me-may-api.onrender.com; chưa xác minh release mới trong phiên.
 - .env/.local/dump/cookie/workspace QA ignored; asset nguồn public/logo vẫn tracked. Giữ spec/plan M5 vì gate online còn mở. Bằng chứng local: [VERIFICATION](VERIFICATION.md#m5-completion-local--29102026).
