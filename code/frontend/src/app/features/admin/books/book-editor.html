@@ -27,6 +27,7 @@
   </p>
   <a [href]="'/admin/sach/' + b.id" target="_blank" rel="noopener">Mở bản đã lưu trong tab khác</a>
 }
+<button type="button" class="secondary" [disabled]="busy() || loading()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
 <form [formGroup]="form" (ngSubmit)="save()" class="book-form">
   <fieldset [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain()">
     <legend>Thông tin cuốn sách</legend>

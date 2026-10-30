@@ -1,3 +1,5 @@
+import { BookDetailHandoff } from './book-detail-handoff';
+import { Subscription } from 'rxjs';
 import { VndInput } from './vnd-input';
 import { BookUploadQueue } from './book-upload-queue';
 import { BookCreate } from './book.models';
@@ -33,6 +35,9 @@ import { PRICE_NOTE, READING_NOTE } from './book-copy';
 })
 export class BookEditor {
   readonly api = inject(BookApi);
+  private readonly handoff=inject(BookDetailHandoff);
+  private metadataRequests=new Subscription();
+  private loadSequence=0;
   readonly auth = inject(AuthService);
   private readonly collectionApi = inject(CollectionApi);
   private readonly route = inject(ActivatedRoute);
@@ -92,18 +97,19 @@ export class BookEditor {
     });
   }
   ngOnInit() {
-    this.api
-      .taxonomy()
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({ next: (t) => this.taxonomy.set(t), error: (e) => this.fail(e) });
-    this.collectionApi
-      .list()
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({ next: (c) => this.collections.set(c), error: (e) => this.fail(e) });
+    this.loadMetadata();
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.load(id);
+    if(id){const seed=this.handoff.take(id);if(seed)this.accept(seed);else this.load(id);}
+  }
+  loadMetadata(refresh=false) {
+    this.metadataRequests.unsubscribe();this.metadataRequests=new Subscription();
+    this.metadataRequests.add((refresh?this.api.refreshTaxonomy():this.api.taxonomy()).pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({next:t=>this.taxonomy.set(t),error:e=>this.fail(e)}));
+    this.metadataRequests.add((refresh?this.collectionApi.refresh():this.collectionApi.list()).pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({next:c=>this.collections.set(c),error:e=>this.fail(e)}));
   }
   load(id: string) {
+    const sequence=++this.loadSequence;
     this.loading.set(true);
     this.loadFailed.set(false);
     this.api
@@ -111,10 +117,12 @@ export class BookEditor {
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (b) => {
+          if(sequence!==this.loadSequence)return;
           this.accept(b);
           this.loading.set(false);
         },
         error: (e) => {
+          if(sequence!==this.loadSequence)return;
           this.loadFailed.set(true);
           this.fail(e);
           this.loading.set(false);
@@ -246,12 +254,18 @@ export class BookEditor {
   }
   private sendCreate() {
     if (!this.pendingCreate) return;
+    const epoch=this.auth.epoch();
     this.api
       .create(this.pendingCreate)
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (saved) => {
           this.busy.set(false);
+          if(epoch!==this.auth.epoch()) {
+            this.createUncertain.set(true);this.photos.locked.set(true);
+            this.error.set('Phiên đăng nhập đã thay đổi. Kiểm tra sách đã lưu trước khi tiếp tục.');return;
+          }
+          this.handoff.put(saved);
           this.photos.markConsumed();
           this.accept(saved);
           this.notice.set('Đã đăng sách.');

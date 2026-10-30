@@ -11,7 +11,7 @@ describe('Flash Sale editor', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }) } },
+        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0), invalidateSession:()=>{} } },
       ],
     });
     const fixture = TestBed.createComponent(FlashSaleEditor);
@@ -46,7 +46,7 @@ describe('Campaign save locks editing', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }) } },
+        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0), invalidateSession:()=>{} } },
       ],
     });
     const f = TestBed.createComponent(FlashSaleEditor);
