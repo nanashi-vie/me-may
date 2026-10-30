@@ -50,7 +50,8 @@ public class SecurityConfiguration {
                                                                 "/api/v1/flash-sale")
                                                 .permitAll()
                                                 .requestMatchers("/api/v1/admin/owner-access").hasRole("OWNER")
-                                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**").hasAnyRole("OWNER", "STAFF")
+                                                .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")
+                                                .hasAnyRole("OWNER", "STAFF")
                                                 .requestMatchers("/api/v1/admin/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .headers(headers -> headers.addHeaderWriter((req, res) -> {

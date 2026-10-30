@@ -35,7 +35,8 @@ public class BookCommandService {
 
     public BookCommandService(BookCopyRepository books, ListingRepository listings, CategoryRepository categories,
             BookCodeGenerator codes, BookValidation validation, BookAccess access, BookMapper mapper,
-            AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads, BookMediaRepository images, ObjectMapper json, BookVariantStore variants) {
+            AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads,
+            BookMediaRepository images, ObjectMapper json, BookVariantStore variants) {
         this.books = books;
         this.variants = variants;
         this.listings = listings;
@@ -88,55 +89,77 @@ public class BookCommandService {
         try {
             fingerprint = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                     .digest(json.writeValueAsBytes(canonical)));
-        } catch (java.security.NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
+        } catch (java.security.NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
+        }
         var session = uploads.lock(input.uploadSessionId(), actor, false);
         if ("CONSUMED".equals(session.get("state"))) {
-            if (!fingerprint.equals(session.get("request_fingerprint"))) throw new AdminApiException(409,"upload_session_consumed");
+            if (!fingerprint.equals(session.get("request_fingerprint")))
+                throw new AdminApiException(409, "upload_session_consumed");
             long id = ((Number) session.get("book_id")).longValue();
-            return mapper.detail(books.findById(id).orElseThrow(),listings.findByBookCopyId(id).orElseThrow());
+            return mapper.detail(books.findById(id).orElseThrow(), listings.findByBookCopyId(id).orElseThrow());
         }
-        uploads.lock(input.uploadSessionId(),actor,true);
+        uploads.lock(input.uploadSessionId(), actor, true);
         validation.validateWrite(w);
-        if (!input.confirmedActualCopy()) throw AdminApiException.field("confirmedActualCopy","Xác nhận đúng ảnh và tình trạng cuốn sách");
-        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",input.uploadSessionId());
-        var selected = new LinkedHashMap<UUID,Map<String,Object>>();
-        for (var assignment:assignments) {
-            var photo=ready.stream().filter(m->assignment.mediaId().equals(m.get("id"))).findFirst()
-                    .orElseThrow(()->AdminApiException.field("media","Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
-            selected.put(assignment.mediaId(),photo);
+        if (!input.confirmedActualCopy())
+            throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
+        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
+                input.uploadSessionId());
+        var selected = new LinkedHashMap<UUID, Map<String, Object>>();
+        for (var assignment : assignments) {
+            var photo = ready.stream().filter(m -> assignment.mediaId().equals(m.get("id"))).findFirst()
+                    .orElseThrow(
+                            () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
+            selected.put(assignment.mediaId(), photo);
         }
-        var aggregate = createAggregate(actor,w);
+        var aggregate = createAggregate(actor, w);
         long id = Long.parseLong(aggregate.id());
-        for (var assignment:assignments) {
-            var m=selected.get(assignment.mediaId());
-            jdbc.update("insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
-                    assignment.mediaId(),id,assignment.role().name(),m.get("storage_public_id"),m.get("asset_id"),m.get("format"),m.get("bytes"),m.get("width"),m.get("height"),m.get("alt")==null?assignment.role().label()+" "+aggregate.bookCode():m.get("alt"),m.get("source_ref"),m.get("created_at"),m.get("updated_at"));
-            jdbc.update("delete from temporary_media where id=?",assignment.mediaId());
+        for (var assignment : assignments) {
+            var m = selected.get(assignment.mediaId());
+            jdbc.update(
+                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
+                    assignment.mediaId(), id, assignment.role().name(), m.get("storage_public_id"), m.get("asset_id"),
+                    m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
+                    m.get("alt") == null ? assignment.role().label() + " " + aggregate.bookCode() : m.get("alt"),
+                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
+            jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
-        var b=books.findById(id).orElseThrow();var l=listings.findByBookCopyId(id).orElseThrow();
-        validation.validatePublished(mapper.detail(b,l));
-        l.publicationStatus=Publication.PUBLISHED;l.publishedAt=clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);em.flush();
-        var result=mapper.detail(b,l);var snapshot=audit.snapshot(result);snapshot.put("confirmedActualCopy",true);
-        audit.record(actor,"BOOK",id,"CREATE",Map.of(),snapshot,b.version);
-        audit.record(actor,"BOOK",id,"PUBLISHED",Map.of(),snapshot,b.version);
-        jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?",id,fingerprint,input.uploadSessionId());
-        jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",java.sql.Timestamp.from(clock.instant()),input.uploadSessionId());
+        var b = books.findById(id).orElseThrow();
+        var l = listings.findByBookCopyId(id).orElseThrow();
+        validation.validatePublished(mapper.detail(b, l));
+        l.publicationStatus = Publication.PUBLISHED;
+        l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+        em.flush();
+        var result = mapper.detail(b, l);
+        var snapshot = audit.snapshot(result);
+        snapshot.put("confirmedActualCopy", true);
+        audit.record(actor, "BOOK", id, "CREATE", Map.of(), snapshot, b.version);
+        audit.record(actor, "BOOK", id, "PUBLISHED", Map.of(), snapshot, b.version);
+        jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?", id,
+                fingerprint, input.uploadSessionId());
+        jdbc.update(
+                "update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",
+                java.sql.Timestamp.from(clock.instant()), input.uploadSessionId());
         return result;
     }
 
     private List<MediaAssignment> assignments(List<MediaAssignment> input) {
-        if(input==null || input.size()<2 || input.size()>6 || input.stream().anyMatch(m->m==null||m.mediaId()==null||m.role()==null))
-            throw AdminApiException.field("media","Cần từ 2 đến 6 ảnh hợp lệ");
-        if(input.stream().map(MediaAssignment::mediaId).distinct().count()!=input.size() || input.stream().map(MediaAssignment::role).distinct().count()!=input.size()
-                || !input.stream().map(MediaAssignment::role).toList().containsAll(List.of(MediaDtos.MediaRole.FRONT,MediaDtos.MediaRole.BACK)))
-            throw AdminApiException.field("media","Ảnh/vai trò không được trùng, bắt buộc bìa và lưng");
-        return input.stream().sorted(Comparator.comparingInt(m->m.role().ordinal())).toList();
+        if (input == null || input.size() < 2 || input.size() > 6
+                || input.stream().anyMatch(m -> m == null || m.mediaId() == null || m.role() == null))
+            throw AdminApiException.field("media", "Cần từ 2 đến 6 ảnh hợp lệ");
+        if (input.stream().map(MediaAssignment::mediaId).distinct().count() != input.size()
+                || input.stream().map(MediaAssignment::role).distinct().count() != input.size()
+                || !input.stream().map(MediaAssignment::role).toList()
+                        .containsAll(List.of(MediaDtos.MediaRole.FRONT, MediaDtos.MediaRole.BACK)))
+            throw AdminApiException.field("media", "Ảnh/vai trò không được trùng, bắt buộc bìa và lưng");
+        return input.stream().sorted(Comparator.comparingInt(m -> m.role().ordinal())).toList();
     }
 
     @Transactional
     public BookDetail update(long id, long version, AdminUser actor, BookWrite input) {
         return update(id, version, actor, input, null);
     }
+
     @Transactional
     public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media) {
         var b = books.findById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
@@ -148,7 +171,8 @@ public class BookCommandService {
         validation.validateWrite(w);
         var before = mapper.detail(b, l);
         var reordered = media == null ? null : assignments(media);
-        boolean mediaChanged = reordered != null && !reordered.equals(before.media().stream().map(m->new MediaAssignment(UUID.fromString(m.id()),m.role())).toList());
+        boolean mediaChanged = reordered != null && !reordered.equals(
+                before.media().stream().map(m -> new MediaAssignment(UUID.fromString(m.id()), m.role())).toList());
         if (mapper.write(before).equals(w) && !mediaChanged)
             return before;
         apply(b, l, w);
@@ -158,7 +182,8 @@ public class BookCommandService {
         b.touch(clock.instant());
         l.updatedAt = b.updatedAt;
         em.flush();
-        if (mediaChanged) reorder(id,reordered);
+        if (mediaChanged)
+            reorder(id, reordered);
         var after = mapper.detail(b, l);
         if (l.publicationStatus == Publication.PUBLISHED)
             validation.validatePublished(after);
@@ -166,16 +191,27 @@ public class BookCommandService {
         return after;
     }
 
-    private void reorder(long id,List<MediaAssignment> assignments) {
-        var active=images.findByBookCopyIdAndState(id,MediaDtos.MediaState.ACTIVE);
-        if(active.size()!=assignments.size() || !active.stream().map(m->m.id).collect(java.util.stream.Collectors.toSet()).equals(assignments.stream().map(MediaAssignment::mediaId).collect(java.util.stream.Collectors.toSet())))
-            throw AdminApiException.field("media","Chỉ sắp xếp ảnh đang thuộc cuốn này");
-        for(var m:active){m.state=MediaDtos.MediaState.UPLOADING;m.updatedAt=clock.instant();}em.flush();
-        for(var m:active){m.role=assignments.stream().filter(a->a.mediaId().equals(m.id)).findFirst().orElseThrow().role();m.state=MediaDtos.MediaState.ACTIVE;}em.flush();
+    private void reorder(long id, List<MediaAssignment> assignments) {
+        var active = images.findByBookCopyIdAndState(id, MediaDtos.MediaState.ACTIVE);
+        if (active.size() != assignments.size()
+                || !active.stream().map(m -> m.id).collect(java.util.stream.Collectors.toSet()).equals(assignments
+                        .stream().map(MediaAssignment::mediaId).collect(java.util.stream.Collectors.toSet())))
+            throw AdminApiException.field("media", "Chỉ sắp xếp ảnh đang thuộc cuốn này");
+        for (var m : active) {
+            m.state = MediaDtos.MediaState.UPLOADING;
+            m.updatedAt = clock.instant();
+        }
+        em.flush();
+        for (var m : active) {
+            m.role = assignments.stream().filter(a -> a.mediaId().equals(m.id)).findFirst().orElseThrow().role();
+            m.state = MediaDtos.MediaState.ACTIVE;
+        }
+        em.flush();
     }
 
     private Availability availability(BookWrite w) {
-        return w.variants().stream().mapToLong(VariantWrite::stock).sum() == 0 ? Availability.SOLD : Availability.AVAILABLE;
+        return w.variants().stream().mapToLong(VariantWrite::stock).sum() == 0 ? Availability.SOLD
+                : Availability.AVAILABLE;
     }
 
     private void apply(BookCopy b, Listing l, BookWrite w) {

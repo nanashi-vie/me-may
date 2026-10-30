@@ -96,7 +96,7 @@ public class PublicCatalogueController {
 
     @GetMapping("/books/{slug}/media/{role}")
     public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
-            @RequestParam(defaultValue="640") int size, @RequestParam(defaultValue="jpg") String format) {
+            @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format) {
         if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
         var keys = jdbc.queryForList(
@@ -110,7 +110,8 @@ public class PublicCatalogueController {
                 input.transferTo(output);
             }
         };
-        return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg").header("Cache-Control", "no-store")
+        return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg")
+                .header("Cache-Control", "no-store")
                 .header("X-Content-Type-Options", "nosniff").body(body);
     }
 }

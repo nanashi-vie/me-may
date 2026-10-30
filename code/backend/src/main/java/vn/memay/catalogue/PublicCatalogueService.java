@@ -22,7 +22,8 @@ public class PublicCatalogueService {
     private static final String SALE = "(fs.enabled and current_timestamp>=fs.starts_at and current_timestamp<fs.ends_at and b.availability='AVAILABLE' and fi.sale_price_vnd<l.price_min_vnd)";
     private static final String FROM = " from book_copy b join listing l on l.book_copy_id=b.id left join category c on c.id=l.category_id left join flash_sale fs on fs.id=1 left join flash_sale_item fi on fi.listing_id=l.id ";
     private static final String SELECT = "select b.id,b.book_code,b.title,b.publisher,b.author,b.binding,b.condition_grade,b.condition_note,b.availability,b.weight_g,l.id listing_id,l.slug,"
-            + "l.price_min_vnd,l.price_max_vnd,case when " + SALE + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
+            + "l.price_min_vnd,l.price_max_vnd,case when " + SALE
+            + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
             + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code";
 
     public BookDtos.Page<Book> list(String q, String category, String binding, List<String> ages, String sort, int page,
@@ -86,13 +87,15 @@ public class PublicCatalogueService {
             order = "(b.availability='AVAILABLE') desc," + order;
         args.add(20);
         args.add((long) page * 20);
-        var rows = jdbc.query(SELECT + FROM + where + " order by " + order + ",b.book_code desc limit ? offset ?", this::book,
+        var rows = jdbc.query(SELECT + FROM + where + " order by " + order + ",b.book_code desc limit ? offset ?",
+                this::book,
                 args.toArray());
         return new BookDtos.Page<>(rows, page, 20, total, (int) ((total + 19) / 20));
     }
 
     public Book detail(String slug) {
-        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'", (r,n) -> book(r,n,true),
+        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
+                (r, n) -> book(r, n, true),
                 slug);
         if (found.isEmpty())
             throw new AdminApiException(404, "not_found");
@@ -139,12 +142,15 @@ public class PublicCatalogueService {
         return new Book(Long.toString(id), r.getString("book_code"), slug, r.getString("title"),
                 r.getString("publisher"), r.getString("author"), ages, r.getString("category_code"),
                 r.getString("binding"), r.getString("condition_grade"), r.getString("condition_note"),
-                r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class), r.getObject("sale_price_vnd", Long.class),
+                r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class),
+                r.getObject("sale_price_vnd", Long.class),
                 r.getTimestamp("sale_ends_at") == null ? null : r.getTimestamp("sale_ends_at").toInstant(),
-                r.getObject("weight_g", Long.class), r.getString("description"), r.getString("reading_level"), r.getString("reading_video_url"),
+                r.getObject("weight_g", Long.class), r.getString("description"), r.getString("reading_level"),
+                r.getString("reading_video_url"),
                 r.getString("availability"), media, includeVariants ? jdbc.query(
                         "select id::text,name,stock>0 available from book_variant where book_copy_id=? order by sort_order",
-                        (v,i) -> new Variant(v.getString("id"),v.getString("name"),v.getBoolean("available")), id) : List.of());
+                        (v, i) -> new Variant(v.getString("id"), v.getString("name"), v.getBoolean("available")), id)
+                        : List.of());
     }
 
     public List<Collection> collections() {
