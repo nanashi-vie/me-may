@@ -56,6 +56,10 @@ public class MediaService {
     }
 
     public InputStream content(long id, MediaRole role, AdminUser actor) {
-        return gateway.openPreview(timings.measure("authorization", () -> transactions.activeKey(id, role)));
+        return content(id,role,actor,1280);
+    }
+    public InputStream content(long id,MediaRole role,AdminUser actor,int width) {
+        if(width!=320 && width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
+        return gateway.openAdminPreview(timings.measure("authorization", () -> transactions.activeKey(id, role)),width);
     }
 }

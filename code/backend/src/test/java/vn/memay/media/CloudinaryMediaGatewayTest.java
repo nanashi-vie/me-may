@@ -46,4 +46,20 @@ class CloudinaryMediaGatewayTest {
    assertThatThrownBy(()->transport.post(java.net.URI.create("http://api.cloudinary.com/x"),Map.of(),null)).isInstanceOf(IllegalArgumentException.class);
   }
  }
+
+ @Test void adminThumbnailUses320AndOnlyMissingVariantFallsBack() throws Exception {
+  class Transport implements CloudinaryTransport {
+   final List<java.net.URI> opened=new ArrayList<>();int failure;
+   public Map<String,Object> post(java.net.URI u,Map<String,Object> p,byte[] b){throw new UnsupportedOperationException();}
+   public java.io.InputStream open(java.net.URI u)throws java.io.IOException {
+    opened.add(u);if(failure==1&&opened.size()==1)throw new MissingVariantException();
+    if(failure==2)throw new java.io.IOException("Provider error");return new java.io.ByteArrayInputStream(new byte[]{1});
+   }
+  }
+  var t=new Transport();var gateway=new CloudinaryMediaGateway("demo","key","secret","memay/test",t);String id="memay/test/"+UUID.randomUUID();
+  gateway.openAdminPreview(id,320).close();assertThat(t.opened.getFirst().getPath()).contains("w_320","f_jpg");
+  t.opened.clear();t.failure=1;gateway.openAdminPreview(id,320).close();assertThat(t.opened).hasSize(2);assertThat(t.opened.getLast().getPath()).contains("w_1280");
+  t.opened.clear();t.failure=2;assertThatThrownBy(()->gateway.openAdminPreview(id,320)).isInstanceOf(vn.memay.common.AdminApiException.class);assertThat(t.opened).hasSize(1);
+  t.opened.clear();assertThatThrownBy(()->gateway.openAdminPreview(id,640)).isInstanceOf(IllegalArgumentException.class);assertThat(t.opened).isEmpty();
+ }
 }

@@ -48,11 +48,19 @@
         <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
         @if (row.preview) {
           <img
-            [src]="row.state === 'error' && row.previous ? row.previous.preview : row.preview"
+            [src]="thumbnail(row)"
             [alt]="row.alt || labels[row.role]"
             width="240"
             height="320"
+            loading="lazy"
+            decoding="async"
+            (error)="previewFailed(row.id)"
           />
+          <button type="button" class="secondary view-photo" (click)="openPhoto(row,$event)">Xem ảnh lớn</button>
+          @if (failedPreviews()[row.id]) {
+            <p role="status">Chưa tải được ảnh xem trước.</p>
+            <button type="button" class="secondary" (click)="retryPreview(row)">Tải lại ảnh xem trước</button>
+          }
         }
         @if (row.file) {
           <small>{{ row.file.name }}</small>
@@ -143,6 +151,19 @@
       </article>
     }
   </div>
+  <dialog #viewer aria-labelledby="photo-viewer-title" (cancel)="closePhoto()" (close)="selectedPhoto.set(null)">
+    <div class="viewer-heading">
+      <h3 id="photo-viewer-title">Xem ảnh chi tiết</h3>
+      <button type="button" (click)="closePhoto()" autofocus>Đóng ảnh</button>
+    </div>
+    @if(selectedPhoto();as photo) {
+      <img class="large-photo" [src]="photo.src" [alt]="photo.alt" decoding="async" (error)="viewerFailed.set(true)" />
+      @if(viewerFailed()) {
+        <p role="status">Chưa tải được ảnh chi tiết.</p>
+        <button type="button" class="secondary" (click)="retryLargePhoto()">Tải lại ảnh chi tiết</button>
+      }
+    }
+  </dialog>
   @if (photos.persisted() && photos.dirty()) {
     <p role="status">
       Thứ tự và thông tin ảnh đang sửa sẽ áp dụng khi chọn Lưu thay đổi. Ảnh tải mới được lưu riêng

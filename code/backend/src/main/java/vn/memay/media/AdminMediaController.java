@@ -56,8 +56,8 @@ public class AdminMediaController {
 
     @GetMapping("/content")
     public ResponseEntity<StreamingResponseBody> content(Authentication a, @PathVariable long id,
-            @PathVariable MediaRole role) {
-        var input = media.content(id, role, actors.current(a));
+            @PathVariable MediaRole role, @RequestParam(defaultValue="1280") int size) {
+        var input = media.content(id, role, actors.current(a),size);
         var trace=timings.capture();
         StreamingResponseBody body = output -> {
             try (input) {

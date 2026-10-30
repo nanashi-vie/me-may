@@ -69,12 +69,27 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     public InputStream openPreview(String publicId) {
+        return openAdminPreview(publicId,1280);
+    }
+
+    public InputStream openAdminPreview(String publicId,int width) {
+        if(width!=320 && width!=1280)throw new IllegalArgumentException("Invalid admin media size");
         validatePublicId(publicId, namespace);
         try {
-            return timings.measure("provider_open", () -> {try{return transport.open(previewUrl(publicId, PREVIEW));}catch(Exception e){throw failure();}});
+            try {return openTimed(previewUrl(publicId,width==320 ? publicTransform(320,"jpg"):PREVIEW));}
+            catch(CloudinaryTransport.MissingVariantException missing) {
+                if(width!=320)throw missing;
+                return openTimed(previewUrl(publicId,PREVIEW));
+            }
         } catch (Exception e) {
             throw failure();
         }
+    }
+
+    private InputStream openTimed(URI uri) throws IOException {
+        long start=System.nanoTime();String status="ok";
+        try{return transport.open(uri);}catch(IOException | RuntimeException e){status="error";throw e;}
+        finally{timings.record("provider_open",start,status);}
     }
 
     public InputStream openPublicPreview(String publicId) {
