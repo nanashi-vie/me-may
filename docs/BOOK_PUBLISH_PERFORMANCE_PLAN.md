@@ -8,7 +8,7 @@ Dùng JPEG320 hiện có cho grid, handoff BookDetail một lần, cache metadat
 audit theo nhu cầu và prefetch chuẩn hóa một ảnh. Query/parallel upload có gate đo.
 **Tech Stack:** Angular21/RxJS, Spring Boot4/Java21, PostgreSQL, Cloudinary, Pythonstdlib.
 **Spec:** [BOOK_PUBLISH_PERFORMANCE_SPEC](BOOK_PUBLISH_PERFORMANCE_SPEC.md), user duyệt30/10.
-**Status:** Kế hoạch chờ user review; chưa triển khai product code.
+**Status:** User đã duyệt; đang thực thi tuần tự từ30/10/2026.
 **Execution:** Native/tuần tự trong phiên theo phương thức đã dùng; code/commit/pushdev.
 
 ## Global Constraints
@@ -42,7 +42,7 @@ audit theo nhu cầu và prefetch chuẩn hóa một ảnh. Query/parallel uploa
 - Task1→2→3 tạo baseline. Task4/5/6 dùng baseline, kiểm riêng từng thay đổi.
   Task7 tối ưuSQL đã đo. Task8 chỉ spikeparallel nếu có lợi. Task9 đóng regression/evidence.
 
-### Task1 — Bộ công cụ đo và HAR an toàn
+### Task 1 — Bộ công cụ đo và HAR an toàn
 
 **Files:** Create `scripts/book-performance/{evidence.py,test_evidence.py,README.md}`.
 **Interfaces:** `sanitize_har(data: dict) -> dict`; `summarize(records: list[dict]) -> dict`.
@@ -62,7 +62,7 @@ CLI `python3 scripts/book-performance/evidence.py sanitize INPUT OUTPUT` và
   mở network endpoint từ URL trong HAR. Output mặc định `.local/book-performance/`.
 - [ ] Kiểm raw/secrets không tracked, cập nhật DEV_LOG/PROGRESS; commit `test(perf): add safe benchmark evidence tools`.
 
-### Task2 — Timings backend và frontend opt-in
+### Task 2 — Timings backend và frontend opt-in
 
 **Files:** Create `code/backend/src/main/java/vn/memay/common/PerformanceTimings.java`,
 `PerformanceTimingFilter.java`, `PerformanceDataSourceConfiguration.java`;
@@ -99,7 +99,7 @@ opt-in qua InjectionToken `BOOK_PERFORMANCE_ENABLED` defaultfalse, không export
 - [ ] Integration smoke xác nhận logphase và disabled không thêm output;
   cập nhật logs; commit `feat(perf): measure book upload and publish phases`.
 
-### Task3 — Baseline trước tối ưu
+### Task 3 — Baseline trước tối ưu
 
 **Files:** Create `docs/BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md`;
 create `scripts/book-performance/CloudinaryEagerProbe.java` dùng SDK đã có,
@@ -122,7 +122,7 @@ summary Task1 nhận các trường đó. Baseline sản phẩm là commitTask2.
 - [ ] SanitizeHAR/test fixturePASS, đọc lại output khôngsecret; logevidence paths,
   health/quotas available hoặc unknown; commit `docs(perf): record controlled entry baseline`.
 
-### Task4 — Thumbnail quản trị và viewer1280
+### Task 4 — Thumbnail quản trị và viewer1280
 
 **Files:** Modify `media/{MediaGateway,CloudinaryMediaGateway,MediaService,UploadSessionService,AdminMediaController,UploadSessionController}.java`;
 tests `CloudinaryMediaGatewayTest.java`, new `AdminThumbnailIntegrationTest.java`.
@@ -145,7 +145,7 @@ invalid→400, jpgonly. Queue keeps largepreviewpath, grid appends size320 safel
 - [ ] Đo bytes/GETcontent5lượt so baselineTask3, phân biệt providerCDN hitstate;
   cập nhậtlogs; commit `perf(admin): load protected thumbnails in photo grid`.
 
-### Task5 — Publish handoff, metadata cache và audit theo nhu cầu
+### Task 5 — Publish handoff, metadata cache và audit theo nhu cầu
 
 **Files:** Modify frontend `core/auth/{auth.service,admin-http}.ts` vàtests;
 create `core/auth/admin-session-cache.ts` và`.spec.ts`;
@@ -175,7 +175,7 @@ extend `book-editor.spec.ts`/`book-audit-panel.spec.ts`.
   vàsession retry; browserPOST201→edit khôngGETbooktrùng/taxonomycollections
   chỉreusekhihợp lệ/auditclosed zero. FullfrontendPASS; commit `perf(admin): reuse publish response and defer reference reads`.
 
-### Task6 — Chuẩn hóa ảnh kế tiếp khi upload đang chạy
+### Task 6 — Chuẩn hóa ảnh kế tiếp khi upload đang chạy
 
 **Files:** Modify `admin/books/{book-upload-queue,image-upload}.ts` vàtests.
 **Interfaces:** Giữ `prepareImage(file: File): Promise<Blob>` validatesstandalone;
@@ -193,7 +193,7 @@ edit vàtemporary vẫn mộtupload; metricsTask2 dùng cácpha thực tế.
 - [ ] `npm test`→PASS; browser2/6ảnh, errorretry/removeprefetch/cancel;
   đo5vòng đốibaseline, báo overlap/thờigian khôngcộngrequest. Commit `perf(admin): prepare next photo during upload`.
 
-### Task7 — Giảm database round trips đã được đo
+### Task 7 — Giảm database round trips đã được đo
 
 **Files:** `catalogue/{BookCommandService,BookMapper,BookVariantStore}.java`;
 tests `media/BookCreateFinalizationTest.java`, new `catalogue/BookPublishQueryTest.java`.
@@ -215,7 +215,7 @@ Khôngđổi BookDetail/BookCreate/public DTO hoặccontract validation.
   hidden/SOLD/FlashSale vàupdateversion regressionpass. Đoquerycounts/elapsed5vòng;
   commit `perf(catalogue): reduce measured publish round trips` nếu cócodechange.
 
-### Task8 — Đánh giá tối đa2temporary upload có điều kiện
+### Task 8 — Đánh giá tối đa2temporary upload có điều kiện
 
 **Files:** Nếugateđạt modify `book-upload-queue.ts` vàtest;
 extend `media/BookCreateFinalizationTest.java`/uploadsessionintegrationtests.
@@ -231,7 +231,7 @@ UI role vẫntheohàngđợi, mediaID/requestKeyổnđịnh. Khôngtănglimiter/
   cải thiệnelapsed khôngtănglỗi. KhôngkếtluậnRender nếu chỉchạyLocal.
   Commit result hoặcdecision `perf(admin): bound temporary photo uploads`.
 
-### Task9 — Regression, đối chứng, review và bàn giao
+### Task 9 — Regression, đối chứng, review và bàn giao
 
 **Files:** Spec/plan/evidence; docs/{README,PROGRESS,DEV_LOG,ARCHITECTURE,DESIGN,DEPLOYMENT}.md;
 rootREADME khi đổi env/chạylocal. Khônggộp gateonline chưađạt thànhPASS.

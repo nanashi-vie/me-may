@@ -795,3 +795,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Discovery graph/source xác nhận tên controller/service/panel, finalcreate mapping nhiều lần và collectionquery từngID nhưng chưa có timing; plan chỉ tối ưu sau profile. Định nghĩa interfaces timings opt-in/streamIO/JDBCmetadataonly, HARsanitizer, thumbnail320/default1280, auth epoch/cacheTTL60s/handoff10s, prefetch1ảnh, SQL/parallel cógate và regression2–6ảnh.
 - Selfreviewcoverage spec3→Task1–3, spec4→Task4, spec5→Task6/8, spec6→Task5/7, spec7–8→Task9; nămfailuremodes có test nhiệm vụ sở hữu. Plan262dòng, bốnfile spec/plan/index/snapshot≤400 và localfilelinksPASS; root `git diff --check`PASS. Khôngtest/build/benchmark mới vì chỉ docs; online5vòng vàCloudinaryprobe vẫnNOTRUN.
 - Cập nhật docs/README/PROGRESS/specstatus. Chuẩn bị commit/pushdev bộ tài liệu để review; chưa merge/deploymain hoặc ghi dữ liệu QA/production. Bước tiếp user review plan, rồi executing-plans Task1→9; RenderQA5vòng vẫn cần userdeploy môi trường cáchly đúngrevision.
+
+### S027-C03 — 30/10/2026 — bắt đầu thực thi kế hoạch hiệu năng
+- User duyệt plan; executing-plans/TDD/verification/worktree skills đã đọc. Giữ dev checkout theo plan đã duyệt, không tạo worktree mới. Workspace riêng BOOK_PUBLISH_PERFORMANCE_PLAN ignored; basefa7dfe0; preflight interfaces tương thích. Sửa dấu cách heading Task N để script nhận; không đổi phạm vi.
+- Đang chạy baselinefrontend/backend và Task1 sanitizer. Chưa ghi kết quả khi lệnh còn chạy; chưa deploy/migrateonline.
+- Task1 RED import missingevidence→GREEN3/3stdlib tests; sanitizer allowlist bỏheaders/body/query/host/IDs/providerURL, unknown timing=-1. Frontendbaseline124/124PASS; backendbaseline sandbox socketEPERM, rerun elevated đangchạy. Chưa ghiPASSbackend.
