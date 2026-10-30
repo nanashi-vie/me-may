@@ -6,6 +6,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
+- Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
   NodeSSR/Workers/proxy/SSR checker đạt. 5vòng2/6ảnh trước/sau:medianelapsed

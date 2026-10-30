@@ -822,3 +822,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - `git push origin dev` thành công fa7dfe0→07f7354; `git rev-list --left-right --count dev...origin/dev` trả 0/0. Hoàn tất ô bàn giao local; giữ gate online và spec/plan vì RenderQA/Neon/VPS chưa có phép đo đối chứng. Không merge main, deploy hoặc ghi dữ liệu bán thật.
 - Bằng chứng test/build/browser ở checkpoint C03 và BOOK_PUBLISH_PERFORMANCE_VERIFICATION; không chạy lại bộ đo hoặc thay kết quả cũ bằng suy đoán. Review 1Important đã sửa bằng RED→GREEN; Minor replacement selectedAt vẫn defer, chỉ thiếu thời gian prepare trong phép đo thay ảnh.
 - Checkpoint tài liệu này sẽ commit/push dev cùng thay đổi liên quan. Bước cuối chạy task-done9/finalcheck, giữ ledger safe ở `.local/book-performance`, rồi dọn đúng workspace tạm của plan theo executing-plans; không dọn workspace khác hoặc drop DB scratch. Bước tiếp sản phẩm: user deploy QA cách ly đúng revision để đo 5 warm/cold Render và Neon trước quyết định hosting/song song upload.
+
+### S028-C01 — 30/10/2026 — đưa upload ảnh lên đầu editor
+- User yêu cầu phần upload ảnh đứng trước tên sách và các thông tin còn lại. Bắt đầu dev29249b9 sạch/khớp remote; thay đổi nhỏ theo nhánh xử lý trực tiếp của brainstorming, không tạo spec/plan mới.
+- Phạm vi: đổi vị trí component media trong template dùng chung tạo/sửa, cập nhật DESIGN và snapshot; giữ bindings, queue, quyền và nút đăng cuối form. Đang thực hiện, chưa chạy kiểm chứng hoặc commit/push.
+- Đã chuyển duy nhất `<app-book-media-panel>` lên đầu form trong book-editor.html, trước fieldset thông tin; DESIGN ghi thứ tự mới và khả năng nhập thông tin trong lúc upload.
+- Tại code/frontend: `npm test` PASS145/145/33file, `npm run build:workers` PASS. Tại root: kiểm thứ tự template/component chỉ xuất hiện một lần và trần dòng DESIGN/PROGRESS PASS; `git diff --check` PASS. Không thêm test cho thao tác đổi vị trí đơn thuần; không chạy backend/browser hoặc đo hiệu năng mới vì logic không đổi.
+- Chuẩn bị commit/push dev cùng bốn file thay đổi. Không deploy; user merge/deploy theo workflow hiện hành. Gate Render/Neon của hiệu năng vẫn mở.

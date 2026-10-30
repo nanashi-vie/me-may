@@ -29,6 +29,7 @@
 }
 <button type="button" class="secondary" [disabled]="busy() || loading()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
 <form [formGroup]="form" (ngSubmit)="save()" class="book-form">
+  <app-book-media-panel [readonly]="!editable()" [disabled]="busy() || createUncertain()" />
   <fieldset [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain()">
     <legend>Thông tin cuốn sách</legend>
     <div class="fields">
@@ -157,7 +158,6 @@
   @for (entry of fieldErrors(); track entry.key) {
     <p class="error">{{ entry.key }}: {{ entry.message }}</p>
   }
-  <app-book-media-panel [readonly]="!editable()" [disabled]="busy() || createUncertain()" />
   @if (!book() && editable()) {
     <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng cho sách và các biến thể này.</label>
   }
