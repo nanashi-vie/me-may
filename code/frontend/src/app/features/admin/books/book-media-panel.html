@@ -1,7 +1,7 @@
 <section aria-labelledby="photo-heading">
-  <h2 id="photo-heading">Ảnh thật của cuốn sách</h2>
+  <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
+    Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi. Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
     nội dung 3.
   </p>
   @if (!readonly()) {
@@ -44,10 +44,6 @@
     @for (row of photos.sorted(); track row.id; let i = $index) {
       <article
         class="photo-slot"
-        [draggable]="!disabled() && !readonly()"
-        (dragstart)="start($event, row.id)"
-        (dragover)="$event.preventDefault()"
-        (drop)="dropCard($event, row.id)"
       >
         <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
         @if (row.preview) {
@@ -91,33 +87,14 @@
           <fieldset [disabled]="disabled()">
             <label
               >Vai trò ảnh<select
-                [value]="row.role"
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
               >
                 @for (role of roles; track role) {
-                  <option [value]="role">{{ labels[role] }}</option>
+                  <option [value]="role" [selected]="role === row.role">{{ labels[role] }}</option>
                 }
               </select></label
             >
             <div class="actions">
-              <button
-                type="button"
-                class="secondary"
-                [disabled]="i === 0"
-                (click)="photos.step(row.id, -1)"
-                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' lên'"
-              >
-                Đưa lên
-              </button>
-              <button
-                type="button"
-                class="secondary"
-                [disabled]="i === photos.rows().length - 1"
-                (click)="photos.step(row.id, 1)"
-                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' xuống'"
-              >
-                Đưa xuống
-              </button>
               <button
                 type="button"
                 class="secondary"

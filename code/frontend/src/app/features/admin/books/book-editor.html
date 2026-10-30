@@ -64,23 +64,45 @@
       }
       <label
         >Giá từ (VNĐ)<input
-          type="number"
+          type="text" inputmode="numeric" appVndInput
           formControlName="priceMinVnd"
           min="1"
           max="999999999999"
           step="1"
         /><small>{{ priceNote }}</small></label
-      ><label>Giá đến (VNĐ)<input type="number" formControlName="priceMaxVnd" min="1" max="999999999999" step="1" /></label>
+      ><label>Giá đến (VNĐ)<input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" /></label>
       <label>Trọng lượng sách (g)<input type="number" formControlName="weightG" min="1" step="1" /><small>{{book()?.weightG == null ? 'Chưa cập nhật' : ''}}</small></label>
       <label
         >Đánh giá tình trạng<select formControlName="conditionGrade">
           <option [ngValue]="null">Chưa đánh giá</option>
-          <option value="VERY_GOOD">Rất tốt</option>
-          <option value="GOOD">Tốt</option>
-          <option value="FAIR">Có hao mòn</option>
+          <option value="HIGH_FRESHNESS">Độ mới cao</option>
+          <option value="MINOR_FLAWS">Có lỗi nhẹ</option>
+          @if (book()?.conditionGrade; as grade) {
+            @if (legacyConditions[grade]) { <option [value]="grade">{{ legacyConditions[grade] }}</option> }
+          }
         </select></label
       >
     </div>
+    <fieldset formArrayName="variants" class="stock-editor">
+      <legend>Tồn kho và biến thể</legend>
+      @for (row of form.controls.variants.controls; track row; let i = $index) {
+        <div [formGroupName]="i" class="variant-row">
+          @if (variantNamesVisible()) {
+            <label>Tên biến thể<input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
+          }
+          <label>Tồn kho<input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
+          @if (!row.controls.id.value && form.controls.variants.length > 1) {
+            <button type="button" class="secondary" (click)="removeNewVariant(i)" [attr.aria-label]="'Gỡ biến thể mới ' + (i+1)">Gỡ dòng mới</button>
+          }
+        </div>
+      }
+      <p>Tổng tồn: <strong>{{ totalStock() }}</strong></p>
+      <small>Mỗi biến thể dùng chung khoảng giá và bộ ảnh. Tồn 0 là hết hàng; chủ cập nhật sau khi bán.</small>
+      @if ((form.hasError('variants') || form.controls.variants.invalid) && form.touched) {
+        <p class="error" role="alert">Tồn kho phải là số nguyên từ 0 đến 999999. Khi có nhiều biến thể, nhập tên riêng không trùng nhau.</p>
+      }
+      <button type="button" class="secondary" (click)="addVariant()">Thêm biến thể</button>
+    </fieldset>
     <fieldset class="choices">
       <legend>Độ tuổi <small>(có thể chọn nhiều)</small></legend>
       @for (age of taxonomy().ageGroups; track age.code) {
@@ -136,7 +158,7 @@
   }
   <app-book-media-panel [readonly]="!editable()" [disabled]="busy() || createUncertain()" />
   @if (!book() && editable()) {
-    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng với đúng cuốn sách này.</label>
+    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng cho sách và các biến thể này.</label>
   }
   @if (editable()) {
   <button

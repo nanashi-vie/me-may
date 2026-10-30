@@ -27,9 +27,51 @@ const a: PublicBook = {
   readingLevel: null,
   readingVideoUrl: null,
   availability: 'AVAILABLE',
+  variants: [{id:'default',name:null,available:true}],
   media: [],
 };
 describe('Detail refresh and public origin', () => {
+  const variants=[{id:'high',name:'Độ mới cao',available:true},{id:'corner',name:'Có cấn góc',available:true}];
+  it('asksForSelectedVariantAtSharedPrice', async () => {
+    let current={...a,variants};
+    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
+      {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
+    expect(c.selectedVariantId()).toBeNull();expect(c.canContact()).toBe(false);
+    c.selectVariant('corner');expect(c.canContact()).toBe(true);
+    expect(await c.verifyContact()).toContain('Biến thể: Có cấn góc');
+    expect(await c.verifyContact()).toContain('10.000 VNĐ');
+    current={...current,variants:[{...variants[0],available:false},variants[1]]};
+    c.accept(current);c.selectVariant('high');expect(c.selectedVariantId()).toBe('corner');
+  });
+  it('doesNotCopyStaleVariant', async () => {
+    let current={...a,variants};
+    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
+      {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
+    c.selectVariant('high');current={...current,variants:[{...variants[0],available:false},variants[1]]};
+    expect(await c.verifyContact()).toBe('');expect(c.selectedVariantId()).toBeNull();expect(c.variantNotice()).toContain('hết hàng');
+    current={...current,availability:'SOLD'};
+    expect(await c.verifyContact()).toContain('tư vấn sách tương đương');
+  });
+  it('uses the fresh name for a single named variant and clears selection on 404', async()=>{
+    let current={...a,variants:[{id:'single',name:'Tên ban đầu',available:true}]};
+    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
+      {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
+    expect(c.selectedVariantId()).toBe('single');current={...current,variants:[{...current.variants[0],name:'Tên đã sửa'}]};
+    expect(await c.verifyContact()).toContain('Biến thể: Tên đã sửa');c.accept(null,404);expect(c.selectedVariantId()).toBeNull();
+  });
+  it('does not return an old enquiry when navigation overtakes verification', async()=>{
+    const pending=new Subject<PublicBook>();
+    const detail=vi.fn().mockReturnValueOnce(of({...a,variants})).mockReturnValueOnce(pending)
+      .mockReturnValue(of({...a,id:'2',slug:'mm-000002',bookCode:'MM-000002',variants}));
+    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
+      {provide:PublicApi,useValue:{detail,contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
+    c.selectVariant('high');const text=c.verifyContact();await h.navigateByUrl('/sach/mm-000002',BookDetail);pending.next({...a,variants});
+    expect(await text).toBe('');expect(c.selectedVariantId()).toBeNull();
+  });
   it('reserves a portrait gallery frame while keeping the entire source visible', async () => {
     TestBed.configureTestingModule({
       providers: [

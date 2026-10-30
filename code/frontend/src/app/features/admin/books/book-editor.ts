@@ -1,3 +1,4 @@
+import { VndInput } from './vnd-input';
 import { BookUploadQueue } from './book-upload-queue';
 import { BookCreate } from './book.models';
 import { Validators } from '@angular/forms';
@@ -16,7 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BookApi } from './book-api';
 import { BookDetail, Taxonomy, AgeGroup, AdminApiError } from './book.models';
-import { buildBookForm, toBookWrite } from './book-form';
+import { buildBookForm, buildVariantForm, toBookWrite } from './book-form';
 import { CollectionApi, CollectionDto } from '../collections/collection-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BookMediaPanel } from './book-media-panel';
@@ -26,7 +27,7 @@ import { PRICE_NOTE, READING_NOTE } from './book-copy';
 @Component({
   selector: 'app-book-editor',
   providers: [BookUploadQueue],
-  imports: [ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
+  imports: [VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
   templateUrl: './book-editor.html',
   styleUrl: './book-editor.scss',
 })
@@ -39,6 +40,7 @@ export class BookEditor {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   readonly form = buildBookForm();
+  readonly variantNamesVisible = signal(false);
   readonly book = signal<BookDetail | null>(null);
   readonly taxonomy = signal<Taxonomy>({
     categories: [],
@@ -60,6 +62,7 @@ export class BookEditor {
   readonly fields = signal<Record<string, string[]>>({});
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
+  readonly legacyConditions: Record<string,string> = { VERY_GOOD: 'Rất tốt', GOOD: 'Tốt', FAIR: 'Có hao mòn' };
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
   readonly loginForm = new FormGroup({
@@ -124,9 +127,30 @@ export class BookEditor {
     this.photos.locked.set(false);
     this.createUncertain.set(false);
     this.pendingCreate = null;
+    this.variantNamesVisible.set(b.variants.length > 1 || b.variants.some(v => !!v.name));
+    this.form.controls.variants.clear({emitEvent:false});
+    for (const row of b.variants) this.form.controls.variants.push(buildVariantForm(row),{emitEvent:false});
     this.form.reset(b);
     this.form.markAsPristine();
     this.fields.set({});
+  }
+  addVariant() {
+    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
+    this.form.controls.variants.push(buildVariantForm());
+    this.variantNamesVisible.set(true);
+    this.form.controls.variants.markAsDirty();
+  }
+  removeNewVariant(index: number) {
+    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
+    const rows = this.form.controls.variants;
+    if (rows.length > 1 && rows.at(index)?.controls.id.value === null) {
+      rows.removeAt(index); rows.markAsDirty();
+    }
+  }
+  totalStock() {
+    return this.form.controls.variants.controls.reduce((sum,row)=>{
+      const n=row.controls.stock.value;return sum+(n !== null && Number.isSafeInteger(n) && n>=0 ? n : 0);
+    },0);
   }
   toggleAge(age: AgeGroup, checked: boolean) {
     const values = this.form.controls.ageGroups;

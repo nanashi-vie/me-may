@@ -21,7 +21,7 @@ public class AuditService {
 
     private static final Set<String> FIELDS = Set.of("bookCode", "title", "isbn", "publisher", "author", "language",
             "binding", "conditionGrade", "conditionNote", "priceMinVnd", "priceMaxVnd", "weightG", "description", "categoryCode", "ageGroups",
-            "readingLevel", "readingVideoUrl", "collectionIds", "publication", "availability", "media",
+            "readingLevel", "readingVideoUrl", "collectionIds", "publication", "availability", "media", "variants", "totalStock",
             "confirmedActualCopy", "name", "slug", "sortOrder", "active", "enabled", "startsAt", "endsAt", "items");
 
     public Map<String, Object> snapshot(Object value) {

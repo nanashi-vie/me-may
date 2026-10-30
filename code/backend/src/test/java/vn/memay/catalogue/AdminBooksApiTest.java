@@ -41,7 +41,7 @@ class AdminBooksApiTest extends CatalogueTestSupport {
  }
  @Test void equivalentAgeSelectionDoesNotCreateAudit()throws Exception{
   var b=seed(owner,BookFixtures.write("A","PICTURE_BOOK","PAPERBACK",1L,null,null,List.of("AGE_4_6","AGE_7_9"),List.of()));
-  var data=new LinkedHashMap<String,Object>(JSON.convertValue(BookFixtures.write("A","PICTURE_BOOK","PAPERBACK",1L,null,null,List.of("AGE_7_9","AGE_4_6"),List.of()),Map.class));data.put("version",b.version());
+  var data=new LinkedHashMap<String,Object>(JSON.convertValue(BookFixtures.write("A","PICTURE_BOOK","PAPERBACK",1L,null,null,List.of("AGE_7_9","AGE_4_6"),List.of()),Map.class));data.put("version",b.version());data.put("variants",b.variants());
   var r=api.send("PUT","/api/v1/admin/books/"+b.id(),json(data),true);assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("version").asLong()).isEqualTo(b.version());
  }
  @Test void listIsStableAndCodeLookupIsCaseInsensitive()throws Exception{

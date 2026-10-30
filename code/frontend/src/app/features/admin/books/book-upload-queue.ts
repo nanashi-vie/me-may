@@ -135,23 +135,6 @@ export class BookUploadQueue {
     this.error.set('');
     void this.pump();
   }
-  move(id: string, target: string) {
-    if (this.locked()) return;
-    const ordered = this.sorted();
-    const from = ordered.findIndex((r) => r.id === id),
-      to = ordered.findIndex((r) => r.id === target);
-    if (from < 0 || to < 0 || from === to) return;
-    const roles = ordered.map((r) => r.role);
-    const [item] = ordered.splice(from, 1);
-    ordered.splice(to, 0, item);
-    this.rows.set(ordered.map((r, i) => ({ ...r, role: roles[i] })));
-    this.announcement.set(`Đã chuyển ảnh đến vị trí ${to + 1}: ${MEDIA_LABELS[roles[to]]}.`);
-  }
-  step(id: string, delta: number) {
-    const ordered = this.sorted(),
-      index = ordered.findIndex((r) => r.id === id);
-    if (ordered[index + delta]) this.move(id, ordered[index + delta].id);
-  }
   assignRole(id: string, role: MediaRole) {
     if (this.locked() || !MEDIA_ROLES.includes(role)) return;
     const item = this.rows().find((r) => r.id === id);

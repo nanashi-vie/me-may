@@ -25,9 +25,22 @@ const book: PublicBook = {
   readingLevel: null,
   readingVideoUrl: null,
   availability: 'AVAILABLE',
+  variants: [{id:'default',name:null,available:true}],
   media: [],
 };
 describe('Contact copy fallback', () => {
+  it('includes the selected variant in the visible enquiry and copy fallback',()=>{
+    const f=TestBed.createComponent(ContactDialog);f.componentRef.setInput('book',book);
+    f.componentRef.setInput('variant',{id:'condition',name:'Có cấn góc',available:true});f.detectChanges();
+    expect(f.componentInstance.text()).toContain('Biến thể: Có cấn góc');
+    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 VNĐ');
+  });
+  it('keeps manual enquiry empty when a multi-variant selection is no longer available',()=>{
+    const f=TestBed.createComponent(ContactDialog);
+    f.componentRef.setInput('book',{...book,variants:[{id:'a',name:'A',available:false},{id:'b',name:'B',available:true}]});
+    f.componentRef.setInput('variant',null);f.detectChanges();
+    expect(f.componentInstance.text()).toBe('');
+  });
   for (const change of ['busy', 'text'])
     it('clears copy success when verified content becomes ' + change, async () => {
       const f = TestBed.createComponent(ContactDialog);

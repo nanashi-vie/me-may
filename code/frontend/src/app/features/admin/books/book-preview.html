@@ -12,6 +12,11 @@
   <p class="muted">
     {{ b.bookCode }} · {{ b.availability === 'AVAILABLE' ? 'Còn hàng' : 'Hết hàng' }}
   </p>
+  <section aria-label="Tồn kho đã lưu">
+    <p>Tổng tồn: {{ b.totalStock }}</p>
+    @for (v of b.variants; track v.id) { <p>{{ v.name || 'Mặc định' }}: {{ v.stock }}</p> }
+  </section>
+  <p>Bộ ảnh chung của sách; tiệm xác nhận tình trạng cụ thể theo biến thể.</p>
   <div class="preview-images">
     @for (image of b.media; track image.id) {
       <img [src]="image.contentPath" [alt]="image.alt || b.bookCode" />

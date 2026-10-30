@@ -1,5 +1,8 @@
 # Kiểm chứng local — M1 và M2
 
+Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
+Tách bằng chứng theo chủ đề để giữ file này dưới400dòng; các gate M5 bên dưới vẫn giữ.
+
 Ngày: 22/10/2026. Phần M1 là bằng chứng lịch sử; trạng thái M2 mới nhất ở cuối. Không phải nghiệm thu staging/production.
 
 ## Kết quả

@@ -26,6 +26,7 @@ const book: PublicBook = {
   readingLevel: null,
   readingVideoUrl: null,
   availability: 'AVAILABLE',
+  variants: [{id:'default',name:null,available:true}],
   media: [],
 };
 describe('Public catalogue state', () => {

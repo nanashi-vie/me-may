@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
 import {
-  Availability,
   AuditSummary,
   BookDetail,
   BookFilter,
@@ -41,12 +40,6 @@ export class BookApi {
       version,
       status,
       confirmedActualCopy,
-    });
-  }
-  availability(id: string, version: number, availability: Availability) {
-    return this.http.mutate<BookDetail>('PATCH', `/books/${id}/availability`, {
-      version,
-      availability,
     });
   }
   preview(id: string) {

@@ -27,7 +27,7 @@ Owner nhập dữ liệu/ảnh tạm → kiểm tra trọng lượng/khoảng gi
 
 Danh sách quan tâm đọc lại trạng thái từ API khi mở; nếu API lỗi, ghi “Chưa kiểm tra được tình trạng” thay vì coi cache là còn hàng. Cuốn đã bán được cảnh báo; cuốn ẩn/không tìm thấy hiển thị không còn công khai, không lộ lại dữ liệu nháp. Chỉ sao chép thông tin công khai đã xác nhận, kèm lưu ý không giữ sách.
 
-Publication: `PUBLISHED` / `ARCHIVED`; availability: `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng). Hai nhóm độc lập. SOLD không tự archive; trang chi tiết vẫn tồn tại nếu còn published. Không có Đang giữ trong MVP.
+Publication: `PUBLISHED` / `ARCHIVED`; availability: `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng). Khả dụng tính từ tổng tồn biến thể; publication độc lập. SOLD không tự archive; trang chi tiết vẫn tồn tại nếu còn published. Không có Đang giữ trong MVP.
 
 ## Quyền thiết kế M0
 
@@ -156,9 +156,26 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 
 ## Editor — desktop
 
-Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → chọn/thả nhiều file 2–6 ảnh, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → trọng lượng gram + listing mô tả + khoảng giá từ–đến + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, availability, version/cập nhật, Đăng sách một lần sau xác nhận; sửa/preview/ẩn/hiện theo quyền.
+Cột nội dung chính: thông tin cuốn (mã, tên, NXB/tác giả, tình trạng/lỗi, ngôn ngữ) → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → chọn/thả nhiều file 2–6 ảnh, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → trọng lượng gram + listing mô tả + khoảng giá từ–đến + nhiều nhóm tuổi/collection + mức đọc và link video đọc sách tùy chọn. Sidebar phải: publication, khả dụng dẫn xuất từ tồn, version/cập nhật, Đăng sách một lần sau xác nhận; sửa/preview/ẩn/hiện theo quyền.
 
 Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, condition note và 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+
+### Tối ưu nhập sách và biến thể (duyệt30/10)
+
+- Form mới điền sẵn “Tiếng Anh”, sửa/xóa được; mở sách cũ không điền đè ngôn ngữ trống.
+- Hai ô giá định dạng21.000 ngay khi nhập, gõ/dán/sửa giữa số/xóa được, model là số nguyên.
+  Giá âm/thập phân/exponent không bị đổi ngầm thành giá khác; giữ min≤max và chú thích cũ.
+- Đánh giá tình trạng mới: “Độ mới cao”/“Có lỗi nhẹ”; sách legacy vẫn hiện nhãn đã lưu.
+- Tồn ban đầu1, sửa được; “Thêm biến thể” mở tên và tồn từng dòng, tổng tự cộng readonly.
+  Tên tối đa100 ký tự, không trùng trim/case, nhiều dòng không được bỏ tên; tồn0..999999.
+- Không gỡ biến thể đã lưu; gỡ được dòng mới chưa lưu khi còn ít nhất1dòng. Tồn0 là hết.
+- Bỏ nút Đưa lên/Đưa xuống và kéo card đổi vai trò; chỉ dropdown, hoán đổi không upload lại.
+  Giữ kéo file vào vùng tải, thay/gỡ/retry ảnh, progress và ghi chú nội bộ.
+- Public một card/một sách, giá khoảng chung; detail có radio tên biến thể, hết hàng có nhãn
+  và không chọn được. Chọn tình trạng còn hàng trước hỏi; một biến thể tự chọn khi còn.
+- Nội dung hỏi mua kèm tên biến thể đã chọn; kiểm lại trước copy, hết riêng thì yêu cầu chọn
+  lại, tổng hết thì tư vấn tương đương. Ảnh chung không hứa đúng tình trạng của mọi bản.
+- Wishlist giữ theo sách và dữ liệu đã lưu; hỏi nhiều sách không tự gán biến thể cho khách.
 
 ## Trạng thái UX dùng chung
 

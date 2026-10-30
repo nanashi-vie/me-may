@@ -8,7 +8,9 @@ import {
   Taxonomy,
 } from '../admin/books/book.models';
 export type { Page, Taxonomy, AgeGroup, CategoryCode, Binding };
+export interface PublicVariant { id: string; name: string | null; available: boolean; }
 export interface PublicBook {
+  variants: PublicVariant[];
   id: string;
   bookCode: string;
   slug: string;

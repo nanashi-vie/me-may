@@ -15,8 +15,11 @@ public final class BookDtos {
 
     public record BookWrite(String title, String isbn, String publisher, String author, String language, String binding,
             String conditionGrade, String conditionNote, Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String categoryCode,
-            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds) {
+            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds, List<VariantWrite> variants) {
     }
+
+    public record VariantWrite(String id, String name, Long stock) {}
+    public record VariantView(String id, String name, long stock) {}
 
     public record MediaAssignment(java.util.UUID mediaId, MediaRole role) {}
     public record BookCreate(BookWrite write, java.util.UUID uploadSessionId, List<MediaAssignment> media, boolean confirmedActualCopy) {}
@@ -25,10 +28,10 @@ public final class BookDtos {
             @jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,
             String title, String isbn, String publisher, String author, String language, String binding,
             String conditionGrade, String conditionNote, Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String categoryCode,
-            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds, List<MediaAssignment> media) {
+            List<String> ageGroups, String readingLevel, String readingVideoUrl, List<String> collectionIds, List<MediaAssignment> media, List<VariantWrite> variants) {
         public BookWrite write() {
             return new BookWrite(title, isbn, publisher, author, language, binding, conditionGrade, conditionNote,
-                    priceMinVnd, priceMaxVnd, weightG, description, categoryCode, ageGroups, readingLevel, readingVideoUrl, collectionIds);
+                    priceMinVnd, priceMaxVnd, weightG, description, categoryCode, ageGroups, readingLevel, readingVideoUrl, collectionIds, variants);
         }
     }
 
@@ -50,11 +53,11 @@ public final class BookDtos {
             String conditionNote, Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String categoryCode, List<String> ageGroups,
             String readingLevel, String readingVideoUrl, List<String> collectionIds, Publication publication,
             Availability availability, Instant publishedAt, Instant createdAt, Instant updatedAt,
-            List<MediaView> media) {
+            List<MediaView> media, List<VariantView> variants, long totalStock) {
     }
 
     public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd, Publication publication,
-            Availability availability, long version, Instant updatedAt, String frontContentPath) {
+            Availability availability, long version, Instant updatedAt, String frontContentPath, long totalStock) {
     }
 
     public record BookFilter(String q, Publication publication, Availability availability, int page, int size) {
@@ -69,7 +72,7 @@ public final class BookDtos {
     public record PreviewBook(String bookCode, String slug, String title, String publisher, String author,
             List<String> ageGroups, String categoryCode, String binding, String conditionGrade, String conditionNote,
             Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String readingLevel, String readingVideoUrl, Availability availability,
-            List<PreviewMedia> media) {
+            List<PreviewMedia> media, List<VariantView> variants, long totalStock) {
     }
 
     public record AuditSummary(String id, String actorId, String action, java.util.Map<String, Object> before,

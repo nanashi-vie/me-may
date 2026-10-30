@@ -92,7 +92,7 @@ public class PublicCatalogueService {
     }
 
     public Book detail(String slug) {
-        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'", this::book,
+        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'", (r,n) -> book(r,n,true),
                 slug);
         if (found.isEmpty())
             throw new AdminApiException(404, "not_found");
@@ -123,6 +123,10 @@ public class PublicCatalogueService {
     }
 
     private Book book(ResultSet r, int n) throws SQLException {
+        return book(r, n, false);
+    }
+
+    private Book book(ResultSet r, int n, boolean includeVariants) throws SQLException {
         long id = r.getLong("id"), listing = r.getLong("listing_id");
         String slug = r.getString("slug");
         var ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
@@ -138,7 +142,9 @@ public class PublicCatalogueService {
                 r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class), r.getObject("sale_price_vnd", Long.class),
                 r.getTimestamp("sale_ends_at") == null ? null : r.getTimestamp("sale_ends_at").toInstant(),
                 r.getObject("weight_g", Long.class), r.getString("description"), r.getString("reading_level"), r.getString("reading_video_url"),
-                r.getString("availability"), media);
+                r.getString("availability"), media, includeVariants ? jdbc.query(
+                        "select id::text,name,stock>0 available from book_variant where book_copy_id=? order by sort_order",
+                        (v,i) -> new Variant(v.getString("id"),v.getString("name"),v.getBoolean("available")), id) : List.of());
     }
 
     public List<Collection> collections() {

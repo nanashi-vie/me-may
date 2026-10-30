@@ -27,7 +27,7 @@ describe('Owner actions', () => {
     f.componentInstance.execute('PUBLISHED', true);
     expect(publication).toHaveBeenCalledWith('1', 0, 'PUBLISHED', true);
   });
-  it('sends availability and archive/restore with current aggregate version', () => {
+  it('keeps archive/restore with current aggregate version and derives stock in the editor', () => {
     const publication = vi.fn(() => of(testBook())),
       availability = vi.fn(() => of(testBook()));
     TestBed.configureTestingModule({
@@ -36,8 +36,8 @@ describe('Owner actions', () => {
     const f = TestBed.createComponent(BookStatusActions);
     f.componentRef.setInput('book', { ...testBook(), version: 4 });
     f.componentRef.setInput('role', 'OWNER');
-    f.componentInstance.execute('SOLD', false);
-    expect(availability).toHaveBeenCalledWith('1', 4, 'SOLD');
+    f.detectChanges();
+    expect(f.nativeElement.textContent).not.toContain('Đánh dấu hết hàng');
     f.componentInstance.execute('ARCHIVED', false);
     expect(publication).toHaveBeenCalledWith('1', 4, 'ARCHIVED', false);
     f.componentInstance.execute('ARCHIVED', false);

@@ -12,7 +12,7 @@ class M5FieldsApiTest extends CatalogueTestSupport {
   for(long max:List.of(20000L,30000L)) {
    var values=new LinkedHashMap<String,Object>();values.put("title","Range");values.put("conditionNote","Actual");values.put("categoryCode","BOARD_BOOK");values.put("priceMinVnd",20000);values.put("priceMaxVnd",max);values.put("weightG",250);
    var existing=seed(owner,BookFixtures.write("Range","BOARD_BOOK",null,20000L,null,null,List.of(),List.of()));
-   values.put("version",existing.version());String path="/api/v1/admin/books/"+existing.id();
+   values.put("variants",existing.variants());values.put("version",existing.version());String path="/api/v1/admin/books/"+existing.id();
    var r=api.send("PUT",path,json(values),true);
    assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("priceMinVnd").asLong()).isEqualTo(20000);assertThat(tree(r).path("priceMaxVnd").asLong()).isEqualTo(max);assertThat(tree(r).path("weightG").asInt()).isEqualTo(250);
    values.put("version",tree(r).path("version").asLong());

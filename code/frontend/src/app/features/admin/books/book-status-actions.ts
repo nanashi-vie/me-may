@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild, inject, input, output, signal } from 
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { BookApi } from './book-api';
-import { Availability, BookDetail, Publication } from './book.models';
+import { BookDetail, Publication } from './book.models';
 @Component({
   selector: 'app-book-status-actions',
   template: `@if (role() === 'OWNER') {
@@ -22,13 +22,6 @@ import { Availability, BookDetail, Publication } from './book.models';
               Hiện sách
             </button>
           }
-          <button
-            class="secondary"
-            (click)="choose(book().availability === 'AVAILABLE' ? 'SOLD' : 'AVAILABLE')"
-            [disabled]="locked()"
-          >
-            {{ book().availability === 'AVAILABLE' ? 'Đánh dấu hết hàng' : 'Đánh dấu còn hàng' }}
-          </button>
         </div>
         @if (error()) {
           <p class="error" role="alert">{{ error() }}</p>
@@ -44,7 +37,7 @@ import { Availability, BookDetail, Publication } from './book.models';
             type="checkbox"
             [checked]="confirmed()"
             (change)="confirmed.set($any($event.target).checked)"
-          />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng với đúng cuốn sách này.</label
+          />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng cho sách và các biến thể này.</label
         >
       }
       @if (error()) {
@@ -99,7 +92,7 @@ export class BookStatusActions {
   readonly busyChange = output<boolean>();
   private readonly api = inject(BookApi);
   @ViewChild('dialog') dialog?: ElementRef<HTMLDialogElement>;
-  readonly pending = signal<Publication | Availability | null>(null);
+  readonly pending = signal<Publication | null>(null);
   readonly confirmed = signal(false);
   readonly busy = signal(false);
   readonly error = signal('');
@@ -111,12 +104,10 @@ export class BookStatusActions {
       {
         PUBLISHED: 'xuất bản',
         ARCHIVED: 'ẩn sách',
-        SOLD: 'hết hàng',
-        AVAILABLE: 'còn hàng',
       } as const
     )[this.pending() ?? 'ARCHIVED'];
   }
-  choose(action: Publication | Availability) {
+  choose(action: Publication) {
     if (this.locked()) return;
     this.pending.set(action);
     this.confirmed.set(false);
@@ -131,16 +122,13 @@ export class BookStatusActions {
     const target = this.pending();
     if (target) this.execute(target, this.confirmed());
   }
-  execute(target: Publication | Availability, confirmed: boolean) {
+  execute(target: Publication, confirmed: boolean) {
     if (this.locked() || (target === 'PUBLISHED' && !confirmed)) return;
     const b = this.book();
     this.busy.set(true);
     this.busyChange.emit(true);
     this.error.set('');
-    const req =
-      target === 'AVAILABLE' || target === 'SOLD'
-        ? this.api.availability(b.id, b.version, target)
-        : this.api.publication(b.id, b.version, target, confirmed);
+    const req = this.api.publication(b.id, b.version, target, confirmed);
     req
       .pipe(
         finalize(() => {

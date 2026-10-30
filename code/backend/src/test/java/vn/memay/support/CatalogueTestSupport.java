@@ -14,6 +14,7 @@ public abstract class CatalogueTestSupport {
  protected AdminUser owner,staff;
  @BeforeEach void catalogueSetup(){PgTestData.clean(jdbc);var hash=new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder().encode("test-password-123");owner=users.save(new AdminUser("owner@catalogue.test",hash,AdminUser.Role.OWNER));staff=users.save(new AdminUser("staff@catalogue.test",hash,AdminUser.Role.STAFF));}
  protected BookDtos.BookDetail seed(AdminUser actor,BookDtos.BookWrite w){return BookTestData.seed(jdbc,queries,actor,w);}
+ protected BookDtos.BookDetail update(long id,long version,AdminUser actor,BookDtos.BookWrite w){return commands.update(id,version,actor,BookFixtures.variants(w,queries.detail(id,owner).variants()));}
  protected BookDtos.BookDetail ready(){
   var b=seed(owner,BookFixtures.write("Real book","PICTURE_BOOK","HARDCOVER",10000L,null,null,List.of("AGE_4_6"),List.of()));
   for(String role:List.of("FRONT","BACK","INSIDE_1"))jdbc.update("insert into book_media(id,book_copy_id,role,state,storage_public_id,alt) values (?, ?,?,'ACTIVE',?,?)",UUID.randomUUID(),Long.parseLong(b.id()),role,"test/"+UUID.randomUUID(),role);

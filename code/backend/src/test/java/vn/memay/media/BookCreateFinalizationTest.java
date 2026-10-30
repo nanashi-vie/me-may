@@ -13,11 +13,17 @@ class BookCreateFinalizationTest extends MediaTestSupport {
   for(int i=0;i<count;i++){var r=api.upload("/api/v1/admin/upload-sessions/"+id+"/media",0,ImageValidatorTest.image("jpeg"),true);assertThat(r.statusCode()).isEqualTo(201);assignments.add(Map.of("mediaId",tree(r).path("id").asString(),"role",roles.get(i)));}
   return new LinkedHashMap<>(Map.of("write",BookFixtures.write("Physical copy","BOARD_BOOK",null,20000L,null,null,List.of(),List.of()),"uploadSessionId",id,"media",assignments,"confirmedActualCopy",true));
  }
- @Test void finalCreatesPublishedWithTwoOrSixImagesAndRetryCannotDuplicate()throws Exception {
+ @Test void retryFinalDoesNotDuplicateStock()throws Exception {
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");
   for(int count:List.of(2,6)) {
-   var body=request(api,count);var r=api.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);var book=tree(r);assertThat(book.path("publication").asString()).isEqualTo("PUBLISHED");assertThat(book.path("media").size()).isEqualTo(count);assertThat(book.path("id").isString()).isTrue();assertThat(r.headers().firstValue("location").orElse("")).endsWith("/books/"+book.path("id").asString());
+   var body=request(api,count);
+   var fields=new LinkedHashMap<String,Object>(JSON.convertValue(body.get("write"),Map.class));
+   fields.put("variants",List.of(Map.of("name","Độ mới cao","stock",2),Map.of("name","Có lỗi nhẹ","stock",1)));body.put("write",fields);
+   var r=api.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);var book=tree(r);assertThat(book.path("publication").asString()).isEqualTo("PUBLISHED");assertThat(book.path("media").size()).isEqualTo(count);assertThat(book.path("id").isString()).isTrue();assertThat(r.headers().firstValue("location").orElse("")).endsWith("/books/"+book.path("id").asString());
+   assertThat(book.path("totalStock").asLong()).isEqualTo(3);assertThat(book.path("variants").size()).isEqualTo(2);
    var retry=api.send("POST","/api/v1/admin/books",json(body),true);assertThat(tree(retry).path("id").asString()).isEqualTo(book.path("id").asString());
+   assertThat(tree(retry).path("variants")).isEqualTo(book.path("variants"));
+   var changed=new LinkedHashMap<>(fields);changed.put("variants",List.of(Map.of("name","Độ mới cao","stock",3),Map.of("name","Có lỗi nhẹ","stock",1)));var different=new LinkedHashMap<>(body);different.put("write",changed);assertThat(api.send("POST","/api/v1/admin/books",json(different),true).statusCode()).isEqualTo(409);
    body.put("confirmedActualCopy",false);assertThat(api.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(409);
    cleanup.runOnce();assertThat(fake.assets.size()).isEqualTo(count==2?2:8);
   }
@@ -28,6 +34,7 @@ class BookCreateFinalizationTest extends MediaTestSupport {
   var first=java.util.concurrent.CompletableFuture.supplyAsync(()->{try{return api.send("POST","/api/v1/admin/books",payload,true);}catch(Exception e){throw new RuntimeException(e);}});
   var second=api.send("POST","/api/v1/admin/books",payload,true);var a=tree(first.get());var b=tree(second);assertThat(a.path("id").asString()).isEqualTo(b.path("id").asString());
   var write=new LinkedHashMap<String,Object>(JSON.convertValue(body.get("write"),Map.class));write.put("version",a.path("version").asLong());
+  write.put("variants",JSON.convertValue(a.path("variants"),List.class));
   write.put("media",List.of(Map.of("mediaId",a.path("media").get(0).path("id").asString(),"role","BACK"),Map.of("mediaId",a.path("media").get(1).path("id").asString(),"role","FRONT")));
   var changed=api.send("PUT","/api/v1/admin/books/"+a.path("id").asString(),json(write),true);assertThat(changed.statusCode()).isEqualTo(200);assertThat(tree(changed).path("media").get(0).path("id").asString()).isEqualTo(a.path("media").get(1).path("id").asString());
   assertThat(api.send("PUT","/api/v1/admin/books/"+a.path("id").asString(),json(write),true).statusCode()).isEqualTo(409);

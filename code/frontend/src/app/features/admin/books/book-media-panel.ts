@@ -13,7 +13,6 @@ export class BookMediaPanel {
   readonly roles = MEDIA_ROLES;
   readonly labels = MEDIA_LABELS;
   readonly dragging = signal(false);
-  private dragged = '';
   select(event: Event) {
     const input = event.target as HTMLInputElement;
     if (!this.disabled() && !this.readonly()) this.photos.add(Array.from(input.files ?? []));
@@ -35,24 +34,5 @@ export class BookMediaPanel {
     this.dragging.set(false);
     if (!this.disabled() && !this.readonly())
       this.photos.add(Array.from(event.dataTransfer?.files ?? []));
-  }
-  start(event: DragEvent, id: string) {
-    if (this.disabled() || this.readonly()) {
-      event.preventDefault();
-      return;
-    }
-    this.dragged = id;
-    event.dataTransfer?.setData('application/x-memay-photo', id);
-  }
-  dropCard(event: DragEvent, id: string) {
-    if (event.dataTransfer?.files.length) {
-      this.dropFiles(event);
-      return;
-    }
-    event.preventDefault();
-    event.stopPropagation();
-    if (!this.disabled() && !this.readonly()) this.photos.move(this.dragged, id);
-    this.dragged = '';
-    this.dragging.set(false);
   }
 }

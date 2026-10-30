@@ -1,5 +1,7 @@
 # M2 — Đặc tả quản trị catalogue local
 
+> Điều chỉnh nhập sách đã duyệt30/10: tồn theo biến thể, ảnh/khoảng giá chung, ngôn ngữ default và dropdown ảnh thay các quy tắc cũ tương ứng; xem [DATA](DATA.md), [DESIGN](DESIGN.md) và [ARCHITECTURE](ARCHITECTURE.md). Các gate M5 chưa đạt vẫn giữ.
+
 Spec M2 duyệt22/10/2026; contract dưới đây cập nhật theo M5 duyệt29/10/2026. Bằng chứng M2 cũ giữ ở VERIFICATION/DEV_LOG; các gate M5 online còn mở.
 
 Baseline: [MASTER_PLAN](MASTER_PLAN.md), [DATA](DATA.md), [UX/quyền](DESIGN.md). Vị trí trong workflow: [chỉ mục](README.md#spec-và-plan-đang-thực-thi).

@@ -38,6 +38,7 @@ describe('BookEditor safe final saves', () => {
             cancelSession: () => of(null),
             get: () => throwError(() => new HttpErrorResponse({ status: 404 })),
             taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
+            audit: () => of({items:[],page:0,size:20,totalElements:0,totalPages:0}),
           },
         },
         { provide: CollectionApi, useValue: { list: () => of([]) } },
@@ -79,6 +80,59 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
+  it('defaults language only for new books and offers the two current condition choices', () => {
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
+    expect(e.form.controls.language.value).toBe('Tiếng Anh');
+    fixture.detectChanges();
+    const select=fixture.nativeElement.querySelector('select[formControlName="conditionGrade"]') as HTMLSelectElement;
+    expect(Array.from(select.options).map(o=>o.text)).toEqual(['Chưa đánh giá','Độ mới cao','Có lỗi nhẹ']);
+    e.accept({...saved,language:null});expect(e.form.controls.language.value).toBeNull();
+    e.accept({...saved,language:'Tiếng Nhật'});expect(e.form.controls.language.value).toBe('Tiếng Nhật');
+  });
+  it('changes photo roles with the dropdown while retaining upload and replace controls', () => {
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;ready(e);fixture.detectChanges();
+    const root=fixture.nativeElement as HTMLElement;
+    expect(root.textContent).not.toContain('Đưa lên');expect(root.textContent).not.toContain('Đưa xuống');
+    expect(root.querySelector('[draggable="true"]')).toBeNull();
+    expect(root.querySelector('input[type="file"][multiple]')).not.toBeNull();
+    const role=root.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));
+    expect(e.photos.assignments()).toEqual([{mediaId:'server1',role:'FRONT'},{mediaId:'server0',role:'BACK'}]);
+  });
+  it('startsWithOneStockAndAddsNamedVariants', async () => {
+    vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const e=editor();ready(e);
+    expect(e.form.controls.variants.length).toBe(1);
+    expect(e.form.controls.variants.at(0).controls.stock.value).toBe(1);
+    e.addVariant();expect(e.form.controls.variants.length).toBe(2);
+    e.form.controls.variants.at(0).patchValue({name:'Độ mới cao',stock:2});
+    e.form.controls.variants.at(1).patchValue({name:'Có cấn góc',stock:1});
+    expect(e.totalStock()).toBe(3);await e.save();
+    expect(create.mock.calls[0][0].write.variants).toEqual([{id:null,name:'Độ mới cao',stock:2},{id:null,name:'Có cấn góc',stock:1}]);
+    expect(create.mock.calls[0][0].write.priceMinVnd).toBe(20000);
+  });
+  it('keeps a single variant name input mounted while replacing its entire name',()=>{
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
+    e.accept({...saved,variants:[{id:'stable',name:'Tên cũ',stock:1}],totalStock:1});fixture.detectChanges();
+    const input=fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]') as HTMLInputElement;
+    input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]')).toBe(input);
+    input.value='Tên mới';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
+    expect(e.form.controls.variants.at(0).controls.name.value).toBe('Tên mới');
+    expect(e.form.controls.variants.length).toBe(1);
+  });
+  it('preservesPersistedVariantIdsAndDirtyForm', async () => {
+    const e=editor();e.accept({...saved,variants:[{id:'stable',name:null,stock:2}],totalStock:2});
+    e.removeNewVariant(0);expect(e.form.controls.variants.length).toBe(1);
+    e.addVariant();e.form.controls.variants.at(0).controls.name.setValue('A');
+    e.form.controls.variants.at(1).patchValue({name:' a ',stock:1});expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).patchValue({name:'B',stock:-1});expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).controls.stock.setValue(1.5);expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).controls.stock.setValue(1);expect(e.form.valid).toBe(true);
+    e.form.markAsDirty();update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
+    await e.save();expect(e.form.controls.variants.at(0).controls.id.value).toBe('stable');expect(e.form.controls.variants.length).toBe(2);
+    e.removeNewVariant(1);expect(e.form.controls.variants.length).toBe(1);
+    role='STAFF';const staff=editor();staff.addVariant();expect(staff.form.controls.variants.length).toBe(1);
+  });
   it('posts a complete final request once and opens the saved book', async () => {
     const pending = new Subject<BookDetail>();
     create.mockReturnValue(pending);

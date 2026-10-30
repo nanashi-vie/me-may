@@ -10,9 +10,10 @@ describe('photo panel accessible order and readonly mode',()=>{
   const q=TestBed.inject(BookUploadQueue);q.configure({...testBook(),media:[{id:'a',role:'FRONT',alt:'Cover',sourceRef:null,contentPath:'/a'},{id:'b',role:'BACK',alt:'Back',sourceRef:null,contentPath:'/b'}]});
   const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();return{q,f};
  }
- it('moves a photo using the same button available to keyboard and mobile users',()=>{
-  const {q,f}=setup();(f.nativeElement.querySelector('button[aria-label="Đưa ảnh Bìa xuống"]') as HTMLButtonElement).click();f.detectChanges();
-  expect(q.assignments()).toEqual([{mediaId:'b',role:'FRONT'},{mediaId:'a',role:'BACK'}]);expect(f.nativeElement.querySelector('[aria-live]')?.textContent).toContain('vị trí 2');
+ it('changes a role with the dropdown available to keyboard and mobile users',()=>{
+  const {q,f}=setup();expect(Array.from(f.nativeElement.querySelectorAll('.photo-slot select') as NodeListOf<HTMLSelectElement>).map(s=>s.value)).toEqual(['FRONT','BACK']);
+  const role=f.nativeElement.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));f.detectChanges();
+  expect(q.assignments()).toEqual([{mediaId:'b',role:'FRONT'},{mediaId:'a',role:'BACK'}]);expect(f.nativeElement.querySelector('[aria-live]')?.textContent).toContain('vai trò Lưng');
  });
  it('shows photos while hiding all write controls for STAFF',()=>{
   const {f}=setup();f.componentRef.setInput('readonly',true);f.detectChanges();

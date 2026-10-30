@@ -10,7 +10,7 @@ import {
   effect,
 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { ContactConfig, PublicBook } from './public.models';
+import { ContactConfig, PublicBook, PublicVariant } from './public.models';
 import { enquiryText, effectiveBook } from './catalogue-state';
 @Component({
   selector: 'app-contact-dialog',
@@ -82,6 +82,7 @@ import { enquiryText, effectiveBook } from './catalogue-state';
 })
 export class ContactDialog {
   @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
+  readonly variant = input<PublicVariant|null>(null);
   readonly book = input<PublicBook | null>(null);
   readonly preparedText = input<string | null>(null);
   readonly verifyText = input<(() => Promise<string>) | null>(null);
@@ -100,6 +101,7 @@ export class ContactDialog {
       const text = this.preparedText();
       this.busy();
       this.book();
+      this.variant();
       this.verified.set(null);
       if (text !== null) this.message.set('');
     });
@@ -121,7 +123,9 @@ export class ContactDialog {
     if (this.verified() !== null) return this.verified()!;
     if (this.preparedText() !== null) return this.preparedText()!;
     const book = this.book();
-    return book ? enquiryText(effectiveBook(book, this.clock.now() || Date.now()), this.url()) : '';
+    if (book?.availability === 'AVAILABLE' && book.variants.length > 1 && !this.variant()?.available)
+      return '';
+    return book ? enquiryText(effectiveBook(book, this.clock.now() || Date.now()), this.url(), this.variant() ?? undefined) : '';
   }
   select(event: Event) {
     (event.target as HTMLTextAreaElement).select();
