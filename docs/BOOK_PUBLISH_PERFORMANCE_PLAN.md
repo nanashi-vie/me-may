@@ -259,4 +259,4 @@ rootREADME khi đổi env/chạylocal. Khônggộp gateonline chưađạt thành
   spec7/8→Task9 vàbaselineonlinegateTask3. Khôngrequirementbịbỏ.
 - NămReviewFocus đãcótests ởTask2/4/5/6/7; interfaces dùng cùngnêutrongtask.
 - Query/eager/parallel/VPS làđánhgiácóđiềukiện, khôngbiếnthànhthayđổibắtbuộc.
-- Kếhoạchđượcselfreview; chưachecktaskhoànthành hoặcghiPASSchưachạy.
+- Đã đối chiếu kết quả local; các gate online chưa chạy giữ ô mở.
