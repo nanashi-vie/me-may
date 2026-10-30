@@ -369,7 +369,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 ## 11. Các bước còn lại sau M1 local
 
 1. **Duy trì tài liệu hiện hành**: cập nhật trực tiếp bộ tài liệu này; chỉ tạo bản Word gửi chủ khi có yêu cầu.
-2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Logo người dùng cung cấp nằm tại `code/frontend/public/logo.jpg`; chưa tích hợp vào UI.
+2. **Hoàn thiện visual từ M0 đã duyệt**: customer mobile gồm Home, catalogue, detail, wishlist; admin desktop gồm list, editor, media và publish. Gói favicon/logo người dùng cung cấp nằm tại `code/frontend/public/favicon/`; header dùng PNG192 và Home dùng PNG512 theo quyết định30/10.
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, khoảng giá, trọng lượng, 2–6 ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
 4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; online smoke27/10 đạt, pilot/recovery/performance còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.

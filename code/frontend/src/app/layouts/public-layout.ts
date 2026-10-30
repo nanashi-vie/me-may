@@ -11,7 +11,7 @@ import { WishlistStore } from '../features/wishlist/wishlist-store';
     <div class="utility">Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn</div>
     <header class="site-header wrap">
       <a routerLink="/" class="brand" aria-label="Mẹ Mây — Trang chủ"
-        ><img src="/logo.webp" alt="" width="72" height="72" /><span class="brand-name"
+        ><img src="/favicon/web-app-manifest-192x192.png" alt="" width="72" height="72" /><span class="brand-name"
           >Mẹ Mây<small>Sách ngoại văn cho bé</small></span
         ></a
       >

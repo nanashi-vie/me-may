@@ -61,7 +61,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 ## Desktop — thứ tự từ trên xuống
 
 1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé”; link Facebook/Zalo khi đã có. Không tự nhận freeship/giảm giá.
-2. **Header:** logo Mẹ Mây (asset mới: `code/frontend/public/logo.jpg`, chưa tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
+2. **Header:** logo Mẹ Mây (asset `code/frontend/public/favicon/web-app-manifest-192x192.png`, đã tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
 3. **Navigation:** Tất cả sách, Sách mới đăng, Theo độ tuổi, Theo loại sách, Bộ sưu tập, Cách mua. Dropdown phải thao tác được bằng bàn phím/touch khi triển khai.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
 5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có khoảng giá gốc/giá sale, không % giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.

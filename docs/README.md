@@ -61,5 +61,5 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 - Theo [quy tắc tài liệu trong AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi): tối đa 400 dòng/file, tài liệu lớn hướng tới 200–400, không có tối thiểu bắt buộc; DEV_LOG là ngoại lệ. Khi chuyển/tách nội dung, cập nhật chỉ mục và liên kết, giữ một nguồn hiện hành cho mỗi chủ đề.
 - Không tạo INDEX.md hoặc chỉ mục song song; lịch sử phiên bản do Git quản lý. DEV_LOG có thể nhắc đường dẫn cũ như bằng chứng lịch sử, không phải liên kết tài liệu hiện hành.
-- Ảnh tham khảo/wireframe ở `assets/`, CSV minh họa ở `fixtures/`; chúng chưa chuyển sang baseline trước M2 và không phải dữ liệu thương mại. Logo nguồn ở `code/frontend/public/logo.jpg` (tính từ root), chưa tích hợp UI.
+- Ảnh tham khảo/wireframe ở `assets/`, CSV minh họa ở `fixtures/`; chúng chưa chuyển sang baseline trước M2 và không phải dữ liệu thương mại. Gói favicon/logo hiện hành ở `code/frontend/public/favicon/`; header dùng PNG192, Home dùng PNG512, HTML khai báo icon/Apple Touch/manifest.
 - Skill Ellora giữ local trong `.agents/`, được Git ignore; chọn theo AGENTS, không nạp toàn bộ hoặc coi Git clone sẽ có sẵn skill.
