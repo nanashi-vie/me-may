@@ -5,8 +5,9 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
 - User tạm gác kiểm thử chốt MVP để tối ưu nhập liệu: ngôn ngữ mặc định “Tiếng Anh” có thể sửa; hai ô giá phân nhóm nghìn ngay khi nhập; bỏ nút Đưa lên/Đưa xuống ở ảnh, giữ dropdown vai trò.
-- User đã duyệt [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md) và [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md); task1–6 đã triển khai, task7 QA/review/bàn giao đang chốt. Khoảng giá chung, tồn riêng từng biến thể, tổng tự cộng; ảnh dùng chung. Chưa migrate dev/online/deploy.
-- Backend114run/0failure/0error/3live skipped, frontend124/124PASS; SSR/Workers/proxy build và SSR checker đạt. Browser scratch đã kiểm finalretry, tồn3→1→0, preview, copy stale, mobile/bàn phím và multi-tab409. Reviewer1Important về ô đổi tên biến thể duy nhất đã RED→GREEN; còn QA cuối/cleanup/tài liệu. Gate M5 giữ để tiếp tục sau.
+- Tối ưu nhập sách/biến thể đã triển khai và kiểm chứng local theo spec/plan user duyệt. Ngôn ngữ mặc định, giá phân nhóm nghìn, dropdown ảnh, hai grade mới và tồn riêng/“Thêm biến thể”; giá khoảng và ảnh dùng chung. [Bằng chứng](BOOK_ENTRY_VERIFICATION.md), contract ở DATA/DESIGN/ARCHITECTURE.
+- Backend114run/0failure/0error/3live skipped, frontend124/124PASS; NodeSSR/Workers/proxy/SSR checker đạt. Browser kiểm finalretry/tồn3→1→0/preview/copy stale/mobile/bàn phím/multi-tab409/STAFF403. Reviewer1Important đã RED→GREEN và browser xác nhận.
+- Đã destroy4asset QA, scratch2sách ARCHIVED/3biến thể/media0, dừng API/SSR/browser. Spec/plan đã gộp tài liệu chuẩn và gỡ khi hết vai trò. Chưa migrate dev/online/deploy; bước tiếp là user review dev rồi rolloutV10 theo DEPLOYMENT, các gate M5 vẫn tạm gác.
 
 ## M5 completion — đã triển khai local, còn gate online
 
@@ -21,7 +22,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Gate còn mở và bước tiếp
 
-1. User merge dev→main rồi deploy theo [DEPLOYMENT](DEPLOYMENT.md#rollout-contract-m5-chưa-chạy-online). Backup/counts/fingerprint/restore scratch trước V6–V9; backend và backfill phải sẵn sàng trước frontend mới.
+1. User merge dev→main rồi deploy theo [DEPLOYMENT](DEPLOYMENT.md#rollout-contract-m5-chưa-chạy-online). Backup/counts/fingerprint/restore scratch trước V6–V10; backend và backfill phải sẵn sàng trước frontend mới. Giữ dừng ghi tới khi client mới có payload biến thể.
 2. Backfill4variant trên ảnh bán thật: dryrun63pending, chưa apply v2. Không dùng checkpoint JPEG640 cũ; thiếu WebP có thể làm picture trống. Liveprobe cách ly đã đạt, không thay bằng chứng backfill.
 3. Đo Mobile Lighthouse3run mỗi Home/detailMM-000020/wishlist, từng run LCP≤2,5s và CLS≤0,1. MM20 online trả503 trong phiên; local trace không thay Lighthouse online. Đo cold-start Render riêng.
 4. Recovery/rollback/quota/rate-limit/runtime least privilege/quyền-lịch-retention offhost và production VPS/Dokploy vẫn cần bằng chứng ở [VERIFICATION](VERIFICATION.md). Render/Neon test chưa thay nghiệm thu production.

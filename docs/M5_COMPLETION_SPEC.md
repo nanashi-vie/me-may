@@ -1,5 +1,7 @@
 # M5 — hiệu năng và tạo sách không có nháp
 
+> Điều chỉnh nhập sách đã duyệt30/10: tồn theo biến thể, ảnh/khoảng giá chung, ngôn ngữ default và dropdown ảnh thay các quy tắc cũ tương ứng; xem [DATA](DATA.md), [DESIGN](DESIGN.md) và [ARCHITECTURE](ARCHITECTURE.md). Các gate M5 chưa đạt vẫn giữ.
+
 Trạng thái: **đã được user duyệt ngày29/10/2026**. Cập nhật29/10/2026, Asia/Ho_Chi_Minh.
 Spec được duyệt thay thế các quyết định DRAFT/quyền ghi STAFF, một mức
 giá, đúng ba ảnh và loại trọng lượng khỏi MVP trong M2_SPEC, DATA, DESIGN

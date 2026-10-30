@@ -12,6 +12,7 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 | Đầu việc | File/mục cần đọc |
 |---|---|
+| Nhập sách, tồn và biến thể30/10 | [DATA — tồn kho](DATA.md#tồn-kho-và-biến-thể--quyết-định-30102026), [DESIGN — nhập liệu](DESIGN.md#tối-ưu-nhập-sách-và-biến-thể-duyệt3010), [ARCHITECTURE — contract](ARCHITECTURE.md#tồn-theo-biến-thể--contract-30102026), [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md); rolloutV10 ở DEPLOYMENT |
 | Chốt hoặc thay đổi phạm vi | [MASTER_PLAN — quyết định](MASTER_PLAN.md#0-chốt-quyết-định-và-giới-hạn), [MVP](MASTER_PLAN.md#3-đặc-tả-phạm-vi-mvp-đủ-để-mở-ticket), [milestones](MASTER_PLAN.md#8-kế-hoạch-triển-khai-theo-milestones-1-full-stack-developer) |
 | M2: nhập sách, taxonomy, publication, media | Đọc [M2_SPEC — đã duyệt](M2_SPEC.md) cùng [M2_PLAN — đang thực thi](M2_PLAN.md); đối chiếu [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5), [ca dữ liệu](DATA.md#ca-dữ-liệu-cần-review), [DESIGN — quyền](DESIGN.md#quyền-thiết-kế-m0), [editor](DESIGN.md#editor--desktop) khi cần |
 | M3: Home/catalogue/detail, bộ lọc, Flash Sale và liên hệ | [ARCHITECTURE — contract public](ARCHITECTURE.md#public-m3--contract-đã-triển-khai), [DESIGN — Home](DESIGN.md#home-theo-mẫu-nxb-kim-đồng), [catalogue](DESIGN.md#catalogue--collection--khách-mobile), [detail](DESIGN.md#chi-tiết-cuốn--khách-mobile); bằng chứng ở VERIFICATION |
@@ -25,8 +26,8 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
-- [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md): **đã được user duyệt30/10**, gồm hai lựa chọn tình trạng “Độ mới cao”, “Có lỗi nhẹ”, tồn riêng từng biến thể và khoảng giá chung; tạm gác kiểm thử chốt MVP. Chưa triển khai hoặc migrate.
-- [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md): kế hoạch7task **đã duyệt, đang thực thi tuần tự**; schema/ghi nguyên tử/public/form nhập/biến thể/liên hệ/QA bàn giao.
+- Nhập sách/biến thể30/10 đã triển khai và kiểm chứng local; quyết định gộp DATA/DESIGN/ARCHITECTURE/MASTER_PLAN,
+  bằng chứng ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md), rolloutV10 ở DEPLOYMENT. Spec/plan đã hoàn tất được gỡ; lịch sử ở Git. M5 vẫn tạm gác kiểm thử chốt MVP.
 
 - [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đã được user duyệt29/10**, tối ưu media/LCP/CLS, bỏ nháp, OWNER ghi/STAFF đọc, trọng lượng,2–6ảnh và khoảng giá giữ chú thích. Thay các quyết định baseline tương ứng; task1–6 đã triển khai local, gate online còn mở.
 
