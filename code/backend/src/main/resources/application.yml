@@ -44,5 +44,7 @@ management:
     health:
       show-details: never
 memay:
+  performance:
+    enabled: ${MEMAY_PERFORMANCE_ENABLED:false}
   media:
     namespace: ${CLOUDINARY_NAMESPACE:memay/dev}

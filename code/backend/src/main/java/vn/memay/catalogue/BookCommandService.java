@@ -17,6 +17,8 @@ import vn.memay.common.AdminApiException;
 
 @Service
 public class BookCommandService {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
     private final BookCopyRepository books;
     private final BookVariantStore variants;
     private final ListingRepository listings;
@@ -82,7 +84,7 @@ public class BookCommandService {
         access.requireOwner(actor);
         if (input == null || input.uploadSessionId() == null)
             throw AdminApiException.field("uploadSessionId", "Thiếu phiên ảnh");
-        var w = validation.normalize(input.write());
+        var w = timings.measure("validation", () -> validation.normalize(input.write()));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
         String fingerprint;

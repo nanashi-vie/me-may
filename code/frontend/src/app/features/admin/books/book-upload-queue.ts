@@ -1,3 +1,4 @@
+import { BookPerformance } from './book-performance';
 import { Injectable, InjectionToken, DestroyRef, inject, signal, computed } from '@angular/core';
 import { HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/http';
 import { firstValueFrom, filter, tap, Subject } from 'rxjs';
@@ -31,6 +32,8 @@ export interface UploadItem {
 @Injectable()
 export class BookUploadQueue {
   private readonly api = inject(BookApi);
+  private readonly metrics = inject(BookPerformance);
+  private readonly selectedAt = new Map<string,number>();
   private readonly prepare = inject(PREPARE_BOOK_IMAGE);
   readonly rows = signal<UploadItem[]>([]);
   readonly sessionId = signal<string | null>(null);
@@ -131,6 +134,7 @@ export class BookUploadQueue {
       storedAlt: '',
       storedSource: '',
     }));
+    added.forEach(r=>this.selectedAt.set(r.id,performance.now()));
     this.rows.update((rows) => [...rows, ...added]);
     this.error.set('');
     void this.pump();
@@ -259,6 +263,8 @@ export class BookUploadQueue {
       ) {
         const id = row.id;
         try {
+          const preparingAt=performance.now();
+          this.metrics.record({phase:'queue',item:id,durationMs:preparingAt-(this.selectedAt.get(id)??preparingAt)});
           this.patch(id, { state: 'preparing' });
           if (!row.prepared) {
             const info = await sourceImageInfo(row.file!);
@@ -267,6 +273,8 @@ export class BookUploadQueue {
             this.patch(id, { prepared: row.prepared });
           }
           if (!this.rows().some((r) => r.id === id)) continue;
+          this.metrics.record({phase:'prepare',item:id,durationMs:performance.now()-preparingAt,sourceBytes:row.file?.size,outputBytes:row.prepared?.size});
+          const uploadingAt=performance.now();
           const body = new FormData();
           body.set('file', row.prepared!, 'book.jpg');
           body.set('alt', row.alt);
@@ -317,6 +325,8 @@ export class BookUploadQueue {
               continue;
             }
           }
+          this.metrics.record({phase:'upload',item:id,durationMs:performance.now()-uploadingAt});
+          this.metrics.record({phase:'ready',item:id,durationMs:performance.now()-(this.selectedAt.get(id)??uploadingAt)});
           const latest = this.rows().find((r) => r.id === id);
           if (!latest) continue;
           if (latest.previous) this.revoke(latest.previous.preview);

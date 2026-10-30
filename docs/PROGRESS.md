@@ -9,7 +9,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Hiệu năng nhập/xuất bản30/10: đã nhận checklist và baseline request từ user;
   rà source xác nhận5eager sync/queue tuần tự/GET metadata và audit lặp.
   [Thiết kế](BOOK_PUBLISH_PERFORMANCE_SPEC.md) user đã duyệt;
-  [kế hoạch9task](BOOK_PUBLISH_PERFORMANCE_PLAN.md) đã duyệt, đang thực thi tuần tự từ Task1.
+  [kế hoạch9task](BOOK_PUBLISH_PERFORMANCE_PLAN.md) đã duyệt; Task1sanitizer đạt3/3, Task2timings backend119run/0failure/0error/3skip vàfrontend126/126. Đang chuẩn bị baselineQA riêng8086/4007.
   Chưa sửa product code
   hoặc chạy5vòng warm. Render dashboard Live main24e1a3f, dev2fc3f0b sạch
   trước bắt đầu; benchmark ghi cần QA tách biệt, không publish sách giả lên production.
