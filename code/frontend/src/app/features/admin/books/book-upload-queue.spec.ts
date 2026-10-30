@@ -19,7 +19,7 @@ const photo = () =>
     { type: 'image/png' },
   );
 describe('book photo queue', () => {
-  function setup() {
+  function setup(prepare:(f:File)=>Promise<Blob> = async f=>f) {
     const uploads: Subject<any>[] = [];
     const api = {
       createSession: vi.fn(() => of({ id: 'session', media: [], state: 'OPEN', expiresAt: '' })),
@@ -37,11 +37,47 @@ describe('book photo queue', () => {
       providers: [
         BookUploadQueue,
         { provide: BookApi, useValue: api },
-        { provide: PREPARE_BOOK_IMAGE, useValue: async (f: File) => f },
+        { provide: PREPARE_BOOK_IMAGE, useValue: prepare },
       ],
     });
     return { q: TestBed.inject(BookUploadQueue), api, uploads };
   }
+  it('prepares only one next photo while the current upload is pending',async()=>{
+    const prepare=vi.fn(async(f:File)=>f);const {q,uploads}=setup(prepare);q.add([photo(),photo(),photo()]);
+    await vi.waitFor(()=>expect(prepare).toHaveBeenCalledTimes(2));
+    expect(uploads).toHaveLength(1);expect(q.rows()[1].prepared).toBeDefined();expect(q.rows()[2].prepared).toBeUndefined();
+    uploads[0].next(new HttpResponse({body:{id:'server-a',state:'READY',contentPath:'/a'}}));uploads[0].complete();
+    await vi.waitFor(()=>expect(uploads).toHaveLength(2));await vi.waitFor(()=>expect(prepare).toHaveBeenCalledTimes(3));
+  });
+  it('does not upload a removed lookahead photo after normalization finishes',async()=>{
+    let complete!:(value:Blob)=>void;let calls=0;
+    const {q,uploads}=setup(async f=>++calls===2?new Promise<Blob>(resolve=>complete=resolve):f);
+    q.add([photo(),photo()]);await vi.waitFor(()=>expect(calls).toBe(2));const id=q.rows()[1].id;
+    await q.remove(id);complete(photo());uploads[0].next(new HttpResponse({body:{id:'a',state:'READY',contentPath:'/a'}}));uploads[0].complete();
+    await vi.waitFor(()=>expect(q.processing()).toBe(false));expect(uploads).toHaveLength(1);expect(q.rows()).toHaveLength(1);
+  });
+  it('reuses a normalized lookahead on retry and keeps a failed preparation local',async()=>{
+    let calls=0;const prepare=vi.fn(async(f:File)=>{calls++;if(calls===2)throw Error('bad bitmap');return f;});
+    const {q,uploads}=setup(prepare);q.add([photo(),photo()]);await vi.waitFor(()=>expect(q.rows()[1].state).toBe('error'));
+    expect(q.rows()[0].state).toBe('uploading');uploads[0].error(new HttpErrorResponse({status:502}));
+    await vi.waitFor(()=>expect(q.processing()).toBe(false));const first=q.rows()[0].id;q.retry(first);
+    await vi.waitFor(()=>expect(uploads).toHaveLength(2));expect(prepare).toHaveBeenCalledTimes(2);
+  });
+  it('discards background preparation on destroy and cleans only its completed upload',async()=>{
+    let complete!:(value:Blob)=>void;let calls=0;
+    const {q,uploads,api}=setup(async f=>++calls===2?new Promise<Blob>(resolve=>complete=resolve):f);
+    q.add([photo(),photo()]);await vi.waitFor(()=>expect(calls).toBe(2));TestBed.resetTestingModule();complete(photo());
+    uploads[0].next(new HttpResponse({body:{id:'completed-after-destroy',state:'READY',contentPath:'/a'}}));uploads[0].complete();
+    await vi.waitFor(()=>expect(q.processing()).toBe(false));expect(uploads).toHaveLength(1);
+    expect(api.removeTemporary).toHaveBeenCalledWith('session','completed-after-destroy');
+  });
+  it('pauses all uploads on expiry even when lookahead finishes later',async()=>{
+    let complete!:(value:Blob)=>void;let calls=0;
+    const {q,uploads}=setup(async f=>++calls===2?new Promise<Blob>(resolve=>complete=resolve):f);
+    q.add([photo(),photo()]);await vi.waitFor(()=>expect(calls).toBe(2));uploads[0].error(new HttpErrorResponse({status:410}));
+    complete(photo());await vi.waitFor(()=>expect(q.processing()).toBe(false));expect(q.expired()).toBe(true);expect(uploads).toHaveLength(1);
+    expect(q.rows()[1].prepared).toBeDefined();expect(q.ready()).toBe(false);
+  });
   it('keeps photo IDs when reordered during async upload; ready files are not uploaded twice', async () => {
     const { q, uploads, api } = setup();
     q.add([photo(), photo()]);
