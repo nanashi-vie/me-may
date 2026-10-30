@@ -38,6 +38,7 @@ describe('BookEditor safe final saves', () => {
             cancelSession: () => of(null),
             get: () => throwError(() => new HttpErrorResponse({ status: 404 })),
             taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
+            audit: () => of({items:[],page:0,size:20,totalElements:0,totalPages:0}),
           },
         },
         { provide: CollectionApi, useValue: { list: () => of([]) } },
@@ -108,6 +109,16 @@ describe('BookEditor safe final saves', () => {
     expect(e.totalStock()).toBe(3);await e.save();
     expect(create.mock.calls[0][0].write.variants).toEqual([{id:null,name:'Độ mới cao',stock:2},{id:null,name:'Có cấn góc',stock:1}]);
     expect(create.mock.calls[0][0].write.priceMinVnd).toBe(20000);
+  });
+  it('keeps a single variant name input mounted while replacing its entire name',()=>{
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
+    e.accept({...saved,variants:[{id:'stable',name:'Tên cũ',stock:1}],totalStock:1});fixture.detectChanges();
+    const input=fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]') as HTMLInputElement;
+    input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]')).toBe(input);
+    input.value='Tên mới';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
+    expect(e.form.controls.variants.at(0).controls.name.value).toBe('Tên mới');
+    expect(e.form.controls.variants.length).toBe(1);
   });
   it('preservesPersistedVariantIdsAndDirtyForm', async () => {
     const e=editor();e.accept({...saved,variants:[{id:'stable',name:null,stock:2}],totalStock:2});

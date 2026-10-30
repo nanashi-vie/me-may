@@ -40,6 +40,7 @@ export class BookEditor {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   readonly form = buildBookForm();
+  readonly variantNamesVisible = signal(false);
   readonly book = signal<BookDetail | null>(null);
   readonly taxonomy = signal<Taxonomy>({
     categories: [],
@@ -126,6 +127,7 @@ export class BookEditor {
     this.photos.locked.set(false);
     this.createUncertain.set(false);
     this.pendingCreate = null;
+    this.variantNamesVisible.set(b.variants.length > 1 || b.variants.some(v => !!v.name));
     this.form.controls.variants.clear({emitEvent:false});
     for (const row of b.variants) this.form.controls.variants.push(buildVariantForm(row),{emitEvent:false});
     this.form.reset(b);
@@ -135,6 +137,7 @@ export class BookEditor {
   addVariant() {
     if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
     this.form.controls.variants.push(buildVariantForm());
+    this.variantNamesVisible.set(true);
     this.form.controls.variants.markAsDirty();
   }
   removeNewVariant(index: number) {

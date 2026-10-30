@@ -87,7 +87,7 @@
       <legend>Tồn kho và biến thể</legend>
       @for (row of form.controls.variants.controls; track row; let i = $index) {
         <div [formGroupName]="i" class="variant-row">
-          @if (form.controls.variants.length > 1 || row.controls.name.value) {
+          @if (variantNamesVisible()) {
             <label>Tên biến thể<input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
           }
           <label>Tồn kho<input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
