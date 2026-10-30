@@ -72,20 +72,8 @@ public class BookStatusService {
     @Transactional
     public BookDetail availability(long id, long version, AdminUser actor, Availability target) {
         access.requireOwner(actor);
-        if (target == null)
-            throw AdminApiException.field("availability", "Chọn trạng thái");
-        var b = find(id, version);
-        var l = listings.findByBookCopyId(id).orElseThrow();
-        var before = mapper.detail(b, l);
-        if (b.availability == target)
-            return before;
-        b.availability = target;
-        b.touch(clock.instant());
-        em.flush();
-        var result = mapper.detail(b, l);
-        audit.record(actor, "BOOK", id, "AVAILABILITY_CHANGED", audit.snapshot(before), audit.snapshot(result),
-                b.version);
-        return result;
+        find(id, version);
+        throw new AdminApiException(409, "stock_managed_availability");
     }
 
     private BookCopy find(long id, long version) {

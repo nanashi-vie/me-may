@@ -18,6 +18,7 @@ import vn.memay.common.AdminApiException;
 @Service
 public class BookCommandService {
     private final BookCopyRepository books;
+    private final BookVariantStore variants;
     private final ListingRepository listings;
     private final CategoryRepository categories;
     private final BookCodeGenerator codes;
@@ -34,8 +35,9 @@ public class BookCommandService {
 
     public BookCommandService(BookCopyRepository books, ListingRepository listings, CategoryRepository categories,
             BookCodeGenerator codes, BookValidation validation, BookAccess access, BookMapper mapper,
-            AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads, BookMediaRepository images, ObjectMapper json) {
+            AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads, BookMediaRepository images, ObjectMapper json, BookVariantStore variants) {
         this.books = books;
+        this.variants = variants;
         this.listings = listings;
         this.categories = categories;
         this.codes = codes;
@@ -56,7 +58,7 @@ public class BookCommandService {
         validation.validateWrite(w);
         var b = new BookCopy();
         b.bookCode = codes.nextCode();
-        b.availability = Availability.AVAILABLE;
+        b.availability = availability(w);
         b.createdAt = clock.instant();
         b.updatedAt = b.createdAt;
         var l = new Listing();
@@ -68,6 +70,7 @@ public class BookCommandService {
         l.bookCopyId = b.id;
         listings.saveAndFlush(l);
         mappings(l, w);
+        variants.save(b.id, w.variants());
         em.flush();
         var result = mapper.detail(b, l);
         return result;
@@ -149,7 +152,9 @@ public class BookCommandService {
         if (mapper.write(before).equals(w) && !mediaChanged)
             return before;
         apply(b, l, w);
+        b.availability = availability(w);
         mappings(l, w);
+        variants.save(id, w.variants());
         b.touch(clock.instant());
         l.updatedAt = b.updatedAt;
         em.flush();
@@ -167,6 +172,10 @@ public class BookCommandService {
             throw AdminApiException.field("media","Chỉ sắp xếp ảnh đang thuộc cuốn này");
         for(var m:active){m.state=MediaDtos.MediaState.UPLOADING;m.updatedAt=clock.instant();}em.flush();
         for(var m:active){m.role=assignments.stream().filter(a->a.mediaId().equals(m.id)).findFirst().orElseThrow().role();m.state=MediaDtos.MediaState.ACTIVE;}em.flush();
+    }
+
+    private Availability availability(BookWrite w) {
+        return w.variants().stream().mapToLong(VariantWrite::stock).sum() == 0 ? Availability.SOLD : Availability.AVAILABLE;
     }
 
     private void apply(BookCopy b, Listing l, BookWrite w) {

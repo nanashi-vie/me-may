@@ -27,7 +27,27 @@ public class BookValidation {
                 trim(w.binding()), trim(w.conditionGrade()), trim(w.conditionNote()), w.priceMinVnd(), w.priceMaxVnd(), w.weightG(),
                 trim(w.description()), trim(w.categoryCode()),
                 ordered(w.ageGroups(), Comparator.comparingInt(AGES::indexOf)), trim(w.readingLevel()),
-                trim(w.readingVideoUrl()), ordered(w.collectionIds(), Comparator.comparing(java.math.BigInteger::new)));
+                trim(w.readingVideoUrl()), ordered(w.collectionIds(), Comparator.comparing(java.math.BigInteger::new)), normalizeVariants(w.variants()));
+    }
+
+    public List<VariantWrite> normalizeVariants(List<VariantWrite> input) {
+        if (input == null || input.isEmpty()) throw AdminApiException.field("variants", "Cần ít nhất một dòng tồn kho");
+        var names = new HashSet<String>(); var ids = new HashSet<String>(); var result = new ArrayList<VariantWrite>();
+        for (var row : input) {
+            if (row == null || row.stock() == null || row.stock() < 0 || row.stock() > 999999)
+                throw AdminApiException.field("variants", "Tồn kho nguyên từ 0 đến 999999");
+            String name = trim(row.name()), id = row.id();
+            text("variants", name, 100);
+            if (input.size() > 1 && name == null) throw AdminApiException.field("variants", "Đặt tên cho từng biến thể");
+            if (name != null && !names.add(name.toLowerCase(Locale.ROOT))) throw AdminApiException.field("variants", "Tên biến thể bị trùng");
+            if (id != null) {
+                try { if (!UUID.fromString(id).toString().equals(id)) throw new IllegalArgumentException(); }
+                catch (IllegalArgumentException e) { throw AdminApiException.field("variants", "ID biến thể không hợp lệ"); }
+                if (!ids.add(id)) throw AdminApiException.field("variants", "ID biến thể bị trùng");
+            }
+            result.add(new VariantWrite(id, name, row.stock()));
+        }
+        return List.copyOf(result);
     }
 
     private static List<String> ordered(List<String> input, Comparator<String> comparator) {
@@ -56,7 +76,7 @@ public class BookValidation {
                 throw AdminApiException.field("binding", "Chọn Paperback hoặc Hardcover");
         } else if (w.binding() != null)
             throw AdminApiException.field("binding", "Chỉ dùng cho Picture book");
-        if (w.conditionGrade() != null && !List.of("VERY_GOOD", "GOOD", "FAIR").contains(w.conditionGrade()))
+        if (w.conditionGrade() != null && !List.of("VERY_GOOD", "GOOD", "FAIR", "HIGH_FRESHNESS", "MINOR_FLAWS").contains(w.conditionGrade()))
             throw AdminApiException.field("conditionGrade", "Không hợp lệ");
         if (w.priceMinVnd() != null && (w.priceMinVnd() < 1 || w.priceMinVnd() > 999999999999L))
             throw AdminApiException.field("priceMinVnd", "Giá nguyên VND phải lớn hơn 0");

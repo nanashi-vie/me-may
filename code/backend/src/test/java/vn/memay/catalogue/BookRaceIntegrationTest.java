@@ -17,12 +17,12 @@ class BookRaceIntegrationTest extends CatalogueTestSupport {
  }
  @Test void twoVersionsHaveOneWinner()throws Exception{
   var b=seed(owner,BookFixtures.draft("Start"));long id=Long.parseLong(b.id());
-  assertThat(race(()->commands.update(id,b.version(),owner,BookFixtures.draft("First")),()->commands.update(id,b.version(),owner,BookFixtures.draft("Second")))).isEqualTo(1);
+  assertThat(race(()->update(id,b.version(),owner,BookFixtures.draft("First")),()->update(id,b.version(),owner,BookFixtures.draft("Second")))).isEqualTo(1);
   assertThat(jdbc.queryForObject("select count(*) from audit_event where target_id=?",Integer.class,id)).isEqualTo(2);
  }
  @Test void staffSaveRacingOwnerPublish()throws Exception{
   var b=ready();long id=Long.parseLong(b.id());
-  assertThat(race(()->statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true),()->commands.update(id,b.version(),staff,BookFixtures.write("Staff edit","PICTURE_BOOK","HARDCOVER",10000L,null,null,List.of("AGE_4_6"),List.of())))).isEqualTo(1);
+  assertThat(race(()->statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true),()->update(id,b.version(),staff,BookFixtures.write("Staff edit","PICTURE_BOOK","HARDCOVER",10000L,null,null,List.of("AGE_4_6"),List.of())))).isEqualTo(1);
   assertThat(jdbc.queryForObject("select count(*) from audit_event where target_id=?",Integer.class,id)).isEqualTo(2);
  }
 }
