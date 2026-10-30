@@ -24,6 +24,7 @@ public class PerformanceTimingFilter extends OncePerRequestFilter {
         try { chain.doFilter(req,res); }
         catch(IOException | ServletException | RuntimeException | Error e) { failed=true;throw e; }
         finally {
+            if(failed)trace.fail();
             timings.detach();
             if(req.isAsyncStarted()) {
                 try {req.getAsyncContext().addListener(new AsyncListener() {
@@ -31,7 +32,7 @@ public class PerformanceTimingFilter extends OncePerRequestFilter {
                     public void onError(AsyncEvent event){trace.finish("error");}
                     public void onTimeout(AsyncEvent event){trace.finish("error");}
                     public void onStartAsync(AsyncEvent event){event.getAsyncContext().addListener(this);}
-                });} catch(IllegalStateException completed){trace.finish("ok");}
+                });} catch(IllegalStateException completed){trace.finish(res.getStatus()>=400 ? "error":"ok");}
             } else trace.finish(failed || res.getStatus()>=400 ? "error":"ok");
         }
     }

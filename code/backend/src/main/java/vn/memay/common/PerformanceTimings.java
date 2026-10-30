@@ -45,8 +45,10 @@ public class PerformanceTimings {
         private final String id=UUID.randomUUID().toString(), operation;
         private final long start=System.nanoTime();
         private boolean closed;
+        private boolean terminalFailure;
         private Trace(String operation) { this.operation=operation; }
         private synchronized void add(String phase,long start,String status) {
+            if(phase.equals("stream") && status.equals("error"))terminalFailure=true;
             if(enabled && !closed && PHASES.contains(phase))
                 sink.accept(new Event(id,operation,phase,(System.nanoTime()-start)/1_000_000.0,status,1));
         }
@@ -55,9 +57,10 @@ public class PerformanceTimings {
             try { action.run(); } catch(IOException | RuntimeException | Error e){status="error";throw e;}
             finally{add(phase,start,status);}
         }
+        synchronized void fail(){terminalFailure=true;}
         public void close() { finish("ok"); }
         public synchronized void finish(String status) {
-            if(!closed) {add("request",start,status);closed=true;}
+            if(!closed) {add("request",start,terminalFailure ? "error":status);closed=true;}
             if(current.get()==this) current.remove();
         }
     }
