@@ -17,6 +17,55 @@ class BookVariantIntegrationTest extends CatalogueTestSupport {
         for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock"))w.remove(key);
         w.put("variants",variants);return w;
     }
+    @Test void publicVariantsUseOwnStockAndSharedPrice() throws Exception {
+        var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var b=ready();
+        String id=b.variants().getFirst().id();
+        var write=body(b,List.of(variant(id,"Độ mới cao",2),variant(null,"Có cấn góc",0)));
+        var changed=api.send("PUT","/api/v1/admin/books/"+b.id(),json(write),true);
+        assertThat(changed.statusCode()).isEqualTo(200);
+        var saved=tree(changed);
+        var pub=api.send("PATCH","/api/v1/admin/books/"+b.id()+"/publication",json(Map.of("version",saved.path("version").asLong(),"status","PUBLISHED","confirmedActualCopy",true)),true);
+        assertThat(pub.statusCode()).isEqualTo(200);
+        var detail=api.send("GET","/api/v1/books/"+b.slug(),null,false);var book=tree(detail);
+        assertThat(book.path("variants").size()).isEqualTo(2);
+        assertThat(book.path("variants").get(0).path("available").asBoolean()).isTrue();
+        assertThat(book.path("variants").get(1).path("available").asBoolean()).isFalse();
+        assertThat(book.path("variants").get(0).path("id").asString()).isEqualTo(id);
+        assertThat(detail.body()).doesNotContain("sourceRef","totalStock","\"stock\"");
+        assertThat(book.path("priceMinVnd").asLong()).isEqualTo(10000);
+        assertThat(tree(api.send("GET","/api/v1/books",null,false)).path("totalElements").asLong()).isEqualTo(1);
+        var current=queries.detail(Long.parseLong(b.id()),owner);
+        write=body(current,current.variants().stream().map(v->variant(v.id(),v.name(),0)).toList());
+        assertThat(api.send("PUT","/api/v1/admin/books/"+b.id(),json(write),true).statusCode()).isEqualTo(200);
+        book=tree(api.send("GET","/api/v1/books/"+b.slug(),null,false));
+        assertThat(book.path("availability").asString()).isEqualTo("SOLD");
+        assertThat(book.path("variants").get(0).path("available").asBoolean()).isFalse();
+        assertThat(queries.preview(Long.parseLong(b.id()),owner).totalStock()).isZero();
+    }
+
+    @Test void gradesAndVariantNamesRoundTripWithoutChangingIdentity() throws Exception {
+        var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var b=ready();
+        for(String grade:List.of("HIGH_FRESHNESS","MINOR_FLAWS","VERY_GOOD","GOOD","FAIR")) {
+            var current=queries.detail(Long.parseLong(b.id()),owner);
+            var write=body(current,current.variants());write.put("conditionGrade",grade);
+            var r=api.send("PUT","/api/v1/admin/books/"+b.id(),json(write),true);
+            assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("conditionGrade").asString()).isEqualTo(grade);
+        }
+    }
+    @Test void stockUpdatesAffectLookupFiltersAndSale() throws Exception {
+        var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var b=ready();
+        jdbc.update("update listing set publication_status='PUBLISHED',published_at=current_timestamp where book_copy_id=?",Long.parseLong(b.id()));
+        var sale=Map.of("version",0,"enabled",true,"startsAt",java.time.Instant.now().minusSeconds(60).toString(),"endsAt",java.time.Instant.now().plusSeconds(3600).toString(),"items",List.of(Map.of("bookCode",b.bookCode(),"salePriceVnd",7000)));
+        assertThat(api.send("PUT","/api/v1/admin/flash-sale",json(sale),true).statusCode()).isEqualTo(200);
+        assertThat(tree(api.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isEqualTo(1);
+        var current=queries.detail(Long.parseLong(b.id()),owner);
+        var w=body(current,List.of(variant(b.variants().getFirst().id(),null,0)));
+        assertThat(api.send("PUT","/api/v1/admin/books/"+b.id(),json(w),true).statusCode()).isEqualTo(200);
+        assertThat(tree(api.send("GET","/api/v1/flash-sale",null,false)).path("items").size()).isZero();
+        assertThat(tree(api.send("GET","/api/v1/books/lookup?code="+b.bookCode(),null,false)).get(0).path("availability").asString()).isEqualTo("SOLD");
+        assertThat(queries.list(owner,new BookDtos.BookFilter(null,null,BookDtos.Availability.AVAILABLE,0,20)).totalElements()).isZero();
+        var after=queries.detail(Long.parseLong(b.id()),owner);assertThat(after.slug()).isEqualTo(current.slug());assertThat(after.publishedAt()).isEqualTo(current.publishedAt());assertThat(after.media()).isEqualTo(current.media());
+    }
     @Test void stockAndAvailabilityCommitTogether() throws Exception {
         var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var b=ready();
         String id=jdbc.queryForObject("select id::text from book_variant where book_copy_id=?",String.class,Long.parseLong(b.id()));
