@@ -1,11 +1,22 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S026 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S027 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
 
-- Favicon30/10: tích hợp PNG/SVG/ICO/Apple Touch/manifest; user chọn dùng PNG192 cho header, PNG512 cho Home thay logo cũ. Build Workers và kiểm tra đường dẫn HTML/manifest/logo sau build PASS; chuẩn bị commit/push dev, chưa deploy.
+- Favicon30/10: PNG192header/PNG512Home vàgóiicon đãcommit2fc3f0b trêndev. Baseline đầu phiên thấyRenderLivemain24e1a3f; không coi đó là deployment của candidatehiệu năng mới.
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
+- Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
+  [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
+  NodeSSR/Workers/proxy/SSR checker đạt. 5vòng2/6ảnh trước/sau:medianelapsed
+  5,05→4,85s và14,47→14,32s; không tuyên bố tăng tốc đáng kể toànluồng.
+- Grid320/viewer1280/viewportdefer; authcachemetadata/handoff/lazyaudit;
+  prefetch1, uploadserial/eager5 giữ nguyên; publish giảm9query(39→30/47→38).
+  Cùngasset320 giảm97,6%bytes. Review1Important đãRED→GREEN;1Minor edittiming
+  replacementthiếuselectedAt đượcdefer, không ảnhhưởng benchmarknhậpmới.
+- Đãcleanup83asset cònlại,23sáchscratchARCHIVED/23variant/media0/temporary0,
+  dừngQA8086/SSR4007/browser; evidence safeHAR ở.local/book-performance ignored.
+  Chưa deploy/merge main;5vòngRenderwarm/cold/Neon/VPS vẫn cầnuserdeployQA cáchly.
 - User tạm gác kiểm thử chốt MVP để tối ưu nhập liệu: ngôn ngữ mặc định “Tiếng Anh” có thể sửa; hai ô giá phân nhóm nghìn ngay khi nhập; bỏ nút Đưa lên/Đưa xuống ở ảnh, giữ dropdown vai trò.
 - Tối ưu nhập sách/biến thể đã triển khai và kiểm chứng local theo spec/plan user duyệt. Ngôn ngữ mặc định, giá phân nhóm nghìn, dropdown ảnh, hai grade mới và tồn riêng/“Thêm biến thể”; giá khoảng và ảnh dùng chung. [Bằng chứng](BOOK_ENTRY_VERIFICATION.md), contract ở DATA/DESIGN/ARCHITECTURE.
 - Backend114run/0failure/0error/3live skipped, frontend124/124PASS; NodeSSR/Workers/proxy/SSR checker đạt. Browser kiểm finalretry/tồn3→1→0/preview/copy stale/mobile/bàn phím/multi-tab409/STAFF403. Reviewer1Important đã RED→GREEN và browser xác nhận.
@@ -32,6 +43,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Git và bàn giao
 
+- Hiệu năng30/10: code và evidence đã push origin/dev tới `07f7354`, xác nhận dev/remote chênh lệch 0/0. Checkpoint bàn giao cuối đi cùng commit tiếp theo; spec/plan giữ cho gate Render/Neon QA còn mở.
 - Nhập sách30/10: source và tài liệu đã push origin/dev tới ec5286b; checkout sạch sau push. Bản ghi bàn giao cuối đi cùng commit tiếp theo. Workspace QA riêng đã dọn; giữ screenshot ignored và DB scratch đã ẩn sách, không còn media.
 - Chỉ commit/push dev; user tự merge main và deploy. Tasks1–6:4a0683f..19c0138; commit sửa review/task7 ghi ở checkpoint cuối DEV_LOG.
 - Online theo release cũ: Workers https://me-may.dqhungg8357.workers.dev, API https://me-may-api.onrender.com; chưa xác minh release mới trong phiên.

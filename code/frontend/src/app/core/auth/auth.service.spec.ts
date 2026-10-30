@@ -51,4 +51,9 @@ describe('AuthService session boundary', () => {
     req.flush(null);
     expect(auth.user()).toBeNull();
   });
+  it('does not emit an old authenticated response after session invalidation',()=>{
+    const values:any[]=[];auth.refresh().subscribe(v=>values.push(v));const old=http.expectOne('/api/v1/auth/me');
+    auth.invalidateSession();old.flush({id:9,email:'old@test.local',role:'OWNER'});
+    expect(auth.user()).toBeNull();expect(values).toEqual([null]);
+  });
 });

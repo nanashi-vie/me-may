@@ -1,13 +1,15 @@
-import { Component, inject, input, output, signal, OnChanges } from '@angular/core';
+import { Component, inject, input, output, signal, OnChanges, DestroyRef } from '@angular/core';
 import { DatePipe, JsonPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subscription } from 'rxjs';
 import { BookApi } from './book-api';
 import { AuditSummary, Page } from './book.models';
 @Component({
   selector: 'app-book-audit-panel',
   imports: [DatePipe, JsonPipe],
-  template: `<section>
-    <h2>Lịch sử thay đổi</h2>
+  template: `<details class="audit-panel" [open]="opened()" (toggle)="toggle($any($event.target).open)">
+    <summary>Lịch sử thay đổi</summary>
+    @if(loading()){<p role="status">Đang tải lịch sử…</p>}
     @if (error()) {
       <p class="error" role="alert">{{ error() }}</p>
     }
@@ -49,10 +51,10 @@ import { AuditSummary, Page } from './book.models';
         </button>
       </nav>
     }
-  </section>`,
+  </details>`,
   styles: [
     `
-      section {
+      .audit-panel {
         border-top: 1px solid var(--line);
         padding-top: 1rem;
         margin-top: 2rem;
@@ -90,17 +92,31 @@ export class BookAuditPanel implements OnChanges {
   readonly result = signal<Page<AuditSummary> | null>(null);
   readonly error = signal('');
   readonly loading = signal(false);
+  readonly opened=signal(false);
+  private stale=true;
+  private request:Subscription|null=null;
   private sequence = 0;
+  constructor(){inject(DestroyRef).onDestroy(()=>this.cancel());}
+  private cancel(){this.request?.unsubscribe();this.sequence++;this.loading.set(false);}
+  toggle(open:boolean){
+    if(open===this.opened())return;
+    this.opened.set(open);
+    if(open&&this.stale)this.load(0);
+    if(!open&&this.loading()){this.stale=true;this.cancel();}
+  }
   ngOnChanges() {
-    this.load(0);
+    this.cancel();this.stale=true;this.result.set(null);
+    if(this.opened())this.load(0);
   }
   load(page = 0) {
+    if(!this.opened())return;
+    this.cancel();
     const seq = ++this.sequence;
     this.loading.set(true);
-    this.api.audit(this.bookId(), page).subscribe({
+    this.request=this.api.audit(this.bookId(), page).subscribe({
       next: (r) => {
         if (seq === this.sequence) {
-          this.result.set(r);
+          this.result.set(r);this.stale=false;
           this.loading.set(false);
           this.error.set('');
         }
@@ -109,7 +125,7 @@ export class BookAuditPanel implements OnChanges {
         if (seq === this.sequence) {
           this.loading.set(false);
           this.error.set('Chưa tải được lịch sử.');
-          this.failed.emit(e);
+          if(e.status===401)this.failed.emit(e);
         }
       },
     });

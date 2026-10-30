@@ -6,25 +6,32 @@ import vn.memay.auth.AdminUser;
 import static vn.memay.media.UploadSessionDtos.*;
 @Service
 public class UploadSessionService {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
  private final UploadSessionTransactions transactions;private final MediaGateway gateway;private final ImageValidator validator;private final UploadLimiter limiter;private final tools.jackson.databind.ObjectMapper json;
  public UploadSessionService(UploadSessionTransactions transactions,MediaGateway gateway,ImageValidator validator,UploadLimiter limiter,tools.jackson.databind.ObjectMapper json){this.transactions=transactions;this.gateway=gateway;this.validator=validator;this.limiter=limiter;this.json=json;}
  public UploadSession create(AdminUser actor){return transactions.create(actor);}
  public UploadSession get(UUID id,AdminUser actor){return transactions.get(id,actor);}
  public TemporaryMedia upload(UUID id,AdminUser actor,byte[] file,String alt,String sourceRef,UUID replace,UUID requestKey) {
-  transactions.requireOwner(actor);validator.validate(file);
+  transactions.requireOwner(actor);timings.measure("validation", () -> { validator.validate(file); return null; });
   try(var lease=limiter.acquire(actor.getId())) {
-   String fingerprint;
-   try {
-    var digest=java.security.MessageDigest.getInstance("SHA-256");digest.update(file);
-    digest.update(json.writeValueAsBytes(java.util.Arrays.asList(alt,sourceRef,replace)));fingerprint=java.util.HexFormat.of().formatHex(digest.digest());
-   }catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
-   var intent=transactions.begin(id,actor,replace,alt,sourceRef,requestKey,fingerprint);
+   String fingerprint=timings.measure("fingerprint",()->{
+    try {
+     var digest=java.security.MessageDigest.getInstance("SHA-256");digest.update(file);
+     digest.update(json.writeValueAsBytes(java.util.Arrays.asList(alt,sourceRef,replace)));return java.util.HexFormat.of().formatHex(digest.digest());
+    } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+   });
+   var intent=timings.measure("begin", () -> transactions.begin(id,actor,replace,alt,sourceRef,requestKey,fingerprint));
    if(intent.ready()!=null)return intent.ready();
-   try {return transactions.ready(intent,actor,gateway.upload(intent.publicId(),file));}
+   try {var uploaded=gateway.upload(intent.publicId(),file);return timings.measure("ready", () -> transactions.ready(intent,actor,uploaded));}
    catch(RuntimeException e){try{transactions.failed(intent.id());}catch(RuntimeException cleanup){org.slf4j.LoggerFactory.getLogger(UploadSessionService.class).warn("Temporary upload awaiting recovery: {}",intent.id());}throw e;}
   }
  }
- public InputStream content(UUID session,UUID media,AdminUser actor){return gateway.openPreview(transactions.contentKey(session,media,actor));}
+ public InputStream content(UUID session,UUID media,AdminUser actor){return content(session,media,actor,1280);}
+ public InputStream content(UUID session,UUID media,AdminUser actor,int width){
+  if(width!=320&&width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
+  return gateway.openAdminPreview(timings.measure("authorization",()->transactions.contentKey(session,media,actor)),width);
+ }
  public TemporaryMedia metadata(UUID session,UUID media,AdminUser actor,String alt,String sourceRef){return transactions.metadata(session,media,actor,alt,sourceRef);}
  public void remove(UUID session,UUID media,AdminUser actor){transactions.remove(session,media,actor);}
  public void cancel(UUID session,AdminUser actor){transactions.cancel(session,actor);}

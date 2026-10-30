@@ -163,3 +163,10 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 - Contract/validation tại [DATA](docs/DATA.md), [ARCHITECTURE](docs/ARCHITECTURE.md);
   rolloutV10 tại [DEPLOYMENT](docs/DEPLOYMENT.md#bổ-sung-rollout-tồn-khobiến-thể-v10-chưa-chạy-online).
   Chỉ triển khai local/test; chưa migrate hoặc deploy online, chưa chốtMVP.
+
+## Đo hiệu năng nhập sách (QA)
+
+`MEMAY_PERFORMANCE_ENABLED=true` bật timings backend chỉmetadata; mặcđịnhfalse.
+Quy trình sanitizeHAR/summary ở [scripts/book-performance](scripts/book-performance/README.md),
+contract/gateonline vàkếtquả5vòng ở [bằng chứng](docs/BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).
+Không dùng catalogue/ảnhbán thật để benchmarkghi hoặccleanup.

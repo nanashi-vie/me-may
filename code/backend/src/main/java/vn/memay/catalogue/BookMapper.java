@@ -10,6 +10,8 @@ import java.util.*;
 
 @Component
 public class BookMapper {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
         private final JdbcTemplate jdbc;
         private final BookVariantStore variants;
         private final CategoryRepository categories;
@@ -24,6 +26,9 @@ public class BookMapper {
         }
 
         public BookDetail detail(BookCopy b, Listing l) {
+            return timings.measure("mapping", () -> mapDetail(b,l));
+        }
+        private BookDetail mapDetail(BookCopy b, Listing l) {
                 String category = l.categoryId == null ? null : categories.findById(l.categoryId).orElseThrow().code;
                 var ages = jdbc.queryForList(
                                 "select age_group from listing_age_group where listing_id=? order by case age_group when 'AGE_0_3' then 0 when 'AGE_4_6' then 1 when 'AGE_7_9' then 2 else 3 end",
@@ -46,6 +51,14 @@ public class BookMapper {
                                 l.publishedAt,
                                 b.createdAt, b.updatedAt, images, stock,
                                 stock.stream().mapToLong(VariantView::stock).sum());
+        }
+
+        public BookDetail published(BookDetail d,java.time.Instant publishedAt) {
+                return new BookDetail(d.id(),d.bookCode(),d.slug(),d.version(),d.title(),d.isbn(),d.publisher(),
+                        d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceMinVnd(),
+                        d.priceMaxVnd(),d.weightG(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),
+                        d.readingVideoUrl(),d.collectionIds(),Publication.PUBLISHED,d.availability(),publishedAt,
+                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock());
         }
 
         public BookWrite write(BookDetail d) {

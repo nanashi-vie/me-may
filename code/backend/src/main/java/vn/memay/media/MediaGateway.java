@@ -14,6 +14,11 @@ public interface MediaGateway {
 
     InputStream openPreview(String publicId);
 
+    default InputStream openAdminPreview(String publicId, int width) {
+        if(width!=320 && width!=1280)throw new IllegalArgumentException("Invalid admin media size");
+        return openPreview(publicId);
+    }
+
     default InputStream openPublicPreview(String publicId) {
         return openPreview(publicId);
     }

@@ -1,13 +1,14 @@
+import { BookPerformance } from './book-performance';
 import { Injectable, InjectionToken, DestroyRef, inject, signal, computed } from '@angular/core';
 import { HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/http';
 import { firstValueFrom, filter, tap, Subject } from 'rxjs';
 import { BookApi } from './book-api';
 import { BookDetail, MediaRole, MediaAssignment, TemporaryMedia } from './book.models';
 import { MEDIA_ROLES, MEDIA_LABELS } from './book-copy';
-import { prepareImage, sourceImageInfo } from './image-upload';
-export const PREPARE_BOOK_IMAGE = new InjectionToken<typeof prepareImage>('Prepare book image', {
+import { prepareImage, prepareValidatedImage, SourceImageInfo, sourceImageInfo } from './image-upload';
+export const PREPARE_BOOK_IMAGE = new InjectionToken<(file:File,info?:SourceImageInfo)=>Promise<Blob>>('Prepare book image', {
   providedIn: 'root',
-  factory: () => prepareImage,
+  factory: () => (file,info)=>info?prepareValidatedImage(file,info):prepareImage(file),
 });
 export interface UploadItem {
   id: string;
@@ -31,6 +32,8 @@ export interface UploadItem {
 @Injectable()
 export class BookUploadQueue {
   private readonly api = inject(BookApi);
+  private readonly metrics = inject(BookPerformance);
+  private readonly selectedAt = new Map<string,number>();
   private readonly prepare = inject(PREPARE_BOOK_IMAGE);
   readonly rows = signal<UploadItem[]>([]);
   readonly sessionId = signal<string | null>(null);
@@ -45,6 +48,7 @@ export class BookUploadQueue {
   readonly failures = new Subject<HttpErrorResponse>();
   private sessionPromise: Promise<string> | null = null;
   private destroyed = false;
+  private preparing:{id:string;promise:Promise<void>}|null=null;
   private consumed = false;
   readonly sorted = computed(() =>
     [...this.rows()].sort((a, b) => MEDIA_ROLES.indexOf(a.role) - MEDIA_ROLES.indexOf(b.role)),
@@ -131,6 +135,7 @@ export class BookUploadQueue {
       storedAlt: '',
       storedSource: '',
     }));
+    added.forEach(r=>this.selectedAt.set(r.id,performance.now()));
     this.rows.update((rows) => [...rows, ...added]);
     this.error.set('');
     void this.pump();
@@ -246,6 +251,35 @@ export class BookUploadQueue {
     this.persisted.set(book);
     this.updates.next(book);
   }
+  private async normalize(row:UploadItem) {
+    const start=performance.now();
+    this.metrics.record({phase:'queue',item:row.id,durationMs:start-(this.selectedAt.get(row.id)??start)});
+    this.patch(row.id,{state:'preparing'});
+    try {
+      const info=await sourceImageInfo(row.file!);
+      if(this.destroyed || !this.rows().some(r=>r.id===row.id))return;
+      const prepared=await this.prepare(row.file!,info);
+      if(this.destroyed || !this.rows().some(r=>r.id===row.id))return;
+      this.patch(row.id,{prepared,large:info.large,state:'queued'});
+      this.metrics.record({phase:'prepare',item:row.id,durationMs:performance.now()-start,sourceBytes:row.file?.size,outputBytes:prepared.size});
+    } catch(error){if(!this.destroyed&&this.rows().some(r=>r.id===row.id))this.report(error,row.id);}
+  }
+  private async prepareRow(id:string) {
+    if(this.preparing) {
+      const pending=this.preparing;await pending.promise;
+      if(this.preparing===pending)this.preparing=null;
+      if(pending.id===id)return;
+    }
+    const row=this.rows().find(r=>r.id===id);
+    if(!row || row.prepared || this.paused() || this.destroyed)return;
+    const pending={id,promise:this.normalize(row)};this.preparing=pending;
+    await pending.promise;if(this.preparing===pending)this.preparing=null;
+  }
+  private prepareNext() {
+    if(this.preparing || this.paused() || this.destroyed || this.locked())return;
+    const next=this.rows().find(r=>r.state==='queued'&&!r.prepared);
+    if(next)void this.prepareRow(next.id);
+  }
   private async pump() {
     if (this.processing() || this.locked() || this.paused() || this.destroyed) return;
     this.processing.set(true);
@@ -255,23 +289,20 @@ export class BookUploadQueue {
         !this.locked() &&
         !this.paused() &&
         !this.destroyed &&
-        (row = this.rows().find((r) => r.state === 'queued'))
+        (row = this.rows().find((r) => r.state === 'queued' || r.state==='preparing'))
       ) {
         const id = row.id;
         try {
-          this.patch(id, { state: 'preparing' });
-          if (!row.prepared) {
-            const info = await sourceImageInfo(row.file!);
-            this.patch(id, { large: info.large });
-            row = { ...row, prepared: await this.prepare(row.file!) };
-            this.patch(id, { prepared: row.prepared });
-          }
-          if (!this.rows().some((r) => r.id === id)) continue;
+          await this.prepareRow(id);
+          row=this.rows().find(r=>r.id===id);
+          if(!row?.prepared || row.state==='error' || this.paused() || this.destroyed)continue;
+          const uploadingAt=performance.now();
           const body = new FormData();
           body.set('file', row.prepared!, 'book.jpg');
           body.set('alt', row.alt);
           body.set('sourceRef', row.sourceRef);
           this.patch(id, { state: 'uploading', progress: 0 });
+          this.prepareNext();
           let image: TemporaryMedia;
           const book = this.persisted();
           const progress = (event: any) => {
@@ -317,11 +348,14 @@ export class BookUploadQueue {
               continue;
             }
           }
+          this.metrics.record({phase:'upload',item:id,durationMs:performance.now()-uploadingAt});
+          this.metrics.record({phase:'ready',item:id,durationMs:performance.now()-(this.selectedAt.get(id)??uploadingAt)});
           const latest = this.rows().find((r) => r.id === id);
           if (!latest) continue;
           if (latest.previous) this.revoke(latest.previous.preview);
           this.patch(id, {
             state: 'READY',
+            prepared:undefined,
             mediaId: image.id,
             progress: 100,
             error: '',

@@ -11,6 +11,8 @@ import vn.memay.catalogue.BookDtos.*;
 @RestController
 @RequestMapping("/api/v1/admin/books")
 public class AdminBookController {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
     private final AdminActorResolver actors;
     private final BookCommandService commands;
     private final BookStatusService status;
@@ -34,7 +36,7 @@ public class AdminBookController {
 
     @PostMapping
     public ResponseEntity<BookDetail> create(Authentication a, @RequestBody BookCreate body) {
-        var result = commands.createPublished(actors.current(a), body);
+        var result = timings.measure("publish", () -> commands.createPublished(actors.current(a), body));
         return ResponseEntity.created(URI.create("/api/v1/admin/books/" + result.id())).body(result);
     }
 

@@ -2,6 +2,7 @@ import {BookCreate, MediaAssignment, UploadSession, TemporaryMedia} from './book
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
+import { AdminSessionCache } from '../../../core/auth/admin-session-cache';
 import {
   AuditSummary,
   BookDetail,
@@ -17,6 +18,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class BookApi {
   private readonly http = inject(AdminHttp);
+  private readonly cache=inject(AdminSessionCache);
   list(filter: BookFilter) {
     let params = new HttpParams();
     for (const [key, value] of Object.entries(filter))
@@ -33,8 +35,9 @@ export class BookApi {
     return this.http.mutate<BookDetail>('PUT', '/books/' + id, { ...body, version, ...(media ? {media} : {}) });
   }
   taxonomy() {
-    return this.http.get<Taxonomy>('/taxonomy');
+    return this.cache.get('taxonomy',()=>this.http.get<Taxonomy>('/taxonomy'),60000);
   }
+  refreshTaxonomy(){this.cache.invalidate('taxonomy');return this.taxonomy();}
   publication(id: string, version: number, status: Publication, confirmedActualCopy = false) {
     return this.http.mutate<BookDetail>('PATCH', `/books/${id}/publication`, {
       version,

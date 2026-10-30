@@ -9,6 +9,8 @@ import vn.memay.media.MediaDtos.MediaRole;
 
 @Service
 public class MediaService {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
     private final MediaTransactions transactions;
     private final MediaGateway gateway;
     private final ImageValidator validator;
@@ -26,12 +28,12 @@ public class MediaService {
 
     public BookDetail upload(long id, MediaRole role, long version, AdminUser actor, byte[] file, String alt,
             String sourceRef) {
-        validator.validate(file);
+        timings.measure("validation", () -> {validator.validate(file);return null;});
         try (var lease = limiter.acquire(actor.getId())) {
-            var intent = transactions.begin(id, role, version, actor, alt, sourceRef, namespace);
+            var intent = timings.measure("begin", () -> transactions.begin(id, role, version, actor, alt, sourceRef, namespace));
             var uploaded = gateway.upload(intent.publicId(), file);
             try {
-                return transactions.attach(intent, id, version, actor, uploaded);
+                return timings.measure("ready", () -> transactions.attach(intent, id, version, actor, uploaded));
             } catch (RuntimeException e) {
                 try {
                     transactions.fail(intent.id());
@@ -54,6 +56,10 @@ public class MediaService {
     }
 
     public InputStream content(long id, MediaRole role, AdminUser actor) {
-        return gateway.openPreview(transactions.activeKey(id, role));
+        return content(id,role,actor,1280);
+    }
+    public InputStream content(long id,MediaRole role,AdminUser actor,int width) {
+        if(width!=320 && width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
+        return gateway.openAdminPreview(timings.measure("authorization", () -> transactions.activeKey(id, role)),width);
     }
 }

@@ -1,5 +1,6 @@
+export interface SourceImageInfo {width:number;height:number;large:boolean;}
 /** Check source bytes/pixels before allocating a decoded bitmap. */
-export async function sourceImageInfo(file: File) {
+export async function sourceImageInfo(file: File):Promise<SourceImageInfo> {
   if (!file.size || file.size > 10 * 1024 * 1024) throw Error('Ảnh nguồn tối đa 10 MB.');
   const buffer = await new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
@@ -37,7 +38,10 @@ export function imageOutputSize(width: number, height: number) {
   return {width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale))};
 }
 export async function prepareImage(file: File): Promise<Blob> {
-  await sourceImageInfo(file);
+  return prepareValidatedImage(file,await sourceImageInfo(file));
+}
+export async function prepareValidatedImage(file:File,info:SourceImageInfo):Promise<Blob> {
+  if(!info.width || !info.height || info.width*info.height>25_000_000)throw Error('Ảnh nguồn tối đa 25 megapixel.');
   let bitmap: ImageBitmap;
   try { bitmap = await createImageBitmap(file, {imageOrientation:'from-image'}); }
   catch { throw Error('Không giải mã được ảnh. Hãy chọn ảnh JPEG hoặc PNG khác.'); }

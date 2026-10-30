@@ -1,3 +1,4 @@
+import { AuthService } from './auth.service';
 import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
@@ -48,4 +49,11 @@ describe('AdminHttp', () => {
     expect(r.request.withCredentials).toBe(true);
     r.flush({});
   });
+ it('invalidates current auth on 401 but ignores an old request failure after a new boundary',()=>{
+   const auth=TestBed.inject(AuthService);const initial=auth.epoch();
+   api.get('/taxonomy').subscribe({error:()=>{}});http.expectOne('/api/v1/admin/taxonomy').flush({}, {status:401,statusText:'Unauthorized'});
+   expect(auth.epoch()).toBeGreaterThan(initial);
+   api.get('/taxonomy').subscribe({error:()=>{}});const old=http.expectOne('/api/v1/admin/taxonomy');
+   auth.invalidateSession();const changed=auth.epoch();old.flush({}, {status:401,statusText:'Unauthorized'});expect(auth.epoch()).toBe(changed);
+ });
 });

@@ -11,6 +11,8 @@ import static vn.memay.media.UploadSessionDtos.*;
 @RestController
 @RequestMapping("/api/v1/admin/upload-sessions")
 public class UploadSessionController {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
  private final AdminActorResolver actors;private final UploadSessionService sessions;
  public UploadSessionController(AdminActorResolver actors,UploadSessionService sessions){this.actors=actors;this.sessions=sessions;}
  @PostMapping public ResponseEntity<UploadSession> create(Authentication a){return ResponseEntity.status(201).body(sessions.create(actors.current(a)));}
@@ -20,8 +22,8 @@ public class UploadSessionController {
   if(file.getSize()>ImageValidator.MAX_BYTES)throw new AdminApiException(413,"image_too_large");
   return ResponseEntity.status(201).body(sessions.upload(id,actors.current(a),file.getBytes(),alt,sourceRef,replaceId,requestKey));
  }
- @GetMapping("/{id}/media/{mediaId}") public ResponseEntity<StreamingResponseBody> content(Authentication a,@PathVariable UUID id,@PathVariable UUID mediaId) {
-  var input=sessions.content(id,mediaId,actors.current(a));StreamingResponseBody body=out->{try(input){input.transferTo(out);}};
+ @GetMapping("/{id}/media/{mediaId}") public ResponseEntity<StreamingResponseBody> content(Authentication a,@PathVariable UUID id,@PathVariable UUID mediaId,@RequestParam(defaultValue="1280") int size) {
+  var input=sessions.content(id,mediaId,actors.current(a),size);var trace=timings.capture();StreamingResponseBody body=out->{try(input){if(trace==null)input.transferTo(out);else trace.measureIo("stream",()->input.transferTo(out));}};
   return ResponseEntity.ok().header("Content-Type","image/jpeg").header("Cache-Control","no-store").header("X-Content-Type-Options","nosniff").body(body);
  }
  public record Metadata(String alt,String sourceRef) {}

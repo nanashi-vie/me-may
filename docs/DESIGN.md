@@ -186,3 +186,13 @@ Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit
 Home/catalogue/collection/detail đã nối API, gallery 2–6 ảnh thật (M5), metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
 
 Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.
+
+## Xem ảnh và phản hồi khi nhập sách —30/10
+
+Grid quản trị dùng thumbnail320, khung220px/contain ổnđịnh và chỉtải khi vào
+viewport. Nút “Xem ảnh lớn” giữ preview1280 choOWNER/STAFF đượcphép đọc;
+dialog hỗtrợ Escape/đóng/trảfocus. Trạngthái đangtảipreview/lỗipreview/tảilại
+riêng với đangupload/đãupload; lỗixemảnh khôngbiến thành lỗitạo sách.
+Taxonomy/collections có làm mới thủcông; lịch sử chỉtải khi mở. Đăngthànhcông
+đi thẳng sang bảnresponse chínhthức, không GET lại ngay khi handoff còn hợp lệ.
+Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn thứhai.

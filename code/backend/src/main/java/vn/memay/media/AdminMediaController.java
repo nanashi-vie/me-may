@@ -15,6 +15,8 @@ import vn.memay.media.MediaDtos.MediaRole;
 @RestController
 @RequestMapping("/api/v1/admin/books/{id}/media/{role}")
 public class AdminMediaController {
+    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+
     public record Metadata(@NotNull @PositiveOrZero Long version, String alt, String sourceRef) {
     }
 
@@ -54,11 +56,12 @@ public class AdminMediaController {
 
     @GetMapping("/content")
     public ResponseEntity<StreamingResponseBody> content(Authentication a, @PathVariable long id,
-            @PathVariable MediaRole role) {
-        var input = media.content(id, role, actors.current(a));
+            @PathVariable MediaRole role, @RequestParam(defaultValue="1280") int size) {
+        var input = media.content(id, role, actors.current(a),size);
+        var trace=timings.capture();
         StreamingResponseBody body = output -> {
             try (input) {
-                input.transferTo(output);
+                if(trace==null)input.transferTo(output);else trace.measureIo("stream", () -> input.transferTo(output));
             }
         };
         return ResponseEntity.ok().header("Content-Type", "image/jpeg").header("Cache-Control", "no-store")

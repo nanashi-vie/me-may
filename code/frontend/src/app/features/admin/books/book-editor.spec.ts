@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
@@ -42,7 +43,7 @@ describe('BookEditor safe final saves', () => {
           },
         },
         { provide: CollectionApi, useValue: { list: () => of([]) } },
-        { provide: AuthService, useValue: { user: () => ({ role }) } },
+        { provide: AuthService, useValue: { user: () => ({ role }), epoch:signal(0) } },
       ],
     });
   });
@@ -228,5 +229,12 @@ describe('BookEditor safe final saves', () => {
     expect(e.photos.paused()).toBe(true);
     expect(e.form.controls.title.value).toBe('New');
     expect(e.createUncertain()).toBe(false);
+  });
+  it('does not accept or navigate a publish response from an earlier login',async()=>{
+    const pending=new Subject<BookDetail>();create.mockReturnValueOnce(pending);
+    const e=editor();ready(e);await e.save();
+    const auth=TestBed.inject(AuthService);(auth.epoch as any).set(1);
+    pending.next(saved);pending.complete();expect(e.book()).toBeNull();expect(e.createUncertain()).toBe(true);
+    expect(e.error()).toContain('Phiên đăng nhập đã thay đổi');
   });
 });

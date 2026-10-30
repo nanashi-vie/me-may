@@ -1,4 +1,4 @@
-import { sourceImageInfo, imageOutputSize } from './image-upload';
+import { sourceImageInfo, imageOutputSize, prepareImage } from './image-upload';
 describe('upload source guards', () => {
   const png = (w: number, h: number, size = 32) => {
     const bytes = new Uint8Array(size); bytes.set([137,80,78,71,13,10,26,10]);
@@ -17,5 +17,10 @@ describe('upload source guards', () => {
     expect(imageOutputSize(4000,3000)).toEqual({width:2560,height:1920});
     expect(imageOutputSize(3000,4000)).toEqual({width:1920,height:2560});
     expect(imageOutputSize(600,800)).toEqual({width:600,height:800});
+  });
+  it('standalone normalization validates bytes before any bitmap decoding',async()=>{
+    await expect(prepareImage(new File(['bad'],'file.jpg'))).rejects.toThrow('JPEG');
+    await expect(prepareImage(new File([],'empty.jpg'))).rejects.toThrow('10 MB');
+    await expect(prepareImage(png(5001,5000))).rejects.toThrow('25');
   });
 });
