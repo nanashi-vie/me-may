@@ -15,11 +15,12 @@ public class UploadSessionService {
  public TemporaryMedia upload(UUID id,AdminUser actor,byte[] file,String alt,String sourceRef,UUID replace,UUID requestKey) {
   transactions.requireOwner(actor);timings.measure("validation", () -> { validator.validate(file); return null; });
   try(var lease=limiter.acquire(actor.getId())) {
-   String fingerprint;
-   try {
-    var digest=java.security.MessageDigest.getInstance("SHA-256");digest.update(file);
-    digest.update(json.writeValueAsBytes(java.util.Arrays.asList(alt,sourceRef,replace)));fingerprint=java.util.HexFormat.of().formatHex(digest.digest());
-   }catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+   String fingerprint=timings.measure("fingerprint",()->{
+    try {
+     var digest=java.security.MessageDigest.getInstance("SHA-256");digest.update(file);
+     digest.update(json.writeValueAsBytes(java.util.Arrays.asList(alt,sourceRef,replace)));return java.util.HexFormat.of().formatHex(digest.digest());
+    } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+   });
    var intent=timings.measure("begin", () -> transactions.begin(id,actor,replace,alt,sourceRef,requestKey,fingerprint));
    if(intent.ready()!=null)return intent.ready();
    try {var uploaded=gateway.upload(intent.publicId(),file);return timings.measure("ready", () -> transactions.ready(intent,actor,uploaded));}

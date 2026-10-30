@@ -53,6 +53,14 @@ public class BookMapper {
                                 stock.stream().mapToLong(VariantView::stock).sum());
         }
 
+        public BookDetail published(BookDetail d,java.time.Instant publishedAt) {
+                return new BookDetail(d.id(),d.bookCode(),d.slug(),d.version(),d.title(),d.isbn(),d.publisher(),
+                        d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceMinVnd(),
+                        d.priceMaxVnd(),d.weightG(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),
+                        d.readingVideoUrl(),d.collectionIds(),Publication.PUBLISHED,d.availability(),publishedAt,
+                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock());
+        }
+
         public BookWrite write(BookDetail d) {
                 return new BookWrite(d.title(), d.isbn(), d.publisher(), d.author(), d.language(), d.binding(),
                                 d.conditionGrade(), d.conditionNote(), d.priceMinVnd(), d.priceMaxVnd(), d.weightG(),

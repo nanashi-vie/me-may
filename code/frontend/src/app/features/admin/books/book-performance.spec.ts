@@ -16,4 +16,11 @@ describe('BookPerformance', () => {
     metrics.record({phase:'SECRET',item:'SECRET',durationMs:-1});
     expect(metrics.events().length).toBe(1000);
   });
+  it('bounds the browser User Timing entries as well as the memory buffer',()=>{
+    TestBed.configureTestingModule({providers:[{provide:BOOK_PERFORMANCE_ENABLED,useValue:true}]});
+    for(const entry of performance.getEntriesByType('measure'))if(entry.name.startsWith('memay-book-'))performance.clearMeasures(entry.name);
+    const metrics=TestBed.inject(BookPerformance);
+    for(let i=0;i<1001;i++)metrics.record({phase:'prepare',item:'unique-'+i,durationMs:1});
+    expect(performance.getEntriesByType('measure').filter(e=>e.name.startsWith('memay-book-')).length).toBeLessThanOrEqual(1000);
+  });
 });

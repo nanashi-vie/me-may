@@ -1,6 +1,6 @@
 import { Injectable, InjectionToken, inject, signal } from '@angular/core';
 export const BOOK_PERFORMANCE_ENABLED = new InjectionToken<boolean>('Book performance metrics', {
-  providedIn:'root', factory:()=> typeof window !== 'undefined' && window.sessionStorage.getItem('memay-performance') === '1',
+  providedIn:'root', factory:()=> {try{return typeof window !== 'undefined' && window.sessionStorage.getItem('memay-performance') === '1';}catch{return false;}},
 });
 export interface BookPerformanceEvent { phase:string; item:string; durationMs:number; sourceBytes?:number; outputBytes?:number; }
 @Injectable({providedIn:'root'})
@@ -19,6 +19,8 @@ export class BookPerformance {
     const clean:BookPerformanceEvent={phase:event.phase,item:this.items.get(event.item)!,durationMs:event.durationMs};
     for(const key of ['sourceBytes','outputBytes'] as const)
       if(Number.isSafeInteger(event[key]) && event[key]!>=0)clean[key]=event[key];
+    const evicted=this.buffer().length>=1000?this.buffer()[0]:null;
+    if(evicted&&typeof performance.clearMeasures==='function')performance.clearMeasures('memay-book-'+evicted.item+'-'+evicted.phase);
     this.buffer.update(rows=>[...rows.slice(-999),clean]);
     // QA can read the bounded buffer through User Timing without exporting form data.
     if(typeof performance !== 'undefined' && typeof performance.measure === 'function') {

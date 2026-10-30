@@ -56,9 +56,11 @@ public class BookCommandService {
         this.json = json;
     }
 
-    private BookDetail createAggregate(AdminUser actor, BookWrite input) {
+    private record CreatedAggregate(BookCopy book,Listing listing) {}
+
+    private CreatedAggregate createAggregate(AdminUser actor, BookWrite input) {
         var w = validation.normalize(input);
-        validation.validateWrite(w);
+        timings.measure("validation",()->{validation.validateWrite(w);return null;});
         var b = new BookCopy();
         b.bookCode = codes.nextCode();
         b.availability = availability(w);
@@ -75,8 +77,7 @@ public class BookCommandService {
         mappings(l, w);
         variants.save(b.id, w.variants());
         em.flush();
-        var result = mapper.detail(b, l);
-        return result;
+        return new CreatedAggregate(b,l);
     }
 
     @Transactional
@@ -87,13 +88,12 @@ public class BookCommandService {
         var w = timings.measure("validation", () -> validation.normalize(input.write()));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
-        String fingerprint;
-        try {
-            fingerprint = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
-                    .digest(json.writeValueAsBytes(canonical)));
-        } catch (java.security.NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
+        String fingerprint=timings.measure("fingerprint",()->{
+            try {
+                return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
+                        .digest(json.writeValueAsBytes(canonical)));
+            } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+        });
         var session = uploads.lock(input.uploadSessionId(), actor, false);
         if ("CONSUMED".equals(session.get("state"))) {
             if (!fingerprint.equals(session.get("request_fingerprint")))
@@ -102,7 +102,7 @@ public class BookCommandService {
             return mapper.detail(books.findById(id).orElseThrow(), listings.findByBookCopyId(id).orElseThrow());
         }
         uploads.lock(input.uploadSessionId(), actor, true);
-        validation.validateWrite(w);
+        timings.measure("validation",()->{validation.validateWrite(w);return null;});
         if (!input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
         var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
@@ -115,24 +115,24 @@ public class BookCommandService {
             selected.put(assignment.mediaId(), photo);
         }
         var aggregate = createAggregate(actor, w);
-        long id = Long.parseLong(aggregate.id());
+        var b=aggregate.book();var l=aggregate.listing();
+        long id = b.id;
         for (var assignment : assignments) {
             var m = selected.get(assignment.mediaId());
             jdbc.update(
                     "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
                     assignment.mediaId(), id, assignment.role().name(), m.get("storage_public_id"), m.get("asset_id"),
                     m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
-                    m.get("alt") == null ? assignment.role().label() + " " + aggregate.bookCode() : m.get("alt"),
+                    m.get("alt") == null ? assignment.role().label() + " " + b.bookCode : m.get("alt"),
                     m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
             jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
-        var b = books.findById(id).orElseThrow();
-        var l = listings.findByBookCopyId(id).orElseThrow();
-        validation.validatePublished(mapper.detail(b, l));
+        var prepared=mapper.detail(b,l);
+        validation.validatePublished(prepared);
         l.publicationStatus = Publication.PUBLISHED;
         l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         em.flush();
-        var result = mapper.detail(b, l);
+        var result = mapper.published(prepared,l.publishedAt);
         var snapshot = audit.snapshot(result);
         snapshot.put("confirmedActualCopy", true);
         audit.record(actor, "BOOK", id, "CREATE", Map.of(), snapshot, b.version);
@@ -170,7 +170,7 @@ public class BookCommandService {
         if (b.version != version)
             throw AdminApiException.conflict(b.version);
         var w = validation.normalize(input);
-        validation.validateWrite(w);
+        timings.measure("validation",()->{validation.validateWrite(w);return null;});
         var before = mapper.detail(b, l);
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && !reordered.equals(
