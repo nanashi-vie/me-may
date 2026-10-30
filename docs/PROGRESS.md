@@ -1,6 +1,8 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S025 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S026 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+
+- Favicon30/10: tích hợp PNG/SVG/ICO/Apple Touch/manifest; user chọn dùng PNG192 cho header, PNG512 cho Home thay logo cũ. Build Workers và kiểm tra đường dẫn HTML/manifest/logo sau build PASS; chuẩn bị commit/push dev, chưa deploy.
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 

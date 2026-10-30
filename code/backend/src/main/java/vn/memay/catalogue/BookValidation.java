@@ -24,26 +24,38 @@ public class BookValidation {
         if (w == null)
             throw AdminApiException.field("body", "Thiếu nội dung");
         return new BookWrite(trim(w.title()), trim(w.isbn()), trim(w.publisher()), trim(w.author()), trim(w.language()),
-                trim(w.binding()), trim(w.conditionGrade()), trim(w.conditionNote()), w.priceMinVnd(), w.priceMaxVnd(), w.weightG(),
+                trim(w.binding()), trim(w.conditionGrade()), trim(w.conditionNote()), w.priceMinVnd(), w.priceMaxVnd(),
+                w.weightG(),
                 trim(w.description()), trim(w.categoryCode()),
                 ordered(w.ageGroups(), Comparator.comparingInt(AGES::indexOf)), trim(w.readingLevel()),
-                trim(w.readingVideoUrl()), ordered(w.collectionIds(), Comparator.comparing(java.math.BigInteger::new)), normalizeVariants(w.variants()));
+                trim(w.readingVideoUrl()), ordered(w.collectionIds(), Comparator.comparing(java.math.BigInteger::new)),
+                normalizeVariants(w.variants()));
     }
 
     public List<VariantWrite> normalizeVariants(List<VariantWrite> input) {
-        if (input == null || input.isEmpty()) throw AdminApiException.field("variants", "Cần ít nhất một dòng tồn kho");
-        var names = new HashSet<String>(); var ids = new HashSet<String>(); var result = new ArrayList<VariantWrite>();
+        if (input == null || input.isEmpty())
+            throw AdminApiException.field("variants", "Cần ít nhất một dòng tồn kho");
+        var names = new HashSet<String>();
+        var ids = new HashSet<String>();
+        var result = new ArrayList<VariantWrite>();
         for (var row : input) {
             if (row == null || row.stock() == null || row.stock() < 0 || row.stock() > 999999)
                 throw AdminApiException.field("variants", "Tồn kho nguyên từ 0 đến 999999");
             String name = trim(row.name()), id = row.id();
             text("variants", name, 100);
-            if (input.size() > 1 && name == null) throw AdminApiException.field("variants", "Đặt tên cho từng biến thể");
-            if (name != null && !names.add(name.toLowerCase(Locale.ROOT))) throw AdminApiException.field("variants", "Tên biến thể bị trùng");
+            if (input.size() > 1 && name == null)
+                throw AdminApiException.field("variants", "Đặt tên cho từng biến thể");
+            if (name != null && !names.add(name.toLowerCase(Locale.ROOT)))
+                throw AdminApiException.field("variants", "Tên biến thể bị trùng");
             if (id != null) {
-                try { if (!UUID.fromString(id).toString().equals(id)) throw new IllegalArgumentException(); }
-                catch (IllegalArgumentException e) { throw AdminApiException.field("variants", "ID biến thể không hợp lệ"); }
-                if (!ids.add(id)) throw AdminApiException.field("variants", "ID biến thể bị trùng");
+                try {
+                    if (!UUID.fromString(id).toString().equals(id))
+                        throw new IllegalArgumentException();
+                } catch (IllegalArgumentException e) {
+                    throw AdminApiException.field("variants", "ID biến thể không hợp lệ");
+                }
+                if (!ids.add(id))
+                    throw AdminApiException.field("variants", "ID biến thể bị trùng");
             }
             result.add(new VariantWrite(id, name, row.stock()));
         }
@@ -76,7 +88,8 @@ public class BookValidation {
                 throw AdminApiException.field("binding", "Chọn Paperback hoặc Hardcover");
         } else if (w.binding() != null)
             throw AdminApiException.field("binding", "Chỉ dùng cho Picture book");
-        if (w.conditionGrade() != null && !List.of("VERY_GOOD", "GOOD", "FAIR", "HIGH_FRESHNESS", "MINOR_FLAWS").contains(w.conditionGrade()))
+        if (w.conditionGrade() != null
+                && !List.of("VERY_GOOD", "GOOD", "FAIR", "HIGH_FRESHNESS", "MINOR_FLAWS").contains(w.conditionGrade()))
             throw AdminApiException.field("conditionGrade", "Không hợp lệ");
         if (w.priceMinVnd() != null && (w.priceMinVnd() < 1 || w.priceMinVnd() > 999999999999L))
             throw AdminApiException.field("priceMinVnd", "Giá nguyên VND phải lớn hơn 0");
@@ -122,7 +135,8 @@ public class BookValidation {
             throw AdminApiException.field("conditionNote", "Mô tả tình trạng thực tế");
         var roles = b.media().stream().map(BookDtos.MediaView::role).toList();
         if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
-                || !roles.containsAll(List.of(vn.memay.media.MediaDtos.MediaRole.FRONT, vn.memay.media.MediaDtos.MediaRole.BACK)))
+                || !roles.containsAll(
+                        List.of(vn.memay.media.MediaDtos.MediaRole.FRONT, vn.memay.media.MediaDtos.MediaRole.BACK)))
             throw AdminApiException.field("media", "Cần từ 2 đến 6 ảnh, bắt buộc bìa và lưng");
     }
 }
