@@ -17,7 +17,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BookApi } from './book-api';
 import { BookDetail, Taxonomy, AgeGroup, AdminApiError } from './book.models';
-import { buildBookForm, toBookWrite } from './book-form';
+import { buildBookForm, buildVariantForm, toBookWrite } from './book-form';
 import { CollectionApi, CollectionDto } from '../collections/collection-api';
 import { AuthService } from '../../../core/auth/auth.service';
 import { BookMediaPanel } from './book-media-panel';
@@ -126,9 +126,28 @@ export class BookEditor {
     this.photos.locked.set(false);
     this.createUncertain.set(false);
     this.pendingCreate = null;
+    this.form.controls.variants.clear({emitEvent:false});
+    for (const row of b.variants) this.form.controls.variants.push(buildVariantForm(row),{emitEvent:false});
     this.form.reset(b);
     this.form.markAsPristine();
     this.fields.set({});
+  }
+  addVariant() {
+    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
+    this.form.controls.variants.push(buildVariantForm());
+    this.form.controls.variants.markAsDirty();
+  }
+  removeNewVariant(index: number) {
+    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
+    const rows = this.form.controls.variants;
+    if (rows.length > 1 && rows.at(index)?.controls.id.value === null) {
+      rows.removeAt(index); rows.markAsDirty();
+    }
+  }
+  totalStock() {
+    return this.form.controls.variants.controls.reduce((sum,row)=>{
+      const n=row.controls.stock.value;return sum+(n !== null && Number.isSafeInteger(n) && n>=0 ? n : 0);
+    },0);
   }
   toggleAge(age: AgeGroup, checked: boolean) {
     const values = this.form.controls.ageGroups;

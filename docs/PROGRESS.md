@@ -5,7 +5,7 @@ Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
 - User tạm gác kiểm thử chốt MVP để tối ưu nhập liệu: ngôn ngữ mặc định “Tiếng Anh” có thể sửa; hai ô giá phân nhóm nghìn ngay khi nhập; bỏ nút Đưa lên/Đưa xuống ở ảnh, giữ dropdown vai trò.
-- User đã duyệt [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md) và [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md); task1–2 schema/ghi tồn nguyên tử đã qua test, tiếp task3 public projection. Hai lựa chọn tình trạng “Độ mới cao”, “Có lỗi nhẹ”; tồn riêng, tổng tự cộng, khoảng giá chung và “Thêm biến thể”.
+- User đã duyệt [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md) và [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md); task1–5 schema/API/public projection/form nhập đã qua test, tiếp task6 chọn biến thể/liên hệ rồi QA. Khoảng giá chung, tồn riêng từng biến thể, tổng tự cộng; ảnh dùng chung. Chưa migrate dev/online/deploy.
 - Chưa sửa application/schema hoặc chạy kiểm thử mới; các gate M5 dưới đây được giữ để tiếp tục sau khi chốt thay đổi nhập sách.
 
 ## M5 completion — đã triển khai local, còn gate online

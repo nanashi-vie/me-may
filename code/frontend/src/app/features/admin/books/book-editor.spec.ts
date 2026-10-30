@@ -97,6 +97,31 @@ describe('BookEditor safe final saves', () => {
     const role=root.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));
     expect(e.photos.assignments()).toEqual([{mediaId:'server1',role:'FRONT'},{mediaId:'server0',role:'BACK'}]);
   });
+  it('startsWithOneStockAndAddsNamedVariants', async () => {
+    vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const e=editor();ready(e);
+    expect(e.form.controls.variants.length).toBe(1);
+    expect(e.form.controls.variants.at(0).controls.stock.value).toBe(1);
+    e.addVariant();expect(e.form.controls.variants.length).toBe(2);
+    e.form.controls.variants.at(0).patchValue({name:'Độ mới cao',stock:2});
+    e.form.controls.variants.at(1).patchValue({name:'Có cấn góc',stock:1});
+    expect(e.totalStock()).toBe(3);await e.save();
+    expect(create.mock.calls[0][0].write.variants).toEqual([{id:null,name:'Độ mới cao',stock:2},{id:null,name:'Có cấn góc',stock:1}]);
+    expect(create.mock.calls[0][0].write.priceMinVnd).toBe(20000);
+  });
+  it('preservesPersistedVariantIdsAndDirtyForm', async () => {
+    const e=editor();e.accept({...saved,variants:[{id:'stable',name:null,stock:2}],totalStock:2});
+    e.removeNewVariant(0);expect(e.form.controls.variants.length).toBe(1);
+    e.addVariant();e.form.controls.variants.at(0).controls.name.setValue('A');
+    e.form.controls.variants.at(1).patchValue({name:' a ',stock:1});expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).patchValue({name:'B',stock:-1});expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).controls.stock.setValue(1.5);expect(e.form.invalid).toBe(true);
+    e.form.controls.variants.at(1).controls.stock.setValue(1);expect(e.form.valid).toBe(true);
+    e.form.markAsDirty();update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
+    await e.save();expect(e.form.controls.variants.at(0).controls.id.value).toBe('stable');expect(e.form.controls.variants.length).toBe(2);
+    e.removeNewVariant(1);expect(e.form.controls.variants.length).toBe(1);
+    role='STAFF';const staff=editor();staff.addVariant();expect(staff.form.controls.variants.length).toBe(1);
+  });
   it('posts a complete final request once and opens the saved book', async () => {
     const pending = new Subject<BookDetail>();
     create.mockReturnValue(pending);

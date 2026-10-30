@@ -158,7 +158,7 @@ describe('book photo queue', () => {
     await q.remove(row.id);
     expect(q.pending()).toBe(false);
   });
-  it('reconciles a committed edit replacement after a lost response without uploading twice', async () => {
+  it.each([false,true])('reconciles a lost media response only when concurrent stock is unchanged (%s)', async (stockChanged) => {
     const response = new Subject<any>();
     const book = {
       ...testBook(),
@@ -170,6 +170,8 @@ describe('book photo queue', () => {
     const current = {
       ...book,
       version: book.version + 1,
+      variants: stockChanged ? [{...book.variants[0],stock:9}] : book.variants,
+      totalStock: stockChanged ? 9 : book.totalStock,
       media: [{ ...book.media[0], id: 'new', contentPath: '/new' }, book.media[1]],
     };
     const api = {
@@ -193,6 +195,10 @@ describe('book photo queue', () => {
     response.error(new HttpErrorResponse({ status: 0 }));
     await vi.waitFor(() => expect(q.pending()).toBe(true));
     q.retry(id);
+    if (stockChanged) {
+      await vi.waitFor(()=>expect(q.rows().find(r=>r.id===id)?.error).toContain('thay đổi khác'));
+      expect(q.persisted()?.version).toBe(0);expect(api.upload).toHaveBeenCalledTimes(1);return;
+    }
     await vi.waitFor(() => expect(q.pending()).toBe(false));
     expect(api.upload).toHaveBeenCalledTimes(1);
     expect(api.get).toHaveBeenCalled();

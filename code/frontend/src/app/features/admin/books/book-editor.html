@@ -83,6 +83,26 @@
         </select></label
       >
     </div>
+    <fieldset formArrayName="variants" class="stock-editor">
+      <legend>Tồn kho và biến thể</legend>
+      @for (row of form.controls.variants.controls; track row; let i = $index) {
+        <div [formGroupName]="i" class="variant-row">
+          @if (form.controls.variants.length > 1 || row.controls.name.value) {
+            <label>Tên biến thể<input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
+          }
+          <label>Tồn kho<input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
+          @if (!row.controls.id.value && form.controls.variants.length > 1) {
+            <button type="button" class="secondary" (click)="removeNewVariant(i)" [attr.aria-label]="'Gỡ biến thể mới ' + (i+1)">Gỡ dòng mới</button>
+          }
+        </div>
+      }
+      <p>Tổng tồn: <strong>{{ totalStock() }}</strong></p>
+      <small>Mỗi biến thể dùng chung khoảng giá và bộ ảnh. Tồn 0 là hết hàng; chủ cập nhật sau khi bán.</small>
+      @if ((form.hasError('variants') || form.controls.variants.invalid) && form.touched) {
+        <p class="error" role="alert">Tồn kho phải là số nguyên từ 0 đến 999999. Khi có nhiều biến thể, nhập tên riêng không trùng nhau.</p>
+      }
+      <button type="button" class="secondary" (click)="addVariant()">Thêm biến thể</button>
+    </fieldset>
     <fieldset class="choices">
       <legend>Độ tuổi <small>(có thể chọn nhiều)</small></legend>
       @for (age of taxonomy().ageGroups; track age.code) {
@@ -138,7 +158,7 @@
   }
   <app-book-media-panel [readonly]="!editable()" [disabled]="busy() || createUncertain()" />
   @if (!book() && editable()) {
-    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng với đúng cuốn sách này.</label>
+    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng cho sách và các biến thể này.</label>
   }
   @if (editable()) {
   <button

@@ -11,7 +11,10 @@ export type CategoryCode =
   | 'STORY_COLLECTION';
 export type AgeGroup = 'AGE_0_3' | 'AGE_4_6' | 'AGE_7_9' | 'AGE_10_PLUS';
 export type ReadingLevel = 'PRE_A1' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+export interface BookVariantWrite { id: string | null; name: string | null; stock: number; }
+export interface BookVariant extends BookVariantWrite { id: string; }
 export interface BookWrite {
+  variants: BookVariantWrite[];
   title: string | null;
   isbn: string | null;
   publisher: string | null;
@@ -38,6 +41,8 @@ export interface MediaView {
   contentPath: string;
 }
 export interface BookDetail extends BookWrite {
+  variants: BookVariant[];
+  totalStock: number;
   id: string;
   bookCode: string;
   slug: string;
@@ -50,6 +55,7 @@ export interface BookDetail extends BookWrite {
   media: MediaView[];
 }
 export interface BookSummary {
+  totalStock: number;
   id: string;
   bookCode: string;
   title: string | null;
@@ -76,6 +82,8 @@ export interface Page<T> {
   totalPages: number;
 }
 export interface PreviewBook {
+  variants: BookVariant[];
+  totalStock: number;
   bookCode: string;
   slug: string;
   title: string | null;
