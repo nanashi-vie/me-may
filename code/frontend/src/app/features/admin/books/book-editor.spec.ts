@@ -79,6 +79,24 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
+  it('defaults language only for new books and offers the two current condition choices', () => {
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
+    expect(e.form.controls.language.value).toBe('Tiếng Anh');
+    fixture.detectChanges();
+    const select=fixture.nativeElement.querySelector('select[formControlName="conditionGrade"]') as HTMLSelectElement;
+    expect(Array.from(select.options).map(o=>o.text)).toEqual(['Chưa đánh giá','Độ mới cao','Có lỗi nhẹ']);
+    e.accept({...saved,language:null});expect(e.form.controls.language.value).toBeNull();
+    e.accept({...saved,language:'Tiếng Nhật'});expect(e.form.controls.language.value).toBe('Tiếng Nhật');
+  });
+  it('changes photo roles with the dropdown while retaining upload and replace controls', () => {
+    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;ready(e);fixture.detectChanges();
+    const root=fixture.nativeElement as HTMLElement;
+    expect(root.textContent).not.toContain('Đưa lên');expect(root.textContent).not.toContain('Đưa xuống');
+    expect(root.querySelector('[draggable="true"]')).toBeNull();
+    expect(root.querySelector('input[type="file"][multiple]')).not.toBeNull();
+    const role=root.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));
+    expect(e.photos.assignments()).toEqual([{mediaId:'server1',role:'FRONT'},{mediaId:'server0',role:'BACK'}]);
+  });
   it('posts a complete final request once and opens the saved book', async () => {
     const pending = new Subject<BookDetail>();
     create.mockReturnValue(pending);

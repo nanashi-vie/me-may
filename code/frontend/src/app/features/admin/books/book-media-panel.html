@@ -44,10 +44,6 @@
     @for (row of photos.sorted(); track row.id; let i = $index) {
       <article
         class="photo-slot"
-        [draggable]="!disabled() && !readonly()"
-        (dragstart)="start($event, row.id)"
-        (dragover)="$event.preventDefault()"
-        (drop)="dropCard($event, row.id)"
       >
         <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
         @if (row.preview) {
@@ -100,24 +96,6 @@
               </select></label
             >
             <div class="actions">
-              <button
-                type="button"
-                class="secondary"
-                [disabled]="i === 0"
-                (click)="photos.step(row.id, -1)"
-                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' lên'"
-              >
-                Đưa lên
-              </button>
-              <button
-                type="button"
-                class="secondary"
-                [disabled]="i === photos.rows().length - 1"
-                (click)="photos.step(row.id, 1)"
-                [attr.aria-label]="'Đưa ảnh ' + labels[row.role] + ' xuống'"
-              >
-                Đưa xuống
-              </button>
               <button
                 type="button"
                 class="secondary"

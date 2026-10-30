@@ -48,7 +48,7 @@ describe('book photo queue', () => {
     await vi.waitFor(() => expect(q.rows()[0].state).toBe('uploading'));
     const first = q.rows()[0].id,
       second = q.rows()[1].id;
-    q.move(first, second);
+    q.assignRole(first, 'BACK');
     uploads[0].next(
       new HttpResponse({
         body: {
@@ -79,7 +79,7 @@ describe('book photo queue', () => {
       { mediaId: 'server-second', role: 'FRONT' },
       { mediaId: 'server-first', role: 'BACK' },
     ]);
-    q.move(first, second);
+    q.assignRole(first, 'FRONT');
     expect(api.uploadTemporary).toHaveBeenCalledTimes(2);
   });
   it('rejects overflow as a batch and retries only the failed item with the same request key', async () => {
@@ -134,7 +134,7 @@ describe('book photo queue', () => {
     q.replace(q.sorted()[0].id, photo());
     await vi.waitFor(() => expect(q.sorted()[0].state).toBe('uploading'));
     const id = q.sorted()[0].id;
-    q.step(id, 1);
+    q.assignRole(id, 'BACK');
     response.next(
       new HttpResponse({
         body: { ...book, version: 1, media: [{ ...book.media[0], id: 'new' }, book.media[1]] },
@@ -189,7 +189,7 @@ describe('book photo queue', () => {
     q.replace(q.sorted()[0].id, photo());
     await vi.waitFor(() => expect(api.upload).toHaveBeenCalledTimes(1));
     const id = q.sorted()[0].id;
-    q.step(id, 1);
+    q.assignRole(id, 'BACK');
     response.error(new HttpErrorResponse({ status: 0 }));
     await vi.waitFor(() => expect(q.pending()).toBe(true));
     q.retry(id);

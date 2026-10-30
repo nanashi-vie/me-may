@@ -1,3 +1,4 @@
+import { VndInput } from './vnd-input';
 import { BookUploadQueue } from './book-upload-queue';
 import { BookCreate } from './book.models';
 import { Validators } from '@angular/forms';
@@ -26,7 +27,7 @@ import { PRICE_NOTE, READING_NOTE } from './book-copy';
 @Component({
   selector: 'app-book-editor',
   providers: [BookUploadQueue],
-  imports: [ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
+  imports: [VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
   templateUrl: './book-editor.html',
   styleUrl: './book-editor.scss',
 })
@@ -60,6 +61,7 @@ export class BookEditor {
   readonly fields = signal<Record<string, string[]>>({});
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
+  readonly legacyConditions: Record<string,string> = { VERY_GOOD: 'Rất tốt', GOOD: 'Tốt', FAIR: 'Có hao mòn' };
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
   readonly loginForm = new FormGroup({

@@ -18,7 +18,7 @@ export interface BookWrite {
   author: string | null;
   language: string | null;
   binding: Binding | null;
-  conditionGrade: 'VERY_GOOD' | 'GOOD' | 'FAIR' | null;
+  conditionGrade: 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'HIGH_FRESHNESS' | 'MINOR_FLAWS' | null;
   conditionNote: string | null;
   priceMinVnd: number | null;
   priceMaxVnd: number | null;

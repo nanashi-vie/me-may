@@ -8,7 +8,7 @@ export function buildBookForm() {
       isbn: text(32),
       publisher: text(200),
       author: text(200),
-      language: text(50),
+      language: new FormControl<string | null>('Tiếng Anh', Validators.maxLength(50)),
       binding: new FormControl<Binding | null>(null),
       conditionGrade: new FormControl<BookWrite['conditionGrade']>(null),
       conditionNote: text(4000),

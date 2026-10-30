@@ -64,20 +64,22 @@
       }
       <label
         >Giá từ (VNĐ)<input
-          type="number"
+          type="text" inputmode="numeric" appVndInput
           formControlName="priceMinVnd"
           min="1"
           max="999999999999"
           step="1"
         /><small>{{ priceNote }}</small></label
-      ><label>Giá đến (VNĐ)<input type="number" formControlName="priceMaxVnd" min="1" max="999999999999" step="1" /></label>
+      ><label>Giá đến (VNĐ)<input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" /></label>
       <label>Trọng lượng sách (g)<input type="number" formControlName="weightG" min="1" step="1" /><small>{{book()?.weightG == null ? 'Chưa cập nhật' : ''}}</small></label>
       <label
         >Đánh giá tình trạng<select formControlName="conditionGrade">
           <option [ngValue]="null">Chưa đánh giá</option>
-          <option value="VERY_GOOD">Rất tốt</option>
-          <option value="GOOD">Tốt</option>
-          <option value="FAIR">Có hao mòn</option>
+          <option value="HIGH_FRESHNESS">Độ mới cao</option>
+          <option value="MINOR_FLAWS">Có lỗi nhẹ</option>
+          @if (book()?.conditionGrade; as grade) {
+            @if (legacyConditions[grade]) { <option [value]="grade">{{ legacyConditions[grade] }}</option> }
+          }
         </select></label
       >
     </div>
