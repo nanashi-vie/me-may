@@ -1,6 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 29/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S024 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S025 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+
+## Ưu tiên hiện tại — tối ưu nhập sách
+
+- User tạm gác kiểm thử chốt MVP để tối ưu nhập liệu: ngôn ngữ mặc định “Tiếng Anh” có thể sửa; hai ô giá phân nhóm nghìn ngay khi nhập; bỏ nút Đưa lên/Đưa xuống ở ảnh, giữ dropdown vai trò.
+- User đã duyệt [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md) và [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md); đang thực thi tuần tự task1/7: schema tồn kho/biến thể. Hai lựa chọn tình trạng “Độ mới cao”, “Có lỗi nhẹ”; tồn riêng, tổng tự cộng, khoảng giá chung và “Thêm biến thể”.
+- Chưa sửa application/schema hoặc chạy kiểm thử mới; các gate M5 dưới đây được giữ để tiếp tục sau khi chốt thay đổi nhập sách.
 
 ## M5 completion — đã triển khai local, còn gate online
 

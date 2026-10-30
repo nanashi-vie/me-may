@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
+Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
@@ -24,6 +24,9 @@ Cập nhật: 29/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
 
 ## Spec và plan đang thực thi
+
+- [BOOK_ENTRY_SPEC](BOOK_ENTRY_SPEC.md): **đã được user duyệt30/10**, gồm hai lựa chọn tình trạng “Độ mới cao”, “Có lỗi nhẹ”, tồn riêng từng biến thể và khoảng giá chung; tạm gác kiểm thử chốt MVP. Chưa triển khai hoặc migrate.
+- [BOOK_ENTRY_PLAN](BOOK_ENTRY_PLAN.md): kế hoạch7task **đã duyệt, đang thực thi tuần tự**; schema/ghi nguyên tử/public/form nhập/biến thể/liên hệ/QA bàn giao.
 
 - [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md): **đã được user duyệt29/10**, tối ưu media/LCP/CLS, bỏ nháp, OWNER ghi/STAFF đọc, trọng lượng,2–6ảnh và khoảng giá giữ chú thích. Thay các quyết định baseline tương ứng; task1–6 đã triển khai local, gate online còn mở.
 
