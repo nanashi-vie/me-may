@@ -203,8 +203,20 @@ Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không 
 ### Rollout contract M5 (chưa chạy online)
 
 1. Tạm dừng ghi; chụp backup DB/media/manifest mới và kiểm restore scratch. Ghi schema/version/counts book/listing/media/audit, giá/ID/asset/published_at fingerprint, sequence high-water mark; giữ bản release cũ.
-2. Thử nâng V5→V9 trên scratch từ backup: giá cũ→hai đầu bằng nhau, INSIDE→INSIDE_1, DRAFT→ARCHIVED, weight cũ null; không mất asset hoặc tựẩn sách công khai. Đối chiếu audit/counts/fingerprint sau nâng.
-3. Deploy backend V6–V9 trước frontend đồng bộ contract; không cho frontend cũ ghi vào API mới. Chạy backfill4variant với expectedcount và checkpointv2 ở gate trên, verify response MIME/magic/dimensions.
-4. Deploy frontend sau backend/backfill; smoke OWNER tạo2/6ảnh/sửa/reorder/ẩn/hiện/SOLD và STAFF403, giá khoảng/weight/ảnh public/no-store. Không ghi synthetic QA vào catalogue bán thật.
+2. Thử nâng V5→V10 trên scratch từ backup: giá cũ→hai đầu bằng nhau, INSIDE→INSIDE_1, DRAFT→ARCHIVED, weight cũ null; không mất asset hoặc tựẩn sách công khai. Đối chiếu audit/counts/fingerprint sau nâng.
+3. Deploy backend V6–V10 trước frontend đồng bộ contract; không cho frontend cũ ghi vào API mới. Chạy backfill4variant với expectedcount và checkpointv2 ở gate trên, verify response MIME/magic/dimensions.
+4. Deploy frontend sau backend/backfill; smoke OWNER tạo2/6ảnh/đổi vai trò bằng dropdown/ẩn/hiện và tồn biến thể về0 và STAFF403, giá khoảng/weight/ảnh public/no-store. Không ghi synthetic QA vào catalogue bán thật.
 5. Migration không có down tự động. Nếu lỗi contract/data: dừng ghi, rollback app cùng DB backup đã xác minh và đối chiếu mọi ghi mới trước mở lại; không restore đè khi còn ghi hoặc reset sequence mù quáng. Rollback drill vẫn là gate chưa đạt.
 6. Đo lại Mobile Lighthouse3lần mỗi Home/detailMM-000020/wishlist cùng dữliệu, từngrun LCP≤2,5s/CLS≤0,1; coldstart riêng. Local test không thay kết quả online. User thực hiện merge main/deploy; phiên này không triển khai online.
+
+### Bổ sung rollout tồn kho/biến thể V10 (chưa chạy online)
+
+- Sau V6–V9, V10 thêm một dòng tồn cho mỗi sách cũ: AVAILABLE→1, SOLD→0; giữ mã/URL,
+  ảnh/giá/publishedAt/grade. Đối chiếu số dòng bằng số sách; chủ kiểm tồn thực trước mở ghi.
+- Backup/restore scratch trước rollout; fingerprint dữ liệu cũ và sequence giữ nguyên.
+- Backend mới bắt buộc payload variants; frontend cũ không ghi được. Giữ cửa sổ dừng ghi
+  tới khi frontend mới sẵn sàng; endpoint availability cũ trả409, không tự chuyển thành tồn.
+- Smoke OWNER thêm/sửa biến thể với cùng ảnh/giá, tổng3→1→0, public chọn riêng/hỏi mua,
+  STAFF403 và retry không nhân sách/tồn; không nhập synthetic vào catalogue bán thật.
+- Rollback phải phối hợp app/DB theo bước5 ở trên, không chỉ hạ frontend về contract cũ.
+  Giữ gate backfill4variant ảnh, Lighthouse/cold-start và vận hành M5 chưa đạt.

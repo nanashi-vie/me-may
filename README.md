@@ -67,7 +67,7 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 
 Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
 
-Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, availability, preview, audit và ba slot media; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
+Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, preview, audit và2–6vai trò media; availability dẫn xuất từ tồn; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
 
 Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env` (run-local.sh nạp lại `.env`, nên không để namespace dev ghi đè lệnh test); chỉ chạy `MediaLiveTest,CloudinaryLiveTest` với `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test`. Guard `me_may_test` và namespace phải đạt trước upload/delete. Test mặc định không gọi cloud thật; cleanup chỉ public_id do gate tạo.
 
@@ -151,3 +151,15 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 - Checkbox chọn các cuốn muốn hỏi, ban đầu chưa chọn; chọn tất cả chỉ còn hàng. SOLD cảnh báo/không chọn; mã ẩn/thiếu chỉ hiện “Không còn hiển thị”. Những cuốn chưa chọn vẫn được lưu.
 - “Chuẩn bị nội dung hỏi mua” gọi GET `/api/v1/books/lookup?code=...&code=...` (1–100 mã,400 nếu sai/thiếu/quá nhiều), cập nhật giá và loại sold/hidden. Copy → mở Zalo → khách dán/gửi; luôn có textarea copy thủ công, không tự gửi/giữ sách/tạo đơn.
 - Foreground/sale expiry/thay đổi tab khác làm mới trạng thái và vô hiệu hóa nội dung cũ; mất mạng không copy giá cũ. `/quan-tam` noindex/no-store, SSR không chứa dữ liệu đã lưu. Thiết bị thật/Zalo in-app vẫn cần nghiệm thu riêng.
+
+## Nhập sách, tồn kho và biến thể (30/10/2026)
+
+- Form mới: “Tiếng Anh” sửa được, hai ô giá phân nhóm nghìn ngay khi gõ; vẫn lưu số nguyên VND.
+- Tình trạng mới “Độ mới cao”/“Có lỗi nhẹ”; grade/ngôn ngữ sách cũ được bảo toàn.
+- Tồn mặc định1; “Thêm biến thể” để thêm tên/tồn riêng, tổng readonly. Dòng đã lưu không xóa,
+  đặt0 khi hết; tổng0 thành hết hàng. Khoảng giá và bộ ảnh chung, không tải lại ảnh cho biến thể.
+- Dropdown đổi vai trò ảnh; giữ chọn/thả file/thay/gỡ/retry. Chủ sửa tồn sau bán ngoài web.
+- Detail cho chọn biến thể và đưa tên vào hỏi mua; wishlist vẫn theo sách, không giữ/trừ kho.
+- Contract/validation tại [DATA](docs/DATA.md), [ARCHITECTURE](docs/ARCHITECTURE.md);
+  rolloutV10 tại [DEPLOYMENT](docs/DEPLOYMENT.md#bổ-sung-rollout-tồn-khobiến-thể-v10-chưa-chạy-online).
+  Chỉ triển khai local/test; chưa migrate hoặc deploy online, chưa chốtMVP.

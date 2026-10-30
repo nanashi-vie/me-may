@@ -87,11 +87,10 @@
           <fieldset [disabled]="disabled()">
             <label
               >Vai trò ảnh<select
-                [value]="row.role"
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
               >
                 @for (role of roles; track role) {
-                  <option [value]="role">{{ labels[role] }}</option>
+                  <option [value]="role" [selected]="role === row.role">{{ labels[role] }}</option>
                 }
               </select></label
             >

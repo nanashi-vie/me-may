@@ -12,6 +12,11 @@
 
 > **Baseline trước M2 được duyệt ngày 22/10/2026:** MVP nhập thủ công, lọc tuổi/thể loại, mỗi cuốn một thể loại, Picture book bắt buộc Paperback hoặc Hardcover, ba ảnh thật, giá và mức đọc tham khảo, liên hệ Zalo theo khả dụng. Import CSV/Excel là bước ngay sau MVP, không phải điều kiện ra mắt. Quyết định này thay thế các mặc định M0 tương ứng; chưa triển khai code M2.
 
+> **Điều chỉnh nhập sách duyệt30/10/2026:** ngôn ngữ mới mặc định “Tiếng Anh” sửa được,
+> hai ô giá có dấu phân nhóm nghìn, ảnh đổi vai trò chỉ qua dropdown. Tình trạng mới
+> “Độ mới cao”/“Có lỗi nhẹ”; thêm biến thể có tồn riêng, tổng tự cộng, giá khoảng chung.
+> Quyết định này thay baseline mã theo từng bản vật lý/ảnh riêng từng cuốn; chi tiết ở DATA/DESIGN.
+
 ### Phạm vi M1 local đã thực hiện
 
 Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
@@ -27,7 +32,7 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Người chọn sách trên web | **Chủ tiệm** | Nhân viên có thể hỗ trợ nhập liệu; phân quyền xuất bản theo thiết kế bên dưới |
 | Chốt mua | **Zalo hotline cá nhân có zBusiness**, ngoài website | Detail dùng Zalo; Facebook vẫn có thể là link thông tin cửa hàng. Không tự gửi tin |
 | Kho & đơn livestream | **Giữ luồng hiện tại** | Không ép livestream → website, không tự đồng bộ Excel/Zalo |
-| Sách cũ | **Mỗi cuốn vật lý = một định danh** | Hai cuốn cùng tên khác tình trạng vẫn riêng biệt; ISBN không thay mã cuốn |
+| Sách cũ | **Một mục sách = mã MM, các biến thể có tồn riêng** | User duyệt30/10: dùng chung thông tin/ảnh/khoảng giá; tổng tồn tự cộng, không theo dõi từng bản vật lý |
 | Tech stack | Angular + Spring Boot + **PostgreSQL** + Cloudinary | Local giữ Docker; test online dùng Neon đã cung cấp; chỉ Spring truy cập JDBC |
 | Hosting frontend | **Cloudflare Workers + Angular SSR**, user đã chốt | Cần spike runtime/SSR/SEO/OG thực tế; upload browser assets không tự có SSR |
 | Hosting backend | Test: dịch vụ miễn phí do user chuẩn bị, ví dụ Render | Chưa thuê VPS/chốt provider; VPS + Dokploy là hướng production hoãn, không chặn test online |
@@ -41,7 +46,7 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 2. **Chủ tiệm duyệt tập sách đăng bằng quyền xuất bản** (`OWNER`); nhân viên (`STAFF`) chỉ đọc quản trị; OWNER thực hiện mọi ghi. Không có tạo/lưu nháp. Trường hợp chủ trực tiếp đăng, không buộc đi qua bước duyệt thừa. Đây là lựa chọn kỹ thuật mặc định, không phải khẳng định tất cả công việc ở tiệm đều cần phê duyệt.
 3. **Wishlist lưu trong trình duyệt** (localStorage) và không cần tài khoản; nó chỉ tồn tại trong cùng trình duyệt/thiết bị, có thể mất khi xóa dữ liệu hoặc dùng ẩn danh. Khi mở danh sách, đọc trạng thái mới nhất từ server; không tự động gửi dữ liệu cho tiệm.
 4. **Liên hệ theo khả dụng:** còn hàng dùng “Liên hệ”; hết hàng dùng “Tư vấn sách tương đương”. Cùng mở Zalo hotline cá nhân có zBusiness; chuẩn bị mục đích hỏi, mã, tên, giá tham khảo và URL. Chỉ cam kết điền sẵn sau kiểm chứng; MVP chấp nhận sao chép → mở Zalo → khách dán/gửi, có copy thủ công nếu clipboard lỗi. Nút cộng đồng mở link nhóm Zalo riêng.
-5. **Tình trạng khả dụng** quản lý thủ công, chỉ `AVAILABLE` (Còn hàng) / `SOLD` (Hết hàng); không có trạng thái Đang giữ trong MVP. Dữ liệu website có thể trễ so với Page/livestream.
+5. **Tình trạng khả dụng** tính từ tổng tồn biến thể: >0 là `AVAILABLE`, 0 là `SOLD`; chủ cập nhật tồn sau bán ngoài web. Không có Đang giữ; dữ liệu vẫn có thể trễ so với Page/livestream.
 6. **Sách hết hàng** tiếp tục có trang chi tiết hiển thị “Hết hàng” để giữ link cũ, mặc định không ưu tiên trong danh sách. Chủ vẫn có thể ẩn riêng mục đăng.
 7. **Tuổi/thể loại và mức đọc** do chủ chọn thủ công theo mục 3.1; độc lập với nhau. Không tự suy mức đọc từ tuổi/thể loại hoặc tự gán tuổi khi thiếu căn cứ. Mức đọc không bắt buộc để xuất bản.
 8. **Nhập thủ công trong MVP**, 2–6 ảnh thật, bắt buộc bìa và lưng mới được xuất bản; tình trạng/lỗi vẫn mô tả bằng chữ. Import CSV/Excel triển khai ngay sau MVP.
@@ -57,7 +62,7 @@ Các quy tắc trên là baseline MVP đã duyệt; không suy thêm cam kết v
 - Trang chi tiết có **mã sản phẩm, giá, tình trạng, ISBN, tác giả, khuôn khổ, số trang, định dạng, trọng lượng** khi được khai báo; trang Kim Đồng còn có thêm giỏ hàng/mua ngay.
 
 **Giữ lại cho Mẹ Mây:** cấu trúc IA, danh mục/độ tuổi, card sách, tìm kiếm, sort/filter, trang chi tiết và metadata chia sẻ.
-**Thay đổi cho Mẹ Mây:** ưu tiên ảnh thật của **đúng cuốn**, phần tình trạng/lỗi, loại sách Picture/Board/Chapter, bằng chứng trang ruột, mã cuốn duy nhất; thay nút giỏ/mua bằng hỏi mua/danh sách quan tâm.
+**Thay đổi cho Mẹ Mây:** ưu tiên bộ ảnh chung của **đúng sách**, xác nhận bản cụ thể khi khách hỏi, phần tình trạng/lỗi, loại sách Picture/Board/Chapter, bằng chứng trang ruột, mã cuốn duy nhất; thay nút giỏ/mua bằng hỏi mua/danh sách quan tâm.
 **Không bê sang:** khuyến mãi giả định, kho theo số lượng của một SKU, combo tự động, đánh giá sao không có dữ liệu, checkout, tin tức phức tạp.
 
 Nguồn tham khảo: [Trang chủ](https://nxbkimdong.com.vn/), [Ví dụ trang bộ sưu tập](https://nxbkimdong.com.vn/collections/em-biet-gi), [Ví dụ trang chi tiết](https://nxbkimdong.com.vn/products/lo-au-oi-tam-biet-tro-chuyen-ve-suc-khoe-tam-than-chung-roi-loan-lo-au).
@@ -190,7 +195,8 @@ erDiagram
 
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
-| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `weight_g`, `availability`, timestamps/version | Từng vật thể; nguồn đối soát/sticker/ảnh phục vụ capstone |
+| `BookVariant` | UUID, book_copy_id, name?, stock0..999999, sort_order | Tồn riêng theo tình trạng; ít nhất1dòng, tổng chỉ đọc; không giá/ảnh riêng |
+| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?`, `condition_note`, `weight_g`, `availability`, timestamps/version | Mục sách chung; mã ổn định, biến thể nhận diện riêng bằng UUID/tên |
 | `Listing` | `id`, `book_copy_id` unique, `slug`, `price_min_vnd`, `price_max_vnd` (khoảng tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M5 final tạo cuốn + listing công khai + media cùng giao dịch; dùng version của BookCopy cho cả aggregate |
 | `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
 | `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |

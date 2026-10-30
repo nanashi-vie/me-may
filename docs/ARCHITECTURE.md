@@ -282,3 +282,25 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 - OWNER mọi ghi, STAFF đọc. Phiên24giờ, intent→provider ngoài transaction→READY; final khóa phiên/kiểm owner/expiry, attachmedia+tạoPUBLISHED+audit+consume cùngtransaction. Cùngnormalizedpayload retry trảcùngbook; khác409. Cleanup cùngsessionlock, UPLOADING/ambiguous giữgrace1giờ.
 - Reorder theo mediaID/version, tất cả mapping/audit nguyên tử. QueueclientID riêngserverID, uploadtuần tự, metadata lưu trước final; retry ảnh tạm dùngrequestKey/hash để không chiếm thêm slot khi mấtresponse.
 - Public detail seed dữ liệu publicSSR trong TransferState riêng; luôn revalidate no-store, giữ DOM khi cùngslug, khóa contact đến dữliệumới. Admin/wishlist vẫn không transfercache. Logo WebP208; favicon dùng cùngasset.
+
+## Tồn theo biến thể — contract 30/10/2026
+
+- V10 thêm book_variant qua JDBC, FK BookCopy, UUID ổn định, tên nullable khi một dòng,
+  stock BIGINT0..999999 và sort_order; unique tên lower(trim) trong sách, thứ tự deferred.
+- Aggregate vẫn BookCopy/Listing. Create/update nhận variants[{id:null|string,name,stock}],
+  tối thiểu1dòng, tên≤100, nhiều dòng bắt buộc tên khác nhau; chỉ server cấp UUID dòng mới.
+  ID lạ/trùng/thuộc sách khác/bỏ dòng đã lưu bị từ chối, không delete/recreate cả tập.
+- Detail/preview admin trả variants và totalStock; list có totalStock. Tổng long tính từ dòng,
+  không có totalStock editable. Cột availability cập nhật từ tổng trong cùng transaction.
+- Bất kỳ sửa tồn/tên cũng dùng aggregate version, audit variants/totalStock/availability;
+  no-op không tăng. Xung đột rollback sách/listing/biến thể/media/audit và trả409 giữ form.
+- Final fingerprint bao gồm normalizedvariants; UUID cấp sau fingerprint, retry không nhân
+  sách/tồn, payload khác409. Media response mất chỉ adoptversion nếu các field khác giữ nguyên,
+  gồm variants/totalStock; không tự merge một cập nhật tồn khác.
+- PATCH availability cũ OWNER nhận409 stock_managed_availability, STAFF403; client mới cập nhật
+  tồn qua PUT sách. Ẩn/hiện vẫn độc lập; liên hệ/wishlist không tạo mutation kho.
+- Public detail có variants[{id,name,available}], không trả số tồn nội bộ/sourceRef.
+  Card/list/shelf/lookup dùng DTO cùng shape với variants rỗng, không queryvariants từng card.
+  Catalogue/sale/lookup dựa availability đã đồng bộ; không join biến thể làm nhân card/count.
+- Default ngôn ngữ ở form mới; CVA VND giữ numericmodel/validation/caret. Grade mới
+  HIGH_FRESHNESS/MINOR_FLAWS; legacy VERY_GOOD/GOOD/FAIR giữ nguyên, không tự đổi ý nghĩa.

@@ -123,6 +123,8 @@ export class ContactDialog {
     if (this.verified() !== null) return this.verified()!;
     if (this.preparedText() !== null) return this.preparedText()!;
     const book = this.book();
+    if (book?.availability === 'AVAILABLE' && book.variants.length > 1 && !this.variant()?.available)
+      return '';
     return book ? enquiryText(effectiveBook(book, this.clock.now() || Date.now()), this.url(), this.variant() ?? undefined) : '';
   }
   select(event: Event) {

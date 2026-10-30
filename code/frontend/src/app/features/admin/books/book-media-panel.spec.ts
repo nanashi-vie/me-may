@@ -11,7 +11,8 @@ describe('photo panel accessible order and readonly mode',()=>{
   const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();return{q,f};
  }
  it('changes a role with the dropdown available to keyboard and mobile users',()=>{
-  const {q,f}=setup();const role=f.nativeElement.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));f.detectChanges();
+  const {q,f}=setup();expect(Array.from(f.nativeElement.querySelectorAll('.photo-slot select') as NodeListOf<HTMLSelectElement>).map(s=>s.value)).toEqual(['FRONT','BACK']);
+  const role=f.nativeElement.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));f.detectChanges();
   expect(q.assignments()).toEqual([{mediaId:'b',role:'FRONT'},{mediaId:'a',role:'BACK'}]);expect(f.nativeElement.querySelector('[aria-live]')?.textContent).toContain('vai trò Lưng');
  });
  it('shows photos while hiding all write controls for STAFF',()=>{

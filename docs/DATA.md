@@ -16,12 +16,13 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | title | BookCopy | Bắt buộc khi publish; giữ tên sách nguồn |
 | category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện; bắt buộc khi publish |
 | binding | BookCopy | Khi nhập Picture book bắt buộc đúng một kiểu Paperback hoặc Hardcover; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
-| language | BookCopy | Tùy chọn khi chưa xác minh; không mặc định EN |
+| language | BookCopy | Form tạo mới điền sẵn “Tiếng Anh”, có thể sửa/xóa; mở sách cũ giữ nguyên ngôn ngữ đã lưu |
 | isbn | BookCopy | Tùy chọn; trùng giữa các cuốn là hợp lệ; xác minh khi dùng dữ liệu thật |
 | author, publisher | BookCopy | Tùy chọn; không suy đoán |
-| condition_grade | BookCopy | Nhãn biên tập VERY_GOOD / GOOD / FAIR đề xuất, không thay condition_note |
+| condition_grade | BookCopy | HIGH_FRESHNESS (Độ mới cao) / MINOR_FLAWS (Có lỗi nhẹ); giữ nguyên mã/nhãn legacy khi đọc, không thay condition_note |
 | condition_note | BookCopy | Mô tả thực tế bắt buộc để publish, nêu lỗi nhìn thấy và phần chưa kiểm tra |
-| availability | BookCopy | AVAILABLE (Còn hàng) / SOLD (Hết hàng), do người có quyền đổi; không có Đang giữ trong MVP |
+| availability | BookCopy | AVAILABLE khi tổng tồn >0, SOLD khi tổng tồn 0; OWNER cập nhật tồn, không có Đang giữ |
+| variants | BookVariant | Ít nhất một dòng: UUID ổn định, tên tối đa100 ký tự, stock nguyên0..999999, thứ tự; không xóa dòng đã lưu |
 | slug | Listing | Duy nhất, ổn định; chứa code khi cần tránh trùng tên |
 | price_min_vnd, price_max_vnd | Listing | Hai đầu khoảng giá nguyên VND 1..999999999999, min≤max (cho bằng nhau), không suy từ ảnh; hiển thị “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” |
 | weight_g | BookCopy | Gram nguyên dương, tối đa 9007199254740991; bắt buộc tạo/lưu sửa/hiện lại. Sách cũ null không tự ẩn; public bỏ trường chưa biết |
@@ -74,7 +75,7 @@ MVP chỉ nhập thủ công qua admin. Bước tiếp theo ngay sau MVP hỗ tr
 Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách; trọng lượng gram là field M5, không suy từ bảng cũ hoặc tạo module quản lý đơn từ ảnh này.
 
 1. Chủ chọn 10–20 cuốn và xác nhận giá tham khảo; website tự sinh mã khi tạo cuốn, tiệm dùng mã đó để nhận diện đúng vật thể.
-2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng và mô tả lỗi đúng từng cuốn; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
+2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng và mô tả tình trạng; các biến thể dùng chung ảnh, tiệm xác nhận ảnh/video đúng bản khi khách hỏi; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
 3. Điền mẫu field, để trống dữ liệu chưa biết; ghi riêng các ảnh và thứ tự cần có.
 4. Một người kiểm tra lại mã/giá/ảnh/tình trạng với cuốn thật.
 5. Ghi thời gian nhập mỗi cuốn, field khó hiểu và thiếu sót ảnh; không đặt mục tiêu tốc độ khi chưa đo.
@@ -87,3 +88,16 @@ M0 đã được duyệt về phạm vi/UX; pilot thật vẫn chưa đạt cho 
 Khoảng giá tham khảo trên listing được giữ làm giá gốc; sale là một số nguyên thấp hơn giá từ, không hiển thị % giảm. `flash_sale` singleton lưu enabled/starts_at/ends_at/version; `flash_sale_item` gắn listing và sale_price_vnd. OWNER quản lý thủ công, audit và optimistic version; không import hoặc ghi số đã bán.
 
 Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED, AVAILABLE và giá sale thấp hơn giá từ. Hết hạn/sold/ẩn/giá không còn hợp lệ thì không trả nhãn giảm giá. Giá gốc lấy giá tham khảo hiện tại, không phải snapshot cố định lúc tạo campaign.
+
+## Tồn kho và biến thể — quyết định 30/10/2026
+
+- Một mã MM/URL đại diện một mục sách, có nhiều bản vật lý theo biến thể tình trạng.
+  Không cấp mã mới cho từng bản trong biến thể; không tự gộp sách đang có cùng tên/ISBN.
+- Ban đầu một dòng không tên, tồn1; “Thêm biến thể” thêm dòng tồn1. Khi có nhiều dòng,
+  mọi tên phải khác nhau sau trim/không phân biệt hoa thường; không để tên trống.
+- Dòng mới chưa lưu được gỡ; dòng đã lưu giữ ID, chỉ sửa tên/tồn; đặt0 khi hết.
+- Tổng tồn tự cộng, chỉ đọc. Khoảng giá/trọng lượng/thông tin/ảnh/publication dùng chung;
+  không thêm giá hoặc ảnh riêng từng biến thể. Mô tả chung không thay xác nhận từng bản.
+- V10 chuyển mỗi sách cũ thành một dòng: AVAILABLE→1, SOLD→0; không suy tồn thật cao hơn1.
+  Giữ ID/mã/slug/ảnh/giá/publishedAt và grade legacy; không sửa migrationV1–V9.
+- Chủ cập nhật sau bán ngoài web; liên hệ và wishlist không trừ/giữ kho hoặc đồng bộ đa kênh.
