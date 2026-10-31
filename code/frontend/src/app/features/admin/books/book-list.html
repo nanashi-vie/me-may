@@ -19,7 +19,7 @@
       <option value="AVAILABLE">Còn hàng</option>
       <option value="SOLD">Hết hàng</option>
     </select></label
-  ><button type="submit">Tìm sách</button>
+  ><label class="unpublished-filter"><input type="checkbox" formControlName="unpublishedOnly" />Chưa xuất bản</label><button type="submit">Tìm sách</button>
 </form>
 @if (error()) {
   <p role="alert" class="error">{{ error() }}</p>
@@ -50,6 +50,8 @@
                   [src]="book.frontContentPath + '?v=' + book.version"
                   [alt]="book.title || book.bookCode"
                 />
+              } @else {
+                <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
               }
               <a [routerLink]="['/admin/sach', book.id]" queryParamsHandling="preserve">{{
                 book.title || 'Chưa có tên'
@@ -59,7 +61,7 @@
             <td>
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}
             </td>
-            <td>{{ labels[book.publication] }}</td>
+            <td>{{ book.publication === 'ARCHIVED' && !book.publishedAt ? 'Chưa xuất bản' : labels[book.publication] }}</td>
             <td>{{ book.totalStock }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
           </tr>
