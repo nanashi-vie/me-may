@@ -60,11 +60,12 @@ public class BookQueryService {
             where.append(" and b.availability=?");
             args.add(filter.availability().name());
         }
+        if(Boolean.TRUE.equals(filter.unpublishedOnly()))where.append(" and l.publication_status='ARCHIVED' and l.published_at is null");
         long total = jdbc.queryForObject("select count(*)" + where, Long.class, args.toArray());
         args.add(filter.size());
         args.add((long) filter.page() * filter.size());
         var items = jdbc.query(
-                "select b.id,b.book_code,b.title,l.price_min_vnd,l.price_max_vnd,l.publication_status,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
+                "select b.id,b.book_code,b.title,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
                         + where + " order by b.updated_at desc,b.id desc limit ? offset ?",
                 (r, n) -> new BookSummary(r.getString("id"), r.getString("book_code"), r.getString("title"),
                         r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class),
@@ -73,7 +74,7 @@ public class BookQueryService {
                         r.getTimestamp("updated_at").toInstant(),
                         r.getBoolean("has_front") ? "/api/v1/admin/books/" + r.getString("id") + "/media/FRONT/content"
                                 : null,
-                        r.getLong("total_stock")),
+                        r.getLong("total_stock"),r.getTimestamp("published_at")==null?null:r.getTimestamp("published_at").toInstant()),
                 args.toArray());
         return new Page<>(items, filter.page(), filter.size(), total,
                 (int) ((total + filter.size() - 1) / filter.size()));

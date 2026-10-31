@@ -22,6 +22,9 @@ export class AdminHttp {
   get<T>(path: string, params?: HttpParams): Observable<T> {
     return this.guarded(this.http.get<T>('/api/v1/admin' + path, { ...this.options, params }));
   }
+  download(path:string,params?:HttpParams):Observable<Blob> {
+    return this.guarded(this.http.get('/api/v1/admin'+path,{...this.options,params,responseType:'blob'}));
+  }
   mutate<T>(
     method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,

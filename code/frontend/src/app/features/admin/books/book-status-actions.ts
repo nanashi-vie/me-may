@@ -19,7 +19,7 @@ import { BookDetail, Publication } from './book.models';
           }
           @if (book().publication === 'ARCHIVED') {
             <button class="secondary" (click)="choose('PUBLISHED')" [disabled]="locked()">
-              Hiện sách
+              {{ book().publishedAt ? 'Hiện sách' : 'Xuất bản' }}
             </button>
           }
         </div>

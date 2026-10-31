@@ -55,6 +55,7 @@ export interface BookDetail extends BookWrite {
   media: MediaView[];
 }
 export interface BookSummary {
+  publishedAt: string | null;
   totalStock: number;
   id: string;
   bookCode: string;
@@ -68,6 +69,7 @@ export interface BookSummary {
   frontContentPath: string | null;
 }
 export interface BookFilter {
+  unpublishedOnly?: boolean;
   q?: string;
   publication?: Publication;
   availability?: Availability;

@@ -17,6 +17,10 @@
 > “Độ mới cao”/“Có lỗi nhẹ”; thêm biến thể có tồn riêng, tổng tự cộng, giá khoảng chung.
 > Quyết định này thay baseline mã theo từng bản vật lý/ảnh riêng từng cuốn; chi tiết ở DATA/DESIGN.
 
+> **Import duyệt31/10/2026:** [BOOK_IMPORT](BOOK_IMPORT.md) thay các nhắc
+> “import tạo nháp” bên dưới bằng tạo nguyên lô sách mới ARCHIVED sau kiểm cả file;
+> thêm ảnh rồi OWNER tự publish, không thêm DRAFT. Đã triển khai local; không là gate MVP.
+
 ### Phạm vi M1 local đã thực hiện
 
 Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
@@ -37,7 +41,7 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Hosting frontend | **Cloudflare Workers + Angular SSR**, user đã chốt | Cần spike runtime/SSR/SEO/OG thực tế; upload browser assets không tự có SSR |
 | Hosting backend | Test: dịch vụ miễn phí do user chuẩn bị, ví dụ Render | Chưa thuê VPS/chốt provider; VPS + Dokploy là hướng production hoãn, không chặn test online |
 | Email | **Resend (sau MVP)** | Dự trù cổng tích hợp, chưa làm gửi mail/notification tại MVP |
-| Bước ngay sau MVP | **Import CSV/Excel tạo sách mới thành nháp** | Mã trùng báo lỗi, không ghi đè; chưa đặc tả định dạng file |
+| Bước ngay sau MVP | **Import CSV/XLSX tạo sách mới Ẩn** | Contract31/10 ở BOOK_IMPORT/DATA; receipt retry, thêm ảnh rồi chủ publish |
 | Mở rộng sau đó | Import cập nhật sách; giỏ hàng/đặt hàng → thanh toán/giao vận → AI số hóa/đối soát | Mỗi bước cần đặc tả riêng |
 
 ### 0.1. Quy tắc MVP hiện hành (M5 duyệt 29/10/2026)
@@ -272,7 +276,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | Giai đoạn | Đầu ra | Điều kiện chấp nhận |
 |---|---|---|
 | **MVP A+B (hiện tại)** | Public catalogue + wishlist + liên hệ; admin desktop quản lý sách/ảnh/trạng thái | Chủ có thể đăng 10–20 cuốn thật và khách có thể tự tìm/gửi yêu cầu; không phát sinh đơn web |
-| **Ngay sau MVP — import CSV/Excel** | Chỉ tạo sách mới thành nháp; mã trùng trong file/database báo lỗi, không ghi đè | Đặc tả cấu trúc file, preview và xử lý lỗi tại bước này; không phải gate nghiệm thu MVP |
+| **Ngay sau MVP — import CSV/Excel** | Chỉ tạo sách mới Ẩn; kiểm cả file, receipt chống retry, không cập nhật | Đã triển khai local theo BOOK_IMPORT/DATA; không phải gate nghiệm thu MVP |
 | **Mở rộng import về sau** | Tạo mới và cập nhật cả sách đã công khai theo mã | Đối chiếu thay đổi, chống ghi đè và audit; đặc tả riêng, không gộp vào bước import đầu |
 | **V1 e-commerce** | Giỏ hàng thực, yêu cầu đặt hàng, admin xác nhận, record đơn | Có chính sách giữ hàng, dữ liệu khách và đối soát đa kênh được đặc tả riêng |
 | **V2 vận hành** | Thanh toán/cọc, giao hàng, trạng thái hoàn/hủy, có thể tích hợp tồn | Chỉ khi chủ muốn thay đổi workflow Excel/Zalo và có quyền API phù hợp |
@@ -310,7 +314,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 | **M4 – wishlist + polish (3–5 ngày)** | Local wishlist, copy multi-book enquiry, cập nhật sold, empty states, accessibility | A+B end-to-end trên điện thoại | Không tạo order, đã bán được cảnh báo |
 | **M5 – hardening/pilot/test online; release tách gate hạ tầng** | Spike Angular SSR trên Workers; backend Render Docker + Neon V1–V5 test; QA iOS/Android/in-app, cookie/CSRF/HTTPS, SEO/cache, backup/restore/rollback, performance/owner demo | Test end-to-end theo hạ tầng có thật; production VPS chưa thuê nên chưa nghiệm thu | Không cắt gate an toàn/SEO/khôi phục; không coi deployment test là release production |
 
-**Ngay sau M5/MVP:** import CSV/Excel tạo mới thành nháp theo mục 7; không đưa importer vào gate M2 hoặc M5.
+**Ngay sau M5/MVP:** import CSV/XLSX tạo mới thành Ẩn theo mục 7; không đưa importer vào gate M2 hoặc M5.
 
 **Quy tắc ưu tiên khi trễ:** cắt collection đẹp/recommendations trước; không cắt hai ảnh bìa/lưng bắt buộc hoặc link video đọc sách tùy chọn; không cắt khả năng phân biệt từng cuốn, cập nhật sold, backup, quyền admin và luồng hỏi mua. Không đưa `Order` vào làm đường tắt.
 
@@ -354,7 +358,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 |---|---|---|
 | Bán chéo Page/livestream nhưng web chưa cập nhật | **Cao** | Người phụ trách đổi sold ngay sau chốt; nhấn mạnh phải xác nhận trong chat; không hứa tồn realtime |
 | Danh sách quan tâm bị hiểu là giỏ hàng/giữ sách | **Cao** | Ngôn ngữ UI “Quan tâm / Gửi hỏi mua”, thông báo rõ không giữ; không tạo reservation |
-| Nhập 500+ cuốn thủ công thành bottleneck | Cao | **Không ép nhập toàn kho**; chủ chọn trước, pilot 10–20; ngay sau MVP làm import CSV/Excel chỉ tạo mới thành nháp; cập nhật hàng loạt để bước sau |
+| Nhập 500+ cuốn thủ công thành bottleneck | Cao | **Không ép nhập toàn kho**; chủ chọn trước, pilot 10–20; ngay sau MVP làm import CSV/XLSX chỉ tạo mới thành Ẩn; cập nhật hàng loạt để bước sau |
 | Ảnh thực tế nặng/quá nhiều | Trung bình | CDN/transforms, giới hạn file, thumbnails, lazy load, retention/backup hợp lý |
 | SEO/OpenGraph sai khi Angular client render | **Cao** | Chốt chiến lược SSR/SSG qua spike, crawler/in-app test, cache invalidation |
 | Reuse code cũ kéo rác nghiệp vụ | Trung bình | Chỉ chuyển module đủ scope, migration mới, static/security checks |
@@ -373,7 +377,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 3. **Dùng 10–20 cuốn chủ chọn làm fixture**: mã, khoảng giá, trọng lượng, 2–6 ảnh, thể loại/kiểu bìa, tuổi, mức đọc và tình trạng; đánh giá các bộ lọc có dữ liệu thực trước khi code giao diện sâu.
 4. **Chốt spec M5 theo hạ tầng test** (26/10 Workers config/Render Docker và Neon V1–V5 đã chuẩn bị/kiểm chứng local; online smoke27/10 đạt, pilot/recovery/performance còn mở): Workers SSR đã chốt, Neon có pooled URL; xác minh direct URL/migration, backend host/runtime, APIroute/cookie/CSRF, env/secrets/health/backup/restore. Production VPS/Dokploy hoãn; chưa tự deploy từ việc cung cấp credential.
 5. **Tiếp tục M2→M5**, pilot với dữ liệu thật, thu log lỗi, đo hiệu năng và thao tác nhập liệu.
-6. **Ngay sau MVP** đặc tả và triển khai import CSV/Excel tạo mới thành nháp; mã trùng báo lỗi, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
+6. **Ngay sau MVP** import CSV/XLSX tạo mới thành Ẩn đã triển khai local; receipt chống retry, không ghi đè. Import cập nhật cả sách đã công khai là bước mở rộng về sau.
 7. **Sau đó** mới mở proposal V1 (order/cart, Resend transactional emails khi có yêu cầu), đồng thời lập experimental protocol capstone (dataset, labels, baselines, metrics).
 
 ### Kết luận

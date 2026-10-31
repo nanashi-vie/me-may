@@ -3,7 +3,7 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  @if(auth.user()?.role === 'OWNER') { <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a> }
+  @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label>Tên hoặc mã sách<input formControlName="q" maxlength="200" type="search" /></label
@@ -19,7 +19,7 @@
       <option value="AVAILABLE">Còn hàng</option>
       <option value="SOLD">Hết hàng</option>
     </select></label
-  ><button type="submit">Tìm sách</button>
+  ><label class="unpublished-filter"><input type="checkbox" formControlName="unpublishedOnly" />Chưa xuất bản</label><button type="submit">Tìm sách</button>
 </form>
 @if (error()) {
   <p role="alert" class="error">{{ error() }}</p>
@@ -36,7 +36,7 @@
           <th>Mã / sách</th>
           <th>Giá tham khảo</th>
           <th>Xuất bản</th>
-          <th>Khả dụng</th>
+          <th>Tồn kho</th>
           <th>Cập nhật</th>
         </tr>
       </thead>
@@ -50,6 +50,8 @@
                   [src]="book.frontContentPath + '?v=' + book.version"
                   [alt]="book.title || book.bookCode"
                 />
+              } @else {
+                <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
               }
               <a [routerLink]="['/admin/sach', book.id]" queryParamsHandling="preserve">{{
                 book.title || 'Chưa có tên'
@@ -59,8 +61,8 @@
             <td>
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}
             </td>
-            <td>{{ labels[book.publication] }}</td>
-            <td>{{ availabilityLabels[book.availability] }}</td>
+            <td>{{ book.publication === 'ARCHIVED' && !book.publishedAt ? 'Chưa xuất bản' : labels[book.publication] }}</td>
+            <td>{{ book.totalStock }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
           </tr>
         } @empty {

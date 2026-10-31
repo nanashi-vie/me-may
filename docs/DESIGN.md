@@ -156,6 +156,9 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 
 ## Editor — desktop
 
+Danh sách sách quản trị hiển thị cột “Tồn kho” bằng tổng tồn các biến thể, gồm cả 0;
+bộ lọc Còn hàng/Hết hàng vẫn dựa trên khả dụng dẫn xuất từ tổng tồn.
+
 Cột nội dung chính: chọn/thả nhiều file 2–6 ảnh lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, tình trạng, tồn/biến thể và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; nút Đăng sách nằm cuối form sau xác nhận.
 
 Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, condition note và 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
@@ -196,3 +199,13 @@ riêng với đangupload/đãupload; lỗixemảnh khôngbiến thành lỗitạ
 Taxonomy/collections có làm mới thủcông; lịch sử chỉtải khi mở. Đăngthànhcông
 đi thẳng sang bảnresponse chínhthức, không GET lại ngay khi handoff còn hợp lệ.
 Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn thứhai.
+
+## Import CSV/Excel —31/10
+
+OWNER mở Import sách từ danh sách; tải mẫu, chọn file, kiểm toàn file rồi xác nhận
+nhập sách Ẩn. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
+File chỉ ở memory tab; mất phản hồi có retry đúng file/fingerprint, hết phiên giữ
+file để đăng nhập và kiểm lại. Receipt dẫn editor từng sách; không bulk publish.
+Danh sách có lọc/nhãn Chưa xuất bản và placeholder; ARCHIVED+publishedAtnull
+dùng nút Xuất bản, sách từng công khai dùng Hiện sách. Ảnh/editor giữ nguyên.
+[Contract và hướng dẫn](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026).

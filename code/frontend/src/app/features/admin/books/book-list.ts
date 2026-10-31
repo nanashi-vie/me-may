@@ -7,7 +7,7 @@ import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookApi } from './book-api';
 import { Availability, BookFilter, BookSummary, Page, Publication } from './book.models';
-import { AVAILABILITY_LABELS, PUBLICATION_LABELS } from './book-copy';
+import { PUBLICATION_LABELS } from './book-copy';
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -25,12 +25,12 @@ export class BookList {
     q: new FormControl('', { nonNullable: true }),
     publication: new FormControl('', { nonNullable: true }),
     availability: new FormControl('', { nonNullable: true }),
+    unpublishedOnly: new FormControl(false,{nonNullable:true}),
   });
   readonly result = signal<Page<BookSummary> | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
   readonly labels = PUBLICATION_LABELS;
-  readonly availabilityLabels = AVAILABILITY_LABELS;
   private sequence = 0;
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
@@ -40,8 +40,10 @@ export class BookList {
         q: p.get('q') ?? '',
         publication: publication ?? '',
         availability: availability ?? '',
+        unpublishedOnly: p.get('unpublishedOnly')==='true',
       });
       const filter: BookFilter = {
+        ...(p.get('unpublishedOnly')==='true'?{unpublishedOnly:true}:{}),
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
         publication: ['PUBLISHED', 'ARCHIVED'].includes(publication ?? '')

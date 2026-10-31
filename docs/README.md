@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
+Cập nhật: 01/11/2026. Đây là **chỉ mục duy nhất** để chọn tài liệu cần đọc theo đầu việc; không cần đọc toàn bộ tài liệu mỗi phiên. Quy tắc bắt buộc nằm trong [AGENTS](../AGENTS.md#giữ-tài-liệu-gọn-sau-mỗi-thay-đổi).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
@@ -22,7 +22,7 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 | Staging/deploy, SEO/OG, bảo mật hạ tầng, backup/restore | [ARCHITECTURE — hạ tầng triển khai](ARCHITECTURE.md#hạ-tầng-triển-khai), [MASTER_PLAN — nghiệm thu MVP](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp), [VERIFICATION — chưa kiểm chứng](VERIFICATION.md#chưa-kiểm-chứng--để-sau) |
 | Deploy Workers/Render và migrate Neon | [DEPLOYMENT — dashboard/env/commands](DEPLOYMENT.md), [VERIFICATION](VERIFICATION.md); source và online smoke đã kiểm chứng; xem gate còn mở trước nghiệm thu |
 | Kiểm chứng M5 online và gate còn mở | [MASTER_PLAN — Workers/Neon đã chốt](MASTER_PLAN.md), [ARCHITECTURE — SSR/runtime/Neon env](ARCHITECTURE.md#điều-chỉnh-trước-m5--25102026); Workers/Render đã deploy27/10; SSR/auth/privacy và detail3ảnh thật đạt; userpublish21/21; xem checklist28/10 về origin/sold/wishlist/error/browser/recovery/performance |
-| Import CSV/Excel ngay sau MVP | [DATA — import](DATA.md#import-ngay-sau-mvp), [MASTER_PLAN — phân kỳ](MASTER_PLAN.md#7-phân-kỳ-sản-phẩm-và-đường-lên-capstone); chưa triển khai importer trong MVP |
+| Import CSV/Excel | [BOOK_IMPORT — quy trình/API](BOOK_IMPORT.md), [DATA — schema](DATA.md#format-file-import--contract-duyệt31102026), [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFICATION.md), [DEPLOYMENT — V11](DEPLOYMENT.md#import-csvxlsx--v11) |
 
 ## Spec và plan đang thực thi
 

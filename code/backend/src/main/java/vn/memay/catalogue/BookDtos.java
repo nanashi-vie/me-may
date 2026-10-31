@@ -75,10 +75,13 @@ public final class BookDtos {
         public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd,
                         Publication publication,
                         Availability availability, long version, Instant updatedAt, String frontContentPath,
-                        long totalStock) {
+                        long totalStock, Instant publishedAt) {
         }
 
-        public record BookFilter(String q, Publication publication, Availability availability, int page, int size) {
+        public record BookFilter(String q, Publication publication, Availability availability, int page, int size, Boolean unpublishedOnly) {
+                public BookFilter(String q,Publication publication,Availability availability,int page,int size) {
+                        this(q,publication,availability,page,size,null);
+                }
         }
 
         public record Page<T>(List<T> items, int page, int size, long totalElements, int totalPages) {
