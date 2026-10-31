@@ -17,6 +17,10 @@
 > “Độ mới cao”/“Có lỗi nhẹ”; thêm biến thể có tồn riêng, tổng tự cộng, giá khoảng chung.
 > Quyết định này thay baseline mã theo từng bản vật lý/ảnh riêng từng cuốn; chi tiết ở DATA/DESIGN.
 
+> **Import duyệt31/10/2026:** [BOOK_IMPORT_SPEC](BOOK_IMPORT_SPEC.md) thay các nhắc
+> “import tạo nháp” bên dưới bằng tạo nguyên lô sách mới ARCHIVED sau kiểm cả file;
+> thêm ảnh rồi OWNER tự publish, không thêm DRAFT. Chưa code, không là gate MVP.
+
 ### Phạm vi M1 local đã thực hiện
 
 Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.

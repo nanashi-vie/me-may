@@ -68,7 +68,12 @@ Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. �
 
 ## Import ngay sau MVP
 
-MVP chỉ nhập thủ công qua admin. Bước tiếp theo ngay sau MVP hỗ trợ CSV/Excel tạo sách mới thành nháp; mã trùng trong file hoặc database báo lỗi, không ghi đè. Định dạng file, preview và xử lý lỗi sẽ đặc tả tại bước đó; CSV demo M0 không phải file mẫu importer. Cập nhật cả sách đã công khai qua import chỉ làm về sau, có đối chiếu thay đổi, chống ghi đè và audit.
+User duyệt31/10 [BOOK_IMPORT_SPEC](BOOK_IMPORT_SPEC.md): CSV/XLSX mẫu website,
+đủ metadata, kiểm cả file trước khi tạo nguyên lô sách mới ARCHIVED; thêm ảnh và
+OWNER tự publish sau. Thay quyết định “tạo nháp” cũ; không thêm DRAFT. Dòng theo
+biến thể/khóa nhóm, tự sinh mã MM, không sửa/gộp theo tên hoặc ISBN; receipt chống
+nhập trùng khi retry. CSV demo M0 không là mẫu importer. Chưa triển khai code;
+không thêm vào gate MVP. Import cập nhật sách cũ vẫn nằm ngoài phạm vi này.
 
 ## Quy trình pilot thật và đầu ra cần ghi
 

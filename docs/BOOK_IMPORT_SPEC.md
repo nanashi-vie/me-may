@@ -1,8 +1,8 @@
 # Import CSV/Excel thành sách ẩn
 
-Trạng thái: hướng xử lý đã được user đồng ý31/10/2026; builder review không
-còn câu hỏi quan trọng. Chờ user duyệt chi tiết trước kế hoạch/code; không là
-gate nghiệm thu MVP.
+Trạng thái: user duyệt đặc tả31/10/2026 sau builder review; kế hoạch triển khai
+ở [BOOK_IMPORT_PLAN](BOOK_IMPORT_PLAN.md) đang chờ review. Chưa code importer;
+không là gate nghiệm thu MVP.
 
 ## 1. Mục tiêu và quyết định
 
@@ -18,8 +18,8 @@ Các lựa chọn đã cân nhắc:
 Dùng ARCHIVED hiện có, không thêm DRAFT hoặc pipeline xử lý nền. Chỉ tạo mới;
 không sửa sách đã có, không gộp theo tên/ISBN, không import ảnh/URL ảnh/đơn/khách.
 Luồng nhập thủ công đã duyệt tiếp tục tạo và publish nguyên tử như hiện tại.
-Đặc tả này thay quyết định importer cũ “tạo nháp” khi được duyệt; chưa sửa
-MASTER_PLAN/DATA trước khi duyệt.
+Đặc tả được duyệt này thay quyết định importer cũ “tạo nháp” bằng ARCHIVED;
+MASTER_PLAN/DATA dẫn tới contract hiện hành ở đây trong thời gian triển khai.
 
 ## 2. Format file — đề xuất cụ thể của agent
 
