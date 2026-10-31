@@ -6,7 +6,7 @@ Cập nhật 31/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
-- Danh sách admin31/10: cột Tồn kho hiển thị totalStock; 145/145 test frontend và build Workers đạt, chuẩn bị commit/push dev. CSV/Excel đang brainstorm nguồn file/ảnh; chưa triển khai importer hoặc thay quyết định nháp cũ.
+- Danh sách admin31/10: cột Tồn kho hiển thị totalStock, đã push c1cad3b; 145/145 test frontend và build Workers đạt. Import đang brainstorm: user chọn format website, đề xuất tạo sách ẩn rồi thêm ảnh/publish thủ công; cần chốt độ đầy đủ metadata trước spec. Chưa triển khai importer hoặc thay quyết định nháp cũ.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
