@@ -3,7 +3,7 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  @if(auth.user()?.role === 'OWNER') { <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a> }
+  @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label>Tên hoặc mã sách<input formControlName="q" maxlength="200" type="search" /></label

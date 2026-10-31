@@ -148,32 +148,32 @@ code/backend/src/test/java/vn/memay/support/CatalogueTestSupport.java.
 `BookImportTransaction.commit(AdminUser actor,ImportDocument document) -> CommitResult(receipt,created)`;
 `BookCommandService.createImported(AdminUser actor,BookWrite write,UUID batchId) -> BookDetail` (package-private).
 
-- [ ] RED migration on disposable PostgreSQL V10→V11: existingdata/counts/IDs untouched;
+- [x] RED migration on disposable PostgreSQL V10→V11: existingdata/counts/IDs untouched;
   unique fingerprint64hex; receiptitem groupkey/bookID unique perbatch/FK valid.
   Tables `book_import_batch(id UUID,fingerprint CHAR(64) UNIQUE,schema_version INT,
   owner_id BIGINT FK,created_at TIMESTAMPTZ,state CHECK='COMMITTED')` and
   `book_import_item(batch_id UUID FK,group_key VARCHAR(50),book_id BIGINT FK,
   book_code VARCHAR(30),title VARCHAR(300),PRIMARY KEY(batch_id,group_key),UNIQUE(batch_id,book_id))`.
   Add exact newtables cleanup before book_copy in test fixture, never disable foreign keys.
-- [ ] RED commit2groups/3variants→2ARCHIVED/media0/session0/publishedAtnull/stock đúng,
+- [x] RED commit2groups/3variants→2ARCHIVED/media0/session0/publishedAtnull/stock đúng,
   CREATE audit nguồnimport/batchID, không PUBLISHED audit. Mid-batch invalid nhóm cuối
   rollback book/listing/variant/audit/receipt; không cần sequence không bỏ số.
-- [ ] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportMigrationTest,BookImportTransactionTest test`;
+- [x] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportMigrationTest,BookImportTransactionTest test`;
   Expected RED missing tables/service. Implement receipt-first conflict arbitration
   `INSERT ... ON CONFLICT(fingerprint) DO NOTHING RETURNING id` trong transaction;
   conflict chờ commit rồi read receipt; rollback contender không để record rỗng đã commit.
   RequireOwner trước mọi lookup, receipt cũ trả ngay trước resolve DB references.
-- [ ] Resolve category/collection slug once mỗi batch, không lookup từng biến thể;
+- [x] Resolve category/collection slug once mỗi batch, không lookup từng biến thể;
   lock collection rows `FOR SHARE` khi validate/commit để active không đổi giữa kiểm và ghi.
   Validate import document đầy đủ, createImported reuse createAggregate/mapper/audit,
   không gọi createPublished hoặc Cloudinary. Không để domain write method cho endpoint khác bỏ qua OWNER.
   Receipt stateCOMMITTED chỉ tồn tại cùng đủ items; đọc bên ngoài transaction không thấy partial.
-- [ ] Races2owner/cùngfingerprint đúng1batch/IDs; firsttransactionrollback cho contenderretry;
+- [x] Races2owner/cùngfingerprint đúng1batch/IDs; firsttransactionrollback cho contenderretry;
   postcommitresponse mất→retry; sau sửa/publish sách/deactivatecollection vẫn trả receipt cũ,
   không touchversion/audit/stock. Người sửa file/key tạo digest khác, không tự gộp theoISBN.
   `concurrentSameFileReturnsOneReceipt` assert1batch/2book/3variant, receipts IDs bằng nhau;
   `retryAfterCollectionDeactivationDoesNotOverwriteEditedBook` assert version/stock không đổi.
-- [ ] Run focused và cleanverify backend0failure/error (liveprovider skips ghi rõ);
+- [x] Run focused và cleanverify backend0failure/error (liveprovider skips ghi rõ);
   commit `feat(import): create hidden book batches atomically`.
 
 ## Task 4: API preview/confirm, quota và tải mẫu
@@ -184,24 +184,24 @@ T/BookImportApiTest.java, BookImportGateTest.java.
 `confirm(AdminUser,String,byte[],String expected) -> CommitResult`;
 gate `acquire(long ownerId) -> AutoCloseable`, `charge(long ownerId) -> void` dùng Clock.
 
-- [ ] RED realHTTP OWNER/multipart/CSRF/no-store; STAFF403/anonymous401;
+- [x] RED realHTTP OWNER/multipart/CSRF/no-store; STAFF403/anonymous401;
   previewinvalid200issues/DBnochange, malformed422/413; fingerprintmismatch409/DBnochange;
   validconfirm201/existing200. OPTIONS/template nhận active slug/enum; filenames cố định,
   không echo unsafe path; lỗi không leak parser/internal data.
-- [ ] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportApiTest,BookImportGateTest test` Expected RED.
+- [x] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportApiTest,BookImportGateTest test` Expected RED.
   Implement routes ở contract; accept bytes bounded2MiB trước parse; collect all row issues;
   parse ngoài transaction, lookup receipt trước DBvalidation, revalidate refs khi confirm.
   No-store cả downloads/errors; template MIME và Content-Disposition đúng format.
-- [ ] Gate acquire trước parse, release finally kể cả mọi exception; per-owner counters10/600s,
+- [x] Gate acquire trước parse, release finally kể cả mọi exception; per-owner counters10/600s,
   receipt retry miễn charge. Parse thất bại/newpreview/newconfirm đều charge một lần;
   gate state prune hết cửa sổ để không tăng theo account vô hạn, không bypass auth.
   Clock deterministic test simultaneous429/Retry-After, boundary600s, failedparse stillcount,
   receiptlookup sau10attempts vẫn200, không sửa image limiter.
-- [ ] Tests collectioninactive giữapreview/confirm→422issues/no write, collection concurrentchange
+- [x] Tests collectioninactive giữapreview/confirm→422issues/no write, collection concurrentchange
   không commit dữ liệu trái validation; response gồm cap1000/total đúng; unknown format400.
   `previewDoesNotAllocateBooksOrCodes` kiểm count/sequence trước-sau;
   `confirmRejectsChangedFingerprint` assert409 và counts không đổi.
-- [ ] Run focused + backendcleanverify0fail; commit `feat(import): expose preview and confirm APIs`.
+- [x] Run focused + backendcleanverify0fail; commit `feat(import): expose preview and confirm APIs`.
 
 ## Task 5: Trang import và state của file/auth
 

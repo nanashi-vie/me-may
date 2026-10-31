@@ -6,7 +6,7 @@ Cập nhật 31/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
-- Import31/10: user duyệt [spec](BOOK_IMPORT_SPEC.md) và [plan](BOOK_IMPORT_PLAN.md), thực thi Native/tuần tự từ dev81f1c09. Task1/2 validator/parser/template đã commit; Task3 receipt/atomiccreate đã qua cleanverify147run/0failure/0error/3skip, đang chốt để nối API. Chưa có UI importer hoàn chỉnh hoặc migration online.
+- Import31/10: thực thi [plan](BOOK_IMPORT_PLAN.md) Native/tuần tự đã duyệt. Task1–4 backend đã commit (157run/0failure/0error/3skip); Task5 UI đạt161frontend/Workersbuild, đang chốt. Chưa browserQA, unpublishedfilter/publish regression và migration online.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;

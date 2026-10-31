@@ -1,0 +1,74 @@
+<a routerLink="/admin/sach">← Danh sách sách</a>
+<h1>Import sách</h1>
+<p>Nhập thông tin bằng mẫu CSV/Excel, sau đó thêm ảnh và tự xuất bản từng sách.</p>
+@if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+@if (notice()) { <p role="status">{{ notice() }}</p> }
+@if (needsLogin()) {
+  <section><h2>Đăng nhập lại</h2><p>File chỉ được giữ trong bộ nhớ tab này. Sau đăng nhập cần kiểm tra lại.</p>
+    <form [formGroup]="loginForm" (ngSubmit)="loginAgain()">
+      <label>Email<input type="email" formControlName="email" autocomplete="username" required /></label>
+      <label>Mật khẩu<input type="password" formControlName="password" autocomplete="current-password" required /></label>
+      <button type="submit" [disabled]="busy()">Đăng nhập</button>
+    </form>
+  </section>
+}
+@if (editable()) {
+  <section aria-labelledby="template-title">
+    <h2 id="template-title">1. Chuẩn bị file theo mẫu</h2>
+    <div class="actions"><button type="button" class="secondary" (click)="download('xlsx')">Tải mẫu Excel (.xlsx)</button><button type="button" class="secondary" (click)="download('csv')">Tải mẫu CSV</button></div>
+    <p>Tối đa 2 MiB, 500 dòng, 100 nhóm sách; mỗi nhóm tối đa 100 biến thể. Không nhận .xls hoặc .xlsm.</p>
+    <details><summary>Hướng dẫn cột và mã lựa chọn</summary>
+      <p>Giữ đủ 20 cột của mẫu. Mỗi dòng là một biến thể; cùng <code>nhom_sach</code> là một sách. Lặp lại đầy đủ thông tin chung trên mọi dòng trong nhóm. Khóa nhóm phân biệt hoa thường và không phải mã MM.</p>
+      <p>Ví dụ A01 có hai dòng: “Độ mới cao”, tồn 2 và “Cấn góc”, tồn 1 → một sách tổng tồn 3. Nhiều biến thể cần tên khác nhau; một biến thể được để tên trống.</p>
+      <p>Bắt buộc: nhom_sach, ten_sach, ngon_ngu, the_loai, gia_tu, gia_den, trong_luong_g, tinh_trang, mo_ta_tinh_trang, ton_kho. Picture book phải có kieu_bia. Các cột còn lại có thể để trống.</p>
+      <p>Giá nguyên VND 1–999999999999, giá từ không lớn hơn giá đến. Trọng lượng gram nguyên dương; tồn 0–999999. Giữ ISBN/khóa nhóm và số ở dạng text, không dấu phân nhóm nghìn, phân số hoặc exponent.</p>
+      <p>Ngôn ngữ gợi ý “Tiếng Anh”, không tự điền khi để trống. Tình trạng: HIGH_FRESHNESS = Độ mới cao; MINOR_FLAWS = Có lỗi nhẹ. Video dùng HTTPS plain text, không hyperlink.</p>
+      <p>CSV UTF-8, dấu phẩy; dùng quote kép cho ô chứa dấu phẩy hoặc xuống dòng. Dòng CSV là bản ghi logic, header = 1; ô nhiều dòng vẫn một bản ghi. Excel dùng số hàng thật ở sheet Sach.</p>
+      <p>Không công thức, ngày, macro, ô gộp hoặc liên kết ngoài. Độ tuổi/bộ sưu tập phân cách bằng dấu chấm phẩy, không trùng. Mức đọc trống là chưa xác định.</p>
+      @if (options(); as data) {
+        <dl><dt>Thể loại</dt><dd>@for (item of data.taxonomy.categories; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
+        <dt>Kiểu bìa</dt><dd>@for (item of data.taxonomy.bindings; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
+        <dt>Độ tuổi</dt><dd>@for (item of data.taxonomy.ageGroups; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
+        <dt>Mức đọc</dt><dd>@for (item of data.taxonomy.readingLevels; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
+        <dt>Bộ sưu tập đang dùng</dt><dd>@for (item of data.collections; track item.slug) {<div>{{ item.slug }} — {{ item.name }}</div>} @empty {Không có bộ sưu tập. Để trống cột này.}</dd></dl>
+      }
+      <button type="button" class="secondary" (click)="loadOptions()">Làm mới mã lựa chọn</button>
+    </details>
+    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung hoặc khóa nhóm sẽ là lô mới, không cập nhật sách cũ.</p>
+  </section>
+  <section aria-labelledby="file-title"><h2 id="file-title">2. Kiểm tra file</h2>
+    <label>File CSV/Excel<input type="file" accept=".csv,.xlsx" [disabled]="busy()" (change)="fileChanged($event)" /></label>
+    @if (selectedFile(); as file) {<p>Đã chọn: {{ file.name }} · {{ file.size }} bytes</p>}
+    <button type="button" (click)="checkFile()" [disabled]="!selectedFile() || busy() || needsLogin() || retryable()">Kiểm tra file</button>
+    @if (busy()) {<p role="status">Đang xử lý… File và lần import đang được kiểm tra.</p>}
+    @if (retryAfter()) {<p>Thử lại sau {{ retryAfter() }} giây.</p>}
+    @if (retryable()) {<button type="button" [disabled]="busy()" (click)="retryCommit()">Thử lại lần import này</button>}
+  </section>
+  @if (issues().length) {
+    <section aria-labelledby="issues-title"><h2 id="issues-title">Có {{ totalIssues() }} lỗi cần sửa</h2>
+      <p>Chưa tạo sách nào từ lần kiểm tra này. Sửa file trên máy rồi chọn lại. Hiển thị {{ issues().length }} chi tiết đầu tiên.</p>
+      <div class="table-scroll"><table><thead><tr><th>Sheet</th><th>Dòng</th><th>Cột</th><th>Lỗi</th></tr></thead><tbody>
+        @for (issue of issues(); track $index) {<tr><td>{{ issue.sheet || '—' }}</td><td>{{ issue.row || '—' }}</td><td>{{ issue.column }}</td><td>{{ issue.message }}</td></tr>}
+      </tbody></table></div>
+    </section>
+  }
+  @if (receipt(); as saved) {
+    <section aria-labelledby="receipt-title"><h2 id="receipt-title">Lô đã được nhập</h2>
+      <p>Biên nhận {{ saved.id }} · {{ saved.books.length }} sách. Nếu đây là lần thử lại, mã sách được giữ nguyên; trạng thái hiện tại xem ở từng sách.</p>
+      <ul>@for (book of saved.books; track book.id) {<li><a [routerLink]="['/admin/sach',book.id]">{{ book.bookCode }} · {{ book.title }}</a></li>}</ul>
+      <a routerLink="/admin/sach" [queryParams]="{unpublishedOnly:true}">Mở danh sách chưa xuất bản</a>
+    </section>
+  } @else if (preview(); as result) {
+    <section aria-labelledby="preview-title"><h2 id="preview-title">3. Xem trước và xác nhận</h2>
+      <p>{{ result.document.rowCount }} dòng · {{ result.document.groups.length }} sách · Tổng tồn: {{ display(totalStock()) }}</p>
+      @for (group of result.document.groups; track group.key) {
+        <details><summary>{{ group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · {{ group.write.variants.length }} biến thể</summary>
+          <dl>@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
+          <table><thead><tr><th>Biến thể</th><th>Tồn kho</th></tr></thead><tbody>@for (variant of group.write.variants; track $index) {<tr><td>{{ variant.name || 'Mặc định' }}</td><td>{{ display(variant.stock) }}</td></tr>}</tbody></table>
+        </details>
+      }
+      <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="!canConfirm()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã kiểm tra thông tin. Các sách sẽ được tạo ở trạng thái Ẩn; tôi sẽ thêm ảnh và tự xuất bản sau.</label>
+      <button type="button" [disabled]="!canConfirm() || !confirmed()" (click)="confirm()">Import {{ result.document.groups.length }} sách ẩn</button>
+    </section>
+  }
+} @else if (!needsLogin()) {<p>Chỉ chủ tiệm được import sách.</p>}

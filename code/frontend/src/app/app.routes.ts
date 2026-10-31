@@ -52,6 +52,13 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/books/book-editor').then((m) => m.BookEditor),
       },
       {
+        path: 'sach/import',
+        title: 'Import sách | Mẹ Mây',
+        canActivate: [()=>inject(AuthService).user()?.role==='OWNER'||inject(Router).createUrlTree(['/admin/sach'])],
+        canDeactivate: [pendingBookChanges],
+        loadComponent: ()=>import('./features/admin/books/book-import').then(m=>m.BookImport),
+      },
+      {
         path: 'sach/:id/xem-truoc',
         title: 'Xem trước sách | Mẹ Mây',
         loadComponent: () =>
