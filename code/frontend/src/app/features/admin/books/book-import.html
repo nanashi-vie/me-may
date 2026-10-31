@@ -8,7 +8,7 @@
     <form [formGroup]="loginForm" (ngSubmit)="loginAgain()">
       <label>Email<input type="email" formControlName="email" autocomplete="username" required /></label>
       <label>Mật khẩu<input type="password" formControlName="password" autocomplete="current-password" required /></label>
-      <button type="submit" [disabled]="busy()">Đăng nhập</button>
+      <button type="submit" [disabled]="loginBusy() || busy()">{{ loginBusy() ? 'Đang đăng nhập…' : 'Đăng nhập' }}</button>
     </form>
   </section>
 }

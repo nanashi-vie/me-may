@@ -26,7 +26,7 @@ public class BookImportParser {
                 var rows=new ArrayList<CellRow>();
                 while(iterator.hasNext()) {
                     var record=iterator.next();
-                    if(record.size()==1 && record.get(0).isBlank())continue;
+                    if(record.toList().stream().allMatch(String::isBlank))continue;
                     if(rows.size()>=500)throw BookImportException.file(413,"row_limit","Tối đa 500 dòng dữ liệu.");
                     var issues=new ArrayList<ImportIssue>();
                     if(record.size()!=headers.size())issues.add(new ImportIssue("CSV",Math.toIntExact(record.getRecordNumber()),"file","columns","Số ô không khớp 20 cột của mẫu."));

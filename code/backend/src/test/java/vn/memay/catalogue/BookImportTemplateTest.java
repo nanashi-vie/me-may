@@ -92,4 +92,15 @@ class BookImportTemplateTest {
         assertThatThrownBy(()->parser.parse("a.xlsx",many)).isInstanceOf(BookImportException.class);
         assertThatThrownBy(()->parser.parse("a.xlsx",BookImportParserTest.zip(Map.of("x.xml","<x>"+"a".repeat(500000)+"</x>")))).isInstanceOf(BookImportException.class);
     }
+    @Test void csvBlankCellRecordsMatchXlsxBlankRows() throws Exception {
+        var first=BookImportValidationTest.row(2,"A","","1").cells();var second=BookImportValidationTest.row(4,"B","","1").cells();
+        String csv=new String(BookImportParserTest.csv(first),StandardCharsets.UTF_8);
+        String next=new String(BookImportParserTest.csv(second),StandardCharsets.UTF_8);next=next.substring(next.indexOf('\n')+1);
+        csv+=",".repeat(19)+"\r\n"+String.join(",",Collections.nCopies(20,"\"\""))+"\r\n"+next;
+        var csvDoc=validator.normalize(parser.parse("a.csv",csv.getBytes(StandardCharsets.UTF_8)));
+        var xlsx=workbook(sheet->{var blank=sheet.createRow(2);var data=sheet.createRow(3);for(int i=0;i<20;i++){blank.createCell(i).setCellValue("");data.createCell(i).setCellValue(second.get(BookImportSchema.HEADERS.get(i)));}});
+        var xlsxDoc=validator.normalize(parser.parse("a.xlsx",xlsx));
+        assertThat(csvDoc.issues()).isEmpty();assertThat(csvDoc.rowCount()).isEqualTo(2);
+        assertThat(csvDoc.fingerprint()).isEqualTo(xlsxDoc.fingerprint());
+    }
 }

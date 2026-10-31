@@ -212,23 +212,23 @@ code/frontend/src/app/core/auth/admin-http.ts (chỉ nếu cần overload typed 
 `confirm(file:File,fingerprint:string):Observable<ImportReceipt>`; options/template như contract.
 `AdminHttp.mutate` sẵn nhận FormData choPOST; download Blob giữ guarded auth/no transfercache.
 
-- [ ] RED unit real component: selectfile→clearpreview, check→issues table/cap/instructions;
+- [x] RED unit real component: selectfile→clearpreview, check→issues table/cap/instructions;
   validpreview→confirmation checkbox/nút Import N sách ẩn, duplicate receipt→links/no confirm.
   Stale response fileA khi chọnB và oldepoch sau logout/login không áp; doubleclick chỉ1request.
-- [ ] Run `npm --prefix code/frontend test` Expected RED missing component/API.
+- [x] Run `npm --prefix code/frontend test` Expected RED missing component/API.
   Add OWNER route `/admin/sach/import` trước `sach/:id`, noindex/no-store admin contract;
   link Import sách chỉOWNER. Dùng table/labels hiện có, desktop-first, mobile không tràn trang.
   Không framework spreadsheet hoặc parser frontend; show full preview tất cả nhóm/variants,
   issue plain interpolation, row/column headers, summary/instructions CSV vsExcel.
-- [ ] Keep selectedFile+previewFingerprint trong memory, immutable captured request pair;
+- [x] Keep selectedFile+previewFingerprint trong memory, immutable captured request pair;
   selection hoặc auth epoch đổi →clearresult/confirmed, cancel/ignoreinflight;
   backend401 giữFile nhưng xóa validity, reauth cùngOWNER rồi kiểm lại; logout không giữ receipt
   của tài khoản cũ. SSR không đụng File/window/localStorage trong initialization.
-- [ ] 422showissues/disablecommit;409clearvalidity/recheck;429giữfile/Retry-After/manualretry;
+- [x] 422showissues/disablecommit;409clearvalidity/recheck;429giữfile/Retry-After/manualretry;
   commitnetwork/5xx giữ samefile/fingerprint và hiện “Thử lại lần import này”, không tạo file/key mới.
   Refresh mất memory →chọn lại cùngfile nhận receipt; canDeactivate/beforeunload cảnh báo khi pending,
   không dùng clientrequestcancel làm bằng chứng serverrollback.
-- [ ] Unit assertions401/403/409/422/429/timeout/latedestroy/HTMLtext/downloadBlob và route precedence;
+- [x] Unit assertions401/403/409/422/429/timeout/latedestroy/HTMLtext/downloadBlob và route precedence;
   `latePreviewCannotEnableAnotherFile` assert nútconfirm disabled/fileB vẫnselected;
   `lostCommitResponseRetriesExactFileAndFingerprint` assert hai request cùng capturedpair;
   fullfrontendPASS rồi `npm run build:workers` ở code/frontend PASS;
@@ -243,20 +243,20 @@ T/BookImportVisibilityTest.java; F/book-import-visibility.spec.ts.
 BookFilter thêm `Boolean unpublishedOnly`/TSboolean?; queryparam `unpublishedOnly=true`.
 Giữ constructoroverload BookFilter5args cho callsites cũ nếu cần; null/false không thêmpredicate.
 
-- [ ] RED imported/hiddenpreviouslypublished/published/stock0/stock3 listing assertions;
+- [x] RED imported/hiddenpreviouslypublished/published/stock0/stock3 listing assertions;
   unpublishedOnly thêm `l.publication_status='ARCHIVED' and l.published_at is null`
   cùng search/publication/availability/page; không thêm mediaquery từng dòng.
-- [ ] Run focused `BookImportVisibilityTest` + fullfrontend Expected RED thiếufield/filter/label.
+- [x] Run focused `BookImportVisibilityTest` + fullfrontend Expected RED thiếufield/filter/label.
   Implement query/mapping once; list label “Chưa xuất bản” khiARCHIVED+null, “Ẩn” khiđãpublish,
   placeholderkhi frontContentPathnull. Filtercheckbox “Chưa xuất bản” vẫn cùng URL query/state.
   Statusaction ARCHIVED+null→“Xuất bản”; ARCHIVED+nonnull→“Hiện sách”.
-- [ ] Imported editor tải metadata đủ, pendingảnh/lưu/publish giữ existing flows;
+- [x] Imported editor tải metadata đủ, pendingảnh/lưu/publish giữ existing flows;
   fakeprovider integration add FRONT/BACK→publish/firsttimestamp rồiẩn/hiện timestampkhôngđổi;
   thiếuBACK/dirty/409/STAFF403 không publish, không sinh sách/sessionfinal mới.
   Publiclist/detail/lookup/SSRseed/media persisted/ID archived phảiẩn kể cảstock>0 vàđãcóảnh.
   `importedHiddenMediaStaysPrivateUntilFirstPublication` assert public404 trước/200 sau,
   publishedAt lầnđầu!=null và restore không đổi timestamp.
-- [ ] Fullfrontend và backendcleanverifyPASS; commit `feat(admin): finish imported books before publishing`.
+- [x] Fullfrontend và backendcleanverifyPASS; commit `feat(admin): finish imported books before publishing`.
 
 ## Task 7: QA, giới hạn workload, review và bàn giao
 

@@ -6,7 +6,7 @@ Cập nhật 31/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
-- Import31/10: thực thi [plan](BOOK_IMPORT_PLAN.md) Native/tuần tự đã duyệt. Task1–4 backend đã commit (157run/0failure/0error/3skip); Task5 UI đạt161frontend/Workersbuild, đang chốt. Chưa browserQA, unpublishedfilter/publish regression và migration online.
+- Import31/10: Task1–6 đã commit, Task7 QA/bàn giao đang làm theo [plan](BOOK_IMPORT_PLAN.md). Review2Important đã sửa RED→GREEN; backend160run/0failure/0error/3skip, frontend165/165. Đang rebuild/browserQA/đo100sách–500biến thể; cuối phiên dọn DB QA/restore tạm theo user. Chưa migrate/deploy online.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
