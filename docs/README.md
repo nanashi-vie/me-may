@@ -26,6 +26,9 @@ Cập nhật: 30/10/2026. Đây là **chỉ mục duy nhất** để chọn tài
 
 ## Spec và plan đang thực thi
 
+- [BOOK_IMPORT_SPEC](BOOK_IMPORT_SPEC.md): hướng CSV/XLSX mẫu website, kiểm cả file
+  rồi tạo sách Ẩn được user đồng ý31/10; builder review đạt, chờ duyệt chi tiết, chưa code.
+
 - [BOOK_PUBLISH_PERFORMANCE_SPEC](BOOK_PUBLISH_PERFORMANCE_SPEC.md): user duyệt30/10;
   [BOOK_PUBLISH_PERFORMANCE_PLAN](BOOK_PUBLISH_PERFORMANCE_PLAN.md) đã triển khai code/local,
   giữ để theo gate RenderQA/Neon còn mở. Đã đủ5vònglocal2/6ảnh trước/sau;
