@@ -6,7 +6,7 @@ Cập nhật 01/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
-- Import CSV/XLSX31/10–01/11 đã triển khai/kiểm chứng local; [contract](BOOK_IMPORT.md), [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Backend160run/0failure/0error/3skip, frontend165/165, NodeSSR/Workers/proxy/SSR và browserQA đạt. Workload100sách/500variants confirm1,56s một mẫu local; không đại diện Render/Neon. Review2Important đã sửa RED→GREEN. Đã dọn10asset ownQA và7DB tạm, giữ dev/test/postgres; QA/browser dừng. Bàn giao trên dev, V11 và gate online chưa chạy; user review/merge/deploy theo DEPLOYMENT.
+- Import CSV/XLSX31/10–01/11 đã triển khai/kiểm chứng local; [contract](BOOK_IMPORT.md), [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Backend160run/0failure/0error/3skip, frontend165/165, NodeSSR/Workers/proxy/SSR và browserQA đạt. Workload100sách/500variants confirm1,56s một mẫu local; không đại diện Render/Neon. Review2Important đã sửa RED→GREEN. Đã dọn10asset ownQA và7DB tạm, giữ dev/test/postgres; QA/browser dừng. Code và QA bàn giao đã pushdev (d35f79c), V11 và gate online chưa chạy; user review/merge/deploy theo DEPLOYMENT.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Đã commit/pushdev trước importer; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
