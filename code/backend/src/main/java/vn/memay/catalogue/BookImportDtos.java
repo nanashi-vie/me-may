@@ -6,7 +6,9 @@ import vn.memay.catalogue.BookDtos.BookWrite;
 
 public final class BookImportDtos {
     private BookImportDtos() {}
-    public record CellRow(String sheet,int row,Map<String,String> cells) {}
+    public record CellRow(String sheet,int row,Map<String,String> cells,List<ImportIssue> issues) {
+        public CellRow(String sheet,int row,Map<String,String> cells) { this(sheet,row,cells,List.of()); }
+    }
     public record ImportIssue(String sheet,Integer row,String column,String code,String message) {}
     public record ImportGroup(String key,BookWrite write,List<String> collectionSlugs,List<Integer> rows) {}
     public record ImportDocument(List<ImportGroup> groups,List<ImportIssue> issues,int totalIssues,int rowCount,String fingerprint) {

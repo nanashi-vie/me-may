@@ -65,4 +65,10 @@ class BookImportValidationTest {
         var rows=new ArrayList<CellRow>();for(int i=0;i<500;i++)rows.add(change(change(change(row(i+2,"A","v"+i,""),"ngon_ngu",""),"tinh_trang",""),"ten_sach",""));
         var doc=validator.normalize(rows);assertThat(doc.issues()).hasSize(1000);assertThat(doc.totalIssues()).isGreaterThan(1000);
     }
+    @Test void boundsGroupsAndPreservesCaseSensitiveKeys() {
+        var rows=new ArrayList<CellRow>();for(int i=0;i<100;i++)rows.add(row(i+2,"A"+i,"","1"));
+        assertThat(validator.normalize(rows).issues()).isEmpty();rows.add(row(102,"A100","","1"));
+        assertThat(validator.normalize(rows).issues()).extracting(ImportIssue::column).contains("nhom_sach");
+        assertThat(validator.normalize(List.of(row(2,"A","","1"),row(3,"a","","1"))).groups()).hasSize(2);
+    }
 }

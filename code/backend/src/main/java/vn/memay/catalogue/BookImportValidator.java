@@ -16,6 +16,7 @@ public class BookImportValidator {
         if(input.isEmpty()) issue(errors,null,"file","empty","File không có dữ liệu sách.");
         if(input.size()>BookImportSchema.MAX_ROWS) issue(errors,null,"file","limit","Tối đa 500 dòng dữ liệu.");
         for(var row:input) {
+            errors.addAll(row.issues());
             var cells=new LinkedHashMap<String,String>();
             for(String column:BookImportSchema.HEADERS) cells.put(column,BookValidation.trim(row.cells().get(column)));
             var clean=new CellRow(row.sheet(),row.row(),cells);
