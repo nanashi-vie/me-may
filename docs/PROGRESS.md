@@ -6,6 +6,8 @@ Cập nhật 01/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
+- UI import01/11: đã bỏ bước/nút tải mẫu, rút hướng dẫn thành bảng field ngắn; mã lựa chọn thu gọn. Frontend165/165 và Workers build đạt; chuẩn bị commit/pushdev, chưa deploy.
+
 - Import CSV/XLSX31/10–01/11 đã triển khai/kiểm chứng local; [contract](BOOK_IMPORT.md), [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Backend160run/0failure/0error/3skip, frontend165/165, NodeSSR/Workers/proxy/SSR và browserQA đạt. Workload100sách/500variants confirm1,56s một mẫu local; không đại diện Render/Neon. Review2Important đã sửa RED→GREEN. Đã dọn10asset ownQA và7DB tạm, giữ dev/test/postgres; QA/browser dừng. Code và QA bàn giao đã pushdev (d35f79c), V11 và gate online chưa chạy; user review/merge/deploy theo DEPLOYMENT.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Đã commit/pushdev trước importer; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
