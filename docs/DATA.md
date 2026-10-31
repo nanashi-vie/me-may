@@ -6,7 +6,7 @@
 
 Pilot M0 thật cần 10–20 cuốn do chủ chọn. Chưa có dữ liệu thật trong workspace được xác nhận cho mục đích này. Không dùng bìa Kim Đồng, ảnh AI hoặc ảnh cuốn khác để thay bằng chứng của cuốn vật lý.
 
-Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế trước đây, **chưa chuyển sang baseline trước M2**: các cột `format`, `age_min/age_max`, trạng thái HELD hoặc nhiều loại ảnh cũ không phải contract nhập liệu hiện hành. Không đưa fixture này thẳng vào production. MVP nhập thủ công; CSV/Excel tạo mới thành nháp là bước ngay sau MVP, chưa có định dạng importer được duyệt.
+Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế trước đây, **chưa chuyển sang baseline trước M2**: các cột `format`, `age_min/age_max`, trạng thái HELD hoặc nhiều loại ảnh cũ không phải contract nhập liệu hiện hành. Không đưa fixture này thẳng vào production. MVP nhập thủ công; importer CSV/XLSX được duyệt31/10, contract hiện hành ở mục import bên dưới.
 
 ## Field nhập liệu hiện hành sau M5
 
@@ -68,12 +68,64 @@ Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. �
 
 ## Import ngay sau MVP
 
-User duyệt31/10 [BOOK_IMPORT_SPEC](BOOK_IMPORT_SPEC.md): CSV/XLSX mẫu website,
-đủ metadata, kiểm cả file trước khi tạo nguyên lô sách mới ARCHIVED; thêm ảnh và
-OWNER tự publish sau. Thay quyết định “tạo nháp” cũ; không thêm DRAFT. Dòng theo
-biến thể/khóa nhóm, tự sinh mã MM, không sửa/gộp theo tên hoặc ISBN; receipt chống
-nhập trùng khi retry. CSV demo M0 không là mẫu importer. Chưa triển khai code;
-không thêm vào gate MVP. Import cập nhật sách cũ vẫn nằm ngoài phạm vi này.
+CSV/XLSX mẫu website đã triển khai local: đủ metadata, kiểm cả file trước khi
+tạo nguyên lô sách mới ARCHIVED; thêm ảnh rồi OWNER tự publish. Không thêm DRAFT,
+không cập nhật/gộp theo tên/ISBN, không import ảnh. Receipt bảo đảm retry cùng
+nội dung không nhân sách. Quy trình và tiêu chí ở [BOOK_IMPORT](BOOK_IMPORT.md),
+bằng chứng và gate online ở [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFICATION.md).
+
+## Format file import — contract duyệt31/10/2026
+
+Hỗ trợ `.csv` UTF-8 có/không BOM và `.xlsx`; không nhận `.xls`/`.xlsm`.
+Một schema/cùng header cho hai định dạng. Website cung cấp mẫu CSV/XLSX và
+hướng dẫn mã lựa chọn hiện hành; CSV demo M0 không phải mẫu importer.
+
+Header ASCII cố định, cho đổi thứ tự cột; mọi cột dưới đây phải có đúng một
+lần. Thiếu/trùng/cột lạ đều báo lỗi cấu trúc, không đoán cột. Giá trị ô optional
+có thể trống, không đồng nghĩa file được thiếu cột. Header trim nhưng không
+tự dịch hoặc đổi tên. XLSX có một sheet dữ liệu `Sach`, hàng1 là header;
+sheet hướng dẫn `HuongDan` không được đọc thành dữ liệu. Sheet lạ có dữ liệu
+bị từ chối. CSV dấu phẩy, quote kép/escape kép, cho phép xuống dòng trong ô.
+CSV dùng dấu phân cách khác báo dùng mẫu chuẩn, không âm thầm hiểu sai.
+
+| Cột | Bắt buộc có giá trị | Quy tắc |
+|---|---|---|
+| nhom_sach | Có | Khóa nhóm trong file, 1–50 ký tự ASCII chữ/số/`_-`; không phải mã MM |
+| ten_sach | Có | Trim, tối đa300 ký tự |
+| isbn | Không | Text tối đa32, giữ số0 đầu; không coi ISBN là khóa duy nhất |
+| nha_xuat_ban | Không | Text tối đa200 |
+| tac_gia | Không | Text tối đa200 |
+| ngon_ngu | Có | Text tối đa50; mẫu gợi ý Tiếng Anh, không tự điền ô trống |
+| the_loai | Có | Category code hợp lệ của website |
+| kieu_bia | Có điều kiện | PAPERBACK/HARDCOVER khi PICTURE_BOOK; thể loại khác để trống |
+| gia_tu | Có | Số nguyên VND1..999999999999 |
+| gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
+| trong_luong_g | Có | Số nguyên1..9007199254740991 theo contract hiện tại |
+| tinh_trang | Có | HIGH_FRESHNESS hoặc MINOR_FLAWS; mã legacy không cho tạo mới qua import |
+| mo_ta_tinh_trang | Có | Text tối đa4000, không tự sinh nội dung |
+| do_tuoi | Không | Các age code hiện có, phân cách `;`, không trùng |
+| mo_ta_sach | Không | Text tối đa10000 |
+| trinh_do_doc | Không | PRE_A1/A1/A2/B1/B2/C1/C2; trống là chưa xác định |
+| link_video | Không | HTTPS hợp lệ như editor, không fetch URL |
+| bo_suu_tap | Không | Slug collection đang active, phân cách `;`, tối đa100, không trùng |
+| bien_the | Có điều kiện | Tên tối đa100; nhóm nhiều dòng bắt buộc tên riêng không trùng |
+| ton_kho | Có | Số nguyên0..999999; trống báo lỗi, không tự dùng1 |
+
+Mỗi dòng là một biến thể. Cùng nhom_sach là cùng một sách; các dòng có thể
+không liền nhau. Toàn bộ cột ngoài bien_the/ton_kho phải giống nhau sau chuẩn
+hóa trong cùng nhóm; báo các dòng/cột lệch, không chọn dòng đầu để ghi đè.
+Một nhóm một dòng được để trống tên biến thể. Không nhận variant ID/mã MM.
+Website sinh mã MM khi commit; nhom_sach chỉ dùng ghép dòng và chống nhầm file.
+Khóa nhóm phân biệt hoa thường; A01 và a01 là hai nhóm, hướng dẫn nêu rõ.
+Các nhóm khác nhau dù cùng tên/ISBN vẫn là sách khác, không tự gộp.
+
+Số trong CSV là chữ số ASCII, không dấu nhóm nghìn, âm/phân số/exponent.
+XLSX nhận ô text chữ số hoặc numeric chính xác là số nguyên trong giới hạn;
+không nhận formula/date/boolean/error hoặc số mất độ chính xác. Mẫu định dạng
+ISBN/khóa nhóm và cột số là text để giữ nguyên giá trị. Không evaluate formula,
+macro hoặc external link; không tự ép `21.000` thành21000 hoặc21.
+Trim text, giữ Unicode/xuống dòng bên trong. Mọi check enum/độ dài/link/biến thể
+và tham chiếu DB tái sử dụng logic domain, không chỉ validate ở trình duyệt.
 
 ## Quy trình pilot thật và đầu ra cần ghi
 

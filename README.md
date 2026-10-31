@@ -170,3 +170,11 @@ Bắt đầu từ [chỉ mục tài liệu duy nhất](docs/README.md): đọc t
 Quy trình sanitizeHAR/summary ở [scripts/book-performance](scripts/book-performance/README.md),
 contract/gateonline vàkếtquả5vòng ở [bằng chứng](docs/BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).
 Không dùng catalogue/ảnhbán thật để benchmarkghi hoặccleanup.
+
+## Import sách CSV/XLSX
+
+OWNER vào `/admin/sach/import`, tải mẫu website, điền đủ metadata và kiểm toàn file
+trước khi nhập. Sách được tạo Ẩn; thêm ảnh từng sách rồi tự xuất bản. Retry cùng file
+trả receipt cũ. Không dùng import để cập nhật sách đã có. [Hướng dẫn](docs/BOOK_IMPORT.md),
+[schema20cột](docs/DATA.md#format-file-import--contract-duyệt31102026),
+[bằng chứng và gate rollout](docs/BOOK_IMPORT_VERIFICATION.md).

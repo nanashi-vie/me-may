@@ -323,3 +323,11 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
   gồmcommit. Không gọi đó là exactlockwait hoặc thời gianNeon riêng.
   Asyncstream dùngcapturedtrace; terminalstreamerror không bịHTTP200 hạthànhok.
 - Bằngchứng vàgiớihạn: [hiệu năng nhập sách](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).
+
+## Import CSV/XLSX —31/10
+
+[BOOK_IMPORT](BOOK_IMPORT.md#api-và-lưu-trữ) là nguồn API/schemaV11/retry/quota hiện hành;
+[DATA](DATA.md#format-file-import--contract-duyệt31102026) giữ20cột. Parser bounded,
+canonicalSHA256; một transaction tạo ARCHIVED/variants/audit/receipt, không Cloudinary.
+Tái sử dụng aggregate/validation/editor/publish; private no-store và OWNER/CSRF.
+[Kiểm chứng](BOOK_IMPORT_VERIFICATION.md) gồm rollback100sách, mất phản hồi và giới hạn host.

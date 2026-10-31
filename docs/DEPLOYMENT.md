@@ -237,3 +237,21 @@ first-hit/coldRender/Neonresume cólog xácnhận vàkhông trộn với warm.
 So before/after cùngmôitrường/revisionworkload, giữ HARđãlọc, querycount vàbytes;
 khôngđánhdấu hoànthànhonline từ sốđolocal. VPSchỉđối chứng nếuđãcó vàvẫnchậm.
 Bằngchứng: [BOOK_PUBLISH_PERFORMANCE_VERIFICATION](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md).
+
+## Import CSV/XLSX — V11
+
+Candidate local thêm FlywayV11 `book_import_batch`/`book_import_item`; cầnV10 trước.
+Chưa migrate online. Sao lưu database và kiểm restore trước rollout; dùng đúng
+Neon direct migration target, không dev/test hoặc DB bán thật ngoài phạm vi duyệt.
+User merge/deploy theo workflow. Smoke OWNER mẫuCSV/XLSX→preview→ARCHIVED→ảnh→publish,
+STAFF403/private/no-store, retry cùngfile/cùngID; không dùng dữ liệu khách làm test.
+Sau khi có dữ liệu import, không drop receipt hoặc rollback migration bằng xóa bảng:
+receipt là hàng rào chống tạo lại sách. Nếu rollback app, tắt đường import mới và
+giữV11/dữ liệu/backup; version cũ không có importer cần được kiểm tương thích trước.
+
+Gate còn mở: workload100sách/500biến thể trên RenderQA/Neon tách biệt, warm/cold
+riêng, timeout/mất phản hồi và retry, peakheap/RSS/quota/query/locks. Local chỉ một
+mẫu đo; không đủ median/p95 hoặc kết luận host. Nếu vượt ngân sách, giảm giới hạn
+trước rollout và cập nhật contract/tests. Không bỏ validation/audit để tăng tốc.
+Backend quota memory từnginstance; nhiềuinstance cần đánh giá thêm, chưa có distributedgate.
+[Contract](BOOK_IMPORT.md), [bằng chứng local](BOOK_IMPORT_VERIFICATION.md).

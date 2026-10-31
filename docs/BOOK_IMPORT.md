@@ -1,8 +1,7 @@
-# Import CSV/Excel thành sách ẩn
+# Import CSV/Excel — contract hiện hành
 
-Trạng thái: user duyệt đặc tả31/10/2026 sau builder review; kế hoạch triển khai
-ở [BOOK_IMPORT_PLAN](BOOK_IMPORT_PLAN.md) đang chờ review. Chưa code importer;
-không là gate nghiệm thu MVP.
+Triển khai local31/10–01/11/2026; chưa migrate/deploy online.
+[Bằng chứng](BOOK_IMPORT_VERIFICATION.md) và [rollout](DEPLOYMENT.md#import-csvxlsx--v11).
 
 ## 1. Mục tiêu và quyết định
 
@@ -19,60 +18,12 @@ Dùng ARCHIVED hiện có, không thêm DRAFT hoặc pipeline xử lý nền. Ch
 không sửa sách đã có, không gộp theo tên/ISBN, không import ảnh/URL ảnh/đơn/khách.
 Luồng nhập thủ công đã duyệt tiếp tục tạo và publish nguyên tử như hiện tại.
 Đặc tả được duyệt này thay quyết định importer cũ “tạo nháp” bằng ARCHIVED;
-MASTER_PLAN/DATA dẫn tới contract hiện hành ở đây trong thời gian triển khai.
+Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện hành.
 
-## 2. Format file — đề xuất cụ thể của agent
+## 2. Format file
 
-Hỗ trợ `.csv` UTF-8 có/không BOM và `.xlsx`; không nhận `.xls`/`.xlsm`.
-Một schema/cùng header cho hai định dạng. Website cung cấp mẫu CSV/XLSX và
-hướng dẫn mã lựa chọn hiện hành; CSV demo M0 không phải mẫu importer.
-
-Header ASCII cố định, cho đổi thứ tự cột; mọi cột dưới đây phải có đúng một
-lần. Thiếu/trùng/cột lạ đều báo lỗi cấu trúc, không đoán cột. Giá trị ô optional
-có thể trống, không đồng nghĩa file được thiếu cột. Header trim nhưng không
-tự dịch hoặc đổi tên. XLSX có một sheet dữ liệu `Sach`, hàng1 là header;
-sheet hướng dẫn `HuongDan` không được đọc thành dữ liệu. Sheet lạ có dữ liệu
-bị từ chối. CSV dấu phẩy, quote kép/escape kép, cho phép xuống dòng trong ô.
-CSV dùng dấu phân cách khác báo dùng mẫu chuẩn, không âm thầm hiểu sai.
-
-| Cột | Bắt buộc có giá trị | Quy tắc |
-|---|---|---|
-| nhom_sach | Có | Khóa nhóm trong file, 1–50 ký tự ASCII chữ/số/`_-`; không phải mã MM |
-| ten_sach | Có | Trim, tối đa300 ký tự |
-| isbn | Không | Text tối đa32, giữ số0 đầu; không coi ISBN là khóa duy nhất |
-| nha_xuat_ban | Không | Text tối đa200 |
-| tac_gia | Không | Text tối đa200 |
-| ngon_ngu | Có | Text tối đa50; mẫu gợi ý Tiếng Anh, không tự điền ô trống |
-| the_loai | Có | Category code hợp lệ của website |
-| kieu_bia | Có điều kiện | PAPERBACK/HARDCOVER khi PICTURE_BOOK; thể loại khác để trống |
-| gia_tu | Có | Số nguyên VND1..999999999999 |
-| gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
-| trong_luong_g | Có | Số nguyên1..9007199254740991 theo contract hiện tại |
-| tinh_trang | Có | HIGH_FRESHNESS hoặc MINOR_FLAWS; mã legacy không cho tạo mới qua import |
-| mo_ta_tinh_trang | Có | Text tối đa4000, không tự sinh nội dung |
-| do_tuoi | Không | Các age code hiện có, phân cách `;`, không trùng |
-| mo_ta_sach | Không | Text tối đa10000 |
-| trinh_do_doc | Không | PRE_A1/A1/A2/B1/B2/C1/C2; trống là chưa xác định |
-| link_video | Không | HTTPS hợp lệ như editor, không fetch URL |
-| bo_suu_tap | Không | Slug collection đang active, phân cách `;`, tối đa100, không trùng |
-| bien_the | Có điều kiện | Tên tối đa100; nhóm nhiều dòng bắt buộc tên riêng không trùng |
-| ton_kho | Có | Số nguyên0..999999; trống báo lỗi, không tự dùng1 |
-
-Mỗi dòng là một biến thể. Cùng nhom_sach là cùng một sách; các dòng có thể
-không liền nhau. Toàn bộ cột ngoài bien_the/ton_kho phải giống nhau sau chuẩn
-hóa trong cùng nhóm; báo các dòng/cột lệch, không chọn dòng đầu để ghi đè.
-Một nhóm một dòng được để trống tên biến thể. Không nhận variant ID/mã MM.
-Website sinh mã MM khi commit; nhom_sach chỉ dùng ghép dòng và chống nhầm file.
-Khóa nhóm phân biệt hoa thường; A01 và a01 là hai nhóm, hướng dẫn nêu rõ.
-Các nhóm khác nhau dù cùng tên/ISBN vẫn là sách khác, không tự gộp.
-
-Số trong CSV là chữ số ASCII, không dấu nhóm nghìn, âm/phân số/exponent.
-XLSX nhận ô text chữ số hoặc numeric chính xác là số nguyên trong giới hạn;
-không nhận formula/date/boolean/error hoặc số mất độ chính xác. Mẫu định dạng
-ISBN/khóa nhóm và cột số là text để giữ nguyên giá trị. Không evaluate formula,
-macro hoặc external link; không tự ép `21.000` thành21000 hoặc21.
-Trim text, giữ Unicode/xuống dòng bên trong. Mọi check enum/độ dài/link/biến thể
-và tham chiếu DB tái sử dụng logic domain, không chỉ validate ở trình duyệt.
+Schema20cột và mọi quy tắc ô/nhóm/số nằm tại [DATA — format import](DATA.md#format-file-import--contract-duyệt31102026).
+Mẫu hiện hành tải từ website; không dùng fixture M0 hoặc file không rõ schema.
 
 ## 3. Kiểm file và xác nhận
 
@@ -154,7 +105,7 @@ Public list/detail/lookup/SSR và mọi đường media tiếp tục loại ARCH
 ẩn có tồn>0 vẫn không public. STAFF không import/publish, vẫn đọc theo quyền cũ.
 Mã sách được cấp sớm khi import là thay đổi riêng của đường import được duyệt.
 
-## 6. Giới hạn vận hành — đề xuất của agent
+## 6. Giới hạn vận hành
 
 Đồng bộ request, không thêm job framework. Mỗi file tối đa2MiB upload,
 500 dòng dữ liệu và100 nhóm sách; mỗi nhóm tối đa100 biến thể. File trống,
@@ -162,8 +113,8 @@ dòng trống giữa file bỏ qua; dòng có ô dữ liệu vượt giới hạ
 XLSX giới hạn tổng XML giải nén20MiB, cell text≤10000 ký tự; giới hạn zip-entry/
 tỉ lệ nén, số sheet và số ô được kiểm trước/trong parse để không nạp vô hạn.
 Parser có giới hạn tài nguyên và từ chối workbook/formula/link không được hỗ trợ;
-không tự viết bộ XLSX ZIP/XML tùy tiện. Dependency parser sẽ chọn ở plan sau
-kiểm tài liệu chính thức, không đổi framework/stack hoặc cài vào frontend.
+không tự viết bộ XLSX ZIP/XML tùy tiện. Parser dùng CommonsCSV1.14.1 và ApachePOI6.0.0, event/SAX bounded;
+không đổi framework/stack hoặc cài parser vào frontend.
 
 Mỗi OWNER tối đa1 request import/preview đang chạy; tối đa10 lần bắt đầu mới
 mỗi10phút, retry lấy biên nhận committed không bị coi là lô tạo mới. 429 trả
@@ -196,9 +147,32 @@ QA; nếu không phù hợp thì giảm giới hạn trước rollout, không â
  100sách/500biến thể được ghi thực tế; cleanup chỉ DB/assetQA có ledger.
   Không đo/xóa/sửa dữ liệu bán thật, không tự deploy hoặc migrate online.
 
-## 8. Bước tiếp
+## API và lưu trữ
 
-Builder review và user duyệt đặc tả → writing-plans → user review plan →
-thực thi Native/tuần tự theo workflow hiện hành. Commit/push dev; user merge
-main/deploy. Sau kiểm chứng gộp quyết định vào DATA/DESIGN/ARCHITECTURE,
-bằng chứng vào VERIFICATION chủ đề và retire spec/plan khi chuyển đủ tiêu chí.
+Tất cả endpoint ở `/api/v1/admin/book-imports`, chỉ OWNER, session/CSRF,
+private `Cache-Control: no-store`; không có public import endpoint.
+
+| Method/path | Dữ liệu/kết quả |
+|---|---|
+| GET /options | Taxonomy và slug/name của collections active |
+| GET /templates?format=csv hoặc xlsx | Attachment `me-may-sach.csv`/`.xlsx`, đúng MIME |
+| POST /preview | Multipart `file`;200 `{document,receipt}`; invalid document có issues/fingerprintnull |
+| POST /confirm | Multipart `file,fingerprint`;201 receipt mới hoặc200 receipt committed |
+
+Unreadable422, giới hạn413, stale fingerprint409, validation422, unauthorized401,
+STAFF403, quota429/Retry-After. Client kiểm document/issues, không chỉ status200.
+V11 thêm `book_import_batch`/`book_import_item`, unique fingerprint và FK sách;
+transaction tạo aggregate và receipt cùng audit. Không giữ file gốc trong database.
+BookSummary thêm `publishedAt`, list nhận `unpublishedOnly=true`; null/false
+không đổi filter cũ. Không query ảnh/biến thể riêng từng card để đếm.
+Quota1inflight/10starts/600s theoOWNER nằm memory từng backend instance;
+khởi động lại sẽ reset, không phải distributed rate limiter.
+
+## Vận hành
+
+Danh sách sách → Import sách → tải mẫu và mã lựa chọn → điền đủ cột → chọn file
+→ Kiểm tra file → sửa lỗi ngoài Excel nếu có → kiểm lại → xác nhận nhập sách Ẩn.
+Mở từng mã từ receipt hoặc lọc Chưa xuất bản, thêm ảnh thật, lưu và tự xuất bản.
+Không reload khi còn file/lô chưa xác nhận; nếu mất kết nối chọn lại cùng file
+để nhận receipt. Đổi khóa nhóm/nội dung tạo lô mới, không dùng để sửa lô đã nhập.
+Trước rollout phải hoàn tất gate host/backup/migration tại DEPLOYMENT.
