@@ -1,11 +1,12 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 30/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint S027 cuối [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
+Cập nhật 31/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất [DEV_LOG](DEV_LOG.md); xác minh lại môi trường khi tiếp tục.
 
 - Favicon30/10: PNG192header/PNG512Home vàgóiicon đãcommit2fc3f0b trêndev. Baseline đầu phiên thấyRenderLivemain24e1a3f; không coi đó là deployment của candidatehiệu năng mới.
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
+- Danh sách admin31/10: cột Tồn kho hiển thị totalStock; 145/145 test frontend và build Workers đạt, chuẩn bị commit/push dev. CSV/Excel đang brainstorm nguồn file/ảnh; chưa triển khai importer hoặc thay quyết định nháp cũ.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;

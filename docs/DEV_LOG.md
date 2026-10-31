@@ -829,3 +829,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã chuyển duy nhất `<app-book-media-panel>` lên đầu form trong book-editor.html, trước fieldset thông tin; DESIGN ghi thứ tự mới và khả năng nhập thông tin trong lúc upload.
 - Tại code/frontend: `npm test` PASS145/145/33file, `npm run build:workers` PASS. Tại root: kiểm thứ tự template/component chỉ xuất hiện một lần và trần dòng DESIGN/PROGRESS PASS; `git diff --check` PASS. Không thêm test cho thao tác đổi vị trí đơn thuần; không chạy backend/browser hoặc đo hiệu năng mới vì logic không đổi.
 - Chuẩn bị commit/push dev cùng bốn file thay đổi. Không deploy; user merge/deploy theo workflow hiện hành. Gate Render/Neon của hiệu năng vẫn mở.
+
+### S029-C01 — 31/10/2026 — tồn kho trong danh sách và brainstorm import
+- User yêu cầu đổi cột Khả dụng của danh sách admin thành Tồn kho, sau đó brainstorm CSV/Excel. Bắt đầu dev6db146f sạch/khớp remote; API BookSummary đã có totalStock nên chỉ thay hiển thị và bỏ property không còn dùng.
+- Đang thực hiện thay đổi nhỏ; chưa chạy kiểm chứng. Import mới ở discovery bằng brainstorming, chưa code hoặc chốt spec: tài liệu cũ đề nghị tạo nháp nhưng M5 đã bỏ DRAFT, cần chốt nguồn file và xử lý ảnh trước khi chọn hướng.
+- Đã đổi header thành Tồn kho và ô dữ liệu dùng book.totalStock trong book-list.html, bỏ availabilityLabels/import không dùng ở book-list.ts; filter availability giữ nguyên. Cập nhật DESIGN/PROGRESS; không sửa response API, database hoặc quyền.
+- Tại code/frontend: `npm test` PASS145/145/33file; `npm run build:workers` PASS. Root kiểm binding cột và trần dòng tài liệu PASS, `git diff --check` PASS. Không chạy backend/browser hoặc thêm test cho thay đổi hiển thị nhỏ này. Chuẩn bị commit/push dev, chưa deploy.
+- Brainstorm bước tiếp: xác định dùng bảng hiện có của tiệm hay mẫu mới trước khi chốt schema file, biến thể/tồn, cách ghép ảnh và trạng thái trước publish. Tài liệu import cũ chưa được thay bằng quyết định mới; không đưa tính năng import vào gate MVP hiện tại.

@@ -36,7 +36,7 @@
           <th>Mã / sách</th>
           <th>Giá tham khảo</th>
           <th>Xuất bản</th>
-          <th>Khả dụng</th>
+          <th>Tồn kho</th>
           <th>Cập nhật</th>
         </tr>
       </thead>
@@ -60,7 +60,7 @@
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}
             </td>
             <td>{{ labels[book.publication] }}</td>
-            <td>{{ availabilityLabels[book.availability] }}</td>
+            <td>{{ book.totalStock }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
           </tr>
         } @empty {
