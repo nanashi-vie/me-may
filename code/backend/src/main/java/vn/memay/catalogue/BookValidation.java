@@ -74,41 +74,42 @@ public class BookValidation {
         return values;
     }
 
-    public void validateWrite(BookWrite w) {
-        text("title", w.title(), 300);
-        text("isbn", w.isbn(), 32);
-        text("publisher", w.publisher(), 200);
-        text("author", w.author(), 200);
-        text("language", w.language(), 50);
-        text("conditionNote", w.conditionNote(), 4000);
-        text("description", w.description(), 10000);
-        text("readingVideoUrl", w.readingVideoUrl(), 2048);
+    public Map<String, List<String>> writeErrors(BookWrite w) {
+        var errors = new LinkedHashMap<String,List<String>>();
+        textError(errors, "title", w.title(), 300);
+        textError(errors, "isbn", w.isbn(), 32);
+        textError(errors, "publisher", w.publisher(), 200);
+        textError(errors, "author", w.author(), 200);
+        textError(errors, "language", w.language(), 50);
+        textError(errors, "conditionNote", w.conditionNote(), 4000);
+        textError(errors, "description", w.description(), 10000);
+        textError(errors, "readingVideoUrl", w.readingVideoUrl(), 2048);
         if ("PICTURE_BOOK".equals(w.categoryCode())) {
             if (!List.of("PAPERBACK", "HARDCOVER").contains(w.binding() == null ? "" : w.binding()))
-                throw AdminApiException.field("binding", "Chọn Paperback hoặc Hardcover");
+                errors.put("binding", List.of("Chọn Paperback hoặc Hardcover"));
         } else if (w.binding() != null)
-            throw AdminApiException.field("binding", "Chỉ dùng cho Picture book");
+            errors.put("binding", List.of("Chỉ dùng cho Picture book"));
         if (w.conditionGrade() != null
                 && !List.of("VERY_GOOD", "GOOD", "FAIR", "HIGH_FRESHNESS", "MINOR_FLAWS").contains(w.conditionGrade()))
-            throw AdminApiException.field("conditionGrade", "Không hợp lệ");
+            errors.put("conditionGrade", List.of("Không hợp lệ"));
         if (w.priceMinVnd() != null && (w.priceMinVnd() < 1 || w.priceMinVnd() > 999999999999L))
-            throw AdminApiException.field("priceMinVnd", "Giá nguyên VND phải lớn hơn 0");
+            errors.put("priceMinVnd", List.of("Giá nguyên VND phải lớn hơn 0"));
         if (w.priceMaxVnd() != null && (w.priceMaxVnd() < 1 || w.priceMaxVnd() > 999999999999L))
-            throw AdminApiException.field("priceMaxVnd", "Giá nguyên VND phải lớn hơn 0");
+            errors.put("priceMaxVnd", List.of("Giá nguyên VND phải lớn hơn 0"));
         if ((w.priceMinVnd() == null) != (w.priceMaxVnd() == null) ||
                 w.priceMinVnd() != null && w.priceMinVnd() > w.priceMaxVnd())
-            throw AdminApiException.field("priceMaxVnd", "Nhập đủ hai đầu khoảng giá và giá đến không nhỏ hơn giá từ");
+            errors.put("priceMaxVnd", List.of("Nhập đủ hai đầu khoảng giá và giá đến không nhỏ hơn giá từ"));
         if (w.weightG() == null || w.weightG() < 1 || w.weightG() > 9007199254740991L)
-            throw AdminApiException.field("weightG", "Nhập trọng lượng nguyên gram lớn hơn 0");
+            errors.put("weightG", List.of("Nhập trọng lượng nguyên gram lớn hơn 0"));
         if (w.ageGroups().size() > 4 || w.ageGroups().stream().anyMatch(Objects::isNull)
                 || new HashSet<>(w.ageGroups()).size() != w.ageGroups().size() || !AGES.containsAll(w.ageGroups()))
-            throw AdminApiException.field("ageGroups", "Nhóm tuổi không hợp lệ hoặc trùng");
+            errors.put("ageGroups", List.of("Nhóm tuổi không hợp lệ hoặc trùng"));
         if (w.collectionIds().size() > 100 || w.collectionIds().stream().anyMatch(Objects::isNull)
                 || new HashSet<>(w.collectionIds()).size() != w.collectionIds().size())
-            throw AdminApiException.field("collectionIds", "Bộ sưu tập không hợp lệ hoặc trùng");
+            errors.put("collectionIds", List.of("Bộ sưu tập không hợp lệ hoặc trùng"));
         if (w.readingLevel() != null) {
             if (!LEVELS.contains(w.readingLevel()))
-                throw AdminApiException.field("readingLevel", "Mức đọc không hợp lệ");
+                errors.put("readingLevel", List.of("Mức đọc không hợp lệ"));
         }
         if (w.readingVideoUrl() != null) {
             try {
@@ -117,22 +118,43 @@ public class BookValidation {
                         || w.readingVideoUrl().chars().anyMatch(c -> c < 32 || c == 127))
                     throw new IllegalArgumentException();
             } catch (RuntimeException ex) {
-                throw AdminApiException.field("readingVideoUrl", "Dùng URL HTTPS hợp lệ");
+                errors.put("readingVideoUrl", List.of("Dùng URL HTTPS hợp lệ"));
             }
         }
+        return errors;
+    }
+
+    private static void textError(Map<String,List<String>> errors,String key,String value,int max) {
+        if(value!=null && value.length()>max) errors.put(key,List.of("Tối đa " + max + " ký tự"));
+    }
+
+    public void validateWrite(BookWrite w) {
+        var errors=writeErrors(w);
+        if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
+    }
+
+    public Map<String,List<String>> metadataErrors(BookWrite w) {
+        return requiredMetadata(w.title(),w.categoryCode(),w.weightG(),w.priceMinVnd(),w.priceMaxVnd(),w.conditionNote());
+    }
+
+    private static Map<String,List<String>> requiredMetadata(String title,String category,Long weight,Long min,Long max,String note) {
+        var errors=new LinkedHashMap<String,List<String>>();
+        if (trim(title) == null)
+            errors.put("title",List.of("Nhập tên sách"));
+        if (category == null)
+            errors.put("categoryCode",List.of("Chọn thể loại"));
+        if (weight == null || weight < 1)
+            errors.put("weightG",List.of("Nhập trọng lượng sách (g)"));
+        if (min == null || max == null)
+            errors.put("priceMinVnd",List.of("Nhập giá tham khảo"));
+        if (trim(note) == null)
+            errors.put("conditionNote",List.of("Mô tả tình trạng thực tế"));
+        return errors;
     }
 
     public void validatePublished(BookDetail b) {
-        if (trim(b.title()) == null)
-            throw AdminApiException.field("title", "Nhập tên sách");
-        if (b.categoryCode() == null)
-            throw AdminApiException.field("categoryCode", "Chọn thể loại");
-        if (b.weightG() == null || b.weightG() < 1)
-            throw AdminApiException.field("weightG", "Nhập trọng lượng sách (g)");
-        if (b.priceMinVnd() == null || b.priceMaxVnd() == null)
-            throw AdminApiException.field("priceMinVnd", "Nhập giá tham khảo");
-        if (trim(b.conditionNote()) == null)
-            throw AdminApiException.field("conditionNote", "Mô tả tình trạng thực tế");
+        var errors=requiredMetadata(b.title(),b.categoryCode(),b.weightG(),b.priceMinVnd(),b.priceMaxVnd(),b.conditionNote());
+        if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
         var roles = b.media().stream().map(BookDtos.MediaView::role).toList();
         if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
                 || !roles.containsAll(

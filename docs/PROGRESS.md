@@ -6,7 +6,7 @@ Cập nhật 31/10/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Ưu tiên hiện tại — tối ưu nhập sách
 
-- Danh sách admin31/10: cột Tồn kho hiển thị totalStock, đã push c1cad3b; 145/145 test frontend và build Workers đạt. Import: user duyệt [BOOK_IMPORT_SPEC](BOOK_IMPORT_SPEC.md)31/10, thay “tạo nháp” bằng ARCHIVED/đủ metadata/kiểm cả file/thêm ảnh rồi publish. [BOOK_IMPORT_PLAN](BOOK_IMPORT_PLAN.md)7task Native/tuần tự chờ review; chưa code.
+- Import31/10: user duyệt [spec](BOOK_IMPORT_SPEC.md) và [plan](BOOK_IMPORT_PLAN.md), thực thi Native/tuần tự từ dev81f1c09. Đang Task1 canonical validation/fingerprint, chưa có importer hoàn chỉnh hoặc migration online.
 - Editor30/10: phần chọn/upload ảnh đứng đầu form tạo/sửa, trước tên sách; 145/145 test frontend và build Workers đạt. Chuẩn bị commit/push dev; chưa deploy.
 - Hiệu năng nhập/xuất bản30/10: spec/plan userduyệt, code/local đã kiểm chứng.
   [Bằng chứng](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md):145frontend;123backend/0failure/0error/3live skips;
