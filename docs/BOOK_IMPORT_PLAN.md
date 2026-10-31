@@ -79,24 +79,24 @@ T/BookImportValidationTest.java; tests BookStatusIntegrationTest/BookVariantInte
 **Interfaces:** `BookImportValidator.normalize(List<CellRow>) -> ImportDocument` pure;
 `BookImportFingerprint.digest(List<ImportGroup>) -> String`; `BookValidation.writeErrors(BookWrite) -> Map<String,List<String>>`.
 
-- [ ] RED tests nhóm không liền dòng/optional trống/ISBN0/100variant/cùng tên khác key;
+- [x] RED tests nhóm không liền dòng/optional trống/ISBN0/100variant/cùng tên khác key;
   nhóm lệch commonfield chỉ rõ các dòng/cột; nhiều mandatory trống trả đủ lỗi.
   Assert stock0 hợp lệ; blank stock/lang/grade, tên trùng trim/case, age trùng,
   giá21.000/âm/phân/exponent/overflow, videoHTTP, binding sai đều lỗi đúng cột.
   `normalizationPreservesLogicalBooksAndReportsAllMissingFields` assert lỗi chứa
   `ngon_ngu`,`ton_kho`; `fingerprintIgnoresRowAndHeaderOrder` assert digest bằng nhau,
   `changedStockChangesFingerprint` assert digest khác.
-- [ ] Run root `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportValidationTest test`.
+- [x] Run root `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportValidationTest test`.
   Expected RED thiếu DTO/validator; ghi fail thực tế, không coi compile lỗi fixture là RED nghiệp vụ.
-- [ ] Implement shared `writeErrors`; `validateWrite` dùng collector và vẫn ném AdminApiException400.
+- [x] Implement shared `writeErrors`; `validateWrite` dùng collector và vẫn ném AdminApiException400.
   Tách metadata-required checks khỏi media checks của validatePublished để import dùng chung;
   không làm ngôn ngữ/grade bắt buộc ở editor cũ. Import thêm mandatory/grade mới riêng.
   Normalize lists thành thứ tự chuẩn; canonical groups sort key theo natural String,
   variants sort tên null trước rồi tên exact; giữ Unicode/case của dữ liệu, không làm tròn số.
   Group canonical dùng collectionSlugs, collectionIds rỗng; schemaVersion=1 trong digest.
-- [ ] Digest test cùng dữ liệu/header/dòng đổi thứ tự bằng nhau; thay key/name/stock/price khác digest;
+- [x] Digest test cùng dữ liệu/header/dòng đổi thứ tự bằng nhau; thay key/name/stock/price khác digest;
   khi nhiều lỗi không tạo partial fingerprint;1001issue giữ1000detail/total1001.
-- [ ] Run targeted plus `-Dtest=BookImportValidationTest,BookStatusIntegrationTest,BookVariantIntegrationTest test`.
+- [x] Run targeted plus `-Dtest=BookImportValidationTest,BookStatusIntegrationTest,BookVariantIntegrationTest test`.
   Expected0failure/error; commit `feat(import): define canonical book file validation`.
 
 ## Task 2: Parser và template CSV/XLSX an toàn
@@ -107,34 +107,34 @@ T/BookImportParserTest.java, BookImportTemplateTest.java.
 `BookImportTemplate.render(String format,ImportOptions options) -> byte[]`;
 DTO `ImportOptions(Taxonomy taxonomy,List<CollectionOption> collections)` slug/name active.
 
-- [ ] RED fixtures CSV BOM/CRLF/quote/comma/multiline/header đổi thứ tự; XLSX Sach/HuongDan,
+- [x] RED fixtures CSV BOM/CRLF/quote/comma/multiline/header đổi thứ tự; XLSX Sach/HuongDan,
   text ISBN000123/numeric integer; cùng semanticdocument/digest, mandatory header20cột.
   Header thiếu/trùng/lạ/semicolon, `.xls`/`.xlsm`/ZIP giả/UTF8 lỗi/empty fail rõ.
   `csvAndXlsxProduceSameCanonicalFingerprint` so digest đãnormalize;
   `formulaCachedValuesAreNeverAccepted` assert422issues và không evaluator/networkcall.
-- [ ] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportTemplateTest test`.
+- [x] Run `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportTemplateTest test`.
   Expected RED missing parser. Pin org.apache.commons:commons-csv:1.14.1,
   org.apache.poi:poi-ooxml:6.0.0; verify Maven resolves/Java21/dependency tree,
   không tự downgrade nếu unavailable; ghi blocker/ruling theo nguồn official.
-- [ ] CSV dùng Commons CSV RFC4180 strict, UTF8 decoder REPORT, bỏ BOM đầu,
+- [x] CSV dùng Commons CSV RFC4180 strict, UTF8 decoder REPORT, bỏ BOM đầu,
   validate header trước map; dòng logic kể cả multiline/blank có vị trí rõ.
   XLSX POI OPCPackage/XSSFReader event/SAX hardened, không FormulaEvaluator;
   tách reader riêng, không WorkbookFactory nạp không giới hạn vào RAM.
   Bounded preflight với POI ZipSecureFile:≤100entries, mỗi entry và tổng uncompressed≤20MiB,
   inflate ratio≥0.01; đếm byte thực khi đọc, không chỉ tin ZIP headers.
   Set POI global limits một lần startup, không đổi/restore theo request.
-- [ ] SAX bounded XML, DTD/external entities off; sharedStrings/styles count≤20000,
+- [x] SAX bounded XML, DTD/external entities off; sharedStrings/styles count≤20000,
   cell events≤20000 toàn workbook;≤2sheet đúng tên, không data ở sheet lạ.
   Từ chối encryption/VBA/OLE/embedded objects/external relationships (kể cả hyperlink),
   formula dù có cachedvalue; data type/date/boolean/error sai báo hàng/cột.
   Numeric dùng raw XML BigDecimal→long exact trong giới hạn safe integer;
   cell numeric vào ISBN/nhom_sach báo nhập text để không đoán số0 đã mất.
   Header cells string; hàng Sach có data tối đa500, nhóm/variant limit ở validator.
-- [ ] Template header-only, numeric/ISBN/key text; HuongDan chứa schema/version,
+- [x] Template header-only, numeric/ISBN/key text; HuongDan chứa schema/version,
   ví dụ nhóm2biến thể/enum/slug, ghi cách paste URL plain text không hyperlink,
   giới hạn, quy tắc CSV dòng logic và không dùng file để cập nhật sách.
   CSV template tải kèm hướng dẫn hiển thị ở UI/options; không dựng fileCSV nhiều sheet.
-- [ ] Adversarial tests2MiB+1/501rows/101groups/101variants/10001char/21MiBexpanded/
+- [x] Adversarial tests2MiB+1/501rows/101groups/101variants/10001char/21MiBexpanded/
   >100entries/ratio/XXE/sharedstrings hoặc sparse/style bombs/missing references/merged Sach cells;
   test không network/evaluate; run focused0fail rồi commit `feat(import): parse bounded CSV and XLSX templates`.
 

@@ -17,7 +17,7 @@ public final class PgTestData {
  }
  public static void clean(JdbcTemplate jdbc){
   if(!"me_may_test".equals(jdbc.queryForObject("select current_database()",String.class))) throw new IllegalStateException("Refusing non-test database");
-  for(String table:new String[]{"temporary_media","upload_session","audit_event","flash_sale_item","book_media","listing_collection","listing_age_group","book_variant","listing","book_copy","collection"}) {
+  for(String table:new String[]{"book_import_item","book_import_batch","temporary_media","upload_session","audit_event","flash_sale_item","book_media","listing_collection","listing_age_group","book_variant","listing","book_copy","collection"}) {
    if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass(?) is not null",Boolean.class,table))) jdbc.execute("delete from "+table);
   }
   if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass('flash_sale') is not null",Boolean.class))) jdbc.update("update flash_sale set enabled=false,starts_at=null,ends_at=null,version=0");
