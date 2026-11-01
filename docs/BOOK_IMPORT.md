@@ -23,11 +23,12 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 ## 2. Format file
 
 Schema20cột và mọi quy tắc ô/nhóm/số nằm tại [DATA — format import](DATA.md#format-file-import--contract-duyệt31102026).
-Mẫu hiện hành tải từ website; không dùng fixture M0 hoặc file không rõ schema.
+UI hiển thị hướng dẫn field ngắn và mã lựa chọn; không còn bước/nút tải mẫu.
+Không dùng fixture M0 hoặc file không rõ schema.
 
 ## 3. Kiểm file và xác nhận
 
-OWNER mở “Import sách” từ danh sách admin; chọn/tải mẫu và đọc hướng dẫn.
+OWNER mở “Import sách” từ danh sách admin; xem hướng dẫn field và mã lựa chọn.
 Chọn một file → bấm “Kiểm tra file”. Chưa tạo sách, mã, ảnh hoặc bản ghi lô.
 Backend là nguồn kiểm tra chính thức, response no-store.
 
@@ -170,7 +171,7 @@ khởi động lại sẽ reset, không phải distributed rate limiter.
 
 ## Vận hành
 
-Danh sách sách → Import sách → tải mẫu và mã lựa chọn → điền đủ cột → chọn file
+Danh sách sách → Import sách → đọc hướng dẫn field/mã lựa chọn → điền đủ cột → chọn file
 → Kiểm tra file → sửa lỗi ngoài Excel nếu có → kiểm lại → xác nhận nhập sách Ẩn.
 Mở từng mã từ receipt hoặc lọc Chưa xuất bản, thêm ảnh thật, lưu và tự xuất bản.
 Không reload khi còn file/lô chưa xác nhận; nếu mất kết nối chọn lại cùng file

@@ -202,8 +202,9 @@ Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn t
 
 ## Import CSV/Excel —31/10
 
-OWNER mở Import sách từ danh sách; tải mẫu, chọn file, kiểm toàn file rồi xác nhận
-nhập sách Ẩn. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
+OWNER mở Import sách từ danh sách; xem bảng field ngắn và mã lựa chọn thu gọn,
+chọn file, kiểm toàn file rồi xác nhận
+nhập sách Ẩn. Bỏ bước chuẩn bị/nút tải mẫu theo yêu cầu01/11. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
 File chỉ ở memory tab; mất phản hồi có retry đúng file/fingerprint, hết phiên giữ
 file để đăng nhập và kiểm lại. Receipt dẫn editor từng sách; không bulk publish.
 Danh sách có lọc/nhãn Chưa xuất bản và placeholder; ARCHIVED+publishedAtnull

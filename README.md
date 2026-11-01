@@ -57,17 +57,17 @@ Trên môi trường sandbox hạn chế quyền localhost/worker, build SSR có
 
 ## Nhập sách và pilot M2
 
-- Đăng nhập Owner rồi mở [Quản lý sách](http://127.0.0.1:4200/admin/sach). Tạo tại `/admin/sach/moi`; lưu nháp trước để nhận mã tự sinh và thêm ảnh. Mã không sửa hoặc tái sử dụng; số có thể khuyết.
-- Mỗi cuốn một thể loại, nhiều nhóm tuổi. Picture book chọn Paperback hoặc Hardcover. Mức đọc có thể chưa xác định; khi chọn mức phải ghi căn cứ nội bộ.
-- OWNER nhập khoảng giá từ–đến nguyên VND, trọng lượng gram dương và tình trạng/lỗi; chọn/thả 2–6 ảnh thật (bìa/lưng bắt buộc; gáy/nội dung1–3 tùy chọn), JPEG/PNG <=10 MiB và 25 MP. Lưu nội dung trước khi chỉnh ảnh; ảnh được tải tuần tự theo version mới.
+- Đăng nhập Owner rồi mở [Quản lý sách](http://127.0.0.1:4200/admin/sach). Tạo tại `/admin/sach/moi`; chọn ảnh tạm, nhập thông tin rồi bấm Đăng sách để nhận mã. Mã không sửa hoặc tái sử dụng; số có thể khuyết.
+- Mỗi cuốn một thể loại, nhiều nhóm tuổi. Picture book chọn Paperback hoặc Hardcover. Mức đọc có thể chưa xác định, không bắt ghi căn cứ nội bộ.
+- OWNER nhập khoảng giá từ–đến nguyên VND, trọng lượng gram dương và tình trạng/lỗi; chọn/thả 2–6 ảnh thật (bìa/lưng bắt buộc; gáy/nội dung1–3 tùy chọn), JPEG/PNG <=10 MiB và 25 MP. Ảnh tạm tải tuần tự; khi sửa sách, ảnh dùng version aggregate hiện hành.
 - Ảnh mới dùng phiên tạm24giờ; chưa sinh sách/mã trước khi xác nhận Đăng sách. Final nguyên tử và retry cùng payload trả cùng sách. STAFF chỉ đọc. Còn hàng/Hết hàng độc lập Công khai/Ẩn; ẩn↔hiện trực tiếp, không có Nháp.
-- Staff chỉ sửa nháp; Owner quản trị trạng thái và bộ sưu tập. Không có UI quản lý tài khoản; không tạo tài khoản demo trong dữ liệu vận hành.
+- STAFF chỉ đọc; OWNER quản trị nội dung, tồn, ảnh, trạng thái và bộ sưu tập. Không có UI quản lý tài khoản; không tạo tài khoản demo trong dữ liệu vận hành.
 - Khi xung đột hoặc hết phiên, nội dung chưa lưu được giữ trong tab. Có đăng nhập lại ngay trên editor. Không tự gửi lại yêu cầu tạo nếu chưa rõ kết quả; mở danh sách ở tab khác để kiểm tra. Reload/đóng tab có thể mất nội dung chưa lưu.
-- Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. User28/10 đã xác nhận publish21/21; chưa có xác nhận đầy đủ case sold/error và thời gian nhập/tìm/sửa.
+- Pilot: chủ tự nhập 10–20 cuốn thật, dán/đối chiếu mã, kiểm giá/ảnh/tình trạng; thử tìm/sửa/preview/publish/sold/ẩn/khôi phục và ghi thời gian nhập/tìm/sửa cùng lỗi gặp phải. User28/10 đã xác nhận publish21/21 và các ca chức năng còn lại; thời gian nhập/tìm/sửa và biên bản thiết bị còn ở gate PROGRESS.
 
-Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn nhập nháp được, thao tác media trả503. Ảnh dùng authenticated delivery, browser chỉ nhận stream qua API có session, không nhận signed cloud URL.
+Cloudinary chỉ backend đọc `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`; `CLOUDINARY_NAMESPACE` mặc định `memay/dev`. Thiếu cấu hình vẫn chạy auth/đọc dữ liệu; media trả503 và không thể đăng mới khi thiếu ảnh. Ảnh dùng authenticated delivery, ảnh quản trị qua stream có session, ảnh public chỉ cho sách PUBLISHED; browser không nhận signed cloud URL.
 
-Contract API đầy đủ và quyền: [M2_SPEC §6–9](docs/M2_SPEC.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, preview, audit và2–6vai trò media; availability dẫn xuất từ tồn; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
+Contract API đầy đủ và quyền: [CATALOGUE — quyền/API/media](docs/CATALOGUE.md#6-quyền-và-lỗi). `/api/v1/admin/books` gồm list/create/detail/update, publication, preview, audit và2–6vai trò media; availability dẫn xuất từ tồn; taxonomy chỉ đọc, collection Owner create/update. ID là chuỗi; mutation gửi CSRF mới và version hiện hành. JSON admin/HTML admin/ảnh không cache; public API sách triển khai ở M3 (xem phần bên dưới).
 
 Gate live opt-in: đặt namespace test trong môi trường sau khi nạp `.env` (run-local.sh nạp lại `.env`, nên không để namespace dev ghi đè lệnh test); chỉ chạy `MediaLiveTest,CloudinaryLiveTest` với `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test`. Guard `me_may_test` và namespace phải đạt trước upload/delete. Test mặc định không gọi cloud thật; cleanup chỉ public_id do gate tạo.
 
@@ -91,7 +91,7 @@ flag `nodejs_compat`. `/api` được proxy cùng origin, giữ session/CSRF/upl
 no-store; SSR nhận origin qua request context. Không đặt DB/Neon/Cloudinary key
 trong frontend. Root `.env` không được nạp; script tắt Wrangler dotenv loading.
 Nếu cần override dùng `code/frontend/.dev.vars` (ignored), chỉ hai origin trên.
-Không dùng config local để publish; chưa có domain/account/backend online.
+Không dùng config local để publish. Config online và cách rollout riêng ở DEPLOYMENT.
 
 Kiểm tra sau khi Worker đã chạy:
 
@@ -173,7 +173,7 @@ Không dùng catalogue/ảnhbán thật để benchmarkghi hoặccleanup.
 
 ## Import sách CSV/XLSX
 
-OWNER vào `/admin/sach/import`, tải mẫu website, điền đủ metadata và kiểm toàn file
+OWNER vào `/admin/sach/import`, xem hướng dẫn field, điền đủ metadata và kiểm toàn file
 trước khi nhập. Sách được tạo Ẩn; thêm ảnh từng sách rồi tự xuất bản. Retry cùng file
 trả receipt cũ. Không dùng import để cập nhật sách đã có. [Hướng dẫn](docs/BOOK_IMPORT.md),
 [schema20cột](docs/DATA.md#format-file-import--contract-duyệt31102026),
