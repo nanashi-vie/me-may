@@ -32,7 +32,7 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Review0Critical/0Important/1Minor: sparseXLSXfixture/errorrow thiếuregression riêng,
   defer; không giả là đãtest. Workbookuser không đổi; browser/SSRQA riêng đãdừng.
 - [Contract](BOOK_IMPORT.md#format-v2--chốt0111), [bằng chứng](BOOK_IMPORT_VERIFICATION.md#importv2-và-thể-loại-chung-01112026).
-  Code/QA local đã hoàn tất trêndev; online rollout/backupV12 và smokeV2 tiếp tục theoDEPLOYMENT.
+  Code/QA local đã pushdev tới fdd06f5; online rollout/backupV12 và smokeV2 tiếp tục theoDEPLOYMENT.
 
 ## Gate tồn đọng — tổng hợp01/11
 
