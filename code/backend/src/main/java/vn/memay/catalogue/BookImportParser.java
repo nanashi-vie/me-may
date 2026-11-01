@@ -22,17 +22,18 @@ public class BookImportParser {
             if(text.startsWith("\ufeff"))text=text.substring(1);
             try(var csv=CSVFormat.RFC4180.builder().setIgnoreEmptyLines(false).get().parse(new StringReader(text))) {
                 var iterator=csv.iterator();if(!iterator.hasNext())throw BookImportException.file(422,"headers","Thiếu hàng tiêu đề.");
-                List<String> headers=iterator.next().toList();checkHeaders(headers);
+                List<String> headers=BookImportSchema.canonicalHeaders(iterator.next().toList());int version=BookImportSchema.version(headers);
                 var rows=new ArrayList<CellRow>();
                 while(iterator.hasNext()) {
                     var record=iterator.next();
                     if(record.toList().stream().allMatch(String::isBlank))continue;
-                    if(rows.size()>=500)throw BookImportException.file(413,"row_limit","Tối đa 500 dòng dữ liệu.");
+                    int max=version==2?100:500;
+                    if(rows.size()>=max)throw BookImportException.file(413,"row_limit","Tối đa "+max+" dòng dữ liệu.");
                     var issues=new ArrayList<ImportIssue>();
-                    if(record.size()!=headers.size())issues.add(new ImportIssue("CSV",Math.toIntExact(record.getRecordNumber()),"file","columns","Số ô không khớp 20 cột của mẫu."));
+                    if(record.size()!=headers.size())issues.add(new ImportIssue("CSV",Math.toIntExact(record.getRecordNumber()),"file","columns","Số ô không khớp "+headers.size()+" cột tiêu đề."));
                     var cells=new LinkedHashMap<String,String>();
                     for(int i=0;i<headers.size();i++)cells.put(headers.get(i).trim(),i<record.size()?record.get(i):"");
-                    rows.add(new CellRow("CSV",Math.toIntExact(record.getRecordNumber()),cells,issues));
+                    rows.add(new CellRow("CSV",Math.toIntExact(record.getRecordNumber()),cells,issues,version));
                 }
                 return List.copyOf(rows);
             }
@@ -40,10 +41,6 @@ public class BookImportParser {
         catch(Exception e) { throw BookImportException.file(422,"file_unreadable","Không đọc được file. Dùng mẫu chuẩn, kiểm tra UTF-8, dấu phẩy và dấu nháy."); }
     }
     static void checkHeaders(List<String> input) {
-        var headers=input.stream().map(String::trim).toList();
-        if(headers.size()!=20 || new HashSet<>(headers).size()!=20 || !new HashSet<>(headers).equals(new HashSet<>(BookImportSchema.HEADERS))) {
-            var missing=BookImportSchema.HEADERS.stream().filter(h->!headers.contains(h)).toList();
-            throw BookImportException.file(422,"headers","File phải có đúng 20 cột theo mẫu, không cột lạ/trùng. Cột thiếu: "+String.join(", ",missing));
-        }
+        BookImportSchema.canonicalHeaders(input);
     }
 }

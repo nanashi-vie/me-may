@@ -64,6 +64,23 @@ describe('BookImport file and session boundaries',()=>{
     const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'books.csv'));c.checkFile();previews[0].next({...valid(),receipt});f.detectChanges();
     expect(c.canConfirm()).toBe(false);expect(c.receipt()?.id).toBe('batch');expect(f.nativeElement.textContent).toContain('MM-000007');
   });
+  it('previews V2 by source row and shows the default language and stock',()=>{
+    const f=setup(),c=f.componentInstance;
+    c.select(new File(['csv'],'owner.csv'));c.checkFile();
+    const document=valid().document;
+    const result={receipt:null,document:{...document,schemaVersion:2,groups:[{...document.groups[0],key:'R001',rows:[7],write:{...document.groups[0].write,variants:[{id:null,name:null,stock:1}]}}]}};
+    previews[0].next(result);f.detectChanges();
+    const preview=f.nativeElement.querySelector('[aria-labelledby="preview-title"]') as HTMLElement;
+    expect(preview.querySelector('summary')?.textContent).toContain('Dòng 7');
+    expect(preview.querySelector('summary')?.textContent).not.toContain('R001');
+    expect(preview.textContent).toContain('Tiếng Anh');
+    expect(preview.querySelector('tbody tr')?.textContent?.replace(/\s/g,'')).toBe('Mặcđịnh1');
+    expect(c.canConfirm()).toBe(true);
+  });
+  it('keeps source group labels for the legacy preview',()=>{
+    const f=setup();ready(f.componentInstance);f.detectChanges();
+    expect(f.nativeElement.querySelector('[aria-labelledby="preview-title"] summary')?.textContent).toContain('A · Synthetic');
+  });
   it('does not allow STAFF or detached late responses to change state',()=>{
     const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'books.csv'));c.checkFile();f.destroy();previews[0].next(valid());expect(c.preview()).toBeNull();
     user.set({id:3,email:'staff@qa.test',role:'STAFF'});const other=setup().componentInstance;other.select(new File(['csv'],'books.csv'));other.checkFile();expect(api.preview).toHaveBeenCalledTimes(1);

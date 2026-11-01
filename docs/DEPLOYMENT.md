@@ -204,7 +204,7 @@ Không cần sửa URL trong DB hoặc tạo lại sách; backend/schema không 
 
 1. Tạm dừng ghi; chụp backup DB/media/manifest mới và kiểm restore scratch. Ghi schema/version/counts book/listing/media/audit, giá/ID/asset/published_at fingerprint, sequence high-water mark; giữ bản release cũ.
 2. Thử nâng V5→V10 trên scratch từ backup: giá cũ→hai đầu bằng nhau, INSIDE→INSIDE_1, DRAFT→ARCHIVED, weight cũ null; không mất asset hoặc tựẩn sách công khai. Đối chiếu audit/counts/fingerprint sau nâng.
-3. Deploy backend V6–V10 trước frontend đồng bộ contract; không cho frontend cũ ghi vào API mới. Chạy backfill4variant với expectedcount và checkpointv2 ở gate trên, verify response MIME/magic/dimensions.
+3. Deploy backend V6–V12 trước frontend đồng bộ contract; không cho frontend cũ ghi vào API mới. Chạy backfill4variant với expectedcount và checkpointv2 ở gate trên, verify response MIME/magic/dimensions.
 4. Deploy frontend sau backend/backfill; smoke OWNER tạo2/6ảnh/đổi vai trò bằng dropdown/ẩn/hiện và tồn biến thể về0 và STAFF403, giá khoảng/weight/ảnh public/no-store. Không ghi synthetic QA vào catalogue bán thật.
 5. Migration không có down tự động. Nếu lỗi contract/data: dừng ghi, rollback app cùng DB backup đã xác minh và đối chiếu mọi ghi mới trước mở lại; không restore đè khi còn ghi hoặc reset sequence mù quáng. Rollback drill vẫn là gate chưa đạt.
 6. Đo lại Mobile Lighthouse3lần mỗi Home/detailMM-000020/wishlist cùng dữliệu, từngrun LCP≤2,5s/CLS≤0,1; coldstart riêng. Local test không thay kết quả online. User thực hiện merge main/deploy; phiên này không triển khai online.
@@ -310,4 +310,15 @@ trạng thái và số đo đã có ở VERIFICATION chủ đề, không mở l�
   Không trộn observed/simulated hoặc lấy passlocal thay online. Cache vẫn no-store;
   đổi cache cần chứng minh freshness/ẩn/thayảnh/invalidation trước khi duyệt.
 - Recovery/rollback/quota/loginratelimit/runtimeleastprivilege/offhostretention
-  vẫn phải có bằng chứng trước nghiệmthu; xem rolloutV6–V11 ở trên.
+  vẫn phải có bằng chứng trước nghiệmthu; xem rolloutV6–V12 ở trên.
+
+## Thể loại chung V12 và format importV2
+
+V12 thêm Tập đọc/READING_PRACTICE và Nấu ăn - thủ công - activity book/
+COOKING_CRAFT_ACTIVITY, sort6/7; không sửa V3/6categorycũ hoặc dữ liệu sách.
+Sau backup/rollout backend, taxonomy public/admin phải có8mục; smoke form/manualsave,
+publicfilter/backnavigation và import nhãn/code. Frontend mới cần backend đãmigrate.
+Chưa migrateonline trong phiên01/11; không coi testDBV12 là liveđãcó2lựachọn.
+ImportV2 không có migration riêng, dùng receiptV11/schema_version2; giữ receiptV1.
+QAworkload V1=100sách/500variants, V2=100sách/100variantdefault; không trộn số đo.
+Header16/dòng2data/nhãn/defaults và retry hỗtrợV1 phải smoke trên candidateonline.

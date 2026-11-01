@@ -14,7 +14,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 |---|---|---|
 | book_code | BookCopy | Website tự sinh mã tăng dần, duy nhất và bất biến sau khi tạo; dùng để dán nhãn/trao đổi với tiệm. Không lấy từ tên sách, ISBN hoặc mã khách; fixture có prefix DEMO để không nhầm mã vận hành |
 | title | BookCopy | Bắt buộc khi publish; giữ tên sách nguồn |
-| category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện; bắt buộc khi publish |
+| category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện / Tập đọc / Nấu ăn - thủ công - activity book; bắt buộc khi publish |
 | binding | BookCopy | Khi nhập Picture book bắt buộc đúng một kiểu Paperback hoặc Hardcover; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
 | language | BookCopy | Form tạo mới điền sẵn “Tiếng Anh”, có thể sửa/xóa; mở sách cũ giữ nguyên ngôn ngữ đã lưu |
 | isbn | BookCopy | Tùy chọn; trùng giữa các cuốn là hợp lệ; xác minh khi dùng dữ liệu thật |
@@ -76,56 +76,52 @@ bằng chứng và gate online ở [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFI
 
 ## Format file import — contract duyệt31/10/2026
 
-Hỗ trợ `.csv` UTF-8 có/không BOM và `.xlsx`; không nhận `.xls`/`.xlsm`.
-Một schema/cùng header cho hai định dạng. Trang import hướng dẫn field và mã lựa chọn hiện hành;
-API mẫu CSV/XLSX vẫn giữ để tương thích, UI không còn nút tải mẫu; CSV demo M0 không phải mẫu importer.
+V2/16cột là format hiện hành01/11, cùng schema cho CSV UTF-8 (BOM tùy chọn) và
+XLSX sheet `Sach`/headerhàng1. Không nhận xls/xlsm, công thức/macro/date/boolean/
+error/merge/external links. Sheet `HuongDan` chỉ hướng dẫn, không là dữ liệu.
+Header trim, cho đổi thứ tự; đúng16cột, không thiếu/trùng/cộtlạ. Alias đúng
+`kieu_bia (nếu là picture book)` được nhận thành `kieu_bia`, không nhận cả hai cùngfile.
+Optional trống không có nghĩa được thiếu cột. Website không có nút tải mẫu.
 
-Header ASCII cố định, cho đổi thứ tự cột; mọi cột dưới đây phải có đúng một
-lần. Thiếu/trùng/cột lạ đều báo lỗi cấu trúc, không đoán cột. Giá trị ô optional
-có thể trống, không đồng nghĩa file được thiếu cột. Header trim nhưng không
-tự dịch hoặc đổi tên. XLSX có một sheet dữ liệu `Sach`, hàng1 là header;
-sheet hướng dẫn `HuongDan` không được đọc thành dữ liệu. Sheet lạ có dữ liệu
-bị từ chối. CSV dấu phẩy, quote kép/escape kép, cho phép xuống dòng trong ô.
-CSV dùng dấu phân cách khác báo dùng mẫu chuẩn, không âm thầm hiểu sai.
+Mỗi dòng là một sách riêng, không ghép theo tên/ISBN. Tự điền ngôn ngữ **Tiếng Anh**,
+một biến thể không tên/tồn1. OWNER thêm ảnh, sửa ngôn ngữ/tồn/thêm biến thể trong
+editor rồi tự xuất bản. Hai dòng giống nhau vẫn tạo hai sách trong cùng lô.
 
 | Cột | Bắt buộc có giá trị | Quy tắc |
 |---|---|---|
-| nhom_sach | Có | Khóa nhóm trong file, 1–50 ký tự ASCII chữ/số/`_-`; không phải mã MM |
-| ten_sach | Có | Trim, tối đa300 ký tự |
-| isbn | Không | Text tối đa32, giữ số0 đầu; không coi ISBN là khóa duy nhất |
+| ten_sach | Có | Text trim, tối đa300 |
+| isbn | Không | Text tối đa32, giữ số0đầu; không là khóa duy nhất |
 | nha_xuat_ban | Không | Text tối đa200 |
 | tac_gia | Không | Text tối đa200 |
-| ngon_ngu | Có | Text tối đa50; mẫu gợi ý Tiếng Anh, không tự điền ô trống |
-| the_loai | Có | Category code hợp lệ của website |
-| kieu_bia | Có điều kiện | PAPERBACK/HARDCOVER khi PICTURE_BOOK; thể loại khác để trống |
-| gia_tu | Có | Số nguyên VND1..999999999999 |
+| the_loai | Có | Nhãn dễ đọc hoặc code chuẩn của8thểloại hiện hành |
+| kieu_bia | Có điều kiện | Paperback/Hardcover hoặc code tương ứng khi Picture Book; thểloại khác đểtrống |
+| gia_tu | Có | NguyênVND1..999999999999 |
 | gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
-| trong_luong_g | Có | Số nguyên1..9007199254740991 theo contract hiện tại |
-| tinh_trang | Có | HIGH_FRESHNESS hoặc MINOR_FLAWS; mã legacy không cho tạo mới qua import |
-| mo_ta_tinh_trang | Có | Text tối đa4000, không tự sinh nội dung |
-| do_tuoi | Không | Các age code hiện có, phân cách `;`, không trùng |
+| trong_luong_g | Có | Gram nguyên1..9007199254740991 |
+| tinh_trang | Có | Độ mới cao/HIGH_FRESHNESS hoặc Có lỗi nhẹ/MINOR_FLAWS |
+| mo_ta_tinh_trang | Có | Text tối đa4000, không tự sinh |
+| do_tuoi | Không | 0-3/4-6/7-9/10+ hoặc code; nhận cả dấu– từtaxonomy, nhiều mục ngăn`;`, khôngtrùng |
 | mo_ta_sach | Không | Text tối đa10000 |
-| trinh_do_doc | Không | PRE_A1/A1/A2/B1/B2/C1/C2; trống là chưa xác định |
-| link_video | Không | HTTPS hợp lệ như editor, không fetch URL |
-| bo_suu_tap | Không | Slug collection đang active, phân cách `;`, tối đa100, không trùng |
-| bien_the | Có điều kiện | Tên tối đa100; nhóm nhiều dòng bắt buộc tên riêng không trùng |
-| ton_kho | Có | Số nguyên0..999999; trống báo lỗi, không tự dùng1 |
+| trinh_do_doc | Không | Nhãn website hoặc PRE_A1/A1/A2/B1/B2/C1/C2; trống là chưa xác định |
+| link_video | Không | AbsoluteHTTPS plain text theo editor, không fetch URL |
+| bo_suu_tap | Không | Slugactive, ngăn`;`, tốiđa100, khôngtrùng |
 
-Mỗi dòng là một biến thể. Cùng nhom_sach là cùng một sách; các dòng có thể
-không liền nhau. Toàn bộ cột ngoài bien_the/ton_kho phải giống nhau sau chuẩn
-hóa trong cùng nhóm; báo các dòng/cột lệch, không chọn dòng đầu để ghi đè.
-Một nhóm một dòng được để trống tên biến thể. Không nhận variant ID/mã MM.
-Website sinh mã MM khi commit; nhom_sach chỉ dùng ghép dòng và chống nhầm file.
-Khóa nhóm phân biệt hoa thường; A01 và a01 là hai nhóm, hướng dẫn nêu rõ.
-Các nhóm khác nhau dù cùng tên/ISBN vẫn là sách khác, không tự gộp.
+Nhãn/code V2 bỏ khoảngtrắng đầu/cuối, không phân biệt hoa thường; chỉ ánh xạ
+alias biết trước, không đoán gần đúng. [Bảng nhãn](BOOK_IMPORT.md#format-v2--chốt0111).
+Giá CSV là chữ số ASCII không dấu nhóm/âm/phân số/exponent. XLSX cho textchữsố
+hoặc numericnguyên chính xác; ISBN phải text. Giữ Unicode/xuống dòng trong text.
+CSV dấu phẩy/quote kép/escape kép; bản ghi multiline vẫn một dònglogic, header1.
+V2 tốiđa2MiB/100dòng sách; blankrows bỏ qua, dữ liệu ngoài header không bị lờ đi.
 
-Số trong CSV là chữ số ASCII, không dấu nhóm nghìn, âm/phân số/exponent.
-XLSX nhận ô text chữ số hoặc numeric chính xác là số nguyên trong giới hạn;
-không nhận formula/date/boolean/error hoặc số mất độ chính xác. Mẫu định dạng
-ISBN/khóa nhóm và cột số là text để giữ nguyên giá trị. Không evaluate formula,
-macro hoặc external link; không tự ép `21.000` thành21000 hoặc21.
-Trim text, giữ Unicode/xuống dòng bên trong. Mọi check enum/độ dài/link/biến thể
-và tham chiếu DB tái sử dụng logic domain, không chỉ validate ở trình duyệt.
+### Tương thích V1/20cột
+
+V1 giữ16field trên và thêm nhom_sach/ngon_ngu/bien_the/ton_kho; phải đủ20header.
+Nhãn/mã V1 theo quy tắc cũ (code chuẩn), ngon_ngu và ton_kho bắt buộc, không áp
+mặc địnhV2. nhom_sach là ASCII1–50 chữ/số/`_-`, phân biệt hoa thường; mỗi dòng
+một biến thể, cùng nhóm phải lặp đầy đủ thông tin chung, tên riêng khi nhiều dòng.
+Tồn nguyên0..999999; tên biến thể≤100. Tốiđa500rows/100groups/100variantsnhóm.
+Không đổi semanticdigest/receiptV1; retry file cũ vẫn trả mã cũ, không cập nhật sách.
+Không coi đổi nội dung hoặc đổi schemaV1→V2 là yêu cầu update lô cũ.
 
 ## Quy trình pilot thật và đầu ra cần ghi
 
@@ -158,3 +154,18 @@ Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED,
 - V10 chuyển mỗi sách cũ thành một dòng: AVAILABLE→1, SOLD→0; không suy tồn thật cao hơn1.
   Giữ ID/mã/slug/ảnh/giá/publishedAt và grade legacy; không sửa migrationV1–V9.
 - Chủ cập nhật sau bán ngoài web; liên hệ và wishlist không trừ/giữ kho hoặc đồng bộ đa kênh.
+
+## Thể loại bổ sung01/11
+
+V12 append2category, giữ6categorycũ/ID/slug/thứtự và dữ liệu sách. Không tự phân
+loại lại sách hoặc suy mức đọc từ thểloại. Tập đọc và nhómactivity không có binding;
+chỉ Picture Book cần Paperback/Hardcover.
+
+| Code | Nhãn | Slug | sort_order |
+|---|---|---|---:|
+| READING_PRACTICE | Tập đọc | tap-doc |6|
+| COOKING_CRAFT_ACTIVITY | Nấu ăn - thủ công - activity book | nau-an-thu-cong-activity-book |7|
+
+Taxonomy public/admin/form/filter và importer cùng dùng8thểloại sau migration.
+FileExcel gốc user giữ nguyên; danh sách dropdown trong file đó vẫn do chủ chỉnh,
+website/API đã nhận hai nhãn/code mới. Không tự sửa workbook khi đổi taxonomyDB.

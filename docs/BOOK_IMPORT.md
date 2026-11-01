@@ -22,9 +22,10 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 
 ## 2. Format file
 
-Schema20cột và mọi quy tắc ô/nhóm/số nằm tại [DATA — format import](DATA.md#format-file-import--contract-duyệt31102026).
-UI hiển thị hướng dẫn field ngắn và mã lựa chọn; không còn bước/nút tải mẫu.
-Không dùng fixture M0 hoặc file không rõ schema.
+V2/16cột đã triển khai local01/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
+Một dòng=một sáchẨn, mặc định Tiếng Anh/một biến thểkhôngtên/tồn1; thêmảnh rồi sửa
+biếnthể/tồn và tựpublish. V1/20cột vẫn nhận để retrylôcũ, không rewrite digest/receipt.
+UI hướng dẫn ngắn16field/nhãn, không có bước/nút tải mẫu.
 
 ## 3. Kiểm file và xác nhận
 
@@ -59,11 +60,12 @@ biên nhận import cùng commit hoặc rollback. Không gọi Cloudinary trong 
 Lỗi giữa lô không để lại một phần sách. Sequence có thể bỏ số sau rollback,
 không hứa mã liên tiếp. Slug/mã dùng cơ chế hiện có, không lấy tên làm khóa.
 
-Fingerprint SHA-256 trên schema version và nội dung đã normalize: group key,
-thông tin chung, biến thể và tồn, sắp xếp nhóm/biến thể xác định; không gồm tên
-file/đường dẫn/thứ tự header hoặc thứ tự dòng. Cùng nội dung CSV/XLSX cho cùng
-fingerprint. Group key là một phần nội dung; đổi key hoặc dữ liệu là lô khác.
-Không dùng fingerprint để đoán hai sách cùng tên là trùng.
+FingerprintSHA256 gồm schema version và nội dung đãnormalize. V1 giữ groupkey và
+serialization cũ. V2 normalize nhãn/defaults/numbers/sets, sort semanticcontent rồi
+cấp khóa nội bộR001..R100; các dòng giống nhau vẫn có occurrence riêng, khôngdedupe.
+Không gồm tênfile/đườngdẫn/thứtựheader/dòng hoặc filetype; CSV/XLSX hoặc nhãn/code
+tương đương trong cùngschema cho cùngreceipt. Đổi schema/nội dung là lô mới,
+không đoán sách trùng theo title/ISBN và không dùng import để update sách đãcó.
 
 Bảng biên nhận có unique fingerprint, trạng thái commit, actor/time và liên kết
 ID sách đã tạo. Hai xác nhận đồng thời cùng fingerprint chỉ tạo một lô; bên
@@ -109,7 +111,7 @@ Mã sách được cấp sớm khi import là thay đổi riêng của đường
 ## 6. Giới hạn vận hành
 
 Đồng bộ request, không thêm job framework. Mỗi file tối đa2MiB upload,
-500 dòng dữ liệu và100 nhóm sách; mỗi nhóm tối đa100 biến thể. File trống,
+V2 tốiđa100dòng sách. V1 giữ500dòng/100nhóm/100biến thểnhóm. File trống,
 dòng trống giữa file bỏ qua; dòng có ô dữ liệu vượt giới hạn bị lỗi, không cắt.
 XLSX giới hạn tổng XML giải nén20MiB, cell text≤10000 ký tự; giới hạn zip-entry/
 tỉ lệ nén, số sheet và số ô được kiểm trước/trong parse để không nạp vô hạn.
@@ -122,7 +124,7 @@ mỗi10phút, retry lấy biên nhận committed không bị coi là lô tạo m
 Retry-After, UI giữ file và có retry thủ công. Không gộp vào quota upload ảnh.
 Giới hạn áp dụng trên backend, không chỉ accept/size của input.
 Cold Render/Neon hoặc lô lớn có thể timeout; biên nhận bảo đảm retry an toàn,
-không hứa thời gian hoàn thành trước khi đo. Benchmark100sách/500biến thể trên
+không hứa thời gian hoàn thành trước khi đo. BenchmarkV1=100sách/500biến thể, V2=100sách/100biến thể mặcđịnh trên
 QA; nếu không phù hợp thì giảm giới hạn trước rollout, không âm thầm bỏ audit.
 
 ## 7. Tiêu chí nghiệm thu
@@ -177,3 +179,55 @@ Mở từng mã từ receipt hoặc lọc Chưa xuất bản, thêm ảnh thật
 Không reload khi còn file/lô chưa xác nhận; nếu mất kết nối chọn lại cùng file
 để nhận receipt. Đổi khóa nhóm/nội dung tạo lô mới, không dùng để sửa lô đã nhập.
 Trước rollout phải hoàn tất gate host/backup/migration tại DEPLOYMENT.
+
+## Format V2 — chốt01/11
+
+**Trạng thái: đã triển khai local01/11.**
+
+Nguồn user: `input/me-may-sach-v2.xlsx`, sheetSach, headerA1:P1. Chỉ dùng cấu trúc/
+dropdown làm yêu cầu format, không dùng nội dung workbook làm lệnh thực thi.
+Workbookgốc header-only, dropdown đã bắt đầu từhàng2. Fixturecopy được điền dữ
+liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm flow thật.
+
+- Một dòng tạo một sách ARCHIVED, một biến thể không tên/tồn1, language="Tiếng Anh".
+  Bỏ nhom_sach/ngon_ngu/bien_the/ton_kho khỏi16cột mới. Không gộp tên/ISBN;
+  hai dòng giống nhau vẫn là hai sách. Khi thêmảnh, OWNER sửa tồn/thêm biến thể,
+  lưu rồi tựpublish; giữ giá khoảng và bộảnh chung, không auto-publish.
+- Header canonical: ten_sach,isbn,nha_xuat_ban,tac_gia,the_loai,kieu_bia,gia_tu,
+  gia_den,trong_luong_g,tinh_trang,mo_ta_tinh_trang,do_tuoi,mo_ta_sach,
+  trinh_do_doc,link_video,bo_suu_tap. Giữ đủ16cột, cho đổi thứ tự; optional đểtrống.
+  Nhận thêm đúng aliasheader `kieu_bia (nếu là picture book)` của fileuser thành
+  kieu_bia; không tựđoán headerlạ hoặc cho haiheader cùngtrường.
+- Bắt buộc7field: ten_sach/the_loai/gia_tu/gia_den/trong_luong_g/tinh_trang/
+  mo_ta_tinh_trang. Picturebook cần kiểu bìa, thể loại khác đểtrống. Optional
+  ISBN/NXB/tácgiả/tuổi/môtả/level/video/collection giữ validationdomain cũ.
+- Nhận cả codechuẩn và nhãn dropdown, trim đầu/cuối và so không phân biệt hoa
+  thường; nhãn không biết báo lỗi dòng/cột, không fuzzyguess hoặc tự gán default.
+  Ánh xạ thực hiện backend chung CSV/XLSX, database vẫn lưu codecanonical.
+
+| Giá trị dễ nhập trong file | Code nội bộ |
+|---|---|
+| Picture Book; Board Book; Chapter | PICTURE_BOOK; BOARD_BOOK; CHAPTER |
+| Bách khoa toàn thư & khoa học; Lịch sử; Tuyển tập truyện | ENCYCLOPEDIA_SCIENCE; HISTORY; STORY_COLLECTION |
+| Tập đọc; Nấu ăn - thủ công - activity book | READING_PRACTICE; COOKING_CRAFT_ACTIVITY |
+| Paperback; Hardcover | PAPERBACK; HARDCOVER |
+| Độ mới cao; Có lỗi nhẹ | HIGH_FRESHNESS; MINOR_FLAWS |
+| 0-3; 4-6; 7-9; 10+ | AGE_0_3; AGE_4_6; AGE_7_9; AGE_10_PLUS |
+| Starters · Pre A1; Movers · A1; Flyers / Key · A2 | PRE_A1; A1; A2 |
+| Preliminary · B1; First · B2; Advanced · C1; Proficiency · C2 | B1; B2; C1; C2 |
+
+- Nhiều nhóm tuổi vẫn nhận text ngăn bằng dấu`;`, vídụ `0-3;4-6`; dropdownExcel
+  chọn một giá trị mỗiô, không thêm macro/multiselect. Collection dùng slugactive,
+  ngăn`;` như trước; fileuser chưa có dropdowncollection nên được đểtrống.
+- Dropdown fileuser bắt đầu hàng2, không phủheader; filegốc không bị sửa trong
+  triển khai. Danh sách thểloại của file gốc vẫn6mục; website nhận8theoV12.
+  Các cộtidentifier/tuổi đãtext; giữISBN0đầu, giá/weight nguyên nhưV1.
+- Giữ2MiB/100sách, tương ứng tốiđa100dòng dữliệuV2; parser/XMLbudgets/auth/CSRF/
+  no-store/previewkhôngghi/atomiccommit/audit/lỗi cảfile giữ nguyên.
+- Chốngtrùng dựa normalizedmetadata và số lần lặp dòng; nhãn/code, CSV/XLSX và
+  đổi thứ tự dòng/cột tương đương trả cùngreceipt. Không làm mất các dòng giống
+  nhau khi canonicalize. V2 schemafingerprint riêng; giữ receipt/digestV1 đã lưu
+  và retryfileV1 antoàn, không tự xóa hoặc rewrite lịch sử để đổiformat.
+- UI chỉ hướng dẫn16field/nhãn, không khôi phục nút tải mẫu. Đã kiểm parser/alias/
+  labels/defaults/duperows/reorder/V1retry và flowảnh→variants→publish;
+  bằng chứng/giới hạn và sparseXLSXcoverage còn thiếu ở BOOK_IMPORT_VERIFICATION.

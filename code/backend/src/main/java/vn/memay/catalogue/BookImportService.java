@@ -25,7 +25,7 @@ public class BookImportService {
             try {transactions.resolve(document,false);}
             catch(BookImportException e) {
                 var issues=new ArrayList<>(document.issues());issues.addAll(e.issues);
-                document=new ImportDocument(document.groups(),List.copyOf(issues.subList(0,Math.min(1000,issues.size()))),document.totalIssues()+e.totalIssues,document.rowCount(),null);
+                document=new ImportDocument(document.groups(),List.copyOf(issues.subList(0,Math.min(1000,issues.size()))),document.totalIssues()+e.totalIssues,document.rowCount(),null,document.schemaVersion());
             }
             return new ImportPreview(document,null);
         }
