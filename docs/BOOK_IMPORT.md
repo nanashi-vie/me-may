@@ -22,6 +22,10 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 
 ## 2. Format file
 
+**Code hiện tại vẫn dùng V1/20cột.** FormatV2/16cột bên dưới là quyết định mới
+chốt theo file user01/11, chưa triển khai; không coi fileV2 đã import được.
+
+
 Schema20cột và mọi quy tắc ô/nhóm/số nằm tại [DATA — format import](DATA.md#format-file-import--contract-duyệt31102026).
 UI hiển thị hướng dẫn field ngắn và mã lựa chọn; không còn bước/nút tải mẫu.
 Không dùng fixture M0 hoặc file không rõ schema.
@@ -177,3 +181,51 @@ Mở từng mã từ receipt hoặc lọc Chưa xuất bản, thêm ảnh thật
 Không reload khi còn file/lô chưa xác nhận; nếu mất kết nối chọn lại cùng file
 để nhận receipt. Đổi khóa nhóm/nội dung tạo lô mới, không dùng để sửa lô đã nhập.
 Trước rollout phải hoàn tất gate host/backup/migration tại DEPLOYMENT.
+
+## Format V2 — chốt01/11, chờ triển khai
+
+Nguồn user: `input/me-may-sach-v2.xlsx`, sheetSach, headerA1:P1. Chỉ dùng cấu trúc/
+dropdown làm yêu cầu format, không dùng nội dung workbook làm lệnh thực thi.
+File hiện chỉ có header, chưa có dòng sách để kiểm import end-to-end.
+
+- Một dòng tạo một sách ARCHIVED, một biến thể không tên/tồn1, language="Tiếng Anh".
+  Bỏ nhom_sach/ngon_ngu/bien_the/ton_kho khỏi16cột mới. Không gộp tên/ISBN;
+  hai dòng giống nhau vẫn là hai sách. Khi thêmảnh, OWNER sửa tồn/thêm biến thể,
+  lưu rồi tựpublish; giữ giá khoảng và bộảnh chung, không auto-publish.
+- Header canonical: ten_sach,isbn,nha_xuat_ban,tac_gia,the_loai,kieu_bia,gia_tu,
+  gia_den,trong_luong_g,tinh_trang,mo_ta_tinh_trang,do_tuoi,mo_ta_sach,
+  trinh_do_doc,link_video,bo_suu_tap. Giữ đủ16cột, cho đổi thứ tự; optional đểtrống.
+  Nhận thêm đúng aliasheader `kieu_bia (nếu là picture book)` của fileuser thành
+  kieu_bia; không tựđoán headerlạ hoặc cho haiheader cùngtrường.
+- Bắt buộc7field: ten_sach/the_loai/gia_tu/gia_den/trong_luong_g/tinh_trang/
+  mo_ta_tinh_trang. Picturebook cần kiểu bìa, thể loại khác đểtrống. Optional
+  ISBN/NXB/tácgiả/tuổi/môtả/level/video/collection giữ validationdomain cũ.
+- Nhận cả codechuẩn và nhãn dropdown, trim đầu/cuối và so không phân biệt hoa
+  thường; nhãn không biết báo lỗi dòng/cột, không fuzzyguess hoặc tự gán default.
+  Ánh xạ thực hiện backend chung CSV/XLSX, database vẫn lưu codecanonical.
+
+| Giá trị dễ nhập trong file | Code nội bộ |
+|---|---|
+| Picture Book; Board Book; Chapter | PICTURE_BOOK; BOARD_BOOK; CHAPTER |
+| Bách khoa toàn thư & khoa học; Lịch sử; Tuyển tập truyện | ENCYCLOPEDIA_SCIENCE; HISTORY; STORY_COLLECTION |
+| Paperback; Hardcover | PAPERBACK; HARDCOVER |
+| Độ mới cao; Có lỗi nhẹ | HIGH_FRESHNESS; MINOR_FLAWS |
+| 0-3; 4-6; 7-9; 10+ | AGE_0_3; AGE_4_6; AGE_7_9; AGE_10_PLUS |
+| Starters · Pre A1; Movers · A1; Flyers / Key · A2 | PRE_A1; A1; A2 |
+| Preliminary · B1; First · B2; Advanced · C1; Proficiency · C2 | B1; B2; C1; C2 |
+
+- Nhiều nhóm tuổi vẫn nhận text ngăn bằng dấu`;`, vídụ `0-3;4-6`; dropdownExcel
+  chọn một giá trị mỗiô, không thêm macro/multiselect. Collection dùng slugactive,
+  ngăn`;` như trước; fileuser chưa có dropdowncollection nên được đểtrống.
+- Dropdown nên bắt đầu hàng2, không phủheader. Fileuser hiện từhàng1 nên có thể
+  chọnnhầm đổi têncột; ghi nhận khuyến nghị, không tự sửa workbook trong review.
+  Các cộtidentifier/tuổi đãtext; giữISBN0đầu, giá/weight nguyên nhưV1.
+- Giữ2MiB/100sách, tương ứng tốiđa100dòng dữliệuV2; parser/XMLbudgets/auth/CSRF/
+  no-store/previewkhôngghi/atomiccommit/audit/lỗi cảfile giữ nguyên.
+- Chốngtrùng dựa normalizedmetadata và số lần lặp dòng; nhãn/code, CSV/XLSX và
+  đổi thứ tự dòng/cột tương đương trả cùngreceipt. Không làm mất các dòng giống
+  nhau khi canonicalize. V2 schemafingerprint riêng; giữ receipt/digestV1 đã lưu
+  và retryfileV1 antoàn, không tự xóa hoặc rewrite lịch sử để đổiformat.
+- UI chỉ hướng dẫn16field/nhãn, không khôi phục nút tải mẫu. Test cần bổ sung
+  trước triển khai: workbookuser/headeralias/dropdownlabels/defaults/missingfield,
+  duperows/reorder/receiptretry/V1compatibility, chỉnhảnh-variants-publish.

@@ -76,6 +76,9 @@ bằng chứng và gate online ở [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFI
 
 ## Format file import — contract duyệt31/10/2026
 
+Phần này là V1/20cột đang chạy. Quyết định V2/16cột user chốt01/11 ở
+[BOOK_IMPORT](BOOK_IMPORT.md#format-v2--chốt0111-chờ-triển-khai), chưa đổi parser/code.
+
 Hỗ trợ `.csv` UTF-8 có/không BOM và `.xlsx`; không nhận `.xls`/`.xlsm`.
 Một schema/cùng header cho hai định dạng. Trang import hướng dẫn field và mã lựa chọn hiện hành;
 API mẫu CSV/XLSX vẫn giữ để tương thích, UI không còn nút tải mẫu; CSV demo M0 không phải mẫu importer.

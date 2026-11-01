@@ -7,7 +7,8 @@ Cập nhật01/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và c
 
 User muốn khép phần xây tính năng MVP tại đây để tối ưu UI. Giữ chức năng hiện có,
 không mở thêm feature trong lần tổng hợp này. Chưa đánh dấu nghiệm thu release/
-production vì các gate kỹ thuật dưới đây chưa đủ bằng chứng. Chưa thiết kế/code UI mới.
+production vì các gate kỹ thuật dưới đây chưa đủ bằng chứng. Chưa thiết kế/code UI mới. Điều chỉnh format importV2 user yêu cầu sau đó được
+ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 - Dev đã push tới8afb88d; import CSV/XLSX tạoẨn→thêmảnh→OWNERpublish, tồn riêng theo
   biến thể, upload đứng đầu editor và hướng dẫn import ngắn đã triển khai local.
@@ -19,6 +20,16 @@ production vì các gate kỹ thuật dưới đây chưa đủ bằng chứng. 
   bằng chứng chi tiết, không tự chuyển ca đã được user xác nhận sang FAIL.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
+
+## Điều chỉnh format import V2 — đã chốt, chưa triển khai
+
+- Đã review fileuser `input/me-may-sach-v2.xlsx`:16header/5dropdown, header-only.
+  [Quyết định](BOOK_IMPORT.md#format-v2--chốt0111-chờ-triển-khai): một dòng=mộtsáchẨn,
+  ngôn ngữ “Tiếng Anh”/biếnthểmặcđịnh/tồn1; bỏ4cột, nhận nhãn dễđọc/code và headeralias
+  kiểu bìa. OWNER thêmảnh/sửa tồn/thêm biếnthể rồi publish. Không đổi workbook.
+- Website vẫn nhậnV1/20cột; parser/UI/fingerprintcompatibility/testV2 chưa làm.
+  Bước tiếp lập task triển khai theo quyết định này khi user yêu cầu thực thi;
+  không lấy kiểm XML của file mẫu làm bằng chứng importV2 chạy được.
 
 ## Gate tồn đọng — tổng hợp01/11
 
