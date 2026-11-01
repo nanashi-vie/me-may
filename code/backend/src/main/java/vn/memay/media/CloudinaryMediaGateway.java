@@ -8,15 +8,18 @@ import java.util.*;
 import vn.memay.common.AdminApiException;
 
 public class CloudinaryMediaGateway implements MediaGateway {
-    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+    @org.springframework.beans.factory.annotation.Autowired
+    private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
     static final String PREVIEW = "a_auto/c_limit,w_1280/fl_strip_profile,f_jpg";
     static final String PUBLIC_PREVIEW = publicTransform(640, "jpg");
+
     static String publicTransform(int width, String format) {
         if ((width != 320 && width != 640) || !List.of("jpg", "webp").contains(format))
             throw new IllegalArgumentException("Invalid media variant");
         return "a_auto/c_limit,w_" + width + "/q_auto:good/fl_strip_profile,f_" + format;
     }
+
     private final Cloudinary cloud;
     private final Uploader uploader;
     private final CloudinaryTransport transport;
@@ -24,7 +27,7 @@ public class CloudinaryMediaGateway implements MediaGateway {
 
     public CloudinaryMediaGateway(String cloudName, String apiKey, String apiSecret, String namespace,
             CloudinaryTransport transport) {
-        if (!cloudName.matches("[a-zA-Z0-9_-]+") || !namespace.matches("memay/(dev|test|online-test)"))
+        if (!cloudName.matches("[a-zA-Z0-9_-]+") || !namespace.matches("memay/(dev|test|online-test|production)"))
             throw new IllegalArgumentException("Invalid media configuration");
         this.namespace = namespace;
         this.transport = transport;
@@ -42,8 +45,9 @@ public class CloudinaryMediaGateway implements MediaGateway {
     static Map<String, Object> uploadOptions(String id) {
         var eager = new ArrayList<Transformation<?>>();
         eager.add(new Transformation<>().rawTransformation(PREVIEW));
-        for (int width : List.of(320, 640)) for (String format : List.of("jpg", "webp"))
-            eager.add(new Transformation<>().rawTransformation(publicTransform(width, format)));
+        for (int width : List.of(320, 640))
+            for (String format : List.of("jpg", "webp"))
+                eager.add(new Transformation<>().rawTransformation(publicTransform(width, format)));
         return Map.of("public_id", id, "resource_type", "image", "type", "authenticated", "overwrite", false,
                 "unique_filename", false, "eager", eager);
     }
@@ -57,7 +61,13 @@ public class CloudinaryMediaGateway implements MediaGateway {
     public UploadedMedia upload(String publicId, byte[] bytes) {
         validatePublicId(publicId, namespace);
         try {
-            Map result = timings.measure("provider", () -> {try {return uploader.upload(bytes, uploadOptions(publicId));} catch(Exception e) {throw failure();}});
+            Map result = timings.measure("provider", () -> {
+                try {
+                    return uploader.upload(bytes, uploadOptions(publicId));
+                } catch (Exception e) {
+                    throw failure();
+                }
+            });
             if (!publicId.equals(result.get("public_id")) || !"authenticated".equals(result.get("type")))
                 throw new IOException();
             return new UploadedMedia((String) result.get("asset_id"), publicId, (String) result.get("format"),
@@ -69,17 +79,20 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     public InputStream openPreview(String publicId) {
-        return openAdminPreview(publicId,1280);
+        return openAdminPreview(publicId, 1280);
     }
 
-    public InputStream openAdminPreview(String publicId,int width) {
-        if(width!=320 && width!=1280)throw new IllegalArgumentException("Invalid admin media size");
+    public InputStream openAdminPreview(String publicId, int width) {
+        if (width != 320 && width != 1280)
+            throw new IllegalArgumentException("Invalid admin media size");
         validatePublicId(publicId, namespace);
         try {
-            try {return openTimed(previewUrl(publicId,width==320 ? publicTransform(320,"jpg"):PREVIEW));}
-            catch(CloudinaryTransport.MissingVariantException missing) {
-                if(width!=320)throw missing;
-                return openTimed(previewUrl(publicId,PREVIEW));
+            try {
+                return openTimed(previewUrl(publicId, width == 320 ? publicTransform(320, "jpg") : PREVIEW));
+            } catch (CloudinaryTransport.MissingVariantException missing) {
+                if (width != 320)
+                    throw missing;
+                return openTimed(previewUrl(publicId, PREVIEW));
             }
         } catch (Exception e) {
             throw failure();
@@ -87,9 +100,16 @@ public class CloudinaryMediaGateway implements MediaGateway {
     }
 
     private InputStream openTimed(URI uri) throws IOException {
-        long start=System.nanoTime();String status="ok";
-        try{return transport.open(uri);}catch(IOException | RuntimeException e){status="error";throw e;}
-        finally{timings.record("provider_open",start,status);}
+        long start = System.nanoTime();
+        String status = "ok";
+        try {
+            return transport.open(uri);
+        } catch (IOException | RuntimeException e) {
+            status = "error";
+            throw e;
+        } finally {
+            timings.record("provider_open", start, status);
+        }
     }
 
     public InputStream openPublicPreview(String publicId) {
@@ -103,8 +123,15 @@ public class CloudinaryMediaGateway implements MediaGateway {
             try {
                 return transport.open(previewUrl(publicId, transform, format));
             } catch (CloudinaryTransport.MissingVariantException missingVariant) {
-                if (width != 640 || !format.equals("jpg")) throw missingVariant;
-                return timings.measure("provider_open", () -> {try{return transport.open(previewUrl(publicId, PREVIEW));}catch(Exception e){throw failure();}});
+                if (width != 640 || !format.equals("jpg"))
+                    throw missingVariant;
+                return timings.measure("provider_open", () -> {
+                    try {
+                        return transport.open(previewUrl(publicId, PREVIEW));
+                    } catch (Exception e) {
+                        throw failure();
+                    }
+                });
             }
         } catch (Exception e) {
             throw failure();
@@ -114,6 +141,7 @@ public class CloudinaryMediaGateway implements MediaGateway {
     private URI previewUrl(String publicId, String transform) {
         return previewUrl(publicId, transform, "jpg");
     }
+
     private URI previewUrl(String publicId, String transform, String format) {
         return URI.create(cloud.url().secure(true).signed(true).resourceType("image").type("authenticated")
                 .transformation(new Transformation<>().rawTransformation(transform)).format(format).generate(publicId));
