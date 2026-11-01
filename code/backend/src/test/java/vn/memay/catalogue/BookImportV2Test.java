@@ -76,6 +76,14 @@ class BookImportV2Test {
         var levels=Map.of("Starters · Pre A1","PRE_A1","Movers · A1","A1","Flyers / Key · A2","A2","Preliminary · B1","B1","First · B2","B2","Advanced · C1","C1","Proficiency · C2","C2");
         levels.forEach((label,code)->assertThat(read(csv(List.of(change(values(),"trinh_do_doc",label)),COLUMNS),"csv").groups().getFirst().write().readingLevel()).isEqualTo(code));
     }
+    @Test void acceptsTheTwoRequestedCategoriesByNameAndCode() {
+        for(var entry:Map.of("Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY").entrySet()) {
+            for(String value:List.of(entry.getKey(),entry.getValue())) {
+                var doc=read(csv(List.of(change(values(),"the_loai",value)),COLUMNS),"csv");
+                assertThat(doc.issues()).as(value).isEmpty();assertThat(doc.groups().getFirst().write().categoryCode()).isEqualTo(entry.getValue());
+            }
+        }
+    }
     @Test void reportsMissingRequiredAndUnknownLabelsWithoutGuessing() {
         for(String column:List.of("ten_sach","the_loai","gia_tu","gia_den","trong_luong_g","tinh_trang","mo_ta_tinh_trang")) {
             var doc=read(csv(List.of(change(values(),column,"")),COLUMNS),"csv");assertThat(doc.fingerprint()).isNull();assertThat(doc.issues()).extracting(ImportIssue::column).contains(column);

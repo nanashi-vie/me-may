@@ -8,6 +8,11 @@ import {
   effectiveBook,
 } from './catalogue-state';
 import { PublicBook } from './public.models';
+it.each(['READING_PRACTICE','COOKING_CRAFT_ACTIVITY'])('preserves the new category %s through URL filters',(category)=>{
+  const filters=readFilters(convertToParamMap({category,binding:'HARDCOVER'}));
+  expect(filters.category).toBe(category);expect(filters.binding).toBe('');
+  expect(filterParams(filters)['category']).toBe(category);
+});
 const book: PublicBook = {
   id: '1',
   bookCode: 'MM-000001',

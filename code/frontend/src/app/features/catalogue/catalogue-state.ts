@@ -8,6 +8,8 @@ const categories = [
   'HISTORY',
   'CHAPTER',
   'STORY_COLLECTION',
+  'READING_PRACTICE',
+  'COOKING_CRAFT_ACTIVITY',
 ];
 export function readFilters(p: ParamMap): CatalogueFilter {
   const category = categories.includes(p.get('category') || '') ? p.get('category')! : '';
