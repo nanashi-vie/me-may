@@ -7,7 +7,7 @@ giữ fileV1 và biên nhận cũ, một dòngV2 tạo một sáchẨn.
 **Architecture:** Nhận diện schema từ header; CSV/XLSX dùng chung canonical header.
 V2 ánh xạ nhãn/defaults rồi dùng validator/domain hiện có. FingerprintV1 giữ byte
 serialization/version cũ; V2 canonicalize một multiset sách, không bỏ dòng trùng.
-Không migrationDB/dependency/provider mới. Frontend hướng dẫn16field và preview
+ImportV2 không migrationDB/dependency/provider mới; user bổ sung2category cầnV12. Frontend hướng dẫn16field và preview
 theo dòng; flowcheck/confirm/retry/editor/publish giữ nguyên.
 **Tech Stack:** Angular, SpringJDBC, CommonsCSV, POI event/SAX hiện có.
 **Spec:** [BOOK_IMPORT — V2 đã chốt](BOOK_IMPORT.md#format-v2--chốt0111-chờ-triển-khai).
@@ -25,6 +25,9 @@ User01/11 đã yêu cầu bắt đầu triển khai, không mở lại approval 
 - Giữ receipt/digestV1, fileV1 retry không ghi đè; V2 hash schema2, gồm multiplicity,
   không gồm vị trí dòng/header/filetype. Không rewrite bảngreceipt hoặc migrateDB.
 - Không đổi ảnh/publish/authcache/uploadconcurrency, không thêm nút tải mẫu.
+- Steeringuser: thêm Tập đọc (READING_PRACTICE/tap-doc) và Nấu ăn - thủ công - activity book
+  (COOKING_CRAFT_ACTIVITY/nau-an-thu-cong-activity-book), append sort6/7 quaV12;
+  không sửa checksumseedV3, không tự migrateonline.
 - Workbookuser read-only; fixture chỉ copy header/dropdowns không chứa dữ liệu bán.
 - Code/tài liệu trêndev hiện có theo preference trước; không tạo worktree mới,
   khôngmerge/deploymain. Test trên DBtest cóguard; khôngtạo scratchDB/providerasset.
@@ -81,7 +84,23 @@ keyR001..R100 ổn định; duplicates vẫn thành nhóm riêng, rows dùng s�
 - [ ] Full frontend test và buildWorkers Expected PASS. Commit
   `feat(admin): explain simplified book import format`.
 
-## Task 3: Regression, một review và bàn giao
+## Task 3: Hai thể loại chung — user bổ sung trong lúc triển khai
+
+**Files:** migrationV12__add_book_categories.sql; BookImportSchema.java;
+frontend book.models.ts/catalogue-state.ts; tests CategoryExpansionTest.java,
+BookImportV2Test.java/catalogue-state.spec.ts.
+**Interfaces:** taxonomy hiện có đọc database nhận thêm READING_PRACTICE và
+COOKING_CRAFT_ACTIVITY; không thêm endpoint/entity hoặc đổi category sách cũ.
+
+- [ ] RED API/DB: taxonomy public/admin có2nhãn/mã, manualsave/publicfilter hoạt động,
+  import16cột nhận cảlabel/code; migrationV11→12 giữ6categorycũ và existingbooks.
+  Frontend readFilters giữ2categorymới qua URL, vẫn bỏbinding khi khôngPicturebook.
+- [ ] Implement V12insert2category sort6/7, importaliases/CATEGORIES và TSunion/
+  catalogueallowlist. Không cài dependency hoặc sửaV3.
+- [ ] Backendcleanverify + fullfrontend + Workersbuild Expected PASS; sourcechange
+  mới cho phép rerun suites. Commit feat(catalogue): add requested book categories.
+
+## Task 4: Regression, một review và bàn giao
 
 **Files:** docs hiện hành DATA/BOOK_IMPORT/VERIFICATION chủ đề/PROGRESS/DEV_LOG/
 README soleindex; owned ignored workspace BOOK_IMPORT_V2_PLAN.
@@ -102,5 +121,5 @@ README soleindex; owned ignored workspace BOOK_IMPORT_V2_PLAN.
 ## Self-review
 
 Spec defaults/16headers/aliases→Task1/2; labels/limits/security→Task1;
-rowmultiplicity/receipt/V1→Task1; UI→Task2; editor/publish/review/docs→Task3.
+rowmultiplicity/receipt/V1→Task1; UI→Task2; editor/publish/review/docs→Task4.
 Năm ReviewFocus có testcase tại task tương ứng. Không đổi field/domain ngoàiimport.

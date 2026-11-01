@@ -15,22 +15,22 @@
 @if (editable()) {
   <section aria-labelledby="fields-title">
     <h2 id="fields-title">Hướng dẫn các field</h2>
-    <p>File cần đủ 20 cột bên dưới; cột không bắt buộc có thể để trống. Mỗi dòng là một biến thể, cùng <code>nhom_sach</code> là một sách và phải lặp lại cùng thông tin chung.</p>
+    <p>File cần đủ 16 cột bên dưới; cột không bắt buộc có thể để trống. Mỗi dòng tạo một sách riêng.</p>
+    <p>Mặc định ngôn ngữ <strong>Tiếng Anh</strong>, một biến thể chưa đặt tên và <strong>tồn 1</strong>. Khi thêm ảnh, bạn có thể sửa ngôn ngữ, chỉnh tồn và thêm biến thể trước khi xuất bản.</p>
     <div class="table-scroll"><table>
       <thead><tr><th scope="col">Field</th><th scope="col">Cách nhập</th></tr></thead>
       <tbody>
-        <tr><td><code>nhom_sach</code></td><td>Bắt buộc. Khóa nhóm tự đặt, ví dụ A01; phân biệt hoa/thường, không phải mã MM.</td></tr>
-        <tr><td><code>ten_sach</code>, <code>ngon_ngu</code></td><td>Bắt buộc. Tên sách và ngôn ngữ, ví dụ Tiếng Anh.</td></tr>
-        <tr><td><code>the_loai</code>, <code>kieu_bia</code></td><td>Thể loại bắt buộc; Picture book cần PAPERBACK hoặc HARDCOVER, thể loại khác để trống kiểu bìa.</td></tr>
+        <tr><td><code>ten_sach</code></td><td>Bắt buộc. Tên sách.</td></tr>
+        <tr><td><code>the_loai</code>, <code>kieu_bia</code></td><td>Thể loại bắt buộc, ví dụ Board Book hoặc Picture Book. Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kiểu bìa.</td></tr>
         <tr><td><code>gia_tu</code>, <code>gia_den</code>, <code>trong_luong_g</code></td><td>Bắt buộc. Giá nguyên VND, giá từ ≤ giá đến; trọng lượng gram nguyên dương. Không dùng dấu phân nhóm nghìn.</td></tr>
-        <tr><td><code>tinh_trang</code>, <code>mo_ta_tinh_trang</code></td><td>Bắt buộc. HIGH_FRESHNESS = Độ mới cao; MINOR_FLAWS = Có lỗi nhẹ. Mô tả rõ tình trạng/lỗi.</td></tr>
-        <tr><td><code>bien_the</code>, <code>ton_kho</code></td><td>Tồn bắt buộc, số nguyên 0–999999. Nhiều biến thể cần tên riêng khác nhau; một biến thể được để tên trống.</td></tr>
+        <tr><td><code>tinh_trang</code>, <code>mo_ta_tinh_trang</code></td><td>Bắt buộc. Chọn Độ mới cao hoặc Có lỗi nhẹ, kèm mô tả rõ tình trạng/lỗi.</td></tr>
         <tr><td><code>isbn</code>, <code>nha_xuat_ban</code>, <code>tac_gia</code>, <code>mo_ta_sach</code></td><td>Không bắt buộc. ISBN nhập dạng text để giữ số 0 đầu.</td></tr>
-        <tr><td><code>do_tuoi</code>, <code>trinh_do_doc</code>, <code>bo_suu_tap</code>, <code>link_video</code></td><td>Không bắt buộc. Dùng mã bên dưới; nhiều độ tuổi/bộ sưu tập ngăn bằng dấu ;. Video là URL HTTPS.</td></tr>
+        <tr><td><code>do_tuoi</code>, <code>trinh_do_doc</code>, <code>bo_suu_tap</code>, <code>link_video</code></td><td>Không bắt buộc. Tuổi ví dụ 0-3; mức đọc ví dụ Starters · Pre A1. Nhiều độ tuổi/slug bộ sưu tập ngăn bằng dấu ;. Video là URL HTTPS.</td></tr>
       </tbody>
     </table></div>
-    <p>Nhận CSV UTF-8 (dấu phẩy) hoặc Excel .xlsx (sheet <code>Sach</code>); không dùng công thức. Tối đa 2 MiB, 500 dòng, 100 sách và 100 biến thể/sách.</p>
-    <details><summary>Mã lựa chọn</summary>
+    <p>Nhận CSV UTF-8 (dấu phẩy) hoặc Excel .xlsx (sheet <code>Sach</code>); không dùng công thức. Tối đa 2 MiB và 100 dòng sách. File 20 cột cũ vẫn được hỗ trợ.</p>
+    <details><summary>Tên và mã lựa chọn</summary>
+      <p>Có thể nhập tên dễ đọc hoặc mã chuẩn. Các lựa chọn không phân biệt hoa/thường và bỏ khoảng trắng đầu/cuối.</p>
       @if (options(); as data) {
         <dl><dt>Thể loại</dt><dd>@for (item of data.taxonomy.categories; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
         <dt>Kiểu bìa</dt><dd>@for (item of data.taxonomy.bindings; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
@@ -40,7 +40,7 @@
       }
       <button type="button" class="secondary" (click)="loadOptions()">Làm mới mã lựa chọn</button>
     </details>
-    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung hoặc khóa nhóm sẽ là lô mới, không cập nhật sách cũ.</p>
+    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung là lô mới, không cập nhật sách cũ. Các dòng trùng tên hoặc ISBN vẫn tạo sách riêng.</p>
   </section>
   <section aria-labelledby="file-title"><h2 id="file-title">1. Kiểm tra file</h2>
     <label>File CSV/Excel<input type="file" accept=".csv,.xlsx" [disabled]="busy()" (change)="fileChanged($event)" /></label>
@@ -68,7 +68,7 @@
     <section aria-labelledby="preview-title"><h2 id="preview-title">2. Xem trước và xác nhận</h2>
       <p>{{ result.document.rowCount }} dòng · {{ result.document.groups.length }} sách · Tổng tồn: {{ display(totalStock()) }}</p>
       @for (group of result.document.groups; track group.key) {
-        <details><summary>{{ group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · {{ group.write.variants.length }} biến thể</summary>
+        <details><summary>{{ result.document.schemaVersion === 2 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · {{ group.write.variants.length }} biến thể</summary>
           <dl>@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
           <table><thead><tr><th>Biến thể</th><th>Tồn kho</th></tr></thead><tbody>@for (variant of group.write.variants; track $index) {<tr><td>{{ variant.name || 'Mặc định' }}</td><td>{{ display(variant.stock) }}</td></tr>}</tbody></table>
         </details>
