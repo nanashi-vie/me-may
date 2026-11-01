@@ -1,6 +1,7 @@
 # Bằng chứng hiệu năng nhập và xuất bản
 
-Ngày30/10/2026, Asia/Ho_Chi_Minh. Spec/plan ở [chỉ mục](README.md).
+Ngày30/10/2026, Asia/Ho_Chi_Minh. Contract hiện hành ở ARCHITECTURE/CATALOGUE;
+[quy trình đo còn mở](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện).
 Chưa nghiệm thu Render warm/cold hoặc VPS. Không dùng local thay online.
 
 ## Baseline có kiểm soát — d1cca7b
@@ -129,7 +130,8 @@ size/format chỉ nhận giá trị allowlist. Sanitizer4/4PASS.
 
 Cleanup xácnhận destroy83assetQA cònlại,0absent;3ảnhoptional đãđược cleanupjob
 xửlý trước đó. Hai probe độc lập có ledgerdeleted. DBscratch giữ23sáchđãẩn,
-23variant/media0/temporary0. ĐãdừngAPI/SSR vàđóngbrowserQA; khôngdropDB.
+23variant/media0/temporary0 tại mốc30/10, API/SSR/browser đã dừng.
+Update01/11: DBscratch này đã drop theo yêu cầu cleanup, evidence safe vẫn giữ.
 Không thayDB/ảnh bánthật, khôngmerge/deploymain.
 
 ## Gate còn mở

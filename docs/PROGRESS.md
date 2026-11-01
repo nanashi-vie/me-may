@@ -53,9 +53,9 @@ Nguồn: [VERIFICATION](VERIFICATION.md#m5-pilot-và-link-hỏi-sách--28102026)
 
 - [MASTER_PLAN](MASTER_PLAN.md#9-definition-of-done--nghiệm-thu-mvp): DoD và giới hạn;
   [DESIGN](DESIGN.md): UX hiện hành; [DATA](DATA.md): field và tồn/biến thể.
-- [M5_COMPLETION_SPEC](M5_COMPLETION_SPEC.md)/[PLAN](M5_COMPLETION_PLAN.md) và
-  [BOOK_PUBLISH_PERFORMANCE_SPEC](BOOK_PUBLISH_PERFORMANCE_SPEC.md)/[PLAN](BOOK_PUBLISH_PERFORMANCE_PLAN.md)
-  giữ cho gate online còn mở; không tự xóa tiêu chí hoặc đánh dấu PASS.
+- [CATALOGUE](CATALOGUE.md) giữ contract quản trị/media hiện hành; các spec/plan
+  M2/M5/hiệu năng cũ đã gộp/gỡ01/11. Chỉ theo gate chưa xong ở bảng trên và
+  [DEPLOYMENT — quy trình đo](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện).
 - [BOOK_IMPORT](BOOK_IMPORT.md)/[BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFICATION.md):
   contract/schema/hướng dẫn/bằng chứng và gate rolloutV11.
 - Chỉ commit/pushdev; user merge main/deploy. Không đọc/mutate live trong lần tổng

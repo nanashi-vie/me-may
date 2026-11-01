@@ -1,9 +1,11 @@
-# Kiểm chứng local — M1 và M2
+# Kiểm chứng nền tảng, catalogue và online
 
 Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
 Tách bằng chứng theo chủ đề để giữ file này dưới400dòng; các gate M5 bên dưới vẫn giữ.
 
-Ngày: 22/10/2026. Phần M1 là bằng chứng lịch sử; trạng thái M2 mới nhất ở cuối. Không phải nghiệm thu staging/production.
+Bằng chứng22–29/10/2026 dưới đây theo revision/ngày từng mục; không là kiểm tra
+live01/11. Backlog duy nhất ở [PROGRESS](PROGRESS.md); cách đo/rollout ở
+[DEPLOYMENT](DEPLOYMENT.md). Không suy checkbox/câu “chưa” lịch sử thành task mới.
 
 ## Kết quả
 
@@ -43,15 +45,10 @@ Các test backend có cảnh báo Mockito/JDK về agent tự attach từ test i
 
 `git diff --cached --check` toàn repo báo trailing spaces trong skill nhập nguyên trạng và Markdown master plan có hard line breaks; giữ nguyên để không thay đổi checksum nguồn. Check scoped code/tài liệu M1 không có whitespace error. Git có cảnh báo chuẩn hóa CRLF cho Maven Windows wrapper và CSV demo khi checkout; không thay đổi hành vi ứng dụng.
 
-## Chưa kiểm chứng / để sau
-
-Cloudflare runtime compatibility, SEO/OG sách thật, cookie/CORS trên domain thật, Dokploy deployment, production role separation/rate limit, backup/restore ngoài VPS, media upload và dữ liệu pilot. Không coi local Node SSR là phương án Cloudflare đã được chấp thuận.
-
-Home hiện là shell nền tảng; chưa phải Home nhiều hàng sách trong wireframe M0. Không có CRUD sách, upload hoặc wishlist thực ở M1. Tài khoản Staff được kiểm tra trong test database; chưa có giao diện quản lý tài khoản.
-
 ## M2 — gate kỹ thuật và pilot
 
-Ngày 22/10/2026, branch `feat/m2-admin-catalogue`. Task1–10 hoàn tất; task11 còn **pilot chủ tiệm10–20 cuốn thật**, người dùng đã xác nhận sẵn sàng tự nhập/đối chiếu. Chưa đánh dấu M2 hoàn tất hoặc chuyển M3.
+Ngày 22/10/2026, branch `feat/m2-admin-catalogue`. Task kỹ thuật hoàn tất tại mốc này; pilot sau đó user xác nhận21/21.
+Các ca/measurement còn thiếu theo PROGRESS, không giữ task11 cũ làm plan thực thi.
 
 | Kiểm tra mới | Kết quả |
 |---|---|
@@ -232,24 +229,8 @@ public từ máy để giữ verify-full. Python urllib mặc định bị Cloud
 User-Agent thông thường chạy được. /actuator/env trên Worker404 vì không phải
 API proxy; kiểm trực tiếp Render401. Đây là chỉnh probe/môi trường, không sửa code.
 
-**Gate còn mở để đóng M5:**
-
-- Pilot10–20cuốn thật/đủ3ảnh, bộ50–100listing kiểm thử theoDoD; online CRUD/upload,
-  optimistic lock/audit/RBAC STAFF, publish/sold/ẩn/cache, detailSEO/OG/media và
-  wishlist nhiều cuốn chưa kiểm chứng. SSR checker bỏ qua detail/media khi items rỗng.
-- Safari iPhone/Android Chrome/Facebook/Zalo in-app, copy→mở→dán và fallback,
-  owner demo/thời gian nhập liệu chưa thử (user xác nhận).
-- Backup hiện chỉ skeleton/taxonomy/owner; chưa có restore dữ liệu/ảnh pilot,
-  lịch/retention/offhost policy, media recovery hoặc rollback drill. Checklist ở DEPLOYMENT.
-- Chưa lab mobile LCP≤2,5s/trang đại diện, cold-start có kiểm soát, quota/load,
-  role runtime tối thiểu/rate limit và review cấu hình secrets/dashboard đầy đủ.
-  Tab Home cũ báo chưa tải dữ liệu; sau warmup/reload bình thường, chưa quy nguyên nhân.
-- Không restart/deploy/rollback dịch vụ để ép outage; backend-down503 trước đây mới
-  có bằng chứng local. Không coi test online hiện tại là production VPS/Dokploy.
-
-Chỉ sửa tài liệu bàn giao trong phiên này; không đổi application/schema, không chạy
-lại unit/build vì không đổi source. Bằng chứng online mới ở bảng trên; các suite
-local trong checkpoint trước giữ nguyên ngày/code đã kiểm chứng.
+Gate tại mốc27/10 đã được cập nhật sau pilot và các thay đổi tiếp theo;
+xem [PROGRESS](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) cho backlog hiện hành.
 
 ## M5 pilot và link hỏi sách — 28/10/2026
 
@@ -276,25 +257,12 @@ Browser WorkersQA8792: freshadmin→Home canonical đúng originQA, search/save/
 Bản sửa chưa deploy: user merge dev→main theo workflow rồi Cloudflare build/deploy;
 smoke lại singlebook/multibook enquiry sau adminentry và directentry.
 
-### Checklist người dùng còn cần xác nhận
+### Xác nhận chức năng của người dùng
 
-| Case | Kết quả cần thấy |
-|---|---|
-| Sau deploy bản sửa | Từ admin về public và mở trực tiếp trang sách/wishlist; nội dung hỏi1/nhiềucuốn chỉ có domainonline, mở link đúng sách |
-| SOLD và wishlist cũ | Lưu sách trước; Owner đánh dấu Hết hàng; mở/reload wishlist: cảnh báo hết hàng, không chọn hỏi mua; detailURL cũ còn tồn tại và CTA tư vấn sách tương đương |
-| Ẩn và wishlist cũ | Sách đã lưu rồi bị ẩn: không lộ thông tin cũ hoặc tiếp tục copy hỏi mua; khôngchỉ kiểm biến mất khỏi catalogue |
-| Wishlist bền trên cùng browser | Lưu2–3cuốn, xóa1, đóng/mở lại hoặc reload; còn đúng danh sách, chọnsubset và nội dung chỉ gồm cuốnđượcchọn/mã/giá/URL mới nhất |
-| Tìm/lọc/quay lại | Tên/mã, từngnhómtuổi, thểloại/binding, sort và backdetail giữfilters; next/prev khi có>20public. Hiện20 nên online chưa chạy nhánh trang2 |
-| Form và lỗi | Thiếu1ảnh bị chặnpublish; ảnhsai/hỏng báo lỗi; ngắtmạng/lưuhoặc hếtsession không mất form;2tab sửa cùngcuốn không âmthầm ghiđè |
-| Thiết bị/context còn thiếu | Xác nhận SafariiPhone/ChromeAndroid/Facebook hoặcZaloin-app nào đã thử; mỗicontextchưa thử cần tìm/detail/wishlist/copyfallback/mởZalo. Không yêu cầu gửi tin thử hoặc lặp toàn bộ21cuốn |
-
-Sau checklist này, user báo đã test xong các case chức năng còn lại; ghi nhận
-xác nhận đó, dù chưa có biên bản từng thiết bị/case để agent tự kiểm chứng.
-Không yêu cầu lặp lại21cuốn khi đang xử lý gate kỹ thuật.
-Các case user đã báo đạt được giữ; chỉ kiểm nhánh khác khi phát sinh lỗi.
-STAFF/RBAC,CSRF và race có testlocal trước đây; case userdesktop/mobile không thay
-cho kiểm bảo mật/lỗi. Bộ50–100listing/load theoDoD vẫn chưa chạy; dùng datasetQA
-riêng khi kiểm tải, không tạo sách bán giả chỉ để đủ số.
+Sau checklist28/10, user báo đã test xong các ca chức năng còn lại. Giữ xác nhận
+đó, không yêu cầu nhập lại21cuốn hoặc coi ca đã báo đạt thànhFAIL vì thiếu biên
+bản thiết bị. Chưa có đủ biên bản iPhoneSafari/AndroidChrome/in-app và publicload
+50–100listing; follow-up theo [PROGRESS](PROGRESS.md), không lặp checklist cũ.
 
 ### Gate kỹ thuật agent/operator còn phải hoàn tất
 

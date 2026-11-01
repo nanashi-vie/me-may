@@ -255,3 +255,59 @@ mẫu đo; không đủ median/p95 hoặc kết luận host. Nếu vượt ngân
 trước rollout và cập nhật contract/tests. Không bỏ validation/audit để tăng tốc.
 Backend quota memory từnginstance; nhiềuinstance cần đánh giá thêm, chưa có distributedgate.
 [Contract](BOOK_IMPORT.md), [bằng chứng local](BOOK_IMPORT_VERIFICATION.md).
+
+## Quy trình đo QA còn phải thực hiện
+
+Checklist này nhận các tiêu chí online chưa xong từ plan M5/hiệu năng đã gỡ.
+Danh sách gate/chủ đề duy nhất ở [PROGRESS](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111);
+trạng thái và số đo đã có ở VERIFICATION chủ đề, không mở lại task code đã xong.
+
+- Ghi revision FE/BE, host/vùng nếu đọc được, browser/device/viewport/network,
+  thời điểm và manifestSHA256/kích thước/bytes của cùng bộảnhQA ngang/dọc.
+- Warmup riêng,5lượt/workload2ảnh và6ảnh; giữ cùng lịch request khi so sánh.
+  Rendercold/Neonresume đo riêng, phải có bằng chứng lifecycle/log; unknown ghi
+  unknown, không loại mẫu chậm tùy ý hoặc restart dịch vụ bán thật để tạo cold.
+- Đo request temporary/editupload, POSTbooks, content, bookdetail, taxonomy,
+  collections, audit, CSRF: queue/blocked/send/TTFB/download/total/status/bytes,
+  DNS/connect/TLS nếu có, và các request chồng lấn. Không cộng median thành elapsed.
+- Browser monotonicclock: selected→normalizeStart→JPEGready→upload→READY,
+  bytestrước/sau; đo tổng chọn→publish→editor dùngđược và ảnhđầuhiện. Minor còn mở:
+  replacement chưa ghi selectedAt; sửa/kiểm trước khi kết luận edittiming.
+- Backend correlationID/phase: validation/fingerprint, intent/ready/publishtransaction,
+  mapping/querycount, poolacquisition, contentauth/provideropen/stream. Transaction
+  đo ngoài proxy để gồmcommit; không gọi methodelapsed là exactlocktime/Neontime.
+  Flyway là startup riêng. Cloudinary upload+eager đo combined; upload-only rồi
+  expliciteager chỉ là phép QA đối chứng, không phân rã chính xác request cũ.
+- Báo cả5mẫu/min/max/median, bytes/query/requestcount và elapsed;5mẫu không đại
+  diện p95. Chỉ kết luận nhanh hơn khi cùng môi trường và ngoài dao động đo.
+- HAR chỉ allowlistmetadata; loại cookie/auth/CSRF/headers/body/multipart/query
+  nhạy cảm/providerURL/signedURL/sourceRef/PII, kiểm sanitizer với secretgiả.
+  Logs không chứa SQLbindings/nộidungfile/ảnh/tênsách; evidenceignored private.
+- Chia đợt tôn trọng4providerinflight/30attempt10phút (gồm đối chứng/retry),
+  không tăng quota/plan/limit để đo. Quota không đủ thì báo partial, khôngPASS.
+- Đọc health/logs/Neonquota-pool-lock/Cloudinaryusage khi có quyền. Collection-heavy
+  workload chưa đo nên chưa quyết batching/index. VPSQA chỉ đối chứng nếu Renderwarm
+  vẫn chậm, cùngrevision/ảnh/data/vùngDB/browser; không bắt buộc mua host mới.
+- Chỉ ghi vào DBQA/media namespacecáchly có ledger exactIDs và crosscheck không
+  productionreference; cleanup không theo prefix rộng, không xóa ảnhnguồn chủtiệm.
+
+## Smoke còn mở sau rollout và sau UI cuối
+
+- OWNER tạo2/6ảnh, ngang/dọc, ảnhcũ, dropdownroles, thumbnail320/viewer1280,
+  lưu/publish/ẩn/hiện/tổngtồn0, trọnglượng/khoảnggiá/FlashSale và firstpublishedAt.
+- STAFFread/write403, anonymous401/CSRF403, temp/foreign/hidden/archived private;
+  không lộ sourceRef/signedURL, giữ no-store/nosniff/MIME và4publicvariants.
+- Timeout/lostresponse→retry đúngID, refresh theo contract, replace/remove/cancel/
+  expiry/410/reauth và2tab409; không duplicatebook/asset hoặc cleanupnhầm ảnh.
+- Wishlist0/3cuốn, hidden/SOLD/giáđổi, saleexpiry/foreground/multitab/preparecopy:
+  không copytextcũ, không hiện giá chưa xác minh; directentry/adminentry dùng
+  đúng domain. Giữ xác nhận chức năng user đã báo đạt, chỉ ghi nhánh/revision mới.
+- 50–100listing datasetQA cho publicsearch/filter/sort/paging; import100 đơn lẻ
+  không thay publicload. Ghi device/context thật iPhoneSafari/AndroidChrome/in-app
+  và giới hạn clipboard/Zalo, không yêu cầu tự gửi tin hoặc nhập lại21cuốn pilot.
+- Lighthouse Mobile warm3run/route Home/detailcốđịnh/wishlist cùng cấu hình vàdata,
+  từngrun LCP≤2,5s/CLS≤0,1; lưu JSON/trace, LCPelement/TTFB/mediawait/CLSsource.
+  Không trộn observed/simulated hoặc lấy passlocal thay online. Cache vẫn no-store;
+  đổi cache cần chứng minh freshness/ẩn/thayảnh/invalidation trước khi duyệt.
+- Recovery/rollback/quota/loginratelimit/runtimeleastprivilege/offhostretention
+  vẫn phải có bằng chứng trước nghiệmthu; xem rolloutV6–V11 ở trên.

@@ -1,6 +1,6 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật 28/10/2026 | User publish21/21; M5 còn originfix, case biên và recovery/performance**
+**Bản hiện hành | Cập nhật01/11/2026 | Đóng phạm vi tính năng, chuyển tối ưu UI; gate release ở PROGRESS**
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
@@ -23,7 +23,7 @@
 
 ### Phạm vi M1 local đã thực hiện
 
-Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Chưa có CRUD sách, Cloudinary upload, Home đầy đủ hoặc wishlist. Docker hóa ứng dụng, CI/CD và deploy được hoãn; bảng M1 bên dưới mô tả đích foundation đầy đủ, không có nghĩa staging đã nghiệm thu.
+Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Các feature tiếp theo đã triển khai; contract hiện hành ở CATALOGUE/ARCHITECTURE. DockerRender/Workers đã có, CI/CD/productionVPS chưa nghiệm thu; bảng milestone bên dưới không thay snapshot PROGRESS.
 
 ## 0. Chốt quyết định và giới hạn
 
@@ -249,7 +249,7 @@ Baseline hiện tại: Angular SSR trên Cloudflare Workers; Neon PostgreSQL tes
 
 ### 5.2. API contract khởi điểm (minh họa)
 
-Contract M2 ở [M2_SPEC](M2_SPEC.md#7-api-aggregate-m2): `/api/v1/admin/books` lưu BookCopy/Listing cùng transaction/version, upload qua backend. API public M3/M4 đã triển khai; contract hiện hành ở README/ARCHITECTURE, UX ở DESIGN và bằng chứng ở VERIFICATION.
+Contract M2 ở [CATALOGUE](CATALOGUE.md#7-api-quản-trị-catalogue): `/api/v1/admin/books` lưu BookCopy/Listing cùng transaction/version, upload qua backend. API public M3/M4 đã triển khai; contract hiện hành ở README/ARCHITECTURE, UX ở DESIGN và bằng chứng ở VERIFICATION.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=
@@ -329,7 +329,7 @@ Từ assessment trước, **tái sử dụng pattern chứ không fork nguyên w
 - `WEB-01` responsive shell/search; `WEB-02` product grid/filter/sort/pagination; `WEB-03` book detail/media; `WEB-04` links/contact+fallback; `WEB-05` wishlist; `WEB-06` SSR/SEO/OpenGraph.
 - `QA-01` integration tests/public restrictions; `QA-02` cross-channel stale stock scenario; `QA-03` security/uploads; `QA-04` manual mobile/in-app; `QA-05` Cloudflare deployed initial HTML + share preview + status-change cache tests; `OPS-01` PostgreSQL backup ngoài VPS/restore; `OPS-02` Dokploy TLS, health, rollback, secrets; `FUTURE-EMAIL-01` Resend decision/ADR (không code MVP).
 
-Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **Chỉ triển khai phạm vi đã được duyệt; M1 local đã hoàn tất. M2_SPEC/M2_PLAN đã duyệt và qua gate kỹ thuật; user28/10 xác nhận publish21/21; ownerdemo/sold/error và sốđo pilot chưa đủ, M3 local đã được duyệt độc lập; Người dùng đã duyệt bắt đầu M3 local23/10; pilot publish M2 đã đủ số lượng; xem case chưa xác nhận ở VERIFICATION28/10. Trạng thái và bằng chứng ở PROGRESS/VERIFICATION.**
+Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex các ticket có tiêu chí chấp nhận rõ. Tạo test trước hoặc cùng lúc với tính năng có dữ liệu/trạng thái quan trọng. **M1–M4 và các thay đổi tính năng đã có bằng chứng local/pilot; user xác nhận publish21/21 và các ca chức năng. Đóng phạm vi tính năng để tối ưu UI, giữ gate release tại PROGRESS/DEPLOYMENT; không coi đó là nghiệm thu production.**
 
 ## 9. Definition of Done — nghiệm thu MVP
 
