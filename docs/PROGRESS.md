@@ -21,14 +21,14 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
-## Điều chỉnh format import V2 — đã chốt, chưa triển khai
+## Điều chỉnh format import V2 — đang triển khai
 
 - Đã review fileuser `input/me-may-sach-v2.xlsx`:16header/5dropdown, header-only.
   [Quyết định](BOOK_IMPORT.md#format-v2--chốt0111-chờ-triển-khai): một dòng=mộtsáchẨn,
   ngôn ngữ “Tiếng Anh”/biếnthểmặcđịnh/tồn1; bỏ4cột, nhận nhãn dễđọc/code và headeralias
   kiểu bìa. OWNER thêmảnh/sửa tồn/thêm biếnthể rồi publish. Không đổi workbook.
-- Website vẫn nhậnV1/20cột; parser/UI/fingerprintcompatibility/testV2 chưa làm.
-  Bước tiếp lập task triển khai theo quyết định này khi user yêu cầu thực thi;
+- BackendV2 đã TDD/defaults/labels/receiptcompat; fullbackend173run/0failure/0error/3skipPASS. UI đang thực hiện; chưa deploy.
+  User đã yêu cầu thực thi; đang [triển khai tuần tự](BOOK_IMPORT_V2_PLAN.md) và baseline/TDD;
   không lấy kiểm XML của file mẫu làm bằng chứng importV2 chạy được.
 
 ## Gate tồn đọng — tổng hợp01/11

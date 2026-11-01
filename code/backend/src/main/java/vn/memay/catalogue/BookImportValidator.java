@@ -11,6 +11,32 @@ public class BookImportValidator {
     public BookImportValidator(BookValidation validation) { this.validation=validation; }
 
     public ImportDocument normalize(List<CellRow> input) {
+        int version=input.isEmpty()?1:input.getFirst().schemaVersion();
+        if(input.stream().anyMatch(row->row.schemaVersion()!=version) || (version!=1 && version!=2))
+            throw BookImportException.file(422,"headers","Không trộn hai format trong cùng file.");
+        return version==2?normalizeV2(input):normalizeLegacy(input);
+    }
+    private ImportDocument normalizeV2(List<CellRow> input) {
+        if(input.size()>100)throw BookImportException.file(413,"row_limit","Tối đa 100 dòng sách V2.");
+        var adapted=new ArrayList<CellRow>();
+        for(int i=0;i<input.size();i++) {
+            var row=input.get(i);var cells=new LinkedHashMap<String,String>(row.cells());
+            for(String column:List.of("the_loai","kieu_bia","tinh_trang","trinh_do_doc"))
+                cells.put(column,BookImportSchema.normalizeLabel(column,cells.get(column)));
+            String age=BookValidation.trim(cells.get("do_tuoi"));
+            if(age!=null)cells.put("do_tuoi",String.join(";",Arrays.stream(age.split(";",-1)).map(v->Objects.requireNonNullElse(BookImportSchema.normalizeLabel("do_tuoi",v),"")).toList()));
+            cells.put("nhom_sach","R"+i);cells.put("ngon_ngu","Tiếng Anh");cells.put("bien_the",null);cells.put("ton_kho","1");
+            adapted.add(new CellRow(row.sheet(),row.row(),cells,row.issues()));
+        }
+        var legacy=normalizeLegacy(adapted);
+        var sorted=new ArrayList<>(legacy.groups());sorted.sort(Comparator.comparing(BookImportFingerprint::semanticContent));
+        var groups=new ArrayList<ImportGroup>();
+        for(int i=0;i<sorted.size();i++) {
+            var group=sorted.get(i);groups.add(new ImportGroup(String.format(Locale.ROOT,"R%03d",i+1),group.write(),group.collectionSlugs(),group.rows()));
+        }
+        return new ImportDocument(List.copyOf(groups),legacy.issues(),legacy.totalIssues(),input.size(),legacy.valid()?BookImportFingerprint.digest(groups,2):null,2);
+    }
+    private ImportDocument normalizeLegacy(List<CellRow> input) {
         var errors=new ArrayList<ImportIssue>();
         var grouped=new TreeMap<String,List<CellRow>>();
         if(input.isEmpty()) issue(errors,null,"file","empty","File không có dữ liệu sách.");

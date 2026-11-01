@@ -87,7 +87,7 @@ final class BookImportXlsxReader {
         final String sheet;final SharedStrings strings;final StylesTable styles;final int budget;
         final List<CellRow> rows=new ArrayList<>();final List<String> headers=new ArrayList<>();
         final Map<Integer,String> values=new TreeMap<>();final List<ImportIssue> issues=new ArrayList<>();
-        final StringBuilder text=new StringBuilder();int row,col,cellCount,style;String type;boolean formula,capture;
+        final StringBuilder text=new StringBuilder();int row,col,cellCount,style,version=1;String type;boolean formula,capture;
         SheetHandler(String sheet,SharedStrings strings,StylesTable styles,int budget) { this.sheet=sheet;this.strings=strings;this.styles=styles;this.budget=budget; }
         @Override public void startElement(String uri,String local,String q,Attributes a) {
             if(local.equals("mergeCell") && sheet.equals("Sach"))bad("Không gộp ô trong sheet Sach.");
@@ -128,15 +128,20 @@ final class BookImportXlsxReader {
                     if(row==1 || !sheet.equals("Sach"))bad(problem);
                     issues.add(new ImportIssue(sheet,row,col<headers.size()?headers.get(col):"file","cell_type",problem));value="";
                 }
+                if(sheet.equals("Sach") && row>1 && col>=headers.size() && !value.isBlank())
+                    issues.add(new ImportIssue(sheet,row,"file","columns","Có dữ liệu ngoài các cột tiêu đề."));
                 values.put(col,value);
             }
             if(local.equals("row") && sheet.equals("Sach")) {
                 if(row==1) {
-                    for(int i=0;i<20;i++)headers.add(values.getOrDefault(i,"").trim());BookImportParser.checkHeaders(headers);
+                    int width=values.entrySet().stream().filter(e->!e.getValue().isBlank()).mapToInt(Map.Entry::getKey).max().orElse(-1)+1;
+                    var raw=new ArrayList<String>();for(int i=0;i<width;i++)raw.add(values.getOrDefault(i,""));
+                    headers.addAll(BookImportSchema.canonicalHeaders(raw));version=BookImportSchema.version(headers);
                 } else if(!issues.isEmpty() || values.values().stream().anyMatch(v->!v.isBlank())) {
-                    if(headers.isEmpty())bad("Thiếu hàng tiêu đề số 1.");if(rows.size()>=500)limit("Tối đa 500 dòng dữ liệu.");
-                    var mapped=new LinkedHashMap<String,String>();for(int i=0;i<20;i++)mapped.put(headers.get(i),values.getOrDefault(i,""));
-                    rows.add(new CellRow(sheet,row,mapped,List.copyOf(issues)));
+                    if(headers.isEmpty())bad("Thiếu hàng tiêu đề số 1.");int max=version==2?100:500;
+                    if(rows.size()>=max)limit("Tối đa "+max+" dòng dữ liệu.");
+                    var mapped=new LinkedHashMap<String,String>();for(int i=0;i<headers.size();i++)mapped.put(headers.get(i),values.getOrDefault(i,""));
+                    rows.add(new CellRow(sheet,row,mapped,List.copyOf(issues),version));
                 }
             }
         }

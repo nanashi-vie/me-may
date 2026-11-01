@@ -27,7 +27,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
-- Format importV2/16cột đã chốt theo workbookuser01/11, chưa triển khai;
+- Format importV2/16cột đã được yêu cầu triển khai01/11 theo [plan](BOOK_IMPORT_V2_PLAN.md);
   [quyết định](BOOK_IMPORT.md#format-v2--chốt0111-chờ-triển-khai) và taskởPROGRESS.
 
 - Gate còn mở và điều kiện đóng chỉ theo [PROGRESS](PROGRESS.md); thao tác/tiêu chí

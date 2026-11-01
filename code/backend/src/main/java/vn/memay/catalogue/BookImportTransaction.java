@@ -20,11 +20,11 @@ public class BookImportTransaction {
     public CommitResult commit(AdminUser actor,ImportDocument document) {
         access.requireOwner(actor);
         if(!document.valid() || document.fingerprint()==null)throw invalid(document.issues(),document.totalIssues());
-        if(!BookImportFingerprint.digest(document.groups()).equals(document.fingerprint()))
+        if(!BookImportFingerprint.digest(document.groups(),document.schemaVersion()).equals(document.fingerprint()))
             throw BookImportException.file(409,"fingerprint_mismatch","File đã thay đổi; kiểm tra lại trước khi import.");
         UUID id=UUID.randomUUID();
         var inserted=jdbc.queryForList("insert into book_import_batch(id,fingerprint,schema_version,owner_id) values(?,?,?,?) on conflict(fingerprint) do nothing returning id",
-                id,document.fingerprint(),BookImportSchema.VERSION,actor.getId());
+                id,document.fingerprint(),document.schemaVersion(),actor.getId());
         if(inserted.isEmpty())return new CommitResult(store.find(document.fingerprint()).orElseThrow(),false);
         var resolved=resolve(document,true);
         for(var group:resolved.groups()) {
