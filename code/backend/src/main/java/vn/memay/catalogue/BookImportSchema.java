@@ -32,7 +32,7 @@ public final class BookImportSchema {
                     "Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY")),
             "kieu_bia",labels(Map.of("Paperback","PAPERBACK","Hardcover","HARDCOVER")),
             "tinh_trang",labels(Map.of("Độ mới cao","HIGH_FRESHNESS","Có lỗi nhẹ","MINOR_FLAWS")),
-            "do_tuoi",labels(Map.of("0-3","AGE_0_3","4-6","AGE_4_6","7-9","AGE_7_9","10+","AGE_10_PLUS")),
+            "do_tuoi",labels(Map.of("0-3","AGE_0_3","0–3","AGE_0_3","4-6","AGE_4_6","4–6","AGE_4_6","7-9","AGE_7_9","7–9","AGE_7_9","10+","AGE_10_PLUS")),
             "trinh_do_doc",labels(Map.of("Starters · Pre A1","PRE_A1","Movers · A1","A1","Flyers / Key · A2","A2",
                     "Preliminary · B1","B1","First · B2","B2","Advanced · C1","C1","Proficiency · C2","C2")));
     static String normalizeLabel(String column,String value) {

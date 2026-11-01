@@ -84,6 +84,12 @@ class BookImportV2Test {
             }
         }
     }
+    @Test void acceptsTheAgeLabelsAlsoShownByTheWebsite() {
+        for(var entry:Map.of("0–3","AGE_0_3","4–6","AGE_4_6","7–9","AGE_7_9").entrySet()) {
+            var doc=read(csv(List.of(change(values(),"do_tuoi",entry.getKey())),COLUMNS),"csv");
+            assertThat(doc.issues()).isEmpty();assertThat(doc.groups().getFirst().write().ageGroups()).containsExactly(entry.getValue());
+        }
+    }
     @Test void reportsMissingRequiredAndUnknownLabelsWithoutGuessing() {
         for(String column:List.of("ten_sach","the_loai","gia_tu","gia_den","trong_luong_g","tinh_trang","mo_ta_tinh_trang")) {
             var doc=read(csv(List.of(change(values(),column,"")),COLUMNS),"csv");assertThat(doc.fingerprint()).isNull();assertThat(doc.issues()).extracting(ImportIssue::column).contains(column);
