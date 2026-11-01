@@ -173,8 +173,8 @@ Không dùng catalogue/ảnhbán thật để benchmarkghi hoặccleanup.
 
 ## Import sách CSV/XLSX
 
-OWNER vào `/admin/sach/import`, xem hướng dẫn field, điền đủ metadata và kiểm toàn file
+OWNER vào `/admin/sach/import`, xem hướng dẫn field, điền đủ16cột metadata (mỗi dòng=mộtsách, Tiếng Anh/tồn1 mặc định) và kiểm toàn file
 trước khi nhập. Sách được tạo Ẩn; thêm ảnh từng sách rồi tự xuất bản. Retry cùng file
 trả receipt cũ. Không dùng import để cập nhật sách đã có. [Hướng dẫn](docs/BOOK_IMPORT.md),
-[schema20cột](docs/DATA.md#format-file-import--contract-duyệt31102026),
+[schema16cột/V1compat](docs/DATA.md#format-file-import--contract-duyệt31102026),
 [bằng chứng và gate rollout](docs/BOOK_IMPORT_VERIFICATION.md).

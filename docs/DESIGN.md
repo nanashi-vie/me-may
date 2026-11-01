@@ -109,7 +109,7 @@ Xem [wireframe desktop](assets/wireframes/home-desktop.svg) và [mobile](assets/
 
 ## Catalogue / collection — khách mobile
 
-Header tìm kiếm và Quan tâm dùng chung với Home. Breadcrumb → tên nhóm/số kết quả → sort và nút “Lọc” → grid hai cột → pagination. Bộ lọc nằm trong sheet trên mobile, trong panel trên desktop: chỉ độ tuổi (0–3, 4–6, 7–9, 10+) và thể loại (Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện). Một cuốn có thể gán nhiều nhóm tuổi nhưng chỉ một thể loại. Riêng Picture book có Paperback / Hardcover / Tất cả; “Tất cả” lấy cả hai kiểu, không phải dạng sách để nhập. Không có lọc giá/chủ đề/khả dụng/mức đọc/ngôn ngữ trong MVP. Giữ sort mới nhất và giá tham khảo tăng/giảm.
+Header tìm kiếm và Quan tâm dùng chung với Home. Breadcrumb → tên nhóm/số kết quả → sort và nút “Lọc” → grid hai cột → pagination. Bộ lọc nằm trong sheet trên mobile, trong panel trên desktop: chỉ độ tuổi (0–3, 4–6, 7–9, 10+) và thể loại (Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện, Tập đọc, Nấu ăn - thủ công - activity book). Một cuốn có thể gán nhiều nhóm tuổi nhưng chỉ một thể loại. Riêng Picture book có Paperback / Hardcover / Tất cả; “Tất cả” lấy cả hai kiểu, không phải dạng sách để nhập. Không có lọc giá/chủ đề/khả dụng/mức đọc/ngôn ngữ trong MVP. Giữ sort mới nhất và giá tham khảo tăng/giảm.
 
 Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
 
@@ -203,6 +203,7 @@ Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn t
 ## Import CSV/Excel —31/10
 
 OWNER mở Import sách từ danh sách; xem bảng field ngắn và mã lựa chọn thu gọn,
+xem16cột (mỗi dòng=một sách, mặc định Tiếng Anh/tồn1), nhận nhãn dropdown,
 chọn file, kiểm toàn file rồi xác nhận
 nhập sách Ẩn. Bỏ bước chuẩn bị/nút tải mẫu theo yêu cầu01/11. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
 File chỉ ở memory tab; mất phản hồi có retry đúng file/fingerprint, hết phiên giữ

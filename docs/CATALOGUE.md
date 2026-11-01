@@ -44,7 +44,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 |---|---|
 | book_copy | bigint identity PK; book_code varchar(32) UNIQUE NOT NULL; title varchar(300) nullable; isbn varchar(32), publisher/author varchar(200), language varchar(50) nullable; binding varchar(16) nullable; condition_grade varchar(16) nullable; condition_note varchar(4000) nullable; weight_g bigint nullable CHECK 1..9007199254740991; availability NOT NULL CHECK; version bigint NOT NULL >=0; created_at/updated_at NOT NULL |
 | listing | bigint identity PK; book_copy_id UNIQUE NOT NULL FK; slug varchar(80) UNIQUE NOT NULL; price_min_vnd/price_max_vnd bigint nullable theo cặp CHECK 1..999999999999 và min≤max; description varchar(10000) nullable; category_id nullable FK; reading_level varchar(8),  reading_video_url varchar(2048) nullable; publication_status NOT NULL CHECK; published_at nullable; updated_at NOT NULL |
-| category | Sáu bản ghi seed có code UNIQUE cố định, name, slug UNIQUE, sort_order; một FK category/listing, không có many-to-many category |
+| category | Tám bản ghi seed có code UNIQUE cố định, name, slug UNIQUE, sort_order; một FK category/listing, không có many-to-many category |
 | listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
 | collection | bigint identity PK; name varchar(100) NOT NULL; slug varchar(120) UNIQUE NOT NULL; sort_order integer >=0; active boolean; version bigint; timestamps |
 | listing_collection | listing_id FK + collection_id FK, composite PK |
@@ -55,7 +55,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - upload_session/temporary_media giữ intent/owner/expiry/state/fingerprint; V7/V9 và lifecycle ở mục7. Importreceipt V11 ở BOOK_IMPORT.
 - book_media có unique partial index `(book_copy_id, role)` khi state ACTIVE: tối đa một ảnh hoạt động mỗi vai trò.
 - Thêm index listing(publication_status, published_at), book_copy(availability), updated_at/id và FK/mapping phục vụ bảng quản trị.
-- Seed category codes: BOARD_BOOK, PICTURE_BOOK, ENCYCLOPEDIA_SCIENCE, HISTORY, CHAPTER, STORY_COLLECTION; nhãn theo DATA.
+- Seed category codes: BOARD_BOOK, PICTURE_BOOK, ENCYCLOPEDIA_SCIENCE, HISTORY, CHAPTER, STORY_COLLECTION, READING_PRACTICE, COOKING_CRAFT_ACTIVITY; nhãn theo DATA.
 - age_group codes: AGE_0_3, AGE_4_6, AGE_7_9, AGE_10_PLUS; một cuốn chọn nhiều, có thể để trống nếu chưa xác định.
 - binding: PAPERBACK/HARDCOVER; category PICTURE_BOOK bắt buộc đúng một binding cả khi lưu sách ẩn; category khác phải binding=null.
 - Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
@@ -193,7 +193,7 @@ Quy trình upload/thay slot:
 
 ## 10. Migration và vận hành
 
-- FlywayV1–V11 là nguồn schema duy nhất; không sửa checksum migration đã chạy. Rollout/backup/restore/V10–V11 tại DEPLOYMENT.
+- FlywayV1–V12 là nguồn schema duy nhất; không sửa checksum migration đã chạy. Rollout/backup/restore/V10–V11 tại DEPLOYMENT.
 - Test dùng me_may_test với guard tên DB như M1; chỉ xóa fixture test, không truncate bảng/dev/database dùng chung của Docker.
 - Chỉ seed taxonomy/reference; không seed sách bán thật hoặc fixture SYNTHETIC dưới trạng thái published.
 - Thêm biến mẫu CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAMESPACE (memay/dev, memay/test hoặc memay/online-test) vào .env.example bằng giá trị mẫu; credential thật chỉ trong .env ignored, không gửi qua chat/log.

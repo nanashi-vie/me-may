@@ -117,3 +117,54 @@ không giữ file/tokens/ảnh/customerdata trong log ứng dụng hoặc commit
 RenderQA/Neon warm/cold5vòng, peakheap/RSS/quota/timeouts/locks, V11 migrate/restore
 và browser online chưa chạy; cần user rollout QA cách ly theo DEPLOYMENT.
 Không mở lại test chốtMVP đã tạm gác, không tự merge main hoặc deploy.
+
+## ImportV2 và thể loại chung —01/11/2026
+
+Candidatecode9852a55..b0d23a8, triển khai local; user yêu cầu bắt đầu V2 và bổ sung
+hai thểloại trong cùng phiên. Không migrate/deployonline. Dùng PostgreSQLtest cóguard
+hiện có, không tạo DBscratch hoặc assetCloudinary mới. Workbookuser giữ nguyên
+SHA256d5568d738df71ab5727131b7b5c476c7ed8622dc30a403e481e473c964d5a590.
+Fixturetest là copy header-only/dropdowns hàng2 đã chỉnh, không là sách bán thật.
+
+| Kiểm đã chạy | Kết quả |
+|---|---|
+| Backend root `bash code/backend/run-local.sh -B -ntp clean verify` |178run,0failure,0error,3live-provider skips |
+| Frontend root `npm --prefix code/frontend test` |169/169,37files |
+| NodeSSR và Workersbuild |PASS |
+| `npm --prefix code/frontend run check:workers:proxy` |PASS workerd POST/query/cookie/CSRF/multipart/separateSetCookie/server-time/no-store/context/backend-down |
+| Browser Angular thật, API mô phỏng |XLSXinput/guide16field/defaults/source-rowpreview/receipt-editorlink/mobile390×844 khôngoverflow PASS |
+| V2 end-to-end domain với fakeprovider |ImportẨn→2ảnh→thêm biếnthể/tổng3→publish/media404trước200sau→receipt retry giữ edits PASS |
+
+RED→GREEN mới: V2header/template20→16; fingerprintversionconfirm409→201 và
+referencepreview schema1→2; taxonomy6→8/migrationgiữdata; URLfilterbỏcode mới→giữ;
+V2previewR001→số dòng thật; taxonomyageen-dash bị từchối→knownaliases.
+
+V1goldendigest7eeb28ad04e84becf333f10f1960783d696d9eb76fbe63417e340d3699f992fc
+không đổi, V1commit/replay vẫnschema1/cùngreceipt cùng vớiV2schema2.
+Hai dòngV2giống nhau tạo2sách/2variants mặcđịnh1, khônggộp; đổi header/roworder,
+CSV/XLSX hoặc label/code trongcùngschema trả cùngfingerprint. Replay sau sửa tồn9
+không overwrite; referenceerror/STAFF403/rollbacklỗi sáchcuối không ghi mộtphần.
+Workbookuser/aliasF1,8categorylabels,2bindinglabels,2grades,4ages/7levels,
+optionalblank/missingrequired/unknownlabels/dupealiases/extraXLSXdata/formula và
+100/101CSVrows được kiểm. Reader budgets và V1security regressions giữ PASS.
+
+V12: Tập đọc/READING_PRACTICE và Nấu ăn - thủ công - activity book/
+COOKING_CRAFT_ACTIVITY append sort6/7. TestV11→12 giữ6categorycũ và existingbook/listing,
+taxonomy public/admin đúngnhãn; manualsave/publish/publicfilter2code PASS.
+Không sửaV3, sáchcũ, IDs, userworkbook hoặc API quyền. Dropdownfilegốc vẫn6mục
+chủ đãthiếtlập; API/app nhận8thểloại, danh sáchExcel phải chỉnh trong file nếu cần.
+
+Một freshreview read-only:0Critical/0Important/1Minor, không rereview. Minor defer:
+fixtureV2 chưa trực tiếp bỏcellXMLoptional hoặc dùng dòng thưa/noncontiguous để
+kiểm errorrow. Reader đượcreviewđúng nhưng thiếu regression riêng cho input này;
+không ghi coverageđó làPASS. Thêmtest trước khi refactor indexing tiếp theo.
+Header-onlyV2 báoschema1 nhưng bị chặnemptyfile trước tạo; không ảnh hưởng đường
+import dữ liệu, để metadata polishing sau. Samebatchreturnsreceipt là chủđích,
+không dùng reimport để cộng tồn hoặc update sách.
+
+Browsermock chỉ chứng minh UI/fileinput/transition, không giả là browser→realAPI
+end-to-end. Luồng dữ liệu thật được kiểm qua APIintegration/PostgreSQL vàfakeprovider;
+không chạy lại realCloudinary/labLighthouse/publicSSRchecker trong phiên này vì
+không đổi publicdelivery/runtime. OnlineV12/V2 smoke và targetperf vẫn là gate.
+Browser/SSR4009 riêng đãdừng trước bàn giao; safeledger/results giữ ignored tại
+`.local/book-import-v2/`, owned planworkspace dọn sau khi Task4 hoàn tất.

@@ -277,7 +277,13 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 ## Import CSV/XLSX —31/10
 
 [BOOK_IMPORT](BOOK_IMPORT.md#api-và-lưu-trữ) là nguồn API/schemaV11/retry/quota hiện hành;
-[DATA](DATA.md#format-file-import--contract-duyệt31102026) giữ20cột. Parser bounded,
-canonicalSHA256; một transaction tạo ARCHIVED/variants/audit/receipt, không Cloudinary.
+[DATA](DATA.md#format-file-import--contract-duyệt31102026) giữV2/16cột và V1/20cột tương thích. Parser bounded,
+canonicalSHA256 theo schema, V2 không gộp dòng giốngnhau; một transaction tạo ARCHIVED/variants/audit/receipt, không Cloudinary.
 Tái sử dụng aggregate/validation/editor/publish; private no-store và OWNER/CSRF.
 [Kiểm chứng](BOOK_IMPORT_VERIFICATION.md) gồm rollback100sách, mất phản hồi và giới hạn host.
+
+### Thể loại bổ sung01/11
+
+V12 append READING_PRACTICE và COOKING_CRAFT_ACTIVITY, giữcategoryID/slug/sort cũ;
+form/taxonomy public/admin đọcDB, publicURLallowlist và importer nhận2code mới.
+Giới hạn/thứtự/nhãn ở DATA; rolloutbackend trướcfrontend và gate ở DEPLOYMENT.
