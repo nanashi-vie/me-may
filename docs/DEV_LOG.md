@@ -915,3 +915,44 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đóngbrowserimport-v2 và ownedSSR4009; khôngtạo DBscratch/providerasset, khôngđụngsiblingworkspace. Workbookuser giữSHA256d556…a590; filegốc dropdowncategoryvẫn6mụcdoownerthiếtlập, website/API đãnhận8labels/codes. Không tựsửa workbook. Gộp16cột/V1compat/8category/V12rollout vàoDATA/BOOK_IMPORT/CATALOGUE/DESIGN/ARCHITECTURE/MASTER_PLAN/DEPLOYMENT/README; evidencevàminorgiữBOOK_IMPORT_VERIFICATION. Đangfinalcheck/retireplan/commitpushdev, chưadeploy/migrateonline.
 - Finalcheck vàtask-done4PASS: backend178/0failure/0error/3skip, frontend169/169, NodeSSR/Workers/proxy, browsermock, workbookchecksumkhôngđổi, QA4009đóng, docline/link/anchor/ignore/diff. Plan4taskcomplete, criteria/decision/gates đãchuyển đủ nên gỡBOOK_IMPORT_V2_PLAN; safeevidence/ledger giữ.local/book-import-v2 ignored, không thêmarchive/plantrùng. Chuẩn bịcommit/pushdev cùngbàn giao; khôngclaimonlineđạt.
 - Commitcodefb61cd4/68df545/8368530/b0d23a8 và bàn giaofdd06f5 đã pushorigin/dev thành công, verify0/0/treeclean. Đã lưu safelog/ledger4taskcomplete rồi xóa duy nhất workspaceBOOK_IMPORT_V2_PLAN thuộcphiên, giữsiblingplan/userworkbook/ảnhsource. Bước tiếp userreview/merge/deploytheoDEPLOYMENT (V12vàsmokeV2); frontend/backendlocal đãkiểm, khôngclaimonlinePASS.
+
+### S031-C01 — 02/11/2026 — grill-me spec navbar và trang danh sách sách
+
+- Mục tiêu: user bắt đầu tối ưu UI từ navbar (mẫu IPM gửi trong chat: navbar desktop,
+  dropdown, sidebar/header mobile, trang danh mục). Đọc README/PROGRESS/DESIGN/CATALOGUE §11
+  và `public-layout.ts`, `catalogue-page.*`, `catalogue-state.ts` (thể loại từ `/taxonomy`).
+- Quyết định (user chọn qua 19 câu): nav `Trang chủ · Tất cả sách▾ · Flash Sale · Bộ sưu tập▾ ·
+  Cách mua · Liên hệ`, IN HOA căn giữa, active `--red`, hover/focus mở dropdown; mobile ☰/logo/♡ +
+  search full-width, sidebar `<dialog>` đỏ accordion, ẩn utility, không sticky, breakpoint 720px.
+  Trang `/sach`: cột DANH MỤC dạng link, Độ tuổi checkbox + Áp dụng, tiêu đề theo thể loại, chip
+  Paperback/Hardcover dưới tiêu đề Picture book, bỏ ô tìm/select thể loại/kiểu bìa trong panel,
+  dòng "Kết quả cho q ✕"; mobile chip cuộn ngang; bộ sưu tập cùng bố cục, thể loại link sang `/sach`.
+- File: thêm `docs/UI_NAV_CATALOGUE_SPEC.md`, đăng ký README, cập nhật PROGRESS. Ảnh mẫu không commit.
+- Kiểm tra: chưa chạy test/build (chỉ tài liệu). Chưa code.
+- Bước tiếp: user duyệt spec + 2 câu hỏi mở (sort áp ngay; tablet 721–960px) → plan → code trên `dev`.
+
+### S031-C02 — 02/11/2026 — user duyệt spec navbar/catalogue, bắt đầu triển khai
+
+- Mục tiêu: thực thi `docs/UI_NAV_CATALOGUE_SPEC.md` sau khi user duyệt và chốt 2 điểm §10
+  (chỉ Độ tuổi cần nút Áp dụng, Sắp xếp áp ngay; tablet 721–960px giảm cỡ chữ/khoảng cách;
+  ô search placeholder `Bạn đang tìm…` và điền sẵn `q` khi ở `/sach?q=…`).
+- Kế hoạch 4 bước trên `dev`: (1) nhãn/fallback taxonomy & helper filter URL; (2) `PublicLayout`
+  navbar desktop IN HOA + dropdown hover/focus/touch/Escape + mobile header ☰/logo/♡ + sidebar
+  `<dialog>` accordion; (3) `CataloguePage` cột DANH MỤC link + Độ tuổi checkbox/Áp dụng +
+  chip mobile cuộn ngang + chip Paperback/Hardcover + dòng `q`; (4) unit test Vitest, build SSR/
+  Workers, kiểm tra browser 1280px & 390×844 và hoàn tất tài liệu.
+- Trạng thái: đang thực thi Task 1–3.
+
+### S031-C03 — 02/11/2026 — hoàn tất triển khai và kiểm chứng navbar/catalogue UI
+
+- Phạm vi & file thay đổi:
+  - `code/frontend/src/app/features/admin/books/book-copy.ts`, `code/frontend/src/app/features/catalogue/catalogue-state.ts`: thêm `CATEGORY_LABELS`, `DEFAULT_CATEGORIES`, `DEFAULT_AGE_GROUPS`, `categoryLabel` làm fallback đồng bộ với `/taxonomy`.
+  - `code/frontend/src/app/layouts/public-layout.ts`: navbar desktop 6 mục IN HOA căn giữa, active `--red`, dropdown `Tất cả sách` (9 mục) & `Bộ sưu tập` hỗ trợ hover/focus/click nút `▾`/Escape trả focus; mobile (≤720px) ẩn utility/nav ngang, header ☰/logo/♡ + search full-width (`placeholder="Bạn đang tìm…"`, đồng bộ `q`), sidebar `<dialog>` đỏ trượt từ trái kèm accordion `›`, đóng khi Escape/backdrop/✕/link/đổi route và trả focus về ☰, tắt animation khi `prefers-reduced-motion: reduce`.
+  - `code/frontend/src/app/features/catalogue/catalogue-page.{ts,html,scss}`: bố cục cột trái `DANH MỤC` (link thể loại giữ `q/age/sort`, reset `page/binding`; trên trang bộ sưu tập link sang `/sach?category=`) + `Độ tuổi` checkbox kèm nút Áp dụng; vùng phải tiêu đề IN HOA + `<title>` theo thể loại, `Sắp xếp theo:` áp ngay, chip `Tất cả · Paperback · Hardcover` cho Picture book, thanh `Kết quả cho “q” ✕ Xóa`; mobile chuyển thành 2 hàng chip cuộn ngang (`minmax(0, 1fr)` tránh tràn ngang ở 390px).
+  - `code/frontend/src/app/app.spec.ts`, `code/frontend/src/app/features/catalogue/catalogue-page.spec.ts`: thêm unit test cho toàn bộ tiêu chí nghiệm thu.
+  - Gộp spec vào `docs/DESIGN.md`, bằng chứng vào `docs/VERIFICATION.md`, cập nhật `docs/README.md`, `docs/PROGRESS.md` và gỡ `docs/UI_NAV_CATALOGUE_SPEC.md`.
+- Kiểm tra đã chạy (cwd `code/frontend`):
+  - `npm test`: 37/37 test files, 172/172 tests PASS.
+  - `npm run build`, `npm run build:workers`, `npm run check:workers:proxy`: PASS.
+  - Chrome headless qua CDP với built SSR (4009) + mock API (8099), đã xem 4 ảnh chụp màn hình (`1280×800`, `820×900`, `390×844` catalogue & sidebar): không overflow ngang (`scrollWidth <= innerWidth`), dropdown/sidebar/chip/reduced-motion/focus hoạt động đúng; đã đóng Chrome và server 4009/8099.
+- Bước tiếp theo: commit và push lên `dev`; sẵn sàng cho đầu việc tối ưu UI tiếp theo của user.

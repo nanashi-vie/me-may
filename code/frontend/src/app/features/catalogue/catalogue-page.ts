@@ -1,16 +1,24 @@
-import { Component, RESPONSE_INIT, inject, signal, effect } from '@angular/core';
+import { Component, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { catchError, map, of, switchMap, tap, combineLatest, Subject, startWith } from 'rxjs';
+import { catchError, combineLatest, map, of, startWith, Subject, switchMap, tap } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { PublicApi } from './public-api';
-import { CatalogueFilter, Page, PublicBook, Taxonomy } from './public.models';
-import { filterParams, readFilters } from './catalogue-state';
+import { AgeGroup, CategoryCode, CatalogueFilter, Page, PublicBook, Taxonomy } from './public.models';
+import {
+  categoryLabel,
+  DEFAULT_AGE_GROUPS,
+  DEFAULT_CATEGORIES,
+  filterParams,
+  readFilters,
+} from './catalogue-state';
 import { BookCard } from './book-card';
 import { PublicError } from './public-error';
 import { PublicClock } from './public-clock';
 import { PageMetadata } from '../../core/page-metadata';
+import { TaxonomyOption } from '../admin/books/book.models';
+
 @Component({
   selector: 'app-catalogue-page',
   imports: [FormsModule, RouterLink, BookCard, PublicError],
@@ -28,10 +36,21 @@ export class CataloguePage {
   readonly error = signal(0);
   readonly page = signal<Page<PublicBook> | null>(null);
   readonly title = signal('Tất cả sách');
+  readonly isCollection = signal(false);
   readonly taxonomy = signal<Taxonomy | null>(null);
+  readonly categories = computed<TaxonomyOption<CategoryCode>[]>(() => {
+    const list = this.taxonomy()?.categories;
+    return list?.length ? list : DEFAULT_CATEGORIES;
+  });
+  readonly ageGroups = computed<TaxonomyOption<AgeGroup>[]>(() => {
+    const list = this.taxonomy()?.ageGroups;
+    return list?.length ? list : DEFAULT_AGE_GROUPS;
+  });
+  readonly applied = signal<CatalogueFilter>(readFilters(this.route.snapshot.queryParamMap));
   readonly now = inject(PublicClock).now;
   private expired = '';
   draft: CatalogueFilter = readFilters(this.route.snapshot.queryParamMap);
+
   constructor() {
     effect(() => {
       const p = this.page(),
@@ -55,8 +74,14 @@ export class CataloguePage {
       this.refreshRequests.pipe(startWith(undefined)),
     ])
       .pipe(
-        tap(([, p]) => {
-          this.draft = readFilters(p);
+        tap(([params, p]) => {
+          const f = readFilters(p);
+          this.isCollection.set(!!params.get('slug'));
+          this.applied.set(f);
+          this.draft = { ...f, age: [...f.age] };
+          if (!params.get('slug')) {
+            this.title.set(f.category ? categoryLabel(f.category, this.categories()) : 'Tất cả sách');
+          }
           this.loading.set(true);
           this.error.set(0);
         }),
@@ -85,7 +110,8 @@ export class CataloguePage {
           this.title.set(result.collection.name);
           this.page.set(result.books);
         } else {
-          this.title.set('Tất cả sách');
+          const cat = this.applied().category;
+          this.title.set(cat ? categoryLabel(cat, this.categories()) : 'Tất cả sách');
           this.page.set(result);
         }
         this.meta.set(
@@ -95,20 +121,45 @@ export class CataloguePage {
         );
       });
   }
+
+  categoryParams(category: string): Params {
+    if (this.isCollection()) return category ? { category } : {};
+    return filterParams({ ...this.applied(), category, binding: '', page: 1 });
+  }
+
+  bindingParams(binding: string): Params {
+    return filterParams({ ...this.applied(), binding, page: 1 });
+  }
+
   toggleAge(code: string, event: Event) {
     this.draft.age = (event.target as HTMLInputElement).checked
       ? [...this.draft.age, code]
       : this.draft.age.filter((a) => a !== code);
   }
+
+  changeSort(sort: string) {
+    this.draft.sort = sort;
+    const f = { ...this.applied(), sort, page: 1 };
+    void this.router.navigate([], { relativeTo: this.route, queryParams: filterParams(f) });
+  }
+
+  clearQuery() {
+    this.draft.q = '';
+    const f = { ...this.applied(), q: '', page: 1 };
+    void this.router.navigate([], { relativeTo: this.route, queryParams: filterParams(f) });
+  }
+
   apply(page = 1) {
     const f = { ...this.draft, page };
     if (f.category !== 'PICTURE_BOOK') f.binding = '';
     void this.router.navigate([], { relativeTo: this.route, queryParams: filterParams(f) });
   }
+
   reset() {
     this.draft = readFilters({ get: () => null, getAll: () => [] } as never);
     this.apply();
   }
+
   retry() {
     this.refreshRequests.next();
   }

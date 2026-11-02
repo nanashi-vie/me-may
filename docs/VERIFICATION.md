@@ -349,3 +349,12 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Sessionexpire giữform/file, renew3ảnhREADY; final mấtresponse saucommit, count2→3→retryvẫn3/cùngIDPASS. Dữliệu/credentialQA giảlập, khôngsửa sách/tài khoảnthật.
 - Trace local fixedMM1+delay1500ms tái hiện2shift0,6000/0,5838, saufix khôngshift/LCPobserved440ms. Đây không phải Lighthouse. Logo208WebP10142B; chuẩn hóaalpha/EXIFvàlive4variant isolated+cleanupPASS.
 - Backfill63ACTIVE ảnh thật mới dryrun/pending63, chưaapplyv2. OnlineMM20 trả503 trongphiên, gateLighthouse/coldstart/rollback/quota/security/runtimeleastprivilege/offhostretention/productionVPS cònmở; user không cần nhập lại pilot21cuốn.
+
+
+## Tối ưu UI navbar và trang danh sách sách — 02/11/2026
+
+- Unit test Vitest (`npm test`): 37/37 file, 172/172 test PASS (thêm test active state nav, dropdown focus/Escape trả focus, sidebar `<dialog>` đóng khi đổi route, đồng bộ `q`/placeholder `Bạn đang tìm…`, tiêu đề/`<title>` theo thể loại, chip Paperback/Hardcover chỉ cho Picture book, link thể loại giữ `q/age/sort` và reset `page/binding`, Áp dụng độ tuổi, Xóa `q`, và link thể loại từ Bộ sưu tập sang `/sach?category=`).
+- Build & proxy: `npm run build` (Node SSR), `npm run build:workers` (Cloudflare Workers) và `npm run check:workers:proxy` PASS.
+- Kiểm tra trình duyệt thật (Google Chrome headless qua CDP với SSR local + mock API trên cổng tạm 4009/8099, đã dừng sau kiểm):
+  - Desktop `1280×800` và tablet `820×900`: `scrollWidth <= innerWidth`, dropdown `Tất cả sách` mở 9 mục (`Tất cả thể loại` + 8 thể loại), Escape đóng và trả focus về link cha, mục active tô `rgb(179, 38, 53)`, cột `DANH MỤC` + chip `Tất cả · Paperback · Hardcover` + thanh `Kết quả cho “Usborne” ✕ Xóa` hiển thị đúng.
+  - Mobile `390×844`: phát hiện và sửa lỗi CSS Grid `1fr` làm `.category-links` đẩy ngang trang ở `390px` (đổi sang `minmax(0, 1fr)` và `min-width: 0`); sau sửa `scrollWidth = 390 <= innerWidth = 390`, chip cuộn ngang (`scrollWidth > clientWidth`, cao `44px`), utility/nav ngang ẩn, sidebar `<dialog>` mở `left = 0, width = 312`, accordion `Tất cả sách ›` mở 9 mục, `prefers-reduced-motion: reduce` tắt animation (`animationName = 'none'`), Escape đóng dialog và trả focus về nút `☰`. Chưa phải kiểm tra trên iPhone Safari / Android Chrome vật lý.

@@ -35,8 +35,10 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
   chi tiết ở DEPLOYMENT. Không có plan feature đang thực thi sau khi khép scope.
 - Spec/plan M2, M5 completion và hiệu năng nhập/publish đã gộp thành contract,
   quy trình đo và bằng chứng rồi gỡ01/11; không tạo archive hoặc plan trùng.
-- Tối ưu UI chưa có brief/spec mới được duyệt. Không tự triển khai thiết kế hoặc
-  bỏ gate bảo mật/khôi phục/SEO vì chuyển giai đoạn.
+- Tối ưu UI: đợt 1 (navbar desktop dropdown 8 thể loại, mobile header + sidebar `<dialog>`,
+  trang `/sach` và `/bo-suu-tap/:slug` cột DANH MỤC/chip) đã gộp vào [DESIGN](DESIGN.md) và
+  [VERIFICATION](VERIFICATION.md#tối-ưu-ui-navbar-và-trang-danh-sách-sách--02112026). Không
+  tự triển khai thiết kế ngoài phạm vi duyệt hoặc bỏ gate bảo mật/khôi phục/SEO.
 - Commit/pushdev; user merge main/deploy. Không tự migrate/backfill dữ liệu bán thật.
 
 ## Giữ tài liệu gọn
