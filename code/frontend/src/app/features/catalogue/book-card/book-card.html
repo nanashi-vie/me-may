@@ -1,0 +1,49 @@
+<article class="book-card">
+  <a [routerLink]="['/sach', book().slug]" class="cover-link" tabindex="-1" aria-hidden="true">
+    @if (front()) {
+      <picture>
+        <source
+          type="image/webp"
+          [attr.srcset]="
+            front()!.contentPath +
+            '?size=320&format=webp 320w, ' +
+            front()!.contentPath +
+            '?size=640&format=webp 640w'
+          "
+          sizes="(max-width: 480px) 45vw, 240px"
+        />
+        <img
+          [src]="front()!.contentPath"
+          [attr.srcset]="
+            front()!.contentPath +
+            '?size=320&format=jpg 320w, ' +
+            front()!.contentPath +
+            '?size=640&format=jpg 640w'
+          "
+          sizes="(max-width: 480px) 45vw, 240px"
+          [alt]="front()!.alt || book().title"
+          loading="lazy"
+          width="240"
+          height="300"
+        />
+      </picture>
+    }
+  </a>
+  <p class="book-code">{{ book().bookCode }}</p>
+  <h3>
+    <a [routerLink]="['/sach', book().slug]">{{ book().title }}</a>
+  </h3>
+  <p class="price">
+    {{ price(current()) }}
+  </p>
+  @if (current().salePriceVnd) {
+    <del>{{ range(book().priceMinVnd, book().priceMaxVnd) }}</del>
+  }
+  @if (current().priceMinVnd === null) {
+    <small>Đang chờ xác nhận giá</small>
+  }
+  <span class="stock" [class.sold]="book().availability === 'SOLD'">{{
+    book().availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
+  }}</span>
+  <app-wishlist-button [bookCode]="book().bookCode" [title]="book().title" />
+</article>

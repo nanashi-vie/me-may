@@ -1,0 +1,45 @@
+<dialog #dialog (close)="onClose()" aria-labelledby="contact-title">
+  <h2 id="contact-title">
+    {{
+      preparedText() !== null
+        ? 'Hỏi mua các cuốn đã chọn'
+        : book()?.availability === 'SOLD'
+          ? 'Tư vấn sách tương đương'
+          : 'Liên hệ tiệm'
+    }}
+  </h2>
+  <p>Sao chép nội dung, mở Zalo rồi dán và gửi cho tiệm. Liên hệ không giữ sách.</p>
+  @if (busy() || checking()) {
+    <p role="status">Đang xác nhận lại giá và tình trạng…</p>
+  }
+  <p role="status">{{ notice() }}</p>
+  <label
+    >Nội dung hỏi sách<textarea
+      readonly
+      rows="7"
+      [value]="text()"
+      (focus)="select($event)"
+    ></textarea>
+  </label>
+  <p role="status">{{ message() }}</p>
+  <div class="actions">
+    <button
+      [disabled]="busy() || checking() || (!text() && verified() === null)"
+      (click)="copy()"
+    >
+      Sao chép nội dung
+    </button>
+    @if (config()?.hotlineUrl) {
+      <a
+        class="button secondary"
+        [href]="config()!.hotlineUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Mở Zalo</a
+      >
+    } @else {
+      <span>Zalo hotline chưa được cấu hình.</span>
+    }
+    <button class="secondary" (click)="dialog.close()">Đóng</button>
+  </div>
+</dialog>

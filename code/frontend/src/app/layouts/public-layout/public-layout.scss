@@ -1,0 +1,44 @@
+.menu-toggle, .dropdown-panel[hidden] { display: none; }
+.header-search { display: flex; align-items: center; flex: 1; max-width: 560px; }
+.header-search input { margin: 0; border-radius: 4px 0 0 4px; min-width: 0; }
+.header-search button { width: auto; margin: 0; white-space: nowrap; border-radius: 0 4px 4px 0; padding: .65rem 1rem; }
+.header-contact { font-size: .85rem; white-space: nowrap; }
+.header-links { display: flex; flex-wrap: wrap; gap: .6rem 1rem; align-items: center; }
+.wishlist-count { display: inline-block; width: 2.3em; text-align: center; background: var(--red); color: #fff; border-radius: 1em; padding: .1em .3em; }
+.storage-warning { font-size: .85rem; color: #8e4b35; }
+.public-nav { display: flex; justify-content: center; gap: 2.4rem; padding-block: .85rem; border-bottom: 1px solid var(--line); font: 700 .92rem system-ui, sans-serif; text-transform: uppercase; align-items: center; }
+.public-nav a, .nav-button, .dropdown-caret { color: var(--ink); text-decoration: none; white-space: nowrap; }
+.public-nav a:hover, .public-nav .active, .nav-button:hover, .dropdown-caret:hover { color: var(--red); }
+.nav-dropdown, .nav-dropdown-trigger { position: relative; display: inline-flex; align-items: center; gap: .15rem; }
+.dropdown-caret, .nav-button { background: none; border: 0; padding: .2rem; font: inherit; text-transform: inherit; cursor: pointer; }
+.dropdown-panel { position: absolute; top: 100%; left: 0; min-width: 245px; background: #f6f5f3; border-bottom: 3px solid var(--red); box-shadow: 0 8px 20px #29272424; z-index: 20; display: flex; flex-direction: column; text-transform: none; font-weight: 500; }
+.dropdown-panel > * { padding: .7rem 1rem; border-bottom: 1px dotted #c9c1b8; }
+.dropdown-panel > :last-child { border-bottom: 0; }
+.dropdown-panel a:hover, .dropdown-panel a.active { background: #ece8e1; font-weight: 600; }
+.mobile-sidebar { margin: 0; padding: 0; border: 0; width: min(80vw, 320px); height: 100dvh; max-height: 100dvh; background: var(--red); color: #fff; box-shadow: 4px 0 24px #0004; animation: slide .2s ease-out; }
+.mobile-sidebar::backdrop { background: #1917158c; }
+@keyframes slide { from { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .mobile-sidebar { animation: none; } }
+.sidebar-panel, .sidebar-nav, .sidebar-sub { display: flex; flex-direction: column; }
+.sidebar-header { display: flex; align-items: center; justify-content: space-between; padding: .7rem 1rem; border-bottom: 1px solid #fff3; font-weight: 750; text-transform: uppercase; }
+.mobile-sidebar button { background: none; border: 0; border-radius: 0; color: #fff; }
+.sidebar-close { min-width: 44px; min-height: 44px; padding: 0; font-size: 1.2rem; }
+.sidebar-nav a, .sidebar-label-btn { display: flex; align-items: center; min-height: 48px; padding: .7rem 1.1rem; color: #fff; text-decoration: none; text-transform: uppercase; font: 600 .92rem system-ui, sans-serif; border-bottom: 1px solid #fff3; flex: 1; text-align: left; }
+.sidebar-row { display: flex; }
+.sidebar-expand { min-width: 48px; padding: 0; border-left: 1px solid #fff3; border-bottom: 1px solid #fff3; font-size: 1.35rem; }
+.sidebar-expand[aria-expanded='true'], .sidebar-sub { background: #0002; }
+.sidebar-sub > * { min-height: 44px; padding: .6rem 1.1rem .6rem 1.75rem; text-transform: none; font: 400 .88rem system-ui, sans-serif; border-bottom: 1px solid #fff3; }
+.sidebar-nav .active { font-weight: 800; background: #0002; border-left: 4px solid #fff; }
+@media (max-width: 960px) { .public-nav { gap: 1.15rem; font-size: .82rem; } }
+@media (max-width: 720px) {
+  .utility, .public-nav, .desktop-contact { display: none; }
+  .site-header { display: grid; grid-template-columns: 44px 1fr auto; gap: .65rem .5rem; padding-block: .7rem; min-height: auto; }
+  .menu-toggle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--red); font-size: 1.65rem; }
+  .brand, .brand-name { justify-self: center; font-size: 1.35rem; gap: .45rem; white-space: nowrap; }
+  .brand img { width: 44px; height: 44px; }
+  .brand small { font-size: .65rem; margin-top: .15rem; white-space: nowrap; }
+  .header-links { justify-self: end; }
+  .header-search { grid-column: 1/-1; max-width: none; }
+  footer { grid-template-columns: 1fr; }
+  footer nav { justify-content: start; }
+}

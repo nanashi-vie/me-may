@@ -1,0 +1,27 @@
+.audit-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  margin-top: 2rem;
+}
+details {
+  border-bottom: 1px solid var(--line);
+  padding: 1rem 0;
+}
+summary {
+  cursor: pointer;
+}
+.audit-values {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 0.85rem;
+}
+nav {
+  align-items: center;
+  justify-content: end;
+  margin-top: 1rem;
+}

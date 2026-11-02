@@ -1,0 +1,18 @@
+dialog {
+  width: min(560px, calc(100% - 32px));
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+dialog::backdrop {
+  background: #29272480;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+textarea {
+  font-size: 0.9rem;
+}

@@ -956,3 +956,36 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build`, `npm run build:workers`, `npm run check:workers:proxy`: PASS.
   - Chrome headless qua CDP với built SSR (4009) + mock API (8099), đã xem 4 ảnh chụp màn hình (`1280×800`, `820×900`, `390×844` catalogue & sidebar): không overflow ngang (`scrollWidth <= innerWidth`), dropdown/sidebar/chip/reduced-motion/focus hoạt động đúng; đã đóng Chrome và server 4009/8099.
 - Bước tiếp theo: commit và push lên `dev`; sẵn sàng cho đầu việc tối ưu UI tiếp theo của user.
+
+### S032-C01 — 02/11/2026 — bắt đầu chuẩn hóa cấu trúc frontend External Template
+
+- Mục tiêu: chuẩn hóa `code/frontend/src/app` theo quy ước External Template và gom thư mục con `<tên>/<tên>.{ts,html,scss,spec.ts}` (Phương án 2 user đã duyệt).
+- Phạm vi đã chốt:
+  - Giữ tên file ngắn chuẩn Angular 20 (`<tên>.{ts,html,scss,spec.ts}`).
+  - Gom vào thư mục con `<tên>/` và dùng External Template (`templateUrl`) cho các layout/page/component nghiệp vụ:
+    - `layouts/public-layout/public-layout.{ts,html,scss}`, `layouts/admin-layout/admin-layout.{ts,html}`
+    - `features/admin/login/login.{ts,html}`, `features/admin/collections/collection-list/collection-list.{ts,html,scss,spec.ts}`, `features/admin/flash-sale/flash-sale.{ts,html,scss,spec.ts}`
+    - `features/admin/books/{book-editor,book-import,book-list,book-media-panel,book-preview,book-audit-panel,book-status-actions}/<tên>.{ts,html,scss,spec.ts}`
+    - `features/catalogue/{catalogue-page,book-detail,book-card,contact-dialog,flash-sale-page}/<tên>.*`
+    - `features/wishlist/wishlist-page/wishlist-page.{ts,html,scss,spec.ts}`, `features/information/contact-page/contact-page.{ts,html}`
+    - `features/home/home-page.{ts,html,scss}` và `app.{ts,html,scss,spec.ts}` đã ở thư mục riêng.
+  - Không tạo `.scss` rỗng cho `admin-layout`, `login`, `contact-page`.
+  - Giữ Inline Template cho 5 component nhỏ: `overview.ts`, `not-found.ts`, `public-page.ts`, `public-error.ts`, `wishlist-button.ts`.
+- Trạng thái: đang thực thi trên `dev` theo kế hoạch 3 bước: (1) `layouts/`, `information/`, `wishlist/` và `catalogue/`; (2) `admin/` (`login`, `flash-sale`, `collections`, `books`); (3) kiểm chứng Vitest + SSR/Workers build + cập nhật `docs/ARCHITECTURE.md`.
+
+### S032-C02 — 02/11/2026 — hoàn tất chuẩn hóa cấu trúc frontend External Template
+
+- Thay đổi chính:
+  - Tách External Template (`.html`) và style riêng (`.scss`) cho 6 component đang để inline: `layouts/public-layout/`, `features/admin/books/book-audit-panel/`, `features/admin/books/book-status-actions/`, `features/catalogue/book-card/`, `features/catalogue/contact-dialog/`, `features/catalogue/flash-sale-page/`.
+  - Tách `styles` inline sang `features/admin/flash-sale/flash-sale.scss`.
+  - Tách External Template (`.html`) không kèm `.scss` rỗng cho 3 component dùng global/utility CSS: `layouts/admin-layout/`, `features/admin/login/`, `features/information/contact-page/`; xóa `app.scss` 0 byte không dùng.
+  - Di chuyển các bộ component có sẵn vào thư mục con `<tên>/` và cập nhật toàn bộ đường dẫn `import`: `features/wishlist/wishlist-page/`, `features/catalogue/{catalogue-page,book-detail}/`, `features/admin/collections/collection-list/`, `features/admin/books/{book-editor,book-import,book-list,book-media-panel,book-preview}/`.
+  - Giữ Inline Template cho 5 component trình bày nhỏ: `overview.ts`, `not-found.ts`, `public-page.ts`, `public-error.ts`, `wishlist-button.ts`.
+  - Hợp nhất style chung của `.site-header`, `.brand`, `footer` về `src/styles.scss` để loại bỏ hoàn toàn cảnh báo budget `anyComponentStyle` (4kB) khi build production/Workers.
+  - Cập nhật sơ đồ và quy ước component frontend trong `docs/ARCHITECTURE.md` và `docs/PROGRESS.md`.
+- Kiểm chứng đã chạy:
+  - `npm --prefix code/frontend test`: 37/37 file, 172/172 test PASS.
+  - `npm --prefix code/frontend run build`: PASS (0 warning).
+  - `npm --prefix code/frontend run build:workers`: PASS (0 warning).
+  - `npm --prefix code/frontend run check:workers:proxy`: PASS.
+- Bước tiếp theo: kiểm tra trần dòng tài liệu/link local/`git diff --check`, commit và push lên `dev`.

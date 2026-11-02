@@ -8,51 +8,7 @@ import { Campaign } from '../../catalogue/public.models';
   selector: 'app-flash-sale-editor',
   imports: [FormsModule],
   templateUrl: './flash-sale.html',
-  styles: `
-    form {
-      max-width: 800px;
-    }
-    .dates {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    .enabled {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .enabled input {
-      width: auto;
-    }
-    .sale-item {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 1rem;
-      align-items: end;
-    }
-    .sale-item button {
-      margin-bottom: 0;
-    }
-    .actions {
-      display: flex;
-      gap: 1rem;
-      margin: 2rem 0;
-    }
-    .actions button {
-      width: auto;
-      margin: 0;
-    }
-    small {
-      color: var(--muted);
-    }
-    @media (max-width: 600px) {
-      .dates,
-      .sale-item {
-        grid-template-columns: 1fr;
-      }
-    }
-  `,
+  styleUrl: './flash-sale.scss',
 })
 export class FlashSaleEditor {
   private readonly http = inject(AdminHttp);

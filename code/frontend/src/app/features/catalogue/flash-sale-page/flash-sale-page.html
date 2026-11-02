@@ -1,0 +1,27 @@
+<p class="breadcrumb"><a routerLink="/">Trang chủ</a> / Flash Sale</p>
+<header class="sale-heading">
+  <p class="eyebrow">Ưu đãi của tiệm</p>
+  <h1>Flash Sale</h1>
+  @if (sale()?.endsAt) {
+    <p>
+      Kết thúc trong <strong>{{ countdown(remaining()) }}</strong>
+    </p>
+  }
+  <p>Giá áp dụng trong thời gian đợt sale, tiệm xác nhận tình trạng khi trao đổi.</p>
+</header>
+@if (loading()) {
+  <p role="status">Đang kiểm tra Flash Sale…</p>
+} @else if (error()) {
+  <app-public-error (retry)="load()" />
+} @else if (sale()?.items?.length) {
+  <div class="sale-grid">
+    @for (b of sale()!.items; track b.id) {
+      <app-book-card [book]="b" [now]="clock.now()" />
+    }
+  </div>
+} @else {
+  <section class="empty">
+    <h2>Hiện chưa có Flash Sale</h2>
+    <a routerLink="/sach">Khám phá tất cả sách →</a>
+  </section>
+}

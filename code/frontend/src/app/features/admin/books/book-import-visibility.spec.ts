@@ -2,9 +2,9 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute,convertToParamMap,provideRouter } from '@angular/router';
 import { of,BehaviorSubject } from 'rxjs';
 import { vi } from 'vitest';
-import { BookList } from './book-list';
+import { BookList } from './book-list/book-list';
 import { BookApi } from './book-api';
-import { BookStatusActions } from './book-status-actions';
+import { BookStatusActions } from './book-status-actions/book-status-actions';
 import { AuthService } from '../../../core/auth/auth.service';
 import { testBook } from './book-test-fixture';
 describe('Imported books awaiting publication',()=>{

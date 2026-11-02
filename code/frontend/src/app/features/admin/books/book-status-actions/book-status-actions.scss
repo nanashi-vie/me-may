@@ -1,0 +1,25 @@
+.status-actions {
+  border-top: 1px solid var(--line);
+  margin-top: 2rem;
+  padding-top: 1rem;
+}
+.buttons {
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+dialog {
+  border: 1px solid var(--line);
+  max-width: 520px;
+  padding: 2rem;
+}
+dialog::backdrop {
+  background: #0006;
+}
+dialog input {
+  width: auto;
+  margin-right: 0.5rem;
+}
+dialog .buttons {
+  margin-top: 1.5rem;
+}

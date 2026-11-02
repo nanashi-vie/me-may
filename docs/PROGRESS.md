@@ -27,6 +27,11 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Trang `/sach` và `/bo-suu-tap/:slug`: cột `DANH MỤC` link thể loại + `Độ tuổi` checkbox kèm nút Áp dụng, tiêu đề/`<title>` theo thể loại, select `Sắp xếp theo:` áp ngay, chip `Tất cả · Paperback · Hardcover` dưới tiêu đề Picture book, thanh `Kết quả cho “q” ✕ Xóa`; mobile chuyển thành 2 hàng chip cuộn ngang (cao ≥44px).
 - Kiểm chứng: Vitest 37/37 file (172/172 test) PASS, Node SSR build + Workers build + `check:workers:proxy` PASS, Chrome headless 1280px/820px/390×844 PASS ([VERIFICATION](VERIFICATION.md#tối-ưu-ui-navbar-và-trang-danh-sách-sách--02112026)). Spec tạm đã gộp vào [DESIGN](DESIGN.md) và gỡ.
 
+## Chuẩn hóa cấu trúc frontend External Template (đã triển khai 02/11)
+
+- Đã hoàn tất trên `dev`: gom 20 page/layout/component nghiệp vụ vào thư mục con `<tên>/<tên>.{ts,html,scss,spec.ts}` (giữ tên ngắn Angular 20); tách `.html` + `.scss` cho các component đang để inline (`public-layout`, `book-audit-panel`, `book-status-actions`, `book-card`, `contact-dialog`, `flash-sale-page`, `flash-sale`); tách `.html` không cần `.scss` cho `admin-layout`, `login`, `contact-page` và bỏ `app.scss` rỗng; giữ Inline Template cho 5 component trình bày nhỏ (`overview`, `not-found`, `public-page`, `public-error`, `wishlist-button`).
+- Kiểm chứng: Vitest 37/37 file (172/172 test) PASS, Node SSR build + Workers build (0 warning) + `check:workers:proxy` PASS; quy ước gộp vào [ARCHITECTURE](ARCHITECTURE.md#trách-nhiệm-và-phụ-thuộc).
+
 ## Import V2 và hai thể loại — đã triển khai local01/11
 
 -16cột/mỗi dòng=một sáchẨn/defaultTiếngAnh/tồn1; nhãn dễđọc/code/aliasheader;
