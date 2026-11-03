@@ -1,0 +1,140 @@
+<p class="breadcrumb">
+  <a routerLink="/">Trang chủ</a>
+  @if (isCollection()) {
+    / Bộ sưu tập / {{ title() }}
+  } @else if (applied().category) {
+    / <a routerLink="/sach">Tất cả sách</a> / {{ title() }}
+  } @else {
+    / Tất cả sách
+  }
+</p>
+<div class="catalogue-layout">
+  <aside class="catalogue-sidebar" aria-label="Danh mục và bộ lọc">
+    <div class="sidebar-section">
+      <h2 class="sidebar-heading">DANH MỤC</h2>
+      <div class="chip-scroll-wrap">
+        <nav class="category-links" aria-label="Danh mục thể loại">
+          <a
+            routerLink="/sach"
+            [queryParams]="categoryParams('')"
+            [class.active]="!isCollection() && !applied().category"
+            [attr.aria-current]="!isCollection() && !applied().category ? 'page' : null"
+            >Tất cả sách</a
+          >
+          @for (c of categories(); track c.code) {
+            <a
+              routerLink="/sach"
+              [queryParams]="categoryParams(c.code)"
+              [class.active]="!isCollection() && applied().category === c.code"
+              [attr.aria-current]="
+                !isCollection() && applied().category === c.code ? 'page' : null
+              "
+              >{{ c.label }}</a
+            >
+          }
+        </nav>
+      </div>
+    </div>
+    <form class="age-filter" (ngSubmit)="apply()">
+      <fieldset>
+        <legend class="sidebar-heading">Độ tuổi</legend>
+        <div class="chip-scroll-wrap">
+          <div class="age-options">
+            @for (a of ageGroups(); track a.code) {
+              <label class="check" [class.checked]="draft.age.includes(a.code)">
+                <input
+                  type="checkbox"
+                  [checked]="draft.age.includes(a.code)"
+                  (change)="toggleAge(a.code, $event)"
+                />
+                <span>{{ a.label }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </fieldset>
+      <button type="submit" class="apply-age">Áp dụng</button>
+    </form>
+  </aside>
+  <div class="catalogue-main">
+    <header class="catalogue-heading">
+      <div class="heading-title">
+        <h1>{{ title() }}</h1>
+        @if (!loading() && !error()) {
+          <p class="book-count">{{ page()?.totalElements }} cuốn sách</p>
+        }
+      </div>
+      <label class="sort-control">
+        <span>Sắp xếp theo:</span>
+        <select name="sort" [ngModel]="applied().sort" (ngModelChange)="changeSort($event)">
+          <option value="newest">Mới xuất bản</option>
+          <option value="price_asc">Giá tăng dần</option>
+          <option value="price_desc">Giá giảm dần</option>
+        </select>
+      </label>
+    </header>
+    @if (!isCollection() && applied().category === 'PICTURE_BOOK') {
+      <nav class="binding-chips" aria-label="Kiểu bìa Picture book">
+        <a
+          routerLink="/sach"
+          [queryParams]="bindingParams('')"
+          [class.active]="!applied().binding"
+          [attr.aria-current]="!applied().binding ? 'page' : null"
+          >Tất cả</a
+        >
+        <a
+          routerLink="/sach"
+          [queryParams]="bindingParams('PAPERBACK')"
+          [class.active]="applied().binding === 'PAPERBACK'"
+          [attr.aria-current]="applied().binding === 'PAPERBACK' ? 'page' : null"
+          >Paperback</a
+        >
+        <a
+          routerLink="/sach"
+          [queryParams]="bindingParams('HARDCOVER')"
+          [class.active]="applied().binding === 'HARDCOVER'"
+          [attr.aria-current]="applied().binding === 'HARDCOVER' ? 'page' : null"
+          >Hardcover</a
+        >
+      </nav>
+    }
+    @if (applied().q) {
+      <div class="search-query-bar">
+        <span>Kết quả cho “{{ applied().q }}”</span>
+        <button type="button" class="clear-query secondary" (click)="clearQuery()">✕ Xóa</button>
+      </div>
+    }
+    <section aria-label="Kết quả sách" aria-live="polite">
+      @if (loading()) {
+        <p class="loading" role="status">Đang tìm những cuốn sách…</p>
+      } @else if (error()) {
+        <app-public-error [status]="error()" (retry)="retry()" />
+      } @else if (page()?.items?.length) {
+        <div class="book-grid">
+          @for (b of page()!.items; track b.id) {
+            <app-book-card [book]="b" [now]="now()" />
+          }
+        </div>
+        <nav class="pagination" aria-label="Phân trang">
+          <button class="secondary" [disabled]="page()!.page === 0" (click)="apply(page()!.page)">
+            Trang trước
+          </button>
+          <span>Trang {{ page()!.page + 1 }} / {{ page()!.totalPages }}</span>
+          <button
+            class="secondary"
+            [disabled]="page()!.page + 1 >= page()!.totalPages"
+            (click)="apply(page()!.page + 2)"
+          >
+            Trang sau
+          </button>
+        </nav>
+      } @else {
+        <div class="empty">
+          <h2>Chưa có cuốn phù hợp</h2>
+          <p>Thử bỏ bớt bộ lọc hoặc tìm bằng mã sách.</p>
+          <button class="secondary" (click)="reset()">Bỏ bộ lọc</button>
+        </div>
+      }
+    </section>
+  </div>
+</div>

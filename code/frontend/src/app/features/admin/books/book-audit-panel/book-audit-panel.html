@@ -1,0 +1,48 @@
+<details class="audit-panel" [open]="opened()" (toggle)="toggle($any($event.target).open)">
+  <summary>Lịch sử thay đổi</summary>
+  @if (loading()) {
+    <p role="status">Đang tải lịch sử…</p>
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (result(); as data) {
+    @for (event of data.items; track event.id) {
+      <details>
+        <summary>
+          {{ event.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }} · {{ label(event.action) }} ·
+          Người dùng #{{ event.actorId }} · Phiên bản {{ event.aggregateVersion }}
+        </summary>
+        <div class="audit-values">
+          <div>
+            <h3>Trước</h3>
+            <pre>{{ event.before | json }}</pre>
+          </div>
+          <div>
+            <h3>Sau</h3>
+            <pre>{{ event.after | json }}</pre>
+          </div>
+        </div>
+      </details>
+    } @empty {
+      <p>Chưa có lịch sử.</p>
+    }
+    <nav aria-label="Trang lịch sử">
+      <button
+        class="secondary"
+        [disabled]="loading() || data.page === 0"
+        (click)="load(data.page - 1)"
+      >
+        Trước</button
+      ><span>Trang {{ data.page + 1 }} / {{ data.totalPages || 1 }}</span
+      ><button
+        class="secondary"
+        [disabled]="loading() || data.page + 1 >= data.totalPages"
+        (click)="load(data.page + 1)"
+      >
+        Sau
+      </button>
+    </nav>
+  }
+</details>
+

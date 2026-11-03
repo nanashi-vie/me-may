@@ -5,7 +5,6 @@
   "compatibility_date": "2026-10-26",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
-  "preview_urls": false,
   "build": { "command": "npm run build:workers" },
   "assets": {
     "directory": "dist/me-may-workers/browser",
@@ -29,8 +28,8 @@
   "preview_urls": true,
   "previews": {
     "vars": {
-      "MEMAY_API_ORIGIN": "http://127.0.0.1:8080",
-      "MEMAY_WORKER_NAME": "ttp://127.0.0.1:8787",
+      "MEMAY_API_ORIGIN": "https://dev-me-may.dqhungg8357.workers.dev",
+      "MEMAY_WORKER_NAME": "dev-me-may",
     },
   },
 }

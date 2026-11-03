@@ -6,7 +6,7 @@ import { PublicApi } from '../catalogue/public-api';
 import { FlashSale, HomeData } from '../catalogue/public.models';
 import { PublicClock } from '../catalogue/public-clock';
 import { countdown } from '../catalogue/catalogue-state';
-import { BookCard } from '../catalogue/book-card';
+import { BookCard } from '../catalogue/book-card/book-card';
 import { PublicError } from '../catalogue/public-error';
 import { PageMetadata } from '../../core/page-metadata';
 @Component({

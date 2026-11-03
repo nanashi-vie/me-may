@@ -20,14 +20,13 @@ me-may/
 │   │       ├── app.config.ts
 │   │       ├── app.routes.ts
 │   │       ├── core/             # HTTP config, session/CSRF, SEO, browser storage adapter
-│   │       ├── layouts/          # public-layout, admin-layout
-│   │       ├── features/
-│   │       │   ├── home/
-│   │       │   ├── catalogue/    # list/detail và API/model tương ứng
-│   │       │   ├── wishlist/     # trạng thái cục bộ + enquiry text
-│   │       │   ├── information/  # giới thiệu/cách mua/liên hệ
-│   │       │   └── admin/        # login, editor, table, taxonomy; lazy routes
-│   │       └── shared/           # book-card, gallery, pagination, filter control đã dùng chung
+│   │       ├── layouts/          # public-layout/, admin-layout/ (External Template)
+│   │       └── features/
+│   │           ├── home/         # home-page.{ts,html,scss}
+│   │           ├── catalogue/    # catalogue-page/, book-detail/, book-card/, contact-dialog/, flash-sale-page/ + state/API/models
+│   │           ├── wishlist/     # wishlist-page/ + wishlist-button (inline) + wishlist-store
+│   │           ├── information/  # contact-page/ + not-found/public-page (inline)
+│   │           └── admin/        # login/, flash-sale/, collections/collection-list/, books/<component>/ + services/models
 │   └── backend/
 │       ├── pom.xml
 │       ├── run-local.sh          # Chạy backend local; Dockerfile Render đã có
@@ -67,6 +66,7 @@ Package thực tế ở M1 là `vn.memay`; các domain chưa dùng trong sơ đ�
 - Admin dùng endpoint có session/CSRF; guard chỉ hỗ trợ UI, backend là nơi quyết định quyền.
 - Media xử lý provider; catalogue/listing chỉ dùng định danh và metadata media cần thiết.
 - Test đặt gần feature theo convention framework, test backend nằm trong src/test; tránh folder test cấp root rời ngữ cảnh khi chưa cần.
+- Frontend component (chốt 02/11/2026): các page, layout và component nghiệp vụ có giao diện đáng kể dùng External Template (`templateUrl`) và gom vào thư mục con `<tên>/<tên>.{ts,html,scss,spec.ts}` (giữ tên ngắn Angular 20; feature chỉ có 1 page như `home/` hoặc `admin/flash-sale/` đặt trực tiếp trong thư mục feature). Chỉ tạo `.scss` khi cần style riêng ngoài utility/global CSS (`admin-layout`, `login`, `contact-page` không cần `.scss`). Inline Template chỉ dùng cho component trình bày/wrapper thực sự nhỏ (`overview`, `not-found`, `public-page`, `public-error`, `wishlist-button`).
 - `database/` không chứa dump production/PII; `ops/` không chứa secret hoặc data volume. Mọi config mẫu chỉ có tên biến và giá trị demo an toàn.
 
 ## Hệ quả triển khai

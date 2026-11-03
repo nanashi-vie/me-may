@@ -4,7 +4,7 @@ import { Subject, of } from 'rxjs';
 import { vi } from 'vitest';
 import { Meta, Title } from '@angular/platform-browser';
 import { HomePage } from '../home/home-page';
-import { FlashSalePage } from './flash-sale-page';
+import { FlashSalePage } from './flash-sale-page/flash-sale-page';
 import { PublicApi } from './public-api';
 describe('Retry restores successful page metadata', () => {
   for (const kind of ['home', 'sale'])

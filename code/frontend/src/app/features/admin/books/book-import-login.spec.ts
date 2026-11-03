@@ -4,7 +4,7 @@ import { provideHttpClientTesting,HttpTestingController } from '@angular/common/
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
-import { BookImport } from './book-import';
+import { BookImport } from './book-import/book-import';
 import { BookImportApi } from './book-import-api';
 describe('BookImport login with real auth epochs',()=>{
   const owner={id:1,email:'owner@qa.test',role:'OWNER'};

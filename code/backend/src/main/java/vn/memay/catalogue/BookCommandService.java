@@ -17,7 +17,8 @@ import vn.memay.common.AdminApiException;
 
 @Service
 public class BookCommandService {
-    @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
+    @org.springframework.beans.factory.annotation.Autowired
+    private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
     private final BookCopyRepository books;
     private final BookVariantStore variants;
@@ -56,15 +57,20 @@ public class BookCommandService {
         this.json = json;
     }
 
-    private record CreatedAggregate(BookCopy book,Listing listing) {}
+    private record CreatedAggregate(BookCopy book, Listing listing) {
+    }
 
     private CreatedAggregate createAggregate(AdminUser actor, BookWrite input) {
         var w = validation.normalize(input);
-        timings.measure("validation",()->{validation.validateWrite(w);return null;});
+        timings.measure("validation", () -> {
+            validation.validateWrite(w);
+            return null;
+        });
         var b = new BookCopy();
         b.bookCode = codes.nextCode();
         b.availability = availability(w);
-        b.createdAt = clock.instant();
+        b.createdAt = clock.instant()
+                .truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         b.updatedAt = b.createdAt;
         var l = new Listing();
         l.publicationStatus = Publication.ARCHIVED;
@@ -77,19 +83,23 @@ public class BookCommandService {
         mappings(l, w);
         variants.save(b.id, w.variants());
         em.flush();
-        return new CreatedAggregate(b,l);
+        return new CreatedAggregate(b, l);
     }
 
-    BookDetail createImported(AdminUser actor,BookWrite input,UUID batchId) {
+    BookDetail createImported(AdminUser actor, BookWrite input, UUID batchId) {
         access.requireOwner(actor);
-        var required=validation.metadataErrors(input);
-        if(!required.isEmpty())throw new AdminApiException(400,"validation_error",required,null);
-        if(BookValidation.trim(input.language())==null || !Set.of("HIGH_FRESHNESS","MINOR_FLAWS").contains(input.conditionGrade()==null?"":input.conditionGrade()))
-            throw AdminApiException.field("import","Nhập đủ ngôn ngữ và tình trạng theo mẫu.");
-        var aggregate=createAggregate(actor,input);
-        var result=mapper.detail(aggregate.book(),aggregate.listing());
-        var snapshot=audit.snapshot(result);snapshot.put("source","IMPORT");snapshot.put("importBatchId",batchId.toString());
-        audit.record(actor,"BOOK",aggregate.book().id,"CREATE",Map.of(),snapshot,aggregate.book().version);
+        var required = validation.metadataErrors(input);
+        if (!required.isEmpty())
+            throw new AdminApiException(400, "validation_error", required, null);
+        if (BookValidation.trim(input.language()) == null || !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")
+                .contains(input.conditionGrade() == null ? "" : input.conditionGrade()))
+            throw AdminApiException.field("import", "Nhập đủ ngôn ngữ và tình trạng theo mẫu.");
+        var aggregate = createAggregate(actor, input);
+        var result = mapper.detail(aggregate.book(), aggregate.listing());
+        var snapshot = audit.snapshot(result);
+        snapshot.put("source", "IMPORT");
+        snapshot.put("importBatchId", batchId.toString());
+        audit.record(actor, "BOOK", aggregate.book().id, "CREATE", Map.of(), snapshot, aggregate.book().version);
         return result;
     }
 
@@ -101,11 +111,13 @@ public class BookCommandService {
         var w = timings.measure("validation", () -> validation.normalize(input.write()));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
-        String fingerprint=timings.measure("fingerprint",()->{
+        String fingerprint = timings.measure("fingerprint", () -> {
             try {
                 return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
                         .digest(json.writeValueAsBytes(canonical)));
-            } catch(java.security.NoSuchAlgorithmException e){throw new IllegalStateException(e);}
+            } catch (java.security.NoSuchAlgorithmException e) {
+                throw new IllegalStateException(e);
+            }
         });
         var session = uploads.lock(input.uploadSessionId(), actor, false);
         if ("CONSUMED".equals(session.get("state"))) {
@@ -115,7 +127,10 @@ public class BookCommandService {
             return mapper.detail(books.findById(id).orElseThrow(), listings.findByBookCopyId(id).orElseThrow());
         }
         uploads.lock(input.uploadSessionId(), actor, true);
-        timings.measure("validation",()->{validation.validateWrite(w);return null;});
+        timings.measure("validation", () -> {
+            validation.validateWrite(w);
+            return null;
+        });
         if (!input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
         var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
@@ -128,7 +143,8 @@ public class BookCommandService {
             selected.put(assignment.mediaId(), photo);
         }
         var aggregate = createAggregate(actor, w);
-        var b=aggregate.book();var l=aggregate.listing();
+        var b = aggregate.book();
+        var l = aggregate.listing();
         long id = b.id;
         for (var assignment : assignments) {
             var m = selected.get(assignment.mediaId());
@@ -140,12 +156,12 @@ public class BookCommandService {
                     m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
             jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
-        var prepared=mapper.detail(b,l);
+        var prepared = mapper.detail(b, l);
         validation.validatePublished(prepared);
         l.publicationStatus = Publication.PUBLISHED;
         l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         em.flush();
-        var result = mapper.published(prepared,l.publishedAt);
+        var result = mapper.published(prepared, l.publishedAt);
         var snapshot = audit.snapshot(result);
         snapshot.put("confirmedActualCopy", true);
         audit.record(actor, "BOOK", id, "CREATE", Map.of(), snapshot, b.version);
@@ -183,7 +199,10 @@ public class BookCommandService {
         if (b.version != version)
             throw AdminApiException.conflict(b.version);
         var w = validation.normalize(input);
-        timings.measure("validation",()->{validation.validateWrite(w);return null;});
+        timings.measure("validation", () -> {
+            validation.validateWrite(w);
+            return null;
+        });
         var before = mapper.detail(b, l);
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && !reordered.equals(

@@ -1,0 +1,48 @@
+@if (role() === 'OWNER') {
+  <section class="status-actions">
+    <h2>Xuất bản và khả dụng</h2>
+    @if (dirty()) {
+      <p>Lưu nội dung trước khi đổi trạng thái.</p>
+    }
+    <div class="buttons">
+      @if (book().publication === 'PUBLISHED') {
+        <button class="secondary" (click)="choose('ARCHIVED')" [disabled]="locked()">
+          Ẩn sách
+        </button>
+      }
+      @if (book().publication === 'ARCHIVED') {
+        <button class="secondary" (click)="choose('PUBLISHED')" [disabled]="locked()">
+          {{ book().publishedAt ? 'Hiện sách' : 'Xuất bản' }}
+        </button>
+      }
+    </div>
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+  </section>
+}
+<dialog #dialog (cancel)="cancel()" aria-labelledby="status-title">
+  <h2 id="status-title">Xác nhận {{ actionLabel() }}</h2>
+  <p>{{ book().bookCode }} · {{ book().title || 'Chưa có tên' }}</p>
+  @if (pending() === 'PUBLISHED') {
+    <label
+      ><input
+        type="checkbox"
+        [checked]="confirmed()"
+        (change)="confirmed.set($any($event.target).checked)"
+      />Tôi đã đối chiếu các ảnh bắt buộc và tình trạng cho sách và các biến thể này.</label
+    >
+  }
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  <div class="buttons">
+    <button
+      (click)="confirm()"
+      [disabled]="busy() || (pending() === 'PUBLISHED' && !confirmed())"
+    >
+      Xác nhận</button
+    ><button class="secondary" (click)="cancel()" [disabled]="busy()">Hủy</button>
+  </div>
+</dialog>
+

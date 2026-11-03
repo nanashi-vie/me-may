@@ -60,9 +60,12 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 
 ## Desktop — thứ tự từ trên xuống
 
-1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé”; link Facebook/Zalo khi đã có. Không tự nhận freeship/giảm giá.
-2. **Header:** logo Mẹ Mây (asset `code/frontend/public/favicon/web-app-manifest-192x192.png`, đã tích hợp UI), search lớn, Quan tâm (số cuốn), Hướng dẫn mua/Liên hệ. Không có đăng nhập khách/giỏ hàng. Header admin không dùng chung nguyên cụm này.
-3. **Navigation:** Tất cả sách, Sách mới đăng, Theo độ tuổi, Theo loại sách, Bộ sưu tập, Cách mua. Dropdown phải thao tác được bằng bàn phím/touch khi triển khai.
+1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” trên desktop (>720px); ẩn trên mobile (≤720px). Không tự nhận freeship/giảm giá.
+2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
+3. **Navigation & Sidebar (chốt 02/11):**
+   - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Cách mua · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
+   - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 8 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
+   - Mobile (≤720px): `<dialog>` native mở bằng `showModal()`, trượt từ trái (~80vw, tối đa 320px), nền `--red`, chữ trắng IN HOA, nút Đóng ✕; `Tất cả sách ›` và `Bộ sưu tập ›` mở accordion tại chỗ; đóng khi Escape, chạm backdrop, bấm ✕, chọn link hoặc đổi route, khóa cuộn nền và trả focus về ☰; tắt animation khi `prefers-reduced-motion: reduce`.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
 5. **Flash Sale:** ngay dưới hero, nền đỏ cam, thanh tiêu đề và countdown, thẻ có khoảng giá gốc/giá sale, không % giảm cùng Xem tất cả. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
 6. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
@@ -107,9 +110,14 @@ Xem [wireframe desktop](assets/wireframes/home-desktop.svg) và [mobile](assets/
 
 Đọc cùng phần Home trong tài liệu này và [screen board](assets/wireframes/screens.svg). Nội dung này mô tả UX, chưa khóa cấu trúc component hoặc OpenAPI.
 
-## Catalogue / collection — khách mobile
+## Catalogue / collection — desktop và mobile (chốt 02/11)
 
-Header tìm kiếm và Quan tâm dùng chung với Home. Breadcrumb → tên nhóm/số kết quả → sort và nút “Lọc” → grid hai cột → pagination. Bộ lọc nằm trong sheet trên mobile, trong panel trên desktop: chỉ độ tuổi (0–3, 4–6, 7–9, 10+) và thể loại (Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện, Tập đọc, Nấu ăn - thủ công - activity book). Một cuốn có thể gán nhiều nhóm tuổi nhưng chỉ một thể loại. Riêng Picture book có Paperback / Hardcover / Tất cả; “Tất cả” lấy cả hai kiểu, không phải dạng sách để nhập. Không có lọc giá/chủ đề/khả dụng/mức đọc/ngôn ngữ trong MVP. Giữ sort mới nhất và giá tham khảo tăng/giảm.
+Header tìm kiếm và Quan tâm dùng chung với Home. Contract URL `q`, `category`, `binding`, `age` (lặp), `sort`, `page` giữ nguyên.
+
+- **Desktop (>720px):** Breadcrumb (`Trang chủ / Tất cả sách [/ Thể loại]` hoặc `Trang chủ / Bộ sưu tập / Tên`) → bố cục 2 cột:
+  - Cột trái: `DANH MỤC` gồm link `Tất cả sách` + 8 thể loại (trên `/sach` giữ `q/age/sort`, reset `page/binding`, mục đang chọn tô `--red`; trên `/bo-suu-tap/:slug` là link rời trang sang `/sach?category=CODE`, không tô active); bên dưới là nhóm `Độ tuổi` (checkbox 0–3, 4–6, 7–9, 10+ chọn nhiều) kèm nút **Áp dụng**.
+  - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), số cuốn và select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi `category=PICTURE_BOOK` hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
+- **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + số cuốn + Sắp xếp → chip Paperback/Hardcover (nếu Picture book) → dòng kết quả `q` → grid 2 cột → pagination.
 
 Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
 

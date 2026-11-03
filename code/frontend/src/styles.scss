@@ -9,16 +9,21 @@ button:disabled { opacity: .65; cursor: not-allowed; }
 a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid #68552b; outline-offset: 4px; }
 .wrap { width: min(1200px, calc(100% - 40px)); margin-inline: auto; }
 .utility { background: var(--red); color: white; text-align: center; font-size: .8rem; padding: .35rem; }
-.site-header { display: flex; justify-content: space-between; align-items: center; gap: 2rem; min-height: 110px; border-bottom: 1px solid var(--line); }
-.brand { color: var(--red); font-size: 2rem; font-weight: 750; text-decoration: none; }
-.brand span { display: block; color: var(--muted); font-size: .8rem; font-weight: 400; }
+.site-header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; min-height: 110px; border-bottom: 1px solid var(--line); }
+.brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--red); font-size: 1.8rem; line-height: 1.2; font-weight: 750; text-decoration: none; flex-shrink: 0; }
+.brand img { object-fit: contain; }
+.brand-name { display: block; font-size: 1.8rem; font-weight: 750; color: var(--red); }
+.brand small { display: block; color: var(--muted); font-size: .7rem; font-weight: 400; margin-top: .4rem; }
 nav { display: flex; gap: 1.5rem; }
 nav a { color: var(--ink); }
 h1 { font-family: Georgia, serif; font-weight: 500; font-size: clamp(2rem, 5vw, 3.8rem); line-height: 1.14; max-width: 18ch; margin: 1rem 0 1.5rem; }
 .public-intro { padding: clamp(3rem, 8vw, 7rem) 0; min-height: 60vh; }
 .intro { font-size: 1.15rem; max-width: 54ch; margin-bottom: 2rem; color: var(--muted); }
 .eyebrow { color: var(--red); font-weight: 600; }
-footer { border-top: 1px solid var(--line); padding-block: 1.8rem; font-size: .9rem; color: var(--muted); }
+footer { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; border-top: 1px solid var(--line); padding-block: 1.8rem; font-size: .9rem; color: var(--muted); }
+footer p { margin: .6rem 0; }
+footer nav { flex-wrap: wrap; justify-content: end; font-size: .85rem; }
+footer small { grid-column: 1/-1; font-size: .75rem; }
 .skip-link { position: absolute; top: -100px; left: 16px; background: white; padding: .6rem; z-index: 2; }
 .skip-link:focus { top: 8px; }
 .login-page { width: min(480px, calc(100% - 32px)); margin: 4rem auto; }

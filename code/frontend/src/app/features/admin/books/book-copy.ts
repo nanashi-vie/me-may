@@ -3,6 +3,16 @@ export const READING_NOTE =
   'Trình độ đọc là gợi ý của tiệm, không phải chứng nhận Cambridge cho sách.';
 export const PUBLICATION_LABELS = { PUBLISHED: 'Công khai', ARCHIVED: 'Ẩn' };
 export const AVAILABILITY_LABELS = { AVAILABLE: 'Còn hàng', SOLD: 'Hết hàng' };
+export const CATEGORY_LABELS = {
+  BOARD_BOOK: 'Board book',
+  PICTURE_BOOK: 'Picture book',
+  ENCYCLOPEDIA_SCIENCE: 'Bách khoa toàn thư & khoa học',
+  HISTORY: 'Lịch sử',
+  CHAPTER: 'Chapter',
+  STORY_COLLECTION: 'Tuyển tập truyện',
+  READING_PRACTICE: 'Tập đọc',
+  COOKING_CRAFT_ACTIVITY: 'Nấu ăn - thủ công - activity book',
+} as const;
 export const AGE_LABELS = { AGE_0_3: '0–3', AGE_4_6: '4–6', AGE_7_9: '7–9', AGE_10_PLUS: '10+' };
 export const READING_LABELS = {
   PRE_A1: 'Starters · Pre A1',

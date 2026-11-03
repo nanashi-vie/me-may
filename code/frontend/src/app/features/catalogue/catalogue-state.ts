@@ -1,18 +1,18 @@
 import { ParamMap, Params } from '@angular/router';
-import { CatalogueFilter, PublicBook, PublicVariant } from './public.models';
-import { AGE_LABELS, formatPrice, formatPriceRange } from '../admin/books/book-copy';
-const categories = [
-  'BOARD_BOOK',
-  'PICTURE_BOOK',
-  'ENCYCLOPEDIA_SCIENCE',
-  'HISTORY',
-  'CHAPTER',
-  'STORY_COLLECTION',
-  'READING_PRACTICE',
-  'COOKING_CRAFT_ACTIVITY',
-];
+import { AgeGroup, CategoryCode, CatalogueFilter, PublicBook, PublicVariant } from './public.models';
+import { AGE_LABELS, CATEGORY_LABELS, formatPrice, formatPriceRange } from '../admin/books/book-copy';
+import { TaxonomyOption } from '../admin/books/book.models';
+export const DEFAULT_CATEGORIES: TaxonomyOption<CategoryCode>[] = Object.entries(CATEGORY_LABELS).map(
+  ([code, label], sortOrder) => ({ code: code as CategoryCode, label, sortOrder }),
+);
+export const DEFAULT_AGE_GROUPS: TaxonomyOption<AgeGroup>[] = Object.entries(AGE_LABELS).map(
+  ([code, label], sortOrder) => ({ code: code as AgeGroup, label, sortOrder }),
+);
+export function categoryLabel(code: string, list: TaxonomyOption<CategoryCode>[] = DEFAULT_CATEGORIES) {
+  return list.find((c) => c.code === code)?.label || CATEGORY_LABELS[code as CategoryCode] || 'Tất cả sách';
+}
 export function readFilters(p: ParamMap): CatalogueFilter {
-  const category = categories.includes(p.get('category') || '') ? p.get('category')! : '';
+  const category = (p.get('category') || '') in CATEGORY_LABELS ? p.get('category')! : '';
   const page = Number(p.get('page') || 1);
   return {
     q: (p.get('q') || '').trim().slice(0, 200),
