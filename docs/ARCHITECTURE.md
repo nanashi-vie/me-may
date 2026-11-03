@@ -202,8 +202,8 @@ phải build/check runtime lại khi nâng Angular/Wrangler. Không cài framewo
 ### Deploy setup — 26/10/2026
 
 [DEPLOYMENT](DEPLOYMENT.md) là nguồn hướng dẫn dashboard/secret/migration hiện hành.
-Production wrangler.jsonc dùng tên me-may/APIme-may-api.onrender.com; site origin
-chỉ derive từ đúng WorkerHTTPS host hoặc explicit custom origin. Per-request
+Production wrangler.jsonc gắn Custom Domain memaybooks.com vào Worker me-may,
+đặt HTTPS origin chính thức và proxy /api đến me-may-api.onrender.com. Per-request
 AngularAppEngine allowedHosts exact; x-forwarded headers bị bỏ để giữ SSR và origin.
 Render Docker Java21/nonroot/profile render, owner cấp riêng bằng one-shot command, không startup bootstrap hoặc
 profile local trên Render; datasource pooled/Flywaydirect/public/cleanDisabled. NamespaceCloudinary

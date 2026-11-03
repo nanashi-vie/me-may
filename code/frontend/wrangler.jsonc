@@ -4,7 +4,8 @@
   "main": "dist/me-may-workers/server/server.mjs",
   "compatibility_date": "2026-10-26",
   "compatibility_flags": ["nodejs_compat"],
-  "workers_dev": true,
+  "workers_dev": false,
+  "routes": [{ "pattern": "memaybooks.com", "custom_domain": true }],
   "build": { "command": "npm run build:workers" },
   "assets": {
     "directory": "dist/me-may-workers/browser",
@@ -15,7 +16,7 @@
   },
   "vars": {
     "MEMAY_API_ORIGIN": "https://me-may-api.onrender.com",
-    "MEMAY_WORKER_NAME": "me-may",
+    "MEMAY_SITE_ORIGIN": "https://memaybooks.com",
   },
 
   "observability": {

@@ -3,6 +3,13 @@
 Cập nhật01/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Tên miền — 03/11/2026
+
+- SETUP-05 đã cấu hình Custom Domain và SSR origin `https://memaybooks.com` trên dev.
+- 172 test frontend, Wrangler dry-run và proxy workerd đạt. Còn kích hoạt zone Cloudflare,
+  merge/deploy và kiểm tra HTTPS, SSR, đăng nhập, link hỏi sách trên tên miền mới.
+  Xem [hướng dẫn triển khai](DEPLOYMENT.md#1-cloudflare-workers-git-integration).
+
 ## Hướng hiện tại — đóng phạm vi tính năng, chuyển tối ưu giao diện
 
 User muốn khép phần xây tính năng MVP tại đây để tối ưu UI. Giữ chức năng hiện có,
