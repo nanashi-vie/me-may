@@ -44,11 +44,19 @@ export function bookTitle(b: PublicBook) {
 export function enquiryText(b: PublicBook, url: string, variant?: PublicVariant) {
   return `${b.availability === 'SOLD' ? 'Tôi muốn được tư vấn sách tương đương cuốn' : 'Tôi muốn hỏi thêm và xem ảnh/video thật của cuốn'}:\n${b.bookCode} | ${b.title}${variant?.available && variant.name && b.availability !== 'SOLD' ? '\nBiến thể: ' + variant.name : ''}\nGiá tham khảo: ${bookPrice(b)}\n${url}\nNhờ tiệm xác nhận tình trạng và giá cụ thể.`;
 }
-export function countdown(ms: number) {
+export function countdownParts(ms: number): [string, string, string] {
   const seconds = Math.max(0, Math.floor(ms / 1000));
-  return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60]
-    .map((n) => String(n).padStart(2, '0'))
-    .join(':');
+  return [Math.floor(seconds / 3600), Math.floor(seconds / 60) % 60, seconds % 60].map((n) =>
+    String(n).padStart(2, '0'),
+  ) as [string, string, string];
+}
+export function countdown(ms: number) {
+  return countdownParts(ms).join(':');
+}
+export function discountPercent(b: PublicBook): number | null {
+  if (b.salePriceVnd === null || !b.priceMaxVnd || b.salePriceVnd >= b.priceMaxVnd) return null;
+  const pct = Math.round((1 - b.salePriceVnd / b.priceMaxVnd) * 100);
+  return pct > 0 ? pct : null;
 }
 export function effectiveBook(b: PublicBook, now: number): PublicBook {
   return b.saleEndsAt && now >= Date.parse(b.saleEndsAt)

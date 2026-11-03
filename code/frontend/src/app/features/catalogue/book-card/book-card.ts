@@ -2,7 +2,7 @@ import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { formatPriceRange } from '../../admin/books/book-copy';
 import { WishlistButton } from '../../wishlist/wishlist-button';
-import { bookPrice, effectiveBook } from '../catalogue-state';
+import { bookPrice, discountPercent, effectiveBook } from '../catalogue-state';
 import { PublicBook } from '../public.models';
 
 @Component({
@@ -18,4 +18,5 @@ export class BookCard {
   readonly front = computed(() => this.book().media.find((m) => m.role === 'FRONT'));
   readonly range = formatPriceRange;
   readonly price = bookPrice;
+  readonly discount = discountPercent;
 }

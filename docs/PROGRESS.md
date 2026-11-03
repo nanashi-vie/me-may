@@ -1,6 +1,6 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật01/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật03/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
 ## Tên miền — 03/11/2026
@@ -27,6 +27,15 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
   bằng chứng chi tiết, không tự chuyển ca đã được user xác nhận sang FAIL.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
+
+## Tối ưu UI — Flash Sale banner, đếm ngược 3 ô, badge -% và chi tiết sách (đã triển khai 03/11)
+
+- Đã hoàn tất trên `dev` sau khi chốt qua grill-me (6 câu):
+  1. Helper `discountPercent(book)` tính `Math.round((1 - salePriceVnd / priceMaxVnd) * 100)` và `countdownParts(ms)` tách `[HH, MM, SS]` (`catalogue-state.ts`).
+  2. Home Flash Sale: nền đỏ cam `#ff625c` tràn 100vw kèm họa tiết tia sét chìm nhẹ hai bên, nội dung trong khung `.wrap`; thanh tiêu đề trắng gồm `FLASH ⚡ SALE` + `Kết thúc trong` + 3 ô đen bo tròn (`HH : MM : SS`, dấu `:` nằm ngoài) + `Xem tất cả ›` màu xanh dương đậm không gạch chân.
+  3. Trang `/flash-sale`: đồng bộ 3 ô đếm ngược `HH : MM : SS`.
+  4. `BookCard` và `BookDetail`: hiển thị badge `-XX%` cạnh giá sale; riêng `BookDetail` khi đang Flash Sale có thanh đỏ cam chứa khung trắng `FLASH ⚡ SALE` + 3 ô đếm ngược và hàng giá `Giá sale · Giá gốc gạch ngang · -XX%` theo mẫu.
+  5. Kiểm chứng: Vitest 37/37 file (174/174 test) PASS, Node SSR build + Workers build (0 warning) + `check:workers:proxy` PASS, Chrome headless 1280px & 390×844 PASS ([VERIFICATION](VERIFICATION.md#tối-ưu-ui-flash-sale-home-flash-sale-bookcard-sachslug--03112026)).
 
 ## Tối ưu UI — navbar và trang danh sách sách (đã triển khai 02/11)
 

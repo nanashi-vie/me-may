@@ -358,3 +358,10 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Kiểm tra trình duyệt thật (Google Chrome headless qua CDP với SSR local + mock API trên cổng tạm 4009/8099, đã dừng sau kiểm):
   - Desktop `1280×800` và tablet `820×900`: `scrollWidth <= innerWidth`, dropdown `Tất cả sách` mở 9 mục (`Tất cả thể loại` + 8 thể loại), Escape đóng và trả focus về link cha, mục active tô `rgb(179, 38, 53)`, cột `DANH MỤC` + chip `Tất cả · Paperback · Hardcover` + thanh `Kết quả cho “Usborne” ✕ Xóa` hiển thị đúng.
   - Mobile `390×844`: phát hiện và sửa lỗi CSS Grid `1fr` làm `.category-links` đẩy ngang trang ở `390px` (đổi sang `minmax(0, 1fr)` và `min-width: 0`); sau sửa `scrollWidth = 390 <= innerWidth = 390`, chip cuộn ngang (`scrollWidth > clientWidth`, cao `44px`), utility/nav ngang ẩn, sidebar `<dialog>` mở `left = 0, width = 312`, accordion `Tất cả sách ›` mở 9 mục, `prefers-reduced-motion: reduce` tắt animation (`animationName = 'none'`), Escape đóng dialog và trả focus về nút `☰`. Chưa phải kiểm tra trên iPhone Safari / Android Chrome vật lý.
+
+## Tối ưu UI Flash Sale (Home, `/flash-sale`, `BookCard`, `/sach/:slug`) — 03/11/2026
+
+- Unit test Vitest (`npm test`): 37/37 file, 174/174 test PASS (thêm test `countdownParts`, `discountPercent` tính theo `priceMaxVnd` và tự ẩn khi hết hạn/không giảm, và test `BookDetail` hiển thị `.detail-flash-bar`, 3 ô `.time-box`, `<del>` giá gốc và badge `.discount`).
+- Build & proxy: `npm run build`, `npm run build:workers` (0 warning, tất cả component style < 4 kB) và `npm run check:workers:proxy` PASS.
+- Kiểm tra trình duyệt thật (Google Chrome headless qua CDP với SSR local + mock API trên cổng tạm 4009/8099, đã dừng sau kiểm):
+  - Desktop `1280×900` và mobile `390×844` trên `/`, `/flash-sale` và `/sach/how-many-are-there-mm-000020`: `scrollWidth <= innerWidth`, nền `.flash-section` tràn toàn chiều ngang (`flashLeft <= 0`, `flashRight >= clientWidth`), đếm ngược tách 3 ô đen bo góc (`HH : MM : SS`), link `Xem tất cả ›` màu xanh `rgb(25, 118, 210)`, badge `-55%`..`-90%` cạnh giá sale trên `BookCard` và `BookDetail`, banner `FLASH ⚡ SALE` trên trang chi tiết khớp mẫu.

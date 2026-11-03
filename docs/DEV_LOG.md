@@ -1002,3 +1002,31 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chạy lại với quyền đã duyệt đạt. Chưa chạy smoke HTTPS/SSR/admin trên domain thật.
 - Bàn giao qua dev. Tiếp theo kích hoạt zone Cloudflare, user merge main/deploy,
   rồi smoke theo DEPLOYMENT. Chưa đổi DNS hoặc deploy.
+
+### S034-C01 — 03/11/2026 — grill-me và bắt đầu triển khai UI Flash Sale & badge -%
+
+- Mục tiêu: tối ưu giao diện Flash Sale trên Home, `/flash-sale`, `BookCard` và `BookDetail` theo
+  mẫu user cung cấp.
+- Quyết định (user chốt qua 6 câu):
+  1. `% giảm` tính theo `priceMaxVnd` và làm tròn `Math.round((1 - salePriceVnd / priceMaxVnd) * 100)` (vd 40k → 18k = `-55%`).
+  2. Hiển thị badge `-XX%` trên cả `BookCard` lẫn `BookDetail`, tự ẩn khi hết giờ sale.
+  3. Nền Flash Sale trên Home tràn full-width `100vw` (`#ff625c` kèm họa tiết tia sét chìm hai bên), thanh tiêu đề trắng và 5 thẻ sách vẫn căn trong khung `.wrap` 1200px.
+  4. Đếm ngược tách 3 ô đen bo tròn (`HH` `:` `MM` `:` `SS`, dấu `:` nằm ngoài giữa các ô) trên cả Home, `/flash-sale` và `BookDetail`; link `Xem tất cả ›` màu xanh dương đậm không gạch chân.
+  5. Trên `BookDetail` khi sách đang Flash Sale: hiển thị thanh đỏ cam `#ff625c` chứa khung trắng `FLASH ⚡ SALE` + 3 ô đếm ngược; bên dưới là hàng ngang `Giá sale lớn · Giá gốc gạch ngang · Badge -XX%`; giữ lưu ý giá của Mẹ Mây, không thêm đánh giá/đã bán.
+- Trạng thái: đang thực thi code và unit test trên `dev`.
+
+### S034-C02 — 03/11/2026 — hoàn tất triển khai và kiểm chứng UI Flash Sale & badge -%
+
+- Phạm vi & file thay đổi:
+  - `code/frontend/src/app/features/catalogue/catalogue-state.ts`, `catalogue-state.spec.ts`: thêm `countdownParts(ms)` tách `[HH, MM, SS]` và `discountPercent(book)` tính `% giảm` làm tròn theo `priceMaxVnd`, trả `null` khi không có sale hoặc đã hết hạn.
+  - `code/frontend/src/styles.scss`: thêm `overflow-x: clip` trên `body` và quy tắc chung `.countdown-boxes`, `.time-box`, `.time-sep` để tái sử dụng trên Home, `/flash-sale` và `/sach/:slug` mà không vượt budget CSS 4kB của từng component.
+  - `code/frontend/src/app/features/catalogue/book-card/book-card.{ts,html,scss}`: hiển thị badge `.discount` (`-XX%`) bên cạnh giá sale.
+  - `code/frontend/src/app/features/home/home-page.{ts,html,scss}`: nền `.flash-section` đỏ cam `#ff625c` tràn toàn chiều ngang (`margin-inline: calc(50% - 50vw)`) kèm tia sét SVG mờ hai bên, nội dung trong `.flash-inner.wrap`, thanh tiêu đề trắng bo góc gồm `FLASH ⚡ SALE`, 3 ô đếm ngược đen và link `Xem tất cả ›` màu `#1976d2`.
+  - `code/frontend/src/app/features/catalogue/flash-sale-page/flash-sale-page.{ts,html,scss}`: đồng bộ 3 ô đếm ngược đen trong `.sale-timer`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.{ts,html,scss,spec.ts}`: thêm thanh `.detail-flash-bar` (chứa `.detail-flash-pill` với `FLASH ⚡ SALE` + 3 ô đếm ngược) và hàng `.price-row` (`Giá sale · <del>Giá gốc</del> · Badge -XX%`) khi sách đang Flash Sale; giữ nguyên chú thích giá.
+  - Cập nhật `docs/MASTER_PLAN.md`, `docs/DESIGN.md`, `docs/VERIFICATION.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- Kiểm tra đã chạy (cwd `code/frontend`):
+  - `npm test`: 37/37 file, 174/174 test PASS.
+  - `npm run build`, `npm run build:workers` (0 warning), `npm run check:workers:proxy`: PASS.
+  - Chrome headless qua CDP với built SSR (4009) + mock API (8099) tại `1280×900` và `390×844` trên `/`, `/flash-sale` và `/sach/how-many-are-there-mm-000020`: không tràn ngang (`scrollWidth <= innerWidth`), nền Flash Sale tràn sát mép, 3 ô đếm ngược, link `Xem tất cả ›` và badge `-XX%` hiển thị đúng; đã đóng Chrome và server 4009/8099.
+- Bước tiếp theo: commit và push lên `dev`; sẵn sàng cho đầu việc tối ưu UI tiếp theo của user.

@@ -1,4 +1,4 @@
-import { bookPrice, enquiryText } from '../catalogue-state';
+import { bookPrice, bookTitle, countdownParts, discountPercent, effectiveBook, enquiryText } from '../catalogue-state';
 import { firstValueFrom } from 'rxjs';
 import {
   Component,
@@ -16,7 +16,6 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, switchMap, combineLatest, Subject, startWith } from 'rxjs';
 import { PublicApi, PUBLIC_SITE_ORIGIN } from '../public-api';
 import { PublicBook, PublicVariant, ContactConfig } from '../public.models';
-import { bookTitle, effectiveBook } from '../catalogue-state';
 import { PageMetadata } from '../../../core/page-metadata';
 import { PublicError } from '../public-error';
 import { ContactDialog } from '../contact-dialog/contact-dialog';
@@ -87,6 +86,8 @@ export class BookDetail {
   readonly title = bookTitle;
   readonly price = bookPrice;
   readonly range = formatPriceRange;
+  readonly countdownParts = countdownParts;
+  readonly discount = discountPercent;
   readonly mediaLabels: Record<string, string> = MEDIA_LABELS;
   readonly ages = AGE_LABELS;
   readonly levels = READING_LABELS;
@@ -129,6 +130,10 @@ export class BookDetail {
   }
   display() {
     return this.book() ? effectiveBook(this.book()!, this.clock.now()) : null;
+  }
+  saleRemaining() {
+    const ends = this.display()?.saleEndsAt;
+    return ends ? Math.max(0, Date.parse(ends) - (this.clock.now() || Date.now())) : 0;
   }
   accept(b: PublicBook | null, error = 0) {
     this.loading.set(false);

@@ -161,10 +161,10 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 
 Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/PayOS/VNPay, vận chuyển/J&T, thanh toán/cọc, hold timer, phân tích doanh thu, Meta/Zalo API, Zalo Mini App, import CSV/Excel, đồng bộ Excel, tự đăng comment, OCR/VLM/AI, gợi ý sách bằng ML, chatbot, loyalty, review khách và quản lý tồn đa kênh.
 
-### Flash Sale bổ sung M3 (duyệt 23/10/2026)
+### Flash Sale bổ sung M3 (duyệt 23/10/2026, cập nhật UI 03/11/2026)
 
-- Home có section Flash Sale ngay dưới banner, theo mẫu người dùng: nền đỏ cam, thanh tiêu đề/countdown, thẻ sách và Xem tất cả. Chỉ hiện khi đợt đang có hiệu lực và có sách hợp lệ; không tạo sale/số đã bán giả.
-- Một campaign do OWNER quản lý: bật/tắt, bắt đầu/kết thúc theo giờ Việt Nam, tối đa50 mã sách và giá sale nguyên VND từng cuốn. Giá gốc là khoảng tham khảo hiện tại; giá sale phải thấp hơn giá từ. Hiển thị khoảng gốc và giá sale, không tính % giảm.
+- Home có section Flash Sale ngay dưới banner, theo mẫu người dùng: nền đỏ cam `#ff625c` tràn toàn chiều ngang (`100vw`) kèm tia sét mờ hai bên, thanh tiêu đề trắng bo góc gồm `FLASH ⚡ SALE`, đếm ngược 3 ô đen bo góc (`HH : MM : SS`) và link `Xem tất cả ›` màu xanh đậm (`#1976d2`), cùng lưới thẻ sách trong `.wrap`. Chỉ hiện khi đợt đang có hiệu lực và có sách hợp lệ; không tạo sale/số đã bán giả.
+- Một campaign do OWNER quản lý: bật/tắt, bắt đầu/kết thúc theo giờ Việt Nam, tối đa50 mã sách và giá sale nguyên VND từng cuốn. Giá gốc là khoảng tham khảo hiện tại; giá sale phải thấp hơn giá từ. Hiển thị khoảng gốc gạch ngang, giá sale và badge `-XX%` tính theo `priceMaxVnd` (`Math.round((1 - salePriceVnd / priceMaxVnd) * 100)`) trên cả `BookCard` và trang chi tiết (`/sach/:slug`). Trên trang chi tiết, khi đang sale hiển thị thanh banner đỏ cam chứa pill trắng `FLASH ⚡ SALE` + 3 ô đếm ngược đen phía trên dòng giá.
 - Hiệu lực theo giờ database `[start,end)`, chỉ sách PUBLISHED/AVAILABLE; hết hạn, sold, ẩn hoặc giá gốc giảm xuống không còn giảm giá thì public dùng giá tham khảo. Catalogue sort/detail/nội dung hỏi dùng cùng giá hiệu lực.
 - Campaign có version/audit độc lập, không tạo order/quantity hoặc số bán; STAFF không sửa. Không có campaign trong dữ liệu tiệm cho đến khi OWNER chủ động cấu hình.
 

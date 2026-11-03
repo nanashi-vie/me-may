@@ -5,6 +5,8 @@ import {
   bookTitle,
   enquiryText,
   countdown,
+  countdownParts,
+  discountPercent,
   effectiveBook,
 } from './catalogue-state';
 import { PublicBook } from './public.models';
@@ -73,5 +75,14 @@ describe('Public catalogue state', () => {
     expect(effectiveBook(book, Date.parse('2026-10-23T12:00:00Z')).salePriceVnd).toBe(7000);
     expect(countdown(90061000)).toBe('25:01:01');
     expect(countdown(-1)).toBe('00:00:00');
+    expect(countdownParts(90061000)).toEqual(['25', '01', '01']);
+    expect(countdownParts(-1)).toEqual(['00', '00', '00']);
+  });
+  it('calculates rounded discount percentage against priceMaxVnd and hides invalid or expired discounts', () => {
+    expect(discountPercent({ ...book, priceMinVnd: 20000, priceMaxVnd: 40000, salePriceVnd: 18000 })).toBe(55);
+    expect(discountPercent({ ...book, priceMinVnd: 59000, priceMaxVnd: 59000, salePriceVnd: 15000 })).toBe(75);
+    expect(discountPercent({ ...book, salePriceVnd: null })).toBeNull();
+    expect(discountPercent({ ...book, priceMaxVnd: 10000, salePriceVnd: 10000 })).toBeNull();
+    expect(discountPercent(effectiveBook(book, Date.parse('2026-10-23T13:00:00Z')))).toBeNull();
   });
 });

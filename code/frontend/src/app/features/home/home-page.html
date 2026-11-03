@@ -17,17 +17,20 @@
 </section>
 @if (sale()?.items?.length) {
   <section class="flash-section" aria-label="Flash Sale">
-    <header>
-      <h2>FLASH <span>ϟ</span> SALE</h2>
-      <p>
-        Kết thúc trong <time [attr.datetime]="sale()!.endsAt">{{ countdown(remaining()) }}</time>
-      </p>
-      <a routerLink="/flash-sale">Xem tất cả →</a>
-    </header>
-    <div class="shelf-grid">
-      @for (b of sale()!.items.slice(0, 5); track b.id) {
-        <app-book-card [book]="b" [now]="clock.now()" />
-      }
+    <div class="flash-inner wrap">
+      <header>
+        <h2>FLASH <svg class="bolt" viewBox="0 0 16 24" width="16" height="22" aria-hidden="true"><path d="M10 0L1 13h6l-2 11 10-14H9z" fill="#ffa000"/></svg> SALE</h2>
+        <div class="flash-timer">
+          <span>Kết thúc trong</span>
+          <time class="countdown-boxes" [attr.datetime]="sale()!.endsAt">@for (part of countdownParts(remaining()); track $index) {<span class="time-box">{{ part }}</span>@if (!$last) {<b class="time-sep" aria-hidden="true">:</b>}}</time>
+        </div>
+        <a class="see-all" routerLink="/flash-sale">Xem tất cả <span aria-hidden="true">›</span></a>
+      </header>
+      <div class="shelf-grid">
+        @for (b of sale()!.items.slice(0, 5); track b.id) {
+          <app-book-card [book]="b" [now]="clock.now()" />
+        }
+      </div>
     </div>
   </section>
 } @else if (saleError()) {

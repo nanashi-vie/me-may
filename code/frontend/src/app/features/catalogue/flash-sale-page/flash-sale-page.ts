@@ -4,7 +4,7 @@ import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { PageMetadata } from '../../../core/page-metadata';
 import { BookCard } from '../book-card/book-card';
-import { countdown } from '../catalogue-state';
+import { countdown, countdownParts } from '../catalogue-state';
 import { PublicApi } from '../public-api';
 import { PublicClock } from '../public-clock';
 import { PublicError } from '../public-error';
@@ -27,6 +27,7 @@ export class FlashSalePage {
   readonly loading = signal(true);
   readonly error = signal(false);
   readonly countdown = countdown;
+  readonly countdownParts = countdownParts;
   private expired = '';
   constructor() {
     inject(PageMetadata).set(

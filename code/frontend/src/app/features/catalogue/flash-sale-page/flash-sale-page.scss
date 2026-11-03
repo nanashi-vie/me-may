@@ -7,6 +7,13 @@
   background: var(--cream);
   margin-bottom: 2rem;
 }
+.sale-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
 h1 {
   max-width: none;
 }
