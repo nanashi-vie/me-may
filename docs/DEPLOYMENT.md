@@ -20,17 +20,20 @@ service production vẫn theo branch `main`, không tự đổi deployment sang 
 - Không đặt output browser làm SPA/Pages: entry là `dist/me-may-workers/server/server.mjs`.
 - Không cần copy account token vào Git; token do dashboard tạo dùng cho Git integration.
 
-Cấu hình `code/frontend/wrangler.jsonc`: Workers Assets+AngularSSR, workers.dev bật,
-preview URLs tắt, không SPA fallback. API origin dự kiến
-`https://me-may-api.onrender.com`; nếu Render cấp tên khác, sửa MEMAY_API_ORIGIN rồi
-redeploy. Backend chưa lên thì route cần dữ liệu có thể503; shell vẫn chạy.
+Worker production dùng Custom Domain `memaybooks.com` và đặt
+`MEMAY_SITE_ORIGIN=https://memaybooks.com` cho SSR, canonical, Open Graph và link hỏi
+sách. Route production trên `workers.dev` được tắt khi deploy cấu hình này.
+Trình duyệt gọi `/api` cùng origin, Worker chuyển tiếp sang Render qua
+`MEMAY_API_ORIGIN`. Forwarded headers bị bỏ trước Angular và Worker kiểm tra
+request khớp origin đã cấu hình.
 
-URL đã xác minh: `https://me-may.dqhungg8357.workers.dev`. Worker chỉ nhận URL HTTPS
-`me-may.<account>.workers.dev` đúng mẫu, dùng origin đó cho SSR/canonical/enquiry.
-Khi gắn custom domain đặt `MEMAY_SITE_ORIGIN=https://domain-thật` trong config rồi
-redeploy; URL request phải khớp origin. Không wildcard allowed hosts. Forwarded
-headers bị bỏ trước Angular để không ép CSR hoặc thay origin. Site origin được
-chuyển qua TransferState; backend/DB secret không đưa vào browser.
+Thêm zone `memaybooks.com` vào cùng tài khoản Cloudflare với Worker `me-may`.
+Nếu mua domain ngoài Cloudflare, đặt nameserver tại nhà đăng ký theo hướng dẫn
+trong dashboard và đợi zone Active. Sau khi merge `dev` vào `main`, deploy qua Git
+integration để Wrangler gắn Custom Domain. Cloudflare tạo DNS và cấp chứng chỉ.
+Kiểm tra SSR bằng `node scripts/check-ssr.mjs https://memaybooks.com` từ
+`code/frontend`, rồi smoke đăng nhập admin và link hỏi sách trên domain mới.
+Các URL workers.dev trong phần bằng chứng bên dưới thuộc lần kiểm tra trước.
 
 Không dùng `wrangler.local.jsonc` cho deploy. Local: `npm run dev:workers`8787.
 `npm run deploy:workers -- --dry-run` chỉ build/kiểm bundle, không upload.

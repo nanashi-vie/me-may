@@ -989,3 +989,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm --prefix code/frontend run build:workers`: PASS (0 warning).
   - `npm --prefix code/frontend run check:workers:proxy`: PASS.
 - Bước tiếp theo: kiểm tra trần dòng tài liệu/link local/`git diff --check`, commit và push lên `dev`.
+
+### S033-C01 — 03/11/2026 — cấu hình domain memaybooks.com
+
+- SETUP-05, đang làm trên dev. Dùng domain gốc cho Cloudflare Worker me-may và origin SSR chính thức. Kiểm cấu hình Wrangler, frontend và proxy API.
+
+- `wrangler.jsonc` khai báo Custom Domain và origin chính thức; tắt route production
+  workers.dev khi deploy. /api cùng origin vẫn qua Worker đến Render. Cập nhật
+  DEPLOYMENT, ARCHITECTURE và PROGRESS.
+- Từ code/frontend: `npm test` 172/172; `npm run deploy:workers -- --dry-run` và
+  `npm run check:workers:proxy` đạt. Lần dry-run trong sandbox gặp EPERM/SIGABRT,
+  chạy lại với quyền đã duyệt đạt. Chưa chạy smoke HTTPS/SSR/admin trên domain thật.
+- Bàn giao qua dev. Tiếp theo kích hoạt zone Cloudflare, user merge main/deploy,
+  rồi smoke theo DEPLOYMENT. Chưa đổi DNS hoặc deploy.
