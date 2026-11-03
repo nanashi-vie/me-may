@@ -43,11 +43,25 @@
         b.availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
       }}</span>
       <div class="pricing">
-        <p class="price">{{ price(display()!) }}</p>
         @if (display()!.salePriceVnd) {
-          <del>{{ range(b.priceMinVnd,b.priceMaxVnd) }}</del
-          ><span>Giá Flash Sale</span>
+          <div class="detail-flash-bar">
+            <div class="detail-flash-pill">
+              <span class="flash-title">FLASH <svg class="bolt" viewBox="0 0 16 24" width="15" height="20" aria-hidden="true"><path d="M10 0L1 13h6l-2 11 10-14H9z" fill="#ffa000"/></svg> SALE</span>
+              @if (b.saleEndsAt) {
+                <time class="countdown-boxes" [attr.datetime]="b.saleEndsAt">@for (part of countdownParts(saleRemaining()); track $index) {<span class="time-box">{{ part }}</span>@if (!$last) {<b class="time-sep" aria-hidden="true">:</b>}}</time>
+              }
+            </div>
+          </div>
         }
+        <div class="price-row">
+          <p class="price">{{ price(display()!) }}</p>
+          @if (display()!.salePriceVnd) {
+            <del>{{ range(b.priceMinVnd, b.priceMaxVnd) }}</del>
+          }
+          @if (discount(display()!); as pct) {
+            <span class="discount">-{{ pct }}%</span>
+          }
+        </div>
         @if (display()!.priceMinVnd === null) {
           <p>Đang chờ xác nhận lại giá.</p>
         }

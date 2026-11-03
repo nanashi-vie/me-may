@@ -34,7 +34,10 @@
     <a [routerLink]="['/sach', book().slug]">{{ book().title }}</a>
   </h3>
   <p class="price">
-    {{ price(current()) }}
+    <span>{{ price(current()) }}</span>
+    @if (discount(current()); as pct) {
+      <span class="discount">-{{ pct }}%</span>
+    }
   </p>
   @if (current().salePriceVnd) {
     <del>{{ range(book().priceMinVnd, book().priceMaxVnd) }}</del>

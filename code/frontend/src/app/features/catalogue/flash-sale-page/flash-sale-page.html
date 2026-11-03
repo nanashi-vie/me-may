@@ -3,8 +3,9 @@
   <p class="eyebrow">Ưu đãi của tiệm</p>
   <h1>Flash Sale</h1>
   @if (sale()?.endsAt) {
-    <p>
-      Kết thúc trong <strong>{{ countdown(remaining()) }}</strong>
+    <p class="sale-timer">
+      <span>Kết thúc trong</span>
+      <time class="countdown-boxes" [attr.datetime]="sale()!.endsAt">@for (part of countdownParts(remaining()); track $index) {<span class="time-box">{{ part }}</span>@if (!$last) {<b class="time-sep" aria-hidden="true">:</b>}}</time>
     </p>
   }
   <p>Giá áp dụng trong thời gian đợt sale, tiệm xác nhận tình trạng khi trao đổi.</p>

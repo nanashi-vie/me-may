@@ -163,4 +163,32 @@ describe('Detail refresh and public origin', () => {
       'http://127.0.0.1:4000/sach/mm-000001',
     );
   });
+  it('renders Flash Sale banner, 3 countdown boxes, and discount badge on BookDetail when sale is active', async () => {
+    const saleBook: PublicBook = {
+      ...a,
+      priceMinVnd: 35000,
+      priceMaxVnd: 40000,
+      salePriceVnd: 18000,
+      saleEndsAt: '2099-12-31T23:59:59Z',
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of(saleBook),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    expect(el.querySelector('.detail-flash-bar')).not.toBeNull();
+    expect(el.querySelectorAll('.detail-flash-bar .time-box').length).toBe(3);
+    expect(el.querySelector('.pricing .discount')?.textContent?.trim()).toBe('-55%');
+    expect(el.querySelector('.pricing del')?.textContent).toContain('35.000 - 40.000 VNĐ');
+  });
 });
