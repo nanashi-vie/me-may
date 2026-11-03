@@ -65,7 +65,7 @@ describe('Public catalogue state', () => {
     expect(bookTitle(book)).toBe('A book | Author | 4–6');
   });
   it('uses actual purpose and confirmed price for enquiry', () => {
-    expect(enquiryText(book, 'http://localhost:4200/sach/mm-000001')).toContain('7.000 VNĐ');
+    expect(enquiryText(book, 'http://localhost:4200/sach/mm-000001')).toContain('7.000 đ');
     expect(
       enquiryText({ ...book, availability: 'SOLD' }, 'http://localhost:4200/sach/mm-000001'),
     ).toContain('sách tương đương');

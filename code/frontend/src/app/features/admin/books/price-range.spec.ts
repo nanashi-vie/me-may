@@ -2,8 +2,8 @@ import { formatPriceRange } from './book-copy';
 import { buildBookForm } from './book-form';
 describe('book price ranges', () => {
  it('formats both endpoints without picking a final sale price', () => {
-  expect(formatPriceRange(20000,30000)).toBe('20.000 - 30.000 VNĐ');
-  expect(formatPriceRange(20000,20000)).toBe('20.000 VNĐ');
+  expect(formatPriceRange(20000,30000)).toBe('20.000 - 30.000 đ');
+  expect(formatPriceRange(20000,20000)).toBe('20.000 đ');
   expect(formatPriceRange(null,30000)).toBe('—');
  });
  it('rejects reversed and incomplete ranges while allowing equal endpoints', () => {
