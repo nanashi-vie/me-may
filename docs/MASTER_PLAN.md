@@ -22,9 +22,9 @@
 > thêm ảnh rồi OWNER tự publish, không thêm DRAFT. Đã triển khai local; không là gate MVP.
 
 
-> **Bổ sung01/11:** import16cột, mỗi dòng=một sáchẨn/defaultTiếngAnh/tồn1;
-> nhãn dễđọc/code và receiptV1 tương thích. Thêm Tập đọc và Nấu ăn - thủ công -
-> activity book vào thểloại chung quaV12. Contract ở DATA/BOOK_IMPORT, gate ởPROGRESS.
+> **Bổ sung01/11–04/11:** import16cột, mỗi dòng=một sáchẨn/defaultTiếngAnh/tồn1;
+> nhãn dễđọc/code và receiptV1 tương thích. Thêm Tập đọc, Nấu ăn - thủ công -
+> activity book (V12) và Kinh Thánh (V13) vào thểloại chung. Contract ở DATA/BOOK_IMPORT, gate ởPROGRESS.
 
 ### Phạm vi M1 local đã thực hiện
 
@@ -171,7 +171,7 @@ Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/
 ### 3.1. Phân loại và trình độ đọc đã duyệt
 
 - **Tuổi:** 0–3, 4–6, 7–9, 10+; một cuốn có thể gán nhiều nhóm. Không suy tuổi từ mức đọc.
-- **Thể loại:** mỗi cuốn chọn đúng một trong Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện, Tập đọc, Nấu ăn - thủ công - activity book.
+- **Thể loại:** mỗi cuốn chọn đúng một trong Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện, Tập đọc, Nấu ăn - thủ công - activity book, Kinh Thánh.
 - **Picture book:** bắt buộc chọn đúng một kiểu Paperback hoặc Hardcover khi nhập. “Tất cả” chỉ là lựa chọn bộ lọc lấy cả hai kiểu; không lưu làm kiểu bìa của cuốn sách.
 - **Mức đọc:** chọn một trong bảy mức bên dưới hoặc “Chưa xác định”. Không bắt buộc để publish; chưa xác định thì ẩn trường public. Không tự gán bằng thể loại/độ tuổi.
 

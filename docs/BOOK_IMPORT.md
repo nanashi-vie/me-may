@@ -209,7 +209,7 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 |---|---|
 | Picture Book; Board Book; Chapter | PICTURE_BOOK; BOARD_BOOK; CHAPTER |
 | Bách khoa toàn thư & khoa học; Lịch sử; Tuyển tập truyện | ENCYCLOPEDIA_SCIENCE; HISTORY; STORY_COLLECTION |
-| Tập đọc; Nấu ăn - thủ công - activity book | READING_PRACTICE; COOKING_CRAFT_ACTIVITY |
+| Tập đọc; Nấu ăn - thủ công - activity book; Kinh Thánh | READING_PRACTICE; COOKING_CRAFT_ACTIVITY; BIBLE |
 | Paperback; Hardcover | PAPERBACK; HARDCOVER |
 | Độ mới cao; Có lỗi nhẹ | HIGH_FRESHNESS; MINOR_FLAWS |
 | 0-3; 4-6; 7-9; 10+ | AGE_0_3; AGE_4_6; AGE_7_9; AGE_10_PLUS |
@@ -220,7 +220,7 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
   chọn một giá trị mỗiô, không thêm macro/multiselect. Collection dùng slugactive,
   ngăn`;` như trước; fileuser chưa có dropdowncollection nên được đểtrống.
 - Dropdown fileuser bắt đầu hàng2, không phủheader; filegốc không bị sửa trong
-  triển khai. Danh sách thểloại của file gốc vẫn6mục; website nhận8theoV12.
+  triển khai. Danh sách thểloại của file gốc vẫn6mục; website nhận9theoV12–V13.
   Các cộtidentifier/tuổi đãtext; giữISBN0đầu, giá/weight nguyên nhưV1.
 - Giữ2MiB/100sách, tương ứng tốiđa100dòng dữliệuV2; parser/XMLbudgets/auth/CSRF/
   no-store/previewkhôngghi/atomiccommit/audit/lỗi cảfile giữ nguyên.

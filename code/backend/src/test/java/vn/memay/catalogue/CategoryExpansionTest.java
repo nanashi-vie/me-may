@@ -17,9 +17,9 @@ class CategoryExpansionTest extends CatalogueTestSupport {
         for(String path:List.of("/api/v1/taxonomy","/api/v1/admin/taxonomy")) {
             var response=api.send("GET",path,null,false);assertThat(response.statusCode()).isEqualTo(200);
             var labels=new LinkedHashMap<String,String>();tree(response).path("categories").forEach(item->labels.put(item.path("code").asString(),item.path("label").asString()));
-            assertThat(labels).containsEntry("READING_PRACTICE","Tập đọc").containsEntry("COOKING_CRAFT_ACTIVITY","Nấu ăn - thủ công - activity book");
+            assertThat(labels).containsEntry("READING_PRACTICE","Tập đọc").containsEntry("COOKING_CRAFT_ACTIVITY","Nấu ăn - thủ công - activity book").containsEntry("BIBLE","Kinh Thánh");
         }
-        for(String code:List.of("READING_PRACTICE","COOKING_CRAFT_ACTIVITY")) {
+        for(String code:List.of("READING_PRACTICE","COOKING_CRAFT_ACTIVITY","BIBLE")) {
             var book=ready();var write=BookFixtures.write("New category "+code,code,null,21000L,null,null,List.of(),List.of());
             book=update(Long.parseLong(book.id()),book.version(),owner,write);
             book=status.publication(Long.parseLong(book.id()),book.version(),owner,BookDtos.Publication.PUBLISHED,true);
@@ -39,7 +39,7 @@ class CategoryExpansionTest extends CatalogueTestSupport {
             var books=db.queryForList("select b.*,l.* from book_copy b join listing l on b.id=l.book_copy_id");
             config.target(MigrationVersion.LATEST).load().migrate();
             assertThat(db.queryForList("select * from category where sort_order<6 order by id")).isEqualTo(old);
-            assertThat(db.queryForObject("select count(*) from category",Long.class)).isEqualTo(8);
+            assertThat(db.queryForObject("select count(*) from category",Long.class)).isEqualTo(9);
             assertThat(db.queryForList("select b.*,l.* from book_copy b join listing l on b.id=l.book_copy_id")).isEqualTo(books);
         } finally {PgTestData.jdbc().execute("drop schema if exists "+schema+" cascade");}
     }

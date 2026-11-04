@@ -54,9 +54,10 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
-## Tối ưu UI — chi tiết sách gom ảnh + nút (đã triển khai 04/11)
+## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard và thể loại Kinh Thánh (đã triển khai 04/11)
 
-- `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnh-và-nút-liên-hệquan-tâm-ở-chi-tiết-sách--04112026). Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành.
+- `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành; thêm nhãn `(nếu có)` cho Nhà xuất bản/Tác giả và sửa header mobile `390px` cho icon `♡ + badge`.
+- Trên nhánh `dev-b`: cố định khung `.cover-link` tỉ lệ `4:5` (`grid-template-rows: minmax(0, 1fr); overflow: hidden; flex-shrink: 0`) kèm viền `1px solid var(--line, #ddd7ce)` cho `.book-card` để các thẻ ảnh dọc/ảnh ngang thẳng hàng ngang tuyệt đối; thêm thể loại dùng chung thứ 9 `Kinh Thánh` (`BIBLE`, slug `kinh-thanh`, `sort_order=8`) qua Flyway `V13`, importer CSV/XLSX và taxonomy frontend/backend. Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnhnút-chi-tiết-sách-khung-bookcard-và-thể-loại-kinh-thánh--04112026).
 
 ## Tối ưu UI — Flash Sale banner, đếm ngược 3 ô, badge -% và chi tiết sách (đã triển khai 03/11)
 

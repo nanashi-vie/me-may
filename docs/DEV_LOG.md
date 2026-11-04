@@ -1128,3 +1128,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   git diff --check đạt; .env và công cụ QA vẫn ignored.
 - Bàn giao commit/push dev; user merge main và deploy backend trước Worker, đặt
   MEMAY_CACHE_ZONE_ID/MEMAY_CACHE_PURGE_TOKEN rồi smoke/đo HIT-MISS theo DEPLOYMENT.
+
+### S037-C01 — 04/11/2026 — nhánh dev-b: cố định khung ngang BookCard và thêm thể loại Kinh Thánh
+
+- Yêu cầu (chốt qua `/grill-me`): tạo nhánh `dev-b` từ `dev` (sau khi user commit `e373540`), cố định khung `.book-card` ngang bằng nhau giữa ảnh dọc/ảnh ngang kèm viền mảnh quanh thẻ, và thêm thể loại dùng chung `"Kinh Thánh"` (`BIBLE`).
+- Nguyên nhân lệch thẻ: `.cover-link` dùng `display: grid; aspect-ratio: 4/5` nhưng track mặc định `auto` bị ảnh dọc đẩy cao tới `max-height: 260px` trong khi ảnh ngang giữ `~242px`, làm mã/tiêu đề/giá của thẻ ảnh ngang bị lệch lên trên ~18px.
+- Thay đổi:
+  - `book-card.scss`: khóa `.cover-link` với `grid-template-rows: minmax(0, 1fr); width: 100%; aspect-ratio: 4 / 5; overflow: hidden; flex-shrink: 0;`, `.cover-link img` `width: 100%; height: 100%; min-height: 0; object-fit: contain;` (bỏ `max-height: 260px`), và thêm viền `border: 1px solid #ddd7ce; border-color: var(--line, #ddd7ce);` cho `.book-card`.
+  - Thể loại `"Kinh Thánh"`: thêm Flyway `V13__add_bible_category.sql` (`BIBLE`, `Kinh Thánh`, `kinh-thanh`, `sort_order=8`), cập nhật `BookImportSchema.java`, `book.models.ts`, `book-copy.ts`, unit/integration tests và tài liệu (`DATA.md`, `CATALOGUE.md`, `BOOK_IMPORT.md`, `MASTER_PLAN.md`, `DESIGN.md`, `VERIFICATION.md`, `PROGRESS.md`).
+- Kiểm tra:
+  - Backend: `./run-local.sh test -Dtest=CategoryExpansionTest,BookImportV2Test` (cwd `code/backend`) → 12/12 PASS.
+  - Frontend: `npm test` (37/37 file, 186/186 test PASS), `npm run build`, `npm run build:workers` PASS.
+  - Browser Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): 4 thẻ trên `/sach` (2 ảnh dọc, 2 ảnh ngang) có `cardTop=328, cardBottom=819, coverBottom=583, codeTop=594, titleTop=617, priceTop=674, heartTop=746` trùng khít từng pixel. Đã dừng server/browser tạm.
+- Bước tiếp theo: commit và push nhánh `dev-b` lên `origin/dev-b`.

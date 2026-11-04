@@ -14,7 +14,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 |---|---|---|
 | book_code | BookCopy | Website tự sinh mã tăng dần, duy nhất và bất biến sau khi tạo; dùng để dán nhãn/trao đổi với tiệm. Không lấy từ tên sách, ISBN hoặc mã khách; fixture có prefix DEMO để không nhầm mã vận hành |
 | title | BookCopy | Bắt buộc khi publish; giữ tên sách nguồn |
-| category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện / Tập đọc / Nấu ăn - thủ công - activity book; bắt buộc khi publish |
+| category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện / Tập đọc / Nấu ăn - thủ công - activity book / Kinh Thánh; bắt buộc khi publish |
 | binding | BookCopy | Khi nhập Picture book bắt buộc đúng một kiểu Paperback hoặc Hardcover; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
 | language | BookCopy | Form tạo mới điền sẵn “Tiếng Anh”, có thể sửa/xóa; mở sách cũ giữ nguyên ngôn ngữ đã lưu |
 | isbn | BookCopy | Tùy chọn; trùng giữa các cuốn là hợp lệ; xác minh khi dùng dữ liệu thật |
@@ -93,7 +93,7 @@ editor rồi tự xuất bản. Hai dòng giống nhau vẫn tạo hai sách tro
 | isbn | Không | Text tối đa32, giữ số0đầu; không là khóa duy nhất |
 | nha_xuat_ban | Không | Text tối đa200 |
 | tac_gia | Không | Text tối đa200 |
-| the_loai | Có | Nhãn dễ đọc hoặc code chuẩn của8thểloại hiện hành |
+| the_loai | Có | Nhãn dễ đọc hoặc code chuẩn của9thểloại hiện hành |
 | kieu_bia | Có điều kiện | Paperback/Hardcover hoặc code tương ứng khi Picture Book; thểloại khác đểtrống |
 | gia_tu | Có | NguyênVND1..999999999999 |
 | gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
@@ -155,17 +155,18 @@ Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED,
   Giữ ID/mã/slug/ảnh/giá/publishedAt và grade legacy; không sửa migrationV1–V9.
 - Chủ cập nhật sau bán ngoài web; liên hệ và wishlist không trừ/giữ kho hoặc đồng bộ đa kênh.
 
-## Thể loại bổ sung01/11
+## Thể loại bổ sung01/11 và04/11
 
-V12 append2category, giữ6categorycũ/ID/slug/thứtự và dữ liệu sách. Không tự phân
-loại lại sách hoặc suy mức đọc từ thểloại. Tập đọc và nhómactivity không có binding;
+V12 append2category (01/11), V13 append `BIBLE` (04/11), giữ6categorycũ/ID/slug/thứtự và dữ liệu sách. Không tự phân
+loại lại sách hoặc suy mức đọc từ thểloại. Tập đọc, nhómactivity và Kinh Thánh không có binding;
 chỉ Picture Book cần Paperback/Hardcover.
 
 | Code | Nhãn | Slug | sort_order |
 |---|---|---|---:|
 | READING_PRACTICE | Tập đọc | tap-doc |6|
 | COOKING_CRAFT_ACTIVITY | Nấu ăn - thủ công - activity book | nau-an-thu-cong-activity-book |7|
+| BIBLE | Kinh Thánh | kinh-thanh |8|
 
-Taxonomy public/admin/form/filter và importer cùng dùng8thểloại sau migration.
+Taxonomy public/admin/form/filter và importer cùng dùng9thểloại sau migration.
 FileExcel gốc user giữ nguyên; danh sách dropdown trong file đó vẫn do chủ chỉnh,
-website/API đã nhận hai nhãn/code mới. Không tự sửa workbook khi đổi taxonomyDB.
+website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đổi taxonomyDB.

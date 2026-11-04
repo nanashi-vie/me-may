@@ -366,10 +366,10 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Kiểm tra trình duyệt thật (Google Chrome headless qua CDP với SSR local + mock API trên cổng tạm 4009/8099, đã dừng sau kiểm):
   - Desktop `1280×900` và mobile `390×844` trên `/`, `/flash-sale` và `/sach/how-many-are-there-mm-000020`: `scrollWidth <= innerWidth`, nền `.flash-section` tràn toàn chiều ngang (`flashLeft <= 0`, `flashRight >= clientWidth`), đếm ngược tách 3 ô đen bo góc (`HH : MM : SS`), link `Xem tất cả ›` màu xanh `rgb(25, 118, 210)`, badge `-55%`..`-90%` cạnh giá sale trên `BookCard` và `BookDetail`, banner `FLASH ⚡ SALE` trên trang chi tiết khớp mẫu.
 
-## Gom ảnh và nút Liên hệ/Quan tâm ở chi tiết sách — 04/11/2026
+## Gom ảnh/nút chi tiết sách, khung BookCard và thể loại Kinh Thánh — 04/11/2026
 
-- Vitest 37/37 file, 175/175 test PASS (thêm test một ảnh lớn + thumbnail đổi ảnh, nút trong `.media-col`, nhắc chọn biến thể khi chưa chọn); Node SSR build, Workers build (0 warning) PASS.
-- Chrome headless (SSR local + mock API, cổng tạm 4009/8099, đã dừng): `1280×900` một `figure`, 5 thumbnail, cột `sticky`, sau khi cuộn hai nút vẫn trong khung nhìn; `390×844` thanh nút `fixed` sát đáy, không tràn ngang. Chưa kiểm tra trên thiết bị thật; hover/swipe không có.
+- Vitest 37/37 file, 186/186 test PASS (thêm test một ảnh lớn + thumbnail đổi ảnh, nút trong `.media-col`, nhắc chọn biến thể khi chưa chọn, cố định khung `.cover-link` 4:5 + viền `.book-card`, và thể loại thứ 9 `BIBLE` / `Kinh Thánh`); Backend `CategoryExpansionTest,BookImportV2Test` 12/12 PASS (migration `V13__add_bible_category.sql`); Node SSR build, Workers build (0 warning) PASS.
+- Chrome headless (SSR local + mock API, cổng tạm 4009/8099, đã dừng): `1280×900` trên `/sach` 4 thẻ (2 ảnh dọc, 2 ảnh ngang) có `coverBottom=583`, `codeTop=594`, `titleTop=617`, `priceTop=674`, `heartTop=746` trùng khít từng pixel và viền mảnh; chi tiết sách một `figure`, 5 thumbnail, cột `sticky`, `390×844` thanh nút `fixed` sát đáy, không tràn ngang. Chưa kiểm tra trên thiết bị thật; hover/swipe không có.
 
 
 ## Cache public và trạng thái tải — 04/11/2026
