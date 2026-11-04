@@ -40,7 +40,7 @@ describe('Detail refresh and public origin', () => {
     expect(c.selectedVariantId()).toBeNull();expect(c.canContact()).toBe(false);
     c.selectVariant('corner');expect(c.canContact()).toBe(true);
     expect(await c.verifyContact()).toContain('Biến thể: Có cấn góc');
-    expect(await c.verifyContact()).toContain('10.000 VNĐ');
+    expect(await c.verifyContact()).toContain('10.000 đ');
     current={...current,variants:[{...variants[0],available:false},variants[1]]};
     c.accept(current);c.selectVariant('high');expect(c.selectedVariantId()).toBe('corner');
   });
@@ -189,6 +189,6 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.detail-flash-bar')).not.toBeNull();
     expect(el.querySelectorAll('.detail-flash-bar .time-box').length).toBe(3);
     expect(el.querySelector('.pricing .discount')?.textContent?.trim()).toBe('-55%');
-    expect(el.querySelector('.pricing del')?.textContent).toContain('35.000 - 40.000 VNĐ');
+    expect(el.querySelector('.pricing del')?.textContent).toContain('35.000 - 40.000 đ');
   });
 });

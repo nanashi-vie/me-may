@@ -33,7 +33,7 @@ describe('Contact copy fallback', () => {
     const f=TestBed.createComponent(ContactDialog);f.componentRef.setInput('book',book);
     f.componentRef.setInput('variant',{id:'condition',name:'Có cấn góc',available:true});f.detectChanges();
     expect(f.componentInstance.text()).toContain('Biến thể: Có cấn góc');
-    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 VNĐ');
+    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 đ');
   });
   it('keeps manual enquiry empty when a multi-variant selection is no longer available',()=>{
     const f=TestBed.createComponent(ContactDialog);
@@ -89,7 +89,7 @@ describe('Contact copy fallback', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('thủ công');
     expect(f.nativeElement.querySelector('textarea').value).toContain('MM-000001');
-    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 VNĐ');
+    expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 đ');
     expect(f.nativeElement.textContent).toContain('chưa được cấu hình');
   });
   it('does not copy expired discount as a current price', () => {

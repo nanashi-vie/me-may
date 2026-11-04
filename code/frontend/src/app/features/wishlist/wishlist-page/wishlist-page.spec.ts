@@ -83,7 +83,7 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
       ]),
     );
     const text = await c.verifyEnquiry();
-    expect(text).toContain('30.000 - 40.000 VNĐ');
+    expect(text).toContain('30.000 - 40.000 đ');
     expect(text).not.toContain('20.000');
     expect(text).not.toContain('MM-000002');
     lookup.mockReturnValueOnce(of([]));
@@ -170,7 +170,7 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     expect(lookup).toHaveBeenLastCalledWith(['MM-000001']);
     const text = (f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value;
     expect(text).toContain(
-      'MM-000001 | Moon MM-000001 | 17.000 - 18.000 VNĐ | https://memay.example/sach/mm-000001',
+      'MM-000001 | Moon MM-000001 | 17.000 - 18.000 đ | https://memay.example/sach/mm-000001',
     );
     expect(text).not.toContain('MM-000002');
     expect(text).toContain('xác nhận');
@@ -178,13 +178,13 @@ describe('Wishlist selection and verified multi-book enquiry', () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
     await c.dialog.copy();
-    expect(writeText).toHaveBeenCalledWith(text.replace('17.000 - 18.000 VNĐ', '20.000 VNĐ'));
+    expect(writeText).toHaveBeenCalledWith(text.replace('17.000 - 18.000 đ', '20.000 đ'));
     writeText.mockRejectedValueOnce(Error('denied'));
     await c.dialog.copy();
     f.detectChanges();
     expect(f.nativeElement.textContent).toContain('thủ công');
     expect((f.nativeElement.querySelector('textarea') as HTMLTextAreaElement).value).toBe(
-      text.replace('17.000 - 18.000 VNĐ', '20.000 VNĐ'),
+      text.replace('17.000 - 18.000 đ', '20.000 đ'),
     );
   });
   it('revalidation removes newly sold and hidden selections and explains exclusion', () => {
