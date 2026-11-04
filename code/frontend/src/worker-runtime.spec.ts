@@ -261,9 +261,11 @@ describe('versioned media and asset caching', () => {
     await handleWorkerRequest(new Request(url + '&unexpected=1'), config, async () => null, storage);
     expect(backend).toHaveBeenCalledTimes(2);
   });
-  it('uses immutable only for successful root hashed bundles', async () => {
+  it('uses immutable only for successful root hashed bundles and self-hosted woff2 fonts', async () => {
     const hashed = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/main-ABC12345.js'), env, async () => null);
     expect(hashed.headers.get('cache-control')).toContain('immutable');
+    const font = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/fonts/nunito-vietnamese.woff2'), env, async () => null);
+    expect(font.headers.get('cache-control')).toContain('immutable');
     const plain = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/logo.png'), env, async () => null);
     expect(plain.headers.get('cache-control') ?? '').not.toContain('immutable');
   });

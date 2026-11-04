@@ -162,7 +162,7 @@ export async function handleWorkerRequest(
   if (/\.[a-z0-9]+$/i.test(url.pathname) && !/\.html?$/i.test(url.pathname)) {
     const asset = await env.ASSETS.fetch(request);
     if (privatePage) return noStore(asset);
-    if (asset.status === 200 && /^\/(?:main|styles|chunk|polyfills)-[A-Z0-9]{8,}\.(?:js|css)$/.test(url.pathname)) {
+    if (asset.status === 200 && (/^\/(?:main|styles|chunk|polyfills)-[A-Z0-9]{8,}\.(?:js|css)$/.test(url.pathname) || /^\/fonts\/[a-z0-9-]+\.woff2$/.test(url.pathname))) {
       const result = new Response(asset.body, asset);
       result.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       return result;

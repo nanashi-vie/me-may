@@ -92,7 +92,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 
 Nền trắng, màu chữ tối, đỏ trầm làm điểm nhấn điều hướng/giá, kem nhạt ở banner và phân vùng phụ; khoảng cách gọn như cửa hàng sách, ít viền/shadow. Đây là hướng dựa trên screenshot, không tự biến thành phong cách bento/landing của skill.
 
-Logo, font tiếng Việt, màu chính xác và ảnh banner sẽ chốt ở vòng visual sau khi bố cục được review. Wireframe dùng system font và hình khối minh họa để đánh giá cấu trúc.
+Bộ font tiếng Việt chốt 04/11: tự host `.woff2` variable font (`public/fonts/`, subset `vietnamese` + `latin`, cache `immutable` 1 năm) gồm `--font-display: 'Baloo 2'` (độ đậm 700) cho tiêu đề lớn public (`.brand-name`, `h1`, `h2`, tiêu đề mục/trang) và `--font-sans: 'Nunito'` (400–800) cho nội dung body, tên sách trên thẻ (`h3` và dòng sách wishlist), giá, nút bấm, thanh menu và toàn bộ trang Admin. Wireframe SVG cũ dùng system font và hình khối minh họa để đánh giá cấu trúc.
 
 ## Chấp nhận về UX
 

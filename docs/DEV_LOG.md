@@ -1141,3 +1141,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Frontend: `npm test` (37/37 file, 186/186 test PASS), `npm run build`, `npm run build:workers` PASS.
   - Browser Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): 4 thẻ trên `/sach` (2 ảnh dọc, 2 ảnh ngang) có `cardTop=328, cardBottom=819, coverBottom=583, codeTop=594, titleTop=617, priceTop=674, heartTop=746` trùng khít từng pixel. Đã dừng server/browser tạm.
 - Bước tiếp theo: commit và push nhánh `dev-b` lên `origin/dev-b`.
+
+### S037-C02 — 04/11/2026 — cấu hình bộ font Baloo 2 + Nunito self-hosted trên dev-b
+
+- Yêu cầu (chốt qua `/grill-me`):
+  1. Phân vai: `Baloo 2` (độ đậm 700) cho tiêu đề lớn public (`.brand-name`, `h1`, `h2`, tiêu đề mục/trang); `Nunito` (400/600/700/800) cho nội dung body, tên sách trên thẻ (`h3` và dòng sách wishlist), giá, nút bấm, thanh menu và toàn bộ trang Admin (thay thế hoàn toàn `Georgia, serif` và `system-ui` cũ).
+  2. Nạp font: tự host 6 file `.woff2` variable font (`vietnamese` + `latin` cho `Baloo 2`, `Nunito` normal và `Nunito` italic) trong `code/frontend/public/fonts/` kèm header cache `Cache-Control: public, max-age=31536000, immutable` trên `worker-runtime.ts`.
+  3. Nhánh thực hiện: `dev-b`.
+- Thay đổi:
+  - `code/frontend/public/fonts/*.woff2` (6 file variable font: `baloo-2-vietnamese.woff2`, `baloo-2-latin.woff2`, `nunito-vietnamese.woff2`, `nunito-latin.woff2`, `nunito-italic-vietnamese.woff2`, `nunito-italic-latin.woff2`).
+  - `styles.scss`, `index.html`, `home-page.scss`, `catalogue-page.scss`, `public-layout.scss`, `wishlist-page.scss`: khai báo `@font-face`, biến `--font-sans` (`Nunito`) và `--font-display` (`Baloo 2`), thay thế toàn bộ `Georgia, serif` và `system-ui` hardcoded; giữ `.admin-shell` và `.login-panel` dùng `--font-sans`.
+  - `worker-runtime.ts` & `worker-runtime.spec.ts`: bổ sung `immutable` cache cho `/fonts/[a-z0-9-]+\.woff2`.
+  - `DESIGN.md`, `VERIFICATION.md`, `PROGRESS.md`: cập nhật quy ước typography và kết quả kiểm chứng.
+- Kiểm tra:
+  - `npm test` (cwd `code/frontend`): 37/37 file, 186/186 test PASS.
+  - `npm run build`, `npm run build:workers` (0 warning) và `npm run check:workers:proxy` PASS.
+  - Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` trạng thái `loaded`, `.brand-name`/`.hero h1` dùng `Baloo 2` weight `700`, `body`/`.public-nav`/`.book-card h3` dùng `Nunito`, 4 thẻ trên `/sach` thẳng hàng ngang từng pixel, mobile không tràn ngang. Đã đóng Chrome/server tạm.
+- Bước tiếp theo: commit và push lên `origin/dev-b`.
