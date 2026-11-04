@@ -1,7 +1,21 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật03/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật04/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+## Homelab Dell và kiểm tra API — 04/11/2026
+
+- User xác nhận đã chọn Dell cũ làm homelab, Spring Boot qua Dokploy/network và
+  Cloudflare Tunnel; API chính thức `https://api.memaybooks.com`. Không tiếp tục
+  coi Render là đích backend hiện hành; các hướng dẫn Render/Neon cũ là lịch sử,
+  chưa xác minh database/profile/revision thực tế trên Dell.
+- Live GET health/taxonomy/CSRF trên API đạt200; cookie phiên Secure/HttpOnly/
+  SameSite=Lax/Path=/api. OPTIONS login với Origin frontend trả401, chưa mở CORS.
+- Angular browser dùng `/api` cùng origin qua Worker, không cần mở CORS cho luồng
+  này. Repo `wrangler.jsonc` vẫn trỏ Render; cần đổi `MEMAY_API_ORIGIN` sang API
+  homelab rồi user merge/deploy. Phiên kiểm tra chưa sửa cấu hình hoặc deploy.
+- Proxy frontend live `/api/v1/taxonomy` trả503 sau70,38s (`backend_unavailable`);
+  chưa xác nhận target Worker live hoặc login/CRUD/upload qua homelab.
 
 ## Tên miền — 03/11/2026
 

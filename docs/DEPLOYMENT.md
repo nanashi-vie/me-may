@@ -1,4 +1,26 @@
-# Deploy test — Workers + Render + Neon
+# Triển khai — Workers + homelab Dell
+
+## Đích hiện hành — user xác nhận 04/11/2026
+
+- Backend: Dell cũ làm homelab, Dokploy; Cloudflare Tunnel → dokploy-network →
+  Spring Boot:8080, hostname `https://api.memaybooks.com`.
+- Frontend: `https://memaybooks.com`, browser giữ `/api` cùng origin qua Worker.
+  `MEMAY_API_ORIGIN` phải là `https://api.memaybooks.com` (chỉ origin, không `/api`);
+  `MEMAY_SITE_ORIGIN=https://memaybooks.com`. Repo vẫn trỏ Render khi audit04/11;
+  chưa đổi/deploy trong phiên kiểm tra. Preview cũng cần kiểm đích backend riêng:
+  giá trị hiện tại là hostname frontend dev Worker, chưa xác minh routing tương ứng.
+- Không cần CORS trên Spring cho luồng browser → Worker `/api` → backend. Chỉ nếu
+  đổi browser gọi thẳng API khác origin mới cần whitelist origin frontend,
+  credentials, CSRF headers và expose `X-Memay-Server-Time`; không dùng wildcard.
+- Live04/11: API health/taxonomy/CSRF200; cookie Secure/HttpOnly/SameSiteLax/Path=/api;
+  OPTIONS login trực tiếp từ origin frontend401. Chưa smoke login/upload/CRUD.
+- Dockerfile vẫn mặc định `SPRING_PROFILES_ACTIVE=render` (datasource Neon).
+  Cần đối chiếu biến môi trường thật trên Dokploy; không suy ra DB/profile/revision
+  chỉ từ health. Giữ cookie Secure, không dùng profile local trên Internet.
+- Các mục Render/Neon dưới đây là hướng dẫn/bằng chứng môi trường test cũ;
+  không dùng chúng làm xác nhận cấu hình Dell hoặc chạy migration sang target mới.
+
+## Môi trường test cũ — Workers + Render + Neon
 
 Phạm vi đã chọn26/10/2026: AngularSSR trên Worker `me-may`, Spring Boot Docker
 trên Render `me-may-api`, PostgreSQL Neon đã migrate schema. User đã deploy hai
