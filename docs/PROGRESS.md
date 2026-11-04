@@ -43,6 +43,10 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
+## Tối ưu UI — chi tiết sách gom ảnh + nút (đã triển khai 04/11)
+
+- `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnh-và-nút-liên-hệquan-tâm-ở-chi-tiết-sách--04112026). Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành.
+
 ## Tối ưu UI — Flash Sale banner, đếm ngược 3 ô, badge -% và chi tiết sách (đã triển khai 03/11)
 
 - Đã hoàn tất trên `dev` sau khi chốt qua grill-me (6 câu):

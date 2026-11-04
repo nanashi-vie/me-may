@@ -7,32 +7,67 @@
     <a routerLink="/">Trang chủ</a> / <a routerLink="/sach">Sách</a> / {{ b.bookCode }}
   </p>
   <div class="detail-layout">
-    <section class="gallery" aria-label="Bộ ảnh chung của sách">
-      @for (m of b.media; track m.role) {
-        <figure>
-          <picture>
-            <source type="image/webp"
-              [attr.srcset]="m.contentPath + '?size=320&format=webp 320w, ' + m.contentPath + '?size=640&format=webp 640w'"
-              sizes="(max-width: 720px) 90vw, 576px" />
-          <img
-            [src]="m.contentPath"
-            [attr.srcset]="m.contentPath + '?size=320&format=jpg 320w, ' + m.contentPath + '?size=640&format=jpg 640w'"
-            sizes="(max-width: 720px) 90vw, 576px"
-            [alt]="m.alt || b.title"
-            [attr.loading]="$first ? 'eager' : 'lazy'"
-            [attr.fetchpriority]="$first ? 'high' : 'low'"
-            width="600"
-            height="800"
-          />
-          </picture>
-          <figcaption>
-            {{
-              mediaLabels[$any(m.role)]
-            }}
-          </figcaption>
-        </figure>
-      }
-    </section>
+    <div class="media-col">
+      <section class="gallery" aria-label="Bộ ảnh chung của sách">
+        @if (mainMedia(); as m) {
+          <figure>
+            <picture>
+              <source type="image/webp"
+                [attr.srcset]="m.contentPath + '?size=320&format=webp 320w, ' + m.contentPath + '?size=640&format=webp 640w'"
+                sizes="(max-width: 720px) 90vw, 576px" />
+              <img
+                [src]="m.contentPath"
+                [attr.srcset]="m.contentPath + '?size=320&format=jpg 320w, ' + m.contentPath + '?size=640&format=jpg 640w'"
+                sizes="(max-width: 720px) 90vw, 576px"
+                [alt]="m.alt || b.title"
+                loading="eager"
+                fetchpriority="high"
+                width="600"
+                height="800"
+              />
+            </picture>
+            <figcaption>{{ mediaLabels[$any(m.role)] }}</figcaption>
+          </figure>
+        }
+        @if (b.media.length > 1) {
+          <ul class="thumbs">
+            @for (m of b.media; track m.role; let i = $index) {
+              <li>
+                <button type="button" class="thumb" [attr.aria-pressed]="mainMedia() === m"
+                  [attr.aria-label]="'Xem ảnh ' + mediaLabels[$any(m.role)]" (click)="selectMedia(i)">
+                  <img [src]="m.contentPath + '?size=320&format=jpg'" alt="" width="72" height="96" loading="lazy" />
+                </button>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+      <div class="contact-actions">
+        <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
+        <button [disabled]="verifying()" (click)="onContact(contact)">
+          {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
+        </button>
+      </div>
+      <div class="contact-extra">
+        @if (config()?.groupUrl) {
+          <a class="community" [href]="config()!.groupUrl" target="_blank" rel="noopener noreferrer"
+            >Tham gia cộng đồng để nhận thông tin ưu đãi ↗</a
+          >
+        } @else {
+          <p class="muted">Link cộng đồng Zalo đang được cập nhật.</p>
+        }
+        <small>Tiệm xác nhận tình trạng và giá qua Zalo. Liên hệ không giữ sách.</small>
+      </div>
+      <app-contact-dialog
+        [variant]="selectedVariant()"
+        #contact
+        [book]="b"
+        [verifyText]="verifyContact"
+        [busy]="verifying()"
+        [config]="config()"
+        [url]="origin + '/sach/' + b.slug"
+      />
+    </div>
     <article>
       <p class="eyebrow">Ảnh sách · Tình trạng theo biến thể</p>
       <h1>{{ title(b) }}</h1>
@@ -67,6 +102,20 @@
         }
         <small>{{ priceNote }}</small>
       </div>
+      @if (b.variants.length > 1 || b.variants[0]?.name) {
+        <fieldset class="variant-selector" id="variant-selector">
+          <legend>Chọn tình trạng</legend>
+          @for (v of b.variants; track v.id) {
+            <label [class.unavailable]="!v.available">
+              <input type="radio" name="book-variant" [value]="v.id" [checked]="selectedVariantId() === v.id"
+                [disabled]="!v.available || verifying()" (change)="selectVariant(v.id)" />
+              {{ v.name }} {{ v.available ? '' : '· Hết hàng' }}
+            </label>
+          }
+          <small>Các biến thể dùng chung khoảng giá và bộ ảnh. Tiệm xác nhận tình trạng cụ thể khi liên hệ.</small>
+        </fieldset>
+      }
+      @if (variantNotice()) { <p role="status">{{ variantNotice() }}</p> }
       <section class="condition">
         <h2>Tình trạng thực tế</h2>
         <p>{{ b.conditionNote }}</p>
@@ -114,43 +163,6 @@
           </dd>
         }
       </dl>
-      @if (b.variants.length > 1 || b.variants[0]?.name) {
-        <fieldset class="variant-selector">
-          <legend>Chọn tình trạng</legend>
-          @for (v of b.variants; track v.id) {
-            <label [class.unavailable]="!v.available">
-              <input type="radio" name="book-variant" [value]="v.id" [checked]="selectedVariantId() === v.id"
-                [disabled]="!v.available || verifying()" (change)="selectVariant(v.id)" />
-              {{ v.name }} {{ v.available ? '' : '· Hết hàng' }}
-            </label>
-          }
-          <small>Các biến thể dùng chung khoảng giá và bộ ảnh. Tiệm xác nhận tình trạng cụ thể khi liên hệ.</small>
-        </fieldset>
-      }
-      @if (variantNotice()) { <p role="status">{{ variantNotice() }}</p> }
-      <div class="contact-actions">
-        <app-wishlist-button [bookCode]="b.bookCode" [title]="b.title" />
-        <button [disabled]="!canContact()" (click)="contact.open()">
-          {{ b.availability === 'SOLD' ? 'Tư vấn sách tương đương' : 'Liên hệ' }}
-        </button>
-        @if (config()?.groupUrl) {
-          <a class="community" [href]="config()!.groupUrl" target="_blank" rel="noopener noreferrer"
-            >Tham gia cộng đồng để nhận thông tin ưu đãi ↗</a
-          >
-        } @else {
-          <p class="muted">Link cộng đồng Zalo đang được cập nhật.</p>
-        }
-        <small>Tiệm xác nhận tình trạng và giá qua Zalo. Liên hệ không giữ sách.</small>
-      </div>
-      <app-contact-dialog
-        [variant]="selectedVariant()"
-        #contact
-        [book]="b"
-        [verifyText]="verifyContact"
-        [busy]="verifying()"
-        [config]="config()"
-        [url]="origin + '/sach/' + b.slug"
-      />
     </article>
   </div>
 }

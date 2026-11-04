@@ -1071,3 +1071,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Kiểm git diff --check, trần dòng và link local tài liệu đạt. Commit/push dev
   cùng tài liệu bàn giao; bước tiếp theo user merge main/deploy frontend rồi
   kiểm proxy taxonomy, SSR, auth và upload qua Dell. Chưa chạy smoke sau deploy.
+
+### S035-C01 — 04/11/2026 — gom ảnh và nút Liên hệ/Quan tâm ở chi tiết sách
+
+- Yêu cầu: gom ảnh, `Liên hệ`, `Quan tâm` giống mẫu Fahasa; user chốt qua grill-me: ảnh lớn + thumbnail bấm đổi ảnh (không thêm thư viện), hai nút dưới thumbnail trong cột trái, sticky desktop / thanh dưới mobile, bộ chọn biến thể lên cột phải, link cộng đồng + ghi chú dưới nút, `Liên hệ` luôn bấm được và nhắc chọn biến thể, triển khai thẳng trên dev. Cùng phiên: đổi `VNĐ` → `đ` (code frontend + docs, trừ lịch sử DEV_LOG).
+- File: `book-detail.{ts,html,scss,spec.ts}` (`mainMedia`, `selectMedia`, `onContact`, `.media-col`, `.thumbs`, `.contact-actions`), `wishlist-button.ts` (CSS var `--heart-gap/--heart-width`), `DESIGN.md`, `VERIFICATION.md`, `PROGRESS.md`.
+- Kiểm tra: `npm test` 175/175, `npm run build`, `npm run build:workers`, Chrome headless 1280×900 và 390×844 PASS (chi tiết ở VERIFICATION). Đã đóng Chrome/server tạm.
+- Ghi nhận: header mobile ở 390px cắt chữ “Quan tâm” (lỗi cũ từ trước, chưa sửa). Bước tiếp: commit/push `dev`.
+
+
+### S035-C02 — 04/11/2026 — header mobile và nhãn NXB/tác giả
+
+- Sửa header mobile 390px: `♡ + số` ở cột phải hàng 1 (ẩn chữ “Quan tâm” trên mobile, giữ `aria-label`), search xuống hàng 2; trước đó link bị đẩy xuống hàng 3 và cắt chữ.
+- Nhà xuất bản/Tác giả vốn đã tùy chọn ở backend (nullable, không bắt buộc publish), form và import; chỉ thêm nhãn “(nếu có)” trong `book-editor.html` để hiển thị rõ. `npm test` 175/175, build SSR/Workers và Chrome 390×844 PASS.

@@ -25,7 +25,8 @@ import { WishlistStore } from './wishlist-store';
     }
     .heart {
       min-height: 44px;
-      margin-top: 0.6rem;
+      margin-top: var(--heart-gap, 0.6rem);
+      width: var(--heart-width, auto);
       font-size: 0.82rem;
       padding: 0.5rem 0.65rem;
     }
