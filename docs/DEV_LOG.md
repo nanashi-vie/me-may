@@ -1030,3 +1030,44 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build`, `npm run build:workers` (0 warning), `npm run check:workers:proxy`: PASS.
   - Chrome headless qua CDP với built SSR (4009) + mock API (8099) tại `1280×900` và `390×844` trên `/`, `/flash-sale` và `/sach/how-many-are-there-mm-000020`: không tràn ngang (`scrollWidth <= innerWidth`), nền Flash Sale tràn sát mép, 3 ô đếm ngược, link `Xem tất cả ›` và badge `-XX%` hiển thị đúng; đã đóng Chrome và server 4009/8099.
 - Bước tiếp theo: commit và push lên `dev`; sẵn sàng cho đầu việc tối ưu UI tiếp theo của user.
+
+### S035-C01 — 04/11/2026 — kiểm tra frontend API và Spring Security trên homelab
+
+- Phạm vi: user yêu cầu kiểm cấu hình frontend/API/CORS sau khi kết nối tunnel;
+  xác nhận quyết định dùng Dell cũ làm homelab và hostname api.memaybooks.com.
+  Read-only runtime; không deploy/migrate/đăng nhập/ghi dữ liệu nghiệp vụ.
+- Đã đối chiếu Angular PublicApi/AuthService/AdminHttp, Worker proxy/SSR origin,
+  Wrangler, Spring Security, application profiles và Dockerfile trên dev sạch.
+  Wrangler production còn Render; browser gọi relative /api nên giữ cùng origin,
+  không cần thêm CORS. Dockerfile mặc định profile render/Neon, chưa xác minh
+  override trên Dokploy; không suy ra database homelab từ health UP.
+- Kiểm live bằng curl (cwd root, mạng ngoài sandbox do DNS sandbox bị chặn):
+  api health200 UP; taxonomy200 có X-Memay-Server-Time/no-store;
+  CSRF200 có token/header X-CSRF-TOKEN, cookie MEMAYSESSION Secure/HttpOnly/
+  SameSite=Lax/Path=/api; không ghi token/cookie value vào log.
+  OPTIONS login với Origin https://memaybooks.com và preflight POST trả401,
+  không có CORS allow headers. FE /api/v1/taxonomy timeout25s; kiểm lại max80s trả503 sau70,38s
+  với backend_unavailable. Chưa đọc dashboard Worker để xác nhận target live.
+- Cập nhật PROGRESS/DEV_LOG/DEPLOYMENT/ARCHITECTURE theo quyết định homelab;
+  chưa sửa code/config. Admin GET không session401 như mong đợi.
+  `npx vitest run src/worker-runtime.spec.ts` (cwd code/frontend):9/9 PASS;
+  `git diff --check`, trần400dòng (trừ DEV_LOG) và link local file đổi đạt.
+  Login/CRUD/upload/SSR live qua backend Dell chưa chạy; chưa full build vì chỉ
+  audit/tài liệu. Tiếp theo đổi API origin sang homelab, đối chiếu Dokploy profile/
+  DB/forwarded headers thực tế, user merge/deploy rồi smoke auth/SSR/upload.
+  Bàn giao tài liệu trên dev; không deploy, không sửa database hoặc cấu hình live.
+
+### S035-C02 — 04/11/2026 — đổi API origin production sang homelab
+
+- User yêu cầu sửa cấu hình được đánh dấu ở Wrangler production. Đang thực hiện
+  trên dev: đổi MEMAY_API_ORIGIN thành https://api.memaybooks.com; giữ site origin
+  memaybooks.com. Phạm vi không gồm preview, Spring profile hoặc deploy live.
+- Sẽ kiểm Wrangler dry-run trước bàn giao; chưa chạy tại checkpoint bắt đầu.
+- Kết quả: đổi đúng một giá trị production trong code/frontend/wrangler.jsonc;
+  cập nhật PROGRESS/DEPLOYMENT/ARCHITECTURE để bỏ trạng thái repo còn Render.
+  `npm run deploy:workers -- --dry-run` (cwd code/frontend) PASS: Workers build
+  thành công, Wrangler xác nhận MEMAY_API_ORIGIN=https://api.memaybooks.com và
+  MEMAY_SITE_ORIGIN=https://memaybooks.com; không upload/deploy.
+- Kiểm git diff --check, trần dòng và link local tài liệu đạt. Commit/push dev
+  cùng tài liệu bàn giao; bước tiếp theo user merge main/deploy frontend rồi
+  kiểm proxy taxonomy, SSR, auth và upload qua Dell. Chưa chạy smoke sau deploy.

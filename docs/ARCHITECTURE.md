@@ -88,6 +88,10 @@ Cloudflare build root là `code/frontend`; Spring build context `code/backend`. 
 ### Điều chỉnh trước M5 — 25/10/2026
 
 - M3/M4 đã publish; chỉnh sửa chưa mô tả để sau MVP. User chốt **Cloudflare Workers cho frontend SSR** thay Pages và cung cấp URL Neon trong .env; chưa thuê VPS. Ngày26/10 user chọn Render me-may-api, Docker/config đã chuẩn bị.
+- Cập nhật04/11: user xác nhận backend chuyển sang Dell homelab/Dokploy qua
+  Cloudflare Tunnel, API `https://api.memaybooks.com`; frontend Worker vẫn dùng
+  proxy `/api` cùng origin. Repo Wrangler đã đổi sang API homelab04/11, chưa deploy;
+  DB/profile thực tế Dell chưa xác minh. Mô tả Render/Neon dưới đây là testhost cũ.
 - Hướng test: Workers Angular SSR/assets/API proxy → Spring Boot/Java21 Docker trên Render → Neon PostgreSQL; Cloudinary giữ. Neon V1–V5 đã migrate/validate26/10, user đã deploy Worker/Render27/10; health/SSR/privacy/auth online smoke đạt, pilot/media/recovery/performance còn mở. Production VPS/Dokploy hoãn; không đổi auth/media hoặc thêm Neon Functions/Data API vì skill có mẫu.
 - Theo [Render Free](https://render.com/docs/free), service ngủ sau15phút/start~1phút/filesystem ephemeral; Free Postgres hết hạn30ngày. [Docker Render](https://render.com/docs/docker) hỗ trợ JVM. [Neon Free](https://neon.com/docs/introduction/plans) được user chuẩn bị cho DBtest; quota/region/migration/backup còn phải chốt. Không dùng Docker DB cá nhân từ cloud.
 - Code hiện tại bind127.0.0.1 mặc định, có PORT env; khi deploy cần SERVER_ADDRESS=0.0.0.0/profile phù hợp, không bật local profile cookie insecure. Session in-memory mất khi restart/sleep; public HTTP timeout10s có thể ngắn hơn cold-start. Đây là đầu vào spec M5, chưa sửa code tại checkpoint publish.
