@@ -6,8 +6,8 @@
   Spring Boot:8080, hostname `https://api.memaybooks.com`.
 - Frontend: `https://memaybooks.com`, browser giữ `/api` cùng origin qua Worker.
   `MEMAY_API_ORIGIN` phải là `https://api.memaybooks.com` (chỉ origin, không `/api`);
-  `MEMAY_SITE_ORIGIN=https://memaybooks.com`. Repo vẫn trỏ Render khi audit04/11;
-  chưa đổi/deploy trong phiên kiểm tra. Preview cũng cần kiểm đích backend riêng:
+  `MEMAY_SITE_ORIGIN=https://memaybooks.com`. Đã đổi repo sang homelab04/11;
+  user merge/deploy rồi smoke. Preview cũng cần kiểm đích backend riêng:
   giá trị hiện tại là hostname frontend dev Worker, chưa xác minh routing tương ứng.
 - Không cần CORS trên Spring cho luồng browser → Worker `/api` → backend. Chỉ nếu
   đổi browser gọi thẳng API khác origin mới cần whitelist origin frontend,

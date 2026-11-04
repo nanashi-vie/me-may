@@ -12,8 +12,9 @@ Cập nhật04/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và c
 - Live GET health/taxonomy/CSRF trên API đạt200; cookie phiên Secure/HttpOnly/
   SameSite=Lax/Path=/api. OPTIONS login với Origin frontend trả401, chưa mở CORS.
 - Angular browser dùng `/api` cùng origin qua Worker, không cần mở CORS cho luồng
-  này. Repo `wrangler.jsonc` vẫn trỏ Render; cần đổi `MEMAY_API_ORIGIN` sang API
-  homelab rồi user merge/deploy. Phiên kiểm tra chưa sửa cấu hình hoặc deploy.
+  này. Đã đổi `wrangler.jsonc` production sang API homelab theo yêu cầu user;
+  Workers build/Wrangler dry-run đạt, binding API đúng hostname. User merge/deploy
+  rồi smoke; chưa thay cấu hình live.
 - Proxy frontend live `/api/v1/taxonomy` trả503 sau70,38s (`backend_unavailable`);
   chưa xác nhận target Worker live hoặc login/CRUD/upload qua homelab.
 

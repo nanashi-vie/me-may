@@ -15,7 +15,7 @@
     "not_found_handling": "none",
   },
   "vars": {
-    "MEMAY_API_ORIGIN": "https://me-may-api.onrender.com",
+    "MEMAY_API_ORIGIN": "https://api.memaybooks.com",
     "MEMAY_SITE_ORIGIN": "https://memaybooks.com",
   },
 

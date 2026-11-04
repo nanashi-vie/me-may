@@ -1056,3 +1056,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   audit/tài liệu. Tiếp theo đổi API origin sang homelab, đối chiếu Dokploy profile/
   DB/forwarded headers thực tế, user merge/deploy rồi smoke auth/SSR/upload.
   Bàn giao tài liệu trên dev; không deploy, không sửa database hoặc cấu hình live.
+
+### S035-C02 — 04/11/2026 — đổi API origin production sang homelab
+
+- User yêu cầu sửa cấu hình được đánh dấu ở Wrangler production. Đang thực hiện
+  trên dev: đổi MEMAY_API_ORIGIN thành https://api.memaybooks.com; giữ site origin
+  memaybooks.com. Phạm vi không gồm preview, Spring profile hoặc deploy live.
+- Sẽ kiểm Wrangler dry-run trước bàn giao; chưa chạy tại checkpoint bắt đầu.
+- Kết quả: đổi đúng một giá trị production trong code/frontend/wrangler.jsonc;
+  cập nhật PROGRESS/DEPLOYMENT/ARCHITECTURE để bỏ trạng thái repo còn Render.
+  `npm run deploy:workers -- --dry-run` (cwd code/frontend) PASS: Workers build
+  thành công, Wrangler xác nhận MEMAY_API_ORIGIN=https://api.memaybooks.com và
+  MEMAY_SITE_ORIGIN=https://memaybooks.com; không upload/deploy.
+- Kiểm git diff --check, trần dòng và link local tài liệu đạt. Commit/push dev
+  cùng tài liệu bàn giao; bước tiếp theo user merge main/deploy frontend rồi
+  kiểm proxy taxonomy, SSR, auth và upload qua Dell. Chưa chạy smoke sau deploy.
