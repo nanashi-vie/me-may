@@ -1079,3 +1079,8 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Kiểm tra: `npm test` 175/175, `npm run build`, `npm run build:workers`, Chrome headless 1280×900 và 390×844 PASS (chi tiết ở VERIFICATION). Đã đóng Chrome/server tạm.
 - Ghi nhận: header mobile ở 390px cắt chữ “Quan tâm” (lỗi cũ từ trước, chưa sửa). Bước tiếp: commit/push `dev`.
 
+
+### S035-C02 — 04/11/2026 — header mobile và nhãn NXB/tác giả
+
+- Sửa header mobile 390px: `♡ + số` ở cột phải hàng 1 (ẩn chữ “Quan tâm” trên mobile, giữ `aria-label`), search xuống hàng 2; trước đó link bị đẩy xuống hàng 3 và cắt chữ.
+- Nhà xuất bản/Tác giả vốn đã tùy chọn ở backend (nullable, không bắt buộc publish), form và import; chỉ thêm nhãn “(nếu có)” trong `book-editor.html` để hiển thị rõ. `npm test` 175/175, build SSR/Workers và Chrome 390×844 PASS.
