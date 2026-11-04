@@ -1,3 +1,4 @@
+import { publicMediaUrl } from '../catalogue-state';
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { formatPriceRange } from '../../admin/books/book-copy';
@@ -12,6 +13,7 @@ import { PublicBook } from '../public.models';
   styleUrl: './book-card.scss',
 })
 export class BookCard {
+  readonly mediaUrl = publicMediaUrl;
   readonly book = input.required<PublicBook>();
   readonly now = input(0);
   readonly current = computed(() => effectiveBook(this.book(), this.now()));

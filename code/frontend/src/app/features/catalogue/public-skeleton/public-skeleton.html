@@ -1,0 +1,17 @@
+<div class="skeleton" [class.catalogue]="layout() === 'catalogue'" [class.detail]="layout() === 'detail'" role="status" aria-busy="true">
+  <span class="sr-only">{{ label() }}</span>
+  <div class="placeholders" aria-hidden="true">
+    @if (layout() === 'detail') {
+      <div class="cover"></div>
+      <div class="copy">
+        <div class="line wide"></div><div class="line"></div>
+        <div class="line price"></div>
+        <div class="paragraph"><div class="line wide"></div><div class="line wide"></div><div class="line"></div></div>
+      </div>
+    } @else {
+      @for (item of [1, 2, 3, 4, 5]; track item) {
+        <div class="card"><div class="cover"></div><div class="line wide"></div><div class="line"></div><div class="line price"></div></div>
+      }
+    }
+  </div>
+</div>

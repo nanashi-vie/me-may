@@ -3,6 +3,17 @@
 Cập nhật04/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Cache public và trạng thái tải — 04/11/2026
+
+- Đã triển khai local cache trang chủ/ảnh, giảm request lặp, logo bootstrap và
+  skeleton. Frontend184/184, backend verify182run/3live skip và13test sau review
+  đạt; SSR/Workers/proxy/workerd/browser QA đạt.
+- Còn đặt zone/token purge trên backend, deploy và đo/smoke online theo
+  [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026).
+  Cache edge tự giữ no-store nếu backend chưa có cấu hình purge.
+- Purge toàn zone, dữ liệu cũ có thể còn tối đa30s. Bằng chứng ở
+  [VERIFICATION](VERIFICATION.md#cache-public-và-trạng-thái-tải--04112026).
+
 ## Homelab Dell và kiểm tra API — 04/11/2026
 
 - User xác nhận đã chọn Dell cũ làm homelab, Spring Boot qua Dokploy/network và

@@ -135,9 +135,9 @@ public class PublicCatalogueService {
         var ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
         var media = jdbc.query(
-                "select role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
+                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
                 (m, i) -> new Media(m.getString("role"), m.getString("alt"),
-                        "/api/v1/books/" + slug + "/media/" + m.getString("role")),
+                        "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),
                 id);
         return new Book(Long.toString(id), r.getString("book_code"), slug, r.getString("title"),
                 r.getString("publisher"), r.getString("author"), ages, r.getString("category_code"),

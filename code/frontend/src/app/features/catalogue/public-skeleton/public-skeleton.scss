@@ -1,0 +1,20 @@
+:host { display: block; }
+.placeholders { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.2rem; padding-block: 1rem; }
+.cover, .line { background: #eee9e3; border-radius: 3px; animation: breathe 1.6s ease-in-out infinite alternate; }
+.cover { aspect-ratio: 3 / 4; }
+.line { height: 1rem; width: 65%; margin-top: .8rem; }
+.wide { width: 100%; }
+.price { width: 45%; height: 1.5rem; }
+.paragraph { margin-top: 3rem; }
+.catalogue .placeholders { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (min-width: 721px) and (max-width: 1050px) { .catalogue .placeholders { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.detail .placeholders { grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 3rem; }
+.detail .copy { padding-top: 2rem; }
+@keyframes breathe { to { opacity: .5; } }
+@media (max-width: 720px) {
+  .placeholders, .catalogue .placeholders { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+  .card:nth-child(n + 3) { display: none; }
+  .detail .placeholders { grid-template-columns: 1fr; gap: 1rem; }
+  .detail .cover { max-height: 55vh; width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) { .cover, .line { animation: none; } }

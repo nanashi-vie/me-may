@@ -347,3 +347,31 @@ Chưa migrateonline trong phiên01/11; không coi testDBV12 là liveđãcó2lự
 ImportV2 không có migration riêng, dùng receiptV11/schema_version2; giữ receiptV1.
 QAworkload V1=100sách/500variants, V2=100sách/100variantdefault; không trộn số đo.
 Header16/dòng2data/nhãn/defaults và retry hỗtrợV1 phải smoke trên candidateonline.
+
+
+## Cache public — cấu hình và smoke 04/11/2026
+
+1. Trên backend Dokploy, đặt MEMAY_CACHE_ZONE_ID của zone memaybooks.com và
+   MEMAY_CACHE_PURGE_TOKEN. Token chỉ cần Zone > Cache Purge, scope đúng zone.
+   Không đưa token vào Wrangler/frontend, Git hoặc log. Có mẫu trong .env.example.
+2. Deploy backend trước, GET /api/v1/cache-policy phải200, enabled=true; expiresAt
+   tối đa30s từ serverNow và trước mốc chuyển sale. Thiếu token/zone sẽfalse, cache
+   edge không được ghi. Chờ job startup purge trước khi kiểm tra trang chủ.
+3. Deploy Worker từ main sau user merge dev. Production MEMAY_PUBLIC_CACHE=true
+   và MEMAY_VERSION là version_metadata binding; preview/local mặc định tắt.
+4. Mở / bằng cửa sổ sạch không cookie, kiểm X-Memay-Cache MISS→HIT khi chưa hết
+   TTL. Trang có query, admin, wishlist và API JSON vẫn no-store. HTML browser
+   no-store; /main-<hash>.js và /styles-<hash>.css immutable1năm.
+5. Ảnh có v=cacheKey/size/format: MISS→HIT, If-None-Match đúng trả304 không body.
+   Ảnh v cũ/sách ẩn trả404 sau purge/TTL. URL khôngv vẫn no-store.
+6. Sửa giá/ẩn/publish/thayảnh/collection/sale, kiểm job purge và nội dung mới tại
+   nhiều POP nếu có. Job gom mutation, tối đa một lần/12s, lỗi retry; cache TTL30s
+   là giới hạn dữ liệu cũ, kể cả request fill chạy dở khi purge. Không hứa tức thì.
+7. Trước/sau mốc sale kiểm giá/countdown/HTML và browser giờ lệch±1h. Sau deploy
+   kiểm version key mới. Đo TTFB MISS/HIT, số API/ảnh và bytes khi đổi ảnh/quay lại.
+8. Kiểm logo ở CSR khi chặn JS, skeleton với API chậm, mobile390px/desktop1280px,
+   reduced motion, lỗi API và SSR initial HTML. Cache khác policy cần review riêng.
+
+Purge toàn zone làm các asset cache khác trong zone phải làm ấm lại. Với tần suất
+ghi cao/nhiều backend instance cần thay job memory bằng invalidation dùng chung
+và purge chọn lọc. Hiện chưa cài Redis; browser/cache edge xử lý mục tiêu đầu tiên.

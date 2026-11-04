@@ -228,7 +228,8 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 
 ### M5 media — triển khai local29/10
 - Public media nhận allowlist size320/640 và formatjpg/webp; URL cũ mặc địnhJPEG640, chỉ JPEG640thiếuvariant mới fallback1280. WebP thiếuvariant không trảJPEG dưới MIMEWebP; cần backfill đủ4variant trước releasefrontendpicture. Adminpreview1280 giữ nguyên, tất cả vẫn authenticated/no-store, không lộsignedURL.
-- Quyết định cache: tiếp tục no-store, chưa chứng minh được invalidationẩn/thayảnh/tempmedia để bậtcache antoàn. Scriptbackfill checkpointmới public-variants-v2.done, không dùng checkpointJPEG640cũ để bỏqua4variantmới.
+- Cache public được bổ sung 04/11 theo contract cuối file; URL ảnh cũ tiếp tục no-store.
+  Backfill checkpoint public-variants-v2.done vẫn cần đủ4variant.
 
 ### M5 aggregate và media tạm — local29/10
 
@@ -291,3 +292,28 @@ Tái sử dụng aggregate/validation/editor/publish; private no-store và OWNER
 V12 append READING_PRACTICE và COOKING_CRAFT_ACTIVITY, giữcategoryID/slug/sort cũ;
 form/taxonomy public/admin đọcDB, publicURLallowlist và importer nhận2code mới.
 Giới hạn/thứtự/nhãn ở DATA; rolloutbackend trướcfrontend và gate ở DEPLOYMENT.
+
+
+## Cache public và giảm request — 04/11/2026
+
+- Worker Cache API lưu HTML GET / không query và ảnh có cacheKey hợp lệ tối đa30s.
+  Cookie/Authorization, admin/wishlist, API JSON, lỗi và Set-Cookie không cache.
+  Browser HTML no-store; ảnh browser revalidate bằng ETag, edge giữ bytes.
+- Backend /api/v1/cache-policy chỉ bật cache khi có cấu hình purge. Deadline lấy
+  giờ database và mốc sale sắp tới, trừ thời gian chờ policy/render trước khi lưu.
+  Cache key HTML chứa Worker version metadata; deploy tránh HTML/bundle cũ.
+- Audit BOOK/COLLECTION/FLASH_SALE/media đánh dấu sau commit, rollback không purge.
+  Job coalesce, tối đa một purge toàn zone mỗi12s; lỗi giữ pending để retry.
+  Startup backend cũng yêu cầu purge. Một instance homelab là phạm vi hiện tại.
+- Purge là eventual. Dữ liệu cũ có thể còn tối đa30s, kể cả fill đang chạy trong
+  lúc purge. Browser ảnh revalidate thay vì giữ immutable sau khi sách bị ẩn.
+  API detail/lookup/contact verification vẫn fresh, không dựa cache HTML.
+- Media DTO thêm cacheKey opaque theo asset ID, URL cũ vẫn dùng được. Version
+  sai/ảnh không ACTIVE/sách ẩn trả404 khi tới backend. Storage ID/signed URL không lộ.
+- CSS/JS root có hash và200 cache1năm immutable. Asset lỗi/unhashed không đổi policy.
+- Angular metadata taxonomy/collections/contact chia sẻ request và TTL60s theo
+  instance DI, xóa sau admin mutate. Home/listing/metadata SSR transfer body và giờ
+  server một lần; không bật transfer cho lookup/detail verification hoặc sale.
+  Sale vẫn lấy giờ mới; metadata replay không chỉnh đồng hồ ngược mỗi lần đọc.
+- CDN cache chỉ bật trong production config; local/preview mặc định không bật.
+  Thiết lập và smoke online nằm DEPLOYMENT. Chưa có đo cải thiện sau deploy.

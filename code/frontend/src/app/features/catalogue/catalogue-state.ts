@@ -65,3 +65,9 @@ export function effectiveBook(b: PublicBook, now: number): PublicBook {
 }
 
 export function bookPrice(b: PublicBook) { return b.salePriceVnd !== null ? formatPrice(b.salePriceVnd) : formatPriceRange(b.priceMinVnd,b.priceMaxVnd); }
+
+export function publicMediaUrl(media: PublicBook['media'][number], size: 320 | 640, format: 'jpg' | 'webp') {
+  const params = new URLSearchParams({ size: String(size), format });
+  if (media.cacheKey) params.set('v', media.cacheKey);
+  return media.contentPath + '?' + params.toString();
+}

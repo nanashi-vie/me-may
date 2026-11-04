@@ -370,3 +370,23 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 
 - Vitest 37/37 file, 175/175 test PASS (thêm test một ảnh lớn + thumbnail đổi ảnh, nút trong `.media-col`, nhắc chọn biến thể khi chưa chọn); Node SSR build, Workers build (0 warning) PASS.
 - Chrome headless (SSR local + mock API, cổng tạm 4009/8099, đã dừng): `1280×900` một `figure`, 5 thumbnail, cột `sticky`, sau khi cuộn hai nút vẫn trong khung nhìn; `390×844` thanh nút `fixed` sát đáy, không tràn ngang. Chưa kiểm tra trên thiết bị thật; hover/swipe không có.
+
+
+## Cache public và trạng thái tải — 04/11/2026
+
+- Frontend `npm test`:184/184 PASS. Backend `run-local.sh -B -ntp verify`:
+  182run/0failure/0error/3live skip; sau review13test public media/policy/purge PASS.
+- Node SSR build, Workers build/Wrangler dry-run và `check:workers:proxy` PASS.
+  Worker bindings xác nhận version metadata, homelab API và flag cache.
+- Unit cases: home HIT/MISS, release key, private/query/error/Set-Cookie bypass,
+  media ETag304, hash assets, policy trễ, SSR clock±1h, metadata dedupe/expiry/
+  error-retry/invalidation, rollback/afterCommit và purge lỗi giữ pending.
+- Backend integration: cache-policy anonymous/no-store dừng trước sale sắp bắt
+  đầu, media v đúng200/v sai404/sách archive404. Không gọi purge Cloudflare thật.
+- Workerd QA với mock API riêng8097/Worker8797: home/media HIT, SSR có nội dung và
+  loại logo bootstrap. Browser1280×900/390×844: không lặp home/taxonomy/collections
+  khi hydrate, catalogue skeleton4cột, detail skeleton/reduced-motion, không overflow.
+- Review độc lập đã sửa clock transfer, deadline tính từ request start và cột
+  skeleton. Purge eventual có giới hạn dữ liệu cũ30s, không cam kết tức thì.
+- Chưa deploy, chưa cấu hình token purge hoặc đo cải thiện TTFB online. Bắt buộc
+  smoke update/hide/media/sale/deploy theo DEPLOYMENT sau khi bật cache thật.

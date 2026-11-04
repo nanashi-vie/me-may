@@ -23,4 +23,17 @@ class PublicMediaApiTest extends MediaTestSupport {
    var r=client.download(path+"?size="+size+"&format="+format);assertThat(r.statusCode()).isEqualTo(200);assertThat(r.headers().firstValue("content-type").orElse("")).isEqualTo("image/"+(format.equals("jpg")?"jpeg":"webp"));assertThat(r.headers().firstValue("x-content-type-options").orElse("")).isEqualTo("nosniff");assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");
   }
  }
+
+ @Test void versionedUrlRequiresTheCurrentActiveMedia() throws Exception {
+  var b = ready();
+  var client = new AdminHttpClient(port);
+  var media = jdbc.queryForMap("select id, storage_public_id from book_media where book_copy_id=? and role='FRONT'", Long.parseLong(b.id()));
+  fake.assets.put(media.get("storage_public_id").toString(), ImageValidatorTest.image("jpeg"));
+  jdbc.update("update listing set publication_status='PUBLISHED' where book_copy_id=?", Long.parseLong(b.id()));
+  String path = "/api/v1/books/" + b.slug() + "/media/FRONT?size=640&format=webp&v=";
+  assertThat(client.download(path + media.get("id")).statusCode()).isEqualTo(200);
+  assertThat(client.download(path + UUID.randomUUID()).statusCode()).isEqualTo(404);
+  jdbc.update("update listing set publication_status='ARCHIVED' where book_copy_id=?", Long.parseLong(b.id()));
+  assertThat(client.download(path + media.get("id")).statusCode()).isEqualTo(404);
+ }
 }

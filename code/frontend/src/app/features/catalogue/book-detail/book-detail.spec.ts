@@ -214,7 +214,7 @@ describe('Detail refresh and public origin', () => {
     expect(thumbs.length).toBe(3);
     thumbs[1].click();
     h.detectChanges();
-    expect(el.querySelector('.gallery figure img')?.getAttribute('src')).toBe('/BACK.jpg');
+    expect(el.querySelector('.gallery figure img')?.getAttribute('src')).toBe('/BACK.jpg?size=640&format=jpg');
     expect(thumbs[1].getAttribute('aria-pressed')).toBe('true');
     expect(el.querySelector('.media-col .contact-actions app-wishlist-button')).not.toBeNull();
     el.querySelector<HTMLButtonElement>('.contact-actions > button')!.click();

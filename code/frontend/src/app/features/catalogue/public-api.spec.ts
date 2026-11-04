@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 import { DOCUMENT } from '@angular/common';
-import { TransferState } from '@angular/core';
+import { TransferState, makeStateKey } from '@angular/core';
 import { PublicClock } from './public-clock';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
@@ -88,4 +88,63 @@ describe('Public links after client-rendered admin entry', () => {
     TestBed.inject(TransferState).set(PUBLIC_SITE_STATE, 'https://books.example');
     expect(TestBed.inject(PUBLIC_SITE_ORIGIN)).toBe('https://books.example');
   });
+});
+
+describe('public request reuse', () => {
+  it('shares metadata, expires it, and retries failed requests', () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const api = TestBed.inject(PublicApi), http = TestBed.inject(HttpTestingController);
+    const now = vi.spyOn(Date, 'now').mockReturnValue(1000);
+    api.contact().subscribe();
+    api.contact().subscribe();
+    http.expectOne('/api/v1/contact').flush({ groupUrl: null, hotlineUrl: null });
+    api.contact().subscribe();
+    http.expectNone('/api/v1/contact');
+    now.mockReturnValue(62000);
+    api.contact().subscribe({ error: () => {} });
+    http.expectOne('/api/v1/contact').flush({}, { status: 503, statusText: 'Unavailable' });
+    api.contact().subscribe();
+    http.expectOne('/api/v1/contact').flush({});
+    api.invalidateMetadata();
+    api.contact().subscribe();
+    http.expectOne('/api/v1/contact').flush({});
+    now.mockRestore();
+    http.verify();
+  });
+  it('consumes home transfer state once while keeping detail verification fresh', () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    TestBed.inject(TransferState).set(
+      makeStateKey<unknown>('memay-public:/home'), { body: { shelves: [] }, serverNow: null });
+    const api = TestBed.inject(PublicApi), http = TestBed.inject(HttpTestingController);
+    let received: unknown;
+    api.home().subscribe(value => received = value);
+    expect(received).toEqual({ shelves: [] });
+    http.expectNone('/api/v1/home');
+    api.home().subscribe();
+    http.expectOne('/api/v1/home').flush({ shelves: [] });
+    api.detail('mm-000001').subscribe();
+    http.expectOne('/api/v1/books/mm-000001').flush({});
+    api.detail('mm-000001').subscribe();
+    http.expectOne('/api/v1/books/mm-000001').flush({});
+    http.verify();
+  });
+});
+
+describe('transferred server time', () => {
+  for (const skew of [-3600000, 3600000]) {
+    it('keeps catalogue prices on server time despite device skew ' + skew, () => {
+      TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+      const serverTime = '2026-11-04T10:00:00Z';
+      const now = vi.spyOn(Date, 'now').mockReturnValue(Date.parse(serverTime) + skew);
+      TestBed.inject(TransferState).set(makeStateKey<unknown>('memay-public:/taxonomy'),
+        { body: { categories: [], ageGroups: [] }, serverNow: serverTime });
+      const clock = TestBed.inject(PublicClock);
+      let body: unknown;
+      TestBed.inject(PublicApi).taxonomy().subscribe(value => body = value);
+      expect(body).toEqual({ categories: [], ageGroups: [] });
+      expect(clock.now()).toBe(Date.parse(serverTime));
+      TestBed.inject(HttpTestingController).expectNone('/api/v1/taxonomy');
+      now.mockRestore();
+    });
+  }
 });

@@ -219,3 +219,16 @@ file để đăng nhập và kiểm lại. Receipt dẫn editor từng sách; kh
 Danh sách có lọc/nhãn Chưa xuất bản và placeholder; ARCHIVED+publishedAtnull
 dùng nút Xuất bản, sách từng công khai dùng Hiện sách. Ảnh/editor giữ nguyên.
 [Contract và hướng dẫn](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026).
+
+
+## Trạng thái khởi động và tải dữ liệu — 04/11/2026
+
+- Bootstrap CSR hiển thị logo Mẹ Mây112px giữa nền sáng, nhãn Đang mở tiệm sách.
+  Angular thay fallback khi khởi động; HTML SSR có nội dung hiển thị ngay.
+- Sau10s chưa bootstrap, hiện link tải lại; không có thời gian chờ tối thiểu.
+- Home và Flash Sale có skeleton5cột desktop/2cột mobile; danh mục4cột,3cột ở
+  ≤1050px và2cột ở≤720px. Detail skeleton ảnh + nội dung, xếp dọc mobile.
+- Skeleton có role=status/aria-busy, hình khối trang trí aria-hidden, reduced-motion
+  tắt animation; lỗi chuyển sang PublicError hiện hành, không giữ skeleton vô hạn.
+- Detail chỉ tải ảnh lớn được chọn; thumbnail ưu tiên WebP320. URL cùng asset/
+  size/format/cacheKey ổn định để tái sử dụng cache và xác thực ETag.

@@ -106,7 +106,7 @@
     }
     <section aria-label="Kết quả sách" aria-live="polite">
       @if (loading()) {
-        <p class="loading" role="status">Đang tìm những cuốn sách…</p>
+        <app-public-skeleton layout="catalogue" label="Đang tìm những cuốn sách…" />
       } @else if (error()) {
         <app-public-error [status]="error()" (retry)="retry()" />
       } @else if (page()?.items?.length) {

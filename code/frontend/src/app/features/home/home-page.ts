@@ -1,3 +1,4 @@
+import { PublicSkeleton } from '../catalogue/public-skeleton/public-skeleton';
 import { Subscription } from 'rxjs';
 import { Component, inject, signal, effect, RESPONSE_INIT, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -11,7 +12,7 @@ import { PublicError } from '../catalogue/public-error';
 import { PageMetadata } from '../../core/page-metadata';
 @Component({
   selector: 'app-home-page',
-  imports: [RouterLink, BookCard, PublicError],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
@@ -92,6 +93,11 @@ export class HomePage {
         error: () => {
           this.sale.set(null);
           this.saleError.set(true);
+          if (this.response) {
+            const headers = new Headers(this.response.headers);
+            headers.set('X-Memay-No-Cache', 'sale-unavailable');
+            this.response.headers = headers;
+          }
         },
       });
   }

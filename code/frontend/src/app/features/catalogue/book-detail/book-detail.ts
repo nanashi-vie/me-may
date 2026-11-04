@@ -1,3 +1,5 @@
+import { PublicSkeleton } from '../public-skeleton/public-skeleton';
+import { publicMediaUrl } from '../catalogue-state';
 import { bookPrice, bookTitle, countdownParts, discountPercent, effectiveBook, enquiryText } from '../catalogue-state';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -32,11 +34,12 @@ import {
 } from '../../admin/books/book-copy';
 @Component({
   selector: 'app-book-detail',
-  imports: [RouterLink, PublicError, ContactDialog, WishlistButton],
+  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
 })
 export class BookDetail {
+  readonly mediaUrl = publicMediaUrl;
   readonly api = inject(PublicApi);
   readonly selectedVariantId = signal<string|null>(null);
   readonly variantNotice = signal('');

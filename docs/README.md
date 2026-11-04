@@ -27,6 +27,10 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
+- Cache public và trạng thái tải đã gộp contract vào [ARCHITECTURE](ARCHITECTURE.md#cache-public-và-giảm-request--04112026),
+  thao tác bật/smoke ở [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026),
+  bằng chứng local ở [VERIFICATION](VERIFICATION.md#cache-public-và-trạng-thái-tải--04112026).
+
 - Format importV2/16cột và2thểloại01/11 đã triển khai/kiểm local;
   [contract](BOOK_IMPORT.md#format-v2--chốt0111), [bằng chứng](BOOK_IMPORT_VERIFICATION.md#importv2-và-thể-loại-chung-01112026).
   Chưa migrate/deployonlineV12; gate nằmPROGRESS/DEPLOYMENT, không mở lại feature khác.

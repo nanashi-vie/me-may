@@ -1084,3 +1084,47 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 
 - Sửa header mobile 390px: `♡ + số` ở cột phải hàng 1 (ẩn chữ “Quan tâm” trên mobile, giữ `aria-label`), search xuống hàng 2; trước đó link bị đẩy xuống hàng 3 và cắt chữ.
 - Nhà xuất bản/Tác giả vốn đã tùy chọn ở backend (nullable, không bắt buộc publish), form và import; chỉ thêm nhãn “(nếu có)” trong `book-editor.html` để hiển thị rõ. `npm test` 175/175, build SSR/Workers và Chrome 390×844 PASS.
+
+### S036-C01 — 04/11/2026 — bắt đầu cache public và trạng thái tải
+
+- User duyệt đề xuất cache trang chủ, ảnh/static assets, giảm request lặp rồi logo/
+  skeleton. Scope và kiểm chứng trong PUBLIC_CACHE_PLAN, đang triển khai trên dev.
+- Git đầu phiên sạch. Không thêm Redis khi backend homelab đang nhanh.
+- Quyết định triển khai purge toàn zone sau audit commit, coalesce/retry, TTL30s
+  dự phòng; yêu cầu backend có purge config trước khi bật cache edge. Media browser
+  revalidate để hạn chế ảnh đã gỡ còn nằm cache browser dài hạn.
+
+### S036-C02 — 04/11/2026 — cache và giảm request đã qua kiểm tra tự động
+
+- Backend cache-policy lấy giờ DB và mốc sale; audit đánh dấu purge sau commit,
+  job gom batch/retry, giới hạn một lần/12s. Cache edge chỉ được ghi khi backend
+  có zone/token. Media thêm cacheKey opaque và kiểm v đúng asset ACTIVE/PUBLISHED.
+- Worker cache home/ảnh30s, browser ảnh ETag revalidate, CSS/JS hash immutable1năm.
+  Worker version metadata tách cache giữa release. Không cache private/APIJSON/lỗi.
+- Angular shared metadata60s, transfer home/listing/metadata kèm giờ server;
+  detail/lookup/sale vẫn lấy mới. Thumbnail ưu tiên WebP, URL ổn định.
+- Đã thêm logo bootstrap CSR và skeleton Home/catalogue/detail/Flash Sale.
+- Review độc lập phát hiện và đã sửa clock transfer khi máy lệch giờ, TTL tính
+  từ khi bắt đầu gọi origin thay vì sau khi nhận response, và skeleton catalogue
+  theo4/3/2cột. Tests bổ sung clock±1h, policy trễ, sale sắp bắt đầu.
+- Kiểm tra: frontend184/184 PASS; backend verify182run/0failure/0error/3live skip,
+  sau review13test ảnh/policy/purge PASS. SSR/Workers build, Wrangler dry-run và
+  proxy workerd PASS. Lần đầu sandbox chặn DB/socket/build, chạy lại có quyền đạt.
+- Workerd QA cách ly xác nhận home/media HIT và SSR loại bỏ logo fallback.
+  Chưa đo tốc độ online sau deploy, chưa cấu hình secret purge hoặc deploy.
+- Quyết định giới hạn: purge toàn zone, dữ liệu public cũ có thể tồn tại tối đa30s,
+  gồm fill đang chạy khi purge; không hứa ẩn/sửa tức thì qua cache.
+
+### S036-C03 — 04/11/2026 — hoàn tất QA và bàn giao cache public
+
+- Browser Playwright1280×900/390×844 với API trễ giả lập: không gọi lặp home/
+  taxonomy/collections khi hydrate; skeleton4cột, mobile detail/reduced-motion,
+  đổi Bìa/Lưng/Bìa, logo CSR khi chặnJS và không overflow đều đạt. Đã xem ảnh tại
+  output/playwright/cache-*.png; dữ liệu ảnh QA là fixture, không ảnh bán thật.
+- Node SSR build cuối sau review đạt. 13test backend sau review và184frontend
+  đạt; Workers dry-run/proxy đạt. Job purge thật chưa chạy vì chưa có secret.
+- Đã đóng browser và server QA riêng. Gộp plan vào ARCHITECTURE/DESIGN/DEPLOYMENT/
+  VERIFICATION, gỡ plan tạm và cập nhật chỉ mục. Trần400dòng/link file local/
+  git diff --check đạt; .env và công cụ QA vẫn ignored.
+- Bàn giao commit/push dev; user merge main và deploy backend trước Worker, đặt
+  MEMAY_CACHE_ZONE_ID/MEMAY_CACHE_PURGE_TOKEN rồi smoke/đo HIT-MISS theo DEPLOYMENT.

@@ -1,3 +1,4 @@
+import { PublicSkeleton } from '../public-skeleton/public-skeleton';
 import { Component, DestroyRef, RESPONSE_INIT, effect, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -12,7 +13,7 @@ import { FlashSale } from '../public.models';
 
 @Component({
   selector: 'app-flash-sale-page',
-  imports: [RouterLink, BookCard, PublicError],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError],
   templateUrl: './flash-sale-page.html',
   styleUrl: './flash-sale-page.scss',
 })
