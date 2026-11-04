@@ -1157,4 +1157,4 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm test` (cwd `code/frontend`): 37/37 file, 186/186 test PASS.
   - `npm run build`, `npm run build:workers` (0 warning) và `npm run check:workers:proxy` PASS.
   - Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` trạng thái `loaded`, `.brand-name`/`.hero h1` dùng `Baloo 2` weight `700`, `body`/`.public-nav`/`.book-card h3` dùng `Nunito`, 4 thẻ trên `/sach` thẳng hàng ngang từng pixel, mobile không tràn ngang. Đã đóng Chrome/server tạm.
-- Bước tiếp theo: commit và push lên `origin/dev-b`.
+- Bước tiếp theo: theo yêu cầu user, merge `dev-b` vào `dev`, push `origin/dev` và xóa nhánh `dev-b` (local + remote).
