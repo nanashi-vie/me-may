@@ -365,3 +365,8 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Build & proxy: `npm run build`, `npm run build:workers` (0 warning, tất cả component style < 4 kB) và `npm run check:workers:proxy` PASS.
 - Kiểm tra trình duyệt thật (Google Chrome headless qua CDP với SSR local + mock API trên cổng tạm 4009/8099, đã dừng sau kiểm):
   - Desktop `1280×900` và mobile `390×844` trên `/`, `/flash-sale` và `/sach/how-many-are-there-mm-000020`: `scrollWidth <= innerWidth`, nền `.flash-section` tràn toàn chiều ngang (`flashLeft <= 0`, `flashRight >= clientWidth`), đếm ngược tách 3 ô đen bo góc (`HH : MM : SS`), link `Xem tất cả ›` màu xanh `rgb(25, 118, 210)`, badge `-55%`..`-90%` cạnh giá sale trên `BookCard` và `BookDetail`, banner `FLASH ⚡ SALE` trên trang chi tiết khớp mẫu.
+
+## Gom ảnh và nút Liên hệ/Quan tâm ở chi tiết sách — 04/11/2026
+
+- Vitest 37/37 file, 175/175 test PASS (thêm test một ảnh lớn + thumbnail đổi ảnh, nút trong `.media-col`, nhắc chọn biến thể khi chưa chọn); Node SSR build, Workers build (0 warning) PASS.
+- Chrome headless (SSR local + mock API, cổng tạm 4009/8099, đã dừng): `1280×900` một `figure`, 5 thumbnail, cột `sticky`, sau khi cuộn hai nút vẫn trong khung nhìn; `390×844` thanh nút `fixed` sát đáy, không tràn ngang. Chưa kiểm tra trên thiết bị thật; hover/swipe không có.

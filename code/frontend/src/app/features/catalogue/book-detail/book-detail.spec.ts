@@ -191,4 +191,34 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.pricing .discount')?.textContent?.trim()).toBe('-55%');
     expect(el.querySelector('.pricing del')?.textContent).toContain('35.000 - 40.000 đ');
   });
+  it('groups one main image with thumbnails and actions, and prompts for a variant before contact', async () => {
+    const media = ['FRONT', 'BACK', 'SPINE'].map((role) => ({ role, contentPath: '/' + role + '.jpg', alt: role }));
+    const variants = [{ id: 'high', name: 'Độ mới cao', available: true }, { id: 'corner', name: 'Có cấn góc', available: true }];
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({ ...a, media, variants }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    expect(el.querySelectorAll('.gallery figure').length).toBe(1);
+    const thumbs = el.querySelectorAll<HTMLButtonElement>('.thumbs button');
+    expect(thumbs.length).toBe(3);
+    thumbs[1].click();
+    h.detectChanges();
+    expect(el.querySelector('.gallery figure img')?.getAttribute('src')).toBe('/BACK.jpg');
+    expect(thumbs[1].getAttribute('aria-pressed')).toBe('true');
+    expect(el.querySelector('.media-col .contact-actions app-wishlist-button')).not.toBeNull();
+    el.querySelector<HTMLButtonElement>('.contact-actions > button')!.click();
+    h.detectChanges();
+    expect(c.variantNotice()).toContain('chọn tình trạng');
+  });
 });

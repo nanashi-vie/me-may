@@ -10,7 +10,7 @@ import {
   makeStateKey,
   PLATFORM_ID,
 } from '@angular/core';
-import { isPlatformServer } from '@angular/common';
+import { DOCUMENT, isPlatformServer } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, switchMap, combineLatest, Subject, startWith } from 'rxjs';
@@ -40,6 +40,25 @@ export class BookDetail {
   readonly api = inject(PublicApi);
   readonly selectedVariantId = signal<string|null>(null);
   readonly variantNotice = signal('');
+  readonly selectedMedia = signal(0);
+  private readonly doc = inject(DOCUMENT);
+  mainMedia() {
+    const m = this.book()?.media ?? [];
+    return m[Math.min(this.selectedMedia(), m.length - 1)] ?? null;
+  }
+  selectMedia(i: number) {
+    this.selectedMedia.set(i);
+  }
+  onContact(contact: ContactDialog) {
+    const b = this.book();
+    if (!b || this.verifying()) return;
+    if (b.availability !== 'SOLD' && !this.selectedVariant()?.available) {
+      this.variantNotice.set('Vui lòng chọn tình trạng còn hàng trước khi liên hệ.');
+      this.doc.getElementById('variant-selector')?.scrollIntoView?.({ block: 'center' });
+      return;
+    }
+    contact.open();
+  }
   selectedVariant(): PublicVariant | null {
     return this.book()?.variants.find(v=>v.id===this.selectedVariantId()) ?? null;
   }
@@ -142,7 +161,7 @@ export class BookDetail {
     this.error.set(error);
     const previous=this.book();
     this.book.set(b);
-    if (!b || b.id !== previous?.id) { this.selectedVariantId.set(null); this.variantNotice.set(''); }
+    if (!b || b.id !== previous?.id) { this.selectedVariantId.set(null); this.variantNotice.set(''); this.selectedMedia.set(0); }
     if (b && this.selectedVariantId() && !b.variants.some(v=>v.id===this.selectedVariantId() && v.available)) {
       this.selectedVariantId.set(null);
       this.variantNotice.set('Biến thể đã chọn đã hết hàng. Vui lòng chọn lại.');
