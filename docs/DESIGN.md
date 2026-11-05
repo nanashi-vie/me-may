@@ -61,7 +61,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 ## Desktop — thứ tự từ trên xuống
 
 1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” trên desktop (>720px); ẩn trên mobile (≤720px). Không tự nhận freeship/giảm giá.
-2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
+2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Danh sách quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Cách mua · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
    - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
@@ -123,7 +123,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–6 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `Quan tâm` (viền đỏ) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → chọn tình trạng (biến thể) → tình trạng thực tế/mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, `Quan tâm`/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); sách nhiều biến thể mà chưa chọn thì nhắc “Vui lòng chọn tình trạng còn hàng” và cuộn tới bộ chọn, không mở hộp thoại. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
+Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–6 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → chọn tình trạng (biến thể) → tình trạng thực tế/mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); sách nhiều biến thể mà chưa chọn thì nhắc “Vui lòng chọn tình trạng còn hàng” và cuộn tới bộ chọn, không mở hộp thoại. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -137,6 +137,18 @@ Các nút trên detail:
 Hai nút tư vấn dùng chung hotline Zalo cá nhân có zBusiness. Nội dung soạn sẵn gồm mục đích hỏi, mã, tên, giá tham khảo và URL; hết hàng đổi mục đích thành hỏi sách tương đương. Chỉ dùng điền sẵn khi đã kiểm chứng được với kênh thực tế. Phương án MVP: mở hướng dẫn với nội dung đã soạn, nút “Sao chép” và “Mở Zalo”; khách dán rồi gửi. Clipboard thất bại có ô văn bản chọn/copy thủ công. Không tự gửi tin, không tự giữ sách; thiếu link hotline/nhóm thật phải được giải quyết trước nghiệm thu.
 
 Tối đa sáu ảnh public; ảnh/video thực tế bổ sung trao đổi qua Zalo. Mô tả tình trạng/lỗi phải dễ thấy, không có ảnh lỗi không có nghĩa không có lỗi. Không bịa ISBN/tuổi/author. Khi archived, public URL không trả chi tiết cuốn; public preview không dùng endpoint admin.
+
+### Kệ sách cùng NXB và cùng thể loại (duyệt 05/11)
+
+Dưới phần thông tin chi tiết cuốn, hiển thị 2 section kệ sách liên quan theo mẫu:
+1. `SÁCH CÙNG NHÀ XUẤT BẢN`
+2. `SÁCH CÙNG THỂ LOẠI`
+
+- **Tiêu đề section:** In hoa, căn giữa với hai đường kẻ ngang mảnh phân cách (`.section-divider`).
+- **Bố cục kệ:** Dùng carousel ngang với thẻ `app-book-card` chuẩn Mẹ Mây. Desktop hiển thị 5 thẻ/khung kèm hai nút tròn điều hướng `<` và `>` ở hai mép ngoài; tablet 3 thẻ; mobile 2 thẻ (hoặc vuốt ngang cảm ứng mượt mà).
+- **Link "Xem thêm >>":** Nằm ở góc dưới bên phải mỗi kệ. Kệ NXB dẫn tới `/sach?q={publisher}` (backend mở rộng match `q` với publisher); Kệ thể loại dẫn tới `/sach?category={categoryCode}`.
+- **Trạng thái rỗng:** Nếu cuốn sách không có NXB hoặc không có cuốn khác cùng NXB/thể loại, hiển thị thông báo "Chưa có sách khác cùng nhà xuất bản." / "Chưa có sách khác cùng thể loại." và ẩn link "Xem thêm >>".
+- **Dữ liệu:** Endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, chỉ lấy sách `PUBLISHED`, loại trừ chính cuốn đang xem (`id != currentId`), ưu tiên `AVAILABLE` trước và sắp xếp `published_at DESC`.
 
 ## Danh sách quan tâm — khách mobile
 

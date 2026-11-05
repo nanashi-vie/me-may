@@ -1,7 +1,17 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách — 05/11/2026
+
+- Đã hoàn tất trên worktree `dev-ui`:
+  - Cập nhật nhãn CTA lưu sách rõ ràng: `♡ Thêm vào danh sách quan tâm` (khi đã lưu đổi thành `♥ Đã thêm vào danh sách`); đổi header public layout thành `Danh sách quan tâm` kèm badge số lượng.
+  - Bổ sung 2 kệ sách liên quan dưới trang chi tiết `/sach/:slug`: `SÁCH CÙNG NHÀ XUẤT BẢN` và `SÁCH CÙNG THỂ LOẠI` với đường kẻ ngang phân cách hai bên tiêu đề.
+  - Carousel ngang desktop 5 thẻ `app-book-card` kèm nút trượt `<` / `>`, tablet 3 thẻ, mobile 2 thẻ hoặc vuốt mượt mà; link `Xem thêm >>` góc phải dẫn tới `/sach?q={publisher}` hoặc `/sach?category={code}`; fallback thông báo rõ khi rỗng.
+  - Backend cung cấp endpoint `GET /api/v1/books/{slug}/related` và mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
+  - Kiểm chứng: Vitest 37/37 files (189/189 tests PASS), backend integration tests PASS, `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
+
 
 ## Rà soát project — 05/11/2026
 
