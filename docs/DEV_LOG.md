@@ -1181,3 +1181,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã đóng browser/serverQA. Chỉ sửa worktree me-may/dev; cập nhật DESIGN/PROGRESS/
   VERIFICATION, trần dòng/linklocal/git diff --check đạt. Chưa deploy; bàn giao
   commit/pushdev để user merge main.
+
+### S039-C01 — 05/11/2026 — xóa README.md ở root và gộp hướng dẫn chạy local/Auth M1 vào ARCHITECTURE.md
+
+- Yêu cầu user: kiểm tra `README.md` ở root và xóa hoàn toàn vì chứa tiến độ dự án nội bộ trùng lặp.
+- Thay đổi:
+  - Xóa `README.md` ở root.
+  - Gộp mục `Chạy local, kiểm tra và Auth M1` vào `docs/ARCHITECTURE.md` và bỏ dòng `README.md` trong sơ đồ cấu trúc thư mục.
+  - Cập nhật liên kết/tham chiếu tại `docs/README.md`, `AGENTS.md`, `docs/MASTER_PLAN.md`, `docs/VERIFICATION.md`, `code/backend/run-local.sh` và `docs/PROGRESS.md`.
+- Kiểm tra:
+  - Kiểm tra trần 400 dòng cho toàn bộ file markdown (ngoại trừ `DEV_LOG.md`), kiểm tra liên kết local và `git diff --check`: PASS.
+  - Không thay đổi mã nguồn runtime frontend/backend (test suite `npm test` / `mvnw verify` chưa chạy lại trong phiên dọn tài liệu này).
+- Bước tiếp theo: thay đổi đang ở local worktree `me-may` (`dev`), sẵn sàng commit/push khi user yêu cầu.

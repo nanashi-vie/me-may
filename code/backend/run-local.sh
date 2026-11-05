@@ -2,7 +2,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 if [[ ! -f ../../.env ]]; then
-  echo 'Missing root .env. See .env.example and README.' >&2
+  echo 'Missing root .env. See .env.example and docs/ARCHITECTURE.md.' >&2
   exit 1
 fi
 set -a

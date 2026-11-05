@@ -96,7 +96,7 @@ Review độc lập:4 Important đã sửa một lượt, không re-review: serv
 
 ## M4 local — wishlist và hỏi mua nhiều cuốn
 
-Ngày24/10/2026, branch `codex/m4-wishlist`, baseline main a0a2642. User duyệt toàn bộ plan và checkbox chọn một phần danh sách. Không migration/dependency mới, không order/giữ sách. Contract và hành vi ở ARCHITECTURE/DESIGN, cách dùng ở README root.
+Ngày24/10/2026, branch `codex/m4-wishlist`, baseline main a0a2642. User duyệt toàn bộ plan và checkbox chọn một phần danh sách. Không migration/dependency mới, không order/giữ sách. Contract và hành vi ở ARCHITECTURE/DESIGN.
 
 | Kiểm tra | Kết quả/bằng chứng |
 |---|---|

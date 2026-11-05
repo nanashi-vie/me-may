@@ -28,7 +28,7 @@
 
 ### Phạm vi M1 local đã thực hiện
 
-Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [README](../README.md); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Các feature tiếp theo đã triển khai; contract hiện hành ở CATALOGUE/ARCHITECTURE. DockerRender/Workers đã có, CI/CD/productionVPS chưa nghiệm thu; bảng milestone bên dưới không thay snapshot PROGRESS.
+Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [ARCHITECTURE](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Các feature tiếp theo đã triển khai; contract hiện hành ở CATALOGUE/ARCHITECTURE. DockerRender/Workers đã có, CI/CD/productionVPS chưa nghiệm thu; bảng milestone bên dưới không thay snapshot PROGRESS.
 
 ## 0. Chốt quyết định và giới hạn
 
@@ -254,7 +254,7 @@ Baseline hiện tại: Angular SSR trên Cloudflare Workers; Neon PostgreSQL tes
 
 ### 5.2. API contract khởi điểm (minh họa)
 
-Contract M2 ở [CATALOGUE](CATALOGUE.md#7-api-quản-trị-catalogue): `/api/v1/admin/books` lưu BookCopy/Listing cùng transaction/version, upload qua backend. API public M3/M4 đã triển khai; contract hiện hành ở README/ARCHITECTURE, UX ở DESIGN và bằng chứng ở VERIFICATION.
+Contract M2 ở [CATALOGUE](CATALOGUE.md#7-api-quản-trị-catalogue): `/api/v1/admin/books` lưu BookCopy/Listing cùng transaction/version, upload qua backend. API public M3/M4 đã triển khai; contract hiện hành ở [ARCHITECTURE](ARCHITECTURE.md), UX ở DESIGN và bằng chứng ở VERIFICATION.
 
 ```text
 GET  /api/v1/books?q=&category=&binding=&age=&sort=&page=

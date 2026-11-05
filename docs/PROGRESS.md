@@ -8,6 +8,10 @@ Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và c
 - Đã sửa trên worktree dev: logo luôn hiện400ms khi mở/reload rồi fade120ms,
   kể cả HTML SSR/cache đã có sẵn. 186test, SSR/Workers/proxy và browser QA đạt.
   Chờ user merge main/deploy bản logo mới.
+- Đã xóa `README.md` ở root theo yêu cầu user, gộp phần lệnh chạy/test local và
+  bảng Auth M1 vào [ARCHITECTURE](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1),
+  cập nhật toàn bộ liên kết tại `docs/README.md`, `AGENTS.md`, `MASTER_PLAN.md`,
+  `VERIFICATION.md` và `code/backend/run-local.sh`.
 
 ## Cache public và trạng thái tải — 04/11/2026
 
