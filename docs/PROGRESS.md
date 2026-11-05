@@ -3,6 +3,18 @@
 Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Rà soát project — 05/11/2026
+
+- Frontend187/187; backend183run/0failure/0error/3live-provider skip; SSR/Workers
+  build, proxy workerd, Wrangler dry-run và11test tooling Python đạt.
+- Audit: production0, toàn cây16moderate từ glob/minimatch trong dev tooling;
+  chưa sửa dependency. Theo dõi cập nhật tương thích, không downgrade Angular
+  theo gợi ý audit. Kết quả/bằng chứng/giới hạn ở DEV_LOG S040-C02.
+- Workflow chỉ có main do commit trực tiếp, chưa từng bị xóa khỏi dev. Dev không
+  cần file để chạy app; khuyến nghị đồng bộ file, giữ publish main. Chưa đổi CI.
+- Docs đã sửa host/CI/repository và thêm rollout V13; chưa smoke live, kiểm thiết
+  bị thật hoặc đóng gate release. Chênh lệch local preview trên main cần xem riêng.
+
 ## Logo mở trang — 05/11/2026
 
 - Đã sửa trên worktree dev: logo luôn hiện400ms khi mở/reload rồi fade120ms,
@@ -117,7 +129,7 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 | Gate | Bằng chứng còn thiếu / điều kiện đóng |
 |---|---|
-| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V12 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
+| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V13 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
 | Backfill ảnh public |63ACTIVE media mới dryrunpending63, chưaapplyv2 đủ320/640×JPEG/WebP; verify MIME/magic/dimensions trước frontendpicture, không dùng checkpointJPEG640 cũ |
 | Hiệu năng public |Lighthouse Mobile3run mỗi Home/detail cố định/wishlist; từngrun LCP≤2,5s/CLS≤0,1; detail lần đo online cuối FAIL, wishlist cóoutlier; sourcefix local chưa có đo lại online, cold Render/Neon đo riêng |
 | Backup vận hành |Dump21sách/63mediarefs đãrestorelocal và nguồn63JPG verify; còn lịch backup/retention/người phụ trách/bản saooffhost và bằng chứng khôi phục theo chính sách đó; scratchrestore cũ đã xóa theo user |

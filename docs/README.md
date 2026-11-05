@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật01/11/2026. Đây là chỉ mục duy nhất. User đóng phạm vi tính năng để
+Cập nhật05/11/2026. Đây là chỉ mục duy nhất. User đóng phạm vi tính năng để
 chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Bắt đầu hoặc tiếp tục phiên
@@ -21,6 +21,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
 | Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V2/16cột và V1compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md) |
 | Chạy local, auth, lệnh test/build | [ARCHITECTURE — chạy local và Auth M1](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1), [CATALOGUE](CATALOGUE.md) |
+| GitHub Actions, chênh lệch dev/main | [DEPLOYMENT — Git workflow](DEPLOYMENT.md#git-workflow), [DEV_LOG — rà soát](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow) |
 | Rollout migration/backfill, recovery/rollback | [DEPLOYMENT](DEPLOYMENT.md), [PROGRESS](PROGRESS.md) |
 | Đo hiệu năng và smoke sau UI | [DEPLOYMENT — đo QA](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện), [smoke](DEPLOYMENT.md#smoke-còn-mở-sau-rollout-và-sau-ui-cuối), [bằng chứng nhập/publish](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md) |
 | Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |

@@ -1307,3 +1307,59 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm test` và `npm run build` (cwd `code/frontend`) trên nhánh `dev` sau merge: PASS (37/37 files, 187/187 tests, 0 warning).
   - Kiểm tra trần 400 dòng tài liệu và `git diff --check`: PASS.
 - Bước tiếp theo: commit merge và push lên `origin/dev`.
+
+### S040-C01 — 05/11/2026 — bắt đầu rà soát project và lịch sử GitHub Actions
+
+- Mục tiêu/phạm vi: rà soát cấu trúc, contract/docs, kiểm tra frontend/backend/Workers;
+  truy nguyên `.github/workflows` trên dev/main và đánh giá vai trò CI/publish.
+- Trạng thái đầu phiên: `dev` sạch tại `a0caa10`, đã fetch origin; dev bằng origin/dev.
+  Không deploy/migrate hoặc ghi dữ liệu production.
+- Đang kiểm tra; chưa có kết luận test mới. Sẽ cập nhật bằng chứng và docs liên quan.
+
+### S040-C02 — 05/11/2026 — kết quả rà soát project và workflow
+
+1. Phạm vi: kiểm Git sau fetch, cấu trúc qua codebase-memory graph, chọn đọc các
+   điểm security/RBAC, transaction/version và import receipt; đối chiếu config
+   runtime/hosting/migration với docs; chạy lại bộ kiểm tra tự động local.
+   Không phải chứng nhận mọi nhánh logic hoặc nghiệm thu production.
+2. Kết luận Git:
+   - `dev`/`origin/dev` tại `a0caa10`; `origin/main` tại `35dec00` lúc kiểm.
+   - `.github/workflows/publish-backend.yml` thêm trên main ở `64b7b4a`, cập nhật
+     `1b2a1b9` và `4be7bda`; `git log dev -- .github` rỗng. Không có lần xóa trên dev.
+   - Workflow PR vào main test PostgreSQL17/Java21; push main lọc backend/workflow;
+     job publish cần test và main/non-PR, GHCR tags main/SHA. Không kiểm frontend.
+     Dev không cần file để chạy app; nên đồng bộ file để tránh lệch nguồn quản lý.
+     Chưa copy/sửa trigger vì yêu cầu hiện tại là rà soát và docs, không mở CI mới.
+   - Main còn commit riêng `86363ac` thêm preview local, có `MEMAY_WORKER_NAME`
+     giá trị `ttp://127.0.0.1:8787`; dev không có block này. Không merge toàn bộ main
+     chỉ để lấy workflow; preview production cũng cần kiểm routing như DEPLOYMENT.
+3. Kiểm tra đã chạy từ repo/workspace hiện tại:
+   - `git fetch origin`, log/tree/diff dev/main: đạt, xác định được nguồn khác biệt.
+   - `npm test` (code/frontend):37file/187test PASS.
+   - `bash code/backend/run-local.sh -B -ntp verify` (root):183run/0failure/0error/
+     3skip live-provider, JAR build PASS. Lần sandbox đầu FAIL do socket PostgreSQL
+     bị chặn và Mockito không attach JVM; chạy lại ngoài sandbox PASS. Chỉ DBtest.
+   - `npm run build`, `npm run build:workers` (code/frontend): PASS, không warning.
+     Sandbox trước đó thoát134; chạy lại ngoài sandbox đạt, không đổi source.
+   - `npm run check:workers:proxy`: PASS POST/query/cookie/CSRF/multipart/
+     Set-Cookie/server-time/no-store, canonical SSR và backend-down503.
+   - `npm run deploy:workers -- --dry-run`: PASS, không deploy; binding xác nhận
+     API homelab, site memaybooks.com, public cache=true và version metadata.
+   - `python3 -m unittest discover -s scripts/deploy -p 'test_*.py'`:7PASS;
+     tương tự `scripts/book-performance`:4PASS (cwd root).
+   - `npm audit --json`:16moderate/0high/0critical; hai advisory gốc glob và
+     minimatch trong dev tooling, các mục khác là chuỗi phụ thuộc. Audit production
+     `npm audit --omit=dev --json`:0. Chưa sửa lockfile; không dùng đề xuất downgrade
+     Angular17 của audit. Cần đánh giá bản vá tương thích trước thay dependency.
+   - Markdown trần400 (trừ DEV_LOG), file targets/anchors, không tracked secret/cache
+     và13asset nguồn public tracked: PASS trước commit; `git diff --check`: PASS.
+   - Logs kiểm tra ở `/tmp/memay-s040-*`, không commit runtime log.
+4. Docs cập nhật: README index, MASTER_PLAN và ARCHITECTURE xác định đích Dell/
+   Dokploy hiện hành; DEPLOYMENT ghi lịch sử/trigger workflow, repo remote đúng và
+   rollout V13/9thể loại; PROGRESS/VERIFICATION ghi bằng chứng và hạn chế.
+   Không đổi runtime code/workflow, không tự migrate/deploy hoặc sửa main.
+5. Giới hạn/bước tiếp: chưa smoke live/schema/revision/image digest Dokploy, chưa
+   chạy lại browser visual/thiết bị thật/Lighthouse hoặc provider thật. Giữ gate
+   release hiện hành; xử lý dependency dev, đồng bộ workflow và kiểm preview là
+   các việc tiếp theo, không coi local PASS là đóng gate production.
+   Bàn giao tài liệu trong cùng commit trên dev, push origin/dev theo quy ước.

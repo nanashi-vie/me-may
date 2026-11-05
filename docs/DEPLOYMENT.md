@@ -31,9 +31,25 @@ service qua dashboard27/10; online smoke đạt, M5 chưa đóng. Local DB_URL/T
 Code được agent bàn giao trên `dev`; user tự merge qua `main` khi sẵn sàng. Hai
 service production vẫn theo branch `main`, không tự đổi deployment sang dev.
 
+### GitHub Actions — đối chiếu 05/11/2026
+
+- `origin/main` có `.github/workflows/publish-backend.yml`; `dev` chưa từng có file
+  này, không có commit xóa. File thêm trực tiếp main ở `64b7b4a` (01/11), sửa ở
+  `1b2a1b9`/`4be7bda` (03/11); các commit riêng main chưa tích hợp về dev.
+- Workflow test backend với PostgreSQL17 trên PR vào main; push main chỉ chạy khi
+  backend/workflow đổi. Publish GHCR `:main` và `:${github.sha}` sau test, chỉ ở main
+  ngoài sự kiện PR; manual dispatch dev (nếu có file) cũng không publish.
+- Dev không cần workflow để chạy app/build local; main vẫn giữ workflow khi merge
+  dev bình thường vì dev chưa từng xóa file. Nên đồng bộ nguyên file từ main về dev
+  để quản lý cùng code; muốn CI trên push dev phải thêm trigger riêng. Chưa thay
+  workflow/trigger trong đợt rà soát; không bật auto deploy dev.
+- Publish image không chứng minh Dokploy đã pull/redeploy image đó. Phải kiểm
+  revision/image digest thực tế; frontend build/deploy qua Cloudflare riêng.
+- Nguồn trigger: [GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+
 ## 1. Cloudflare Workers Git integration
 
-- Repository: `nanashi193/me-may`, production branch `main`.
+- Repository: `nanashi-vie/me-may` (Git remote hiện hành), production branch `main`.
 - Root directory/Path: `code/frontend` (ảnh dashboard đang chọn thư mục frontend).
 - Worker name: **me-may**, phải khớp `wrangler.jsonc`.
 - Build command: để trống; Wrangler custom build tự chạy `npm run build:workers`.
@@ -45,7 +61,7 @@ service production vẫn theo branch `main`, không tự đổi deployment sang 
 Worker production dùng Custom Domain `memaybooks.com` và đặt
 `MEMAY_SITE_ORIGIN=https://memaybooks.com` cho SSR, canonical, Open Graph và link hỏi
 sách. Route production trên `workers.dev` được tắt khi deploy cấu hình này.
-Trình duyệt gọi `/api` cùng origin, Worker chuyển tiếp sang Render qua
+Trình duyệt gọi `/api` cùng origin, Worker chuyển tiếp sang API homelab qua
 `MEMAY_API_ORIGIN`. Forwarded headers bị bỏ trước Angular và Worker kiểm tra
 request khớp origin đã cấu hình.
 
@@ -337,7 +353,7 @@ trạng thái và số đo đã có ở VERIFICATION chủ đề, không mở l�
 - Recovery/rollback/quota/loginratelimit/runtimeleastprivilege/offhostretention
   vẫn phải có bằng chứng trước nghiệmthu; xem rolloutV6–V12 ở trên.
 
-## Thể loại chung V12 và format importV2
+## Thể loại chung V12/V13 và format importV2
 
 V12 thêm Tập đọc/READING_PRACTICE và Nấu ăn - thủ công - activity book/
 COOKING_CRAFT_ACTIVITY, sort6/7; không sửa V3/6categorycũ hoặc dữ liệu sách.
@@ -345,6 +361,9 @@ Sau backup/rollout backend, taxonomy public/admin phải có8mục; smoke form/m
 publicfilter/backnavigation và import nhãn/code. Frontend mới cần backend đãmigrate.
 Chưa migrateonline trong phiên01/11; không coi testDBV12 là liveđãcó2lựachọn.
 ImportV2 không có migration riêng, dùng receiptV11/schema_version2; giữ receiptV1.
+V13 thêm `BIBLE`/Kinh Thánh, sort8; candidate hiện có9thể loại. Sau backup và
+rollout V13, smoke taxonomy/form/publicfilter/import với nhãn và code mới; chưa
+xác minh schema live trong đợt rà soát05/11.
 QAworkload V1=100sách/500variants, V2=100sách/100variantdefault; không trộn số đo.
 Header16/dòng2data/nhãn/defaults và retry hỗtrợV1 phải smoke trên candidateonline.
 

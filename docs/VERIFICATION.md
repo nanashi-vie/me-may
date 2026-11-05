@@ -350,7 +350,6 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Trace local fixedMM1+delay1500ms tái hiện2shift0,6000/0,5838, saufix khôngshift/LCPobserved440ms. Đây không phải Lighthouse. Logo208WebP10142B; chuẩn hóaalpha/EXIFvàlive4variant isolated+cleanupPASS.
 - Backfill63ACTIVE ảnh thật mới dryrun/pending63, chưaapplyv2. OnlineMM20 trả503 trongphiên, gateLighthouse/coldstart/rollback/quota/security/runtimeleastprivilege/offhostretention/productionVPS cònmở; user không cần nhập lại pilot21cuốn.
 
-
 ## Tối ưu UI navbar và trang danh sách sách — 02/11/2026
 
 - Unit test Vitest (`npm test`): 37/37 file, 172/172 test PASS (thêm test active state nav, dropdown focus/Escape trả focus, sidebar `<dialog>` đóng khi đổi route, đồng bộ `q`/placeholder `Bạn đang tìm…`, tiêu đề/`<title>` theo thể loại, chip Paperback/Hardcover chỉ cho Picture book, link thể loại giữ `q/age/sort` và reset `page/binding`, Áp dụng độ tuổi, Xóa `q`, và link thể loại từ Bộ sưu tập sang `/sach?category=`).
@@ -371,7 +370,6 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Vitest 37/37 file, 186/186 test PASS (thêm test một ảnh lớn + thumbnail đổi ảnh, nút trong `.media-col`, nhắc chọn biến thể khi chưa chọn, cố định khung `.cover-link` 4:5 + viền `.book-card`, thể loại thứ 9 `BIBLE` / `Kinh Thánh`, và cache `immutable` 1 năm cho `/fonts/*.woff2`); Backend `CategoryExpansionTest,BookImportV2Test` 12/12 PASS (`V13__add_bible_category.sql`); Node SSR build, Workers build (0 warning) và `check:workers:proxy` PASS.
 - Chrome headless (SSR local + mock API, cổng tạm 4009/8099, đã dừng): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` `.woff2` (`vietnamese` + `latin`) nạp `loaded`, `.brand-name`/`h1`/`h2` dùng `Baloo 2` (weight `700`), `body`/`.public-nav`/`.book-card h3` dùng `Nunito`; `1280×900` trên `/sach` 4 thẻ (2 ảnh dọc, 2 ảnh ngang) có `coverBottom=592`, `codeTop=603`, `titleTop=626`, `priceTop=683`, `heartTop=755` trùng khít từng pixel; `390×844` không tràn ngang. Chưa kiểm tra trên thiết bị thật.
 
-
 ## Cache public và trạng thái tải — 04/11/2026
 
 - Frontend `npm test`:184/184 PASS. Backend `run-local.sh -B -ntp verify`:
@@ -391,9 +389,11 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Chưa deploy, chưa cấu hình token purge hoặc đo cải thiện TTFB online. Bắt buộc
   smoke update/hide/media/sale/deploy theo DEPLOYMENT sau khi bật cache thật.
 
-
 ## Logo luôn hiện — 05/11/2026
 
 - Worktree dev:186test, build SSR/Workers và proxy PASS. Playwright1280×900/
   390×844 xác nhận logo hiện cả SSR/cache/reload,400ms + fade120ms, reduced-motion
   bỏ fade, đổi route không lặp và không overflow. Chưa deploy bản logo này.
+
+Rà soát tổng thể local05/11 (test/build/audit/workflow), giới hạn và gate:
+[DEV_LOG S040-C02](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow).
