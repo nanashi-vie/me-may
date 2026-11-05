@@ -1363,3 +1363,44 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    release hiện hành; xử lý dependency dev, đồng bộ workflow và kiểm preview là
    các việc tiếp theo, không coi local PASS là đóng gate production.
    Bàn giao tài liệu trong cùng commit trên dev, push origin/dev theo quy ước.
+
+
+### S041-C01 — 05/11/2026 — Brainstorm tình trạng và tồn gộp
+
+1. Phạm vi user: giải thích Đánh giá tình trạng/Mô tả tình trạng lỗi; brainstorm
+   bỏ khối public và biến thể nhưng giữ tồn gộp, cân nhắc ecommerce tương lai.
+2. Git: checkout sạch ban đầu trên main; git worktree list chỉ có checkout chính
+   và dev-ui. Đã git switch dev theo yêu cầu; dev khớp origin/dev tại7ec9818.
+   Không tạo worktree mới, không sửa main/dev-ui hoặc chạy dịch vụ.
+3. Đã đọc chỉ mục, PROGRESS, checkpoint cuối, DATA, phần liên quan MASTER_PLAN/
+   CATALOGUE/ARCHITECTURE; khám phá qua MCP graph và đọc form/template hiện hành.
+   Grade là phân loại chung tùy chọn ở form; note chung bắt buộc trước publish;
+   khối Tình trạng thực tế render conditionNote. Biến thể hiện có tên/tồn riêng,
+   dùng chung giá khoảng/ảnh; không đủ tự thân cho mua theo tình trạng/giá cố định.
+4. Đang làm rõ cách bán các bản cùng tựa khác tình trạng/giá. Chưa có quyết định
+   thiết kế được duyệt; không đổi schema, API, import, runtime hoặc baseline.
+   Chỉ cập nhật hai file bàn giao. Không chạy test/build vì không đổi code.
+5. Bước tiếp: trao đổi ví dụ bán thực tế, rồi so sánh phương án phù hợp trước
+   ghi spec. Thay đổi tài liệu còn local trên dev, chưa commit/push/deploy.
+
+
+### S041-C02 — 06/11/2026 — Thiết kế nhập giá/kg, tồn gộp, ghi chú nội bộ
+
+1. User chốt xác nhận bản/giá qua tin nhắn; bỏ tình trạng public và hai field
+   form; ghi chú nội bộ optional giữ mô tả cũ; tồn gộp tự tăng; cảnh báo trùng
+   tên không chặn lưu/publish; hướng giữ cấu trúc biến thể bên trong an toàn.
+   Giá từ = đơn giá/kg × gram/1000; giá đến +15%, làm tròn lên1.000đ, sửa tay được.
+2. Tạo BOOK_ENTRY_SIMPLIFICATION_DESIGN.md, đăng ký docs/README và cập nhật
+   PROGRESS. Đề xuất thêm: đơn giá nullable cho sách cũ/import, trigger tính lại
+   khi user sửa input, giữ giá đã lưu khi load, boundary private ở backend,
+   mapping tồn tổng không xóa ID, giữ format import/receipt và grade legacy.
+   Các chi tiết này chờ duyệt, chưa thay contract MASTER_PLAN/DATA/CATALOGUE.
+3. Dùng Superpowers brainstorming và verification-before-completion. Builder
+   check bằng agent review_entry_design đọc độc lập: “nothing important left”.
+   Đã đối chiếu code form, contract catalogue/import và Git dev7ec9818.
+4. Kiểm tra tài liệu: git diff --check, trần400dòng Markdown quản lý (trừ DEV_LOG)
+   và target local của các link thêm/sửa: PASS. Spec193dòng, README59dòng,
+   PROGRESS178dòng; không đổi runtime hoặc gate nghiệm thu.
+   Test/build ứng dụng chưa chạy vì không thay code/schema/API/runtime.
+5. Bước tiếp: user duyệt thiết kế rồi dùng writing-plans; chưa triển khai hoặc
+   chạy migration, không truy cập/đổi live. Bàn giao docs trên dev; chưa push.

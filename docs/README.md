@@ -17,6 +17,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
+| Thiết kế nhập giá/kg, tồn gộp, ghi chú nội bộ (chờ duyệt) | [BOOK_ENTRY_SIMPLIFICATION_DESIGN](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md) |
 | Tồn kho/biến thể | [DATA](DATA.md#tồn-kho-và-biến-thể--quyết-định-30102026), [ARCHITECTURE](ARCHITECTURE.md#tồn-theo-biến-thể--contract-30102026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
 | Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V2/16cột và V1compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md) |
@@ -37,7 +38,9 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
   Chưa migrate/deployonlineV12; gate nằmPROGRESS/DEPLOYMENT, không mở lại feature khác.
 
 - Gate còn mở và điều kiện đóng chỉ theo [PROGRESS](PROGRESS.md); thao tác/tiêu chí
-  chi tiết ở DEPLOYMENT. Không có plan feature đang thực thi sau khi khép scope.
+  chi tiết ở DEPLOYMENT. Phạm vi nhập sách mới đang chờ duyệt thiết kế tại
+  [BOOK_ENTRY_SIMPLIFICATION_DESIGN](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md); chưa có
+  plan triển khai hoặc thay đổi baseline cho phạm vi này.
 - Spec/plan M2, M5 completion và hiệu năng nhập/publish đã gộp thành contract,
   quy trình đo và bằng chứng rồi gỡ01/11; không tạo archive hoặc plan trùng.
 - Tối ưu UI: đợt 1 (navbar desktop dropdown 8 thể loại, mobile header + sidebar `<dialog>`,

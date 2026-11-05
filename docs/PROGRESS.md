@@ -1,7 +1,17 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+## Đơn giản hóa nhập sách — thiết kế chờ duyệt06/11/2026
+
+- User chọn tồn gộp/tự tăng tồn, giữ cấu trúc biến thể bên trong để tương thích;
+  bỏ tình trạng public/form, ghi chú nội bộ optional giữ mô tả cũ.
+- Đơn giá/kg × gram → giá từ; giá đến +15%, làm tròn lên1.000đ; hai giá sửa được.
+  Trùng tên chỉ cảnh báo theo style hiện tại, vẫn lưu/publish được.
+- [Thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md) đã qua builder check, chờ user
+  duyệt các đề xuất chi tiết trước lập plan/code. Không đổi baseline/runtime.
+- Checkpoint S041-C02 trong DEV_LOG. Tài liệu trên dev, chưa push/deploy.
 
 ## Rà soát project — 05/11/2026
 
