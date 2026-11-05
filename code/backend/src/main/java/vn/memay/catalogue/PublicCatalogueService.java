@@ -26,6 +26,8 @@ public class PublicCatalogueService {
             + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
             + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code";
 
+    private record RelatedTarget(long bookCopyId, String publisher, Long categoryId) {}
+
     public BookDtos.Page<Book> list(String q, String category, String binding, List<String> ages, String sort, int page,
             String collection) {
         return list(q, category, binding, ages, sort, page, collection, false);
@@ -96,7 +98,7 @@ public class PublicCatalogueService {
     }
 
     public Book detail(String slug) {
-        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
+        List<Book> found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
                 (r, n) -> book(r, n, true),
                 slug);
         if (found.isEmpty())
@@ -105,15 +107,16 @@ public class PublicCatalogueService {
     }
 
     public RelatedBooks related(String slug) {
-        var current = jdbc.query(
+        List<RelatedTarget> current = jdbc.query(
                 "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED'",
-                (r, n) -> new Object[] { r.getLong("id"), r.getString("publisher"), r.getObject("category_id", Long.class) },
+                (r, n) -> new RelatedTarget(r.getLong("id"), r.getString("publisher"), r.getObject("category_id", Long.class)),
                 slug);
         if (current.isEmpty())
             throw new AdminApiException(404, "not_found");
-        long currentId = (Long) current.getFirst()[0];
-        String publisher = (String) current.getFirst()[1];
-        Long categoryId = (Long) current.getFirst()[2];
+        RelatedTarget first = current.getFirst();
+        long currentId = first.bookCopyId();
+        String publisher = first.publisher();
+        Long categoryId = first.categoryId();
 
         List<Book> samePublisher = List.of();
         if (publisher != null && !publisher.isBlank()) {
@@ -149,12 +152,12 @@ public class PublicCatalogueService {
             }
         }
         var ordered = new LinkedHashSet<>(codes);
-        var books = jdbc.query(
+        List<Book> books = jdbc.query(
                 SELECT + FROM + " where l.publication_status='PUBLISHED' and b.book_code in ("
                         + String.join(",", Collections.nCopies(ordered.size(), "?")) + ")",
-                this::book, ordered.toArray());
+                this::book, (Object[]) ordered.toArray());
         var byCode = new HashMap<String, Book>();
-        for (var book : books)
+        for (Book book : books)
             byCode.put(book.bookCode(), book);
         return ordered.stream().filter(byCode::containsKey).map(byCode::get).toList();
     }
@@ -166,9 +169,9 @@ public class PublicCatalogueService {
     private Book book(ResultSet r, int n, boolean includeVariants) throws SQLException {
         long id = r.getLong("id"), listing = r.getLong("listing_id");
         String slug = r.getString("slug");
-        var ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
+        List<String> ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
-        var media = jdbc.query(
+        List<Media> media = jdbc.query(
                 "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
                 (m, i) -> new Media(m.getString("role"), m.getString("alt"),
                         "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),
