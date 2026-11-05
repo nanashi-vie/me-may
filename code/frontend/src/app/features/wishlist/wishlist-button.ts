@@ -17,7 +17,7 @@ import { WishlistStore } from './wishlist-store';
     (click)="store.toggle(bookCode())"
   >
     <span aria-hidden="true">{{ store.has(bookCode()) ? '♥' : '♡' }}</span>
-    {{ store.has(bookCode()) ? 'Đã quan tâm' : 'Quan tâm' }}
+    {{ store.has(bookCode()) ? 'Đã thêm vào danh sách' : 'Thêm vào danh sách quan tâm' }}
   </button>`,
   styles: `
     :host {
@@ -26,18 +26,25 @@ import { WishlistStore } from './wishlist-store';
     .heart {
       min-height: 44px;
       margin-top: var(--heart-gap, 0.6rem);
-      width: var(--heart-width, auto);
-      font-size: 0.82rem;
-      padding: 0.5rem 0.65rem;
+      width: var(--heart-width, 100%);
+      font-size: 0.78rem;
+      line-height: 1.25;
+      padding: 0.45rem 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      word-break: break-word;
     }
     .heart[aria-pressed='true'] {
       color: var(--red);
       border-color: var(--red);
     }
     .heart span {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       vertical-align: middle;
       margin-right: 0.25rem;
+      flex-shrink: 0;
     }
   `,
 })
