@@ -96,3 +96,35 @@ jobs:
             org.opencontainers.image.source=https://github.com/nanashi-vie/me-may
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy:
+    needs: publish
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    permissions: {}
+    steps:
+      - name: Trigger Dokploy deployment
+        env:
+          DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
+          DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
+          DOKPLOY_APPLICATION_ID: ${{ secrets.DOKPLOY_APPLICATION_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          : "${DOKPLOY_URL:?Missing GitHub Actions secret DOKPLOY_URL}"
+          : "${DOKPLOY_API_KEY:?Missing GitHub Actions secret DOKPLOY_API_KEY}"
+          : "${DOKPLOY_APPLICATION_ID:?Missing GitHub Actions secret DOKPLOY_APPLICATION_ID}"
+          payload=$(jq -nc --arg id "$DOKPLOY_APPLICATION_ID" '{applicationId: $id}')
+          status=$(curl --silent --show-error --fail --output /dev/null \
+            --write-out '%{http_code}' --connect-timeout 10 --max-time 60 \
+            --proto '=https' --request POST \
+            "${DOKPLOY_URL%/}/api/application.deploy" \
+            --header 'Accept: application/json' \
+            --header 'Content-Type: application/json' \
+            --header "x-api-key: $DOKPLOY_API_KEY" \
+            --data "$payload")
+          case "$status" in
+            2??) echo 'Dokploy accepted the deployment request; check deployment logs for completion.' ;;
+            *) echo "::error::Dokploy returned HTTP $status; deployment request was not accepted."; exit 1 ;;
+          esac

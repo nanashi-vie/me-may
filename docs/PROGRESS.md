@@ -3,6 +3,14 @@
 Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## CI/CD Dokploy — 05/11/2026
+
+- Theo ngoại lệ user duyệt: sửa workflow trực tiếp main, thêm API deploy sau GHCR
+  publish thành công; PR/dev không deploy. YAML/shell và8ca request giả PASS.
+- Cần Actions secrets DOKPLOY_URL/API_KEY/APPLICATION_ID và source Docker
+  `ghcr.io/nanashi-vie/me-may-api:main`; hướng dẫn tại DEPLOYMENT.
+- Chưa xác minh secret/live deployment. API2xx chỉ nhận yêu cầu, không là đã deploy.
+
 ## Rà soát project — 05/11/2026
 
 - Frontend187/187; backend183run/0failure/0error/3live-provider skip; SSR/Workers
