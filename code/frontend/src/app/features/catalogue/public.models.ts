@@ -33,6 +33,10 @@ export interface PublicBook {
   availability: Availability;
   media: { role: string; alt: string | null; contentPath: string; cacheKey?: string }[];
 }
+export interface RelatedBooks {
+  samePublisherBooks: PublicBook[];
+  sameCategoryBooks: PublicBook[];
+}
 export interface Collection {
   slug: string;
   name: string;

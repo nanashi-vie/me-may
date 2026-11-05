@@ -168,4 +168,89 @@
       </dl>
     </article>
   </div>
+  <section class="related-section" aria-label="Sách cùng nhà xuất bản">
+    <div class="section-divider">
+      <span>Sách cùng nhà xuất bản</span>
+    </div>
+    @if (related()?.samePublisherBooks?.length) {
+      <div class="carousel-container">
+        @if (related()!.samePublisherBooks.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav prev"
+            aria-label="Xem sách trước"
+            (click)="scrollShelf(pubShelf, -1)"
+          >
+            ‹
+          </button>
+        }
+        <div #pubShelf class="shelf-carousel">
+          @for (item of related()!.samePublisherBooks; track item.id) {
+            <div class="carousel-item">
+              <app-book-card [book]="item" [now]="clock.now()" />
+            </div>
+          }
+        </div>
+        @if (related()!.samePublisherBooks.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav next"
+            aria-label="Xem sách tiếp theo"
+            (click)="scrollShelf(pubShelf, 1)"
+          >
+            ›
+          </button>
+        }
+      </div>
+      @if (b.publisher) {
+        <div class="see-more-wrap">
+          <a [routerLink]="['/sach']" [queryParams]="{ q: b.publisher }">Xem thêm &gt;&gt;</a>
+        </div>
+      }
+    } @else {
+      <p class="shelf-empty">Chưa có sách khác cùng nhà xuất bản.</p>
+    }
+  </section>
+
+  <section class="related-section" aria-label="Sách cùng thể loại">
+    <div class="section-divider">
+      <span>Sách cùng thể loại</span>
+    </div>
+    @if (related()?.sameCategoryBooks?.length) {
+      <div class="carousel-container">
+        @if (related()!.sameCategoryBooks.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav prev"
+            aria-label="Xem sách trước"
+            (click)="scrollShelf(catShelf, -1)"
+          >
+            ‹
+          </button>
+        }
+        <div #catShelf class="shelf-carousel">
+          @for (item of related()!.sameCategoryBooks; track item.id) {
+            <div class="carousel-item">
+              <app-book-card [book]="item" [now]="clock.now()" />
+            </div>
+          }
+        </div>
+        @if (related()!.sameCategoryBooks.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav next"
+            aria-label="Xem sách tiếp theo"
+            (click)="scrollShelf(catShelf, 1)"
+          >
+            ›
+          </button>
+        }
+      </div>
+      <div class="see-more-wrap">
+        <a [routerLink]="['/sach']" [queryParams]="{ category: b.categoryCode }">Xem thêm &gt;&gt;</a>
+      </div>
+    } @else {
+      <p class="shelf-empty">Chưa có sách khác cùng thể loại.</p>
+    }
+  </section>
 }

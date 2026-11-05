@@ -23,6 +23,8 @@ import { PublicError } from '../public-error';
 import { ContactDialog } from '../contact-dialog/contact-dialog';
 import { PublicClock } from '../public-clock';
 import { WishlistButton } from '../../wishlist/wishlist-button';
+import { BookCard } from '../book-card/book-card';
+import { RelatedBooks } from '../public.models';
 import {
   AGE_LABELS,
   READING_LABELS,
@@ -34,7 +36,7 @@ import {
 } from '../../admin/books/book-copy';
 @Component({
   selector: 'app-book-detail',
-  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton],
+  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCard],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
 })
@@ -44,6 +46,7 @@ export class BookDetail {
   readonly selectedVariantId = signal<string|null>(null);
   readonly variantNotice = signal('');
   readonly selectedMedia = signal(0);
+  readonly related = signal<RelatedBooks | null>(null);
   private readonly doc = inject(DOCUMENT);
   mainMedia() {
     const m = this.book()?.media ?? [];
@@ -51,6 +54,9 @@ export class BookDetail {
   }
   selectMedia(i: number) {
     this.selectedMedia.set(i);
+  }
+  scrollShelf(el: HTMLElement, dir: number) {
+    el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: 'smooth' });
   }
   onContact(contact: ContactDialog) {
     const b = this.book();
@@ -126,17 +132,26 @@ export class BookDetail {
     combineLatest([this.route.paramMap, this.refreshRequests.pipe(startWith(undefined))])
       .pipe(
         switchMap(([p]) => {
-          this.loading.set(!this.book() || this.book()?.slug !== p.get('slug'));
+          const slug = p.get('slug')!;
+          this.loading.set(!this.book() || this.book()?.slug !== slug);
           this.verifying.set(true);
           this.error.set(0);
-          return this.api.detail(p.get('slug')!).pipe(
-            map((b) => ({ b, error: 0 })),
-            catchError((e) => of({ b: null, error: e.status === 404 ? 404 : 503 })),
+          return this.api.detail(slug).pipe(
+            switchMap((b) =>
+              (this.api.related ? this.api.related(slug) : of<RelatedBooks>({ samePublisherBooks: [], sameCategoryBooks: [] })).pipe(
+                map((rel) => ({ b, rel, error: 0 })),
+                catchError(() => of({ b, rel: { samePublisherBooks: [], sameCategoryBooks: [] }, error: 0 })),
+              ),
+            ),
+            catchError((e) => of({ b: null, rel: null, error: e.status === 404 ? 404 : 503 })),
           );
         }),
         takeUntilDestroyed(),
       )
-      .subscribe((r) => this.accept(r.b, r.error));
+      .subscribe((r) => {
+        this.related.set(r.rel);
+        this.accept(r.b, r.error);
+      });
     effect(() => {
       const b = this.book(),
         now = this.clock.now();
@@ -172,6 +187,7 @@ export class BookDetail {
     if (b && b.variants.length===1 && b.variants[0].available && !this.selectedVariantId())
       this.selectedVariantId.set(b.variants[0].id);
     if (error) {
+      this.related.set(null);
       if (this.response) this.response.status = error;
       this.meta.unavailable(error);
       return;

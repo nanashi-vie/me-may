@@ -221,4 +221,55 @@ describe('Detail refresh and public origin', () => {
     h.detectChanges();
     expect(c.variantNotice()).toContain('chọn tình trạng');
   });
+  it('renders related publisher and category shelves with see-more links', async () => {
+    const bookWithPub: PublicBook = { ...a, publisher: 'Kim Đồng', categoryCode: 'PICTURE_BOOK' };
+    const relatedPubBook: PublicBook = { ...a, id: '2', bookCode: 'MM-000002', slug: 'mm-000002', title: 'Pub Book', publisher: 'Kim Đồng' };
+    const relatedCatBook: PublicBook = { ...a, id: '3', bookCode: 'MM-000003', slug: 'mm-000003', title: 'Cat Book', publisher: 'Nhã Nam', categoryCode: 'PICTURE_BOOK' };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of(bookWithPub),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+            related: () => of({ samePublisherBooks: [relatedPubBook], sameCategoryBooks: [relatedCatBook] }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    const dividers = el.querySelectorAll('.section-divider');
+    expect(dividers.length).toBe(2);
+    expect(dividers[0].textContent?.toUpperCase()).toContain('SÁCH CÙNG NHÀ XUẤT BẢN');
+    expect(dividers[1].textContent?.toUpperCase()).toContain('SÁCH CÙNG THỂ LOẠI');
+
+    const seeMoreLinks = el.querySelectorAll<HTMLAnchorElement>('.see-more-wrap a');
+    expect(seeMoreLinks.length).toBe(2);
+    expect(seeMoreLinks[0].getAttribute('href')).toContain('q=Kim%20%C4%90%E1%BB%93ng');
+    expect(seeMoreLinks[1].getAttribute('href')).toContain('category=PICTURE_BOOK');
+  });
+  it('shows empty shelf notice when related lists are empty and hides see-more link', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({ ...a, publisher: null }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+            related: () => of({ samePublisherBooks: [], sameCategoryBooks: [] }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    expect(el.textContent).toContain('Chưa có sách khác cùng nhà xuất bản.');
+    expect(el.textContent).toContain('Chưa có sách khác cùng thể loại.');
+    expect(el.querySelectorAll('.see-more-wrap a').length).toBe(0);
+  });
 });
