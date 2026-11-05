@@ -99,8 +99,8 @@
         }
         @if (!readonly()) {
           <fieldset [disabled]="disabled()">
-            <label
-              >Vai trò ảnh<select
+            <label class="admin-field"
+              ><span class="field-label">Vai trò ảnh</span><select
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
               >
                 @for (role of roles; track role) {

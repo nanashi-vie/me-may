@@ -1158,3 +1158,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build`, `npm run build:workers` (0 warning) và `npm run check:workers:proxy` PASS.
   - Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` trạng thái `loaded`, `.brand-name`/`.hero h1` dùng `Baloo 2` weight `700`, `body`/`.public-nav`/`.book-card h3` dùng `Nunito`, 4 thẻ trên `/sach` thẳng hàng ngang từng pixel, mobile không tràn ngang. Đã đóng Chrome/server tạm.
 - Bước tiếp theo: theo yêu cầu user, merge `dev-b` vào `dev`, push `origin/dev` và xóa nhánh `dev-b` (local + remote).
+
+### S038-C01 — 05/11/2026 — nhánh dev-ui: hệ thống input field notched outlined label cho /admin
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C01. Mục tiêu: tạo nhánh `dev-ui` từ `dev`, thiết kế và triển khai lại toàn bộ UI input field, select dropdown, textarea cho trang quản trị `/admin` theo design system notched outlined label chốt qua `/grill-me`.
+2. Phạm vi & Quyết định:
+   - Nhánh: `dev-ui` tạo từ `dev` sạch (commit `8676906`).
+   - Thiết kế nhãn: Notched Outlined Label (nhãn cố định trên viền trên của ô, có nền `#ffffff` che viền, font Nunito 600 line-height 1.2, không giật vị trí khi focus hay gõ).
+   - Màu Active/Focus: Indigo `#4F46E5` kèm focus ring `rgba(79, 70, 229, 0.15)`.
+   - Dropdown (Select): bo góc 8px, ẩn mũi tên native hệ điều hành, thay bằng custom chevron SVG (`∨`) màu `#667085` (đổi `#4F46E5` khi focus).
+   - Trạng thái lỗi (Error State): viền và nhãn chuyển đỏ `#D92D20`, hiển thị icon cảnh báo tam giác (⚠️) ở góc phải ô, helper text đổi màu đỏ.
+   - Textarea: kế thừa viền notched label, bo góc 8px, hover/focus/error đồng nhất.
+   - Files thay đổi:
+     - `code/frontend/src/styles.scss`: khai báo design tokens (`--admin-field-border`, `--admin-field-hover`, `--admin-field-active`, `--admin-field-error`, `--admin-field-radius: 8px`), định nghĩa `.admin-field` notched label cutout, select chevron SVG, error alert SVG và default admin input styles.
+     - `book-editor.html` & `book-editor.scss`: áp dụng `.admin-field` cho toàn bộ input/select/textarea, sửa `priceOrder` class binding thành `priceMaxVnd`, tinh chỉnh row gap thoáng 0.5rem 1.5rem.
+     - `book-editor.spec.ts`: thêm test case kiểm chứng notched outline field labels.
+     - `login.html`: áp dụng `.admin-field` cho Email và Mật khẩu.
+     - `book-list.html` & `book-list.scss`: áp dụng `.admin-field` cho thanh tìm kiếm và bộ lọc Xuất bản / Khả dụng, cân chỉnh chiều cao 46px thẳng hàng với nút tìm kiếm.
+     - `flash-sale.html` & `flash-sale.scss`: áp dụng `.admin-field` cho các ô ngày giờ bắt đầu/kết thúc và mã sách / giá sale.
+     - `collection-list.html`: áp dụng `.admin-field` cho Tên, Đường dẫn, Thứ tự.
+     - `book-import.html`: áp dụng `.admin-field` cho form đăng nhập lại.
+     - `book-media-panel.html`: áp dụng `.admin-field` cho dropdown vai trò ảnh.
+     - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: cập nhật tài liệu thiết kế và tiến độ.
+3. Kiểm tra đã chạy:
+   - Frontend tests: `npm test` (cwd `code/frontend`) → 37/37 files, 187/187 tests PASS.
+   - Frontend builds: `npm run build` và `npm run build:workers` (cwd `code/frontend`) → 0 errors/warnings.
+   - Backend tests: `./run-local.sh test -Dtest=CategoryExpansionTest,BookImportV2Test` (cwd `code/backend`) → 12/12 PASS.
+   - Browser QA qua Chrome headless CDP (`1280×800`):
+     - `/admin/dang-nhap`: chụp `admin-login-empty.png`, `admin-login-email-active.png` (nhãn và viền đổi màu `#4F46E5`), `admin-login-filled.png`.
+     - `/admin/sach/moi`: chụp `admin-book-editor-empty.png` (nhãn notched cắt viền chuẩn, select có chevron ∨), `admin-book-editor-title-active.png`, `admin-book-editor-price-error.png` (viền đỏ, nhãn đỏ, icon tam giác ⚠️ ở góc phải, helper text đỏ).
+     - `/admin/sach` & `/admin/bo-suu-tap`: chụp `admin-book-list-filters.png` và `admin-collection-list.png` (các trường và nút bấm thẳng hàng ngang, chiều cao đồng bộ 46px). Đã dừng server và browser test.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Bàn giao kết quả trên nhánh `dev-ui` cho user nghiệm thu.

@@ -20,8 +20,16 @@ form {
   gap: 1rem;
   align-items: end;
 }
+.sale-item .admin-field,
+.dates .admin-field {
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
 .sale-item button {
   margin-bottom: 0;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
 }
 .actions {
   display: flex;

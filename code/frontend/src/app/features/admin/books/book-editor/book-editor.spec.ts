@@ -237,4 +237,16 @@ describe('BookEditor safe final saves', () => {
     pending.next(saved);pending.complete();expect(e.book()).toBeNull();expect(e.createUncertain()).toBe(true);
     expect(e.error()).toContain('Phiên đăng nhập đã thay đổi');
   });
+  it('renders modern admin fields with notched outline field labels', () => {
+    const fixture = TestBed.createComponent(BookEditor);
+    fixture.detectChanges();
+    const titleInput = fixture.nativeElement.querySelector('input[formControlName="title"]');
+    const titleField = titleInput?.closest('.admin-field');
+    expect(titleField).not.toBeNull();
+    expect(titleField?.querySelector('.field-label')?.textContent).toContain('Tên sách');
+    const categorySelect = fixture.nativeElement.querySelector('select[formControlName="categoryCode"]');
+    const categoryField = categorySelect?.closest('.admin-field');
+    expect(categoryField).not.toBeNull();
+    expect(categoryField?.querySelector('.field-label')?.textContent).toContain('Thể loại');
+  });
 });

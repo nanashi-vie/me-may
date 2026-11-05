@@ -19,26 +19,26 @@
         ><input type="checkbox" name="enabled" [(ngModel)]="enabled" />Bật đợt Flash Sale</label
       >
       <div class="dates">
-        <label
-          >Bắt đầu (giờ Việt Nam)<input
+        <label class="admin-field"
+          ><span class="field-label">Bắt đầu (giờ Việt Nam)</span><input
             type="datetime-local"
             name="start"
             [(ngModel)]="startsAt" /></label
-        ><label
-          >Kết thúc (giờ Việt Nam)<input type="datetime-local" name="end" [(ngModel)]="endsAt"
+        ><label class="admin-field"
+          ><span class="field-label">Kết thúc (giờ Việt Nam)</span><input type="datetime-local" name="end" [(ngModel)]="endsAt"
         /></label>
       </div>
       <h2>Sách tham gia</h2>
       @for (item of items; track $index) {
         <div class="sale-item">
-          <label
-            >Mã sách<input
+          <label class="admin-field"
+            ><span class="field-label">Mã sách</span><input
               [name]="'code' + $index"
               [(ngModel)]="item.bookCode"
               maxlength="32"
               placeholder="MM-000001" /></label
-          ><label
-            >Giá sale (VND)<input
+          ><label class="admin-field"
+            ><span class="field-label">Giá sale (VND)</span><input
               type="number"
               [name]="'price' + $index"
               [(ngModel)]="item.salePriceVnd"

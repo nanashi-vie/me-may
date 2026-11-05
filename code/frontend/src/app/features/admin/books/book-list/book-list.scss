@@ -10,13 +10,20 @@
   align-items: end;
   flex-wrap: wrap;
 }
-.filters label:first-child {
+.filters .admin-field {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+.filters .admin-field:first-child {
   flex: 1;
   min-width: 220px;
 }
 .filters button {
   width: auto;
   margin: 0;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
 }
 .table-scroll {
   overflow: auto;

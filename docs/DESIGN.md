@@ -188,6 +188,14 @@ Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên,
   lại, tổng hết thì tư vấn tương đương. Ảnh chung không hứa đúng tình trạng của mọi bản.
 - Wishlist giữ theo sách và dữ liệu đã lưu; hỏi nhiều sách không tự gán biến thể cho khách.
 
+### Hệ thống Input Field quản trị /admin (duyệt 05/11)
+
+- Thiết kế Notched Outlined Label: nhãn nằm cố định trên viền trên của ô (`background: #ffffff` che viền), không giật chuyển động khi focus/nhập liệu, chiều cao ô 46px, bo góc 8px.
+- Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
+- Dropdown (Select): ẩn mũi tên mặc định của hệ điều hành, thay bằng custom chevron SVG (`∨`) màu `#667085` (đổi `#4F46E5` khi focus).
+- Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
+- Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
+
 ## Trạng thái UX dùng chung
 
 Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit đều cần mô tả/test khi chuyển thành technical spec. Focus rõ, nút có nhãn, form có label, badge không dựa duy nhất vào màu. Public đọc được từ HTML đầu tiên theo chiến lược render đã qua spike; browser API của wishlist/clipboard không chạy trong server initialization.

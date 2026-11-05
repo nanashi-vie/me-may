@@ -58,6 +58,15 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 - `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành; thêm nhãn `(nếu có)` cho Nhà xuất bản/Tác giả và sửa header mobile `390px` cho icon `♡ + badge`.
 - Đã hoàn tất và gộp vào `dev`: cố định khung `.cover-link` tỉ lệ `4:5` (`grid-template-rows: minmax(0, 1fr); overflow: hidden; flex-shrink: 0`) kèm viền `1px solid var(--line, #ddd7ce)` cho `.book-card` để các thẻ ảnh dọc/ảnh ngang thẳng hàng ngang tuyệt đối; thêm thể loại dùng chung thứ 9 `Kinh Thánh` (`BIBLE`, slug `kinh-thanh`, `sort_order=8`) qua Flyway `V13`, importer CSV/XLSX và taxonomy frontend/backend.
+
+## Tối ưu UI quản trị — Hệ thống Input Field Notched Outlined Label (đang trên nhánh dev-ui 05/11/2026)
+
+- Tạo nhánh `dev-ui` từ `dev`.
+- Hoàn tất `/grill-me` làm rõ thiết kế: nhãn cố định trên viền trên (Notched / Cutout border, nền trắng che viền), focus màu xanh tím Indigo (`#4F46E5`), bo góc 8px, chiều cao ô 46px.
+- Dropdown select có custom chevron SVG (`∨`), trạng thái lỗi viền đỏ (`#D92D20`) + nhãn đỏ + icon cảnh báo tam giác (⚠️) góc phải + helper text đỏ.
+- Áp dụng toàn bộ /admin: Thêm/Sửa sách (`book-editor`), Đăng nhập (`login`), Bộ lọc sách (`book-list`), Flash Sale, Bộ sưu tập (`collection-list`), Import (`book-import`).
+- Test frontend: 37/37 files, 187/187 tests PASS. Build `npm run build` và `npm run build:workers` đạt.
+- Visual QA qua headless Chrome CDP: xác nhận các trạng thái Empty, Active, Filled, Error và Select chevron đạt 100% theo mẫu thiết kế.
 - Đã hoàn tất và gộp vào `dev`: cấu hình bộ font self-hosted `.woff2` (`Baloo 2` độ đậm 700 cho tiêu đề public `.brand-name`, `h1`, `h2`; `Nunito` cho body, tên sách trên thẻ, giá, nút bấm, thanh menu và toàn bộ trang Admin; cache `immutable` 1 năm trên Worker). Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnhnút-chi-tiết-sách-khung-bookcard-thể-loại-kinh-thánh-và-font-baloo-2--nunito--04112026).
 
 ## Tối ưu UI — Flash Sale banner, đếm ngược 3 ô, badge -% và chi tiết sách (đã triển khai 03/11)
