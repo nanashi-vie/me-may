@@ -27,7 +27,7 @@
   gap: 1.8rem;
 }
 .sidebar-heading {
-  font: 700 1rem system-ui, sans-serif;
+  font: 700 1rem var(--font-display);
   text-transform: uppercase;
   margin: 0 0 0.65rem;
   padding-bottom: 0.55rem;
@@ -57,7 +57,7 @@
   gap: 0.55rem;
   align-items: center;
   margin: 0;
-  font: 400 0.92rem system-ui, sans-serif;
+  font: 400 0.92rem var(--font-sans);
   cursor: pointer;
 }
 .check input {
@@ -88,7 +88,7 @@
   flex-wrap: wrap;
 }
 h1 {
-  font: 750 1.55rem system-ui, sans-serif;
+  font: 700 1.55rem var(--font-display);
   text-transform: uppercase;
   letter-spacing: 0.02em;
   max-width: none;

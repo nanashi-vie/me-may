@@ -4,7 +4,7 @@ import java.time.Instant;
 import java.util.List;
 
 public final class PublicCatalogueDtos {
-    public record Media(String role, String alt, String contentPath) {
+    public record Media(String role, String alt, String contentPath, String cacheKey) {
     }
 
     public record Variant(String id, String name, boolean available) {

@@ -43,7 +43,7 @@ describe('public shell', () => {
     harness.detectChanges();
     expect(booksMenu.hidden).toBe(false);
     expect(booksLink.getAttribute('aria-expanded')).toBe('true');
-    expect(booksMenu.querySelectorAll('a').length).toBe(9);
+    expect(booksMenu.querySelectorAll('a').length).toBe(10);
 
     booksDropdown.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     harness.detectChanges();

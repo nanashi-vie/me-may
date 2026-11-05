@@ -52,6 +52,10 @@ input[type='checkbox'] {
   max-width: 100%;
   object-fit: contain;
 }
+.wishlist-row h2 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+}
 h2 {
   font-size: 1.05rem;
   line-height: 1.45;

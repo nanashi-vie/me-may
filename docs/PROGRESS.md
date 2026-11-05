@@ -3,6 +3,17 @@
 Cập nhật04/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Cache public và trạng thái tải — 04/11/2026
+
+- Đã triển khai local cache trang chủ/ảnh, giảm request lặp, logo bootstrap và
+  skeleton. Frontend184/184, backend verify182run/3live skip và13test sau review
+  đạt; SSR/Workers/proxy/workerd/browser QA đạt.
+- Còn đặt zone/token purge trên backend, deploy và đo/smoke online theo
+  [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026).
+  Cache edge tự giữ no-store nếu backend chưa có cấu hình purge.
+- Purge toàn zone, dữ liệu cũ có thể còn tối đa30s. Bằng chứng ở
+  [VERIFICATION](VERIFICATION.md#cache-public-và-trạng-thái-tải--04112026).
+
 ## Homelab Dell và kiểm tra API — 04/11/2026
 
 - User xác nhận đã chọn Dell cũ làm homelab, Spring Boot qua Dokploy/network và
@@ -43,9 +54,11 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
-## Tối ưu UI — chi tiết sách gom ảnh + nút (đã triển khai 04/11)
+## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 
-- `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnh-và-nút-liên-hệquan-tâm-ở-chi-tiết-sách--04112026). Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành.
+- `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành; thêm nhãn `(nếu có)` cho Nhà xuất bản/Tác giả và sửa header mobile `390px` cho icon `♡ + badge`.
+- Đã hoàn tất và gộp vào `dev`: cố định khung `.cover-link` tỉ lệ `4:5` (`grid-template-rows: minmax(0, 1fr); overflow: hidden; flex-shrink: 0`) kèm viền `1px solid var(--line, #ddd7ce)` cho `.book-card` để các thẻ ảnh dọc/ảnh ngang thẳng hàng ngang tuyệt đối; thêm thể loại dùng chung thứ 9 `Kinh Thánh` (`BIBLE`, slug `kinh-thanh`, `sort_order=8`) qua Flyway `V13`, importer CSV/XLSX và taxonomy frontend/backend.
+- Đã hoàn tất và gộp vào `dev`: cấu hình bộ font self-hosted `.woff2` (`Baloo 2` độ đậm 700 cho tiêu đề public `.brand-name`, `h1`, `h2`; `Nunito` cho body, tên sách trên thẻ, giá, nút bấm, thanh menu và toàn bộ trang Admin; cache `immutable` 1 năm trên Worker). Kiểm chứng ở [VERIFICATION](VERIFICATION.md#gom-ảnhnút-chi-tiết-sách-khung-bookcard-thể-loại-kinh-thánh-và-font-baloo-2--nunito--04112026).
 
 ## Tối ưu UI — Flash Sale banner, đếm ngược 3 ô, badge -% và chi tiết sách (đã triển khai 03/11)
 

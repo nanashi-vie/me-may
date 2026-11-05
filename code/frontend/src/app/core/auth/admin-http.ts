@@ -2,6 +2,8 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import { XhrFactory } from '@angular/common';
 import { HttpClient, HttpEvent, HttpParams, HttpXhrBackend } from '@angular/common/http';
 import { Observable, switchMap, catchError, defer, throwError } from 'rxjs';
+import { PublicApi } from '../../features/catalogue/public-api';
+import { tap } from 'rxjs';
 import { AuthService } from './auth.service';
 export const ADMIN_UPLOAD_HTTP = new InjectionToken<HttpClient>('Admin upload XHR', {
   providedIn: 'root',
@@ -10,6 +12,7 @@ export const ADMIN_UPLOAD_HTTP = new InjectionToken<HttpClient>('Admin upload XH
 @Injectable({ providedIn: 'root' })
 export class AdminHttp {
   private readonly http = inject(HttpClient);
+  private readonly publicApi = inject(PublicApi);
   private readonly auth=inject(AuthService);
   private guarded<T>(source:Observable<T>):Observable<T> {
     return defer(()=>{const epoch=this.auth.epoch();return source.pipe(catchError(error=>{
@@ -38,6 +41,7 @@ export class AdminHttp {
           headers: { [csrf.headerName]: csrf.token },
         }),
       ),
+      tap(() => this.publicApi.invalidateMetadata()),
     ));
   }
   upload<T>(path: string, body: FormData): Observable<HttpEvent<T>> {

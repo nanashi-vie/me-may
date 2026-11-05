@@ -22,11 +22,13 @@ public class PublicCatalogueController {
     private final JdbcTemplate jdbc;
     private final MediaGateway media;
     private final Contact contact;
+    private final vn.memay.cache.PublicCacheInvalidation publicCache;
 
     public PublicCatalogueController(PublicCatalogueService catalogue, TaxonomyService taxonomy, JdbcTemplate jdbc,
             MediaGateway media, @Value("${CONTACT_ZALO_HOTLINE_URL:}") String hotline,
-            @Value("${CONTACT_ZALO_GROUP_URL:}") String group) {
+            @Value("${CONTACT_ZALO_GROUP_URL:}") String group, vn.memay.cache.PublicCacheInvalidation publicCache) {
         this.catalogue = catalogue;
+        this.publicCache = publicCache;
         this.taxonomy = taxonomy;
         this.jdbc = jdbc;
         this.media = media;
@@ -89,6 +91,20 @@ public class PublicCatalogueController {
         return catalogue.home();
     }
 
+    @GetMapping("/cache-policy")
+    public java.util.Map<String, Object> cachePolicy() {
+        var now = jdbc.queryForObject("select current_timestamp", (r, n) -> r.getTimestamp(1).toInstant());
+        var transitions = jdbc.queryForList(
+                "select least(case when starts_at>current_timestamp then starts_at end, "
+                + "case when ends_at>current_timestamp then ends_at end) from flash_sale where enabled",
+                java.sql.Timestamp.class);
+        var expires = now.plusSeconds(30);
+        for (var transition : transitions)
+            if (transition != null && transition.toInstant().isBefore(expires)) expires = transition.toInstant();
+        return java.util.Map.of("enabled", publicCache.enabled(), "expiresAt", expires.toString(),
+                "serverNow", now.toString());
+    }
+
     @GetMapping("/contact")
     public Contact contact() {
         return contact;
@@ -96,12 +112,13 @@ public class PublicCatalogueController {
 
     @GetMapping("/books/{slug}/media/{role}")
     public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
-            @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format) {
+            @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format,
+            @RequestParam(required = false) String v) {
         if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
         var keys = jdbc.queryForList(
-                "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=?",
-                String.class, slug, role.name());
+                "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=? and (cast(? as text) is null or m.id::text=?)",
+                String.class, slug, role.name(), v, v);
         if (keys.isEmpty())
             throw new AdminApiException(404, "not_found");
         var input = media.openPublicPreview(keys.getFirst(), size, format);
@@ -112,6 +129,7 @@ public class PublicCatalogueController {
         };
         return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg")
                 .header("Cache-Control", "no-store")
+                .header("X-Memay-Public-Cache", publicCache.enabled() && v != null ? "30" : "0")
                 .header("X-Content-Type-Options", "nosniff").body(body);
     }
 }

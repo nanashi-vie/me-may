@@ -11,7 +11,7 @@
   <p>Giá áp dụng trong thời gian đợt sale, tiệm xác nhận tình trạng khi trao đổi.</p>
 </header>
 @if (loading()) {
-  <p role="status">Đang kiểm tra Flash Sale…</p>
+  <app-public-skeleton layout="cards" label="Đang kiểm tra Flash Sale…" />
 } @else if (error()) {
   <app-public-error (retry)="load()" />
 } @else if (sale()?.items?.length) {

@@ -47,7 +47,7 @@ public class SecurityConfiguration {
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/**",
                                                                 "/api/v1/collections", "/api/v1/collections/**",
                                                                 "/api/v1/taxonomy", "/api/v1/home", "/api/v1/contact",
-                                                                "/api/v1/flash-sale")
+                                                                "/api/v1/flash-sale", "/api/v1/cache-policy")
                                                 .permitAll()
                                                 .requestMatchers("/api/v1/admin/owner-access").hasRole("OWNER")
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")

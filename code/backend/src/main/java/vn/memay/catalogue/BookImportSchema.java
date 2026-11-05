@@ -29,7 +29,7 @@ public final class BookImportSchema {
     private static final Map<String,Map<String,String>> LABELS=Map.of(
             "the_loai",labels(Map.of("Board Book","BOARD_BOOK","Picture Book","PICTURE_BOOK","Chapter","CHAPTER",
                     "Bách khoa toàn thư & khoa học","ENCYCLOPEDIA_SCIENCE","Lịch sử","HISTORY","Tuyển tập truyện","STORY_COLLECTION",
-                    "Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY")),
+                    "Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY","Kinh Thánh","BIBLE")),
             "kieu_bia",labels(Map.of("Paperback","PAPERBACK","Hardcover","HARDCOVER")),
             "tinh_trang",labels(Map.of("Độ mới cao","HIGH_FRESHNESS","Có lỗi nhẹ","MINOR_FLAWS")),
             "do_tuoi",labels(Map.of("0-3","AGE_0_3","0–3","AGE_0_3","4-6","AGE_4_6","4–6","AGE_4_6","7-9","AGE_7_9","7–9","AGE_7_9","10+","AGE_10_PLUS")),
@@ -46,5 +46,5 @@ public final class BookImportSchema {
             Map.entry("conditionNote","mo_ta_tinh_trang"),Map.entry("ageGroups","do_tuoi"),Map.entry("description","mo_ta_sach"),
             Map.entry("readingLevel","trinh_do_doc"),Map.entry("readingVideoUrl","link_video"),Map.entry("collectionIds","bo_suu_tap"),
             Map.entry("variants","bien_the"));
-    public static final Set<String> CATEGORIES=Set.of("BOARD_BOOK","PICTURE_BOOK","ENCYCLOPEDIA_SCIENCE","HISTORY","CHAPTER","STORY_COLLECTION","READING_PRACTICE","COOKING_CRAFT_ACTIVITY");
+    public static final Set<String> CATEGORIES=Set.of("BOARD_BOOK","PICTURE_BOOK","ENCYCLOPEDIA_SCIENCE","HISTORY","CHAPTER","STORY_COLLECTION","READING_PRACTICE","COOKING_CRAFT_ACTIVITY","BIBLE");
 }

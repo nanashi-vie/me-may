@@ -64,7 +64,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Cách mua · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
-   - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 8 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
+   - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
    - Mobile (≤720px): `<dialog>` native mở bằng `showModal()`, trượt từ trái (~80vw, tối đa 320px), nền `--red`, chữ trắng IN HOA, nút Đóng ✕; `Tất cả sách ›` và `Bộ sưu tập ›` mở accordion tại chỗ; đóng khi Escape, chạm backdrop, bấm ✕, chọn link hoặc đổi route, khóa cuộn nền và trả focus về ☰; tắt animation khi `prefers-reduced-motion: reduce`.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.
 5. **Flash Sale (cập nhật 03/11):** ngay dưới hero, nền đỏ cam `#ff625c` tràn toàn chiều ngang (`100vw`) kèm họa tiết tia sét mờ hai bên; bên trong `.wrap` là thanh tiêu đề trắng bo góc gồm `FLASH ⚡ SALE`, đếm ngược 3 ô đen bo góc (`HH : MM : SS`) và `Xem tất cả ›` màu xanh đậm (`#1976d2`). Thẻ sách và trang chi tiết hiển thị giá sale kèm badge `-XX%` màu đỏ (tính theo `priceMaxVnd`, làm tròn `Math.round((1 - salePriceVnd / priceMaxVnd) * 100)`) và khoảng giá gốc gạch ngang; đồng bộ 3 ô đếm ngược trên Home, `/flash-sale` và thanh banner `FLASH ⚡ SALE` ở `/sach/:slug`. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
@@ -81,7 +81,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 
 ## Book card và phân bố responsive
 
-- Bìa dùng `contain` trong khung thống nhất để không cắt mất phần bìa/lỗi. Không chỉnh ảnh thật theo tone làm che tình trạng cuốn.
+- Bìa dùng `contain` trong khung `.cover-link` tỉ lệ `4:5` cố định (`grid-template-rows: minmax(0, 1fr); overflow: hidden; flex-shrink: 0`) để không cắt mất phần bìa/lỗi và giữ mọi card ảnh dọc/ảnh ngang thẳng hàng ngang trên cùng hàng. Thẻ `.book-card` có viền mảnh `1px solid var(--line, #ddd7ce)`. Không chỉnh ảnh thật theo tone làm che tình trạng cuốn.
 - Tên tối đa 2 dòng; mã dễ đọc; giá tham khảo VND nổi bật; nhãn tình trạng vật lý tách khỏi khả dụng; nút trái tim quan tâm có tên truy cập rõ và thể hiện trạng thái đã thêm/xóa.
 - Chỉ hiện sale badge/giá gạch ngang khi API xác nhận Flash Sale còn hiệu lực; không có số đã bán, “bán chạy”, rating hoặc preorder giả.
 - Desktop khoảng 1200–1280 px nội dung, 5 cột; tablet 3 cột; mobile 360–390 px: 2 cột, search một hàng riêng, menu cuộn ngang hoặc menu mở bằng nút có nhãn.
@@ -92,7 +92,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 
 Nền trắng, màu chữ tối, đỏ trầm làm điểm nhấn điều hướng/giá, kem nhạt ở banner và phân vùng phụ; khoảng cách gọn như cửa hàng sách, ít viền/shadow. Đây là hướng dựa trên screenshot, không tự biến thành phong cách bento/landing của skill.
 
-Logo, font tiếng Việt, màu chính xác và ảnh banner sẽ chốt ở vòng visual sau khi bố cục được review. Wireframe dùng system font và hình khối minh họa để đánh giá cấu trúc.
+Bộ font tiếng Việt chốt 04/11: tự host `.woff2` variable font (`public/fonts/`, subset `vietnamese` + `latin`, cache `immutable` 1 năm) gồm `--font-display: 'Baloo 2'` (độ đậm 700) cho tiêu đề lớn public (`.brand-name`, `h1`, `h2`, tiêu đề mục/trang) và `--font-sans: 'Nunito'` (400–800) cho nội dung body, tên sách trên thẻ (`h3` và dòng sách wishlist), giá, nút bấm, thanh menu và toàn bộ trang Admin. Wireframe SVG cũ dùng system font và hình khối minh họa để đánh giá cấu trúc.
 
 ## Chấp nhận về UX
 
@@ -115,7 +115,7 @@ Xem [wireframe desktop](assets/wireframes/home-desktop.svg) và [mobile](assets/
 Header tìm kiếm và Quan tâm dùng chung với Home. Contract URL `q`, `category`, `binding`, `age` (lặp), `sort`, `page` giữ nguyên.
 
 - **Desktop (>720px):** Breadcrumb (`Trang chủ / Tất cả sách [/ Thể loại]` hoặc `Trang chủ / Bộ sưu tập / Tên`) → bố cục 2 cột:
-  - Cột trái: `DANH MỤC` gồm link `Tất cả sách` + 8 thể loại (trên `/sach` giữ `q/age/sort`, reset `page/binding`, mục đang chọn tô `--red`; trên `/bo-suu-tap/:slug` là link rời trang sang `/sach?category=CODE`, không tô active); bên dưới là nhóm `Độ tuổi` (checkbox 0–3, 4–6, 7–9, 10+ chọn nhiều) kèm nút **Áp dụng**.
+  - Cột trái: `DANH MỤC` gồm link `Tất cả sách` + 9 thể loại (trên `/sach` giữ `q/age/sort`, reset `page/binding`, mục đang chọn tô `--red`; trên `/bo-suu-tap/:slug` là link rời trang sang `/sach?category=CODE`, không tô active); bên dưới là nhóm `Độ tuổi` (checkbox 0–3, 4–6, 7–9, 10+ chọn nhiều) kèm nút **Áp dụng**.
   - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), số cuốn và select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi `category=PICTURE_BOOK` hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
 - **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + số cuốn + Sắp xếp → chip Paperback/Hardcover (nếu Picture book) → dòng kết quả `q` → grid 2 cột → pagination.
 
@@ -219,3 +219,16 @@ file để đăng nhập và kiểm lại. Receipt dẫn editor từng sách; kh
 Danh sách có lọc/nhãn Chưa xuất bản và placeholder; ARCHIVED+publishedAtnull
 dùng nút Xuất bản, sách từng công khai dùng Hiện sách. Ảnh/editor giữ nguyên.
 [Contract và hướng dẫn](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026).
+
+
+## Trạng thái khởi động và tải dữ liệu — 04/11/2026
+
+- Bootstrap CSR hiển thị logo Mẹ Mây112px giữa nền sáng, nhãn Đang mở tiệm sách.
+  Angular thay fallback khi khởi động; HTML SSR có nội dung hiển thị ngay.
+- Sau10s chưa bootstrap, hiện link tải lại; không có thời gian chờ tối thiểu.
+- Home và Flash Sale có skeleton5cột desktop/2cột mobile; danh mục4cột,3cột ở
+  ≤1050px và2cột ở≤720px. Detail skeleton ảnh + nội dung, xếp dọc mobile.
+- Skeleton có role=status/aria-busy, hình khối trang trí aria-hidden, reduced-motion
+  tắt animation; lỗi chuyển sang PublicError hiện hành, không giữ skeleton vô hạn.
+- Detail chỉ tải ảnh lớn được chọn; thumbnail ưu tiên WebP320. URL cùng asset/
+  size/format/cacheKey ổn định để tái sử dụng cache và xác thực ETag.

@@ -1,3 +1,4 @@
+import { PublicSkeleton } from '../public-skeleton/public-skeleton';
 import { Component, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -21,7 +22,7 @@ import { TaxonomyOption } from '../../admin/books/book.models';
 
 @Component({
   selector: 'app-catalogue-page',
-  imports: [FormsModule, RouterLink, BookCard, PublicError],
+  imports: [PublicSkeleton, FormsModule, RouterLink, BookCard, PublicError],
   templateUrl: './catalogue-page.html',
   styleUrl: './catalogue-page.scss',
 })

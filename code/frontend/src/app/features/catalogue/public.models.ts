@@ -31,7 +31,7 @@ export interface PublicBook {
   readingLevel: ReadingLevel | null;
   readingVideoUrl: string | null;
   availability: Availability;
-  media: { role: string; alt: string | null; contentPath: string }[];
+  media: { role: string; alt: string | null; contentPath: string; cacheKey?: string }[];
 }
 export interface Collection {
   slug: string;

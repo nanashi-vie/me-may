@@ -12,8 +12,22 @@
   <meta name="apple-mobile-web-app-title" content="Mẹ Mây">
   <link rel="manifest" href="/favicon/site.webmanifest">
   <meta name="theme-color" content="#ffffff">
+  <style>
+    .bootstrap-screen { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 1rem; background: #faf8f5; color: #b52336; font: 1rem 'Nunito', system-ui, sans-serif; }
+    .bootstrap-screen img { width: 112px; height: 112px; object-fit: contain; }
+    .bootstrap-screen p { margin: 0; }
+    .bootstrap-help { opacity: 0; animation: reveal-help 0s 10s forwards; }
+    @keyframes reveal-help { to { opacity: 1; } }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="bootstrap-screen" role="status" aria-live="polite">
+      <img src="/favicon/web-app-manifest-192x192.png" alt="Mẹ Mây" width="112" height="112" fetchpriority="high">
+      <p>Đang mở tiệm sách…</p>
+      <p class="bootstrap-help">Tải lâu hơn dự kiến. <a href="">Tải lại trang</a></p>
+      <noscript>Hãy bật JavaScript để mở tiệm sách.</noscript>
+    </div>
+  </app-root>
 </body>
 </html>

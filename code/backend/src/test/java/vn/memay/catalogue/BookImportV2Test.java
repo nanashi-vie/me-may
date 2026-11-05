@@ -77,7 +77,7 @@ class BookImportV2Test {
         levels.forEach((label,code)->assertThat(read(csv(List.of(change(values(),"trinh_do_doc",label)),COLUMNS),"csv").groups().getFirst().write().readingLevel()).isEqualTo(code));
     }
     @Test void acceptsTheTwoRequestedCategoriesByNameAndCode() {
-        for(var entry:Map.of("Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY").entrySet()) {
+        for(var entry:Map.of("Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY","Kinh Thánh","BIBLE").entrySet()) {
             for(String value:List.of(entry.getKey(),entry.getValue())) {
                 var doc=read(csv(List.of(change(values(),"the_loai",value)),COLUMNS),"csv");
                 assertThat(doc.issues()).as(value).isEmpty();assertThat(doc.groups().getFirst().write().categoryCode()).isEqualTo(entry.getValue());

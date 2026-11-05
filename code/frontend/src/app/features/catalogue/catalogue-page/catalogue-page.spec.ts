@@ -5,6 +5,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { Subject, of } from 'rxjs';
 import { vi } from 'vitest';
 import { CataloguePage } from './catalogue-page';
+import { BookCard } from '../book-card/book-card';
 import { PublicApi } from '../public-api';
 import { PublicBook, Page } from '../public.models';
 describe('Catalogue route responses', () => {
@@ -199,5 +200,39 @@ describe('Catalogue category sidebar, binding chips, age apply, and collection l
     expect(c.title()).toBe('Mùa hè');
     expect(c.categoryParams('HISTORY')).toEqual({ category: 'HISTORY' });
     expect(el.querySelector('.category-links a.active')).toBeNull();
+  });
+  it('locks book-card cover frame to 4:5 aspect ratio with overflow hidden and card border', () => {
+    TestBed.configureTestingModule({ providers: [provideRouter([])] });
+    const f = TestBed.createComponent(BookCard);
+    f.componentRef.setInput('book', {
+      id: '1',
+      bookCode: 'MM-000001',
+      slug: 'mm-000001',
+      title: 'Book',
+      publisher: null,
+      author: null,
+      ageGroups: [],
+      categoryCode: 'BOARD_BOOK',
+      binding: null,
+      conditionGrade: null,
+      conditionNote: 'Good',
+      priceMinVnd: 10000,
+      priceMaxVnd: 10000,
+      weightG: 200,
+      salePriceVnd: null,
+      saleEndsAt: null,
+      description: null,
+      readingLevel: null,
+      readingVideoUrl: null,
+      availability: 'AVAILABLE',
+      variants: [{ id: '1', name: null, available: true }],
+      media: [{ role: 'FRONT', contentPath: '/cover.jpg', alt: 'Cover' }],
+    });
+    f.detectChanges();
+    const card = f.nativeElement.querySelector('.book-card') as HTMLElement;
+    const cover = card.querySelector('.cover-link') as HTMLElement;
+    expect(getComputedStyle(card).borderTopStyle).toBe('solid');
+    expect(getComputedStyle(cover).aspectRatio).toBe('4/5');
+    expect(getComputedStyle(cover).overflow).toBe('hidden');
   });
 });

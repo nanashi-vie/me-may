@@ -1084,3 +1084,77 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 
 - Sửa header mobile 390px: `♡ + số` ở cột phải hàng 1 (ẩn chữ “Quan tâm” trên mobile, giữ `aria-label`), search xuống hàng 2; trước đó link bị đẩy xuống hàng 3 và cắt chữ.
 - Nhà xuất bản/Tác giả vốn đã tùy chọn ở backend (nullable, không bắt buộc publish), form và import; chỉ thêm nhãn “(nếu có)” trong `book-editor.html` để hiển thị rõ. `npm test` 175/175, build SSR/Workers và Chrome 390×844 PASS.
+
+### S036-C01 — 04/11/2026 — bắt đầu cache public và trạng thái tải
+
+- User duyệt đề xuất cache trang chủ, ảnh/static assets, giảm request lặp rồi logo/
+  skeleton. Scope và kiểm chứng trong PUBLIC_CACHE_PLAN, đang triển khai trên dev.
+- Git đầu phiên sạch. Không thêm Redis khi backend homelab đang nhanh.
+- Quyết định triển khai purge toàn zone sau audit commit, coalesce/retry, TTL30s
+  dự phòng; yêu cầu backend có purge config trước khi bật cache edge. Media browser
+  revalidate để hạn chế ảnh đã gỡ còn nằm cache browser dài hạn.
+
+### S036-C02 — 04/11/2026 — cache và giảm request đã qua kiểm tra tự động
+
+- Backend cache-policy lấy giờ DB và mốc sale; audit đánh dấu purge sau commit,
+  job gom batch/retry, giới hạn một lần/12s. Cache edge chỉ được ghi khi backend
+  có zone/token. Media thêm cacheKey opaque và kiểm v đúng asset ACTIVE/PUBLISHED.
+- Worker cache home/ảnh30s, browser ảnh ETag revalidate, CSS/JS hash immutable1năm.
+  Worker version metadata tách cache giữa release. Không cache private/APIJSON/lỗi.
+- Angular shared metadata60s, transfer home/listing/metadata kèm giờ server;
+  detail/lookup/sale vẫn lấy mới. Thumbnail ưu tiên WebP, URL ổn định.
+- Đã thêm logo bootstrap CSR và skeleton Home/catalogue/detail/Flash Sale.
+- Review độc lập phát hiện và đã sửa clock transfer khi máy lệch giờ, TTL tính
+  từ khi bắt đầu gọi origin thay vì sau khi nhận response, và skeleton catalogue
+  theo4/3/2cột. Tests bổ sung clock±1h, policy trễ, sale sắp bắt đầu.
+- Kiểm tra: frontend184/184 PASS; backend verify182run/0failure/0error/3live skip,
+  sau review13test ảnh/policy/purge PASS. SSR/Workers build, Wrangler dry-run và
+  proxy workerd PASS. Lần đầu sandbox chặn DB/socket/build, chạy lại có quyền đạt.
+- Workerd QA cách ly xác nhận home/media HIT và SSR loại bỏ logo fallback.
+  Chưa đo tốc độ online sau deploy, chưa cấu hình secret purge hoặc deploy.
+- Quyết định giới hạn: purge toàn zone, dữ liệu public cũ có thể tồn tại tối đa30s,
+  gồm fill đang chạy khi purge; không hứa ẩn/sửa tức thì qua cache.
+
+### S036-C03 — 04/11/2026 — hoàn tất QA và bàn giao cache public
+
+- Browser Playwright1280×900/390×844 với API trễ giả lập: không gọi lặp home/
+  taxonomy/collections khi hydrate; skeleton4cột, mobile detail/reduced-motion,
+  đổi Bìa/Lưng/Bìa, logo CSR khi chặnJS và không overflow đều đạt. Đã xem ảnh tại
+  output/playwright/cache-*.png; dữ liệu ảnh QA là fixture, không ảnh bán thật.
+- Node SSR build cuối sau review đạt. 13test backend sau review và184frontend
+  đạt; Workers dry-run/proxy đạt. Job purge thật chưa chạy vì chưa có secret.
+- Đã đóng browser và server QA riêng. Gộp plan vào ARCHITECTURE/DESIGN/DEPLOYMENT/
+  VERIFICATION, gỡ plan tạm và cập nhật chỉ mục. Trần400dòng/link file local/
+  git diff --check đạt; .env và công cụ QA vẫn ignored.
+- Bàn giao commit/push dev; user merge main và deploy backend trước Worker, đặt
+  MEMAY_CACHE_ZONE_ID/MEMAY_CACHE_PURGE_TOKEN rồi smoke/đo HIT-MISS theo DEPLOYMENT.
+
+### S037-C01 — 04/11/2026 — nhánh dev-b: cố định khung ngang BookCard và thêm thể loại Kinh Thánh
+
+- Yêu cầu (chốt qua `/grill-me`): tạo nhánh `dev-b` từ `dev` (sau khi user commit `e373540`), cố định khung `.book-card` ngang bằng nhau giữa ảnh dọc/ảnh ngang kèm viền mảnh quanh thẻ, và thêm thể loại dùng chung `"Kinh Thánh"` (`BIBLE`).
+- Nguyên nhân lệch thẻ: `.cover-link` dùng `display: grid; aspect-ratio: 4/5` nhưng track mặc định `auto` bị ảnh dọc đẩy cao tới `max-height: 260px` trong khi ảnh ngang giữ `~242px`, làm mã/tiêu đề/giá của thẻ ảnh ngang bị lệch lên trên ~18px.
+- Thay đổi:
+  - `book-card.scss`: khóa `.cover-link` với `grid-template-rows: minmax(0, 1fr); width: 100%; aspect-ratio: 4 / 5; overflow: hidden; flex-shrink: 0;`, `.cover-link img` `width: 100%; height: 100%; min-height: 0; object-fit: contain;` (bỏ `max-height: 260px`), và thêm viền `border: 1px solid #ddd7ce; border-color: var(--line, #ddd7ce);` cho `.book-card`.
+  - Thể loại `"Kinh Thánh"`: thêm Flyway `V13__add_bible_category.sql` (`BIBLE`, `Kinh Thánh`, `kinh-thanh`, `sort_order=8`), cập nhật `BookImportSchema.java`, `book.models.ts`, `book-copy.ts`, unit/integration tests và tài liệu (`DATA.md`, `CATALOGUE.md`, `BOOK_IMPORT.md`, `MASTER_PLAN.md`, `DESIGN.md`, `VERIFICATION.md`, `PROGRESS.md`).
+- Kiểm tra:
+  - Backend: `./run-local.sh test -Dtest=CategoryExpansionTest,BookImportV2Test` (cwd `code/backend`) → 12/12 PASS.
+  - Frontend: `npm test` (37/37 file, 186/186 test PASS), `npm run build`, `npm run build:workers` PASS.
+  - Browser Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): 4 thẻ trên `/sach` (2 ảnh dọc, 2 ảnh ngang) có `cardTop=328, cardBottom=819, coverBottom=583, codeTop=594, titleTop=617, priceTop=674, heartTop=746` trùng khít từng pixel. Đã dừng server/browser tạm.
+- Bước tiếp theo: commit và push nhánh `dev-b` lên `origin/dev-b`.
+
+### S037-C02 — 04/11/2026 — cấu hình bộ font Baloo 2 + Nunito self-hosted trên dev-b
+
+- Yêu cầu (chốt qua `/grill-me`):
+  1. Phân vai: `Baloo 2` (độ đậm 700) cho tiêu đề lớn public (`.brand-name`, `h1`, `h2`, tiêu đề mục/trang); `Nunito` (400/600/700/800) cho nội dung body, tên sách trên thẻ (`h3` và dòng sách wishlist), giá, nút bấm, thanh menu và toàn bộ trang Admin (thay thế hoàn toàn `Georgia, serif` và `system-ui` cũ).
+  2. Nạp font: tự host 6 file `.woff2` variable font (`vietnamese` + `latin` cho `Baloo 2`, `Nunito` normal và `Nunito` italic) trong `code/frontend/public/fonts/` kèm header cache `Cache-Control: public, max-age=31536000, immutable` trên `worker-runtime.ts`.
+  3. Nhánh thực hiện: `dev-b`.
+- Thay đổi:
+  - `code/frontend/public/fonts/*.woff2` (6 file variable font: `baloo-2-vietnamese.woff2`, `baloo-2-latin.woff2`, `nunito-vietnamese.woff2`, `nunito-latin.woff2`, `nunito-italic-vietnamese.woff2`, `nunito-italic-latin.woff2`).
+  - `styles.scss`, `index.html`, `home-page.scss`, `catalogue-page.scss`, `public-layout.scss`, `wishlist-page.scss`: khai báo `@font-face`, biến `--font-sans` (`Nunito`) và `--font-display` (`Baloo 2`), thay thế toàn bộ `Georgia, serif` và `system-ui` hardcoded; giữ `.admin-shell` và `.login-panel` dùng `--font-sans`.
+  - `worker-runtime.ts` & `worker-runtime.spec.ts`: bổ sung `immutable` cache cho `/fonts/[a-z0-9-]+\.woff2`.
+  - `DESIGN.md`, `VERIFICATION.md`, `PROGRESS.md`: cập nhật quy ước typography và kết quả kiểm chứng.
+- Kiểm tra:
+  - `npm test` (cwd `code/frontend`): 37/37 file, 186/186 test PASS.
+  - `npm run build`, `npm run build:workers` (0 warning) và `npm run check:workers:proxy` PASS.
+  - Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` trạng thái `loaded`, `.brand-name`/`.hero h1` dùng `Baloo 2` weight `700`, `body`/`.public-nav`/`.book-card h3` dùng `Nunito`, 4 thẻ trên `/sach` thẳng hàng ngang từng pixel, mobile không tràn ngang. Đã đóng Chrome/server tạm.
+- Bước tiếp theo: theo yêu cầu user, merge `dev-b` vào `dev`, push `origin/dev` và xóa nhánh `dev-b` (local + remote).

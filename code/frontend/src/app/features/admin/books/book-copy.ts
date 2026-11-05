@@ -12,6 +12,7 @@ export const CATEGORY_LABELS = {
   STORY_COLLECTION: 'Tuyển tập truyện',
   READING_PRACTICE: 'Tập đọc',
   COOKING_CRAFT_ACTIVITY: 'Nấu ăn - thủ công - activity book',
+  BIBLE: 'Kinh Thánh',
 } as const;
 export const AGE_LABELS = { AGE_0_3: '0–3', AGE_4_6: '4–6', AGE_7_9: '7–9', AGE_10_PLUS: '10+' };
 export const READING_LABELS = {

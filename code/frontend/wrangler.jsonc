@@ -4,6 +4,7 @@
   "main": "dist/me-may-workers/server/server.mjs",
   "compatibility_date": "2026-10-26",
   "compatibility_flags": ["nodejs_compat"],
+  "version_metadata": { "binding": "MEMAY_VERSION" },
   "workers_dev": false,
   "routes": [{ "pattern": "memaybooks.com", "custom_domain": true }],
   "build": { "command": "npm run build:workers" },
@@ -17,6 +18,7 @@
   "vars": {
     "MEMAY_API_ORIGIN": "https://api.memaybooks.com",
     "MEMAY_SITE_ORIGIN": "https://memaybooks.com",
+    "MEMAY_PUBLIC_CACHE": "true",
   },
 
   "observability": {

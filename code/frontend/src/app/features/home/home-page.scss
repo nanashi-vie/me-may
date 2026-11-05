@@ -34,9 +34,7 @@
   mix-blend-mode: multiply;
 }
 .art-note {
-  font:
-    italic 1rem/1.5 Georgia,
-    serif;
+  font: italic 1rem/1.5 var(--font-sans);
   text-align: center;
   color: #796446;
   margin-top: 0.7rem;
@@ -117,9 +115,7 @@
   margin-bottom: 1rem;
 }
 .shelf h2 {
-  font:
-    500 1.8rem Georgia,
-    serif;
+  font: 700 1.8rem/1.25 var(--font-display);
 }
 .shelf header a {
   font-size: 0.9rem;
@@ -130,9 +126,7 @@
   margin: 3rem 0;
 }
 .how h2 {
-  font:
-    500 2rem Georgia,
-    serif;
+  font: 700 2rem/1.25 var(--font-display);
 }
 .how ol {
   list-style: none;
@@ -144,9 +138,7 @@
 }
 .how li span {
   display: block;
-  font:
-    italic 2rem Georgia,
-    serif;
+  font: 700 2rem/1.2 var(--font-display);
   color: var(--red);
   margin-bottom: 1rem;
 }

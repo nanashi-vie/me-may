@@ -10,7 +10,8 @@ export type CategoryCode =
   | 'CHAPTER'
   | 'STORY_COLLECTION'
   | 'READING_PRACTICE'
-  | 'COOKING_CRAFT_ACTIVITY';
+  | 'COOKING_CRAFT_ACTIVITY'
+  | 'BIBLE';
 export type AgeGroup = 'AGE_0_3' | 'AGE_4_6' | 'AGE_7_9' | 'AGE_10_PLUS';
 export type ReadingLevel = 'PRE_A1' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export interface BookVariantWrite { id: string | null; name: string | null; stock: number; }

@@ -58,4 +58,16 @@ class PublicCatalogueApiTest extends CatalogueTestSupport {
   var contact=anon.send("GET","/api/v1/contact",null,false);assertThat(contact.statusCode()).isEqualTo(200);assertThat(tree(contact).path("hotlineUrl").isNull()).isTrue();
   assertThat(anon.send("GET","/api/v1/admin/books",null,false).statusCode()).isEqualTo(401);
  }
+
+ @Test void anonymousCachePolicyStopsBeforeTheNextSaleTransition() throws Exception {
+  jdbc.update("update flash_sale set enabled=true, starts_at=current_timestamp+interval '10 seconds', ends_at=current_timestamp+interval '1 hour' where id=1");
+  var response = anon.send("GET", "/api/v1/cache-policy", null, false);
+  assertThat(response.statusCode()).isEqualTo(200);
+  assertThat(response.headers().firstValue("cache-control").orElse("")).contains("no-store");
+  var policy = tree(response);
+  var now = java.time.Instant.parse(policy.path("serverNow").asString());
+  var expiry = java.time.Instant.parse(policy.path("expiresAt").asString());
+  assertThat(java.time.Duration.between(now, expiry).toMillis()).isBetween(1L, 10000L);
+  assertThat(policy.path("enabled").asBoolean()).isFalse();
+ }
 }

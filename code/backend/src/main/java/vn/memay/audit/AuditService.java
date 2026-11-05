@@ -12,11 +12,13 @@ public class AuditService {
     private final JdbcTemplate jdbc;
     private final ObjectMapper mapper;
     private final Clock clock;
+    private final vn.memay.cache.PublicCacheInvalidation publicCache;
 
-    public AuditService(JdbcTemplate jdbc, ObjectMapper mapper, Clock clock) {
+    public AuditService(JdbcTemplate jdbc, ObjectMapper mapper, Clock clock, vn.memay.cache.PublicCacheInvalidation publicCache) {
         this.jdbc = jdbc;
         this.mapper = mapper;
         this.clock = clock;
+        this.publicCache = publicCache;
     }
 
     private static final Set<String> FIELDS = Set.of("bookCode", "title", "isbn", "publisher", "author", "language",
@@ -52,5 +54,6 @@ public class AuditService {
                 "insert into audit_event(actor_id,target_type,target_id,action,before_data,after_data,aggregate_version,created_at) values (?,?,?,?,cast(? as jsonb),cast(? as jsonb),?,?)",
                 actor.getId(), targetType, targetId, action, mapper.writeValueAsString(a), mapper.writeValueAsString(b),
                 version, java.sql.Timestamp.from(clock.instant()));
+        publicCache.changed();
     }
 }

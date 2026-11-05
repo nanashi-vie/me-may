@@ -39,7 +39,7 @@
   </p>
 }
 @if (loading()) {
-  <p class="loading" role="status">Đang mở kệ sách của tiệm…</p>
+  <app-public-skeleton layout="cards" label="Đang mở kệ sách của tiệm…" />
 } @else if (error()) {
   <app-public-error (retry)="load()" />
 } @else if (data()?.shelves?.length) {
