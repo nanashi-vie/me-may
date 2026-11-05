@@ -9,31 +9,30 @@
   font-size: 1rem;
 }
 .book-form {
-  max-width: 1000px;
+  max-width: 780px;
   margin-block: 2rem;
 }
 .fields {
   display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 0.5rem 1.5rem;
+  grid-template-columns: repeat(20, minmax(0, 1fr));
+  gap: 0.35rem 1rem;
 }
 
-.field-title { grid-column: span 12; }
-.field-publisher { grid-column: span 6; }
-.field-author { grid-column: span 6; }
-.field-category { grid-column: span 5; }
-.field-language { grid-column: span 3; }
-.field-isbn { grid-column: span 4; }
-.field-binding { grid-column: span 12; }
-.field-price-min { grid-column: span 6; }
-.field-price-max { grid-column: span 6; }
+.field-title { grid-column: span 15; }
+.field-isbn { grid-column: span 5; }
+.field-publisher { grid-column: span 8; }
+.field-author { grid-column: span 7; }
+.field-language { grid-column: span 5; }
+.field-category { grid-column: span 8; }
 .field-condition { grid-column: span 6; }
 .field-weight { grid-column: span 6; }
+.field-price-min { grid-column: span 6; }
+.field-price-max { grid-column: span 6; }
 
 .fields-meta {
   display: grid;
-  grid-template-columns: 5fr 7fr;
-  gap: 0.5rem 1.5rem;
+  grid-template-columns: 7fr 13fr;
+  gap: 0.35rem 1rem;
 }
 
 legend {
@@ -81,7 +80,6 @@ small {
   .field-category,
   .field-language,
   .field-isbn,
-  .field-binding,
   .field-price-min,
   .field-price-max,
   .field-condition,
@@ -106,20 +104,21 @@ small {
 .stock-editor { margin-block: 1.5rem; }
 .variant-row {
   display: flex;
-  gap: 1.25rem;
+  gap: 1rem;
   align-items: flex-end;
   flex-wrap: wrap;
   margin-block: 0.75rem;
 }
 .variant-row .field-variant-name {
-  flex: 1 1 320px;
-  min-width: 200px;
+  flex: 1 1 260px;
+  max-width: 360px;
+  min-width: 180px;
   margin-top: 1rem;
   margin-bottom: 0;
 }
 .variant-row .field-variant-stock {
-  flex: 0 0 200px;
-  max-width: 220px;
+  flex: 0 0 150px;
+  max-width: 160px;
   margin-top: 1rem;
   margin-bottom: 0;
 }
@@ -130,4 +129,5 @@ small {
   margin-bottom: 0;
   width: auto;
 }
+.stock-editor button { width: auto; }
 .stock-editor small { display: block; margin-bottom: 1rem; }

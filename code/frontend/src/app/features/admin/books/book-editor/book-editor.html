@@ -34,36 +34,197 @@
     <legend>Thông tin cuốn sách</legend>
     <div class="fields">
       <label class="admin-field field-title"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" /></label>
+      <label class="admin-field field-isbn"><span class="field-label">ISBN <small>(nếu có)</small></span><input formControlName="isbn" maxlength="32" /></label>
       <label class="admin-field field-publisher"><span class="field-label">Nhà xuất bản <small>(nếu có)</small></span><input formControlName="publisher" maxlength="200" /></label>
       <label class="admin-field field-author"><span class="field-label">Tác giả <small>(nếu có)</small></span><input formControlName="author" maxlength="200" /></label>
-      <label class="admin-field field-category"
-        ><span class="field-label">Thể loại</span><select formControlName="categoryCode">
+      <label class="admin-field field-language"><span class="field-label">Ngôn ngữ</span><input formControlName="language" maxlength="50" /></label>
+      <div
+        class="admin-field custom-dropdown field-category"
+        [class.is-open]="openMenu() === 'category'"
+        [class.has-error]="(form.hasError('binding') || fields()['categoryCode'] || fields()['binding']) && form.touched"
+      >
+        <span class="field-label">Thể loại</span>
+        <select class="sr-only-native-select" formControlName="categoryCode" tabindex="-1" aria-hidden="true">
           <option [ngValue]="null">Chưa xác định</option>
           @for (c of taxonomy().categories; track c.code) {
             <option [ngValue]="c.code">{{ c.label }}</option>
           }
-        </select></label
-      >
-      <label class="admin-field field-language"><span class="field-label">Ngôn ngữ</span><input formControlName="language" maxlength="50" /></label>
-      <label class="admin-field field-isbn"><span class="field-label">ISBN <small>(nếu có)</small></span><input formControlName="isbn" maxlength="32" /></label>
-      @if (form.controls.categoryCode.value === 'PICTURE_BOOK') {
-        <fieldset class="choices binding field-binding">
-          <legend>Kiểu Picture book (bắt buộc)</legend>
-          @for (c of taxonomy().bindings; track c.code) {
-            <label
-              ><input
-                type="radio"
-                formControlName="binding"
-                [value]="c.code"
-                aria-describedby="binding-error"
-              />{{ c.label }}</label
+        </select>
+        <button
+          type="button"
+          class="dropdown-trigger"
+          [disabled]="formDisabled()"
+          [attr.aria-expanded]="openMenu() === 'category'"
+          aria-haspopup="listbox"
+          (click)="toggleMenu('category', $event)"
+        >
+          <span class="dropdown-value">{{ categoryDisplayLabel() }}</span>
+          <span class="dropdown-chevron" aria-hidden="true"></span>
+        </button>
+        @if (openMenu() === 'category') {
+          <div class="dropdown-popover" role="listbox" aria-label="Thể loại">
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="form.controls.categoryCode.value === null"
+              [class.selected]="form.controls.categoryCode.value === null"
+              (mouseenter)="pictureSubmenuOpen.set(false)"
+              (click)="selectCategory(null, $event)"
             >
+              <span class="item-text">Chưa xác định</span>
+              @if (form.controls.categoryCode.value === null) {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+            @for (c of taxonomy().categories; track c.code) {
+              @if (c.code === 'PICTURE_BOOK') {
+                <div class="dropdown-submenu-wrap" (mouseenter)="pictureSubmenuOpen.set(true)">
+                  <button
+                    type="button"
+                    class="dropdown-item has-submenu"
+                    [class.selected]="form.controls.categoryCode.value === 'PICTURE_BOOK'"
+                    [class.submenu-active]="pictureSubmenuOpen()"
+                    [attr.aria-expanded]="pictureSubmenuOpen()"
+                    (click)="togglePictureSubmenu($event)"
+                  >
+                    <span class="item-text">{{ c.label }}</span>
+                    <span class="item-right">
+                      @if (form.controls.categoryCode.value === 'PICTURE_BOOK') {
+                        <span class="item-check" aria-hidden="true">✓</span>
+                      }
+                      <span class="item-arrow" aria-hidden="true">›</span>
+                    </span>
+                  </button>
+                  @if (pictureSubmenuOpen()) {
+                    <div class="dropdown-submenu" role="listbox" aria-label="Kiểu Picture book">
+                      @for (b of pictureBindings(); track b.code) {
+                        <button
+                          type="button"
+                          class="dropdown-item"
+                          role="option"
+                          [attr.aria-selected]="form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code"
+                          [class.selected]="form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code"
+                          (click)="selectPictureBinding(b.code, $event)"
+                        >
+                          <span class="item-text">{{ b.label }}</span>
+                          @if (form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code) {
+                            <span class="item-check" aria-hidden="true">✓</span>
+                          }
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              } @else {
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  role="option"
+                  [attr.aria-selected]="form.controls.categoryCode.value === c.code"
+                  [class.selected]="form.controls.categoryCode.value === c.code"
+                  (mouseenter)="pictureSubmenuOpen.set(false)"
+                  (click)="selectCategory(c.code, $event)"
+                >
+                  <span class="item-text">{{ c.label }}</span>
+                  @if (form.controls.categoryCode.value === c.code) {
+                    <span class="item-check" aria-hidden="true">✓</span>
+                  }
+                </button>
+              }
+            }
+          </div>
+        }
+        @if (form.hasError('binding') && form.touched) {
+          <small class="helper-text" id="binding-error">Chọn Paperback hoặc Hardcover trong Picture book.</small>
+        }
+      </div>
+      <div
+        class="admin-field custom-dropdown field-condition"
+        [class.is-open]="openMenu() === 'condition'"
+      >
+        <span class="field-label">Đánh giá tình trạng</span>
+        <select class="sr-only-native-select" formControlName="conditionGrade" tabindex="-1" aria-hidden="true">
+          <option [ngValue]="null">Chưa đánh giá</option>
+          <option value="HIGH_FRESHNESS">Độ mới cao</option>
+          <option value="MINOR_FLAWS">Có lỗi nhẹ</option>
+          @if (book()?.conditionGrade; as grade) {
+            @if (legacyConditions[grade]) { <option [value]="grade">{{ legacyConditions[grade] }}</option> }
           }
-          @if (form.hasError('binding') && form.touched) {
-            <span class="error" id="binding-error">Chọn Paperback hoặc Hardcover.</span>
-          }
-        </fieldset>
-      }
+        </select>
+        <button
+          type="button"
+          class="dropdown-trigger"
+          [disabled]="formDisabled()"
+          [attr.aria-expanded]="openMenu() === 'condition'"
+          aria-haspopup="listbox"
+          (click)="toggleMenu('condition', $event)"
+        >
+          <span class="dropdown-value">{{ conditionDisplayLabel() }}</span>
+          <span class="dropdown-chevron" aria-hidden="true"></span>
+        </button>
+        @if (openMenu() === 'condition') {
+          <div class="dropdown-popover" role="listbox" aria-label="Đánh giá tình trạng">
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="form.controls.conditionGrade.value === null"
+              [class.selected]="form.controls.conditionGrade.value === null"
+              (click)="selectCondition(null, $event)"
+            >
+              <span class="item-text">Chưa đánh giá</span>
+              @if (form.controls.conditionGrade.value === null) {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="form.controls.conditionGrade.value === 'HIGH_FRESHNESS'"
+              [class.selected]="form.controls.conditionGrade.value === 'HIGH_FRESHNESS'"
+              (click)="selectCondition('HIGH_FRESHNESS', $event)"
+            >
+              <span class="item-text">Độ mới cao</span>
+              @if (form.controls.conditionGrade.value === 'HIGH_FRESHNESS') {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="form.controls.conditionGrade.value === 'MINOR_FLAWS'"
+              [class.selected]="form.controls.conditionGrade.value === 'MINOR_FLAWS'"
+              (click)="selectCondition('MINOR_FLAWS', $event)"
+            >
+              <span class="item-text">Có lỗi nhẹ</span>
+              @if (form.controls.conditionGrade.value === 'MINOR_FLAWS') {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+            @if (book()?.conditionGrade; as grade) {
+              @if (legacyConditions[grade]) {
+                <button
+                  type="button"
+                  class="dropdown-item"
+                  role="option"
+                  [attr.aria-selected]="form.controls.conditionGrade.value === grade"
+                  [class.selected]="form.controls.conditionGrade.value === grade"
+                  (click)="selectCondition(grade, $event)"
+                >
+                  <span class="item-text">{{ legacyConditions[grade] }}</span>
+                  @if (form.controls.conditionGrade.value === grade) {
+                    <span class="item-check" aria-hidden="true">✓</span>
+                  }
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+      <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
       <label class="admin-field field-price-min" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"
         ><span class="field-label">Giá từ (đ)</span><input
           type="text" inputmode="numeric" appVndInput
@@ -73,17 +234,6 @@
           step="1"
         />@if (priceNote) { <small class="helper-text">{{ priceNote }}</small> }</label
       ><label class="admin-field field-price-max" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
-      <label class="admin-field field-condition"
-        ><span class="field-label">Đánh giá tình trạng</span><select formControlName="conditionGrade">
-          <option [ngValue]="null">Chưa đánh giá</option>
-          <option value="HIGH_FRESHNESS">Độ mới cao</option>
-          <option value="MINOR_FLAWS">Có lỗi nhẹ</option>
-          @if (book()?.conditionGrade; as grade) {
-            @if (legacyConditions[grade]) { <option [value]="grade">{{ legacyConditions[grade] }}</option> }
-          }
-        </select></label
-      >
-      <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
     </div>
     <fieldset formArrayName="variants" class="stock-editor">
       <legend>Tồn kho và biến thể</legend>
@@ -123,14 +273,62 @@
       ><span class="field-label">Mô tả sách</span><textarea formControlName="description" maxlength="10000" rows="5"></textarea>
     </label>
     <div class="fields-meta">
-      <label class="admin-field field-reading"
-        ><span class="field-label">Trình độ đọc tham khảo</span><select formControlName="readingLevel">
+      <div
+        class="admin-field custom-dropdown field-reading"
+        [class.is-open]="openMenu() === 'reading'"
+      >
+        <span class="field-label">Trình độ đọc tham khảo</span>
+        <select class="sr-only-native-select" formControlName="readingLevel" tabindex="-1" aria-hidden="true">
           <option [ngValue]="null">Chưa xác định</option>
           @for (level of taxonomy().readingLevels; track level.code) {
             <option [ngValue]="level.code">{{ level.label }}</option>
-          }</select
-        >@if (readingNote) { <small class="helper-text">{{ readingNote }}</small> }</label
-      >
+          }
+        </select>
+        <button
+          type="button"
+          class="dropdown-trigger"
+          [disabled]="formDisabled()"
+          [attr.aria-expanded]="openMenu() === 'reading'"
+          aria-haspopup="listbox"
+          (click)="toggleMenu('reading', $event)"
+        >
+          <span class="dropdown-value">{{ readingDisplayLabel() }}</span>
+          <span class="dropdown-chevron" aria-hidden="true"></span>
+        </button>
+        @if (openMenu() === 'reading') {
+          <div class="dropdown-popover" role="listbox" aria-label="Trình độ đọc tham khảo">
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="form.controls.readingLevel.value === null"
+              [class.selected]="form.controls.readingLevel.value === null"
+              (click)="selectReadingLevel(null, $event)"
+            >
+              <span class="item-text">Chưa xác định</span>
+              @if (form.controls.readingLevel.value === null) {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+            @for (level of taxonomy().readingLevels; track level.code) {
+              <button
+                type="button"
+                class="dropdown-item"
+                role="option"
+                [attr.aria-selected]="form.controls.readingLevel.value === level.code"
+                [class.selected]="form.controls.readingLevel.value === level.code"
+                (click)="selectReadingLevel(level.code, $event)"
+              >
+                <span class="item-text">{{ level.label }}</span>
+                @if (form.controls.readingLevel.value === level.code) {
+                  <span class="item-check" aria-hidden="true">✓</span>
+                }
+              </button>
+            }
+          </div>
+        }
+        @if (readingNote) { <small class="helper-text">{{ readingNote }}</small> }
+      </div>
       <label class="admin-field field-video"
         ><span class="field-label">Link video đọc sách <small>(không bắt buộc)</small></span><input
           formControlName="readingVideoUrl"

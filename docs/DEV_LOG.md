@@ -1226,3 +1226,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
      - Đã chụp các ảnh screenshot kiểm chứng: admin-book-editor-empty.png, admin-book-editor-title-active.png, admin-book-editor-price-error.png. Đã dừng Chrome và test server.
 4. Việc dang dở / blocker: Không có.
 5. Bước tiếp theo: Commit và push các thay đổi lên branch dev-ui trên worktree, báo cáo cho user nghiệm thu.
+
+### S038-C03 — 05/11/2026 — thu gọn khung form 780px, ISBN ngang Tên sách và Custom Dropdown Popover kèm menu con Picture book
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C03. Mục tiêu: thu gọn hơn nữa độ dài các khung input trên form nhập sách (worktree dev-ui), đưa ISBN (~25%) lên ngang hàng Tên sách (~75%), và thiết kế lại custom dropdown popover cho Thể loại (kèm menu con Picture book › [Paperback, Hardcover]), Đánh giá tình trạng và Trình độ đọc tham khảo.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Thu gọn .book-form xuống max-width: 780px và dùng Grid 20 cột (gap: 0.35rem 1rem):
+     - Hàng 1: Tên sách (span 15, ~75%, 581px) · ISBN (span 5, ~25%, 183px).
+     - Hàng 2: Nhà xuất bản (span 8, 40%, 302px) · Tác giả (span 7, 35%, 263px) · Ngôn ngữ (span 5, 25%, 183px).
+     - Hàng 3: Thể loại (span 8, 40%, 302px) · Đánh giá tình trạng (span 6, 30%, 223px) · Trọng lượng sách (g) (span 6, 30%, 223px).
+     - Hàng 4: Giá từ (đ) (span 6, 223px) · Giá đến (đ) (span 6, 223px).
+     - Tồn kho đơn biến thể: thu gọn xuống 150px (max-width: 160px), giữ nút Thêm biến thể width: auto.
+     - Hàng meta: Trình độ đọc tham khảo (7fr, 35%) · Link video đọc sách (13fr, 65%).
+   - Custom Dropdown Popover (Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo):
+     - Nền sáng #FFFFFF đồng bộ Admin, bo góc 10px, viền #E4E7EC, đổ bóng mềm, hover tím nhạt #F4F3FF, mục đang chọn có dấu ✓ bên phải.
+     - Mục Picture book có mũi tên › bên phải; khi rê chuột hoặc bấm vào sẽ mở menu con [Paperback, Hardcover] bung sang bên phải. Chọn xong gán cả categoryCode = PICTURE_BOOK và binding, hiển thị "Picture book · Paperback" (hoặc Hardcover) ngay trong ô Thể loại, đồng thời bỏ cụm radio kiểu bìa rời bên dưới.
+     - Hỗ trợ đóng menu khi click ra ngoài hoặc nhấn phím Escape; giữ select ẩn (.sr-only-native-select) để tương thích ReactiveForms.
+   - Files thay đổi:
+     - code/frontend/src/styles.scss
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.ts
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.html
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.scss
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 37/37 files, 187/187 tests PASS (bao gồm test mở menu con Picture book và chọn Paperback).
+   - Frontend builds: npm run build và npm run build:workers (cwd code/frontend trong worktree) -> PASS (0 errors, 0 warnings).
+   - Browser QA qua Chrome headless CDP (1280x800) với Angular SSR local + mock API:
+     - titleWidth: 581px, isbnWidth: 183px (cùng Hàng 1).
+     - pubWidth: 302px, authWidth: 263px, langWidth: 183px (cùng Hàng 2).
+     - catWidth: 302px, condWidth: 223px, weightWidth: 223px (cùng Hàng 3).
+     - pMinWidth: 223px, pMaxWidth: 223px (cùng Hàng 4).
+     - stockWidth: 150px.
+     - catLabel sau khi chọn từ submenu: "Picture book · Paperback".
+     - Chụp ảnh kiểm chứng: admin-book-editor-dropdown-submenu.png và admin-book-editor-picture-selected.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.
