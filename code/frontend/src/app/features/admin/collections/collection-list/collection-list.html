@@ -32,20 +32,20 @@
       <form [formGroup]="form" (ngSubmit)="save()">
         <fieldset [disabled]="busy() || createUncertain()">
           <legend class="sr-only">Thông tin bộ sưu tập</legend>
-          <label>Tên<input formControlName="name" maxlength="100" required /></label
-          ><label
-            >Đường dẫn<input
+          <label class="admin-field"><span class="field-label">Tên</span><input formControlName="name" maxlength="100" required /></label
+          ><label class="admin-field"
+            ><span class="field-label">Đường dẫn</span><input
               formControlName="slug"
               [readOnly]="editing() !== null"
               maxlength="120"
               required
-            /><small>{{
+            /><small class="helper-text">{{
               editing()
                 ? 'Đường dẫn được giữ nguyên sau khi tạo.'
                 : 'Chữ thường không dấu, số và dấu gạch ngang. Ví dụ: dong-vat.'
             }}</small></label
-          ><label
-            >Thứ tự<input
+          ><label class="admin-field"
+            ><span class="field-label">Thứ tự</span><input
               type="number"
               formControlName="sortOrder"
               min="0"

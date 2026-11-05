@@ -237,4 +237,46 @@ describe('BookEditor safe final saves', () => {
     pending.next(saved);pending.complete();expect(e.book()).toBeNull();expect(e.createUncertain()).toBe(true);
     expect(e.error()).toContain('Phiên đăng nhập đã thay đổi');
   });
+  it('renders modern admin fields with notched outline field labels and custom Picture book submenu', () => {
+    const fixture = TestBed.createComponent(BookEditor);
+    const e = fixture.componentInstance;
+    fixture.detectChanges();
+    e.taxonomy.set({
+      categories: [
+        { code: 'BOARD_BOOK', label: 'Board book', sortOrder: 0 },
+        { code: 'PICTURE_BOOK', label: 'Picture book', sortOrder: 1 },
+      ],
+      ageGroups: [],
+      bindings: [
+        { code: 'PAPERBACK', label: 'Paperback', sortOrder: 0 },
+        { code: 'HARDCOVER', label: 'Hardcover', sortOrder: 1 },
+      ],
+      readingLevels: [],
+    });
+    fixture.detectChanges();
+    const titleInput = fixture.nativeElement.querySelector('input[formControlName="title"]');
+    const titleField = titleInput?.closest('.admin-field');
+    expect(titleField).not.toBeNull();
+    expect(titleField?.querySelector('.field-label')?.textContent).toContain('Tên sách');
+    const categoryField = fixture.nativeElement.querySelector('.field-category');
+    expect(categoryField).not.toBeNull();
+    expect(categoryField?.querySelector('.field-label')?.textContent).toContain('Thể loại');
+
+    const trigger = categoryField.querySelector('.dropdown-trigger') as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+    expect(categoryField.querySelector('.dropdown-popover')).not.toBeNull();
+
+    const pictureBtn = categoryField.querySelector('.has-submenu') as HTMLButtonElement;
+    pictureBtn.click();
+    fixture.detectChanges();
+    const submenuItems = Array.from(categoryField.querySelectorAll('.dropdown-submenu .dropdown-item')) as HTMLButtonElement[];
+    expect(submenuItems.map((b) => b.textContent?.trim())).toEqual(['Paperback', 'Hardcover']);
+
+    submenuItems[0].click();
+    fixture.detectChanges();
+    expect(e.form.controls.categoryCode.value).toBe('PICTURE_BOOK');
+    expect(e.form.controls.binding.value).toBe('PAPERBACK');
+    expect(trigger.textContent).toContain('Picture book · Paperback');
+  });
 });

@@ -1,14 +1,36 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật04/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+## Rà soát project — 05/11/2026
+
+- Frontend187/187; backend183run/0failure/0error/3live-provider skip; SSR/Workers
+  build, proxy workerd, Wrangler dry-run và11test tooling Python đạt.
+- Audit: production0, toàn cây16moderate từ glob/minimatch trong dev tooling;
+  chưa sửa dependency. Theo dõi cập nhật tương thích, không downgrade Angular
+  theo gợi ý audit. Kết quả/bằng chứng/giới hạn ở DEV_LOG S040-C02.
+- Workflow chỉ có main do commit trực tiếp, chưa từng bị xóa khỏi dev. Dev không
+  cần file để chạy app; khuyến nghị đồng bộ file, giữ publish main. Chưa đổi CI.
+- Docs đã sửa host/CI/repository và thêm rollout V13; chưa smoke live, kiểm thiết
+  bị thật hoặc đóng gate release. Chênh lệch local preview trên main cần xem riêng.
+
+## Logo mở trang — 05/11/2026
+
+- Đã sửa trên worktree dev: logo luôn hiện400ms khi mở/reload rồi fade120ms,
+  kể cả HTML SSR/cache đã có sẵn. 186test, SSR/Workers/proxy và browser QA đạt.
+  Chờ user merge main/deploy bản logo mới.
+- Đã xóa `README.md` ở root theo yêu cầu user, gộp phần lệnh chạy/test local và
+  bảng Auth M1 vào [ARCHITECTURE](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1),
+  cập nhật toàn bộ liên kết tại `docs/README.md`, `AGENTS.md`, `MASTER_PLAN.md`,
+  `VERIFICATION.md` và `code/backend/run-local.sh`.
 
 ## Cache public và trạng thái tải — 04/11/2026
 
 - Đã triển khai local cache trang chủ/ảnh, giảm request lặp, logo bootstrap và
   skeleton. Frontend184/184, backend verify182run/3live skip và13test sau review
   đạt; SSR/Workers/proxy/workerd/browser QA đạt.
-- Còn đặt zone/token purge trên backend, deploy và đo/smoke online theo
+- User05/11 xác nhận cache đã ổn. Quy trình cấu hình/đo/smoke online theo
   [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026).
   Cache edge tự giữ no-store nếu backend chưa có cấu hình purge.
 - Purge toàn zone, dữ liệu cũ có thể còn tối đa30s. Bằng chứng ở
@@ -54,6 +76,16 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
+## Tối ưu UI quản trị — Hệ thống Input Field và bố cục Form nhập sách (đã gộp vào dev 05/11/2026)
+
+- Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
+  - Nhãn cố định trên viền trên (Notched / Cutout border, nền trắng che viền), focus màu xanh tím Indigo (`#4F46E5`), bo góc 8px, chiều cao ô 46px.
+  - Dropdown select có custom chevron SVG (`∨`), trạng thái lỗi viền đỏ (`#D92D20`) + nhãn đỏ + icon cảnh báo tam giác (⚠️) góc phải + helper text đỏ.
+  - Áp dụng toàn bộ `/admin`: Thêm/Sửa sách (`book-editor`), Đăng nhập (`login`), Bộ lọc sách (`book-list`), Flash Sale, Bộ sưu tập (`collection-list`), Import (`book-import`).
+  - Tối ưu bố cục form nhập sách (`book-editor`): thu gọn `.book-form` `max-width: 780px` (grid 20 cột); Hàng 1: Tên sách (~75%) - ISBN (~25%); Hàng 2: NXB (40%) - Tác giả (35%) - Ngôn ngữ (25%); Hàng 3: Thể loại (40%) - Tình trạng (30%) - Trọng lượng (30%); Hàng 4: Giá từ (~220px) - Giá đến (~220px); Tồn kho đơn biến thể gọn 150px; Trình độ đọc (35%) - Video URL (65%); xóa câu mô tả thừa tại panel ảnh.
+  - Custom Dropdown Popover (Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo): menu xổ xuống nền sáng `#FFFFFF`, bo góc `10px`, dấu `✓` bên phải; mục `Picture book ›` xổ menu con `[Paperback, Hardcover]` sang phải, chọn xong hiển thị `Picture book · Paperback` (hoặc `Hardcover`) và bỏ cụm radio kiểu bìa rời.
+  - Kiểm chứng: Vitest 37/37 files (187/187 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt.
+
 ## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 
 - `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành; thêm nhãn `(nếu có)` cho Nhà xuất bản/Tác giả và sửa header mobile `390px` cho icon `♡ + badge`.
@@ -97,7 +129,7 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 | Gate | Bằng chứng còn thiếu / điều kiện đóng |
 |---|---|
-| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V12 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
+| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V13 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
 | Backfill ảnh public |63ACTIVE media mới dryrunpending63, chưaapplyv2 đủ320/640×JPEG/WebP; verify MIME/magic/dimensions trước frontendpicture, không dùng checkpointJPEG640 cũ |
 | Hiệu năng public |Lighthouse Mobile3run mỗi Home/detail cố định/wishlist; từngrun LCP≤2,5s/CLS≤0,1; detail lần đo online cuối FAIL, wishlist cóoutlier; sourcefix local chưa có đo lại online, cold Render/Neon đo riêng |
 | Backup vận hành |Dump21sách/63mediarefs đãrestorelocal và nguồn63JPG verify; còn lịch backup/retention/người phụ trách/bản saooffhost và bằng chứng khôi phục theo chính sách đó; scratchrestore cũ đã xóa theo user |

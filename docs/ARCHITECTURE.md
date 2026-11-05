@@ -1,8 +1,8 @@
 # Mẹ Mây — kiến trúc và hạ tầng
 
-Cập nhật01/11/2026: Angular/Spring Boot modular monolith, Spring JDBC/Flyway,
-Workers/Render/Neon test và Cloudinary. Giữ code/frontend và code/backend; các
-package minh họa chưa dùng không cần tạo. [CATALOGUE](CATALOGUE.md) giữ API/quyền/
+Cập nhật05/11/2026: Angular/Spring Boot modular monolith, Spring JDBC/Flyway,
+Workers/homelab Dell qua Dokploy và Cloudinary; Render/Neon là testhost cũ.
+Giữ code/frontend và code/backend; các package minh họa chưa dùng không cần tạo. [CATALOGUE](CATALOGUE.md) giữ API/quyền/
 media quản trị; [DATA](DATA.md) giữ field; [PROGRESS](PROGRESS.md) giữ việc còn mở.
 Khảo sát source cũ và quyết định không tái sử dụng được giữ trong Git/DEV_LOG.
 
@@ -11,7 +11,6 @@ Khảo sát source cũ và quyết định không tái sử dụng được gi�
 ```text
 me-may/
 ├── AGENTS.md
-├── README.md                     # Entrypoint tài liệu khi bắt đầu triển khai
 ├── .agents/                      # Skill local, Git ignored
 ├── code/
 │   ├── frontend/                 # Một Angular app
@@ -71,6 +70,20 @@ Package thực tế ở M1 là `vn.memay`; các domain chưa dùng trong sơ đ�
 
 ## Hệ quả triển khai
 
+### Chạy local, kiểm tra và Auth M1
+
+- Yêu cầu local: Java 21, Node 22.12+ (nhánh 22), npm và container PostgreSQL local (`localhost:5432`) với hai database tách biệt `me_may_dev` (ứng dụng) và `me_may_test` (integration test, role `me_may_app`). Credential đặt tại root `.env` (`0600`, Git ignored; mẫu ở `.env.example`).
+- Chạy backend local (từ root): `bash code/backend/run-local.sh` (`http://127.0.0.1:8080`, health `/actuator/health`). Integration test + JAR: `bash code/backend/run-local.sh -B -ntp verify` (chỉ chạy trên `me_may_test`).
+- Chạy frontend dev/test (từ `code/frontend`): `npm ci && npm start` (`http://127.0.0.1:4200`, giữ cùng hostname `127.0.0.1` cho cookie session), `npm test`, `npm run build`, `npm audit`. Node SSR local: `PORT=4000 npm run serve:ssr:me-may-web` rồi `node scripts/check-ssr.mjs http://127.0.0.1:4000`.
+- Workers local (từ `code/frontend`): `npm run dev:workers` (`http://127.0.0.1:8787`, dùng `wrangler.local.jsonc`), kiểm bằng `node scripts/check-ssr.mjs http://127.0.0.1:8787` và `npm run check:workers:proxy` (probe workerd `8788`/`9231`, mock backend).
+- Gate media live opt-in: chỉ chạy `MediaLiveTest,CloudinaryLiveTest` khi đặt `MEMAY_LIVE_MEDIA_TEST=true` và `CLOUDINARY_NAMESPACE=memay/test` trên `me_may_test`.
+- Auth/API M1 (session in-memory 30 phút, cookie `HttpOnly`/`SameSite=Lax`, `Secure=true` ngoài profile local; cấp owner bằng `python3 scripts/deploy/create_owner.py` hoặc `--target local`):
+  - `GET /api/v1/auth/csrf` (`{headerName, token}`, `no-store`)
+  - `POST /api/v1/auth/login` (form-urlencoded `username`, `password` + CSRF → user DTO hoặc `401`)
+  - `GET /api/v1/auth/me` (user hiện tại hoặc `401` JSON)
+  - `POST /api/v1/auth/logout` (CSRF mới sau login → `204`, hủy session/cookie)
+  - `GET /api/v1/admin/access` (kiểm tra `OWNER`/`STAFF`) và `GET /api/v1/admin/owner-access` (chỉ `OWNER`, `STAFF` trả `403`)
+
 ### Wishlist M4 local
 
 - `WishlistStore`: Angular signals; localStorage `memay.wishlist.v1` là mảng mã duy nhất/thứ tự thêm, tối đa100. Mã canonical theo generator Java Long dương, tối thiểu6 chữ số, không ép đúng6. Không lưu snapshot tên/ảnh/giá, selection hoặc token. Init bằng afterNextRender; cleanup listener khi destroy.
@@ -80,7 +93,7 @@ Package thực tế ở M1 là `vn.memay`; các domain chưa dùng trong sơ đ�
 - Revalidation lifecycle/selection/dialog theo DESIGN. Prepared text được tính từ dữ liệu đã xác minh, selection/codes hiện hành và PublicClock; expiry hoặc mã đã xóa làm text rỗng ngay, trước khi refresh hoàn tất. Chỉ copy sau thao tác riêng của khách; không tự gửi hoặc ghi availability.
 - Route /quan-tam có SSR shell + X-Robots-Tag/meta noindex/no-store; sau browser render mới đọc storage. PUBLIC_SITE_ORIGIN qua TransferState M3 cung cấp URL canonical. Không thêm dependency, customer auth, order hoặc backend wishlist persistence.
 
-Cloudflare build root là `code/frontend`; Spring build context `code/backend`. Môi trường online test trước M5 theo điều chỉnh25/10 ở phần hạ tầng dưới đây; PostgreSQL/Dokploy private volume là hướng production hoãn. Không nhét database binary hoặc ảnh thật lớn vào repo. Dockerfile Render đã triển khai; Compose/CI bổ sung khi có phạm vi được duyệt.
+Cloudflare build root là `code/frontend`; Spring build context `code/backend`. Đích backend hiện hành là Dell/Dokploy qua Tunnel; database/profile/revision live chưa xác minh. Không nhét database binary hoặc ảnh thật lớn vào repo. Dockerfile đã có; CI test/publish GHCR chỉ có trên main, xem [DEPLOYMENT — Git workflow](DEPLOYMENT.md#git-workflow).
 
 
 ## Hạ tầng triển khai
@@ -108,14 +121,14 @@ Cloudflare build root là `code/frontend`; Spring build context `code/backend`. 
 - Flash Sale singleton id1/version0, startsAt/endsAt/items[{bookCode,salePriceVnd}], OWNER GET/PUT `/api/v1/admin/flash-sale`, version/audit. Original price từ listing; effective chỉ enabled/[start,end)/PUBLISHED/AVAILABLE/sale<reference. List/detail/sort/enquiry dùng cùng DBclock; response timestamp sync PublicClock, origin qua TransferState. Không sold counts. Tắt campaign sau sold vẫn được.
 - V4 bỏ reading basis khỏi field/storage/audit mới, giữ audit lịch sử và optional HTTPS video; V5 thêm campaign mặc định tắt. Backup/fingerprint/migration bảo toàn sách/media/audit/sequence đã kiểm chứng. Không cần chạy lại hoặc reset dữ liệu vì user nghiệm thu.
 
-### Luồng mạng / domain (tên minh họa, chưa mua domain)
+### Luồng mạng / domain hiện hành (cấu hình repo, chưa nghiệm thu release)
 
-| URL minh họa | Nơi chạy | Bảo mật / ghi chú |
+| URL / dịch vụ | Nơi chạy | Bảo mật / ghi chú |
 |---|---|---|
-| `www.example.com`, `example.com` | Cloudflare Workers / Angular SSR + assets | User đã chốt; SSR workerd local đạt; deployed spike còn mở |
-| `www.example.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
-| `api.example.com` | Test: backend host miễn phí chưa chốt; production VPS/Dokploy hoãn | HTTPS, CORS whitelist, CSRF, auth cookie, health endpoint tối thiểu |
-| PostgreSQL test endpoint / internal service:5432 | Neon test có URL; production VPS/Dokploy hoãn | JDBC chỉ từ Spring backend, TLS mạng ngoài, direct migrations riêng |
+| `memaybooks.com` | Cloudflare Workers / Angular SSR + assets | Repo đã cấu hình; cần smoke candidate đang deploy |
+| `memaybooks.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
+| `api.memaybooks.com` | Dell/Dokploy qua Cloudflare Tunnel | Browser dùng proxy cùng origin; giữ CSRF/Secure cookie; DB/profile live chưa xác minh |
+| PostgreSQL test endpoint / internal service:5432 | Neon test cũ; đích DB Dell chưa xác minh | JDBC chỉ từ Spring backend, TLS mạng ngoài, direct migrations riêng |
 | Cloudinary delivery domain | Cloudinary CDN | Chỉ giao ảnh đã xuất bản; quản lý signed uploads/delete qua API |
 | Resend API | Resend, **chưa kích hoạt ở MVP** | Gọi từ Spring Boot khi đã có tính năng email |
 

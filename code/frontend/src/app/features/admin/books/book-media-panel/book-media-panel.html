@@ -1,7 +1,7 @@
 <section aria-labelledby="photo-heading">
   <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi. Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
+    Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
     nội dung 3.
   </p>
   @if (!readonly()) {
@@ -99,8 +99,8 @@
         }
         @if (!readonly()) {
           <fieldset [disabled]="disabled()">
-            <label
-              >Vai trò ảnh<select
+            <label class="admin-field"
+              ><span class="field-label">Vai trò ảnh</span><select
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
               >
                 @for (role of roles; track role) {

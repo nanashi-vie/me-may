@@ -18,7 +18,7 @@ import { ReactiveFormsModule, FormControl, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BookApi } from '../book-api';
-import { BookDetail, Taxonomy, AgeGroup, AdminApiError } from '../book.models';
+import { BookDetail, Taxonomy, AgeGroup, AdminApiError, CategoryCode, Binding, BookWrite, ReadingLevel } from '../book.models';
 import { buildBookForm, buildVariantForm, toBookWrite } from '../book-form';
 import { CollectionApi, CollectionDto } from '../../collections/collection-api';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -68,6 +68,8 @@ export class BookEditor {
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
   readonly legacyConditions: Record<string,string> = { VERY_GOOD: 'Rất tốt', GOOD: 'Tốt', FAIR: 'Có hao mòn' };
+  readonly openMenu = signal<'category' | 'condition' | 'reading' | null>(null);
+  readonly pictureSubmenuOpen = signal(false);
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
   readonly loginForm = new FormGroup({
@@ -75,6 +77,105 @@ export class BookEditor {
     password: new FormControl('', { nonNullable: true }),
   });
   readonly editable = computed(() => !this.loadFailed() && this.auth.user()?.role === 'OWNER');
+  readonly formDisabled = computed(() => this.busy() || this.otherBusy() || this.loading() || !this.editable() || this.createUncertain());
+  pictureBindings(): { code: Binding; label: string }[] {
+    const list = this.taxonomy().bindings;
+    return list.length
+      ? list
+      : [
+          { code: 'PAPERBACK', label: 'Paperback' },
+          { code: 'HARDCOVER', label: 'Hardcover' },
+        ];
+  }
+  categoryDisplayLabel(): string {
+    const code = this.form.controls.categoryCode.value;
+    if (!code) return 'Chưa xác định';
+    const cat = this.taxonomy().categories.find((c) => c.code === code);
+    const catLabel = cat?.label ?? (code === 'PICTURE_BOOK' ? 'Picture book' : code);
+    if (code === 'PICTURE_BOOK') {
+      const b = this.form.controls.binding.value;
+      if (b) {
+        const bLabel = this.pictureBindings().find((x) => x.code === b)?.label ?? (b === 'PAPERBACK' ? 'Paperback' : 'Hardcover');
+        return `${catLabel} · ${bLabel}`;
+      }
+      return catLabel;
+    }
+    return catLabel;
+  }
+  conditionDisplayLabel(): string {
+    const val = this.form.controls.conditionGrade.value;
+    if (!val) return 'Chưa đánh giá';
+    if (val === 'HIGH_FRESHNESS') return 'Độ mới cao';
+    if (val === 'MINOR_FLAWS') return 'Có lỗi nhẹ';
+    return this.legacyConditions[val] ?? val;
+  }
+  readingDisplayLabel(): string {
+    const val = this.form.controls.readingLevel.value;
+    if (!val) return 'Chưa xác định';
+    return this.taxonomy().readingLevels.find((l) => l.code === val)?.label ?? val;
+  }
+  toggleMenu(menu: 'category' | 'condition' | 'reading', event: Event) {
+    event.stopPropagation();
+    if (this.formDisabled()) return;
+    if (this.openMenu() === menu) {
+      this.openMenu.set(null);
+      this.pictureSubmenuOpen.set(false);
+    } else {
+      this.openMenu.set(menu);
+      this.pictureSubmenuOpen.set(menu === 'category' && this.form.controls.categoryCode.value === 'PICTURE_BOOK');
+    }
+  }
+  togglePictureSubmenu(event: Event) {
+    event.stopPropagation();
+    this.pictureSubmenuOpen.update((v) => !v);
+  }
+  selectCategory(code: CategoryCode | null, event: Event) {
+    event.stopPropagation();
+    this.form.controls.categoryCode.setValue(code);
+    this.form.controls.categoryCode.markAsDirty();
+    this.form.controls.categoryCode.markAsTouched();
+    this.openMenu.set(null);
+    this.pictureSubmenuOpen.set(false);
+  }
+  selectPictureBinding(binding: Binding, event: Event) {
+    event.stopPropagation();
+    this.form.controls.categoryCode.setValue('PICTURE_BOOK');
+    this.form.controls.binding.setValue(binding);
+    this.form.controls.categoryCode.markAsDirty();
+    this.form.controls.binding.markAsDirty();
+    this.form.controls.categoryCode.markAsTouched();
+    this.form.controls.binding.markAsTouched();
+    this.openMenu.set(null);
+    this.pictureSubmenuOpen.set(false);
+  }
+  selectCondition(grade: BookWrite['conditionGrade'], event: Event) {
+    event.stopPropagation();
+    this.form.controls.conditionGrade.setValue(grade);
+    this.form.controls.conditionGrade.markAsDirty();
+    this.form.controls.conditionGrade.markAsTouched();
+    this.openMenu.set(null);
+  }
+  selectReadingLevel(level: ReadingLevel | null, event: Event) {
+    event.stopPropagation();
+    this.form.controls.readingLevel.setValue(level);
+    this.form.controls.readingLevel.markAsDirty();
+    this.form.controls.readingLevel.markAsTouched();
+    this.openMenu.set(null);
+  }
+  @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
+    if (!this.openMenu()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.custom-dropdown')) {
+      this.openMenu.set(null);
+      this.pictureSubmenuOpen.set(false);
+    }
+  }
+  @HostListener('document:keydown.escape') onEscapeKey() {
+    if (this.openMenu()) {
+      this.openMenu.set(null);
+      this.pictureSubmenuOpen.set(false);
+    }
+  }
   fieldErrors() {
     return Object.entries(this.fields()).map(([key, messages]) => ({
       key,

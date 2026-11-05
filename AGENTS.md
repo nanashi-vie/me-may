@@ -15,7 +15,7 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 - Yêu cầu mới nhất của người dùng là nguồn chỉ đạo hiện tại; system/developer instructions vẫn có độ ưu tiên cao hơn file này.
 - `docs/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/DESIGN.md`, dữ liệu ở `docs/DATA.md`, kiến trúc/chi tiết hạ tầng và khảo sát nguồn cũ ở `docs/ARCHITECTURE.md`. Lịch sử phiên bản tra bằng Git.
 - Bản spec/ADR được duyệt sau này ghi rõ quyết định nào thay thế master plan. Không âm thầm sửa phạm vi thông qua code hoặc skill.
-- Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `README.md`.
+- Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `docs/ARCHITECTURE.md`.
 
 ## Git workflow — user chốt 27/10/2026
 
