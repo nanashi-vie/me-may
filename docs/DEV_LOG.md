@@ -1190,3 +1190,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
      - `/admin/sach` & `/admin/bo-suu-tap`: chụp `admin-book-list-filters.png` và `admin-collection-list.png` (các trường và nút bấm thẳng hàng ngang, chiều cao đồng bộ 46px). Đã dừng server và browser test.
 4. Việc dang dở / blocker: Không có.
 5. Bước tiếp theo: Bàn giao kết quả trên nhánh `dev-ui` cho user nghiệm thu.
+
+### S038-C02 — 05/11/2026 — tối ưu grid layout và độ dài input form nhập sách trên worktree dev-ui
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C02. Mục tiêu: làm việc trên git worktree dev-ui (/Users/daoquanghung/Projects/me-may.worktrees/dev-ui), tối ưu lại bố cục form nhập sách (book-editor), khắc phục tình trạng các trường ngắn bị giãn 100% full-width hoặc chia 50-50 không hợp lý, và xóa câu text thừa tại panel ảnh.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Chuyển container .fields sang CSS Grid 12 cột (repeat(12, minmax(0, 1fr))):
+     - Tên sách: full-width 100% (span 12).
+     - Nhà xuất bản: 50% (span 6) · Tác giả: 50% (span 6).
+     - Hàng 3 (12 cột): Thể loại: 5/12 (span 5) · Ngôn ngữ: 3/12 (span 3) · ISBN: 4/12 (span 4) gom trên cùng một hàng gọn gàng, vừa vặn độ dài dữ liệu.
+     - Kiểu Picture book: 100% (span 12).
+     - Giá từ (đ): 50% (span 6) · Giá đến (đ): 50% (span 6).
+     - Đánh giá tình trạng: 50% (span 6) · Trọng lượng sách (g): 50% (span 6).
+     - Responsive (màn hình <= 800px): các trường tự động giãn span 1 trên grid 1 cột.
+   - Bố cục biến thể (stock-editor):
+     - Khi chỉ có 1 biến thể (mặc định): ô Tồn kho giới hạn độ rộng ~200px (flex: 0 0 200px; max-width: 220px), không kéo dài vô tận 100% màn hình.
+     - Khi có nhiều biến thể: Tên biến thể linh hoạt (flex: 1 1 320px), Tồn kho gọn (flex: 0 0 200px), nút Gỡ dòng mới cao 46px căn đáy thẳng hàng với input.
+   - Textarea Mô tả tình trạng / lỗi và Mô tả sách: giữ 100% full-width.
+   - Hàng thông tin meta: Trình độ đọc tham khảo (40% / 5fr) · Link video đọc sách (60% / 7fr) tạo .fields-meta giúp link URL dài có đủ không gian.
+   - Panel media (book-media-panel.html): xóa câu thừa "Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi.".
+   - Files thay đổi:
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.html
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.scss
+     - code/frontend/src/app/features/admin/books/book-media-panel/book-media-panel.html
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 37/37 files, 187/187 tests PASS.
+   - Frontend build: npm run build (cwd code/frontend trong worktree) -> PASS (0 errors/warnings).
+   - Browser QA qua Chrome headless CDP (1280x800) với Angular SSR local + mock API:
+     - titleWidth: 981px (100% full-width trên container 1000px).
+     - pubWidth: 479px, authWidth: 479px (50% - 50%).
+     - catWidth: 395px, langWidth: 227px, isbnWidth: 311px (hàng 3 gọn gàng, chia 5/12 - 3/12 - 4/12).
+     - stockWidth: 200px (ô Tồn kho gọn gàng, không tràn 100%).
+     - hasDeletedSentence: false (câu text thừa đã được loại bỏ hoàn toàn).
+     - Đã chụp các ảnh screenshot kiểm chứng: admin-book-editor-empty.png, admin-book-editor-title-active.png, admin-book-editor-price-error.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push các thay đổi lên branch dev-ui trên worktree, báo cáo cho user nghiệm thu.

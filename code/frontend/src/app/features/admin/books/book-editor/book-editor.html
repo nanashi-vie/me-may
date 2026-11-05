@@ -33,12 +33,10 @@
   <fieldset [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain()">
     <legend>Thông tin cuốn sách</legend>
     <div class="fields">
-      <label class="admin-field"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" /></label
-      ><label class="admin-field"><span class="field-label">ISBN <small>(nếu có)</small></span><input formControlName="isbn" maxlength="32" /></label
-      ><label class="admin-field"><span class="field-label">Nhà xuất bản <small>(nếu có)</small></span><input formControlName="publisher" maxlength="200" /></label
-      ><label class="admin-field"><span class="field-label">Tác giả <small>(nếu có)</small></span><input formControlName="author" maxlength="200" /></label
-      ><label class="admin-field"><span class="field-label">Ngôn ngữ</span><input formControlName="language" maxlength="50" /></label>
-      <label class="admin-field"
+      <label class="admin-field field-title"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" /></label>
+      <label class="admin-field field-publisher"><span class="field-label">Nhà xuất bản <small>(nếu có)</small></span><input formControlName="publisher" maxlength="200" /></label>
+      <label class="admin-field field-author"><span class="field-label">Tác giả <small>(nếu có)</small></span><input formControlName="author" maxlength="200" /></label>
+      <label class="admin-field field-category"
         ><span class="field-label">Thể loại</span><select formControlName="categoryCode">
           <option [ngValue]="null">Chưa xác định</option>
           @for (c of taxonomy().categories; track c.code) {
@@ -46,8 +44,10 @@
           }
         </select></label
       >
+      <label class="admin-field field-language"><span class="field-label">Ngôn ngữ</span><input formControlName="language" maxlength="50" /></label>
+      <label class="admin-field field-isbn"><span class="field-label">ISBN <small>(nếu có)</small></span><input formControlName="isbn" maxlength="32" /></label>
       @if (form.controls.categoryCode.value === 'PICTURE_BOOK') {
-        <fieldset class="choices binding">
+        <fieldset class="choices binding field-binding">
           <legend>Kiểu Picture book (bắt buộc)</legend>
           @for (c of taxonomy().bindings; track c.code) {
             <label
@@ -64,7 +64,7 @@
           }
         </fieldset>
       }
-      <label class="admin-field" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"
+      <label class="admin-field field-price-min" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"
         ><span class="field-label">Giá từ (đ)</span><input
           type="text" inputmode="numeric" appVndInput
           formControlName="priceMinVnd"
@@ -72,9 +72,8 @@
           max="999999999999"
           step="1"
         />@if (priceNote) { <small class="helper-text">{{ priceNote }}</small> }</label
-      ><label class="admin-field" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
-      <label class="admin-field"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
-      <label class="admin-field"
+      ><label class="admin-field field-price-max" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
+      <label class="admin-field field-condition"
         ><span class="field-label">Đánh giá tình trạng</span><select formControlName="conditionGrade">
           <option [ngValue]="null">Chưa đánh giá</option>
           <option value="HIGH_FRESHNESS">Độ mới cao</option>
@@ -84,15 +83,16 @@
           }
         </select></label
       >
+      <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
     </div>
     <fieldset formArrayName="variants" class="stock-editor">
       <legend>Tồn kho và biến thể</legend>
       @for (row of form.controls.variants.controls; track row; let i = $index) {
         <div [formGroupName]="i" class="variant-row">
           @if (variantNamesVisible()) {
-            <label class="admin-field"><span class="field-label">Tên biến thể</span><input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
+            <label class="admin-field field-variant-name"><span class="field-label">Tên biến thể</span><input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
           }
-          <label class="admin-field"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
+          <label class="admin-field field-variant-stock"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
           @if (!row.controls.id.value && form.controls.variants.length > 1) {
             <button type="button" class="secondary" (click)="removeNewVariant(i)" [attr.aria-label]="'Gỡ biến thể mới ' + (i+1)">Gỡ dòng mới</button>
           }
@@ -122,8 +122,8 @@
     ><label class="admin-field"
       ><span class="field-label">Mô tả sách</span><textarea formControlName="description" maxlength="10000" rows="5"></textarea>
     </label>
-    <div class="fields">
-      <label class="admin-field"
+    <div class="fields-meta">
+      <label class="admin-field field-reading"
         ><span class="field-label">Trình độ đọc tham khảo</span><select formControlName="readingLevel">
           <option [ngValue]="null">Chưa xác định</option>
           @for (level of taxonomy().readingLevels; track level.code) {
@@ -131,7 +131,7 @@
           }</select
         >@if (readingNote) { <small class="helper-text">{{ readingNote }}</small> }</label
       >
-      <label class="admin-field"
+      <label class="admin-field field-video"
         ><span class="field-label">Link video đọc sách <small>(không bắt buộc)</small></span><input
           formControlName="readingVideoUrl"
           type="url"

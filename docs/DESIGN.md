@@ -188,6 +188,21 @@ Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên,
   lại, tổng hết thì tư vấn tương đương. Ảnh chung không hứa đúng tình trạng của mọi bản.
 - Wishlist giữ theo sách và dữ liệu đã lưu; hỏi nhiều sách không tự gán biến thể cho khách.
 
+### Tối ưu bố cục form nhập sách và biến thể (duyệt 05/11)
+
+- Grid 12 cột linh hoạt (`grid-template-columns: repeat(12, minmax(0, 1fr))`):
+  - Tên sách: 100% (`span 12`).
+  - Nhà xuất bản: 50% (`span 6`) · Tác giả: 50% (`span 6`).
+  - Thể loại: 5/12 (`span 5`) · Ngôn ngữ: 3/12 (`span 3`) · ISBN: 4/12 (`span 4`) trên cùng một hàng hài hòa.
+  - Kiểu Picture book (nếu có): 100% (`span 12`).
+  - Giá từ (đ): 50% (`span 6`) · Giá đến (đ): 50% (`span 6`).
+  - Đánh giá tình trạng: 50% (`span 6`) · Trọng lượng sách (g): 50% (`span 6`).
+  - Tồn kho đơn biến thể: giới hạn độ rộng ~200px (`max-width: 220px`), không kéo dãn 100% chiều ngang form.
+  - Đa biến thể: Tên biến thể co giãn linh hoạt (`flex: 1 1 320px`), Tồn kho gọn (`flex: 0 0 200px`), nút Gỡ cao 46px căn đáy đồng bộ.
+  - Mô tả tình trạng / lỗi và Mô tả sách: 100% full-width.
+  - Meta row: Trình độ đọc tham khảo (40% / `5fr`) · Link video đọc sách (60% / `7fr`).
+  - Panel ảnh: Bỏ câu thừa "Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi." để giao diện gọn gàng.
+
 ### Hệ thống Input Field quản trị /admin (duyệt 05/11)
 
 - Thiết kế Notched Outlined Label: nhãn nằm cố định trên viền trên của ô (`background: #ffffff` che viền), không giật chuyển động khi focus/nhập liệu, chiều cao ô 46px, bo góc 8px.
