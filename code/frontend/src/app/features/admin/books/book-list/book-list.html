@@ -6,15 +6,15 @@
   @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
-  <label>Tên hoặc mã sách<input formControlName="q" maxlength="200" type="search" /></label
-  ><label
-    >Xuất bản<select formControlName="publication">
+  <label class="admin-field"><span class="field-label">Tên hoặc mã sách</span><input formControlName="q" maxlength="200" type="search" /></label
+  ><label class="admin-field"
+    ><span class="field-label">Xuất bản</span><select formControlName="publication">
       <option value="">Tất cả</option>
       <option value="PUBLISHED">Công khai</option>
       <option value="ARCHIVED">Ẩn</option>
     </select></label
-  ><label
-    >Khả dụng<select formControlName="availability">
+  ><label class="admin-field"
+    ><span class="field-label">Khả dụng</span><select formControlName="availability">
       <option value="">Tất cả</option>
       <option value="AVAILABLE">Còn hàng</option>
       <option value="SOLD">Hết hàng</option>

@@ -188,6 +188,29 @@ Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên,
   lại, tổng hết thì tư vấn tương đương. Ảnh chung không hứa đúng tình trạng của mọi bản.
 - Wishlist giữ theo sách và dữ liệu đã lưu; hỏi nhiều sách không tự gán biến thể cho khách.
 
+### Tối ưu bố cục form nhập sách và biến thể (duyệt 05/11)
+
+- Khung form `.book-form` thu gọn `max-width: 780px` với Grid 20 cột (`repeat(20, minmax(0, 1fr))`):
+  - Hàng 1: Tên sách (`span 15`, ~75%) · ISBN (`span 5`, ~25%).
+  - Hàng 2: Nhà xuất bản (`span 8`, 40%) · Tác giả (`span 7`, 35%) · Ngôn ngữ (`span 5`, 25%).
+  - Hàng 3: Thể loại (`span 8`, 40%) · Đánh giá tình trạng (`span 6`, 30%) · Trọng lượng sách (g) (`span 6`, 30%).
+  - Hàng 4: Giá từ (đ) (`span 6`, ~220px) · Giá đến (đ) (`span 6`, ~220px).
+  - Tồn kho đơn biến thể: gọn `150px` (`max-width: 160px`), nút `Thêm biến thể` `width: auto`.
+  - Đa biến thể: Tên biến thể (`flex: 1 1 260px; max-width: 360px`), Tồn kho (`150px`), nút Gỡ cao 46px căn đáy.
+  - Mô tả tình trạng / lỗi và Mô tả sách: 100% khung 780px.
+  - Meta row: Trình độ đọc tham khảo (`7fr`, 35%) · Link video đọc sách (`13fr`, 65%).
+  - Panel ảnh: Bỏ câu thừa "Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi.".
+
+### Hệ thống Input Field & Custom Dropdown Popover quản trị /admin (duyệt 05/11)
+
+- Thiết kế Notched Outlined Label: nhãn nằm cố định trên viền trên của ô (`background: #ffffff` che viền), không giật chuyển động khi focus/nhập liệu, chiều cao ô 46px, bo góc 8px.
+- Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
+- Custom Dropdown Popover (áp dụng cho Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo):
+  - Menu xổ xuống nền sáng `#FFFFFF`, viền `#E4E7EC`, bo góc `10px`, đổ bóng mềm, hover tím nhạt `#F4F3FF`, mục đang chọn hiển thị dấu `✓` bên phải.
+  - Mục `Picture book ›` có mũi tên `›` bên phải; khi rê chuột hoặc bấm vào sẽ xổ menu con `[Paperback, Hardcover]` sang bên phải. Chọn xong hiển thị `Picture book · Paperback` (hoặc `Hardcover`) ngay trên ô Thể loại và bỏ cụm radio kiểu bìa rời bên dưới.
+- Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
+- Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
+
 ## Trạng thái UX dùng chung
 
 Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit đều cần mô tả/test khi chuyển thành technical spec. Focus rõ, nút có nhãn, form có label, badge không dựa duy nhất vào màu. Public đọc được từ HTML đầu tiên theo chiến lược render đã qua spike; browser API của wishlist/clipboard không chạy trong server initialization.

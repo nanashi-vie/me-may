@@ -1182,6 +1182,110 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   VERIFICATION, trần dòng/linklocal/git diff --check đạt. Chưa deploy; bàn giao
   commit/pushdev để user merge main.
 
+### S038-UI-C01 — 05/11/2026 — nhánh dev-ui: hệ thống input field notched outlined label cho /admin
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-UI-C01. Mục tiêu: tạo nhánh `dev-ui` từ `dev`, thiết kế và triển khai lại toàn bộ UI input field, select dropdown, textarea cho trang quản trị `/admin` theo design system notched outlined label chốt qua `/grill-me`.
+2. Phạm vi & Quyết định:
+   - Nhánh: `dev-ui` tạo từ `dev` sạch (commit `8676906`).
+   - Thiết kế nhãn: Notched Outlined Label (nhãn cố định trên viền trên của ô, có nền `#ffffff` che viền, font Nunito 600 line-height 1.2, không giật vị trí khi focus hay gõ).
+   - Màu Active/Focus: Indigo `#4F46E5` kèm focus ring `rgba(79, 70, 229, 0.15)`.
+   - Dropdown (Select): bo góc 8px, ẩn mũi tên native hệ điều hành, thay bằng custom chevron SVG (`∨`) màu `#667085` (đổi `#4F46E5` khi focus).
+   - Trạng thái lỗi (Error State): viền và nhãn chuyển đỏ `#D92D20`, hiển thị icon cảnh báo tam giác (⚠️) ở góc phải ô, helper text đổi màu đỏ.
+   - Textarea: kế thừa viền notched label, bo góc 8px, hover/focus/error đồng nhất.
+   - Files thay đổi:
+     - `code/frontend/src/styles.scss`: khai báo design tokens (`--admin-field-border`, `--admin-field-hover`, `--admin-field-active`, `--admin-field-error`, `--admin-field-radius: 8px`), định nghĩa `.admin-field` notched label cutout, select chevron SVG, error alert SVG và default admin input styles.
+     - `book-editor.html` & `book-editor.scss`: áp dụng `.admin-field` cho toàn bộ input/select/textarea, sửa `priceOrder` class binding thành `priceMaxVnd`, tinh chỉnh row gap thoáng 0.5rem 1.5rem.
+     - `book-editor.spec.ts`: thêm test case kiểm chứng notched outline field labels.
+     - `login.html`: áp dụng `.admin-field` cho Email và Mật khẩu.
+     - `book-list.html` & `book-list.scss`: áp dụng `.admin-field` cho thanh tìm kiếm và bộ lọc Xuất bản / Khả dụng, cân chỉnh chiều cao 46px thẳng hàng với nút tìm kiếm.
+     - `flash-sale.html` & `flash-sale.scss`: áp dụng `.admin-field` cho các ô ngày giờ bắt đầu/kết thúc và mã sách / giá sale.
+     - `collection-list.html`: áp dụng `.admin-field` cho Tên, Đường dẫn, Thứ tự.
+     - `book-import.html`: áp dụng `.admin-field` cho form đăng nhập lại.
+     - `book-media-panel.html`: áp dụng `.admin-field` cho dropdown vai trò ảnh.
+     - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: cập nhật tài liệu thiết kế và tiến độ.
+3. Kiểm tra đã chạy:
+   - Frontend tests: `npm test` (cwd `code/frontend`) → 37/37 files, 187/187 tests PASS.
+   - Frontend builds: `npm run build` và `npm run build:workers` (cwd `code/frontend`) → 0 errors/warnings.
+   - Backend tests: `./run-local.sh test -Dtest=CategoryExpansionTest,BookImportV2Test` (cwd `code/backend`) → 12/12 PASS.
+   - Browser QA qua Chrome headless CDP (`1280×800`):
+     - `/admin/dang-nhap`: chụp `admin-login-empty.png`, `admin-login-email-active.png` (nhãn và viền đổi màu `#4F46E5`), `admin-login-filled.png`.
+     - `/admin/sach/moi`: chụp `admin-book-editor-empty.png` (nhãn notched cắt viền chuẩn, select có chevron ∨), `admin-book-editor-title-active.png`, `admin-book-editor-price-error.png` (viền đỏ, nhãn đỏ, icon tam giác ⚠️ ở góc phải, helper text đỏ).
+     - `/admin/sach` & `/admin/bo-suu-tap`: chụp `admin-book-list-filters.png` và `admin-collection-list.png` (các trường và nút bấm thẳng hàng ngang, chiều cao đồng bộ 46px). Đã dừng server và browser test.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Bàn giao kết quả trên nhánh `dev-ui` cho user nghiệm thu.
+
+### S038-UI-C02 — 05/11/2026 — tối ưu grid layout và độ dài input form nhập sách trên worktree dev-ui
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-UI-C02. Mục tiêu: làm việc trên git worktree dev-ui (/Users/daoquanghung/Projects/me-may.worktrees/dev-ui), tối ưu lại bố cục form nhập sách (book-editor), khắc phục tình trạng các trường ngắn bị giãn 100% full-width hoặc chia 50-50 không hợp lý, và xóa câu text thừa tại panel ảnh.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Chuyển container .fields sang CSS Grid 12 cột (repeat(12, minmax(0, 1fr))):
+     - Tên sách: full-width 100% (span 12).
+     - Nhà xuất bản: 50% (span 6) · Tác giả: 50% (span 6).
+     - Hàng 3 (12 cột): Thể loại: 5/12 (span 5) · Ngôn ngữ: 3/12 (span 3) · ISBN: 4/12 (span 4) gom trên cùng một hàng gọn gàng, vừa vặn độ dài dữ liệu.
+     - Kiểu Picture book: 100% (span 12).
+     - Giá từ (đ): 50% (span 6) · Giá đến (đ): 50% (span 6).
+     - Đánh giá tình trạng: 50% (span 6) · Trọng lượng sách (g): 50% (span 6).
+     - Responsive (màn hình <= 800px): các trường tự động giãn span 1 trên grid 1 cột.
+   - Bố cục biến thể (stock-editor):
+     - Khi chỉ có 1 biến thể (mặc định): ô Tồn kho giới hạn độ rộng ~200px (flex: 0 0 200px; max-width: 220px), không kéo dài vô tận 100% màn hình.
+     - Khi có nhiều biến thể: Tên biến thể linh hoạt (flex: 1 1 320px), Tồn kho gọn (flex: 0 0 200px), nút Gỡ dòng mới cao 46px căn đáy thẳng hàng với input.
+   - Textarea Mô tả tình trạng / lỗi và Mô tả sách: giữ 100% full-width.
+   - Hàng thông tin meta: Trình độ đọc tham khảo (40% / 5fr) · Link video đọc sách (60% / 7fr) tạo .fields-meta giúp link URL dài có đủ không gian.
+   - Panel media (book-media-panel.html): xóa câu thừa "Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi.".
+   - Files thay đổi:
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.html
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.scss
+     - code/frontend/src/app/features/admin/books/book-media-panel/book-media-panel.html
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 37/37 files, 187/187 tests PASS.
+   - Frontend build: npm run build (cwd code/frontend trong worktree) -> PASS (0 errors/warnings).
+   - Browser QA qua Chrome headless CDP (1280x800) với Angular SSR local + mock API:
+     - titleWidth: 981px (100% full-width trên container 1000px).
+     - pubWidth: 479px, authWidth: 479px (50% - 50%).
+     - catWidth: 395px, langWidth: 227px, isbnWidth: 311px (hàng 3 gọn gàng, chia 5/12 - 3/12 - 4/12).
+     - stockWidth: 200px (ô Tồn kho gọn gàng, không tràn 100%).
+     - hasDeletedSentence: false (câu text thừa đã được loại bỏ hoàn toàn).
+     - Đã chụp các ảnh screenshot kiểm chứng: admin-book-editor-empty.png, admin-book-editor-title-active.png, admin-book-editor-price-error.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push các thay đổi lên branch dev-ui trên worktree, báo cáo cho user nghiệm thu.
+
+### S038-UI-C03 — 05/11/2026 — thu gọn khung form 780px, ISBN ngang Tên sách và Custom Dropdown Popover kèm menu con Picture book
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-UI-C03. Mục tiêu: thu gọn hơn nữa độ dài các khung input trên form nhập sách (worktree dev-ui), đưa ISBN (~25%) lên ngang hàng Tên sách (~75%), và thiết kế lại custom dropdown popover cho Thể loại (kèm menu con Picture book › [Paperback, Hardcover]), Đánh giá tình trạng và Trình độ đọc tham khảo.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Thu gọn .book-form xuống max-width: 780px và dùng Grid 20 cột (gap: 0.35rem 1rem):
+     - Hàng 1: Tên sách (span 15, ~75%, 581px) · ISBN (span 5, ~25%, 183px).
+     - Hàng 2: Nhà xuất bản (span 8, 40%, 302px) · Tác giả (span 7, 35%, 263px) · Ngôn ngữ (span 5, 25%, 183px).
+     - Hàng 3: Thể loại (span 8, 40%, 302px) · Đánh giá tình trạng (span 6, 30%, 223px) · Trọng lượng sách (g) (span 6, 30%, 223px).
+     - Hàng 4: Giá từ (đ) (span 6, 223px) · Giá đến (đ) (span 6, 223px).
+     - Tồn kho đơn biến thể: thu gọn xuống 150px (max-width: 160px), giữ nút Thêm biến thể width: auto.
+     - Hàng meta: Trình độ đọc tham khảo (7fr, 35%) · Link video đọc sách (13fr, 65%).
+   - Custom Dropdown Popover (Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo):
+     - Nền sáng #FFFFFF đồng bộ Admin, bo góc 10px, viền #E4E7EC, đổ bóng mềm, hover tím nhạt #F4F3FF, mục đang chọn có dấu ✓ bên phải.
+     - Mục Picture book có mũi tên › bên phải; khi rê chuột hoặc bấm vào sẽ mở menu con [Paperback, Hardcover] bung sang bên phải. Chọn xong gán cả categoryCode = PICTURE_BOOK và binding, hiển thị "Picture book · Paperback" (hoặc Hardcover) ngay trong ô Thể loại, đồng thời bỏ cụm radio kiểu bìa rời bên dưới.
+     - Hỗ trợ đóng menu khi click ra ngoài hoặc nhấn phím Escape; giữ select ẩn (.sr-only-native-select) để tương thích ReactiveForms.
+   - Files thay đổi:
+     - code/frontend/src/styles.scss
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.ts
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.html
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.scss
+     - code/frontend/src/app/features/admin/books/book-editor/book-editor.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 37/37 files, 187/187 tests PASS (bao gồm test mở menu con Picture book và chọn Paperback).
+   - Frontend builds: npm run build và npm run build:workers (cwd code/frontend trong worktree) -> PASS (0 errors, 0 warnings).
+   - Browser QA qua Chrome headless CDP (1280x800) với Angular SSR local + mock API:
+     - titleWidth: 581px, isbnWidth: 183px (cùng Hàng 1).
+     - pubWidth: 302px, authWidth: 263px, langWidth: 183px (cùng Hàng 2).
+     - catWidth: 302px, condWidth: 223px, weightWidth: 223px (cùng Hàng 3).
+     - pMinWidth: 223px, pMaxWidth: 223px (cùng Hàng 4).
+     - stockWidth: 150px.
+     - catLabel sau khi chọn từ submenu: "Picture book · Paperback".
+     - Chụp ảnh kiểm chứng: admin-book-editor-dropdown-submenu.png và admin-book-editor-picture-selected.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.
+
 ### S039-C01 — 05/11/2026 — xóa README.md ở root và gộp hướng dẫn chạy local/Auth M1 vào ARCHITECTURE.md
 
 - Yêu cầu user: kiểm tra `README.md` ở root và xóa hoàn toàn vì chứa tiến độ dự án nội bộ trùng lặp.
@@ -1193,3 +1297,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Kiểm tra trần 400 dòng cho toàn bộ file markdown (ngoại trừ `DEV_LOG.md`), kiểm tra liên kết local và `git diff --check`: PASS.
   - Không thay đổi mã nguồn runtime frontend/backend (test suite `npm test` / `mvnw verify` chưa chạy lại trong phiên dọn tài liệu này).
 - Bước tiếp theo: thay đổi đang ở local worktree `me-may` (`dev`), sẵn sàng commit/push khi user yêu cầu.
+
+### S039-C02 — 05/11/2026 — merge worktree dev-ui vào dev
+
+- Yêu cầu user: merge nhánh `dev-ui` (từ worktree `/Users/daoquanghung/Projects/me-may.worktrees/dev-ui`) vào `dev`.
+- Thay đổi:
+  - Merge `dev-ui` (`013ef36`) vào `dev`, giải quyết xung đột lịch sử tại `docs/DEV_LOG.md` và sắp xếp lại mục tiến độ tại `docs/PROGRESS.md`.
+- Kiểm tra:
+  - `npm test` và `npm run build` (cwd `code/frontend`) trên nhánh `dev` sau merge: PASS (37/37 files, 187/187 tests, 0 warning).
+  - Kiểm tra trần 400 dòng tài liệu và `git diff --check`: PASS.
+- Bước tiếp theo: commit merge và push lên `origin/dev`.
