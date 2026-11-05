@@ -1391,6 +1391,7 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - Frontend Vitest: 37/37 test files, 189/189 tests PASS.
    - Frontend build: `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
    - Backend Maven tests: `PublicCatalogueApiTest`, `PublicMediaApiTest`, `PublicCacheInvalidationTest` (15/15 tests PASS).
+   - Fix type inference & generic ambiguities cho Eclipse JDT / VS Code: thay thế `var` và raw `Object[]` bằng explicit generics (`List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`), `(Object[])` varargs cast.
    - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs: PASS.
 5. Việc dang dở / blocker: Không có.
-6. Bước tiếp theo: Commit thay đổi tài liệu trên `dev-ui`, xóa plan tạm, báo cáo user nghiệm thu.
+6. Bước tiếp theo: Push nhánh `dev-ui` lên remote theo yêu cầu user.
