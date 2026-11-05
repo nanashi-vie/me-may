@@ -1158,3 +1158,26 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build`, `npm run build:workers` (0 warning) và `npm run check:workers:proxy` PASS.
   - Chrome headless (`1280×900` & `390×844` qua SSR local + mock API): `document.fonts.ready` xác nhận cả `Baloo 2` và `Nunito` trạng thái `loaded`, `.brand-name`/`.hero h1` dùng `Baloo 2` weight `700`, `body`/`.public-nav`/`.book-card h3` dùng `Nunito`, 4 thẻ trên `/sach` thẳng hàng ngang từng pixel, mobile không tràn ngang. Đã đóng Chrome/server tạm.
 - Bước tiếp theo: theo yêu cầu user, merge `dev-b` vào `dev`, push `origin/dev` và xóa nhánh `dev-b` (local + remote).
+
+### S038-C01 — 05/11/2026 — logo luôn hiện khi mở trang
+
+- User xác nhận cache ổn, yêu cầu luôn chớp logo trước nội dung dù SSR/cache nhanh.
+  Làm tại worktree me-may trên nhánh dev theo user; dev-ui đang có việc riêng.
+- Chọn logo overlay ngoài app-root, hiện400ms sau khi ảnh được decode rồi fade120ms.
+  Áp dụng mỗi document load/reload, điều hướng Angular trong cùng trang tiếp tục
+  bình thường. Failsafe CSS8s để tránh chặn trang nếu script/ảnh gặp lỗi.
+- Graph MCP hiện Transport closed; đọc trực tiếp file index hiện hành để sửa.
+
+### S038-C02 — 05/11/2026 — hoàn tất logo mở trang trên dev
+
+- index.html thêm preload và overlay ngoài app-root, tự hiện mỗi document load/
+  reload kể cả SSR/cache. Logo400ms sau decode + fade120ms, reduced-motion bỏfade.
+  Router navigation giữ overlay đã ẩn; fallback CSS8s và noscript tránh khóa trang.
+- Cwd code/frontend: npm test186/186, npm run build, npm run build:workers,
+  npm run check:workers:proxy PASS.
+- Playwright với workerd/mockAPI cách ly: desktop1280×900/mobile390×844, SSR/cache/
+  reload đều hiện logo, kiểm thời lượng khoảng520ms; router không lặp, reduced-
+  motion/không overflow đạt. Đã xem ảnh output/playwright/splash-always-*.png.
+- Đã đóng browser/serverQA. Chỉ sửa worktree me-may/dev; cập nhật DESIGN/PROGRESS/
+  VERIFICATION, trần dòng/linklocal/git diff --check đạt. Chưa deploy; bàn giao
+  commit/pushdev để user merge main.

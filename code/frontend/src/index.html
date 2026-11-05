@@ -12,15 +12,35 @@
   <meta name="apple-mobile-web-app-title" content="Mẹ Mây">
   <link rel="manifest" href="/favicon/site.webmanifest">
   <meta name="theme-color" content="#ffffff">
+  <link rel="preload" as="image" href="/favicon/web-app-manifest-192x192.png">
   <style>
     .bootstrap-screen { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 1rem; background: #faf8f5; color: #b52336; font: 1rem 'Nunito', system-ui, sans-serif; }
     .bootstrap-screen img { width: 112px; height: 112px; object-fit: contain; }
     .bootstrap-screen p { margin: 0; }
     .bootstrap-help { opacity: 0; animation: reveal-help 0s 10s forwards; }
+    .startup-splash { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; background: #faf8f5; animation: startup-failsafe 0s 8s forwards; }
+    .startup-splash img { width: 112px; height: 112px; object-fit: contain; }
+    .startup-splash.ready { animation: startup-fade 120ms ease-out 400ms forwards; }
+    @keyframes startup-failsafe { to { visibility: hidden; } }
+    @keyframes startup-fade { to { opacity: 0; visibility: hidden; } }
+    @media (prefers-reduced-motion: reduce) { .startup-splash.ready { animation-duration: 0s; } }
     @keyframes reveal-help { to { opacity: 1; } }
   </style>
 </head>
 <body>
+  <div id="startup-splash" class="startup-splash" aria-hidden="true">
+    <img src="/favicon/web-app-manifest-192x192.png" alt="" width="112" height="112" fetchpriority="high">
+  </div>
+  <noscript><style>.startup-splash { display: none; }</style></noscript>
+  <script>
+    (() => {
+      const splash = document.getElementById('startup-splash');
+      const ready = () => requestAnimationFrame(() => requestAnimationFrame(() => {
+        splash.classList.add('ready');
+      }));
+      splash.querySelector('img').decode().then(ready, ready);
+    })();
+  </script>
   <app-root>
     <div class="bootstrap-screen" role="status" aria-live="polite">
       <img src="/favicon/web-app-manifest-192x192.png" alt="Mẹ Mây" width="112" height="112" fetchpriority="high">

@@ -390,3 +390,10 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
   skeleton. Purge eventual có giới hạn dữ liệu cũ30s, không cam kết tức thì.
 - Chưa deploy, chưa cấu hình token purge hoặc đo cải thiện TTFB online. Bắt buộc
   smoke update/hide/media/sale/deploy theo DEPLOYMENT sau khi bật cache thật.
+
+
+## Logo luôn hiện — 05/11/2026
+
+- Worktree dev:186test, build SSR/Workers và proxy PASS. Playwright1280×900/
+  390×844 xác nhận logo hiện cả SSR/cache/reload,400ms + fade120ms, reduced-motion
+  bỏ fade, đổi route không lặp và không overflow. Chưa deploy bản logo này.

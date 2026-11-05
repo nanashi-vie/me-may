@@ -223,9 +223,12 @@ dùng nút Xuất bản, sách từng công khai dùng Hiện sách. Ảnh/edito
 
 ## Trạng thái khởi động và tải dữ liệu — 04/11/2026
 
-- Bootstrap CSR hiển thị logo Mẹ Mây112px giữa nền sáng, nhãn Đang mở tiệm sách.
-  Angular thay fallback khi khởi động; HTML SSR có nội dung hiển thị ngay.
-- Sau10s chưa bootstrap, hiện link tải lại; không có thời gian chờ tối thiểu.
+- User đổi yêu cầu05/11: mỗi lần mở/reload document luôn hiện logo Mẹ Mây112px
+  giữa nền sáng400ms sau decode ảnh rồi fade120ms. Overlay ngoài app-root nên
+  HTML SSR/cache vẫn hiện logo. Chuyển route Angular không lặp màn hình mở trang.
+- Reduced-motion giữ400ms và bỏ fade. Failsafe8s để overlay không khóa trang nếu
+  ảnh/script lỗi; tắt JS bỏ overlay. CSR chậm tiếp tục có fallback Đang mở tiệm sách,
+  sau10s chưa bootstrap hiện link tải lại.
 - Home và Flash Sale có skeleton5cột desktop/2cột mobile; danh mục4cột,3cột ở
   ≤1050px và2cột ở≤720px. Detail skeleton ảnh + nội dung, xếp dọc mobile.
 - Skeleton có role=status/aria-busy, hình khối trang trí aria-hidden, reduced-motion
