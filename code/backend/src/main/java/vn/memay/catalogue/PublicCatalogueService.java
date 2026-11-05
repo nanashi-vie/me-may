@@ -54,9 +54,11 @@ public class PublicCatalogueService {
         StringBuilder where = new StringBuilder(" where l.publication_status='PUBLISHED'");
         List<Object> args = new ArrayList<>();
         if (q != null) {
-            where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\')");
+            where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\'))");
             args.add(q);
-            args.add("%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%");
+            var escaped = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            args.add(escaped);
+            args.add(escaped);
         }
         if (category != null) {
             where.append(" and c.code=?");
@@ -100,6 +102,38 @@ public class PublicCatalogueService {
         if (found.isEmpty())
             throw new AdminApiException(404, "not_found");
         return found.getFirst();
+    }
+
+    public RelatedBooks related(String slug) {
+        var current = jdbc.query(
+                "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED'",
+                (r, n) -> new Object[] { r.getLong("id"), r.getString("publisher"), r.getObject("category_id", Long.class) },
+                slug);
+        if (current.isEmpty())
+            throw new AdminApiException(404, "not_found");
+        long currentId = (Long) current.getFirst()[0];
+        String publisher = (String) current.getFirst()[1];
+        Long categoryId = (Long) current.getFirst()[2];
+
+        List<Book> samePublisher = List.of();
+        if (publisher != null && !publisher.isBlank()) {
+            samePublisher = jdbc.query(
+                    SELECT + FROM
+                            + " where l.publication_status='PUBLISHED' and b.id != ? and lower(trim(b.publisher)) = lower(trim(?)) order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                    this::book,
+                    currentId, publisher.trim());
+        }
+
+        List<Book> sameCategory = List.of();
+        if (categoryId != null) {
+            sameCategory = jdbc.query(
+                    SELECT + FROM
+                            + " where l.publication_status='PUBLISHED' and b.id != ? and l.category_id = ? order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                    this::book,
+                    currentId, categoryId);
+        }
+
+        return new RelatedBooks(samePublisher, sameCategory);
     }
 
     public List<Book> lookup(List<String> codes) {

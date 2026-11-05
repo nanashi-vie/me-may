@@ -62,6 +62,11 @@ public class PublicCatalogueController {
         return catalogue.detail(slug);
     }
 
+    @GetMapping("/books/{slug}/related")
+    public RelatedBooks related(@PathVariable String slug) {
+        return catalogue.related(slug);
+    }
+
     @GetMapping("/books/lookup")
     public List<Book> lookup(@RequestParam(name = "code", required = false) List<String> codes) {
         return catalogue.lookup(codes);
