@@ -3,6 +3,17 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Đối chiếu import Excel — audit xong06/11/2026
+
+- Ưu tiên giảm nhập metadata; ảnh tiếp tục thêm riêng từng cuốn trước publish.
+- Đối chiếu workbook cũ với form mới, không sửa file gốc hay đổi format lúc audit.
+- Parser nhận mẫu16header nhưng chưa đồng bộ tốc độ nhập: thiếu đơn giá/kg,
+  nhập sẵn hai giá; note dùng header cũ, tồn1, chưa cảnh báo tên trùng.
+-15test và12ca probe PASS; file gốc chỉ có header, giữ nguyên SHA256. Chi tiết ở
+  [bằng chứng import](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026).
+- Chưa đổi code/format; bước tiếp theo chốt đơn giá dùng chung lô hay từng sách
+  để thiết kế cách giảm thao tác. Checkpoint S042-C02.
+
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
 - User duyệt và đã thực thi tuần tự: tồn gộp/tự tăng, giữ ID/storage legacy;

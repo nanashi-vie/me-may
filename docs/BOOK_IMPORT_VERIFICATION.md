@@ -1,5 +1,42 @@
 # Kiểm chứng import CSV/XLSX
 
+## Đối chiếu form mới và workbook user — 06/11/2026
+
+Audit trên dev `892f0e9`, không thay app hoặc contract. Mục tiêu user: giảm thời
+gian nhập metadata vì ảnh vẫn thêm từng cuốn. File `input/me-may-sach-v2.xlsx`
+chỉ có sheet Sach, A1:P1/16 header, chưa có dòng sách hoặc công thức.
+
+| Nội dung | Form hiện hành | Import V2/file được cung cấp |
+|---|---|---|
+| Giá | Đơn giá/kg optional × gram; +15%, làm tròn lên1.000đ; sửa tay | Chưa có đơn giá/kg; phải nhập hai giá, giữ nguyên giá file |
+| Tồn | Tổng tồn nhập/sửa được, không tự gộp theo tên | Mỗi dòng tồn1, trùng tên vẫn tạo sách riêng; chủ sửa sau |
+| Ghi chú | Ghi chú nội bộ optional | mo_ta_tinh_trang optional, map note riêng; header cũ vẫn bắt buộc |
+| Tình trạng | Đã bỏ khỏi form/public | tinh_trang vẫn bắt buộc header; giá trị để trống được |
+| Trùng tên | Cảnh báo không chặn | Chưa cảnh báo trùng tên trong lô hoặc với sách có sẵn |
+| Ngôn ngữ | Mặc định Tiếng Anh, sửa được | Mặc định Tiếng Anh, V2 không có cột đổi |
+| Độ tuổi | Chọn nhiều | Dropdown một mục; parser nhận nhiều mục ngăn bằng dấu chấm phẩy |
+| Thể loại |9mục, gồm Kinh Thánh | Dropdown file này8mục, thiếu Kinh Thánh; parser vẫn nhận tên đó |
+| Ảnh/xuất bản | Nhập cùng ảnh rồi xuất bản | Tạo sáchẨn, thêm ảnh từng sách rồi xuất bản |
+
+- Không dùng công thức Excel để thay tính giá của form: parser chặn formula,
+  kể cả cached result. Không thể tự thêm/đổi tên cột vì schema16header nghiêm ngặt.
+- Khác biệt giá/headers/duplicate là tương thích có chủ ý của lần triển khai
+  trước, chưa phải lỗi regression. Chưa duyệt format mới hoặc tự gộp tồn.
+- Kiểm từ root: `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportV2Test,BookLegacyFingerprintTest test`
+  PASS15test/0failure/0error/0skip. Không kết nối DB hoặc chạy import thật.
+- Probe Java riêng tại `.local/import-parity-audit/ImportParityAudit.java` chạy
+  parser/validator hiện hành với bytes gốc và bản sao POI trong bộ nhớ:12ca PASS.
+  Xác nhận header gốc nhận được nhưng file rỗng không import; condition trống,
+  multi-age, note, English/tồn1, hai dòng giống nhau, Kinh Thánh, giữ giá
+  36.000–41.400; chặn thêm đơn giá, đổi note header, bỏ header và công thức.
+- SHA256 trước/sau của file gốc không đổi:
+  `a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd`.
+- Chưa đo thời gian thao tác chủ tiệm hoặc upload ảnh, chưa test UI mới vì
+  không đổi UI. Đề xuất tiếp theo cần chốt cách dùng đơn giá theo lô/từng cuốn
+  trước khi thiết kế format mới; kết quả audit không tự cấp quyền triển khai.
+
+## Bằng chứng triển khai trước đây
+
 Ngày31/10–01/11/2026, code candidate dev7aa8679; kiểm local, không deploy/migrate online.
 [Contract](BOOK_IMPORT.md), [schema file](DATA.md#format-file-import--contract-duyệt31102026),
 [rolloutV11/gate](DEPLOYMENT.md#import-csvxlsx--v11). Không nghiệm thu toàn bộ MVP.

@@ -1697,3 +1697,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   workflow/build Docker thật hoặc gọi API Dokploy. HTTP2xx chưa là deploy hoàn tất.
 - Bàn giao trực tiếp main theo yêu cầu user, gồm workflow và docs trong cùng commit;
   push origin/main. Việc tiếp theo: cấu hình secrets và kiểm run/deployment thật.
+
+### S042-C01 — 06/11/2026 — rà soát Excel với form nhập sách
+
+- Mục tiêu user: đối chiếu import với form mới, ưu tiên giảm thời gian metadata
+  vì ảnh vẫn upload từng cuốn. Phạm vi audit trên dev, không đổi nghiệp vụ/file gốc.
+- Đã fast-forward dev từ origin tới 892f0e9; cây sạch khi bắt đầu. Đọc contract,
+  parser/validator/form và workbook input/me-may-sach-v2.xlsx ở chế độ chỉ đọc.
+- Đang kiểm chứng parser và khác biệt giá/ghi chú/tồn/cảnh báo; chưa triển khai
+  format mới hoặc thay dropdown. Graph MCP lỗi Transport closed, dùng source trực tiếp.
+
+### S042-C02 — 06/11/2026 — kết quả đối chiếu import/form
+
+- Đã audit workbook gốc và parser/validator/form. Import tương thích16header cũ
+  nhưng chưa tối ưu theo form mới: không đơn giá/kg/tự tính, tồn1, không cảnh báo
+  trùng tên, hai header tình trạng vẫn cần. Note optional map riêng đúng contract.
+- File chỉ có header, dropdown8thể loại thiếu Kinh Thánh (parser nhận9). Không
+  sửa workbook; SHA256 trước/sau không đổi, ghi tại BOOK_IMPORT_VERIFICATION.
+- Root chạy `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportV2Test,BookLegacyFingerprintTest test`:
+  15PASS/0failure/0error/0skip. Probe Java ignored .local/import-parity-audit chạy
+  parser thật trên bản sao trong bộ nhớ:12ca PASS, gồm giá36.000–41.400 giữ nguyên,
+  trùng dòng riêng, condition trống, note/tuổi/Bible, chặn formula/header mới.
+- Chỉ đổi docs PROGRESS/DEV_LOG/README/BOOK_IMPORT_VERIFICATION; không DB, live,
+  deploy, app source hoặc file Excel. Chưa đo thao tác thực tế/ảnh; chưa triển khai
+  format mới. Đã hỏi đơn giá thường chung lô hay từng cuốn để xác định bước thiết kế.
+- Audit xong; chuẩn bị commit/push dev, user tự merge main/deploy.
