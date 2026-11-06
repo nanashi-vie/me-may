@@ -55,6 +55,16 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Checkpoint S041-C13 trong DEV_LOG. Hoàn tất trên dev theo workflow commit/push;
   user merge main/deploy. Spec/plan đã gộp và gỡ, không còn việc triển khai S041.
 
+## Box tiện ích & hỗ trợ bên dưới Banner Hero Trang chủ (chuẩn mẫu IPM) — 06/11/2026 (trên worktree dev-ui)
+
+- Triển khai 4 box tiện ích & hỗ trợ dưới banner Hero trang chủ (`/`) chuẩn theo mẫu IPM:
+  - 4 box desktop (`repeat(4, 1fr)`), 2x2 grid mobile (`repeat(2, 1fr)`).
+  - Bo góc vuông 4px, viền đỏ thương hiệu 1px `#9B1C28`, nền trắng `#FFFFFF`, hover bóng đổ nhẹ và chuyển sắc đỏ đậm `#7D131E`.
+  - Icon SVG trần (không viền/nền phụ) màu đỏ `#9B1C28`. Tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
+  - 4 mục: "ƯU ĐÃI VẬN CHUYỂN" (icon xe tải), "CÁCH HỎI MUA SÁCH" (icon tin nhắn), "CỘNG ĐỒNG MẸ MÂY" (link Zalo Group), "HOTLINE" (icon điện thoại đặc kèm 3 sóng âm chuẩn IPM, tiêu đề `HOTLINE:` và 2 số điện thoại `0966 075 005` / `0703 260 005` in đậm căn giữa).
+  - Vitest 40/40 test files (204/204 tests PASS); build SSR (`npm run build`) và Cloudflare Workers (`npm run build:workers`) hoàn tất 0 error, 0 warning.
+  - CDP headless visual verification xác nhận chuẩn bố cục desktop (1280px) và mobile (390px). Chưa merge vào `dev`.
+
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 
 - Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
@@ -156,6 +166,14 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
   - Sidebar `/admin` Accordion Tree View: rộng 240px, nền be kem `#FBF8F2`, viền phải `#E8E2D8`, logo Mẹ Mây Baloo 2 đỏ. Mục "Tổng quan", mục cha "Quản lý sách" dạng accordion có mũi tên xoay `v` / `>` (mặc định mở sẵn) chứa các mục con clean text thụt lề có đường kẻ dọc tree-line: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiện cho OWNER). Active item có nền đỏ pastel `#FDE8E8`, chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left`). Đáy sidebar có thẻ tài khoản (avatar tròn chữ cái đầu, email, role badge) và nút Đăng xuất.
   - Nút quay về `/admin` trên trang public (`/` và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng `/admin` (khi đã login) hoặc `/admin/dang-nhap`.
   - Kiểm chứng: Vitest 38/38 files (194/194 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt 100%.
+
+## Box tiện ích & hỗ trợ dưới banner trang chủ (trên worktree dev-ui 06/11/2026)
+
+- Đã hoàn tất trên worktree `dev-ui`:
+  - 4 box tiện ích theo phong cách IPM đặt ngay dưới banner Hero: "Ưu đãi vận chuyển" (icon xe tải 🚚), "Cách hỏi mua sách" (icon tin nhắn 💬), "Cộng đồng Mẹ Mây" (icon nhóm 👥, link Group Zalo từ `contactConfig.groupUrl`), "Hotline hỗ trợ" (icon điện thoại 📞 kèm 2 số `0966 075 005` và `0703 260 005` link `tel:` trực tiếp).
+  - Responsive: Desktop 4 cột thẳng hàng (`repeat(4, 1fr)`), Mobile lưới 2x2 (`repeat(2, 1fr)`) cân đối, dễ chạm bấm.
+  - Tông màu đỏ thương hiệu Mẹ Mây `#9B1C28`, nền trắng bo góc 12px viền `#E8E2D8`, hover nổi nhẹ. Hai box đầu sẵn sàng tích hợp popup ở giai đoạn 2.
+  - Kiểm chứng: Vitest 40/40 files (204/204 tests PASS), `npm run build` và `npm run build:workers` hoàn tất 0 warning 0 error, Visual QA Chrome headless CDP (Desktop 1280px & Mobile 390px) đạt 100%.
 
 ## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 

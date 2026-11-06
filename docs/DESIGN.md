@@ -307,3 +307,13 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
 - Detail dưới tiêu đề hiện tất cảtags theo thứ tự, wrap/mobile, khônglink/filter.
   Khôngfeatures khôngplaceholder; khungảnh giữ kích thước, không layoutshift đáng kể.
 - Preview mô phỏng khách chỉ public roles và tags; khôngnote/internalmedia/sourceRef.
+
+## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06/11/2026 (chuẩn mẫu IPM)
+
+- **Vị trí & Bố cục**: Đặt ngay dưới Banner Hero trên Trang chủ (`/`), 4 box ngang trên Desktop (`repeat(4, 1fr)`) và lưới 2x2 trên Mobile (`repeat(2, 1fr)`).
+- **Thẻ thông tin**: Nền trắng `#FFFFFF`, viền đỏ thương hiệu 1px `#9B1C28`, bo góc vuông 4px chuẩn mẫu IPM, hover bóng đổ nhẹ và đổi sắc đỏ đậm `#7D131E`. Icon SVG đỏ trần (không nền phụ), tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
+- **4 nội dung**:
+  1. "ƯU ĐÃI VẬN CHUYỂN" (icon 🚚): sẵn sàng gắn popup ở giai đoạn 2.
+  2. "CÁCH HỎI MUA SÁCH" (icon 💬): sẵn sàng gắn popup ở giai đoạn 2.
+  3. "CỘNG ĐỒNG MẸ MÂY" (icon 👥): link mở Zalo Group từ cấu hình `contactConfig.groupUrl` (tab mới).
+  4. "HOTLINE" (icon 📞 đặc kèm 3 sóng âm IPM): tiêu đề `HOTLINE:` và 2 dòng số `0966 075 005` / `0703 260 005` in đậm căn giữa (link `tel:` trực tiếp).

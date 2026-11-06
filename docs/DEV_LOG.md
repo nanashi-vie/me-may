@@ -2048,3 +2048,49 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   offline guardPASS, review0finding; không appcode đổi sau verification.
 - User vẫn cần merge main/deploy trước khi test lại Safari trên memaybooks.com.
   Snapshot docs chốt sau sourcecommit; chưa deploy hoặc kiểm iPhone vật lý sau sửa.
+
+### S038-C06 — 06/11/2026 — Box tiện ích & hỗ trợ dưới banner trang chủ (IPM style)
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C06. Mục tiêu: đồng bộ với nhánh `dev`, triển khai 4 box tiện ích dưới banner Hero theo phong cách IPM trên worktree `dev-ui` (Ưu đãi vận chuyển, Cách hỏi mua sách, Cộng đồng Mẹ Mây, Hotline), giữ trên `dev-ui` chưa merge `dev` chờ user review.
+2. Quyết định & chi tiết kỹ thuật (chốt qua /grill-me):
+   - Bố cục & Responsive: Desktop 4 cột thẳng hàng (grid-template-columns: repeat(4, 1fr)), Mobile hiển thị dạng lưới 2x2 cân đối (grid-template-columns: repeat(2, 1fr)).
+   - Phong cách & Màu sắc: Nền trắng #FFFFFF, viền mềm #E8E2D8 bo góc 12px, hover viền đỏ Mẹ Mây #9B1C28 và nổi nhẹ translateY(-2px). Icon SVG đỏ Mẹ Mây trên nền tròn bo góc đỏ pastel #FDF2F2.
+   - Nội dung 4 box:
+     1. "Ưu đãi vận chuyển" (icon xe tải 🚚): kèm dòng phụ "Giao hàng toàn quốc", sẵn sàng mở popup ở giai đoạn 2.
+     2. "Cách hỏi mua sách" (icon tin nhắn 💬): kèm dòng phụ "Hướng dẫn đặt nhanh", sẵn sàng mở popup ở giai đoạn 2.
+     3. "Cộng đồng Mẹ Mây" (icon nhóm 👥): kèm dòng phụ "Tham gia nhóm Zalo", link mở tab mới trỏ đến contactConfig.groupUrl (từ biến môi trường CONTACT_ZALO_GROUP_URL).
+     4. "Hotline hỗ trợ:" (icon điện thoại 📞): 2 dòng số riêng biệt 0966 075 005 và 0703 260 005, mỗi số có link tel: trực tiếp chuẩn mẫu IPM.
+   - Files thay đổi:
+     - code/frontend/src/app/features/home/home-page.html
+     - code/frontend/src/app/features/home/home-page.ts
+     - code/frontend/src/app/features/home/home-page.scss
+     - code/frontend/src/app/features/home/home-page.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: 40/40 test files, 204/204 tests PASS (thêm 3 test cases cho banner boxes).
+   - Frontend builds: npm run build và npm run build:workers hoàn tất 0 warning, 0 error.
+   - Chrome headless CDP visual test: chụp ảnh màn hình Desktop (home-banner-boxes-desktop.png) và Mobile (home-banner-boxes-mobile.png) kiểm chứng layout, grid, font và kích thước chuẩn.
+4. Việc dang dở / blocker: Không có. Chưa merge vào dev theo yêu cầu của user.
+5. Bước tiếp theo: Bàn giao trên nhánh dev-ui, chuẩn bị giai đoạn 2 (popup khi click vào box).
+
+### S038-C07 — 06/11/2026 — Tinh chỉnh góc vuông 4px, in đậm tiêu đề và Hotline chuẩn 100% mẫu IPM
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C07. Mục tiêu: tinh chỉnh 4 box tiện ích theo ảnh mẫu IPM đính kèm (media_1793973818208_0849018b.png): giảm bán kính bo góc xuống 4px (vuông vức), viền đỏ thương hiệu 1px #9B1C28 cho cả 4 thẻ, in đậm toàn bộ tiêu đề in hoa (font-weight: 800), bỏ nền đỏ pastel của icon (icon trần sắc nét), và thiết kế box Hotline hoàn toàn giống mẫu IPM (icon điện thoại đặc với 3 sóng âm, chữ `HOTLINE:` và 2 số điện thoại căn giữa in đậm).
+2. Chi tiết thay đổi:
+   - `code/frontend/src/app/features/home/home-page.html`:
+     - Chuyển tiêu đề các box thành chữ in hoa 2 dòng: `ƯU ĐÃI <br />VẬN CHUYỂN`, `CÁCH HỎI <br />MUA SÁCH`, `CỘNG ĐỒNG <br />MẸ MÂY`.
+     - Hotline box: dùng icon điện thoại đặc (fill="currentColor") kèm 3 cung sóng âm radiating góc trên bên phải (stroke-width="2"), tiêu đề `HOTLINE:` và 2 link tel `0966 075 005` / `0703 260 005`.
+   - `code/frontend/src/app/features/home/home-page.scss`:
+     - Đổi `border: 1px solid #9b1c28;`, `border-radius: 4px;`, loại bỏ nền phụ `.box-icon` để icon đỏ đứng trần trên nền trắng.
+     - `.box-title` và `.hotline-link`: dùng font `Plus Jakarta Sans`, `font-weight: 800;`, `letter-spacing: 0.02em`, căn giữa cân đối cả chiều dọc và ngang.
+     - Responsive mobile (<= 540px): giữ nguyên lưới 2x2, `border-radius: 4px;`, cỡ chữ 0.84rem và icon 26px đảm bảo không vỡ layout.
+   - `code/frontend/src/app/features/home/home-page.spec.ts`:
+     - Cập nhật assertion khớp tiêu đề in hoa mới.
+   - Docs: Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+3. Kiểm tra đã chạy:
+   - Unit tests: Vitest 40/40 files, 204/204 tests PASS.
+   - Build tests: `npm run build` (SSR) và `npm run build:workers` (Cloudflare) đều thành công 0 warning, 0 error.
+   - Visual regression & CDP screenshot: Chạy lại `verify-banner-boxes.mjs` chụp `home-banner-boxes-desktop.png` và `home-banner-boxes-mobile.png`, đối chiếu với `media_1793973818208_0849018b.png` đạt 100% độ tương đồng về bố cục, icon và font.
+4. Trạng thái & Bước tiếp theo:
+   - Commit và push lên `origin/dev-ui`. Không tự ý merge vào `dev`.
+   - Chờ user duyệt visual và hướng dẫn tiếp theo cho giai đoạn popup.
