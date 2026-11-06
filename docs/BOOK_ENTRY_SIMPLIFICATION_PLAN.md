@@ -68,7 +68,7 @@ user duyệt06/11/2026. Plan chưa thực thi. Base khảo sát: dev84c8c53 sau 
   trả `{duplicate:boolean}`, no-store. title≤300, excludeId positive bigint;
   session OWNER/STAFF; exact lower(trim(title)), gồm sách ẩn/hết hàng.
 
-## T1 — DTO, đơn giá và ghi chú riêng ở backend
+## Task 1 — DTO, đơn giá và ghi chú riêng ở backend
 
 **Files:**
 - Modify: `code/backend/src/main/java/vn/memay/catalogue/BookDtos.java`
@@ -103,7 +103,7 @@ Field entity `Long unitPricePerKgVnd`; column `unit_price_per_kg_vnd` nullable.
   Kiểm no-op không tăng version và audit failure rollback unit price/note.
 - [ ] Commit runtime/tests/migration và checkpoint docs: `feat: support optional private book notes and unit prices`.
 
-## T2 — Tổng tồn qua lớp tương thích biến thể
+## Task 2 — Tổng tồn qua lớp tương thích biến thể
 
 **Files:** Modify `code/backend/src/main/java/vn/memay/catalogue/BookVariantStore.java`,
 `BookCommandService.java`, `BookDtos.java`, `BookMapper.java`, `BookValidation.java`.
@@ -128,7 +128,7 @@ Detail expose stock=totalStock và stockLimit; API legacy variants giữ validat
   Gửi request stock thay phiên variants phải cùng khóa version aggregate.
 - [ ] Commit: `feat: edit pooled stock without replacing legacy variants`.
 
-## T3 — Endpoint cảnh báo tên trùng
+## Task 3 — Endpoint cảnh báo tên trùng
 
 **Files:** Modify `code/backend/src/main/java/vn/memay/catalogue/AdminBookController.java`,
 `BookQueryService.java`, `BookDtos.java`; test
@@ -148,7 +148,7 @@ record `TitleDuplicate(boolean duplicate)` cho endpoint đã chốt.
 - [ ] GREEN cùng lệnh; kiểm body chỉ boolean, không lộ ghi chú hay sách ẩn public.
 - [ ] Commit: `feat: add advisory duplicate title lookup for admins`.
 
-## T4 — Form giá/kg, ghi chú optional, tồn gộp và warning
+## Task 4 — Form giá/kg, ghi chú optional, tồn gộp và warning
 
 **Files:** Modify `code/frontend/src/app/features/admin/books/book.models.ts`,
 `book-api.ts`, `book-form.ts`, `book-detail-handoff.ts`;
@@ -188,7 +188,7 @@ Form mới gửi stock/internalNote/unitPricePerKgVnd, không gửi variants/gra
   variant selector; giữ coverage xung đột/retry/media và test trên189 hiện hành.
 - [ ] Commit: `feat: simplify book entry with editable weight pricing and pooled stock`.
 
-## T5 — Public/preview bỏ tình trạng và chọn biến thể
+## Task 5 — Public/preview bỏ tình trạng và chọn biến thể
 
 **Files:** Modify `code/backend/src/main/java/vn/memay/catalogue/PublicCatalogueService.java`,
 `PublicCatalogueDtos.java`, `BookQueryService.java` (preview);
@@ -218,7 +218,7 @@ client cũ đọc shape; không thêm internalNote/unitPrice/stock nội bộ v�
   JSON-LD, kể cả description rỗng. Remove note fallback trong metadata.
 - [ ] Commit: `feat: remove public condition data and variant selection`.
 
-## T6 — Import V1/V2 và retry tương thích
+## Task 6 — Import V1/V2 và retry tương thích
 
 **Files:** Modify `code/backend/src/main/java/vn/memay/catalogue/BookImportValidator.java`,
 `BookImportFingerprint.java`, `BookImportTemplate.java`, `BookImportSchema.java` nếu
@@ -244,7 +244,7 @@ Importer vẫn tạo qua canonical legacy variants; unitPrice null, note nội b
   V2 hai dòng cùng tên vẫn hai mục; không thêm title lookup theo từng dòng.
 - [ ] Commit: `fix: preserve import receipts with optional private condition notes`.
 
-## T7 — Kiểm chứng tổng thể, rollout và gộp tài liệu
+## Task 7 — Kiểm chứng tổng thể, rollout và gộp tài liệu
 
 **Files:** docs chuẩn MASTER_PLAN/DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT,
 DEPLOYMENT/VERIFICATION/PROGRESS/DEV_LOG/README; test SSR/proxy script hiện có

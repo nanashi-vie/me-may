@@ -147,8 +147,6 @@ public class BookValidation {
             errors.put("weightG",List.of("Nhập trọng lượng sách (g)"));
         if (min == null || max == null)
             errors.put("priceMinVnd",List.of("Nhập giá tham khảo"));
-        if (trim(note) == null)
-            errors.put("conditionNote",List.of("Mô tả tình trạng thực tế"));
         return errors;
     }
 

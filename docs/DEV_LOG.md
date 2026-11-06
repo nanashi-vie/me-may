@@ -1471,3 +1471,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 5. Bước tiếp: user review plan/chọn cách thực thi theo writing-plans; khuyến nghị
    native tuần tự vì chung DTO/fingerprint. Thiết kế đã duyệt, không hỏi duyệt lại
    nghiệp vụ. Tài liệu bàn giao trên dev, chưa push/deploy; gate release giữ nguyên.
+
+### S041-C05 — 06/11/2026 — Bắt đầu thực thi tuần tự
+
+- User chọn làm tuần tự; dùng executing-plans/TDD/verification, giữ checkout dev
+  theo yêu cầu, base7c1283c. Ledger cách ly theo plan trong .superpowers/sdd.
+- Phạm vi: thực thi7task đã duyệt, không deploy/migrate dữ liệu thật. Đang T1.
+- Baseline frontend189/189 PASS; backend đang chạy, chưa kết luận kết quả.
+- Quyết định: giữ nguyên shape BookWrite legacy, nhận field mới qua adapter HTTP
+  để bảo toàn fingerprint import; kiểm missing/null riêng tại boundary.
+- Đổi heading plan sang Task N để công cụ task-start đọc đúng; không đổi nghiệp vụ.
+
+### S041-C06 — 06/11/2026 — T1 backend đã kiểm chứng
+
+- Ghi chú optional/internalNote alias, đơn giá nullable và missing/null tại HTTP;
+  giữ BookWrite cũ để hash import/finalization không thay. Thêm migrationV14;
+  không sửa migration cũ. Lưu giá thủ công, không server tự tính lại.
+- TDD:4test mới RED400→GREEN; test create mới bắt version trả về0/DB1,
+  sửa bằng gán đơn giá trước insert. Giữ retry legacy, pin3golden hash.
+- Toàn backend:191run/0failure/0error/3live-provider skip PASS; baseline185run.
+  Log ở workspace plan/task-1-tests.log; git diff --check PASS.
+- Hai test migration SELECT b.* cần bỏ cột nullable mới trước so dữ liệu cũ;
+  vẫn assert cột mới null. Payload sai kiểu vẫn400 sau bắt lỗi Jackson adapter.
+- Một lần vô ý chạy chồng test backend trên TEST_DB gây race login/cleanup;
+  loại bỏ cả hai kết quả và đã chạy lại toàn suite tuần tự PASS. Không chạy
+  song song database test ở các bước sau. Tiếp theo T2 tồn gộp; chưa deploy.

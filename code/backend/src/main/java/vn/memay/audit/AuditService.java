@@ -25,7 +25,7 @@ public class AuditService {
             "binding", "conditionGrade", "conditionNote", "priceMinVnd", "priceMaxVnd", "weightG", "description",
             "categoryCode", "ageGroups",
             "readingLevel", "readingVideoUrl", "collectionIds", "publication", "availability", "media", "variants",
-            "totalStock",
+            "totalStock", "internalNote", "unitPricePerKgVnd",
             "confirmedActualCopy", "name", "slug", "sortOrder", "active", "enabled", "startsAt", "endsAt", "items", "source", "importBatchId");
 
     public Map<String, Object> snapshot(Object value) {

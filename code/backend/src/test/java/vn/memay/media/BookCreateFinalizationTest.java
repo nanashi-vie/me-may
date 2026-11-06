@@ -13,6 +13,16 @@ class BookCreateFinalizationTest extends MediaTestSupport {
   for(int i=0;i<count;i++){var r=api.upload("/api/v1/admin/upload-sessions/"+id+"/media",0,ImageValidatorTest.image("jpeg"),true);assertThat(r.statusCode()).isEqualTo(201);assignments.add(Map.of("mediaId",tree(r).path("id").asString(),"role",roles.get(i)));}
   return new LinkedHashMap<>(Map.of("write",BookFixtures.write("Physical copy","BOARD_BOOK",null,20000L,null,null,List.of(),List.of()),"uploadSessionId",id,"media",assignments,"confirmedActualCopy",true));
  }
+ @Test void newUnitPriceReturnsCommittedVersionAndReplays() throws Exception {
+  var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var body=request(api,2);
+  var fields=new LinkedHashMap<String,Object>(JSON.convertValue(body.get("write"),Map.class));
+  fields.remove("conditionNote");fields.put("internalNote",null);fields.put("unitPricePerKgVnd",80000);body.put("write",fields);
+  var r=api.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);
+  var b=tree(r);assertThat(b.path("unitPricePerKgVnd").asLong()).isEqualTo(80000);
+  assertThat(b.path("version").asLong()).isEqualTo(jdbc.queryForObject("select version from book_copy where id=?",Long.class,Long.parseLong(b.path("id").asString())));
+  assertThat(tree(api.send("POST","/api/v1/admin/books",json(body),true)).path("id").asString()).isEqualTo(b.path("id").asString());
+  fields.put("unitPricePerKgVnd",81000);assertThat(api.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(409);
+ }
  @Test void retryFinalDoesNotDuplicateStock()throws Exception {
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");
   for(int count:List.of(2,6)) {
@@ -54,7 +64,7 @@ class BookCreateFinalizationTest extends MediaTestSupport {
  @Test void rejectsMissingWeightRangesAndForeignOrDuplicateMediaWithoutConsumingSession()throws Exception {
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var body=request(api,2);
   var valid=JSON.convertValue(body.get("write"),Map.class);
-  for(String field:List.of("weightG","priceMinVnd","priceMaxVnd","title","conditionNote","categoryCode")) {
+  for(String field:List.of("weightG","priceMinVnd","priceMaxVnd","title","categoryCode")) {
    var invalid=new LinkedHashMap<String,Object>(valid);invalid.put(field,null);var test=new LinkedHashMap<>(body);test.put("write",invalid);
    assertThat(api.send("POST","/api/v1/admin/books",json(test),true).statusCode()).isEqualTo(400);
   }

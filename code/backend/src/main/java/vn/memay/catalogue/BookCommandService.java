@@ -61,6 +61,10 @@ public class BookCommandService {
     }
 
     private CreatedAggregate createAggregate(AdminUser actor, BookWrite input) {
+        return createAggregate(actor,input,null);
+    }
+
+    private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice) {
         var w = validation.normalize(input);
         timings.measure("validation", () -> {
             validation.validateWrite(w);
@@ -68,6 +72,7 @@ public class BookCommandService {
         });
         var b = new BookCopy();
         b.bookCode = codes.nextCode();
+        b.unitPricePerKgVnd=unitPrice;
         b.availability = availability(w);
         b.createdAt = clock.instant()
                 .truncatedTo(java.time.temporal.ChronoUnit.MICROS);
@@ -105,16 +110,21 @@ public class BookCommandService {
 
     @Transactional
     public BookDetail createPublished(AdminUser actor, BookCreate input) {
+        return createPublished(actor,input,BookEntryInput.Options.legacy());
+    }
+
+    @Transactional
+    public BookDetail createPublished(AdminUser actor, BookCreate input, BookEntryInput.Options options) {
         access.requireOwner(actor);
         if (input == null || input.uploadSessionId() == null)
             throw AdminApiException.field("uploadSessionId", "Thiếu phiên ảnh");
-        var w = timings.measure("validation", () -> validation.normalize(input.write()));
+        var w = timings.measure("validation", () -> validation.normalize(BookEntryInput.resolve(input.write(),null,options)));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
         String fingerprint = timings.measure("fingerprint", () -> {
             try {
                 return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
-                        .digest(json.writeValueAsBytes(canonical)));
+                        .digest(json.writeValueAsBytes(options.unitSupplied() ? java.util.Arrays.asList(canonical,options.unitPrice()) : canonical)));
             } catch (java.security.NoSuchAlgorithmException e) {
                 throw new IllegalStateException(e);
             }
@@ -142,7 +152,7 @@ public class BookCommandService {
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
             selected.put(assignment.mediaId(), photo);
         }
-        var aggregate = createAggregate(actor, w);
+        var aggregate = createAggregate(actor, w, options.unitPrice());
         var b = aggregate.book();
         var l = aggregate.listing();
         long id = b.id;
@@ -193,23 +203,30 @@ public class BookCommandService {
 
     @Transactional
     public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media) {
+        return update(id,version,actor,input,media,BookEntryInput.Options.legacy());
+    }
+
+    @Transactional
+    public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media, BookEntryInput.Options options) {
         var b = books.findById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
         var l = listings.findByBookCopyId(id).orElseThrow();
         access.requireWritable(actor, l.publicationStatus);
         if (b.version != version)
             throw AdminApiException.conflict(b.version);
-        var w = validation.normalize(input);
+        var before = mapper.detail(b, l);
+        var w = validation.normalize(BookEntryInput.resolve(input,before,options));
+        Long unitPrice=options.unitSupplied()?options.unitPrice():b.unitPricePerKgVnd;
         timings.measure("validation", () -> {
             validation.validateWrite(w);
             return null;
         });
-        var before = mapper.detail(b, l);
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && !reordered.equals(
                 before.media().stream().map(m -> new MediaAssignment(UUID.fromString(m.id()), m.role())).toList());
-        if (mapper.write(before).equals(w) && !mediaChanged)
+        if (mapper.write(before).equals(w) && !mediaChanged && Objects.equals(unitPrice,b.unitPricePerKgVnd))
             return before;
         apply(b, l, w);
+        b.unitPricePerKgVnd=unitPrice;
         b.availability = availability(w);
         mappings(l, w);
         variants.save(id, w.variants());

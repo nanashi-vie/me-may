@@ -29,6 +29,8 @@ public class BookCopy {
     public String conditionNote;
     @Column(name="weight_g")
     public Long weightG;
+    @Column(name="unit_price_per_kg_vnd")
+    public Long unitPricePerKgVnd;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     public BookDtos.Availability availability;

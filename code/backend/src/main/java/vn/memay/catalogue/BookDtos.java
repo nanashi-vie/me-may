@@ -69,7 +69,9 @@ public final class BookDtos {
                         String readingLevel, String readingVideoUrl, List<String> collectionIds,
                         Publication publication,
                         Availability availability, Instant publishedAt, Instant createdAt, Instant updatedAt,
-                        List<MediaView> media, List<VariantView> variants, long totalStock) {
+                        List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd) {
+                @com.fasterxml.jackson.annotation.JsonProperty("internalNote")
+                public String internalNote() { return conditionNote; }
         }
 
         public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd,
