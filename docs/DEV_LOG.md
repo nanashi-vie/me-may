@@ -2094,3 +2094,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 4. Trạng thái & Bước tiếp theo:
    - Commit và push lên `origin/dev-ui`. Không tự ý merge vào `dev`.
    - Chờ user duyệt visual và hướng dẫn tiếp theo cho giai đoạn popup.
+
+### S038-C08 — 06/11/2026 — Triển khai Popup "Cách hỏi mua sách" theo 4 bước timeline dọc
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C08. Mục tiêu: tạo popup hướng dẫn khi click box "CÁCH HỎI MUA SÁCH" trên Trang chủ, chia 4 khung theo timeline dọc kết nối đường kẻ chỉ dẫn, sử dụng ảnh minh họa liên hệ ở đầu popup, nút "Đã hiểu" ở chân và nút ✕ góc trên theo quyết định thống nhất qua `/grill-me`.
+2. Chi tiết kỹ thuật:
+   - Asset: Thêm ảnh minh họa `code/frontend/public/images/how-to-buy-contact.jpg` (từ file user cung cấp `media_1793981513435_8a9d1574.jpg`).
+   - Component `HowToBuyDialog` (`code/frontend/src/app/features/home/how-to-buy-dialog/`):
+     - Modal `<dialog>` HTML5 bo góc 20px, bóng đổ mềm `0 16px 48px rgba(41,39,36,0.22)`, backdrop mờ `rgba(30,27,24,0.65)` kèm blur.
+     - Header: Ảnh minh họa liên hệ dạng tròn 120px (95px mobile) viền trắng nổi, tiêu đề `Cách hỏi mua sách tại Mẹ Mây` font `Baloo 2` đỏ thương hiệu `#9B1C28`, lời dẫn ngắn gọn.
+     - 4 khung bước timeline dọc:
+       - Bước 1: Thêm sách vào “Danh sách quan tâm” (`♡ Thêm vào danh sách quan tâm`).
+       - Bước 2: Vào “Danh sách quan tâm” chọn sách cần kiểm tra video tình trạng thật.
+       - Bước 3: Bấm “Chuẩn bị nội dung hỏi mua” để hệ thống tự động soạn sẵn thông tin.
+       - Bước 4: Gửi tin nhắn qua Zalo Hotline (`Sao chép nội dung` ➔ `Mở Zalo` ➔ `Dán & gửi`).
+     - Footer: Nút chính `Đã hiểu` đỏ thương hiệu `#9B1C28` căn giữa.
+     - Hỗ trợ đóng qua nút ✕, nút `Đã hiểu`, phím `Escape` và click vào backdrop nền mờ.
+   - Tích hợp `HomePage`:
+     - Nhúng `<app-how-to-buy-dialog #howToBuyDialog />` vào `home-page.html`.
+     - Gắn sự kiện `(click)="openHowToBuy($any($event.currentTarget))"` trên box "CÁCH HỎI MUA SÁCH".
+   - Files thay đổi / thêm mới:
+     - `code/frontend/public/images/how-to-buy-contact.jpg`
+     - `code/frontend/src/app/features/home/how-to-buy-dialog/how-to-buy-dialog.html`
+     - `code/frontend/src/app/features/home/how-to-buy-dialog/how-to-buy-dialog.scss`
+     - `code/frontend/src/app/features/home/how-to-buy-dialog/how-to-buy-dialog.ts`
+     - `code/frontend/src/app/features/home/how-to-buy-dialog/how-to-buy-dialog.spec.ts`
+     - `code/frontend/src/app/features/home/home-page.html`
+     - `code/frontend/src/app/features/home/home-page.ts`
+     - `code/frontend/src/app/features/home/home-page.spec.ts`
+     - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+3. Kiểm tra đã chạy:
+   - Vitest: 42/42 test files, 231/231 tests PASS (thêm 6 tests cho `HowToBuyDialog` và 1 test tích hợp mở popup trên `HomePage`).
+   - Builds: `npm run build` (SSR) và `npm run build:workers` (Cloudflare) đều thành công 0 warning, 0 error.
+   - Chrome headless CDP visual test: Script `scratch/verify-how-to-buy-dialog.mjs` chạy thành công, chụp ảnh màn hình Desktop (`how-to-buy-dialog-desktop.png`) và Mobile (`how-to-buy-dialog-mobile.png`) xác nhận modal mở chuẩn xác, tỷ lệ cân đối, không lỗi layout.
+4. Trạng thái & Bước tiếp theo:
+   - Commit và push lên nhánh `origin/dev-ui`. Giữ nguyên chưa merge vào `dev` theo yêu cầu.
+
