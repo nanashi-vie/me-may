@@ -3,6 +3,14 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Sao chép mobile và markup detail — đã sửa local06/11/2026
+
+- S044: ClipboardItem promise khởi tạo write ngay click, giữ revalidation; fallback
+  chọn đầy đủ nội dung. Gỡ p/h2 rỗng theo localedit user, giữ description.
+- Frontend221PASS; SSR/Workers/proxyPASS; reviewer0finding. WebKitmobile copy/paste
+  detail/wishlist và offline guard PASS. Chưa kiểm iPhone vật lý hoặc deploy.
+- Bằng chứng CONTACT_VERIFICATION; đang commit/pushdev theo workflow, user merge main.
+
 ## 8ảnh, lưu/xuất bản và đặc điểm sách — triển khai local06/11/2026
 
 - Sáu ảnh công khai + hai nội bộ; backend lọc mọi projection và direct INTERNAL404.

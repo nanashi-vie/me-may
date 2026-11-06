@@ -14,7 +14,7 @@
   }
   <p role="status">{{ notice() }}</p>
   <label
-    >Nội dung hỏi sách<textarea
+    >Nội dung hỏi sách<textarea #enquiry
       readonly
       rows="7"
       [value]="text()"
@@ -24,10 +24,10 @@
   <p role="status">{{ message() }}</p>
   <div class="actions">
     <button
-      [disabled]="busy() || checking() || (!text() && verified() === null)"
+      [disabled]="busy() || checking() || copying() || (!text() && verified() === null)"
       (click)="copy()"
     >
-      Sao chép nội dung
+      {{ copying() ? 'Đang sao chép…' : 'Sao chép nội dung' }}
     </button>
     @if (config()?.hotlineUrl) {
       <a

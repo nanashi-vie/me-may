@@ -71,7 +71,6 @@
       />
     </div>
     <article>
-      <p class="eyebrow">Ảnh sách · Tình trạng theo biến thể</p>
       <h1>{{ title(b) }}</h1>
       @if(b.features?.length) {
         <ul class="book-features" aria-label="Đặc điểm sách">
@@ -110,10 +109,7 @@
         <small>{{ priceNote }}</small>
       </div>
       @if (b.description) {
-        <section>
-          <h2>Về cuốn sách</h2>
-          <p class="description">{{ b.description }}</p>
-        </section>
+        <p class="description">{{ b.description }}</p>
       }
       <dl>
         @if (b.weightG !== null) { <dt>Trọng lượng sách</dt><dd>{{b.weightG}} g</dd> }

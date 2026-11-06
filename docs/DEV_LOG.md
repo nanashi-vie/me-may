@@ -1992,3 +1992,51 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bản bàn giao docs cuối cùng theo sau sourcecommit, pushdev theo workflow;
   user merge main và phê duyệt rolloutV15 riêng. Không dùng backend cũ chưa lọc
   internal media làm rollback sau khi tiệm đã nhập ảnh nội bộ.
+
+### S044-C01 — 06/11/2026 — sửa sao chép mobile và markup detail
+
+- User báo Sao chép nội dung mobile lỗi; yêu cầu tối ưu sau khi bỏ p/h2.
+  dev840a78f, local detail HTML giữ2thẻ rỗng do user sửa; không ghi đè nội dung này.
+- Graph MCP Transport closed; fallback source: ContactDialog.copy await verifyText
+  (network) trước clipboard.writeText, trái user-gesture boundary Safari/WebKit.
+  Cả detail và wishlist dùng chung component; phải giữ revalidation giá/tình trạng.
+- Đã hỏi thêm loại máy/browser/thông báo; đang làm regression tests. Sửa theo
+  ClipboardItem promise-data khởi tạo write ngay click và selection fallback; không
+  bỏ kiểm dữ liệu, không dependency/backend/migration. Chưa chạy test mới.
+
+### S044-C02 — 06/11/2026 — clipboard RED/GREEN và thông tin máy thật
+
+- User xác nhận iPhone/Safari; ảnh Brave báo Đã sao chép, Safari báo fallback thủ công
+  trên memaybooks.com. Bản đang sửa local, chưa deploy lên URL đó.
+- TestRED3case: deferred write chưa gọi trước network, verifyfail không hủy payload,
+  fallback chưa selectfull. GREEN38scoped; thêm execCommandthrow RED rồi xử lý chọn
+  thủ công vẫn hoạt động. Fullfrontend221PASS/40files, backend không đổi.
+- Dùng ClipboardItem text/plain promise + clipboard.write gọi ngay trong click,
+  chỉ resolve Blob sau verify; empty/offline/stale không ghi clipboard. Khóa doublecopy
+  trong khi clipboardpending; writeText cho browserlegacy, select/execCommand/manualfallback.
+- Gỡ p.eyebrow/h2 rỗng và wrappersection thừa theo localedit user, giữdescription.
+  SSR sandbox esbuild native lỗi; rerun ngoài sandbox đang kiểm. WebKit chưa cài,
+  đang chuẩn bị browserQA riêng, không giả lập rồi coi là iPhone thật.
+
+### S044-C03 — 06/11/2026 — WebKit mobile copy/paste
+
+- Cài WebKit27.2 cho Playwright (toolcache, không repo dependency); API8091 giả
+  delay150ms + builtSSR4012, không database/credential/media thật. Fixturecollections
+  ban đầu trảobject làm Angular iteratorerror; sửa fixture vềarray, không sửaapp.
+- WebKitmobile detail: clickcopy qua networkdelay150ms báo thành công; dán lại bằng
+  Meta+V vào textarea QA so sánh toàn bộ chuỗi mã/tên/giá/URL khớp:PASS. Không
+  stubClipboard hoặc cấp quyềnclipboardread, không đọc/dump clipboard trước thao tácQA.
+- Detail giữdescription, bỏ hai thẻempty; review độc lập0finding. Đang kiểmwishlist
+  và failurepath trước cleanup/commitdev. Chưa Safari iPhone vật lý sau sửa/deploy.
+
+### S044-C04 — 06/11/2026 — hoàn tất local, bàn giao dev
+
+- WebKit27.2 mobile copy/paste toànchuỗi detail và wishlist qua network150ms PASS;
+  lookup503 xóa text/báo chưa xác nhận PASS. NativeClipboard không stub/không đọc
+  clipboard trước QA. Browser đóng, SSR4012/API8091 dừng; không DB/media thật.
+- Fullfrontend221PASS/40files, SSR/Workers/proxyPASS; reviewer0finding. Backend
+  không đổi, không chạy Maven. Docs/contract DESIGN và CONTACT_VERIFICATION, README
+  đăng ký bằng chứng; không spec/plan mới, không dependency/migration/deploy.
+- Bảo toàn localedituser bằng gỡ p.eyebrow/h2 rỗng và sectionthừa; giữ mô tả.
+- Code đang local dev840a78f, chuẩn bị commit/push theo workflow. Chưa iPhone vật lý
+  sau sửa hoặc cập nhật memaybooks.com; user merge main/deploy rồi test máy thật.

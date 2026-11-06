@@ -158,7 +158,7 @@ M4 duyệt24/10: trái tim chung card/detail có nhãn truy cập/aria-pressed; 
 
 SOLD hiện ảnh/tên/giá public với cảnh báo, checkbox bị khóa. Mã nháp/ẩn/không tồn tại chỉ hiện mã + “Không còn hiển thị”, không snapshot tên/ảnh/giá cũ. Có loading/empty/error/retry; xóa được mã không public. Storage hỏng báo rõ, storage chặn/quota dùng bộ nhớ và cảnh báo mất khi tải lại; không hứa đồng bộ khác browser/thiết bị.
 
-Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công.
+Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công. Safari gọi clipboard.write ngay click bằng ClipboardItem promise, chỉ cung cấp nội dung sau xác minh; fallback chọn toàn bộ text và hướng dẫn nhấn giữ.
 
 “Chuẩn bị nội dung hỏi mua” lookup lại các mã được chọn rồi mới mở nội dung; giá thay đổi cập nhật, cuốn vừa sold/hidden bị loại và giải thích. Zero valid không copy. Text có mục đích hỏi, các dòng mã/tên/giá tham khảo/URL canonical và câu cuối nhờ xác nhận. Native dialog có nút copy riêng sau tải (giữ user gesture), textarea manual fallback, hotline có cấu hình mới hiện link; thiếu hotline vẫn copy được. Không tự gửi.
 
