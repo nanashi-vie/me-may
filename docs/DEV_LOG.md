@@ -1737,3 +1737,14 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Form edit hiện có thao tác này; import vẫn bắt buộc hai giá trong Excel.
 - Cần chốt việc để trống hai giá trong Excel để tránh nhập hai lần; đây chưa là
   thay đổi contract được duyệt. Chỉ cập nhật bàn giao, chưa đổi code/file Excel.
+
+### S042-C05 — 06/11/2026 — rút gọn mẫu Excel
+
+- User đồng ý thiếu hai giá khi import và yêu cầu bỏ cột không bắt buộc, giữ
+  NXB/tác giả. Đọc lại BookValidation/BookImportValidator; graph vẫn Transport closed.
+- Viết thiết kế ngắn BOOK_IMPORT_SIMPLIFICATION:6cột title/publisher/author/
+  category/binding/weight, NXB/tác giả optional, binding chỉ Picture Book;
+  thiếu giá giữẨn, thêm ảnh/đơn giá rồi xuất bản; giữ file/receipt cũ.
+- Đăng ký ở README, cập nhật PROGRESS; chưa đổi app/file Excel, chưa chạy test
+  mới vì chỉ thiết kế. Kiểm diff/line limits/liên kết trước commit; chờ duyệt
+  thiết kế rồi writing-plans và thực thi tuần tự trên dev.

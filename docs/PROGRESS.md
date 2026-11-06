@@ -16,6 +16,8 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   cần chốt có cho trống hai giá trước khi thay validation, tránh nhập giá hai lần.
   Chưa đổi code/format; giảm thao tác metadata và thêm ảnh từng sách vẫn là mục tiêu.
   Checkpoint S042-C03; audit docs đã đưa lên dev.
+- User đồng ý thiếu giá trước thêm ảnh và yêu cầu bỏ cột optional, giữ NXB/tác giả.
+  [Thiết kế6cột](BOOK_IMPORT_SIMPLIFICATION.md) chờ duyệt, chưa đổi app/workbook.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
