@@ -20,7 +20,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Nhập giá/kg, tồn gộp, ghi chú nội bộ06/11 | [DATA](DATA.md#nhập-giá-theo-kg-và-sửa-tay-06112026), [CATALOGUE](CATALOGUE.md#payload-nhập-sách-và-field-optional-0611), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
 | Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
-| Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V2/16cột và V1compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md), [đối chiếu form06/11](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026) |
+| Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V3/7cột và V1/V2compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md), [đối chiếu form06/11](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026) |
 | Chạy local, auth, lệnh test/build | [ARCHITECTURE — chạy local và Auth M1](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1), [CATALOGUE](CATALOGUE.md) |
 | GitHub Actions, chênh lệch dev/main | [DEPLOYMENT — Git workflow](DEPLOYMENT.md#git-workflow), [DEV_LOG — rà soát](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow) |
 | Rollout nhập sách06/11/V14 và privacy ghi chú | [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
@@ -30,8 +30,10 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
-- [Rút gọn import Excel](BOOK_IMPORT_SIMPLIFICATION.md): thiết kế7cột đã duyệt;
-  [plan tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) chờ review, chưa đổi app/workbook.
+- ImportV3/7cột đã triển khai/kiểm local; [contract](BOOK_IMPORT.md),
+  [schema](DATA.md#format-file-import--contract-duyệt31102026),
+  [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Spec/plan đã gộp và gỡ;
+  giữ fileV1/V2/receipt cũ, chưa deployV3 online.
 
 - Cache public và trạng thái tải đã gộp contract vào [ARCHITECTURE](ARCHITECTURE.md#cache-public-và-giảm-request--04112026),
   thao tác bật/smoke ở [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026),

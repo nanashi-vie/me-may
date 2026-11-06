@@ -1811,3 +1811,29 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   test và frontend37test/3files. Test editor nhận null giá, tính36000/42000 và
   giữ sửa tay khi upload đã PASS ngay, ghi nhận behavior hiện có.
 - Task3 xong; bắt đầu tổng kiểm, browser QA riêng và review cuối.
+
+### S042-C12 — 06/11/2026 — importV3 kiểm chứng và bàn giao
+
+- User duyệt7cột và không cần file hướng dẫn; triển khai tuần tự trên dev.
+  Source commits9376626/1d0a988/e21d644; V3null giá/receipt3, V1/V2 giữ nguyên.
+- Root clean verify210run/0failure/0error/3live-provider skip; frontend npm test
+  200PASS/39files, npm run build/build:workers/check:workers:proxyPASS. Angular
+  native134/139 và proxyEPERM trong sandbox, rerun ngoài sandbox đạt, không sửa code.
+- Chrome + NodeSSR4011/API8089, schema import_v3_browser_qa/me_may_test, fake
+  provider/OWNER/STAFF/PNG. Import1sách null giá, metadata giữ đúng; upload2ảnh
+  không tính giá; đủảnh thiếu giá publish400;80000/kg×450g→36000/42000,
+  sửa max44000/lưu200, hidden404→publish200/public36000/44000/mô tả đúng.
+- Chọn lại CSV trả MM-000001/cùng receipt, giữ2ảnh/đơn giá/giá; STAFF
+  redirect về danh sách, không link import, options403. ProbeSTAFF đầu chờ
+  thông báo trong trang import timeout vì routeguard đã redirect, sửa probe không sửa app.
+- Browser đã đóng; dừng2service, kiểm JDBC to_regnamespace null và cả2cổng
+  đã đóng:PASS. Không chạm DB/ảnh bán thật/provider thật. Workbook gốc
+  SHA256 không đổi, ghi ở BOOK_IMPORT_VERIFICATION; screenshot output ignored.
+- Review độc lập review_import_v3 trên b393763..e21d644:0Critical/0Important/
+  0Minor. Không re-review; docs/browser cuối tác giả kiểm, live gác ngoài phạm vi.
+- Gộp quyết định vào DATA/BOOK_IMPORT/CATALOGUE/DESIGN/ARCHITECTURE/
+  MASTER_PLAN; bằng chứng vào BOOK_IMPORT_VERIFICATION; README/PROGRESS cập nhật,
+  gỡ spec/plan hết vai trò sau task4. Không tạo file hướng dẫn/workbook riêng.
+- Bàn giao commit/push dev theo workflow; user merge main/deploy. Chưa deploy,
+  chưa đo thao tác chủ tiệm/live-provider. BackendV3 trước frontend; rollback
+  về backendV2 không nhận7cột, dữ liệu Ẩn/null giá vẫn an toàn trong schema cũ.

@@ -1,6 +1,6 @@
 # Import CSV/Excel — contract hiện hành
 
-Triển khai local31/10–01/11/2026; chưa migrate/deploy online.
+Triển khai local31/10–06/11/2026; chưa deployV3 online.
 [Bằng chứng](BOOK_IMPORT_VERIFICATION.md) và [rollout](DEPLOYMENT.md#import-csvxlsx--v11).
 
 ## 1. Mục tiêu và quyết định
@@ -22,10 +22,14 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 
 ## 2. Format file
 
-V2/16cột đã triển khai local01/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
+V3/7cột là mặc định06/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
 Một dòng=một sáchẨn, mặc định Tiếng Anh/một biến thểkhôngtên/tồn1; thêmảnh rồi sửa
-tồn gộp và tựpublish. V1/20cột vẫn nhận để retrylôcũ, không rewrite digest/receipt.
-UI hướng dẫn ngắn16field/nhãn, không có bước/nút tải mẫu.
+tồn gộp, nhập đơn giá/kg để tính hai giá và tựpublish. V3 không có cột giá;
+hai giá null cho đến khi chủ bổ sung trong editor, thiếu giá không được publish.
+Giữ NXB/tác giả/mô tả sách optional. Không tự gộp sách theo tên.
+V2/16cột vàV1/20cột vẫn nhận với giá đã nhập, không rewrite digest/receipt.
+UI hướng dẫn ngắn7field/nhãn, không có bước/nút tải mẫu; không tạo hướng dẫn/file
+giao riêng theo yêu cầu user. Endpoint template hiện có dùng7cột/dropdown.
 
 ## 3. Kiểm file và xác nhận
 
@@ -61,7 +65,7 @@ Lỗi giữa lô không để lại một phần sách. Sequence có thể bỏ 
 không hứa mã liên tiếp. Slug/mã dùng cơ chế hiện có, không lấy tên làm khóa.
 
 FingerprintSHA256 gồm schema version và nội dung đãnormalize. V1 giữ groupkey và
-serialization cũ. V2 normalize nhãn/defaults/numbers/sets, sort semanticcontent rồi
+serialization cũ. V2/V3 normalize nhãn/defaults/numbers/sets, sort semanticcontent rồi
 cấp khóa nội bộR001..R100; các dòng giống nhau vẫn có occurrence riêng, khôngdedupe.
 Không gồm tênfile/đườngdẫn/thứtựheader/dòng hoặc filetype; CSV/XLSX hoặc nhãn/code
 tương đương trong cùngschema cho cùngreceipt. Đổi schema/nội dung là lô mới,
@@ -111,7 +115,7 @@ Mã sách được cấp sớm khi import là thay đổi riêng của đường
 ## 6. Giới hạn vận hành
 
 Đồng bộ request, không thêm job framework. Mỗi file tối đa2MiB upload,
-V2 tốiđa100dòng sách. V1 giữ500dòng/100nhóm/100biến thểnhóm. File trống,
+V2/V3 tốiđa100dòng sách. V1 giữ500dòng/100nhóm/100biến thểnhóm. File trống,
 dòng trống giữa file bỏ qua; dòng có ô dữ liệu vượt giới hạn bị lỗi, không cắt.
 XLSX giới hạn tổng XML giải nén20MiB, cell text≤10000 ký tự; giới hạn zip-entry/
 tỉ lệ nén, số sheet và số ô được kiểm trước/trong parse để không nạp vô hạn.
@@ -182,6 +186,9 @@ Trước rollout phải hoàn tất gate host/backup/migration tại DEPLOYMENT.
 
 ## Format V2 — chốt01/11
 
+Phần này giữ contract tương thích fileV2, không là mẫu mặc định sau06/11.
+FormatV3 rút gọn theo DATA và mục2 ở trên, giữ nguyên fingerprintV1/V2.
+
 **Trạng thái: đã triển khai local01/11.**
 
 Nguồn user: `input/me-may-sach-v2.xlsx`, sheetSach, headerA1:P1. Chỉ dùng cấu trúc/
@@ -234,7 +241,7 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 
 ## Tương thích nhập sách06/11
 
-- Không thêm cột đơn giá hoặc sửa workbook chủ đang dùng; đơn giá mới null,
+- Với V1/V2: không thêm cột đơn giá hoặc sửa workbook chủ đang dùng; đơn giá mới null,
   giá từ/đến trong file được giữ nguyên, không suy ngược đơn giá từ giá làm tròn.
 - tinh_trang chỉ còn legacy, có giá trị thì kiểm mã; mo_ta_tinh_trang optional,
   map ghi chú nội bộ. Cả hai header vẫn phải có theo V1/V2.

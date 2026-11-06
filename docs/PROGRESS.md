@@ -3,19 +3,20 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Đối chiếu import Excel — audit xong06/11/2026
+## Import Excel7cột — đã triển khai06/11/2026
 
-- Ưu tiên giảm nhập metadata; ảnh tiếp tục thêm riêng từng cuốn trước publish.
-- Đối chiếu workbook cũ với form mới, không sửa file gốc hay đổi format lúc audit.
-- Parser nhận mẫu16header nhưng chưa đồng bộ tốc độ nhập: thiếu đơn giá/kg,
-  nhập sẵn hai giá; note dùng header cũ, tồn1, chưa cảnh báo tên trùng.
--15test và12ca probe PASS; file gốc chỉ có header, giữ nguyên SHA256. Chi tiết ở
-  [bằng chứng import](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026).
-- User đồng ý thiếu hai giá khi import; nhập đơn giá/kg ở bước thêm ảnh từng sách.
-- Mẫu mới chỉ giữ7cột: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
-  NXB/tác giả/mô tả optional. [Thiết kế](BOOK_IMPORT_SIMPLIFICATION.md) đã duyệt,
-  [plan tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) đã duyệt, đang thực thi tuần tự.
-  Task1 PASS21, task2 PASS22, task3 backend28/frontend37; đang tổng kiểm; giữ tương thích file cũ, không tạo file hướng dẫn riêng. Checkpoint S042-C08.
+- User duyệt: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
+  NXB/tác giả/mô tả optional. V3 tạo Ẩn/null giá, Tiếng Anh/tồn1.
+- Chủ nhập đơn giá/kg khi thêm ảnh; giá tự tính/sửa tay, thiếu giá không
+  xuất bản. File16/20cột và receipt cũ giữ nguyên, không ghi đè sau edit.
+- Backend210run/0failure/0error/3live-provider skip, frontend200PASS, SSR/Workers/
+  proxyPASS. Chrome QA thật với provider giả: import→ảnh→giá→publish/retry/
+  STAFFPASS; schema QA và services đã dọn, review độc lập không có finding.
+- Không tạo file hướng dẫn/workbook giao riêng; workbookV2 gốc không đổi.
+  [Contract](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026),
+  [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Không migration/dependency/deploy.
+- Checkpoint S042-C12; source9376626/1d0a988/e21d644 trên dev; user merge/deploy.
+  Bước tiếp theo rollout backendV3 trước frontend, kiểm file7cột online.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
