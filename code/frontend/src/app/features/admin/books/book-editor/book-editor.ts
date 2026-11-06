@@ -1,5 +1,6 @@
 import { BookDetailHandoff } from '../book-detail-handoff';
-import { Subscription } from 'rxjs';
+import { Subscription, of, timer, switchMap, map, catchError } from 'rxjs';
+import {calculatedBookPrices,roundPriceUp} from '../book-pricing';
 import { VndInput } from '../vnd-input';
 import { BookUploadQueue } from '../book-upload-queue';
 import { BookCreate } from '../book.models';
@@ -19,7 +20,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { HttpErrorResponse } from '@angular/common/http';
 import { BookApi } from '../book-api';
 import { BookDetail, Taxonomy, AgeGroup, AdminApiError, CategoryCode, Binding, BookWrite, ReadingLevel } from '../book.models';
-import { buildBookForm, buildVariantForm, toBookWrite } from '../book-form';
+import { buildBookForm, toBookWrite } from '../book-form';
 import { CollectionApi, CollectionDto } from '../../collections/collection-api';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { BookMediaPanel } from '../book-media-panel/book-media-panel';
@@ -45,7 +46,10 @@ export class BookEditor {
   private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroy = inject(DestroyRef);
   readonly form = buildBookForm();
-  readonly variantNamesVisible = signal(false);
+  readonly stockLimit = signal(999999);
+  readonly titleWarning = signal('');
+  readonly pricingError = signal('');
+  private priceEdits={min:false,max:false};
   readonly book = signal<BookDetail | null>(null);
   readonly taxonomy = signal<Taxonomy>({
     categories: [],
@@ -67,8 +71,7 @@ export class BookEditor {
   readonly fields = signal<Record<string, string[]>>({});
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
-  readonly legacyConditions: Record<string,string> = { VERY_GOOD: 'Rất tốt', GOOD: 'Tốt', FAIR: 'Có hao mòn' };
-  readonly openMenu = signal<'category' | 'condition' | 'reading' | null>(null);
+  readonly openMenu = signal<'category' | 'reading' | null>(null);
   readonly pictureSubmenuOpen = signal(false);
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
@@ -102,19 +105,12 @@ export class BookEditor {
     }
     return catLabel;
   }
-  conditionDisplayLabel(): string {
-    const val = this.form.controls.conditionGrade.value;
-    if (!val) return 'Chưa đánh giá';
-    if (val === 'HIGH_FRESHNESS') return 'Độ mới cao';
-    if (val === 'MINOR_FLAWS') return 'Có lỗi nhẹ';
-    return this.legacyConditions[val] ?? val;
-  }
   readingDisplayLabel(): string {
     const val = this.form.controls.readingLevel.value;
     if (!val) return 'Chưa xác định';
     return this.taxonomy().readingLevels.find((l) => l.code === val)?.label ?? val;
   }
-  toggleMenu(menu: 'category' | 'condition' | 'reading', event: Event) {
+  toggleMenu(menu: 'category' | 'reading', event: Event) {
     event.stopPropagation();
     if (this.formDisabled()) return;
     if (this.openMenu() === menu) {
@@ -148,13 +144,6 @@ export class BookEditor {
     this.openMenu.set(null);
     this.pictureSubmenuOpen.set(false);
   }
-  selectCondition(grade: BookWrite['conditionGrade'], event: Event) {
-    event.stopPropagation();
-    this.form.controls.conditionGrade.setValue(grade);
-    this.form.controls.conditionGrade.markAsDirty();
-    this.form.controls.conditionGrade.markAsTouched();
-    this.openMenu.set(null);
-  }
   selectReadingLevel(level: ReadingLevel | null, event: Event) {
     event.stopPropagation();
     this.form.controls.readingLevel.setValue(level);
@@ -187,6 +176,17 @@ export class BookEditor {
     return this.collections().filter((c) => c.active || existing.includes(c.id));
   }
   constructor() {
+    this.form.controls.title.valueChanges.pipe(
+      switchMap(title=>{
+        this.titleWarning.set('');
+        const name=title?.trim(), id=this.book()?.id;
+        if(!name || name.length>300) return of('');
+        return timer(300).pipe(switchMap(()=>this.api.titleDuplicate(name,id)),
+          map(r=>this.form.controls.title.value===title && this.book()?.id===id && r.duplicate
+            ? 'Tên sách đã tồn tại. Vui lòng kiểm tra sách đã có trước khi thêm mới.' : ''),
+          catchError(()=>of('Chưa kiểm tra được tên trùng')));
+      }), takeUntilDestroyed()
+    ).subscribe(message=>this.titleWarning.set(message));
     this.form.controls.weightG.addValidators(Validators.required);
     this.photos.updates.pipe(takeUntilDestroyed()).subscribe((book) => this.book.set(book));
     this.photos.failures.pipe(takeUntilDestroyed()).subscribe((error) => this.fail(error));
@@ -236,30 +236,47 @@ export class BookEditor {
     this.photos.locked.set(false);
     this.createUncertain.set(false);
     this.pendingCreate = null;
-    this.variantNamesVisible.set(b.variants.length > 1 || b.variants.some(v => !!v.name));
-    this.form.controls.variants.clear({emitEvent:false});
-    for (const row of b.variants) this.form.controls.variants.push(buildVariantForm(row),{emitEvent:false});
-    this.form.reset(b);
+    const limit=b.stockLimit ?? b.variants.length*999999;
+    this.stockLimit.set(limit);
+    this.form.controls.stock.setValidators([Validators.required,Validators.min(0),Validators.max(limit),
+      c=>Number.isSafeInteger(c.value)?null:{integer:true}]);
+    this.form.reset({...b, stock:b.totalStock,
+      internalNote:b.internalNote !== undefined ? b.internalNote : b.conditionNote ?? null,
+      unitPricePerKgVnd:b.unitPricePerKgVnd ?? null},{emitEvent:false});
+    this.titleWarning.set('');this.pricingError.set('');this.priceEdits={min:false,max:false};
     this.form.markAsPristine();
     this.fields.set({});
   }
-  addVariant() {
-    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
-    this.form.controls.variants.push(buildVariantForm());
-    this.variantNamesVisible.set(true);
-    this.form.controls.variants.markAsDirty();
-  }
-  removeNewVariant(index: number) {
-    if (!this.editable() || this.busy() || this.otherBusy() || this.loading() || this.createUncertain()) return;
-    const rows = this.form.controls.variants;
-    if (rows.length > 1 && rows.at(index)?.controls.id.value === null) {
-      rows.removeAt(index); rows.markAsDirty();
+  priceEdited(which:'min'|'max') { this.priceEdits[which]=true; }
+  calculatePrices() {
+    this.priceEdits={min:false,max:false};
+    const c=this.form.controls;
+    c.unitPricePerKgVnd.updateValueAndValidity({emitEvent:false});
+    const unit=c.unitPricePerKgVnd.value, weight=c.weightG.value;
+    this.pricingError.set('');
+    if(unit===null || weight===null || c.unitPricePerKgVnd.invalid || c.weightG.invalid) return;
+    const prices=calculatedBookPrices(unit,weight);
+    if(!prices) {
+      this.pricingError.set('Giá tính được vượt giới hạn cho phép.');
+      c.unitPricePerKgVnd.setErrors({priceCalculation:true});return;
     }
+    this.form.patchValue(prices,{emitEvent:false});
+    c.priceMinVnd.markAsDirty();c.priceMaxVnd.markAsDirty();
   }
-  totalStock() {
-    return this.form.controls.variants.controls.reduce((sum,row)=>{
-      const n=row.controls.stock.value;return sum+(n !== null && Number.isSafeInteger(n) && n>=0 ? n : 0);
-    },0);
+  finishPrice(which:'min'|'max') {
+    const c=this.form.controls, field=which==='min'?c.priceMinVnd:c.priceMaxVnd;
+    if(!this.priceEdits[which]) return;
+    this.priceEdits[which]=false;
+    if(field.value===null) return;
+    const rounded=roundPriceUp(field.value);
+    if(rounded===null) {field.setErrors({priceCalculation:true});return;}
+    field.setValue(rounded);
+    c.unitPricePerKgVnd.updateValueAndValidity({emitEvent:false});this.pricingError.set('');
+    if(which==='min') {
+      const prices=calculatedBookPrices(rounded,1000);
+      if(prices) {c.priceMaxVnd.setValue(prices.priceMaxVnd);c.priceMaxVnd.markAsDirty();}
+      else field.setErrors({priceCalculation:true});
+    }
   }
   toggleAge(age: AgeGroup, checked: boolean) {
     const values = this.form.controls.ageGroups;
@@ -277,7 +294,6 @@ export class BookEditor {
       this.form.valid &&
       !!w.title &&
       !!w.categoryCode &&
-      !!w.conditionNote &&
       w.priceMinVnd !== null &&
       w.priceMaxVnd !== null &&
       this.photos.ready() &&
@@ -294,6 +310,7 @@ export class BookEditor {
       this.photos.pending()
     )
       return;
+    this.finishPrice('min');this.finishPrice('max');
     this.form.markAllAsTouched();
     this.error.set('');
     this.notice.set('');

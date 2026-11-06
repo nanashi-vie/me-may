@@ -23,8 +23,8 @@
 .field-publisher { grid-column: span 8; }
 .field-author { grid-column: span 7; }
 .field-language { grid-column: span 5; }
-.field-category { grid-column: span 8; }
-.field-condition { grid-column: span 6; }
+.field-category { grid-column: span 14; }
+.field-unit-price { grid-column: span 8; }
 .field-weight { grid-column: span 6; }
 .field-price-min { grid-column: span 6; }
 .field-price-max { grid-column: span 6; }
@@ -82,7 +82,7 @@ small {
   .field-isbn,
   .field-price-min,
   .field-price-max,
-  .field-condition,
+  .field-unit-price,
   .field-weight {
     grid-column: span 1;
   }
@@ -102,32 +102,5 @@ small {
 .confirmation input[type=checkbox]{width:auto;min-width:22px;min-height:22px;margin-right:.6rem;}
 
 .stock-editor { margin-block: 1.5rem; }
-.variant-row {
-  display: flex;
-  gap: 1rem;
-  align-items: flex-end;
-  flex-wrap: wrap;
-  margin-block: 0.75rem;
-}
-.variant-row .field-variant-name {
-  flex: 1 1 260px;
-  max-width: 360px;
-  min-width: 180px;
-  margin-top: 1rem;
-  margin-bottom: 0;
-}
-.variant-row .field-variant-stock {
-  flex: 0 0 150px;
-  max-width: 160px;
-  margin-top: 1rem;
-  margin-bottom: 0;
-}
-.variant-row button {
-  height: 46px;
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 0;
-  width: auto;
-}
-.stock-editor button { width: auto; }
+.field-stock { max-width: 180px; }
 .stock-editor small { display: block; margin-bottom: 1rem; }

@@ -33,7 +33,7 @@
   <fieldset [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain()">
     <legend>Thông tin cuốn sách</legend>
     <div class="fields">
-      <label class="admin-field field-title"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" /></label>
+      <label class="admin-field field-title" [class.has-error]="!!titleWarning() || !!fields()['title'] || (form.controls.title.invalid && form.controls.title.touched)"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" aria-describedby="title-warning" /><small id="title-warning" class="helper-text" aria-live="polite">{{ fields()['title']?.join(' ') || (form.controls.title.invalid ? 'Tên sách tối đa 300 ký tự.' : titleWarning()) }}</small></label>
       <label class="admin-field field-isbn"><span class="field-label">ISBN <small>(nếu có)</small></span><input formControlName="isbn" maxlength="32" /></label>
       <label class="admin-field field-publisher"><span class="field-label">Nhà xuất bản <small>(nếu có)</small></span><input formControlName="publisher" maxlength="200" /></label>
       <label class="admin-field field-author"><span class="field-label">Tác giả <small>(nếu có)</small></span><input formControlName="author" maxlength="200" /></label>
@@ -139,122 +139,23 @@
           <small class="helper-text" id="binding-error">Chọn Paperback hoặc Hardcover trong Picture book.</small>
         }
       </div>
-      <div
-        class="admin-field custom-dropdown field-condition"
-        [class.is-open]="openMenu() === 'condition'"
-      >
-        <span class="field-label">Đánh giá tình trạng</span>
-        <select class="sr-only-native-select" formControlName="conditionGrade" tabindex="-1" aria-hidden="true">
-          <option [ngValue]="null">Chưa đánh giá</option>
-          <option value="HIGH_FRESHNESS">Độ mới cao</option>
-          <option value="MINOR_FLAWS">Có lỗi nhẹ</option>
-          @if (book()?.conditionGrade; as grade) {
-            @if (legacyConditions[grade]) { <option [value]="grade">{{ legacyConditions[grade] }}</option> }
-          }
-        </select>
-        <button
-          type="button"
-          class="dropdown-trigger"
-          [disabled]="formDisabled()"
-          [attr.aria-expanded]="openMenu() === 'condition'"
-          aria-haspopup="listbox"
-          (click)="toggleMenu('condition', $event)"
-        >
-          <span class="dropdown-value">{{ conditionDisplayLabel() }}</span>
-          <span class="dropdown-chevron" aria-hidden="true"></span>
-        </button>
-        @if (openMenu() === 'condition') {
-          <div class="dropdown-popover" role="listbox" aria-label="Đánh giá tình trạng">
-            <button
-              type="button"
-              class="dropdown-item"
-              role="option"
-              [attr.aria-selected]="form.controls.conditionGrade.value === null"
-              [class.selected]="form.controls.conditionGrade.value === null"
-              (click)="selectCondition(null, $event)"
-            >
-              <span class="item-text">Chưa đánh giá</span>
-              @if (form.controls.conditionGrade.value === null) {
-                <span class="item-check" aria-hidden="true">✓</span>
-              }
-            </button>
-            <button
-              type="button"
-              class="dropdown-item"
-              role="option"
-              [attr.aria-selected]="form.controls.conditionGrade.value === 'HIGH_FRESHNESS'"
-              [class.selected]="form.controls.conditionGrade.value === 'HIGH_FRESHNESS'"
-              (click)="selectCondition('HIGH_FRESHNESS', $event)"
-            >
-              <span class="item-text">Độ mới cao</span>
-              @if (form.controls.conditionGrade.value === 'HIGH_FRESHNESS') {
-                <span class="item-check" aria-hidden="true">✓</span>
-              }
-            </button>
-            <button
-              type="button"
-              class="dropdown-item"
-              role="option"
-              [attr.aria-selected]="form.controls.conditionGrade.value === 'MINOR_FLAWS'"
-              [class.selected]="form.controls.conditionGrade.value === 'MINOR_FLAWS'"
-              (click)="selectCondition('MINOR_FLAWS', $event)"
-            >
-              <span class="item-text">Có lỗi nhẹ</span>
-              @if (form.controls.conditionGrade.value === 'MINOR_FLAWS') {
-                <span class="item-check" aria-hidden="true">✓</span>
-              }
-            </button>
-            @if (book()?.conditionGrade; as grade) {
-              @if (legacyConditions[grade]) {
-                <button
-                  type="button"
-                  class="dropdown-item"
-                  role="option"
-                  [attr.aria-selected]="form.controls.conditionGrade.value === grade"
-                  [class.selected]="form.controls.conditionGrade.value === grade"
-                  (click)="selectCondition(grade, $event)"
-                >
-                  <span class="item-text">{{ legacyConditions[grade] }}</span>
-                  @if (form.controls.conditionGrade.value === grade) {
-                    <span class="item-check" aria-hidden="true">✓</span>
-                  }
-                </button>
-              }
-            }
-          </div>
-        }
-      </div>
-      <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
+      <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" (input)="calculatePrices()" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
+      <label class="admin-field field-unit-price" [class.has-error]="form.controls.unitPricePerKgVnd.invalid && form.controls.unitPricePerKgVnd.touched"><span class="field-label">Đơn giá/kg (đ) <small>(nếu có)</small></span><input type="text" inputmode="numeric" appVndInput formControlName="unitPricePerKgVnd" (input)="calculatePrices()" /><small class="helper-text">{{ pricingError() || 'Đổi đơn giá hoặc trọng lượng sẽ tính lại hai mức giá.' }}</small></label>
       <label class="admin-field field-price-min" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"
         ><span class="field-label">Giá từ (đ)</span><input
           type="text" inputmode="numeric" appVndInput
-          formControlName="priceMinVnd"
+          formControlName="priceMinVnd" (input)="priceEdited('min')" (blur)="finishPrice('min')"
           min="1"
           max="999999999999"
           step="1"
         />@if (priceNote) { <small class="helper-text">{{ priceNote }}</small> }</label
-      ><label class="admin-field field-price-max" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
+      ><label class="admin-field field-price-max" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" (input)="priceEdited('max')" (blur)="finishPrice('max')" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
     </div>
-    <fieldset formArrayName="variants" class="stock-editor">
-      <legend>Tồn kho và biến thể</legend>
-      @for (row of form.controls.variants.controls; track row; let i = $index) {
-        <div [formGroupName]="i" class="variant-row">
-          @if (variantNamesVisible()) {
-            <label class="admin-field field-variant-name"><span class="field-label">Tên biến thể</span><input formControlName="name" maxlength="100" [attr.aria-label]="'Tên biến thể ' + (i+1)" /></label>
-          }
-          <label class="admin-field field-variant-stock"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" max="999999" step="1" [attr.aria-label]="'Tồn kho ' + (i+1)" /></label>
-          @if (!row.controls.id.value && form.controls.variants.length > 1) {
-            <button type="button" class="secondary" (click)="removeNewVariant(i)" [attr.aria-label]="'Gỡ biến thể mới ' + (i+1)">Gỡ dòng mới</button>
-          }
-        </div>
-      }
-      <p>Tổng tồn: <strong>{{ totalStock() }}</strong></p>
-      <small>Mỗi biến thể dùng chung khoảng giá và bộ ảnh. Tồn 0 là hết hàng; chủ cập nhật sau khi bán.</small>
-      @if ((form.hasError('variants') || form.controls.variants.invalid) && form.touched) {
-        <p class="error" role="alert">Tồn kho phải là số nguyên từ 0 đến 999999. Khi có nhiều biến thể, nhập tên riêng không trùng nhau.</p>
-      }
-      <button type="button" class="secondary" (click)="addVariant()">Thêm biến thể</button>
-    </fieldset>
+    <div class="stock-editor">
+      <label class="admin-field field-stock"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" [max]="stockLimit()" step="1" />
+      @if (form.controls.stock.invalid && form.controls.stock.touched) {<small class="helper-text">Nhập tồn kho nguyên từ 0 đến {{stockLimit()}}.</small>}</label>
+      <small>Tồn 0 là hết hàng. Chủ tiệm tự cập nhật tồn sau khi bán hoặc nhập thêm sách.</small>
+    </div>
     <fieldset class="choices">
       <legend>Độ tuổi <small>(có thể chọn nhiều)</small></legend>
       @for (age of taxonomy().ageGroups; track age.code) {
@@ -268,7 +169,7 @@
       }
     </fieldset>
     <label class="admin-field"
-      ><span class="field-label">Mô tả tình trạng / lỗi <small>(cần có trước khi xuất bản)</small></span><textarea formControlName="conditionNote" maxlength="4000" rows="3"></textarea></label
+      ><span class="field-label">Ghi chú nội bộ <small>(không bắt buộc)</small></span><textarea formControlName="internalNote" maxlength="4000" rows="3"></textarea></label
     ><label class="admin-field"
       ><span class="field-label">Mô tả sách</span><textarea formControlName="description" maxlength="10000" rows="5"></textarea>
     </label>
@@ -356,7 +257,7 @@
     <p class="error">{{ entry.key }}: {{ entry.message }}</p>
   }
   @if (!book() && editable()) {
-    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu ảnh và tình trạng cho sách và các biến thể này.</label>
+    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu bộ ảnh của mục sách cho sách và các biến thể này.</label>
   }
   @if (editable()) {
   <button

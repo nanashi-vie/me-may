@@ -1511,3 +1511,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   gồm ẩn/hết hàng; OWNER/STAFF đọc, anonymous401, response no-store/boolean.
 - Test mới RED400→GREEN200;8test contract PASS. Không đặt unique title hoặc
   thay đường ghi save/publish. T2 commit8cf5275; tiếp T4 form/giá trên frontend.
+
+### S041-C09 — 06/11/2026 — T4 form quản trị
+
+- Form có đơn giá/kg optional, ghi chú nội bộ optional và một ô tồn gộp;
+  không gửi condition/variants. BigInt tính chính xác, giá đến từ cơ sở chưa
+  làm tròn; sửa tay làm tròn khi kết thúc nhập, load/upload không tự tính lại.
+- Cảnh báo trùng dùng style has-error hiện có nhưng không làm form invalid;
+  lookup300ms, hủy response stale, mất mạng vẫn lưu. Backend T3 commiteb8b01d.
+- Frontend38file/193test PASS (baseline189); tests mới cho công thức/overflow,
+  load giá cũ, manual min/max, upload, tồn lớn/conflict, note trống và warning.
+  Test RED ban đầu thiếu helper/controls; GREEN sau triển khai. Chưa browser QA.
+- Upload queue đã so sánh toàn bộ DTO trừ media/version/updatedAt nên field mới
+  tự tham gia kiểm chống adopt version sai; không thêm cơ chế handoff song song.
+- Tiếp T5 public/preview; chưa deploy hoặc nhập ghi chú riêng trên live.
