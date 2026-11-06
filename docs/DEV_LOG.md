@@ -1722,3 +1722,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   deploy, app source hoặc file Excel. Chưa đo thao tác thực tế/ảnh; chưa triển khai
   format mới. Đã hỏi đơn giá thường chung lô hay từng cuốn để xác định bước thiết kế.
 - Audit xong; chuẩn bị commit/push dev, user tự merge main/deploy.
+
+### S042-C03 — 06/11/2026 — import tạm thời không cần đơn giá
+
+- User trả lời: phần import Excel tạm thời chưa cần nhập đơn giá. Giữ hai giá
+  trực tiếp; không coi thiếu đơn giá/kg là việc cần triển khai lúc này.
+- Audit docs đã commit/push dev `47a2dc4`; cập nhật quyết định vào PROGRESS và
+  BOOK_IMPORT_VERIFICATION. Không đổi code hoặc workbook; mục tiêu giảm thời gian
+  metadata vì ảnh thêm từng sách giữ nguyên. Kiểm diff/line limits trước commit.

@@ -11,8 +11,9 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   nhập sẵn hai giá; note dùng header cũ, tồn1, chưa cảnh báo tên trùng.
 -15test và12ca probe PASS; file gốc chỉ có header, giữ nguyên SHA256. Chi tiết ở
   [bằng chứng import](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026).
-- Chưa đổi code/format; bước tiếp theo chốt đơn giá dùng chung lô hay từng sách
-  để thiết kế cách giảm thao tác. Checkpoint S042-C02.
+- User chốt import tạm thời chưa cần đơn giá/kg, giữ nhập hai giá trực tiếp.
+  Chưa đổi code/format; giảm thao tác metadata và thêm ảnh từng sách vẫn là mục tiêu.
+  Checkpoint S042-C03; audit docs đã đưa lên dev.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 

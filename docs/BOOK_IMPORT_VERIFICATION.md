@@ -32,8 +32,9 @@ chỉ có sheet Sach, A1:P1/16 header, chưa có dòng sách hoặc công thức
 - SHA256 trước/sau của file gốc không đổi:
   `a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd`.
 - Chưa đo thời gian thao tác chủ tiệm hoặc upload ảnh, chưa test UI mới vì
-  không đổi UI. Đề xuất tiếp theo cần chốt cách dùng đơn giá theo lô/từng cuốn
-  trước khi thiết kế format mới; kết quả audit không tự cấp quyền triển khai.
+  không đổi UI. User chốt sau audit: import Excel tạm thời chưa cần nhập đơn giá;
+  tiếp tục nhập hai giá trực tiếp, khác biệt này có chủ ý so với form.
+  Kết quả audit không tự cấp quyền thay headers, cảnh báo hoặc triển khai format mới.
 
 ## Bằng chứng triển khai trước đây
 
