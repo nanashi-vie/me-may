@@ -102,15 +102,17 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
-## Tối ưu UI quản trị — Hệ thống Input Field và bố cục Form nhập sách (đã gộp vào dev 05/11/2026)
+## Tối ưu UI quản trị — Hệ thống Input Field, Bố cục Form, Sidebar Modern Clean và nút Quản trị Public (trên worktree dev-ui 06/11/2026)
 
-- Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
+- Đã hoàn tất trên worktree `dev-ui`:
   - Nhãn cố định trên viền trên (Notched / Cutout border, nền trắng che viền), focus màu xanh tím Indigo (`#4F46E5`), bo góc 8px, chiều cao ô 46px.
   - Dropdown select có custom chevron SVG (`∨`), trạng thái lỗi viền đỏ (`#D92D20`) + nhãn đỏ + icon cảnh báo tam giác (⚠️) góc phải + helper text đỏ.
   - Áp dụng toàn bộ `/admin`: Thêm/Sửa sách (`book-editor`), Đăng nhập (`login`), Bộ lọc sách (`book-list`), Flash Sale, Bộ sưu tập (`collection-list`), Import (`book-import`).
   - Tối ưu bố cục form nhập sách (`book-editor`): thu gọn `.book-form` `max-width: 780px` (grid 20 cột); Hàng 1: Tên sách (~75%) - ISBN (~25%); Hàng 2: NXB (40%) - Tác giả (35%) - Ngôn ngữ (25%); Hàng 3: Thể loại (40%) - Tình trạng (30%) - Trọng lượng (30%); Hàng 4: Giá từ (~220px) - Giá đến (~220px); Tồn kho đơn biến thể gọn 150px; Trình độ đọc (35%) - Video URL (65%); xóa câu mô tả thừa tại panel ảnh.
   - Custom Dropdown Popover (Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo): menu xổ xuống nền sáng `#FFFFFF`, bo góc `10px`, dấu `✓` bên phải; mục `Picture book ›` xổ menu con `[Paperback, Hardcover]` sang phải, chọn xong hiển thị `Picture book · Paperback` (hoặc `Hardcover`) và bỏ cụm radio kiểu bìa rời.
-  - Kiểm chứng: Vitest 37/37 files (187/187 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt.
+  - Sidebar `/admin` Accordion Tree View: rộng 240px, nền be kem `#FBF8F2`, viền phải `#E8E2D8`, logo Mẹ Mây Baloo 2 đỏ. Mục "Tổng quan", mục cha "Quản lý sách" dạng accordion có mũi tên xoay `v` / `>` (mặc định mở sẵn) chứa các mục con clean text thụt lề có đường kẻ dọc tree-line: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiện cho OWNER). Active item có nền đỏ pastel `#FDE8E8`, chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left`). Đáy sidebar có thẻ tài khoản (avatar tròn chữ cái đầu, email, role badge) và nút Đăng xuất.
+  - Nút quay về `/admin` trên trang public (`/` và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng `/admin` (khi đã login) hoặc `/admin/dang-nhap`.
+  - Kiểm chứng: Vitest 38/38 files (194/194 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt 100%.
 
 ## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 

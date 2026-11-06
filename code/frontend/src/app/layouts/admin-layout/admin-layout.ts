@@ -1,12 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PageMetadata } from '../../core/page-metadata';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet],
   templateUrl: './admin-layout.html',
+  styleUrl: './admin-layout.scss',
 })
 export class AdminLayout {
   constructor() {
@@ -16,6 +17,16 @@ export class AdminLayout {
   private readonly router = inject(Router);
   readonly busy = signal(false);
   readonly error = signal('');
+  readonly bookMenuOpen = signal(true);
+  readonly userInitials = computed(() => {
+    const email = this.auth.user()?.email || '';
+    return email.charAt(0).toUpperCase() || 'A';
+  });
+
+  toggleBookMenu() {
+    this.bookMenuOpen.update((open) => !open);
+  }
+
   logout() {
     this.busy.set(true);
     this.auth.logout().subscribe({

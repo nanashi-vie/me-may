@@ -29,9 +29,77 @@
 .sidebar-expand[aria-expanded='true'], .sidebar-sub { background: #0002; }
 .sidebar-sub > * { min-height: 44px; padding: .6rem 1.1rem .6rem 1.75rem; text-transform: none; font: 400 .88rem var(--font-sans); border-bottom: 1px solid #fff3; }
 .sidebar-nav .active { font-weight: 800; background: #0002; border-left: 4px solid #fff; }
+.admin-entry-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid var(--line, #ddd7ce);
+  background: #ffffff;
+  color: #475467;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.82rem;
+  line-height: 1.2;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    color: var(--red, #9b1c28);
+    border-color: var(--red, #9b1c28);
+    background: #fdf2f2;
+  }
+
+  &.logged-in {
+    background: #fdf2f2;
+    border-color: #fecdca;
+    color: var(--red, #9b1c28);
+    font-weight: 700;
+  }
+
+  .admin-gear-icon {
+    font-size: 0.95rem;
+  }
+
+  .admin-active-dot {
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #12b76a;
+    margin-left: 1px;
+  }
+}
+.sidebar-admin-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  opacity: 0.95;
+  border-top: 1px dashed rgba(255, 255, 255, 0.3);
+  font-size: 0.92rem;
+
+  &.logged-in {
+    background: rgba(0, 0, 0, 0.15);
+    font-weight: 700;
+  }
+
+  .sidebar-admin-gear {
+    font-size: 1rem;
+  }
+
+  .sidebar-admin-badge {
+    margin-left: auto;
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    background: rgba(255, 255, 255, 0.25);
+    border-radius: 4px;
+    letter-spacing: 0.04em;
+  }
+}
 @media (max-width: 960px) { .public-nav { gap: 1.15rem; font-size: .82rem; } }
 @media (max-width: 720px) {
-  .utility, .public-nav, .desktop-contact { display: none; }
+  .utility, .public-nav, .desktop-contact, .desktop-only { display: none; }
   .site-header { display: grid; grid-template-columns: 44px 1fr auto; gap: .65rem .5rem; padding-block: .7rem; min-height: auto; }
   .menu-toggle { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; padding: 0; border: 0; background: none; color: var(--red); font-size: 1.65rem; }
   .brand, .brand-name { justify-self: center; font-size: 1.35rem; gap: .45rem; white-space: nowrap; }

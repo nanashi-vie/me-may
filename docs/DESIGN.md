@@ -168,7 +168,14 @@ Refresh khi vào trang/retry/foreground/codes thay đổi; hủy response cũ. S
 
 ## Bảng quản trị — desktop
 
-Sidebar nhỏ: Sách, Bộ sưu tập, Danh mục, Tài khoản (Owner), Cấu hình (Owner). Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
+Sidebar Modern Clean (rộng 240px, nền be kem #FBF8F2, viền phải #E8E2D8, sticky 100vh):
+- Đầu sidebar: logo Mẹ Mây font Baloo 2 đỏ + nhãn "Trang quản trị".
+- Menu điều hướng kèm icon SVG trực quan: Tổng quan (📊), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
+- Mục Active: nền đỏ kem nhạt #FDF2F2, chữ và icon đỏ thương hiệu #9B1C28 (font-weight 700), viền trái đỏ 3px. Hover: nền be sáng #F3EDE2.
+- Đáy sidebar: Thẻ tài khoản (avatar chữ cái đầu, email, badge OWNER/STAFF) và nút Đăng xuất. Bỏ thanh admin-header phía trên để không gian nội dung bên phải rộng rãi.
+- Nút "Quản trị" trên trang public (/ và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng /admin hoặc /admin/dang-nhap.
+
+Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
 
 MVP chỉ nhập thủ công, không có nút import CSV/Excel. Import là bước ngay sau MVP: tạo mới thành nháp, mã trùng báo lỗi, không ghi đè; file mẫu/preview/lỗi sẽ đặc tả riêng. Cập nhật sách đang có qua import để giai đoạn sau.
 
@@ -221,6 +228,13 @@ Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên,
   - Mục `Picture book ›` có mũi tên `›` bên phải; khi rê chuột hoặc bấm vào sẽ xổ menu con `[Paperback, Hardcover]` sang bên phải. Chọn xong hiển thị `Picture book · Paperback` (hoặc `Hardcover`) ngay trên ô Thể loại và bỏ cụm radio kiểu bìa rời bên dưới.
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
+
+## Thanh điều hướng Admin Sidebar — 06/11/2026
+
+- **Cấu trúc phân cấp / Accordion**: Thêm mục cha "Quản lý sách" dạng accordion có mũi tên xoay (`v` khi mở, `>` khi đóng), mặc định mở sẵn khi truy cập trang quản trị.
+- **Mục con (Submenu)**: Thụt lề với đường kẻ dọc tree-line thanh lịch (`#E8E2D8`), phong cách clean text gồm: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiển thị mục phân quyền cho OWNER).
+- **Trạng thái Active**: Nền đỏ pastel vừa vặn (`#FDE8E8`), bo góc dạng pill (`border-radius: 8px`), chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left` indicator).
+- **Responsive mobile**: Tự động chuyển layout linh hoạt khi màn hình hẹp ($\le 768px$).
 
 ## Trạng thái UX dùng chung
 

@@ -26,7 +26,8 @@ public class PublicCatalogueService {
             + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
             + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code";
 
-    private record RelatedTarget(long bookCopyId, String publisher, Long categoryId) {}
+    private record RelatedTarget(long bookCopyId, String publisher, Long categoryId) {
+    }
 
     public BookDtos.Page<Book> list(String q, String category, String binding, List<String> ages, String sort, int page,
             String collection) {
@@ -56,7 +57,8 @@ public class PublicCatalogueService {
         StringBuilder where = new StringBuilder(" where l.publication_status='PUBLISHED'");
         List<Object> args = new ArrayList<>();
         if (q != null) {
-            where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\'))");
+            where.append(
+                    " and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\'))");
             args.add(q);
             var escaped = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
             args.add(escaped);
@@ -109,7 +111,8 @@ public class PublicCatalogueService {
     public RelatedBooks related(String slug) {
         List<RelatedTarget> current = jdbc.query(
                 "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED'",
-                (r, n) -> new RelatedTarget(r.getLong("id"), r.getString("publisher"), r.getObject("category_id", Long.class)),
+                (r, n) -> new RelatedTarget(r.getLong("id"), r.getString("publisher"),
+                        r.getObject("category_id", Long.class)),
                 slug);
         if (current.isEmpty())
             throw new AdminApiException(404, "not_found");
@@ -165,7 +168,8 @@ public class PublicCatalogueService {
     private Book book(ResultSet r, int n) throws SQLException {
         long id = r.getLong("id"), listing = r.getLong("listing_id");
         String slug = r.getString("slug");
-        List<String> ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
+        List<String> ages = jdbc.queryForList(
+                "select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
         List<Media> media = jdbc.query(
                 "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",

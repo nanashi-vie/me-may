@@ -1396,7 +1396,6 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 5. Việc dang dở / blocker: Không có.
 6. Bước tiếp theo: Push nhánh `dev-ui` lên remote theo yêu cầu user.
 
-
 ### S041-C01 — 05/11/2026 — Brainstorm tình trạng và tồn gộp
 
 1. Phạm vi user: giải thích Đánh giá tình trạng/Mô tả tình trạng lỗi; brainstorm
@@ -1595,3 +1594,77 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   ignored output/playwright. Không xóa workspace/task khác, không đổi main.
 - Chốt commit/push dev theo workflow đã cho phép; user merge main/deploy. Không
   còn implementation S041 dang dở; các gate release/online ở PROGRESS giữ nguyên.
+
+### S038-C04 — 06/11/2026 — thiết kế lại Admin Sidebar Modern Clean và nút quay về /admin trên trang Public
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C04. Mục tiêu: thiết kế lại thanh Sidebar /admin theo phong cách Modern Clean ấm áp (nền be kem, icon SVG, tab active đỏ thương hiệu, thẻ tài khoản và nút đăng xuất ở đáy, bỏ admin-header phía trên) và thêm nút quay về /admin trên trang chủ / public layout (nhận diện phiên đăng nhập).
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Admin Sidebar redesign:
+     - Nền be kem nhạt #FBF8F2, viền phải mảnh #E8E2D8, sticky cố định 100vh, rộng 240px.
+     - Header sidebar: logo Mẹ Mây font Baloo 2 đỏ đậm #9B1C28 kèm nhãn phụ "Trang quản trị" chữ in hoa nhỏ.
+     - Menu điều hướng dạng thẻ bo góc 8px với icon SVG: Tổng quan (📊, exact match), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
+     - Trạng thái Active: nền đỏ kem nhạt #FDF2F2, viền chỉ báo trái đỏ 3px, chữ và icon màu đỏ #9B1C28 đậm (font weight 700). Hover: nền be sáng #F3EDE2.
+     - Đáy sidebar: Thẻ tài khoản người dùng (avatar tròn chữ cái đầu, email, role badge OWNER/STAFF) và nút Đăng xuất kèm icon logout.
+     - Xóa bỏ thanh admin-header phía trên để mở rộng tối đa không gian làm việc cho vùng nội dung bên phải.
+   - Nút quay về /admin trên Public:
+     - Desktop header: đặt cạnh nút "Nhắn tiệm ↗", tự động nhận diện nếu đã đăng nhập (auth.user() tồn tại) thì hiện nổi bật kèm chấm xanh active và dẫn thẳng /admin; nếu chưa đăng nhập thì dẫn vào /admin/dang-nhap.
+     - Mobile sidebar: thêm mục ⚙️ Quản trị ở cuối menu trượt mobile (bên dưới Cách mua, Liên hệ), tự động dẫn vào /admin hoặc /admin/dang-nhap.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.html
+     - code/frontend/src/app/layouts/public-layout/public-layout.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.scss
+     - code/frontend/src/app/app.spec.ts
+     - code/frontend/src/styles.scss
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 38/38 files, 193/193 tests PASS (bao gồm 4 test cases mới cho AdminLayout).
+   - Frontend builds: npm run build và npm run build:workers -> hoàn tất với 0 errors, 0 warnings.
+   - Browser QA qua Chrome headless CDP (1280x800 & 390x844) với Angular SSR local + mock API:
+     - Sidebar /admin: asideWidth 240px, brand 'Mẹ Mây - Trang quản trị', tab 'Sách' active đỏ #9b1c28, 5 icons SVG, accountEmail 'admin@memay.vn', roleBadge 'OWNER', logoutBtn 'Đăng xuất'.
+     - Public desktop header: nút "⚙️ Quản trị" hiển thị ngay cạnh "Nhắn tiệm ↗".
+     - Public mobile sidebar: link "⚙️ Quản trị" hiển thị ở đáy menu trượt.
+     - Ảnh chụp kiểm chứng: admin-book-list-filters.png, public-home-header.png, public-mobile-sidebar.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.
+
+### S038-C05 — 06/11/2026 — Sidebar Admin phân cấp Accordion Tree View và tinh chỉnh Active State
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C05. Mục tiêu: điều chỉnh thanh Sidebar /admin theo cấu trúc phân cấp (Accordion Tree View) giống mẫu tham chiếu, tạo mục cha "Quản lý sách" chứa các mục con "Sách", "Bộ sưu tập", "Flash sale", làm đậm màu nền đỏ active và bỏ đường viền nhỏ bên trái.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Nhóm phân cấp Accordion "Quản lý sách":
+     - Mục cha: button "Quản lý sách" có icon sách + mũi tên chevron SVG (v khi mở, > khi đóng), mặc định mở sẵn (bookMenuOpen = signal(true)), hỗ trợ click đóng/mở mượt mà với aria-expanded và aria-controls.
+     - Submenu lồng bên trong: thụt lề 1.45rem, có đường kẻ dọc tree-line mảnh (#E8E2D8), hiển thị clean text gồm 3 mục: "Sách" (/admin/sach), "Bộ sưu tập" (/admin/bo-suu-tap), "Flash sale" (/admin/flash-sale) (hai mục sau chỉ hiển thị với OWNER).
+   - Tinh chỉnh Active State:
+     - Nền active: đổi sang màu đỏ pastel vừa phải #FDE8E8 (đậm hơn nền cũ #FDF2F2, tương phản rõ nét với chữ đỏ đô #9B1C28).
+     - Bỏ hoàn toàn đường viền nhỏ 3px bên trái (border-left indicator) theo ảnh mẫu của user, active item thành hình khối bo tròn mềm mại (pill / rounded rect border-radius 8px / 6px).
+     - Bổ sung responsive linh hoạt cho mobile view.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: npm test (cwd code/frontend trong worktree dev-ui) -> 38/38 files, 194/194 tests PASS (bổ sung test toggle accordion và quyền OWNER/STAFF).
+   - Frontend build: npm run build và npm run build:workers hoàn tất 0 error, 0 warning.
+   - Visual verification qua Chrome headless CDP:
+     - Chụp ảnh admin-sidebar-accordion.png (asideWidth 240px, parentGroup 'Quản lý sách', subItems ['Sách', 'Bộ sưu tập', 'Flash sale'], activeItem 'Sách', icons: 3).
+     - Kiểm chứng trực quan: mục "Sách" active có nền đỏ pastel #FDE8E8, không có viền đỏ trái, đường kẻ dọc thụt lề chuẩn mẫu.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push nhánh dev-ui lên GitHub.
+
+### S041-C14 — 06/11/2026 — Merge nhánh dev-ui vào dev
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S041-C14. Mục tiêu: merge nhánh `dev-ui` vào `dev` theo yêu cầu của user, giải quyết merge conflict tại `docs/DEV_LOG.md`.
+2. Nội dung tích hợp:
+   - Toàn bộ giao diện Admin Sidebar mới (Accordion Tree View: "Quản lý sách" chứa "Sách", "Bộ sưu tập", "Flash sale", nền active đỏ pastel `#FDE8E8`, bỏ viền chỉ báo trái, bo góc tròn pill).
+   - Nút quay về /admin trên header desktop và menu trượt mobile của trang public.
+   - Định dạng và căn chỉnh các file layout admin, layout public và service catalogue.
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: 38/38 test files PASS.
+   - Frontend builds: `npm run build` và `npm run build:workers` hoàn tất 0 error, 0 warning.
+4. Trạng thái: Đã merge thành công vào `dev`.
