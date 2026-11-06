@@ -22,9 +22,9 @@ class UploadSessionApiTest extends MediaTestSupport {
   api.login(other.getEmail());assertThat(api.send("GET",base,null,false).statusCode()).isEqualTo(404);
   api.login("staff@catalogue.test");assertThat(api.send("POST","/api/v1/admin/upload-sessions","{}",true).statusCode()).isEqualTo(403);assertThat(api.send("GET",base,null,false).statusCode()).isEqualTo(403);
  }
- @Test void sixPhotosMaximumAndExpiredSessionsCannotUpload()throws Exception {
+ @Test void eightPhotosMaximumAndExpiredSessionsCannotUpload()throws Exception {
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");String id=tree(api.send("POST","/api/v1/admin/upload-sessions","{}",true)).path("id").asString(),base="/api/v1/admin/upload-sessions/"+id;
-  for(int i=0;i<6;i++)assertThat(api.upload(base+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(201);
+  for(int i=0;i<8;i++)assertThat(api.upload(base+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(201);
   int uploads=fake.uploads.get();assertThat(api.upload(base+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(409);assertThat(fake.uploads.get()).isEqualTo(uploads);
   jdbc.update("update upload_session set created_at=current_timestamp-interval '2 days',expires_at=current_timestamp-interval '1 second' where id=?",UUID.fromString(id));
   assertThat(api.upload(base+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(410);

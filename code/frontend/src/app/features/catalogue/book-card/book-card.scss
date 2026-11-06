@@ -97,3 +97,8 @@ app-wishlist-button {
   }
 }
 
+
+.cover-wrap {position:relative;}
+.feature-tag {position:absolute;bottom:.5rem;left:.5rem;max-width:calc(100% - 1rem);padding:.22rem .5rem;
+  border-radius:3px;background:var(--cream,#faf8f4);color:var(--red,#a52329);border:1px solid var(--line,#ddd7ce);
+  font-size:.75rem;font-weight:650;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none;}

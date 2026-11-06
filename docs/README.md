@@ -30,6 +30,11 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
+- 8ảnh/lưu/features06/11 đã gộp vào [CATALOGUE](CATALOGUE.md), [DATA](DATA.md),
+  [DESIGN](DESIGN.md); [bằng chứng](BOOK_ENTRY_VERIFICATION.md),
+  [rolloutV15](BOOK_ENTRY_ROLLOUT.md). Chưa deployproduction.
+
+
 - ImportV4/8cột/đơn giá optional đã triển khai/kiểm local; [contract](BOOK_IMPORT.md),
   [schema](DATA.md#format-file-import--contract-duyệt31102026),
   [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Spec/plan đã gộp và gỡ;

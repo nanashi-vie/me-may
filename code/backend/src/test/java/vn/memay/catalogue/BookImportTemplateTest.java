@@ -17,7 +17,7 @@ class BookImportTemplateTest {
     @Test void currentTemplateSupportsOptionalUnitColumnAndUnpricedImport()throws Exception {
         var categories=List.of("Picture Book","Board Book","Chapter","Bách khoa toàn thư & khoa học","Lịch sử","Tuyển tập truyện","Tập đọc","Nấu ăn - thủ công - activity book","Kinh Thánh");
         var options=new ImportOptions(new Taxonomy(categories.stream().map(s->new Option(s,s,0)).toList(),List.of(),
-                List.of(new Option("PAPERBACK","Paperback",0),new Option("HARDCOVER","Hardcover",1)),List.of()),List.of());
+                List.of(new Option("PAPERBACK","Paperback",0),new Option("HARDCOVER","Hardcover",1)),List.of(),List.of()),List.of());
         var template=new BookImportTemplate();
         for(var ext:List.of("csv","xlsx"))assertThat(parser.parse("a."+ext,template.render(ext,options))).isEmpty();
         try(var book=new XSSFWorkbook(new ByteArrayInputStream(template.render("xlsx",options)));var out=new ByteArrayOutputStream()) {
@@ -42,7 +42,7 @@ class BookImportTemplateTest {
         }
     }
     @Test void templatesContainNoImportableExampleRows() throws Exception {
-        var options=new ImportOptions(new Taxonomy(List.of(new Option("BOARD_BOOK","Board book",0)),List.of(),List.of(),List.of()),List.of(new CollectionOption("moi-ve","Mới về")));
+        var options=new ImportOptions(new Taxonomy(List.of(new Option("BOARD_BOOK","Board book",0)),List.of(),List.of(),List.of(),List.of()),List.of(new CollectionOption("moi-ve","Mới về")));
         var template=new BookImportTemplate();
         for(String format:List.of("csv","xlsx"))assertThat(parser.parse("template."+format,template.render(format,options))).isEmpty();
         try(var book=new XSSFWorkbook(new ByteArrayInputStream(template.render("xlsx",options)))) {

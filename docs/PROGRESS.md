@@ -3,6 +3,18 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## 8ảnh, lưu/xuất bản và đặc điểm sách — triển khai local06/11/2026
+
+- Sáu ảnh công khai + hai nội bộ; backend lọc mọi projection và direct INTERNAL404.
+- Save-only mới/Ẩn giữARCHIVED, mọiẨn được thiếuweight; atomic save+publish và
+  mediaMetadata/features/audit/version cùngtransaction, publishedAt giữ lần đầu.
+- 0–3tags theoorder, card tagđầu/detail tấtcả; importV1–V4/fingerprint cũ giữ nguyên.
+- Backend227run/0failure/0error/3live skip, frontend217PASS; SSR/Workers/proxyPASS.
+  Reviewer3Important đã sửa và regression; browserChrome desktop/390px đã kiểm
+  8ảnh/public6/internal404/save-only/publish/hide/priority/PUTlost-response.
+- QA đã dọn, schema/cổng/browser đóng; đang commit/pushdev, chưa migrate/deployproduction.
+  ContractCATALOGUE/DATA/DESIGN, rolloutBOOK_ENTRY_ROLLOUT; checkpointS043.
+
 ## Import Excel8cột/đơn giá optional — đã triển khai06/11/2026
 
 - User bổ sung don_gia_kg optional vào7cột rút gọn: có số thì tính/lưu hai giá,

@@ -31,6 +31,13 @@ const a: PublicBook = {
   media: [],
 };
 describe('Detail refresh and public origin', () => {
+  it('shows all features below the title and handles old books without features',async()=>{
+    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
+      {provide:PublicApi,useValue:{detail:()=>of({...a,features:[{code:'SPIN',label:'Xoay chuyển'},{code:'TOUCH',label:'Chạm & cảm nhận'}]}),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
+    expect(Array.from(h.routeNativeElement!.querySelectorAll('.book-features li')).map(n=>n.textContent?.trim())).toEqual(['Xoay chuyển','Chạm & cảm nhận']);
+    c.accept(a);h.detectChanges();expect(h.routeNativeElement!.querySelector('.book-features')).toBeNull();
+  });
   const variants=[{id:'high',name:'Độ mới cao',available:true},{id:'corner',name:'Có cấn góc',available:true}];
   it('contacts without a selection and hides private condition data', async()=>{
     TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),

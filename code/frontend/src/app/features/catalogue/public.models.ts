@@ -10,6 +10,7 @@ import {
 export type { Page, Taxonomy, AgeGroup, CategoryCode, Binding };
 export interface PublicVariant { id: string; name: string | null; available: boolean; }
 export interface PublicBook {
+  features?: {code:string;label:string}[];
   variants: PublicVariant[];
   id: string;
   bookCode: string;

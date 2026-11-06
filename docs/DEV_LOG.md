@@ -1881,3 +1881,104 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Source commit3d5894a; tài liệu bàn giao commit/pushdev cùng task. Chưa deploy,
   không migration/dependency/provider thật. BackendV4 trước frontend; receipt
   cũ giữ nguyên, đổi7→8cột hoặc đổi đơn giá vẫn là lô mới, không update sách cũ.
+
+### S043-C01 — 06/11/2026 — bắt đầu8ảnh/lưu/xuất bản/features
+
+- User cung cấp spec Approved for implementation, yêu cầu kiểm tra/làm rõ rồi tiến hành.
+  Đã đọc chỉ mục, snapshot/checkpointS042, MASTER_PLAN/CATALOGUE và graph/source liên quan.
+- User chốt mọi ARCHIVED kể cả từng đăng được thiếu trọng lượng; publish vẫn đủ dữ liệu.
+- dev390cd9c sạch, fetch originPASS; origin/main4e5e84d chứa toàn bộ dev, chỉ khác merge/CI;
+  local mainb791511 cũ, không dùng làm baseline. Làm trên dev theo workflow đã cho phép.
+- Spec/plan hiện hành BOOK_MEDIA_FEATURE_SPEC/PLAN đăng ký README; tuần tự database/contract,
+  backend, frontend, tests; giữ canonical/fingerprint importV1–V4 và legacy create retry.
+- Chưa chạy test mới; chưa đổi code/migration. Không chạm DB/media thật, không deploy/main.
+
+### S043-C02 — 06/11/2026 — backend8ảnh/save/features lần đầu
+
+- Baseline frontend editor17PASS; backend thiếu TEST_DB_URL khi gọi Maven trực tiếp,
+  dùng run-local.sh rồi sandbox chặn socket (Operation not permitted); rerun ngoài
+  sandbox15test cũPASS,5test mớiRED đúng missing ARCHIVED/eight-photo behavior.
+- V15 thêm INTERNAL roles và feature catalogue/mapping (unique code/position1–3).
+  HTTP extras publication/publishAfterSave/featureCodes không đổi canonical BookWrite.
+- Implement atomic update+publish, optional-weight ARCHIVED riêng; import validateWrite
+  giữ nguyên. Public/preview role allowlist, internal endpoint404 trước gateway;
+  ordered features chiếu SQL không thêm JDBC query mỗi sách; audit includes features.
+- Scoped20tests:5test mớiPASS/6test cũfail do helper gửi DTO read mới features về write;
+  sửa helper bỏ read-only field. Chưa fullverify/frontend mới/browser/review.
+- Thay đổi còn local dev, chưa commit/deploy. Tiếp tục frontend và regression backend.
+
+### S043-C03 — 06/11/2026 — hồi quy và UI
+
+- Clean backend verify224run/0failure/0error/3live skip sau cập nhật fixture/features
+  và constructorTaxonomy test. Legacy create2/6ảnh và fingerprint/import suitesPASS.
+- Frontend210PASS/40files: hai save action, ARCHIVED partial, atomic publish payload,
+  max3/order tags,8ảnh/replacement/role stable, card first/detail all/no-feature.
+- Bổ sung test8ảnh thay slot và audit failure rollback content/tags/mediaPASS.
+  Consumed session recoveryRED (GET trả409 trước sửa); mở GET đã consumed trả bookId
+  có kiểm owner; frontend kiểm session trước retry, GET book đã lưu thay vì POST lại.
+- Đang chạy scoped session regression và SSR build; chưa browser/mobile/review cuối.
+- Code còn local dev. Spec/plan còn thực thi, không deploy/main.
+
+### S043-C04 — 06/11/2026 — review độc lập và sửa ba finding
+
+- Reviewer review_media_features:0Critical/3Important/0Minor. Privacy replacement
+  sau đổi nhóm chưa lưu/in-flight role; metadata preflush riêng transaction; PUT
+  timeout chưa reconcile. Đã nhận, viết regression tests trước sửa.
+- Sửa: chặn replacement qua visibility chưa lưu và đổi nhóm ảnh đang upload/uncertain;
+  mediaMetadata trong PUT validateID/length và lưu cùng aggregate/audit; metadata tạm
+  vẫn flush session trước final. GET lại book sau PUT không rõ kết quả, đối chiếu
+  nội dung/ảnh/tag/publication rồi mới accept hoặc mở retry, giữ edits khi khác.
+- Backend metadataRED400 unknown field trước sửa, đang kiểmGREEN/whole suite; UI
+  REDmissing recovery methods, đang chạy scoped. Chưa claim hoàn thành fix pass.
+- MigrationV14→V15 và scoped7contractPASS trước bổ sung metadata; frontend211PASS
+  trước fixreview; SSR/Workers/proxyPASS ngoài sandbox (native134/EPERM trong sandbox).
+- QA schema s043_browser_qa/me_may_test, fake provider API8089 và SSR4011 đã khởi
+  chạy, browserChrome riêngs043 đã mở login; chưa nghiệm thu luồng browser.
+- Code/doc còn local dev; không production/main.
+
+### S043-C05 — 06/11/2026 — browser candidate cuối
+
+- Chrome headed/SSR4011/API8089/schemaQA riêng: title-only saveARCHIVED/nullweight
+  và public404PASS; upload8ảnh persisted xong,6public/2internal đúng UI.
+- Atomic save+publish200, một nútSavePUBLISHED; APIadmin8/public6, featureSOUND/SLIDE
+  đúngorder/label, direct INTERNAL_1/2 đều404 trên PUBLISHED.
+- Cố ý routefetch PUTcommit200 rồi abortresponse: UI khóa ghi và hiện kiểm kết quả;
+  GETreconcile đúng nội dung/version/publication, không PUTtrùng:PASS.
+- FixturePNG QA đầu tạo saiheader literal\\x89 bị app từ chối đúng; đã sửa binary,
+  gỡ8file lỗi và upload8PNG đúng. Probe locator giá label thay đổi helper gây timeout,
+  dùng formControlName có trong DOM; không sửa app để qua probe. Browser CLI qua
+  Python subprocess trong sandbox ENOTFOUNDnpm, chuyển wrapper trực tiếp đã duyệt.
+- Backend227run/0failure/0error/3live skip, frontend216PASS, SSR/Workers/proxyPASS
+  trên code saufixreview. Không suite lại khi chỉ sửa docs.
+- Đang kiểmhide/republish/publishedAt, tagpriority/mobile/public; chưa cleanupQA/commit.
+
+### S043-C06 — 06/11/2026 — chốt kiểm chứng và gộp tài liệu
+
+- Hide→ARCHIVED/2 nút đều width-height, priority SLIDE→republish/publishedAt giữ nguyên PASS.
+  Home/card390px tag đầu, detail2tag wrap/nooverflow và preview6public PASS.
+  Screenshot chờ startup-splash hidden; lần chụp sớm thấy logo nên chụp lại.
+- Hoàn thiện finding privacy: replacement preparing cũng phải khóa đổi nhóm.
+  Regression RED nhận INTERNAL_1 thay FRONT; thêm guard previous, full frontend
+  GREEN217PASS/40files. Không thay UX public hoặc thêm feature ngoài spec.
+- Backend cuối227run/0failure/0error/3live skip; không đổi source sau kiểm.
+  SSR/Workers rebuild cuối PASS sau guard; proxy PASS trước guard, không đổi proxy code.
+  Browser layout/public kiểm trên candidate trước guard cuối; preparing được unit regression.
+- Browser thay INTERNAL_1: giả503, retry đối chiếu GET rồi upload thành công, vẫn8ảnh PASS.
+  PUT mất response đã reconcile; lỗiconsole dự kiến từ404/503/abort QA, không lỗi app mới.
+- Gộp contract CATALOGUE/DATA/DESIGN/ARCHITECTURE/MASTER_PLAN, rolloutV15 vào
+  BOOK_ENTRY_ROLLOUT. Đang chuyển evidence, cleanupQA rồi commit/pushdev; chưa deploy.
+
+### S043-C07 — 06/11/2026 — hoàn tất kiểm chứng local, chuẩn bị commit
+
+- Backend227run/0failure/0error/3live-provider skip; frontend217PASS/40files;
+  SSR/Workers build cuối PASS, proxy smoke PASS. Review3Important đã sửa,
+  preparing regression RED→GREEN; không còn findingCritical/Important chưa xử lý.
+- Chrome desktop/mobile390px,8ảnh/public6/internal404, preview, tags Home/catalogue/
+  detail, save-only/publish/hide/publishedAt/50:50, lostPUT/reconcile và503retry PASS.
+  Browser đã đóng; QA_SCHEMA_REMOVED=true,8089/4011 CLOSED=true xác minh qua JDBC/socket.
+- Chuyển đủ contract/acceptance/evidence và60file manifest vào tài liệu chuẩn;
+  gỡ spec/plan hết vai trò, README trỏ contract/evidence/rollout. Markdown≤400 trừ
+  DEV_LOG, local links, git diff --check, ignored env/tools và public sourceassets PASS.
+- Fetch origin dev không đổi từ390cd9c; chưa commit tại checkpoint này. Sẽ commit/pushdev
+  theo workflow đã cho phép. Chưa production migration/deploy; user merge main,
+  chọn candidate/backup/restore/backendV15 trướcfrontend và smoke/cachepurge riêng.

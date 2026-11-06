@@ -24,3 +24,6 @@ dialog::backdrop {background:rgb(0 0 0 / .65);}
 
 .preview-wrap {position:relative;height:220px;}
 .preview-loading,.viewer-loading {position:absolute;bottom:.5rem;left:.5rem;right:.5rem;margin:0;padding:.4rem;background:rgb(255 255 255 / .9);font-size:.85rem;}
+
+.photo-group-heading {margin-block:1.5rem .75rem;}
+.private-photo {font-size:.8rem;color:var(--muted);margin-top:0;}

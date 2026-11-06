@@ -10,7 +10,7 @@
           Ẩn sách
         </button>
       }
-      @if (book().publication === 'ARCHIVED') {
+      @if (book().publication === 'ARCHIVED' && allowPublish()) {
         <button class="secondary" (click)="choose('PUBLISHED')" [disabled]="locked()">
           {{ book().publishedAt ? 'Hiện sách' : 'Xuất bản' }}
         </button>

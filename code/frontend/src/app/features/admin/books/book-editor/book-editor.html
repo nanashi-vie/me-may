@@ -16,8 +16,11 @@
   <p>
     <a href="/admin/sach" target="_blank" rel="noopener">Mở danh sách để kiểm tra sách vừa tạo</a>.
     Nội dung hiện tại vẫn được giữ.
-    <button type="button" [disabled]="busy()" (click)="retryCreate()">Thử lại đúng lần đăng này</button>
+    <button type="button" [disabled]="busy()" (click)="retryCreate()">Kiểm tra và thử lại lần lưu này</button>
   </p>
+}
+@if(updateUncertain()) {
+  <p role="status">Chưa xác định kết quả lưu. <button type="button" class="secondary" [disabled]="busy()" (click)="reconcileUpdate()">Kiểm tra kết quả lưu</button></p>
 }
 @if (book(); as b) {
   <p>
@@ -27,10 +30,10 @@
   </p>
   <a [href]="'/admin/sach/' + b.id" target="_blank" rel="noopener">Mở bản đã lưu trong tab khác</a>
 }
-<button type="button" class="secondary" [disabled]="busy() || loading()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
+<button type="button" class="secondary" [disabled]="formDisabled()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
 <form [formGroup]="form" (ngSubmit)="save()" class="book-form">
-  <app-book-media-panel [readonly]="!editable()" [disabled]="busy() || createUncertain()" />
-  <fieldset [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain()">
+  <app-book-media-panel [readonly]="!editable()" [disabled]="formDisabled()" />
+  <fieldset [disabled]="formDisabled()">
     <legend>Thông tin cuốn sách</legend>
     <div class="fields">
       <label class="admin-field field-title" [class.has-error]="!!titleWarning() || !!fields()['title'] || (form.controls.title.invalid && form.controls.title.touched)"><span class="field-label">Tên sách</span><input formControlName="title" maxlength="300" aria-describedby="title-warning" /><small id="title-warning" class="helper-text" aria-live="polite">{{ fields()['title']?.join(' ') || (form.controls.title.invalid ? 'Tên sách tối đa 300 ký tự.' : titleWarning()) }}</small></label>
@@ -168,6 +171,21 @@
         >
       }
     </fieldset>
+    <fieldset class="choices feature-choices">
+      <legend>Đặc điểm sách <small>({{form.controls.featureCodes.value.length}}/3)</small></legend>
+      @for(feature of featureOptions();track feature.code) {
+        <div class="feature-choice">
+          <label><input type="checkbox" [checked]="form.controls.featureCodes.value.includes(feature.code)"
+            [disabled]="formDisabled() || (!form.controls.featureCodes.value.includes(feature.code) && form.controls.featureCodes.value.length >= 3)"
+            (change)="toggleFeature(feature.code,$any($event.target).checked)" />{{feature.label}}</label>
+          @if(form.controls.featureCodes.value.includes(feature.code)) {
+            @if(form.controls.featureCodes.value[0] === feature.code) {<small>Nổi bật trên thẻ sách</small>}
+            @else {<button type="button" class="secondary" (click)="prioritizeFeature(feature.code)">Đặt nổi bật</button>}
+          }
+        </div>
+      }
+      <p class="muted">Nếu cơ chế tương tác bị hỏng, ghi rõ tình trạng trong mô tả sách.</p>
+    </fieldset>
     <label class="admin-field"
       ><span class="field-label">Ghi chú nội bộ <small>(không bắt buộc)</small></span><textarea formControlName="internalNote" maxlength="4000" rows="3"></textarea></label
     ><label class="admin-field"
@@ -256,16 +274,21 @@
   @for (entry of fieldErrors(); track entry.key) {
     <p class="error">{{ entry.key }}: {{ entry.message }}</p>
   }
-  @if (!book() && editable()) {
-    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi xác nhận bộ ảnh đúng với mục sách này.</label>
+  @if (book()?.publication !== 'PUBLISHED' && editable()) {
+    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="formDisabled()" (change)="confirmed.set($any($event.target).checked)" />Tôi xác nhận bộ ảnh đúng với mục sách này.</label>
   }
   @if (editable()) {
-  <button
-    type="submit"
-    [disabled]="busy() || otherBusy() || loading() || !editable() || createUncertain() || photos.pending() || (!book() && !canPublish())"
-  >
-    {{ busy() ? 'Đang lưu…' : book() ? 'Lưu thay đổi' : 'Đăng sách' }}
-  </button>
+  <div class="save-actions" [class.single]="book()?.publication === 'PUBLISHED'">
+    <button type="submit" [class.secondary]="book()?.publication !== 'PUBLISHED'" [disabled]="formDisabled() || photos.pending()">
+      {{ busy() && saveAction() === 'save' ? 'Đang lưu…' : 'Lưu thay đổi' }}
+    </button>
+    @if(book()?.publication !== 'PUBLISHED') {
+      <button type="button" [disabled]="formDisabled() || photos.pending()" (click)="save(true)">
+        {{ busy() && saveAction() === 'publish' ? 'Đang lưu và xuất bản…' : 'Lưu và xuất bản' }}
+      </button>
+    }
+  </div>
+  <p class="publication-state" role="status">{{publicationLabel()}}</p>
   }
   @if (!editable()) {
     <p class="muted">Chỉ chủ tiệm được thêm và sửa sách. Tài khoản STAFF chỉ xem.</p>
@@ -296,10 +319,11 @@
     >
   </p>
   <app-book-status-actions
+    [allowPublish]="false"
     [book]="saved"
     [role]="auth.user()?.role"
     [dirty]="form.dirty || mediaDirty()"
-    [disabled]="busy() || otherBusy() || photos.pending()"
+    [disabled]="formDisabled() || photos.pending()"
     (changed)="accept($event)"
     (failed)="fail($event)"
     (busyChange)="otherBusy.set($event)"

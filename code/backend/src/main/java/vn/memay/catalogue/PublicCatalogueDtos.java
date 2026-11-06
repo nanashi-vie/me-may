@@ -14,7 +14,7 @@ public final class PublicCatalogueDtos {
             List<String> ageGroups, String categoryCode, String binding, String conditionGrade, String conditionNote,
             Long priceMinVnd, Long priceMaxVnd, Long salePriceVnd, Instant saleEndsAt, Long weightG, String description,
             String readingLevel,
-            String readingVideoUrl, String availability, List<Media> media, List<Variant> variants) {
+            String readingVideoUrl, String availability, List<Media> media, List<Variant> variants, List<BookDtos.Feature> features) {
     }
 
     public record Collection(String slug, String name) {

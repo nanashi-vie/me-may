@@ -21,6 +21,8 @@ public final class BookDtos {
                         List<VariantWrite> variants) {
         }
 
+        public record Feature(String code,String label) {}
+
         public record TitleDuplicate(boolean duplicate) {}
 
         public record VariantWrite(String id, String name, Long stock) {
@@ -61,6 +63,8 @@ public final class BookDtos {
                         @jakarta.validation.constraints.NotNull Availability availability) {
         }
 
+        public record MediaMetadata(java.util.UUID mediaId,String alt,String sourceRef) {}
+
         public record MediaView(String id, MediaRole role, String alt, String sourceRef, String contentPath) {
         }
 
@@ -71,7 +75,7 @@ public final class BookDtos {
                         String readingLevel, String readingVideoUrl, List<String> collectionIds,
                         Publication publication,
                         Availability availability, Instant publishedAt, Instant createdAt, Instant updatedAt,
-                        List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd) {
+                        List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd, List<Feature> features) {
                 @com.fasterxml.jackson.annotation.JsonProperty("internalNote")
                 public String internalNote() { return conditionNote; }
                 @com.fasterxml.jackson.annotation.JsonProperty("stock")
@@ -103,7 +107,7 @@ public final class BookDtos {
                         String conditionNote,
                         Long priceMinVnd, Long priceMaxVnd, Long weightG, String description, String readingLevel,
                         String readingVideoUrl, Availability availability,
-                        List<PreviewMedia> media, List<VariantView> variants, long totalStock) {
+                        List<PreviewMedia> media, List<VariantView> variants, long totalStock, List<Feature> features) {
         }
 
         public record AuditSummary(String id, String actorId, String action, java.util.Map<String, Object> before,

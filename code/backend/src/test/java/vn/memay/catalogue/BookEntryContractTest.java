@@ -11,7 +11,7 @@ class BookEntryContractTest extends CatalogueTestSupport {
     @Value("${local.server.port}") int port;
     Map<String,Object> body(BookDtos.BookDetail b) {
         var w=new LinkedHashMap<String,Object>(JSON.convertValue(b,Map.class));
-        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock","stock","stockLimit","internalNote","unitPricePerKgVnd")) w.remove(key);
+        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock","stock","stockLimit","internalNote","unitPricePerKgVnd","features")) w.remove(key);
         return w;
     }
     AdminHttpClient ownerApi() throws Exception {var api=new AdminHttpClient(port);api.login("owner@catalogue.test");return api;}

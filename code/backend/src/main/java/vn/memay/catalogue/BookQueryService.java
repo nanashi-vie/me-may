@@ -96,8 +96,8 @@ public class BookQueryService {
                 b.categoryCode(), b.binding(), null, null, b.priceMinVnd(), b.priceMaxVnd(),
                 b.weightG(), b.description(),
                 b.readingLevel(), b.readingVideoUrl(), b.availability(),
-                b.media().stream().map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
-                List.of(), 0);
+                b.media().stream().filter(m -> m.role().isPublic()).map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
+                List.of(), 0, b.features());
     }
 
     public Page<AuditSummary> audit(long id, AdminUser actor, int page, int size) {

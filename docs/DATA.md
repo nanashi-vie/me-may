@@ -26,15 +26,15 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | variants | BookVariant | Ít nhất một dòng: UUID ổn định, tên tối đa100 ký tự, stock nguyên0..999999, thứ tự; không xóa dòng đã lưu |
 | slug | Listing | Duy nhất, ổn định; chứa code khi cần tránh trùng tên |
 | price_min_vnd, price_max_vnd | Listing | Hai đầu khoảng giá nguyên VND 1..999999999999, min≤max (cho bằng nhau), không suy từ ảnh; hiển thị “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” |
-| weight_g | BookCopy | Gram nguyên dương, tối đa 9007199254740991; bắt buộc tạo/lưu sửa/hiện lại. Sách cũ null không tự ẩn; public bỏ trường chưa biết |
+| weight_g | BookCopy | Gram nguyên dương, tối đa 9007199254740991; bắt buộc khi xuất bản; mọi ARCHIVED được thiếu. Sách cũ null không tự ẩn; public bỏ trường chưa biết |
 | description | Listing | Nội dung giới thiệu theo dữ liệu có; không tự gán chứng chỉ/reading level |
 | publication_status | Listing | PUBLISHED / ARCHIVED; độc lập availability |
 | age_groups | Mapping listing | Chọn nhiều nhóm trong 0–3 / 4–6 / 7–9 / 10+; để trống nếu chưa xác định, không tự suy từ mức đọc |
 | reading_level | Listing | Một trong Pre A1 / A1 / A2 / B1 / B2 / C1 / C2 hoặc chưa xác định; nhãn Cambridge theo bảng bên dưới |
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
-| ảnh 2–6 vai trò | BookMedia | FRONT/BACK bắt buộc; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 tùy chọn; bìa trước là thumbnail; fixture không có ảnh |
-| media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, mỗi vai trò tối đa một ảnh public; metadata từng ảnh, không gom URL thành chuỗi. Ghi chú riêng nằm trong condition_note; ảnh/video/tình trạng bản cụ thể xác nhận qua Zalo |
+| ảnh tối đa8vai trò | BookMedia | FRONT/BACK bắt buộc khi xuất bản; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 công khai tùy chọn, INTERNAL_1/INTERNAL_2 nội bộ tùy chọn; bìa trước là thumbnail; fixture không có ảnh |
+| media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, thêm INTERNAL_1/INTERNAL_2, mỗi vai trò tối đa một ảnh ACTIVE; metadata từng ảnh, không gom URL thành chuỗi. Ghi chú riêng nằm trong condition_note; ảnh/video/tình trạng bản cụ thể xác nhận qua Zalo |
 | source_ref | BookMedia | Tùy chọn, tham chiếu nguồn ảnh nội bộ không chứa dữ liệu khách; không public mặc định |
 | version/timestamps/actor | Server/audit | Server quản lý khi triển khai, không tin giá trị client tự gửi làm audit |
 
@@ -160,7 +160,7 @@ Không coi đổi nội dung hoặc đổi schemaV1/V2/V3 là yêu cầu update 
 Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách; trọng lượng gram là field M5, không suy từ bảng cũ hoặc tạo module quản lý đơn từ ảnh này.
 
 1. Chủ chọn 10–20 cuốn và xác nhận giá tham khảo; website tự sinh mã khi tạo cuốn, tiệm dùng mã đó để nhận diện đúng vật thể.
-2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng; ghi chú nội bộ tùy chọn, tồn gộp dùng chung ảnh, tiệm xác nhận ảnh/video đúng bản khi khách hỏi; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
+2. Chuẩn bị 2–6 ảnh công khai và tối đa2ảnh nội bộ, đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng; ghi chú nội bộ tùy chọn, tồn gộp dùng chung ảnh, tiệm xác nhận ảnh/video đúng bản khi khách hỏi; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
 3. Điền mẫu field, để trống dữ liệu chưa biết; ghi riêng các ảnh và thứ tự cần có.
 4. Một người kiểm tra lại mã/giá/ảnh/tình trạng với cuốn thật.
 5. Ghi thời gian nhập mỗi cuốn, field khó hiểu và thiếu sót ảnh; không đặt mục tiêu tốc độ khi chưa đo.
@@ -216,3 +216,14 @@ chỉ Picture Book cần Paperback/Hardcover.
 Taxonomy public/admin/form/filter và importer cùng dùng9thểloại sau migration.
 FileExcel gốc user giữ nguyên; danh sách dropdown trong file đó vẫn do chủ chỉnh,
 website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đổi taxonomyDB.
+
+## Đặc điểm sách và8ảnh —06/11/2026
+
+- book_feature/code và listing_feature/position là danh mục mở rộng được, không
+  dùng label làm khóa;0–3code/sách không trùng, thứ tự lưu ổn định. Schema/seed
+  và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách--06112026).
+- Sách cũ không tự có tag. Không suy từ tên/category; sách có cơ chế hỏng cần
+  mô tả trung thực, tag không phải cam kết mọi bản đang hoạt động hoàn hảo.
+- Sáu public roles và2internal roles độc lập thứ tự; tối đa8ACTIVE, public≤6.
+  TạoARCHIVED cần tên hoặc ảnh, weight/price/category thiếu được; các giá trị đã
+  nhập vẫn phải hợp lệ. ImportXLSX giữ riêng metadata/weight/schema/receipt cũ.

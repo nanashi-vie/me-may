@@ -11,6 +11,8 @@ export class BookMediaPanel {
   readonly disabled = input(false);
   readonly readonly = input(false);
   readonly roles = MEDIA_ROLES;
+  readonly groups = [{label:"Ảnh công khai (tối đa 6)",internal:false},{label:"Ảnh nội bộ (tối đa 2)",internal:true}];
+  groupRows(internal:boolean) {return this.photos.sorted().filter(row=>row.role.startsWith("INTERNAL_")===internal);}
   readonly labels = MEDIA_LABELS;
   readonly dragging = signal(false);
   readonly viewer = viewChild<ElementRef<HTMLDialogElement>>('viewer');

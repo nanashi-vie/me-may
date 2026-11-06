@@ -73,6 +73,11 @@
     <article>
       <p class="eyebrow">Ảnh sách · Tình trạng theo biến thể</p>
       <h1>{{ title(b) }}</h1>
+      @if(b.features?.length) {
+        <ul class="book-features" aria-label="Đặc điểm sách">
+          @for(feature of b.features;track feature.code) {<li>{{feature.label}}</li>}
+        </ul>
+      }
       <p class="code">
         Mã sách <strong>{{ b.bookCode }}</strong>
       </p>

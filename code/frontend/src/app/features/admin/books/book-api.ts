@@ -1,4 +1,4 @@
-import {BookCreate, MediaAssignment, UploadSession, TemporaryMedia} from './book.models';
+import {BookCreate, MediaAssignment, MediaMetadata, UploadSession, TemporaryMedia} from './book.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
@@ -36,8 +36,8 @@ export class BookApi {
   create(body: BookCreate) {
     return this.http.mutate<BookDetail>('POST', '/books', body);
   }
-  update(id: string, version: number, body: BookWrite, media?: MediaAssignment[]) {
-    return this.http.mutate<BookDetail>('PUT', '/books/' + id, { ...body, version, ...(media ? {media} : {}) });
+  update(id: string, version: number, body: BookWrite, media?: MediaAssignment[], publishAfterSave=false, confirmedActualCopy=false, mediaMetadata?:MediaMetadata[]) {
+    return this.http.mutate<BookDetail>('PUT', '/books/' + id, { ...body, version, ...(media ? {media} : {}), ...(publishAfterSave?{publishAfterSave,confirmedActualCopy}:{}), ...(mediaMetadata?.length?{mediaMetadata}:{}) });
   }
   taxonomy() {
     return this.cache.get('taxonomy',()=>this.http.get<Taxonomy>('/taxonomy'),60000);
@@ -79,6 +79,7 @@ export class BookApi {
   removeMedia(id: string, role: MediaRole, version: number) {
     return this.http.mutate<BookDetail>('DELETE', `/books/${id}/media/${role}?version=${version}`);
   }
+  session(id:string) { return this.http.get<UploadSession>('/upload-sessions/'+id); }
   createSession() { return this.http.mutate<UploadSession>('POST','/upload-sessions',{}); }
   cancelSession(id: string) { return this.http.mutate<void>('DELETE','/upload-sessions/'+id); }
   uploadTemporary(id: string, body: FormData, replaceId: string | null, requestKey: string) {

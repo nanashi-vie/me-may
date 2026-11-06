@@ -38,7 +38,7 @@ public class AdminBookController {
     @PostMapping
     public ResponseEntity<BookDetail> create(Authentication a, @RequestBody tools.jackson.databind.JsonNode payload) {
         var parsed=entryInput.create(payload);
-        var result = timings.measure("publish", () -> commands.createPublished(actors.current(a), parsed.body(), parsed.options()));
+        var result = timings.measure("publish", () -> commands.createPublished(actors.current(a), parsed.body(), parsed.options(), parsed.publication()));
         return ResponseEntity.created(URI.create("/api/v1/admin/books/" + result.id())).body(result);
     }
 
@@ -56,7 +56,7 @@ public class AdminBookController {
     public BookDetail update(Authentication a, @PathVariable long id, @RequestBody tools.jackson.databind.JsonNode payload) {
         var parsed=entryInput.update(payload);var body=parsed.body();
         if(body.version()==null || body.version()<0) throw vn.memay.common.AdminApiException.field("version","Required non-negative version");
-        return commands.update(id, body.version(), actors.current(a), body.write(), body.media(), parsed.options());
+        return commands.update(id, body.version(), actors.current(a), body.write(), body.media(), parsed.options(), parsed.publishAfterSave(), parsed.confirmedActualCopy(), parsed.mediaMetadata());
     }
 
     @PatchMapping("/{id}/publication")

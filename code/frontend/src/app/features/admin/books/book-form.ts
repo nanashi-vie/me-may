@@ -12,6 +12,7 @@ export function buildBookForm() {
   const text = (max: number) => new FormControl<string | null>(null, Validators.maxLength(max));
   return new FormGroup(
     {
+      featureCodes: new FormControl<string[]>([], {nonNullable:true,validators:c=>c.value.length<=3 && new Set(c.value).size===c.value.length?null:{features:true}}),
       stock: new FormControl<number|null>(1,[Validators.required,Validators.min(0),Validators.max(999999),
         c => Number.isSafeInteger(c.value) ? null : {integer:true}]),
       internalNote: text(4000),

@@ -119,6 +119,7 @@ public class PublicCatalogueController {
     public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
             @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format,
             @RequestParam(required = false) String v) {
+        if(!role.isPublic()) throw new AdminApiException(404,"not_found");
         if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
         List<String> keys = jdbc.queryForList(

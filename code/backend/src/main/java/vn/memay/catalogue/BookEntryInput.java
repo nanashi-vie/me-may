@@ -14,19 +14,38 @@ public class BookEntryInput {
     private final ObjectMapper json;
     public BookEntryInput(ObjectMapper json) { this.json=json; }
     public record Options(boolean noteSupplied,String note,boolean gradeSupplied,
-                          boolean unitSupplied,Long unitPrice,boolean stockSupplied,Long stock,boolean variantsSupplied) {
-        public static Options legacy() { return new Options(true,null,true,false,null,false,null,true); }
+                          boolean unitSupplied,Long unitPrice,boolean stockSupplied,Long stock,boolean variantsSupplied,boolean featuresSupplied,java.util.List<String> featureCodes) {
+        public static Options legacy() { return new Options(true,null,true,false,null,false,null,true,false,java.util.List.of()); }
     }
-    public record Create(BookCreate body,Options options) {}
-    public record Update(BookUpdate body,Options options) {}
+    public record Create(BookCreate body,Options options,BookDtos.Publication publication) {}
+    public record Update(BookUpdate body,Options options,boolean publishAfterSave,boolean confirmedActualCopy,java.util.List<BookDtos.MediaMetadata> mediaMetadata) {}
     public Create create(JsonNode body) {
         ObjectNode copy=object(body);ObjectNode write=object(copy.get("write"));
         var options=extras(write);copy.set("write",write);
-        return new Create(decode(copy,BookCreate.class),options);
+        BookDtos.Publication publication=null;
+        if(copy.has("publication")) {
+            var value=copy.remove("publication");
+            try { publication=BookDtos.Publication.valueOf(value.asString()); }
+            catch(RuntimeException ex) { throw AdminApiException.field("publication","Chọn ARCHIVED hoặc PUBLISHED"); }
+        }
+        return new Create(decode(copy,BookCreate.class),options,publication);
     }
     public Update update(JsonNode body) {
         ObjectNode copy=object(body);var options=extras(copy);
-        return new Update(decode(copy,BookUpdate.class),options);
+        boolean publish=flag(copy,"publishAfterSave"),confirmed=flag(copy,"confirmedActualCopy");
+        var metadata=new java.util.ArrayList<BookDtos.MediaMetadata>();
+        if(copy.has("mediaMetadata")) {
+            var rows=copy.remove("mediaMetadata");
+            if(!rows.isArray() || rows.size()>8) throw AdminApiException.field("mediaMetadata","Tối đa 8 ảnh");
+            for(var row:rows) metadata.add(decode(object(row),BookDtos.MediaMetadata.class));
+        }
+        return new Update(decode(copy,BookUpdate.class),options,publish,confirmed,metadata);
+    }
+    private boolean flag(ObjectNode node,String key) {
+        if(!node.has(key)) return false;
+        var value=node.remove(key);
+        if(!value.isBoolean()) throw AdminApiException.field(key,"Expected boolean");
+        return value.asBoolean();
     }
     private <T> T decode(ObjectNode node,Class<T> type) {
         try { return json.treeToValue(node,type); }
@@ -59,7 +78,16 @@ public class BookEntryInput {
         }
         node.remove("stock");
         node.remove("unitPricePerKgVnd");
-        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price,stock,quantity,variants);
+        boolean features=node.has("featureCodes");var codes=new java.util.ArrayList<String>();
+        if(features) {
+            var input=node.remove("featureCodes");
+            if(!input.isArray()) throw AdminApiException.field("featureCodes","Chọn danh sách đặc điểm");
+            for(var code:input) {
+                if(!code.isString()) throw AdminApiException.field("featureCodes","Mã đặc điểm không hợp lệ");
+                codes.add(code.asString());
+            }
+        }
+        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price,stock,quantity,variants,features,codes);
     }
     private String text(JsonNode node,String field) {
         if(node.isNull()) return null;

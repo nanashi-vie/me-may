@@ -186,9 +186,9 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 Danh sách sách quản trị hiển thị cột “Tồn kho” bằng tổng tồn các biến thể, gồm cả 0;
 bộ lọc Còn hàng/Hết hàng vẫn dựa trên khả dụng dẫn xuất từ tổng tồn.
 
-Cột nội dung chính: chọn/thả nhiều file 2–6 ảnh lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; nút Đăng sách nằm cuối form sau xác nhận.
+Cột nội dung chính: chọn/thả nhiều file tối đa8ảnh (6công khai+2nội bộ) lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; hai nút lưu nằm cuối form; xác nhận bộ ảnh khi xuất bản.
 
-Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có DRAFT. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ### Nhập giá theo kg và tồn gộp — duyệt06/11
 
@@ -287,3 +287,23 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   tắt animation; lỗi chuyển sang PublicError hiện hành, không giữ skeleton vô hạn.
 - Detail chỉ tải ảnh lớn được chọn; thumbnail ưu tiên WebP320. URL cùng asset/
   size/format/cacheKey ổn định để tái sử dụng cache và xác thực ETag.
+
+## Lưu/xuất bản, nhóm ảnh và tags —06/11/2026
+
+- Mới/ARCHIVED: “Lưu thay đổi” secondary trái và “Lưu và xuất bản” đỏ primary phải,
+  grid50:50 cùng cao48px. PUBLISHED: một “Lưu thay đổi” toàn chiều rộng; giữẨn sách,
+  bỏ nútXuất bản trùng bên dưới. Trạng thái gần nút: Chưa từng xuất bản/Đang ẩn/Đã xuất bản.
+- Save-only cho thiếu metadata ở ARCHIVED; publish mới kiểm đủ và checkbox đúngảnh.
+  Đang lưu khóa thao tác xung đột, loading theo hành động, lỗi giữform/ảnh.
+  Kết quả chưa rõ phải kiểm session/book trước retry, không tự báo xuất bản.
+- Hai nhóm “Ảnh công khai (tối đa 6)” và “Ảnh nội bộ (tối đa 2)”; ảnh nội bộ có
+  khóa và “Chỉ nội bộ”. Giữ multi-file/drop/replace/remove/role dropdown/largeview/
+  retry/metadata;8file mới mặc định6public+2internal, xóa không đổirole ảnh khác.
+- Fieldset “Đặc điểm sách” checkbox, đếm n/3; chọn tối đa3, nút “Đặt nổi bật”
+  đưa tag chọn lên đầu, không cần drag. Không tự gắn theo tên hoặc thể loại.
+- Book card Home/catalogue/collection/related: tối đa1tag đầu ở góc dưới trái ảnh,
+  nềncream/chữđỏ có tương phản; không chồng giá/discount/stock/wishlist, pointer-events
+  none, text dài ellipsis, label đầy đủ vẫn screenreader đọc và titletooltip.
+- Detail dưới tiêu đề hiện tất cảtags theo thứ tự, wrap/mobile, khônglink/filter.
+  Khôngfeatures khôngplaceholder; khungảnh giữ kích thước, không layoutshift đáng kể.
+- Preview mô phỏng khách chỉ public roles và tags; khôngnote/internalmedia/sourceRef.
