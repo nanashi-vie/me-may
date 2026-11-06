@@ -1,0 +1,370 @@
+.admin-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+  font-family: var(--font-sans, 'Nunito', sans-serif);
+  background: #ffffff;
+}
+
+.admin-sidebar {
+  background: #fbf8f2;
+  border-right: 1px solid #e8e2d8;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.5rem 1rem 1.25rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.sidebar-header {
+  margin-bottom: 1.5rem;
+  padding-inline: 0.5rem;
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    text-decoration: none;
+  }
+
+  .brand-title {
+    font-family: var(--font-display, 'Baloo 2', cursive);
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #9b1c28;
+    line-height: 1.15;
+  }
+
+  .brand-subtitle {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #667085;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 3px;
+  }
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1 1 auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #475467;
+  font-size: 0.95rem;
+  font-weight: 600;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    background: #f3ede2;
+    color: #1f1c18;
+  }
+
+  &.active {
+    background: #fde8e8;
+    color: #9b1c28;
+    font-weight: 700;
+
+    .nav-icon {
+      color: #9b1c28;
+    }
+  }
+
+  &.nav-external {
+    color: #667085;
+
+    &:hover {
+      color: #9b1c28;
+      background: #f3ede2;
+    }
+  }
+}
+
+.nav-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.nav-group-btn {
+  justify-content: flex-start;
+}
+
+.nav-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  color: #98a2b3;
+  transition: transform 0.2s ease-in-out;
+
+  &.open {
+    transform: rotate(0deg);
+  }
+
+  &:not(.open) {
+    transform: rotate(-90deg);
+  }
+}
+
+.nav-sub-group {
+  margin-left: 1.45rem;
+  padding-left: 0.65rem;
+  border-left: 1px solid #e8e2d8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.15rem;
+  margin-bottom: 0.25rem;
+
+  &.collapsed {
+    display: none;
+  }
+}
+
+.nav-sub-item {
+  display: flex;
+  align-items: center;
+  padding: 0.45rem 0.75rem;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #475467;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.15s ease-in-out;
+
+  &:hover {
+    background: #f3ede2;
+    color: #1f1c18;
+  }
+
+  &.active {
+    background: #fde8e8;
+    color: #9b1c28;
+    font-weight: 700;
+  }
+}
+
+.nav-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  color: #667085;
+  flex-shrink: 0;
+}
+
+.nav-text {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-arrow {
+  font-size: 0.9rem;
+  color: #98a2b3;
+  margin-left: auto;
+}
+
+.sidebar-divider {
+  height: 1px;
+  background: #e8e2d8;
+  margin: 0.75rem 0.25rem;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid #e8e2d8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.account-card {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  background: #ffffff;
+  border: 1px solid #e8e2d8;
+  border-radius: 8px;
+}
+
+.account-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #9b1c28;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.account-email {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1f1c18;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-role-badge {
+  display: inline-block;
+  width: fit-content;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e0e7ff;
+  color: #3730a3;
+  margin-top: 2px;
+
+  &.owner {
+    background: #fef3f2;
+    color: #b42318;
+  }
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.55rem;
+  background: transparent;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  color: #667085;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: #fee4e2;
+    border-color: #fda29b;
+    color: #b42318;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.logout-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-main-wrap {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: #ffffff;
+}
+
+.admin-layout-error {
+  margin: 1rem 2rem 0;
+}
+
+.admin-content {
+  padding: 2rem;
+  flex: 1 1 auto;
+}
+
+@media (max-width: 768px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: static;
+    height: auto;
+    padding: 1rem;
+    border-right: 0;
+    border-bottom: 1px solid #e8e2d8;
+  }
+
+  .sidebar-header {
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .nav-group {
+    width: 100%;
+  }
+
+  .nav-sub-group {
+    margin-left: 0;
+    padding-left: 0;
+    border-left: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+  }
+
+  .sidebar-divider {
+    display: none;
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+  }
+
+  .logout-button {
+    width: auto;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .admin-content {
+    padding: 1.25rem;
+  }
+}
+

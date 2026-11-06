@@ -16,6 +16,16 @@ class BookImportV2IntegrationTest extends CatalogueTestSupport {
     long count(String table){return jdbc.queryForObject("select count(*) from "+table,Long.class);}
     byte[] file(List<Map<String,String>> rows){return BookImportV2Test.csv(rows,BookImportV2Test.COLUMNS);}
 
+    @Test void importsEmptyPrivateNotesWithoutInventingUnitPrices() throws Exception {
+        var row=BookImportV2Test.change(BookImportV2Test.change(BookImportV2Test.values(),"tinh_trang",""),"mo_ta_tinh_trang","");
+        byte[] input=file(List.of(row));var preview=request("preview",input,null);
+        assertThat(tree(preview).path("document").path("issues").size()).isZero();
+        String digest=tree(preview).path("document").path("fingerprint").asString();
+        var first=request("confirm",input,digest);assertThat(first.statusCode()).isEqualTo(201);
+        long id=Long.parseLong(tree(first).path("books").get(0).path("id").asString());var book=queries.detail(id,owner);
+        assertThat(book.conditionNote()).isNull();assertThat(book.unitPricePerKgVnd()).isNull();assertThat(book.priceMinVnd()).isEqualTo(21000);
+        assertThat(request("confirm",input,digest).statusCode()).isEqualTo(200);assertThat(count("book_copy")).isEqualTo(1);
+    }
     @Test void duplicateRowsCommitAsSeparateHiddenBooksAndReplayDoesNotOverwrite()throws Exception {
         var values=BookImportV2Test.values();byte[] file=file(List.of(values,values));
         var preview=request("preview",file,null);assertThat(preview.statusCode()).isEqualTo(200);

@@ -25,6 +25,11 @@ export class BookApi {
       if (value !== undefined && value !== '') params = params.set(key, String(value));
     return this.http.get<Page<BookSummary>>('/books', params);
   }
+  titleDuplicate(title:string,excludeId?:string) {
+    let params=new HttpParams().set('title',title);
+    if(excludeId) params=params.set('excludeId',excludeId);
+    return this.http.get<{duplicate:boolean}>('/books/title-duplicate',params);
+  }
   get(id: string) {
     return this.http.get<BookDetail>('/books/' + id);
   }

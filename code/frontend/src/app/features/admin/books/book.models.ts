@@ -17,15 +17,18 @@ export type ReadingLevel = 'PRE_A1' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export interface BookVariantWrite { id: string | null; name: string | null; stock: number; }
 export interface BookVariant extends BookVariantWrite { id: string; }
 export interface BookWrite {
-  variants: BookVariantWrite[];
+  variants?: BookVariantWrite[];
+  stock?: number;
+  internalNote?: string | null;
+  unitPricePerKgVnd?: number | null;
   title: string | null;
   isbn: string | null;
   publisher: string | null;
   author: string | null;
   language: string | null;
   binding: Binding | null;
-  conditionGrade: 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'HIGH_FRESHNESS' | 'MINOR_FLAWS' | null;
-  conditionNote: string | null;
+  conditionGrade?: 'VERY_GOOD' | 'GOOD' | 'FAIR' | 'HIGH_FRESHNESS' | 'MINOR_FLAWS' | null;
+  conditionNote?: string | null;
   priceMinVnd: number | null;
   priceMaxVnd: number | null;
   weightG: number | null;
@@ -46,6 +49,7 @@ export interface MediaView {
 export interface BookDetail extends BookWrite {
   variants: BookVariant[];
   totalStock: number;
+  stockLimit?: number;
   id: string;
   bookCode: string;
   slug: string;

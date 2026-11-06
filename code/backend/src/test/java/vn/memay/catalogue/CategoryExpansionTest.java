@@ -40,7 +40,9 @@ class CategoryExpansionTest extends CatalogueTestSupport {
             config.target(MigrationVersion.LATEST).load().migrate();
             assertThat(db.queryForList("select * from category where sort_order<6 order by id")).isEqualTo(old);
             assertThat(db.queryForObject("select count(*) from category",Long.class)).isEqualTo(9);
-            assertThat(db.queryForList("select b.*,l.* from book_copy b join listing l on b.id=l.book_copy_id")).isEqualTo(books);
+            var after=db.queryForList("select b.*,l.* from book_copy b join listing l on b.id=l.book_copy_id");
+            after.forEach(row -> {assertThat(row.remove("unit_price_per_kg_vnd")).isNull();});
+            assertThat(after).isEqualTo(books);
         } finally {PgTestData.jdbc().execute("drop schema if exists "+schema+" cascade");}
     }
 }

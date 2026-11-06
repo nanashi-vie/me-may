@@ -84,6 +84,10 @@ del {
 .sold {
   color: #8e4b35;
 }
+app-wishlist-button {
+  margin-top: 0.5rem;
+  width: 100%;
+}
 @media (max-width: 480px) {
   .book-card {
     padding: 8px;

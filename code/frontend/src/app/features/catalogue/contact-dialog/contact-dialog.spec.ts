@@ -29,17 +29,17 @@ const book: PublicBook = {
   media: [],
 };
 describe('Contact copy fallback', () => {
-  it('includes the selected variant in the visible enquiry and copy fallback',()=>{
+  it('copies the book enquiry without a variant',()=>{
     const f=TestBed.createComponent(ContactDialog);f.componentRef.setInput('book',book);
-    f.componentRef.setInput('variant',{id:'condition',name:'Có cấn góc',available:true});f.detectChanges();
-    expect(f.componentInstance.text()).toContain('Biến thể: Có cấn góc');
+    f.detectChanges();
+    expect(f.componentInstance.text()).not.toContain('Biến thể:');
     expect(f.nativeElement.querySelector('textarea').value).toContain('20.000 đ');
   });
-  it('keeps manual enquiry empty when a multi-variant selection is no longer available',()=>{
+  it('ignores legacy variants when preparing a book enquiry',()=>{
     const f=TestBed.createComponent(ContactDialog);
     f.componentRef.setInput('book',{...book,variants:[{id:'a',name:'A',available:false},{id:'b',name:'B',available:true}]});
-    f.componentRef.setInput('variant',null);f.detectChanges();
-    expect(f.componentInstance.text()).toBe('');
+    f.detectChanges();
+    expect(f.componentInstance.text()).toContain(book.bookCode);
   });
   for (const change of ['busy', 'text'])
     it('clears copy success when verified content becomes ' + change, async () => {

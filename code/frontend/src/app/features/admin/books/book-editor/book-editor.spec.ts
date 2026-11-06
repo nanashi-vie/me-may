@@ -34,6 +34,7 @@ describe('BookEditor safe final saves', () => {
         {
           provide: BookApi,
           useValue: {
+            titleDuplicate: () => of({duplicate:false}),
             create,
             update,
             cancelSession: () => of(null),
@@ -53,7 +54,7 @@ describe('BookEditor safe final saves', () => {
   function ready(e: BookEditor) {
     e.form.patchValue({
       title: 'New',
-      conditionNote: 'Actual',
+      internalNote: null,
       categoryCode: 'BOARD_BOOK',
       weightG: 250,
       priceMinVnd: 20000,
@@ -81,14 +82,13 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
-  it('defaults language only for new books and offers the two current condition choices', () => {
+  it('defaults language and makes private notes optional', () => {
     const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
-    expect(e.form.controls.language.value).toBe('Tiếng Anh');
-    fixture.detectChanges();
-    const select=fixture.nativeElement.querySelector('select[formControlName="conditionGrade"]') as HTMLSelectElement;
-    expect(Array.from(select.options).map(o=>o.text)).toEqual(['Chưa đánh giá','Độ mới cao','Có lỗi nhẹ']);
+    expect(e.form.controls.language.value).toBe('Tiếng Anh');ready(e);fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[formControlName="conditionGrade"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formControlName="internalNote"]')).not.toBeNull();
+    expect(e.canPublish()).toBe(true);
     e.accept({...saved,language:null});expect(e.form.controls.language.value).toBeNull();
-    e.accept({...saved,language:'Tiếng Nhật'});expect(e.form.controls.language.value).toBe('Tiếng Nhật');
   });
   it('changes photo roles with the dropdown while retaining upload and replace controls', () => {
     const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;ready(e);fixture.detectChanges();
@@ -99,40 +99,56 @@ describe('BookEditor safe final saves', () => {
     const role=root.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));
     expect(e.photos.assignments()).toEqual([{mediaId:'server1',role:'FRONT'},{mediaId:'server0',role:'BACK'}]);
   });
-  it('startsWithOneStockAndAddsNamedVariants', async () => {
+  it('sends one pooled stock and never sends legacy condition or variant fields', async () => {
     vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
-    const e=editor();ready(e);
-    expect(e.form.controls.variants.length).toBe(1);
-    expect(e.form.controls.variants.at(0).controls.stock.value).toBe(1);
-    e.addVariant();expect(e.form.controls.variants.length).toBe(2);
-    e.form.controls.variants.at(0).patchValue({name:'Độ mới cao',stock:2});
-    e.form.controls.variants.at(1).patchValue({name:'Có cấn góc',stock:1});
-    expect(e.totalStock()).toBe(3);await e.save();
-    expect(create.mock.calls[0][0].write.variants).toEqual([{id:null,name:'Độ mới cao',stock:2},{id:null,name:'Có cấn góc',stock:1}]);
-    expect(create.mock.calls[0][0].write.priceMinVnd).toBe(20000);
+    const e=editor();ready(e);expect(e.form.controls.stock.value).toBe(1);
+    e.form.controls.stock.setValue(3);await e.save();
+    const write=create.mock.calls[0][0].write;
+    expect(write.stock).toBe(3);expect(write.internalNote).toBeNull();
+    expect(write).not.toHaveProperty('variants');expect(write).not.toHaveProperty('conditionNote');
+    expect(write).not.toHaveProperty('conditionGrade');
   });
-  it('keeps a single variant name input mounted while replacing its entire name',()=>{
-    const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
-    e.accept({...saved,variants:[{id:'stable',name:'Tên cũ',stock:1}],totalStock:1});fixture.detectChanges();
-    const input=fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]') as HTMLInputElement;
-    input.value='';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('input[aria-label="Tên biến thể 1"]')).toBe(input);
-    input.value='Tên mới';input.dispatchEvent(new Event('input',{bubbles:true}));fixture.detectChanges();
-    expect(e.form.controls.variants.at(0).controls.name.value).toBe('Tên mới');
-    expect(e.form.controls.variants.length).toBe(1);
+  it('retains large stock and dirty values after a conflict',async()=>{
+    const e=editor();e.accept({...saved,variants:[{id:'a',name:'A',stock:999999},{id:'b',name:'B',stock:999999}],totalStock:1999998});
+    expect(e.form.controls.stock.value).toBe(1999998);expect(e.form.valid).toBe(true);
+    e.form.controls.stock.setValue(1999997);e.form.markAsDirty();
+    update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
+    await e.save();expect(e.form.controls.stock.value).toBe(1999997);expect(e.form.dirty).toBe(true);
   });
-  it('preservesPersistedVariantIdsAndDirtyForm', async () => {
-    const e=editor();e.accept({...saved,variants:[{id:'stable',name:null,stock:2}],totalStock:2});
-    e.removeNewVariant(0);expect(e.form.controls.variants.length).toBe(1);
-    e.addVariant();e.form.controls.variants.at(0).controls.name.setValue('A');
-    e.form.controls.variants.at(1).patchValue({name:' a ',stock:1});expect(e.form.invalid).toBe(true);
-    e.form.controls.variants.at(1).patchValue({name:'B',stock:-1});expect(e.form.invalid).toBe(true);
-    e.form.controls.variants.at(1).controls.stock.setValue(1.5);expect(e.form.invalid).toBe(true);
-    e.form.controls.variants.at(1).controls.stock.setValue(1);expect(e.form.valid).toBe(true);
-    e.form.markAsDirty();update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
-    await e.save();expect(e.form.controls.variants.at(0).controls.id.value).toBe('stable');expect(e.form.controls.variants.length).toBe(2);
-    e.removeNewVariant(1);expect(e.form.controls.variants.length).toBe(1);
-    role='STAFF';const staff=editor();staff.addVariant();expect(staff.form.controls.variants.length).toBe(1);
+  it('calculates only on input edits and permits manual adjustments',()=>{
+    const e=editor();e.accept({...saved,priceMinVnd:36450,priceMaxVnd:41918});
+    expect(e.form.controls.priceMinVnd.value).toBe(36450);
+    e.form.patchValue({unitPricePerKgVnd:80000,weightG:450});e.calculatePrices();
+    expect(e.form.controls.priceMinVnd.value).toBe(36000);expect(e.form.controls.priceMaxVnd.value).toBe(42000);
+    e.form.controls.priceMinVnd.setValue(36500);e.priceEdited('min');e.finishPrice('min');
+    expect(e.form.controls.priceMinVnd.value).toBe(37000);expect(e.form.controls.priceMaxVnd.value).toBe(43000);
+    e.form.controls.priceMaxVnd.setValue(44100);e.priceEdited('max');e.finishPrice('max');
+    expect(e.form.controls.priceMaxVnd.value).toBe(45000);expect(e.form.controls.priceMinVnd.value).toBe(37000);
+    e.photos.updates.next({...saved,version:1});
+    expect(e.form.controls.priceMinVnd.value).toBe(37000);expect(e.form.controls.priceMaxVnd.value).toBe(45000);
+    e.form.controls.unitPricePerKgVnd.setValue(null);e.calculatePrices();expect(e.form.controls.priceMaxVnd.value).toBe(45000);
+  });
+  it('shows duplicate warning without making the form invalid or blocking save',async()=>{
+    vi.useFakeTimers();
+    try {
+      const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;ready(e);
+      vi.spyOn(TestBed.inject(BookApi),'titleDuplicate').mockReturnValue(of({duplicate:true}));
+      e.form.controls.title.setValue('Duplicate');await vi.advanceTimersByTimeAsync(300);fixture.detectChanges();
+      expect(e.titleWarning()).toContain('Tên sách đã tồn tại');expect(e.form.valid).toBe(true);
+      expect(fixture.nativeElement.querySelector('.field-title.has-error')).not.toBeNull();
+      vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);await e.save();expect(create).toHaveBeenCalledTimes(1);
+    } finally {vi.useRealTimers();}
+  });
+  it('cancels stale title lookups and permits saving when the lookup fails',async()=>{
+    vi.useFakeTimers();
+    try {
+      const e=editor();ready(e);const pending=new Subject<{duplicate:boolean}>();
+      const lookup=vi.spyOn(TestBed.inject(BookApi),'titleDuplicate').mockReturnValue(pending);
+      e.form.controls.title.setValue('First');await vi.advanceTimersByTimeAsync(300);
+      e.form.controls.title.setValue('Second');pending.next({duplicate:true});expect(e.titleWarning()).toBe('');
+      lookup.mockReturnValue(throwError(()=>new HttpErrorResponse({status:503})));
+      await vi.advanceTimersByTimeAsync(300);expect(e.titleWarning()).toContain('Chưa kiểm tra');expect(e.form.valid).toBe(true);
+    } finally {vi.useRealTimers();}
   });
   it('posts a complete final request once and opens the saved book', async () => {
     const pending = new Subject<BookDetail>();

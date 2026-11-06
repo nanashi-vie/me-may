@@ -24,8 +24,9 @@ export class BookImport {
   readonly metadata:{label:string;key:keyof ImportWrite}[]=[
     {label:'ISBN',key:'isbn'},{label:'Nhà xuất bản',key:'publisher'},{label:'Tác giả',key:'author'},{label:'Ngôn ngữ',key:'language'},
     {label:'Thể loại',key:'categoryCode'},{label:'Kiểu bìa',key:'binding'},{label:'Giá từ',key:'priceMinVnd'},{label:'Giá đến',key:'priceMaxVnd'},
-    {label:'Trọng lượng (g)',key:'weightG'},{label:'Tình trạng',key:'conditionGrade'},{label:'Mô tả tình trạng',key:'conditionNote'},
+    {label:'Trọng lượng (g)',key:'weightG'},{label:'Ghi chú nội bộ',key:'conditionNote'},
     {label:'Độ tuổi',key:'ageGroups'},{label:'Mô tả sách',key:'description'},{label:'Mức đọc',key:'readingLevel'},{label:'Video',key:'readingVideoUrl'}];
+  stock(write:ImportWrite) {return write.variants.reduce((sum,v)=>sum+(v.stock ?? 0),0);}
   private request?:Subscription;private optionRequest?:Subscription;private sequence=0;
   private loginRequest?:Subscription;private loginSequence=0;
   private seenEpoch=this.auth.epoch();private ownerId=this.auth.user()?.id;

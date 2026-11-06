@@ -11,6 +11,7 @@ import {
   HomeData,
   Page,
   PublicBook,
+  RelatedBooks,
   Taxonomy,
 } from './public.models';
 export const PUBLIC_API_ORIGIN = new InjectionToken<string>('Public backend origin', {
@@ -108,6 +109,9 @@ export class PublicApi {
   }
   detail(slug: string) {
     return this.get<PublicBook>('/books/' + encodeURIComponent(slug));
+  }
+  related(slug: string) {
+    return this.get<RelatedBooks>('/books/' + encodeURIComponent(slug) + '/related');
   }
   lookup(codes: string[]) {
     let params = new HttpParams();

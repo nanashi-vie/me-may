@@ -398,3 +398,6 @@ Header16/dòng2data/nhãn/defaults và retry hỗtrợV1 phải smoke trên cand
 Purge toàn zone làm các asset cache khác trong zone phải làm ấm lại. Với tần suất
 ghi cao/nhiều backend instance cần thay job memory bằng invalidation dùng chung
 và purge chọn lọc. Hiện chưa cài Redis; browser/cache edge xử lý mục tiêu đầu tiên.
+
+Rollout nhập sách06/11/V14, boundary ghi chú và rollback: xem
+[BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md); chưa chạy live.

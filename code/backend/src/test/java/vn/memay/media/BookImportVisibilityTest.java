@@ -34,7 +34,7 @@ class BookImportVisibilityTest extends MediaTestSupport {
         assertThat(anon.send("GET","/api/v1/books/"+book.slug()+"/media/FRONT",null,false).statusCode()).isEqualTo(404);
         book=status.publication(id,book.version(),owner,Publication.PUBLISHED,true);
         var visible=AdminHttpClient.tree(anon.send("GET","/api/v1/books/"+book.slug(),null,false));
-        assertThat(visible.path("variants").size()).isEqualTo(2);assertThat(visible.path("priceMinVnd").asLong()).isEqualTo(21000);
+        assertThat(visible.path("variants").size()).isZero();assertThat(visible.path("priceMinVnd").asLong()).isEqualTo(21000);
         assertThat(anon.send("GET","/api/v1/books/"+book.slug()+"/media/FRONT",null,false).statusCode()).isEqualTo(200);
         assertThat(imports.commit(owner,doc).receipt().id()).isEqualTo(receipt.id());
         assertThat(queries.detail(id,owner).totalStock()).isEqualTo(3);assertThat(jdbc.queryForObject("select count(*) from book_copy",Long.class)).isEqualTo(1);

@@ -1,8 +1,33 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật05/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
+
+- User duyệt và đã thực thi tuần tự: tồn gộp/tự tăng, giữ ID/storage legacy;
+  bỏ hai field tình trạng và khối public, ghi chú nội bộ **optional** giữ note cũ.
+- Đơn giá/kg optional × gram → giá từ; giá đến +15%, làm tròn lên1.000đ;
+  sửa tay được, load/upload không tính lại. Trùng tên chỉ cảnh báo, vẫn lưu/publish.
+- Backend clean verify199run/0failure/0error/3live-provider skip, frontend192test,
+  SSR/Workers/proxy, Chrome desktop/mobile, migrationV13→V14 và schema restore QA
+  PASS. Review độc lập0Critical/0Important/0Minor; source/runtime QA đã dọn.
+- Contract ở DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT; bằng chứng tại
+  [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026).
+  [RolloutV14](BOOK_ENTRY_ROLLOUT.md) cần backend trước frontend, purge cache và
+  giữ privacy khi rollback. Chưa migrate/deploy dữ liệu thật; gate release giữ mở.
+- Checkpoint S041-C13 trong DEV_LOG. Hoàn tất trên dev theo workflow commit/push;
+  user merge main/deploy. Spec/plan đã gộp và gỡ, không còn việc triển khai S041.
+
+## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
+
+- Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
+  - Cập nhật nhãn CTA lưu sách rõ ràng: `♡ Thêm vào danh sách quan tâm` (khi đã lưu đổi thành `♥ Đã thêm vào danh sách`); đổi header public layout thành `Danh sách quan tâm` kèm badge số lượng.
+  - Bổ sung 2 kệ sách liên quan dưới trang chi tiết `/sach/:slug`: `SÁCH CÙNG NHÀ XUẤT BẢN` và `SÁCH CÙNG THỂ LOẠI` với đường kẻ ngang phân cách hai bên tiêu đề.
+  - Carousel ngang desktop 5 thẻ `app-book-card` kèm nút trượt `<` / `>`, tablet 3 thẻ, mobile 2 thẻ hoặc vuốt mượt mà; link `Xem thêm >>` góc phải dẫn tới `/sach?q={publisher}` hoặc `/sach?category={code}`; fallback thông báo rõ khi rỗng.
+  - Backend cung cấp endpoint `GET /api/v1/books/{slug}/related` và mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
+  - Fix type inference & generic ambiguities cho Language Server: kiểu dữ liệu tường minh `List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`, explicit cast varargs.
+  - Kiểm chứng: Vitest 37/37 files (189/189 tests PASS), backend integration tests PASS, `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
 ## CI/CD Dokploy — 05/11/2026
 
 - Theo ngoại lệ user duyệt: sửa workflow trực tiếp main, thêm API deploy sau GHCR
@@ -84,15 +109,17 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 - Đã dọn7DB QA/restore tạm và10asset của QA import; giữdev/test/postgres, backupdump
   và media production. QA/browser đã dừng. Các DBscratch trong log cũ không còn.
 
-## Tối ưu UI quản trị — Hệ thống Input Field và bố cục Form nhập sách (đã gộp vào dev 05/11/2026)
+## Tối ưu UI quản trị — Hệ thống Input Field, Bố cục Form, Sidebar Modern Clean và nút Quản trị Public (trên worktree dev-ui 06/11/2026)
 
-- Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
+- Đã hoàn tất trên worktree `dev-ui`:
   - Nhãn cố định trên viền trên (Notched / Cutout border, nền trắng che viền), focus màu xanh tím Indigo (`#4F46E5`), bo góc 8px, chiều cao ô 46px.
   - Dropdown select có custom chevron SVG (`∨`), trạng thái lỗi viền đỏ (`#D92D20`) + nhãn đỏ + icon cảnh báo tam giác (⚠️) góc phải + helper text đỏ.
   - Áp dụng toàn bộ `/admin`: Thêm/Sửa sách (`book-editor`), Đăng nhập (`login`), Bộ lọc sách (`book-list`), Flash Sale, Bộ sưu tập (`collection-list`), Import (`book-import`).
   - Tối ưu bố cục form nhập sách (`book-editor`): thu gọn `.book-form` `max-width: 780px` (grid 20 cột); Hàng 1: Tên sách (~75%) - ISBN (~25%); Hàng 2: NXB (40%) - Tác giả (35%) - Ngôn ngữ (25%); Hàng 3: Thể loại (40%) - Tình trạng (30%) - Trọng lượng (30%); Hàng 4: Giá từ (~220px) - Giá đến (~220px); Tồn kho đơn biến thể gọn 150px; Trình độ đọc (35%) - Video URL (65%); xóa câu mô tả thừa tại panel ảnh.
   - Custom Dropdown Popover (Thể loại, Đánh giá tình trạng, Trình độ đọc tham khảo): menu xổ xuống nền sáng `#FFFFFF`, bo góc `10px`, dấu `✓` bên phải; mục `Picture book ›` xổ menu con `[Paperback, Hardcover]` sang phải, chọn xong hiển thị `Picture book · Paperback` (hoặc `Hardcover`) và bỏ cụm radio kiểu bìa rời.
-  - Kiểm chứng: Vitest 37/37 files (187/187 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt.
+  - Sidebar `/admin` Accordion Tree View: rộng 240px, nền be kem `#FBF8F2`, viền phải `#E8E2D8`, logo Mẹ Mây Baloo 2 đỏ. Mục "Tổng quan", mục cha "Quản lý sách" dạng accordion có mũi tên xoay `v` / `>` (mặc định mở sẵn) chứa các mục con clean text thụt lề có đường kẻ dọc tree-line: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiện cho OWNER). Active item có nền đỏ pastel `#FDE8E8`, chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left`). Đáy sidebar có thẻ tài khoản (avatar tròn chữ cái đầu, email, role badge) và nút Đăng xuất.
+  - Nút quay về `/admin` trên trang public (`/` và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng `/admin` (khi đã login) hoặc `/admin/dang-nhap`.
+  - Kiểm chứng: Vitest 38/38 files (194/194 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt 100%.
 
 ## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 
@@ -137,7 +164,7 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 | Gate | Bằng chứng còn thiếu / điều kiện đóng |
 |---|---|
-| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V13 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
+| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V14 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
 | Backfill ảnh public |63ACTIVE media mới dryrunpending63, chưaapplyv2 đủ320/640×JPEG/WebP; verify MIME/magic/dimensions trước frontendpicture, không dùng checkpointJPEG640 cũ |
 | Hiệu năng public |Lighthouse Mobile3run mỗi Home/detail cố định/wishlist; từngrun LCP≤2,5s/CLS≤0,1; detail lần đo online cuối FAIL, wishlist cóoutlier; sourcefix local chưa có đo lại online, cold Render/Neon đo riêng |
 | Backup vận hành |Dump21sách/63mediarefs đãrestorelocal và nguồn63JPG verify; còn lịch backup/retention/người phụ trách/bản saooffhost và bằng chứng khôi phục theo chính sách đó; scratchrestore cũ đã xóa theo user |

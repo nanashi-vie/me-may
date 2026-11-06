@@ -19,8 +19,9 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | language | BookCopy | Form tạo mới điền sẵn “Tiếng Anh”, có thể sửa/xóa; mở sách cũ giữ nguyên ngôn ngữ đã lưu |
 | isbn | BookCopy | Tùy chọn; trùng giữa các cuốn là hợp lệ; xác minh khi dùng dữ liệu thật |
 | author, publisher | BookCopy | Tùy chọn; không suy đoán |
-| condition_grade | BookCopy | HIGH_FRESHNESS (Độ mới cao) / MINOR_FLAWS (Có lỗi nhẹ); giữ nguyên mã/nhãn legacy khi đọc, không thay condition_note |
-| condition_note | BookCopy | Mô tả thực tế bắt buộc để publish, nêu lỗi nhìn thấy và phần chưa kiểm tra |
+| condition_grade | BookCopy | Chỉ giữ legacy trong DB/admin, không còn field form hoặc public; thiếu field khi sửa không tự xóa |
+| condition_note | BookCopy | Ghi chú nội bộ optional≤4000 ký tự, admin DTO internalNote; null/blank vẫn publish, chỉ OWNER/STAFF đọc |
+| unit_price_per_kg_vnd | BookCopy | Đơn giá/kg optional, nguyên1..999999999999; không suy ngược từ giá cũ, không public |
 | availability | BookCopy | AVAILABLE khi tổng tồn >0, SOLD khi tổng tồn 0; OWNER cập nhật tồn, không có Đang giữ |
 | variants | BookVariant | Ít nhất một dòng: UUID ổn định, tên tối đa100 ký tự, stock nguyên0..999999, thứ tự; không xóa dòng đã lưu |
 | slug | Listing | Duy nhất, ổn định; chứa code khi cần tránh trùng tên |
@@ -33,7 +34,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
 | ảnh 2–6 vai trò | BookMedia | FRONT/BACK bắt buộc; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 tùy chọn; bìa trước là thumbnail; fixture không có ảnh |
-| media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, mỗi vai trò tối đa một ảnh public; metadata từng ảnh, không gom URL thành chuỗi. Tình trạng/lỗi nằm trong condition_note; ảnh/video bổ sung trao đổi qua Zalo |
+| media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, mỗi vai trò tối đa một ảnh public; metadata từng ảnh, không gom URL thành chuỗi. Ghi chú riêng nằm trong condition_note; ảnh/video/tình trạng bản cụ thể xác nhận qua Zalo |
 | source_ref | BookMedia | Tùy chọn, tham chiếu nguồn ảnh nội bộ không chứa dữ liệu khách; không public mặc định |
 | version/timestamps/actor | Server/audit | Server quản lý khi triển khai, không tin giá trị client tự gửi làm audit |
 
@@ -84,7 +85,7 @@ Header trim, cho đổi thứ tự; đúng16cột, không thiếu/trùng/cộtl�
 Optional trống không có nghĩa được thiếu cột. Website không có nút tải mẫu.
 
 Mỗi dòng là một sách riêng, không ghép theo tên/ISBN. Tự điền ngôn ngữ **Tiếng Anh**,
-một biến thể không tên/tồn1. OWNER thêm ảnh, sửa ngôn ngữ/tồn/thêm biến thể trong
+một biến thể không tên/tồn1. OWNER thêm ảnh, sửa ngôn ngữ/tồn gộp trong
 editor rồi tự xuất bản. Hai dòng giống nhau vẫn tạo hai sách trong cùng lô.
 
 | Cột | Bắt buộc có giá trị | Quy tắc |
@@ -98,8 +99,8 @@ editor rồi tự xuất bản. Hai dòng giống nhau vẫn tạo hai sách tro
 | gia_tu | Có | NguyênVND1..999999999999 |
 | gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
 | trong_luong_g | Có | Gram nguyên1..9007199254740991 |
-| tinh_trang | Có | Độ mới cao/HIGH_FRESHNESS hoặc Có lỗi nhẹ/MINOR_FLAWS |
-| mo_ta_tinh_trang | Có | Text tối đa4000, không tự sinh |
+| tinh_trang | Không | Độ mới cao/HIGH_FRESHNESS hoặc Có lỗi nhẹ/MINOR_FLAWS |
+| mo_ta_tinh_trang | Không | Text tối đa4000, giữ làm ghi chú nội bộ; vẫn giữ header cũ |
 | do_tuoi | Không | 0-3/4-6/7-9/10+ hoặc code; nhận cả dấu– từtaxonomy, nhiều mục ngăn`;`, khôngtrùng |
 | mo_ta_sach | Không | Text tối đa10000 |
 | trinh_do_doc | Không | Nhãn website hoặc PRE_A1/A1/A2/B1/B2/C1/C2; trống là chưa xác định |
@@ -128,7 +129,7 @@ Không coi đổi nội dung hoặc đổi schemaV1→V2 là yêu cầu update l
 Ảnh bảng vận hành do người dùng cung cấp cho thấy phần đang mở có ngày bán, khách, thể loại, tên sách, giá bán và trọng lượng; người dùng xác nhận tiệm hiện chưa quản lý bằng mã. Chỉ dùng làm tham khảo workflow, không chép dữ liệu khách hoặc dùng các dòng bán hàng làm pilot catalogue. Giá bán lịch sử không tự trở thành giá tham khảo hiện tại; nhãn thể loại trong bảng cần chủ xác nhận trước khi đối chiếu taxonomy web. MVP không nhập ngày bán/khách; trọng lượng gram là field M5, không suy từ bảng cũ hoặc tạo module quản lý đơn từ ảnh này.
 
 1. Chủ chọn 10–20 cuốn và xác nhận giá tham khảo; website tự sinh mã khi tạo cuốn, tiệm dùng mã đó để nhận diện đúng vật thể.
-2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng và mô tả tình trạng; các biến thể dùng chung ảnh, tiệm xác nhận ảnh/video đúng bản khi khách hỏi; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
+2. Chuẩn bị 2–6 ảnh đúng thứ tự bìa/lưng/gáy/nội dung 1–3, bắt buộc bìa/lưng; ghi chú nội bộ tùy chọn, tồn gộp dùng chung ảnh, tiệm xác nhận ảnh/video đúng bản khi khách hỏi; tách dữ liệu khách trên sticker nếu có trước khi đưa lên web.
 3. Điền mẫu field, để trống dữ liệu chưa biết; ghi riêng các ảnh và thứ tự cần có.
 4. Một người kiểm tra lại mã/giá/ảnh/tình trạng với cuốn thật.
 5. Ghi thời gian nhập mỗi cuốn, field khó hiểu và thiếu sót ảnh; không đặt mục tiêu tốc độ khi chưa đo.
@@ -142,18 +143,32 @@ Khoảng giá tham khảo trên listing được giữ làm giá gốc; sale là
 
 Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED, AVAILABLE và giá sale thấp hơn giá từ. Hết hạn/sold/ẩn/giá không còn hợp lệ thì không trả nhãn giảm giá. Giá gốc lấy giá tham khảo hiện tại, không phải snapshot cố định lúc tạo campaign.
 
-## Tồn kho và biến thể — quyết định 30/10/2026
+## Tồn gộp và tương thích biến thể — quyết định06/11/2026
 
-- Một mã MM/URL đại diện một mục sách, có nhiều bản vật lý theo biến thể tình trạng.
-  Không cấp mã mới cho từng bản trong biến thể; không tự gộp sách đang có cùng tên/ISBN.
-- Ban đầu một dòng không tên, tồn1; “Thêm biến thể” thêm dòng tồn1. Khi có nhiều dòng,
-  mọi tên phải khác nhau sau trim/không phân biệt hoa thường; không để tên trống.
-- Dòng mới chưa lưu được gỡ; dòng đã lưu giữ ID, chỉ sửa tên/tồn; đặt0 khi hết.
-- Tổng tồn tự cộng, chỉ đọc. Khoảng giá/trọng lượng/thông tin/ảnh/publication dùng chung;
-  không thêm giá hoặc ảnh riêng từng biến thể. Mô tả chung không thay xác nhận từng bản.
-- V10 chuyển mỗi sách cũ thành một dòng: AVAILABLE→1, SOLD→0; không suy tồn thật cao hơn1.
-  Giữ ID/mã/slug/ảnh/giá/publishedAt và grade legacy; không sửa migrationV1–V9.
-- Chủ cập nhật sau bán ngoài web; liên hệ và wishlist không trừ/giữ kho hoặc đồng bộ đa kênh.
+- Chọn UI tồn gộp/giữ storage thay vì giữ UI biến thể không hợp cách bán qua
+  tin nhắn, hoặc xóa schema ngay làm tăng rủi ro mất dữ liệu/rollback.
+- Mã MM/URL là một mục sách, chủ tự tăng/giảm tồn; không tự gộp tên/ISBN.
+- Form mới một ô tồn mặc định1; public không chọn biến thể. Tổng0→SOLD,
+  >0→AVAILABLE; liên hệ/wishlist không trừ hoặc giữ kho. Publication độc lập.
+- Giữ bảng book_variant, UUID/tên/thứ tự cũ; metadata không đổi phân bổ.
+  Giảm tổng trừ từ dòng cuối, tăng lấp từ đầu; không thêm/xóa dòng khi sửa.
+- Mỗi dòng≤999999; create tổng≤999999, edit tổng≤số dòng hiện có×999999
+  (chặn trên9007199254740991). Giữ được tổng legacy lớn hơn giới hạn một dòng.
+- Grade legacy giữ trong DB/admin; condition_note đổi thành internalNote optional.
+  Mô tả cũ được giữ nguyên, không copy/xóa; API public/preview chỉ trả null.
+
+## Nhập giá theo kg và sửa tay —06/11/2026
+
+- Gọi U là đơn giá VND/kg, W là gram. B=U×W/1000 chưa làm tròn.
+  Giá từ=ceil(B/1000)×1000; giá đến=ceil(B×1,15/1000)×1000.
+  U80000/W450→36000..42000; U81000/W450→37000..42000.
+- BigInt tính chính xác; không clamp hoặc lưu giá vượt1..999999999999.
+- Đổi U/W do user tính lại cả hai giá; mở sách/upload không tính lại.
+  U/W trống hoặc sai giữ giá đang có, hiển thị validation nếu dữ liệu sai.
+- Giá sửa tay làm tròn lên nghìn khi blur/submit; sửa giá từ tính lại giá đến
+  theo115%, sửa giá đến giữ giá từ. Không suy ngược U từ giá cuối.
+- Đơn giá optional, sách cũ/import null giữ giá cũ; server lưu cặp giá cuối,
+  không tính đè ngoại lệ đã sửa. Ghi chú/tồn/ảnh thay đổi không làm đổi giá.
 
 ## Thể loại bổ sung01/11 và04/11
 

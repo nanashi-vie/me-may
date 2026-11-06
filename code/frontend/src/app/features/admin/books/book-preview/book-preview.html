@@ -12,11 +12,7 @@
   <p class="muted">
     {{ b.bookCode }} · {{ b.availability === 'AVAILABLE' ? 'Còn hàng' : 'Hết hàng' }}
   </p>
-  <section aria-label="Tồn kho đã lưu">
-    <p>Tổng tồn: {{ b.totalStock }}</p>
-    @for (v of b.variants; track v.id) { <p>{{ v.name || 'Mặc định' }}: {{ v.stock }}</p> }
-  </section>
-  <p>Bộ ảnh chung của sách; tiệm xác nhận tình trạng cụ thể theo biến thể.</p>
+  <p>Bộ ảnh chung của mục sách; tiệm xác nhận bản cụ thể qua tin nhắn.</p>
   <div class="preview-images">
     @for (image of b.media; track image.id) {
       <img [src]="image.contentPath" [alt]="image.alt || b.bookCode" />
@@ -27,10 +23,6 @@
     @if (b.description) {
       <h2>Mô tả</h2>
       <p>{{ b.description }}</p>
-    }
-    @if (b.conditionNote) {
-      <h2>Tình trạng / lỗi</h2>
-      <p>{{ b.conditionNote }}</p>
     }
     @if (b.ageGroups.length) {
       <p>Độ tuổi: {{ ages() }}</p>

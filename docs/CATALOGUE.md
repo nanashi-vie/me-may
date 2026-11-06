@@ -11,8 +11,8 @@ giữ backlog còn mở, [DEPLOYMENT](DEPLOYMENT.md) giữ rollout/đo đạc.
 OWNER tạo/sửa/ẩn/hiện sách, tồn và collection; STAFF chỉ đọc quản trị. Nhập thủ công
 upload vào phiên tạm trước rồi final tạoPUBLISHED nguyên tử; import tạoARCHIVED có
 receipt theo [BOOK_IMPORT](BOOK_IMPORT.md). Không có DRAFT/harddelete sách/order/
-checkout/giữ chỗ/đồng bộ đa kênh. Mã MM là một mục sách với biến thể có tồn riêng,
-dùng chung ảnh và khoảng giá. Không lưu hoặc import dữ liệu khách/ngày bán.
+checkout/giữ chỗ/đồng bộ đa kênh. Mã MM là một mục sách với tồn gộp, dùng chung ảnh và khoảng giá.
+Từ06/11 bỏ tình trạng public, ghi chú nội bộ optional; DATA giữ công thức giá/kg. Không lưu hoặc import dữ liệu khách/ngày bán.
 
 ## 2. Kiến trúc và giao dịch
 
@@ -34,7 +34,7 @@ dùng chung ảnh và khoảng giá. Không lưu hoặc import dữ liệu khác
 - Create final tạo BookCopy + Listing PUBLISHED + media ACTIVE cùng transaction, availability dẫn xuất từ tổng tồn; bắt buộc OWNER xác nhận.
 - Publication chỉ PUBLISHED↔ARCHIVED trực tiếp; hiện lại phải qua validation và xác nhận.
 - Không còn DRAFT; không có hard delete sách/listing trong M2. “Ẩn” không xóa mã, ảnh hoặc audit.
-- Availability chỉ AVAILABLE/SOLD, độc lập publication; SOLD không tự archive. OWNER sửa tồn biến thể để chuyển AVAILABLE/SOLD.
+- Availability chỉ AVAILABLE/SOLD, độc lập publication; SOLD không tự archive. OWNER sửa tổng tồn để chuyển AVAILABLE/SOLD.
 
 ## 4. Schema và bất biến
 
@@ -42,7 +42,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 
 | Bảng | Dữ liệu và constraint chính |
 |---|---|
-| book_copy | bigint identity PK; book_code varchar(32) UNIQUE NOT NULL; title varchar(300) nullable; isbn varchar(32), publisher/author varchar(200), language varchar(50) nullable; binding varchar(16) nullable; condition_grade varchar(16) nullable; condition_note varchar(4000) nullable; weight_g bigint nullable CHECK 1..9007199254740991; availability NOT NULL CHECK; version bigint NOT NULL >=0; created_at/updated_at NOT NULL |
+| book_copy | bigint identity PK; book_code varchar(32) UNIQUE NOT NULL; title varchar(300) nullable; isbn varchar(32), publisher/author varchar(200), language varchar(50) nullable; binding varchar(16) nullable; condition_grade varchar(16) nullable; condition_note varchar(4000) nullable nội bộ; unit_price_per_kg_vnd bigint nullable CHECK 1..999999999999; weight_g bigint nullable CHECK 1..9007199254740991; availability NOT NULL CHECK; version bigint NOT NULL >=0; created_at/updated_at NOT NULL |
 | listing | bigint identity PK; book_copy_id UNIQUE NOT NULL FK; slug varchar(80) UNIQUE NOT NULL; price_min_vnd/price_max_vnd bigint nullable theo cặp CHECK 1..999999999999 và min≤max; description varchar(10000) nullable; category_id nullable FK; reading_level varchar(8),  reading_video_url varchar(2048) nullable; publication_status NOT NULL CHECK; published_at nullable; updated_at NOT NULL |
 | category | Chín bản ghi seed có code UNIQUE cố định, name, slug UNIQUE, sort_order; một FK category/listing, không có many-to-many category |
 | listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
@@ -59,7 +59,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - age_group codes: AGE_0_3, AGE_4_6, AGE_7_9, AGE_10_PLUS; một cuốn chọn nhiều, có thể để trống nếu chưa xác định.
 - binding: PAPERBACK/HARDCOVER; category PICTURE_BOOK bắt buộc đúng một binding cả khi lưu sách ẩn; category khác phải binding=null.
 - Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
-- condition_grade: HIGH_FRESHNESS/MINOR_FLAWS cho nhập mới; legacy VERY_GOOD/GOOD/FAIR chỉ giữ khi đọc, không thay condition_note.
+- condition_grade chỉ là legacy; form mới không nhập. condition_note là ghi chú riêng optional; public/preview không nhận nội dung.
 - reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; không yêu cầu căn cứ khi gán mức.
 - Nhãn và thứ tự đọc theo DATA, Flyers/Key chung A2. Không suy ra level/tuổi từ nhau hoặc từ category.
 - Các enum cố định được seed/định nghĩa trong code, không làm trình chỉnh sửa danh sách mức/tuổi/thể loại trong M2.
@@ -73,12 +73,12 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - Khoảng giá nếu có: hai số nguyên 1..999999999999 VND, min≤max; không nhận float, âm, zero hoặc chuỗi có dấu phân cách. UI hiển thị theo vi-VN.
 - Nội dung là plain text, Angular escape; không nhận HTML editor hoặc render nội dung bằng innerHTML.
 - Link video tùy chọn, absolute HTTPS, không userinfo/control characters; backend không fetch URL hoặc oEmbed (tránh SSRF).
-- Publish cần title, category, priceMinVnd/priceMaxVnd, weightG nguyên dương, condition_note, binding nếu Picture book và 2–6 media ACTIVE có FRONT/BACK, không trùng role.
-- Owner phải xác nhận đã đối chiếu các ảnh bắt buộc/tình trạng với đúng cuốn (`confirmedActualCopy=true` trong request publish); ghi xác nhận vào audit.
+- Publish cần title, category, priceMinVnd/priceMaxVnd, weightG nguyên dương, binding nếu Picture book và 2–6 media ACTIVE có FRONT/BACK, không trùng role.
+- Owner phải xác nhận đã đối chiếu bộ ảnh bắt buộc với mục sách (`confirmedActualCopy=true` trong request publish); ghi xác nhận vào audit.
 - Checkbox xác nhận không phải thuật toán chứng minh ảnh thật; pilot vẫn cần người đối chiếu vật thể. Không tự publish dữ liệu demo M0.
 - Publish không bắt tuổi, author/publisher, ISBN, description, level hoặc video. Có level không yêu cầu căn cứ nội bộ.
 - Lần publish đầu set published_at; hide/restore không xóa mốc này, publish lại không biến cuốn cũ thành mới đăng.
-- Mọi cập nhật lên listing PUBLISHED phải giữ điều kiện publish; không được xóa ảnh bắt buộc hoặc làm rỗng giá/title/condition/category.
+- Mọi cập nhật lên listing PUBLISHED phải giữ điều kiện publish; không được xóa ảnh bắt buộc hoặc làm rỗng giá/title/category.
 - Muốn sửa thành dữ liệu chưa hoàn chỉnh: Owner ẩn để chỉnh lại; hiện lại kiểm đầy đủ. Thay một ảnh khi published dùng swap nguyên tử ở mục 8.
 - Preview là route admin được bảo vệ, có noindex/no-store; chiếu DTO public, không hiển thị source_ref/audit.
 - Preview thiếu dữ liệu được ghi rõ “Chưa đủ điều kiện xuất bản”; không biến thành URL public chia sẻ được.
@@ -127,12 +127,12 @@ Các path dưới đây có prefix `/api/v1/admin`. ID bigint trả qua JSON dư
 | POST /collections | {name,slug,sortOrder,active}; Owner, 201 Collection |
 | PUT /collections/{id} | {version,name,sortOrder,active}; Owner, 200 Collection; slug bất biến |
 
-- BookWrite gồm title,isbn,publisher,author,language,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,categoryCode,ageGroups,readingLevel,readingVideoUrl,collectionIds,variants.
+- BookWrite canonical legacy giữ shape để hash import/final retry không đổi; gồm title,isbn,publisher,author,language,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,categoryCode,ageGroups,readingLevel,readingVideoUrl,collectionIds,variants.
 - Field BookWrite nullable theo quy tắc sửa ARCHIVED; create/hiện lại kiểm đầy đủ, ageGroups/collectionIds là mảng không trùng (tối đa 4/100); PUT gửi đủ field, không chứa code/slug/publication/availability.
 - Field unknown/server-managed bị trả 400; không mass assignment. Tạo không nhận availability hoặc publication từ client.
 - BookDetail gồm id,bookCode,slug,version, các field BookWrite,publication,availability,publishedAt,createdAt,updatedAt và media[{id,role,alt,sourceRef,contentPath}],variants,totalStock.
 - BookSummary là id,bookCode,title,priceMinVnd,priceMaxVnd,publication,availability,version,updatedAt,frontContentPath?,totalStock,publishedAt; không có cloud URL hoặc dữ liệu nội bộ.
-- PreviewBook gồm bookCode,slug,title,publisher,author,ageGroups,categoryCode,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,readingLevel,readingVideoUrl,availability,media,variants,totalStock; không có source_ref.
+- PreviewBook gồm bookCode,slug,title,publisher,author,ageGroups,categoryCode,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,readingLevel,readingVideoUrl,availability,media,variants,totalStock; không có source_ref. Grade/note null, variants rỗng và totalStock0; preview không hiện tồn nội bộ.
 - Page<T> = {items,page,size,totalElements,totalPages}; sort list updated_at DESC,id DESC, audit created_at DESC,id DESC.
 - q trim, tối đa 200 ký tự; mã so khớp không phân biệt hoa/thường, tên tìm substring không phân biệt hoa/thường, escape wildcard và bind SQL parameters.
 - Không hứa tìm admin tiếng Việt không dấu; publicsearch ở ARCHITECTURE. Filter admin không tự thêm filter public.
@@ -140,6 +140,21 @@ Các path dưới đây có prefix `/api/v1/admin`. ID bigint trả qua JSON dư
 - Collection response gồm id,name,slug,sortOrder,active,version,createdAt,updatedAt; GET /collections sắp sortOrder ASC,id ASC. AuditSummary gồm id,actorId,action,before,after,aggregateVersion,createdAt.
 - Mọi mutation gửi CSRF token mới theo cơ chế M1, credentials và version hiện tại; GET không thay dữ liệu.
 - Public/wishlist có contract riêng tại ARCHITECTURE; import tại BOOK_IMPORT.
+
+### Payload nhập sách và field optional —06/11
+
+- HTTP mới nhận stock tổng, internalNote, unitPricePerKgVnd; admin detail trả
+  stock/totalStock/stockLimit và aliases legacy. Không trả field này public.
+- Adapter HTTP giữ presence riêng trước canonical BookWrite; thiếu note/grade/U
+  khi update giữ dữ liệu đã lưu, null explicit xóa field optional. Alias note
+  khác nội dung trả400. Stock null, mixed stock+variants hoặc vượt limit trả400.
+- Thiếu stock/variants khi update giữ tồn; create phải có một nguồn tồn.
+  Legacy variants vẫn nhận và giữ validation cũ; không tự delete/recreate ID.
+- Các optional field mới tham gia audit/no-op/final fingerprint; giữ serialization
+  canonical legacy và retry consumed session cũ. Server không tính lại giá cuối.
+- GET /books/title-duplicate?title=&excludeId= trả {duplicate:boolean}, admin
+  no-store, title≤300; exact trim/case-insensitive, gồm ẩn/hết, loại chính ID.
+  Chỉ cảnh báo, không unique constraint hoặc chặn create/update/publish.
 
 ### Phiên upload ảnh
 

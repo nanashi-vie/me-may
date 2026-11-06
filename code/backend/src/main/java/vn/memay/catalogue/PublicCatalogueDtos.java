@@ -31,4 +31,7 @@ public final class PublicCatalogueDtos {
 
     public record Contact(String hotlineUrl, String groupUrl) {
     }
+
+    public record RelatedBooks(List<Book> samePublisherBooks, List<Book> sameCategoryBooks) {
+    }
 }

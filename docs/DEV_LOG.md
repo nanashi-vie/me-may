@@ -1364,6 +1364,310 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    các việc tiếp theo, không coi local PASS là đóng gate production.
    Bàn giao tài liệu trong cùng commit trên dev, push origin/dev theo quy ước.
 
+### S040-C03 — 05/11/2026 — CTA Danh sách quan tâm và Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh). Session worktree `dev-ui` (`/Users/daoquanghung/Projects/me-may.worktrees/dev-ui`).
+2. Phạm vi được yêu cầu:
+   - Đổi nhãn button "Quan tâm" thành CTA rõ ràng, dễ hiểu: "♡ Thêm vào danh sách quan tâm" (khi đã lưu đổi thành "♥ Đã thêm vào danh sách").
+   - Đổi "Quan tâm" ở Header thành "Danh sách quan tâm".
+   - Tại trang chi tiết sách (`/sach/:slug`), thêm 2 section bên dưới theo mẫu ảnh đính kèm: "SÁCH CÙNG NHÀ XUẤT BẢN" và "SÁCH CÙNG THỂ LOẠI".
+   - Chốt qua grill-me và thống nhất Phương án A: Backend cung cấp endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, loại trừ cuốn hiện tại, ưu tiên `AVAILABLE` trước, sắp xếp `published_at DESC`. Mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
+   - Kệ dùng carousel ngang với 5 thẻ `app-book-card` chuẩn trên desktop, nút trượt `<` và `>`, link "Xem thêm >>" góc phải dẫn tới search publisher hoặc category.
+3. Thay đổi code:
+   - Frontend:
+     - `wishlist-button.ts`: đổi nhãn nút thành "♡ Thêm vào danh sách quan tâm" (active: "♥ Đã thêm vào danh sách"), `aria-label` tương ứng; cập nhật test `wishlist-button.spec.ts`.
+     - `public-layout.html`: đổi nhãn Header "Quan tâm" thành "Danh sách quan tâm".
+     - `public.models.ts` & `public-api.ts`: thêm model `RelatedBooks` và method `related(slug: string)`.
+     - `book-detail.ts`, `book-detail.html`, `book-detail.scss`: tích hợp 2 kệ sách liên quan, divider đường kẻ ngang flanking tiêu đề, carousel trượt, nút điều hướng `<` / `>`, link "Xem thêm >>", fallback empty; thêm test trong `book-detail.spec.ts`.
+     - `angular.json`: nâng budget style `anyComponentStyle` `maximumWarning: 6kB`, `maximumError: 10kB`.
+   - Backend:
+     - `PublicCatalogueDtos.java`: thêm DTO record `RelatedBooks(List<PublicBookSummary> samePublisherBooks, List<PublicBookSummary> sameCategoryBooks)`.
+     - `PublicCatalogueService.java`: thêm `related(String slug)` và mở rộng logic tìm kiếm `q` khớp cả publisher.
+     - `PublicCatalogueController.java`: thêm endpoint `@GetMapping("/books/{slug}/related")`.
+     - `PublicCatalogueApiTest.java`: thêm 2 test cases kiểm tra `/related` và tìm kiếm publisher qua `q`.
+   - Tài liệu:
+     - Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+4. Kiểm tra đã chạy:
+   - Frontend Vitest: 37/37 test files, 189/189 tests PASS.
+   - Frontend build: `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
+   - Backend Maven tests: `PublicCatalogueApiTest`, `PublicMediaApiTest`, `PublicCacheInvalidationTest` (15/15 tests PASS).
+   - Fix type inference & generic ambiguities cho Eclipse JDT / VS Code: thay thế `var` và raw `Object[]` bằng explicit generics (`List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`), `(Object[])` varargs cast.
+   - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs: PASS.
+5. Việc dang dở / blocker: Không có.
+6. Bước tiếp theo: Push nhánh `dev-ui` lên remote theo yêu cầu user.
+
+### S041-C01 — 05/11/2026 — Brainstorm tình trạng và tồn gộp
+
+1. Phạm vi user: giải thích Đánh giá tình trạng/Mô tả tình trạng lỗi; brainstorm
+   bỏ khối public và biến thể nhưng giữ tồn gộp, cân nhắc ecommerce tương lai.
+2. Git: checkout sạch ban đầu trên main; git worktree list chỉ có checkout chính
+   và dev-ui. Đã git switch dev theo yêu cầu; dev khớp origin/dev tại7ec9818.
+   Không tạo worktree mới, không sửa main/dev-ui hoặc chạy dịch vụ.
+3. Đã đọc chỉ mục, PROGRESS, checkpoint cuối, DATA, phần liên quan MASTER_PLAN/
+   CATALOGUE/ARCHITECTURE; khám phá qua MCP graph và đọc form/template hiện hành.
+   Grade là phân loại chung tùy chọn ở form; note chung bắt buộc trước publish;
+   khối Tình trạng thực tế render conditionNote. Biến thể hiện có tên/tồn riêng,
+   dùng chung giá khoảng/ảnh; không đủ tự thân cho mua theo tình trạng/giá cố định.
+4. Đang làm rõ cách bán các bản cùng tựa khác tình trạng/giá. Chưa có quyết định
+   thiết kế được duyệt; không đổi schema, API, import, runtime hoặc baseline.
+   Chỉ cập nhật hai file bàn giao. Không chạy test/build vì không đổi code.
+5. Bước tiếp: trao đổi ví dụ bán thực tế, rồi so sánh phương án phù hợp trước
+   ghi spec. Thay đổi tài liệu còn local trên dev, chưa commit/push/deploy.
+
+
+### S041-C02 — 06/11/2026 — Thiết kế nhập giá/kg, tồn gộp, ghi chú nội bộ
+
+1. User chốt xác nhận bản/giá qua tin nhắn; bỏ tình trạng public và hai field
+   form; ghi chú nội bộ optional giữ mô tả cũ; tồn gộp tự tăng; cảnh báo trùng
+   tên không chặn lưu/publish; hướng giữ cấu trúc biến thể bên trong an toàn.
+   Giá từ = đơn giá/kg × gram/1000; giá đến +15%, làm tròn lên1.000đ, sửa tay được.
+2. Tạo BOOK_ENTRY_SIMPLIFICATION_DESIGN.md, đăng ký docs/README và cập nhật
+   PROGRESS. Đề xuất thêm: đơn giá nullable cho sách cũ/import, trigger tính lại
+   khi user sửa input, giữ giá đã lưu khi load, boundary private ở backend,
+   mapping tồn tổng không xóa ID, giữ format import/receipt và grade legacy.
+   Các chi tiết này chờ duyệt, chưa thay contract MASTER_PLAN/DATA/CATALOGUE.
+3. Dùng Superpowers brainstorming và verification-before-completion. Builder
+   check bằng agent review_entry_design đọc độc lập: “nothing important left”.
+   Đã đối chiếu code form, contract catalogue/import và Git dev7ec9818.
+4. Kiểm tra tài liệu: git diff --check, trần400dòng Markdown quản lý (trừ DEV_LOG)
+   và target local của các link thêm/sửa: PASS. Spec193dòng, README59dòng,
+   PROGRESS178dòng; không đổi runtime hoặc gate nghiệm thu.
+   Test/build ứng dụng chưa chạy vì không thay code/schema/API/runtime.
+5. Bước tiếp: user duyệt thiết kế rồi dùng writing-plans; chưa triển khai hoặc
+   chạy migration, không truy cập/đổi live. Bàn giao docs trên dev; chưa push.
+
+
+### S041-C03 — 06/11/2026 — Merge worktree dev-ui vào dev
+
+- Yêu cầu user: merge nhánh `dev-ui` (từ worktree `dev-ui`) vào `dev`, xử lý conflict `docs/DEV_LOG.md` và `docs/PROGRESS.md`.
+- Thay đổi:
+  - Tích hợp toàn bộ tính năng từ `dev-ui`: CTA "Thêm vào danh sách quan tâm", header "Danh sách quan tâm", 2 kệ sách liên quan ở chân trang chi tiết ("Sách cùng Nhà xuất bản" & "Sách cùng thể loại"), backend endpoint `/books/{slug}/related`, mở rộng tìm kiếm `q` khớp publisher, cùng các bản vá type inference & generic ambiguities cho Language Server.
+  - Giải quyết merge conflict tại `docs/DEV_LOG.md` và `docs/PROGRESS.md` theo trật tự thời gian và giữ nguyên đầy đủ nội dung bàn giao.
+- Kiểm tra:
+  - `npm test` và `npm run build` trên `dev`: 37/37 test files (189/189 tests PASS), 0 warning, 0 error.
+  - Backend tests: 15/15 tests PASS.
+  - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs quản lý: PASS.
+- Bước tiếp theo: hoàn tất commit merge trên `dev`, sẵn sàng push `origin/dev`.
+
+
+### S041-C04 — 06/11/2026 — User duyệt thiết kế, lập kế hoạch triển khai
+
+1. User trả lời “tôi duyệt” cho BOOK_ENTRY_SIMPLIFICATION_DESIGN; chuyển trạng
+   thái spec sang đã duyệt, dùng Superpowers writing-plans. Phạm vi như S041-C02.
+2. Kiểm môi trường: branch dev sạch, HEAD84c8c53 sau merge dev-ui ở checkpoint
+   C03; không quay về base cũ hoặc ghi đè các thay đổi UI mới. Đã đọc checkpoint
+   mới và khám phá lại BookDtos/Command/Validation/Mapper/VariantStore/Query qua
+   MCP graph, đối chiếu import fingerprint, form và contact hiện hành.
+3. Đã viết BOOK_ENTRY_SIMPLIFICATION_PLAN7task: quyết định API presence/null,
+   ánh xạ tồn theo sức chứa dòng cũ, giá tính chính xác và bảo vệ ghi chú ở public.
+   Chưa sửa code, chạy dịch vụ, migration hay deploy; test ứng dụng chưa chạy.
+4. Self-review đối chiếu spec→task, interfaces/presence/limits và5Review Focus
+   có test phụ trách; pin hash legacy trước đổi DTO, không lấy hash mới làm expected.
+   Kiểm markdown trần400dòng (trừ DEV_LOG), local targets của link docs đổi và
+   git diff --check: PASS. Plan283dòng; không chạy test/build ứng dụng.
+   Một lần script sửa docs lỗi encoding stdin trước khi ghi; dùng apply_patch
+   rồi kiểm lại. Không ảnh hưởng runtime hoặc dữ liệu ứng dụng.
+5. Bước tiếp: user review plan/chọn cách thực thi theo writing-plans; khuyến nghị
+   native tuần tự vì chung DTO/fingerprint. Thiết kế đã duyệt, không hỏi duyệt lại
+   nghiệp vụ. Tài liệu bàn giao trên dev, chưa push/deploy; gate release giữ nguyên.
+
+### S041-C05 — 06/11/2026 — Bắt đầu thực thi tuần tự
+
+- User chọn làm tuần tự; dùng executing-plans/TDD/verification, giữ checkout dev
+  theo yêu cầu, base7c1283c. Ledger cách ly theo plan trong .superpowers/sdd.
+- Phạm vi: thực thi7task đã duyệt, không deploy/migrate dữ liệu thật. Đang T1.
+- Baseline frontend189/189 PASS; backend đang chạy, chưa kết luận kết quả.
+- Quyết định: giữ nguyên shape BookWrite legacy, nhận field mới qua adapter HTTP
+  để bảo toàn fingerprint import; kiểm missing/null riêng tại boundary.
+- Đổi heading plan sang Task N để công cụ task-start đọc đúng; không đổi nghiệp vụ.
+
+### S041-C06 — 06/11/2026 — T1 backend đã kiểm chứng
+
+- Ghi chú optional/internalNote alias, đơn giá nullable và missing/null tại HTTP;
+  giữ BookWrite cũ để hash import/finalization không thay. Thêm migrationV14;
+  không sửa migration cũ. Lưu giá thủ công, không server tự tính lại.
+- TDD:4test mới RED400→GREEN; test create mới bắt version trả về0/DB1,
+  sửa bằng gán đơn giá trước insert. Giữ retry legacy, pin3golden hash.
+- Toàn backend:191run/0failure/0error/3live-provider skip PASS; baseline185run.
+  Log ở workspace plan/task-1-tests.log; git diff --check PASS.
+- Hai test migration SELECT b.* cần bỏ cột nullable mới trước so dữ liệu cũ;
+  vẫn assert cột mới null. Payload sai kiểu vẫn400 sau bắt lỗi Jackson adapter.
+- Một lần vô ý chạy chồng test backend trên TEST_DB gây race login/cleanup;
+  loại bỏ cả hai kết quả và đã chạy lại toàn suite tuần tự PASS. Không chạy
+  song song database test ở các bước sau. Tiếp theo T2 tồn gộp; chưa deploy.
+
+### S041-C07 — 06/11/2026 — T2 tồn gộp
+
+- Thêm stock/stockLimit quản trị và adapter stock→dòng legacy; giữ UUID/tên/
+  thứ tự, tăng từ dòng đầu và giảm từ dòng cuối. Metadata thiếu stock giữ tồn.
+- TDD RED2test tồn gộp400→GREEN;13test contract/variant PASS, gồm tổng1999998,
+  mixed/null/fraction/over-limit, no-op và concurrency409. Không đổi schema tồn.
+- T1 commit50fccc3. T2 đang bàn giao commit trên dev; tiếp T3 cảnh báo tên.
+
+### S041-C08 — 06/11/2026 — T3 lookup tên trùng
+
+- Endpoint admin title-duplicate exact lower(trim), excludeId, query tham số hóa,
+  gồm ẩn/hết hàng; OWNER/STAFF đọc, anonymous401, response no-store/boolean.
+- Test mới RED400→GREEN200;8test contract PASS. Không đặt unique title hoặc
+  thay đường ghi save/publish. T2 commit8cf5275; tiếp T4 form/giá trên frontend.
+
+### S041-C09 — 06/11/2026 — T4 form quản trị
+
+- Form có đơn giá/kg optional, ghi chú nội bộ optional và một ô tồn gộp;
+  không gửi condition/variants. BigInt tính chính xác, giá đến từ cơ sở chưa
+  làm tròn; sửa tay làm tròn khi kết thúc nhập, load/upload không tự tính lại.
+- Cảnh báo trùng dùng style has-error hiện có nhưng không làm form invalid;
+  lookup300ms, hủy response stale, mất mạng vẫn lưu. Backend T3 commiteb8b01d.
+- Frontend38file/193test PASS (baseline189); tests mới cho công thức/overflow,
+  load giá cũ, manual min/max, upload, tồn lớn/conflict, note trống và warning.
+  Test RED ban đầu thiếu helper/controls; GREEN sau triển khai. Chưa browser QA.
+- Upload queue đã so sánh toàn bộ DTO trừ media/version/updatedAt nên field mới
+  tự tham gia kiểm chống adopt version sai; không thêm cơ chế handoff song song.
+- Tiếp T5 public/preview; chưa deploy hoặc nhập ghi chú riêng trên live.
+
+### S041-C10 — 06/11/2026 — T5 public và preview
+
+- Backend không query/trả note/grade, variants public rỗng; preview không trả
+  nhóm tồn hoặc note. Frontend bỏ selector/condition block/guard; enquiry chỉ
+  mã/tên/giá/URL, vẫn refresh availability và chống response sai route.
+- Privacy marker RED→GREEN cho list/detail/lookup/home/related/preview;
+  admin detail vẫn đọc ghi chú. Backend24test PASS, frontend38file/192test PASS;
+  số test giảm1do thay3case chọn biến thể cũ bằng2case liên hệ theo sách.
+- Giữ related shelves và publisher search. Metadata fallback không dùng note;
+  frontend scrub payload cũ khi accept. Chưa chạy SSR/browser QA ở bước này.
+- T4 commit421f69e; tiếp T6 import tương thích, chưa deploy.
+
+### S041-C11 — 06/11/2026 — T6 import tương thích
+
+- V1/V2 giữ header/digest/receipt, cho note/grade rỗng; note có dữ liệu lưu
+  nội bộ, đơn giá null và giữ hai giá file. Guide/preview import hiển thị tồn
+  gộp, không bảng chọn biến thể. Không yêu cầu đổi workbook hoặc thêm cột.
+- Hai test optional mới RED required→GREEN;56test import/golden PASS, gồm
+  legacy hash, receipt retry/collection inactive và hai dòng trùng tạo riêng.
+  Frontend192test PASS; cập nhật hai kỳ vọng cũ về bảng/biến thể public.
+- T5 commit16dde1b; tiếp T7 kiểm tổng thể, browser QA và tài liệu. Chưa deploy.
+
+
+### S041-C12 — 06/11/2026 — T7 QA và gộp contract
+
+- Backend clean verify199run/0failure/0error/3live-provider skip PASS; frontend
+  38file/192test, NodeSSR/Workers builds và workerd proxy PASS. Chạy ngoài sandbox
+  sau khi lần sandbox bị chặn build/socket. Không chạy DB tests song song.
+- Migration V13→V14 giữ toàn bộ book/listing/variants/media/sequence, unit null;
+  test constraint0/vượt max đạt. Dump me_may_test custom, restore schema QA mới,
+  count/full-row fingerprint5bảng khớp; role không có CREATEDB nên dùng schema
+  cùng DB test, không nâng quyền. Schema QA restore đã dọn; chưa restore production.
+- Playwright desktop1280×900/public390×844 + Spring test/FakeMediaGateway:
+  giá80000/kg×450g→36000..42000; manual min36500→37000..43000, max44100→45000;
+  edit note/tồn5→4→7, reload giữ giá; tạo/publish trùng tên/note trống/2ảnh fake
+  thành công version0. Liên hệ mở thẳng, enquiry không biến thể/note; wishlist
+  lookup/related shelves còn hoạt động; STAFF xem note nhưng không sửa/lưu.
+- SSR smoke9đường HTML/API/OG/admin-preview/wishlist không marker note/private
+  fields. Không dùng fake media để nhận kết quả WebP/Lighthouse/live provider.
+  Runtime/browser/source harness QA đã dừng/dọn, chỉ artifacts ignored còn giữ
+  cho review. Lần HMR đổi refs cần snapshot lại, không coi là lỗi sản phẩm.
+- QA phát hiện copy xác nhận còn chữ biến thể: sửa editor/status và thông báo
+  backend, đã kiểm lại frontend/build/backend. Không thay validation xác nhận ảnh.
+- Đã gộp quyết định vào MASTER_PLAN/DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT;
+  DEPLOYMENT gần trần400 nên thêm BOOK_ENTRY_ROLLOUT theo trách nhiệm, đăng ký
+  README và link evidence BOOK_ENTRY_VERIFICATION/VERIFICATION. Chờ review cuối
+  trước xóa spec/plan đã chuyển hết nội dung. Chưa push/deploy, giữ mọi gate release.
+
+
+### S041-C13 — 06/11/2026 — Review cuối và bàn giao
+
+- Reviewer độc lập final_entry_review đọc range7c1283c..4007ad4, code/tests,
+  spec/plan và ledger:0Critical/0Important/0Minor, ready to merge dev. Không sửa
+  file/DB. Không có finding cần fix hoặc Minor defer trong phạm vi thay đổi.
+- Reviewer không kết luận production rollout/live purge/live provider; giữ
+  nguyên gate và hướng dẫn BOOK_ENTRY_ROLLOUT. Nếu bỏ smoke live sẽ thiếu chứng
+  cứ privacy cache/provider; không biến test local thành nghiệm thu production.
+- Quyết định triển khai: làm tại checkout dev user chỉ định; dùng adapter HTTP
+  giữ BookWrite canonical để bảo toàn import/final retry, thay vì đổi serializer.
+  Presence/null đã có contract tests và3golden hash; sai boundary có thể làm mất
+  field hoặc hỏng retry nên không bỏ các test này khi đổi DTO sau này.
+- Đã chuyển đầy đủ quyết định/acceptance vào tài liệu chuẩn và evidence, đăng ký
+  rollout tại README; xóa BOOK_ENTRY_SIMPLIFICATION_DESIGN/PLAN đã hết vai trò.
+  Trần400dòng (trừ DEV_LOG), local targets/anchors và git diff --check kiểm lại
+  trước commit bàn giao; runtime unchanged từ clean verify199/192test/build PASS.
+- Dọn đúng workspace của plan sau khi lưu rulings/review vào log; giữ ảnh QA
+  ignored output/playwright. Không xóa workspace/task khác, không đổi main.
+- Chốt commit/push dev theo workflow đã cho phép; user merge main/deploy. Không
+  còn implementation S041 dang dở; các gate release/online ở PROGRESS giữ nguyên.
+
+### S038-C04 — 06/11/2026 — thiết kế lại Admin Sidebar Modern Clean và nút quay về /admin trên trang Public
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C04. Mục tiêu: thiết kế lại thanh Sidebar /admin theo phong cách Modern Clean ấm áp (nền be kem, icon SVG, tab active đỏ thương hiệu, thẻ tài khoản và nút đăng xuất ở đáy, bỏ admin-header phía trên) và thêm nút quay về /admin trên trang chủ / public layout (nhận diện phiên đăng nhập).
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Admin Sidebar redesign:
+     - Nền be kem nhạt #FBF8F2, viền phải mảnh #E8E2D8, sticky cố định 100vh, rộng 240px.
+     - Header sidebar: logo Mẹ Mây font Baloo 2 đỏ đậm #9B1C28 kèm nhãn phụ "Trang quản trị" chữ in hoa nhỏ.
+     - Menu điều hướng dạng thẻ bo góc 8px với icon SVG: Tổng quan (📊, exact match), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
+     - Trạng thái Active: nền đỏ kem nhạt #FDF2F2, viền chỉ báo trái đỏ 3px, chữ và icon màu đỏ #9B1C28 đậm (font weight 700). Hover: nền be sáng #F3EDE2.
+     - Đáy sidebar: Thẻ tài khoản người dùng (avatar tròn chữ cái đầu, email, role badge OWNER/STAFF) và nút Đăng xuất kèm icon logout.
+     - Xóa bỏ thanh admin-header phía trên để mở rộng tối đa không gian làm việc cho vùng nội dung bên phải.
+   - Nút quay về /admin trên Public:
+     - Desktop header: đặt cạnh nút "Nhắn tiệm ↗", tự động nhận diện nếu đã đăng nhập (auth.user() tồn tại) thì hiện nổi bật kèm chấm xanh active và dẫn thẳng /admin; nếu chưa đăng nhập thì dẫn vào /admin/dang-nhap.
+     - Mobile sidebar: thêm mục ⚙️ Quản trị ở cuối menu trượt mobile (bên dưới Cách mua, Liên hệ), tự động dẫn vào /admin hoặc /admin/dang-nhap.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.html
+     - code/frontend/src/app/layouts/public-layout/public-layout.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.scss
+     - code/frontend/src/app/app.spec.ts
+     - code/frontend/src/styles.scss
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 38/38 files, 193/193 tests PASS (bao gồm 4 test cases mới cho AdminLayout).
+   - Frontend builds: npm run build và npm run build:workers -> hoàn tất với 0 errors, 0 warnings.
+   - Browser QA qua Chrome headless CDP (1280x800 & 390x844) với Angular SSR local + mock API:
+     - Sidebar /admin: asideWidth 240px, brand 'Mẹ Mây - Trang quản trị', tab 'Sách' active đỏ #9b1c28, 5 icons SVG, accountEmail 'admin@memay.vn', roleBadge 'OWNER', logoutBtn 'Đăng xuất'.
+     - Public desktop header: nút "⚙️ Quản trị" hiển thị ngay cạnh "Nhắn tiệm ↗".
+     - Public mobile sidebar: link "⚙️ Quản trị" hiển thị ở đáy menu trượt.
+     - Ảnh chụp kiểm chứng: admin-book-list-filters.png, public-home-header.png, public-mobile-sidebar.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.
+
+### S038-C05 — 06/11/2026 — Sidebar Admin phân cấp Accordion Tree View và tinh chỉnh Active State
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C05. Mục tiêu: điều chỉnh thanh Sidebar /admin theo cấu trúc phân cấp (Accordion Tree View) giống mẫu tham chiếu, tạo mục cha "Quản lý sách" chứa các mục con "Sách", "Bộ sưu tập", "Flash sale", làm đậm màu nền đỏ active và bỏ đường viền nhỏ bên trái.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Nhóm phân cấp Accordion "Quản lý sách":
+     - Mục cha: button "Quản lý sách" có icon sách + mũi tên chevron SVG (v khi mở, > khi đóng), mặc định mở sẵn (bookMenuOpen = signal(true)), hỗ trợ click đóng/mở mượt mà với aria-expanded và aria-controls.
+     - Submenu lồng bên trong: thụt lề 1.45rem, có đường kẻ dọc tree-line mảnh (#E8E2D8), hiển thị clean text gồm 3 mục: "Sách" (/admin/sach), "Bộ sưu tập" (/admin/bo-suu-tap), "Flash sale" (/admin/flash-sale) (hai mục sau chỉ hiển thị với OWNER).
+   - Tinh chỉnh Active State:
+     - Nền active: đổi sang màu đỏ pastel vừa phải #FDE8E8 (đậm hơn nền cũ #FDF2F2, tương phản rõ nét với chữ đỏ đô #9B1C28).
+     - Bỏ hoàn toàn đường viền nhỏ 3px bên trái (border-left indicator) theo ảnh mẫu của user, active item thành hình khối bo tròn mềm mại (pill / rounded rect border-radius 8px / 6px).
+     - Bổ sung responsive linh hoạt cho mobile view.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: npm test (cwd code/frontend trong worktree dev-ui) -> 38/38 files, 194/194 tests PASS (bổ sung test toggle accordion và quyền OWNER/STAFF).
+   - Frontend build: npm run build và npm run build:workers hoàn tất 0 error, 0 warning.
+   - Visual verification qua Chrome headless CDP:
+     - Chụp ảnh admin-sidebar-accordion.png (asideWidth 240px, parentGroup 'Quản lý sách', subItems ['Sách', 'Bộ sưu tập', 'Flash sale'], activeItem 'Sách', icons: 3).
+     - Kiểm chứng trực quan: mục "Sách" active có nền đỏ pastel #FDE8E8, không có viền đỏ trái, đường kẻ dọc thụt lề chuẩn mẫu.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push nhánh dev-ui lên GitHub.
+
+### S041-C14 — 06/11/2026 — Merge nhánh dev-ui vào dev
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S041-C14. Mục tiêu: merge nhánh `dev-ui` vào `dev` theo yêu cầu của user, giải quyết merge conflict tại `docs/DEV_LOG.md`.
+2. Nội dung tích hợp:
+   - Toàn bộ giao diện Admin Sidebar mới (Accordion Tree View: "Quản lý sách" chứa "Sách", "Bộ sưu tập", "Flash sale", nền active đỏ pastel `#FDE8E8`, bỏ viền chỉ báo trái, bo góc tròn pill).
+   - Nút quay về /admin trên header desktop và menu trượt mobile của trang public.
+   - Định dạng và căn chỉnh các file layout admin, layout public và service catalogue.
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: 38/38 test files PASS.
+   - Frontend builds: `npm run build` và `npm run build:workers` hoàn tất 0 error, 0 warning.
+4. Trạng thái: Đã merge thành công vào `dev`.
 ### S041-C01 — 05/11/2026 — bắt đầu nối publish GHCR với Dokploy
 
 - User xác nhận Auto Deploy vẫn giữ deployment cũ sau push backend main; yêu cầu

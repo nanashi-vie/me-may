@@ -39,7 +39,7 @@ public class PublicCatalogueController {
         if (value == null || value.isBlank())
             return null;
         try {
-            var u = URI.create(value);
+            URI u = URI.create(value);
             if (!"https".equals(u.getScheme()) || !"zalo.me".equals(u.getHost()) || u.getUserInfo() != null
                     || u.getPort() != -1)
                 throw new IllegalArgumentException();
@@ -60,6 +60,11 @@ public class PublicCatalogueController {
     @GetMapping("/books/{slug}")
     public Book detail(@PathVariable String slug) {
         return catalogue.detail(slug);
+    }
+
+    @GetMapping("/books/{slug}/related")
+    public RelatedBooks related(@PathVariable String slug) {
+        return catalogue.related(slug);
     }
 
     @GetMapping("/books/lookup")
@@ -93,16 +98,16 @@ public class PublicCatalogueController {
 
     @GetMapping("/cache-policy")
     public java.util.Map<String, Object> cachePolicy() {
-        var now = jdbc.queryForObject("select current_timestamp", (r, n) -> r.getTimestamp(1).toInstant());
-        var transitions = jdbc.queryForList(
+        java.time.Instant now = jdbc.queryForObject("select current_timestamp", (r, n) -> r.getTimestamp(1).toInstant());
+        List<java.sql.Timestamp> transitions = jdbc.queryForList(
                 "select least(case when starts_at>current_timestamp then starts_at end, "
                 + "case when ends_at>current_timestamp then ends_at end) from flash_sale where enabled",
                 java.sql.Timestamp.class);
-        var expires = now.plusSeconds(30);
-        for (var transition : transitions)
+        java.time.Instant expires = now != null ? now.plusSeconds(30) : java.time.Instant.now().plusSeconds(30);
+        for (java.sql.Timestamp transition : transitions)
             if (transition != null && transition.toInstant().isBefore(expires)) expires = transition.toInstant();
         return java.util.Map.of("enabled", publicCache.enabled(), "expiresAt", expires.toString(),
-                "serverNow", now.toString());
+                "serverNow", now != null ? now.toString() : "");
     }
 
     @GetMapping("/contact")
@@ -116,12 +121,12 @@ public class PublicCatalogueController {
             @RequestParam(required = false) String v) {
         if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
-        var keys = jdbc.queryForList(
+        List<String> keys = jdbc.queryForList(
                 "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=? and (cast(? as text) is null or m.id::text=?)",
                 String.class, slug, role.name(), v, v);
         if (keys.isEmpty())
             throw new AdminApiException(404, "not_found");
-        var input = media.openPublicPreview(keys.getFirst(), size, format);
+        java.io.InputStream input = media.openPublicPreview(keys.getFirst(), size, format);
         StreamingResponseBody body = output -> {
             try (input) {
                 input.transferTo(output);

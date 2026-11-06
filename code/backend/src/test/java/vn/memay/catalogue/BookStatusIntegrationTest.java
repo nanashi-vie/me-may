@@ -24,7 +24,7 @@ class BookStatusIntegrationTest extends CatalogueTestSupport {
  @Test void publishedEditsCannotEraseRequiredFields(){var b=ready();long id=Long.parseLong(b.id());var pub=statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true);assertThatThrownBy(()->update(id,pub.version(),owner,BookFixtures.draft(null))).hasMessageContaining("title");assertThat(jdbc.queryForObject("select title from book_copy where id=?",String.class,id)).isEqualTo("Real book");}
  @Test void staffCannotEditArchivedOrPublished(){var b=ready();long id=Long.parseLong(b.id());var pub=statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true);assertThatThrownBy(()->update(id,pub.version(),staff,BookFixtures.draft("Forged"))).hasMessageContaining("forbidden");var hidden=statuses.publication(id,pub.version(),owner,Publication.ARCHIVED,false);assertThatThrownBy(()->update(id,hidden.version(),staff,BookFixtures.draft("Forged"))).hasMessageContaining("forbidden");}
  @Test void missingRequiredPublicationFieldsAreReported(){
-  for(String key:java.util.List.of("title","categoryCode","priceMinVnd","conditionNote")){
+  for(String key:java.util.List.of("title","categoryCode","priceMinVnd")){
    var b=ready();long id=Long.parseLong(b.id());
    switch(key){case "title"->jdbc.update("update book_copy set title=null where id=?",id);case "conditionNote"->jdbc.update("update book_copy set condition_note=null where id=?",id);case "categoryCode"->jdbc.update("update listing set category_id=null where book_copy_id=?",id);case "priceMinVnd"->jdbc.update("update listing set price_min_vnd=null,price_max_vnd=null where book_copy_id=?",id);}
    assertThatThrownBy(()->statuses.publication(id,b.version(),owner,Publication.PUBLISHED,true)).hasMessageContaining(key);

@@ -21,7 +21,7 @@ export interface PublicBook {
   categoryCode: CategoryCode;
   binding: Binding | null;
   conditionGrade: string | null;
-  conditionNote: string;
+  conditionNote: string | null;
   priceMinVnd: number | null;
   priceMaxVnd: number | null;
   salePriceVnd: number | null;
@@ -32,6 +32,10 @@ export interface PublicBook {
   readingVideoUrl: string | null;
   availability: Availability;
   media: { role: string; alt: string | null; contentPath: string; cacheKey?: string }[];
+}
+export interface RelatedBooks {
+  samePublisherBooks: PublicBook[];
+  sameCategoryBooks: PublicBook[];
 }
 export interface Collection {
   slug: string;

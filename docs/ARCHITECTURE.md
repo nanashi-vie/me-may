@@ -251,27 +251,29 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 - Reorder theo mediaID/version, tất cả mapping/audit nguyên tử. QueueclientID riêngserverID, uploadtuần tự, metadata lưu trước final; retry ảnh tạm dùngrequestKey/hash để không chiếm thêm slot khi mấtresponse.
 - Public detail seed dữ liệu publicSSR trong TransferState riêng; luôn revalidate no-store, giữ DOM khi cùngslug, khóa contact đến dữliệumới. Admin/wishlist vẫn không transfercache. Logo WebP208; favicon dùng cùngasset.
 
-## Tồn theo biến thể — contract 30/10/2026
+## Tồn gộp và tương thích biến thể — contract06/11/2026
 
-- V10 thêm book_variant qua JDBC, FK BookCopy, UUID ổn định, tên nullable khi một dòng,
-  stock BIGINT0..999999 và sort_order; unique tên lower(trim) trong sách, thứ tự deferred.
-- Aggregate vẫn BookCopy/Listing. Create/update nhận variants[{id:null|string,name,stock}],
-  tối thiểu1dòng, tên≤100, nhiều dòng bắt buộc tên khác nhau; chỉ server cấp UUID dòng mới.
-  ID lạ/trùng/thuộc sách khác/bỏ dòng đã lưu bị từ chối, không delete/recreate cả tập.
-- Detail/preview admin trả variants và totalStock; list có totalStock. Tổng long tính từ dòng,
-  không có totalStock editable. Cột availability cập nhật từ tổng trong cùng transaction.
-- Bất kỳ sửa tồn/tên cũng dùng aggregate version, audit variants/totalStock/availability;
-  no-op không tăng. Xung đột rollback sách/listing/biến thể/media/audit và trả409 giữ form.
-- Final fingerprint bao gồm normalizedvariants; UUID cấp sau fingerprint, retry không nhân
-  sách/tồn, payload khác409. Media response mất chỉ adoptversion nếu các field khác giữ nguyên,
-  gồm variants/totalStock; không tự merge một cập nhật tồn khác.
-- PATCH availability cũ OWNER nhận409 stock_managed_availability, STAFF403; client mới cập nhật
-  tồn qua PUT sách. Ẩn/hiện vẫn độc lập; liên hệ/wishlist không tạo mutation kho.
-- Public detail có variants[{id,name,available}], không trả số tồn nội bộ/sourceRef.
-  Card/list/shelf/lookup dùng DTO cùng shape với variants rỗng, không queryvariants từng card.
-  Catalogue/sale/lookup dựa availability đã đồng bộ; không join biến thể làm nhân card/count.
-- Default ngôn ngữ ở form mới; CVA VND giữ numericmodel/validation/caret. Grade mới
-  HIGH_FRESHNESS/MINOR_FLAWS; legacy VERY_GOOD/GOOD/FAIR giữ nguyên, không tự đổi ý nghĩa.
+- V10/storage book_variant giữ UUID/tên/thứ tự và stock0..999999 từng dòng.
+  Từ06/11 form mới gửi stock tổng; thuật toán/limit theo DATA, không xóa dòng.
+- BookEntryInput tách HTTP extras/presence khỏi BookWrite canonical legacy;
+  resolve note/grade/variants trước normalize. Không đổi byte shape import hash.
+- V14 chỉ thêm unit_price_per_kg_vnd nullable, không UPDATE/drop dữ liệu cũ.
+  Mapper quản trị thêm internalNote/stock/stockLimit/unitPricePerKgVnd;
+  alias conditionNote/conditionGrade/variants vẫn đọc được trong admin.
+- Update stock/U/note dùng aggregate version; no-op không tăng, audit failure
+  rollback toàn bộ; concurrent request chỉ một bên ghi thành công, bên còn409.
+- Final fingerprint mới thêm đơn giá khi có field; canonical stock trước sinhUUID.
+  Legacy final hash vẫn giữ nguyên; retry không nhân sách/tồn/media.
+- Media response chỉ adopt version khi mọi field còn lại (gồm field mới) giữ
+  nguyên. Không tự merge một cập nhật tồn/giá/note khác.
+- Public list/detail/home/related/lookup trả grade/note null, variants=[]; không
+  query nội dung riêng hoặc nhóm tồn. Preview không chứa note hoặc nhóm tồn.
+- PATCH availability legacy409/STAFF403; public dùng availability đã đồng bộ,
+  publication độc lập. Liên hệ/wishlist không mutation kho hoặc chọn biến thể.
+- Lookup title-duplicate admin SELECT EXISTS với bind params, không dùng public
+  list/paging. Không thêm unique title; form cảnh báo nonblocking, hủy stale request.
+- Giá/kg frontend dùng BigInt; server chỉ kiểm và lưu giá cuối. Load/handoff/
+  upload không chạy lại công thức. Contract U/note optional theo DATA/CATALOGUE.
 
 ## Hiệu năng nhập và xuất bản —30/10
 

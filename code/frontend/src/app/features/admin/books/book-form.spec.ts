@@ -19,7 +19,9 @@ describe('Book form', () => {
   it('sends only current fields and allows blank optional video', () => {
     const f = buildBookForm();
     expect(Object.keys(toBookWrite(f))).not.toContain('readingLevelBasis');
-    expect(Object.keys(toBookWrite(f))).toHaveLength(18);
+    expect(toBookWrite(f)).not.toHaveProperty('variants');
+    expect(toBookWrite(f)).not.toHaveProperty('conditionNote');
+    expect(toBookWrite(f).internalNote).toBeNull();
     expect(toBookWrite(f).readingVideoUrl).toBeNull();
     f.controls.readingVideoUrl.setValue('http://example.com');
     expect(f.invalid).toBe(true);

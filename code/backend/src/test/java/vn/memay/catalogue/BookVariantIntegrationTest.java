@@ -14,7 +14,7 @@ class BookVariantIntegrationTest extends CatalogueTestSupport {
     }
     Map<String,Object> body(BookDtos.BookDetail b,List<?> variants) {
         var w=new LinkedHashMap<String,Object>(JSON.convertValue(b,Map.class));
-        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock"))w.remove(key);
+        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock","stock","stockLimit","internalNote","unitPricePerKgVnd"))w.remove(key);
         w.put("variants",variants);return w;
     }
     @Test void publicVariantsUseOwnStockAndSharedPrice() throws Exception {
@@ -27,10 +27,7 @@ class BookVariantIntegrationTest extends CatalogueTestSupport {
         var pub=api.send("PATCH","/api/v1/admin/books/"+b.id()+"/publication",json(Map.of("version",saved.path("version").asLong(),"status","PUBLISHED","confirmedActualCopy",true)),true);
         assertThat(pub.statusCode()).isEqualTo(200);
         var detail=api.send("GET","/api/v1/books/"+b.slug(),null,false);var book=tree(detail);
-        assertThat(book.path("variants").size()).isEqualTo(2);
-        assertThat(book.path("variants").get(0).path("available").asBoolean()).isTrue();
-        assertThat(book.path("variants").get(1).path("available").asBoolean()).isFalse();
-        assertThat(book.path("variants").get(0).path("id").asString()).isEqualTo(id);
+        assertThat(book.path("variants").size()).isZero();
         assertThat(detail.body()).doesNotContain("sourceRef","totalStock","\"stock\"");
         assertThat(book.path("priceMinVnd").asLong()).isEqualTo(10000);
         assertThat(tree(api.send("GET","/api/v1/books",null,false)).path("totalElements").asLong()).isEqualTo(1);
@@ -39,7 +36,7 @@ class BookVariantIntegrationTest extends CatalogueTestSupport {
         assertThat(api.send("PUT","/api/v1/admin/books/"+b.id(),json(write),true).statusCode()).isEqualTo(200);
         book=tree(api.send("GET","/api/v1/books/"+b.slug(),null,false));
         assertThat(book.path("availability").asString()).isEqualTo("SOLD");
-        assertThat(book.path("variants").get(0).path("available").asBoolean()).isFalse();
+        assertThat(book.path("variants").size()).isZero();
         assertThat(queries.preview(Long.parseLong(b.id()),owner).totalStock()).isZero();
     }
 
