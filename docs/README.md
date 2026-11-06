@@ -17,7 +17,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
-| Nhập giá/kg, tồn gộp, ghi chú nội bộ (đã triển khai local, review cuối) | [Thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md), [kế hoạch](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) |
+| Nhập giá/kg, tồn gộp, ghi chú nội bộ06/11 | [DATA](DATA.md#nhập-giá-theo-kg-và-sửa-tay-06112026), [CATALOGUE](CATALOGUE.md#payload-nhập-sách-và-field-optional-0611), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
 | Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
 | Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V2/16cột và V1compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md) |
@@ -39,9 +39,9 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
   Chưa migrate/deployonlineV12; gate nằmPROGRESS/DEPLOYMENT, không mở lại feature khác.
 
 - Gate còn mở và điều kiện đóng chỉ theo [PROGRESS](PROGRESS.md); thao tác/tiêu chí
-  chi tiết ở DEPLOYMENT. Thiết kế nhập sách mới đã duyệt06/11 tại
-  [BOOK_ENTRY_SIMPLIFICATION_DESIGN](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md);
-  [plan triển khai](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã thực thi local, chờ review cuối.
+  chi tiết ở DEPLOYMENT. Nhập sách06/11 đã triển khai/kiểm local, gộp contract
+  vào DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT; spec/plan đã hết vai trò
+  được gỡ, rollout riêng ở BOOK_ENTRY_ROLLOUT. Chưa nghiệm thu production.
 - Spec/plan M2, M5 completion và hiệu năng nhập/publish đã gộp thành contract,
   quy trình đo và bằng chứng rồi gỡ01/11; không tạo archive hoặc plan trùng.
 - Tối ưu UI: đợt 1 (navbar desktop dropdown 8 thể loại, mobile header + sidebar `<dialog>`,

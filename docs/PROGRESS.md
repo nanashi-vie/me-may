@@ -3,18 +3,21 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Đơn giản hóa nhập sách — đã triển khai local, review cuối06/11/2026
+## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
-- User chọn tồn gộp/tự tăng tồn, giữ cấu trúc biến thể bên trong để tương thích;
-  bỏ tình trạng public/form, ghi chú nội bộ optional giữ mô tả cũ.
-- Đơn giá/kg × gram → giá từ; giá đến +15%, làm tròn lên 1.000đ; hai giá sửa được.
-  Trùng tên chỉ cảnh báo theo style hiện tại, vẫn lưu/publish được.
-- User đã duyệt toàn bộ [thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md)06/11.
-  [Plan7task](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã viết và tự rà; đề xuất chạy
-  native tuần tự vì cùng DTO/fingerprint; user đã chọn và đã thực thi T1–T7.
-- Checkpoint S041-C12 trong DEV_LOG. Backend clean verify199run/0failure/
-  0error/3skip; frontend192test, SSR/Workers/proxy và browser QA PASS. Migration
-  V13→V14/schema restore QA PASS. Đang review độc lập cuối, chưa deploy/live.
+- User duyệt và đã thực thi tuần tự: tồn gộp/tự tăng, giữ ID/storage legacy;
+  bỏ hai field tình trạng và khối public, ghi chú nội bộ **optional** giữ note cũ.
+- Đơn giá/kg optional × gram → giá từ; giá đến +15%, làm tròn lên1.000đ;
+  sửa tay được, load/upload không tính lại. Trùng tên chỉ cảnh báo, vẫn lưu/publish.
+- Backend clean verify199run/0failure/0error/3live-provider skip, frontend192test,
+  SSR/Workers/proxy, Chrome desktop/mobile, migrationV13→V14 và schema restore QA
+  PASS. Review độc lập0Critical/0Important/0Minor; source/runtime QA đã dọn.
+- Contract ở DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT; bằng chứng tại
+  [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026).
+  [RolloutV14](BOOK_ENTRY_ROLLOUT.md) cần backend trước frontend, purge cache và
+  giữ privacy khi rollback. Chưa migrate/deploy dữ liệu thật; gate release giữ mở.
+- Checkpoint S041-C13 trong DEV_LOG. Hoàn tất trên dev theo workflow commit/push;
+  user merge main/deploy. Spec/plan đã gộp và gỡ, không còn việc triển khai S041.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 

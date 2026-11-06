@@ -1573,3 +1573,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   DEPLOYMENT gần trần400 nên thêm BOOK_ENTRY_ROLLOUT theo trách nhiệm, đăng ký
   README và link evidence BOOK_ENTRY_VERIFICATION/VERIFICATION. Chờ review cuối
   trước xóa spec/plan đã chuyển hết nội dung. Chưa push/deploy, giữ mọi gate release.
+
+
+### S041-C13 — 06/11/2026 — Review cuối và bàn giao
+
+- Reviewer độc lập final_entry_review đọc range7c1283c..4007ad4, code/tests,
+  spec/plan và ledger:0Critical/0Important/0Minor, ready to merge dev. Không sửa
+  file/DB. Không có finding cần fix hoặc Minor defer trong phạm vi thay đổi.
+- Reviewer không kết luận production rollout/live purge/live provider; giữ
+  nguyên gate và hướng dẫn BOOK_ENTRY_ROLLOUT. Nếu bỏ smoke live sẽ thiếu chứng
+  cứ privacy cache/provider; không biến test local thành nghiệm thu production.
+- Quyết định triển khai: làm tại checkout dev user chỉ định; dùng adapter HTTP
+  giữ BookWrite canonical để bảo toàn import/final retry, thay vì đổi serializer.
+  Presence/null đã có contract tests và3golden hash; sai boundary có thể làm mất
+  field hoặc hỏng retry nên không bỏ các test này khi đổi DTO sau này.
+- Đã chuyển đầy đủ quyết định/acceptance vào tài liệu chuẩn và evidence, đăng ký
+  rollout tại README; xóa BOOK_ENTRY_SIMPLIFICATION_DESIGN/PLAN đã hết vai trò.
+  Trần400dòng (trừ DEV_LOG), local targets/anchors và git diff --check kiểm lại
+  trước commit bàn giao; runtime unchanged từ clean verify199/192test/build PASS.
+- Dọn đúng workspace của plan sau khi lưu rulings/review vào log; giữ ảnh QA
+  ignored output/playwright. Không xóa workspace/task khác, không đổi main.
+- Chốt commit/push dev theo workflow đã cho phép; user merge main/deploy. Không
+  còn implementation S041 dang dở; các gate release/online ở PROGRESS giữ nguyên.
