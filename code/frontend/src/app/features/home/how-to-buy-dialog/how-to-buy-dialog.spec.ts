@@ -30,7 +30,7 @@ describe('HowToBuyDialog', () => {
     }
   });
 
-  it('renders 4 steps and illustration image', () => {
+  it('renders 4 steps in 2x2 grid and illustration image', () => {
     const el = fixture.nativeElement as HTMLElement;
     const title = el.querySelector('#how-to-buy-title');
     expect(title?.textContent?.trim()).toBe('Cách hỏi mua sách tại Mẹ Mây');
@@ -40,6 +40,23 @@ describe('HowToBuyDialog', () => {
 
     const badges = Array.from(el.querySelectorAll('.step-badge')).map((b) => b.textContent?.trim());
     expect(badges).toEqual(['1', '2', '3', '4']);
+
+    const titles = Array.from(el.querySelectorAll('.step-title')).map((t) => t.textContent?.trim());
+    expect(titles).toEqual([
+      'Thêm sách vào “Danh sách quan tâm”',
+      'Vào “Danh sách quan tâm” chọn tất cả sách cần kiểm tra video tình trạng thật',
+      'Bấm “Chuẩn bị nội dung hỏi mua”',
+      'Gửi yêu cầu qua Zalo Hotline',
+    ]);
+
+    // Steps 1, 2, 3 have no small description
+    expect(steps[0].querySelector('.step-desc')).toBeNull();
+    expect(steps[1].querySelector('.step-desc')).toBeNull();
+    expect(steps[2].querySelector('.step-desc')).toBeNull();
+
+    // Step 4 keeps the instruction text
+    const desc4 = steps[3].querySelector('.step-desc')?.textContent?.trim();
+    expect(desc4).toContain('Bấm “Sao chép nội dung” => “Mở zalo” => Dán & gửi tin nhắn yêu cầu cho tiệm qua hotline zalo');
 
     const img = el.querySelector('.illustration-img') as HTMLImageElement;
     expect(img).toBeTruthy();

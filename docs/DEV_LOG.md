@@ -2148,3 +2148,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - SSR probe: Chạy server SSR và `check-ssr.mjs`, kiểm chứng `/` và `/lien-he` trả về HTML 200 hợp lệ, đồng thời truy cập `/cach-mua` trả về HTTP 404 chuẩn xác.
 4. Trạng thái: Sẵn sàng commit và push lên nhánh `origin/dev-ui`. Chờ user duyệt trước khi merge `dev`.
 
+
+### S038-C10 — 06/11/2026 — Chuyển popup Cách hỏi mua sách sang bố cục lưới 2x2 ngang gọn
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C10. Mục tiêu: chuyển bố cục popup từ cột dọc sang lưới ngang 2x2, lược bỏ các chú thích phụ ở bước 1–3, chỉ giữ tiêu đề in đậm và giữ nguyên hướng dẫn thao tác chi tiết ở bước 4.
+2. Chi tiết thay đổi:
+   - `how-to-buy-dialog.html`: Đổi layout các bước thành lưới 2x2 `.steps-grid`; gỡ các đoạn chú thích nhỏ ở bước 1, 2, 3; giữ lại tiêu đề in đậm rõ ràng cho B1, B2, B3 và giữ nguyên hướng dẫn cụ thể ở B4: `Bấm “Sao chép nội dung” => “Mở zalo” => Dán & gửi tin nhắn yêu cầu cho tiệm qua hotline zalo`.
+   - `how-to-buy-dialog.scss`: Cấu hình `grid-template-columns: repeat(2, 1fr)` cho desktop/tablet, `max-width: 760px`, `width: min(760px, calc(100% - 32px))`, thẻ bước dạng card ngang nhỏ gọn bo tròn 12px; responsive tự động chuyển 1 cột trên mobile `<=640px`.
+   - `how-to-buy-dialog.spec.ts`: Cập nhật bộ unit test kiểm tra chính xác 4 tiêu đề, xác nhận B1–B3 không có `.step-desc`, và B4 chứa đầy đủ chuỗi hướng dẫn.
+   - Docs: Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+3. Kiểm tra đã chạy:
+   - Vitest: 42/42 test files, 231/231 tests PASS.
+   - Builds: `npm run build` và `npm run build:workers` hoàn thành 0 warning, 0 error.
+   - CDP Visual Test: Chạy `scratch/verify-how-to-buy-dialog.mjs`, chụp ảnh desktop (`how-to-buy-dialog-desktop.png` - 760x554px) và mobile (`how-to-buy-dialog-mobile.png` - 352x618px).
+4. Trạng thái & Bước tiếp theo:
+   - Sẵn sàng commit và push `origin/dev-ui`. Chờ user duyệt trước khi merge vào `dev`.
