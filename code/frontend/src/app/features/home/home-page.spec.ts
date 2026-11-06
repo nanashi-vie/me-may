@@ -66,5 +66,18 @@ describe('HomePage banner info boxes', () => {
     expect(link2.getAttribute('href')).toBe('tel:0703260005');
     expect(link2.textContent?.trim()).toBe('0703 260 005');
   });
+
+  it('opens how-to-buy dialog when clicking "Cách hỏi mua sách" box', () => {
+    const { fixture, component } = setup();
+    const el = fixture.nativeElement as HTMLElement;
+    const button = el.querySelector('button.info-box-item[aria-label="Cách hỏi mua sách"]') as HTMLButtonElement;
+    expect(button).toBeTruthy();
+
+    expect(component.howToBuyDialog).toBeTruthy();
+    const openSpy = vi.spyOn(component.howToBuyDialog!, 'open');
+
+    button.click();
+    expect(openSpy).toHaveBeenCalledWith(button);
+  });
 });
 

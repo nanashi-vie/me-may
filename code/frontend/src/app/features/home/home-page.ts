@@ -1,8 +1,8 @@
-import { PublicSkeleton } from '../catalogue/public-skeleton/public-skeleton';
-import { Subscription } from 'rxjs';
-import { Component, inject, signal, computed, effect, RESPONSE_INIT, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, effect, RESPONSE_INIT, DestroyRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PublicSkeleton } from '../catalogue/public-skeleton/public-skeleton';
 import { PublicApi } from '../catalogue/public-api';
 import { ContactConfig, FlashSale, HomeData } from '../catalogue/public.models';
 import { PublicClock } from '../catalogue/public-clock';
@@ -10,13 +10,16 @@ import { countdown, countdownParts } from '../catalogue/catalogue-state';
 import { BookCard } from '../catalogue/book-card/book-card';
 import { PublicError } from '../catalogue/public-error';
 import { PageMetadata } from '../../core/page-metadata';
+import { HowToBuyDialog } from './how-to-buy-dialog/how-to-buy-dialog';
+
 @Component({
   selector: 'app-home-page',
-  imports: [PublicSkeleton, RouterLink, BookCard, PublicError],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
 export class HomePage {
+  @ViewChild('howToBuyDialog') howToBuyDialog?: HowToBuyDialog;
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
   private readonly api = inject(PublicApi);
@@ -122,5 +125,9 @@ export class HomePage {
         next: (c) => this.contact.set(c),
         error: () => this.contact.set(null),
       });
+  }
+
+  openHowToBuy(trigger?: HTMLElement | null) {
+    this.howToBuyDialog?.open(trigger);
   }
 }

@@ -131,17 +131,6 @@ export const routes: Routes = [
           import('./features/wishlist/wishlist-page/wishlist-page').then((m) => m.WishlistPage),
       },
       {
-        path: 'cach-mua',
-        loadComponent: () => import('./features/information/public-page').then((m) => m.PublicPage),
-        data: {
-          title: 'Cách hỏi mua sách | Mẹ Mây',
-          heading: 'Chọn sách và nhắn tiệm',
-          description:
-            'Ghi lại mã và đường dẫn cuốn sách bạn quan tâm. Tiệm sẽ xác nhận tình trạng và hướng dẫn chốt mua qua Facebook hoặc Zalo.',
-          path: '/cach-mua',
-        },
-      },
-      {
         path: '**',
         loadComponent: () => import('./features/information/not-found').then((m) => m.NotFound),
       },

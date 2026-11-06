@@ -142,7 +142,7 @@ describe('deployed Worker origin boundary', () => {
       MEMAY_WORKER_NAME: 'me-may',
     };
     const response = await handleWorkerRequest(
-      new Request('https://me-may.account.workers.dev/cach-mua', {
+      new Request('https://me-may.account.workers.dev/lien-he', {
         headers: { 'x-forwarded-host': 'evil.example', 'x-forwarded-proto': 'http' },
       }),
       online,
@@ -163,14 +163,14 @@ describe('deployed Worker origin boundary', () => {
       'http://me-may.account.workers.dev',
     ]) {
       const response = await handleWorkerRequest(
-        new Request(origin + '/cach-mua'),
+        new Request(origin + '/lien-he'),
         { ...env, MEMAY_SITE_ORIGIN: undefined, MEMAY_WORKER_NAME: 'me-may' },
         async () => new Response('unexpected'),
       );
       expect(response.status).toBe(400);
     }
     const response = await handleWorkerRequest(
-      new Request('https://evil.example/cach-mua'),
+      new Request('https://evil.example/lien-he'),
       env,
       async () => new Response('unexpected'),
     );

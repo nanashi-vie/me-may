@@ -1,0 +1,56 @@
+<dialog #dialog (close)="onClose()" (click)="onBackdropClick($event)" aria-labelledby="how-to-buy-title">
+  <div class="dialog-card">
+    <button type="button" class="close-btn" (click)="close()" aria-label="Đóng hướng dẫn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="dialog-header">
+      <div class="header-illustration">
+        <img src="/images/how-to-buy-contact.jpg" alt="Minh họa liên hệ Mẹ Mây" class="illustration-img" />
+      </div>
+      <h2 id="how-to-buy-title" class="dialog-title">Cách hỏi mua sách tại Mẹ Mây</h2>
+    </div>
+
+    <div class="steps-grid">
+      <!-- Bước 1 -->
+      <div class="step-card">
+        <span class="step-badge">1</span>
+        <div class="step-content">
+          <h3 class="step-title">Thêm sách vào “Danh sách quan tâm”</h3>
+        </div>
+      </div>
+
+      <!-- Bước 2 -->
+      <div class="step-card">
+        <span class="step-badge">2</span>
+        <div class="step-content">
+          <h3 class="step-title">Vào “Danh sách quan tâm” chọn tất cả sách cần kiểm tra video tình trạng thật</h3>
+        </div>
+      </div>
+
+      <!-- Bước 3 -->
+      <div class="step-card">
+        <span class="step-badge">3</span>
+        <div class="step-content">
+          <h3 class="step-title">Bấm “Chuẩn bị nội dung hỏi mua”</h3>
+        </div>
+      </div>
+
+      <!-- Bước 4 -->
+      <div class="step-card">
+        <span class="step-badge">4</span>
+        <div class="step-content">
+          <h3 class="step-title">Gửi yêu cầu qua Zalo Hotline</h3>
+          <p class="step-desc">Bấm “Sao chép nội dung” => “Mở zalo” => Dán &amp; gửi tin nhắn yêu cầu cho tiệm qua hotline zalo</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="confirm-btn" (click)="close()">Đã hiểu</button>
+    </div>
+  </div>
+</dialog>

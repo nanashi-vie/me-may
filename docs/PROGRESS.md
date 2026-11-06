@@ -55,15 +55,19 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Checkpoint S041-C13 trong DEV_LOG. Hoàn tất trên dev theo workflow commit/push;
   user merge main/deploy. Spec/plan đã gộp và gỡ, không còn việc triển khai S041.
 
-## Box tiện ích & hỗ trợ bên dưới Banner Hero Trang chủ (chuẩn mẫu IPM) — 06/11/2026 (trên worktree dev-ui)
+## Box tiện ích & Popup "Cách hỏi mua sách" — 06/11/2026 (trên worktree dev-ui)
 
-- Triển khai 4 box tiện ích & hỗ trợ dưới banner Hero trang chủ (`/`) chuẩn theo mẫu IPM:
-  - 4 box desktop (`repeat(4, 1fr)`), 2x2 grid mobile (`repeat(2, 1fr)`).
-  - Bo góc vuông 4px, viền đỏ thương hiệu 1px `#9B1C28`, nền trắng `#FFFFFF`, hover bóng đổ nhẹ và chuyển sắc đỏ đậm `#7D131E`.
-  - Icon SVG trần (không viền/nền phụ) màu đỏ `#9B1C28`. Tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
-  - 4 mục: "ƯU ĐÃI VẬN CHUYỂN" (icon xe tải), "CÁCH HỎI MUA SÁCH" (icon tin nhắn), "CỘNG ĐỒNG MẸ MÂY" (link Zalo Group), "HOTLINE" (icon điện thoại đặc kèm 3 sóng âm chuẩn IPM, tiêu đề `HOTLINE:` và 2 số điện thoại `0966 075 005` / `0703 260 005` in đậm căn giữa).
-  - Vitest 40/40 test files (204/204 tests PASS); build SSR (`npm run build`) và Cloudflare Workers (`npm run build:workers`) hoàn tất 0 error, 0 warning.
-  - CDP headless visual verification xác nhận chuẩn bố cục desktop (1280px) và mobile (390px). Chưa merge vào `dev`.
+- Hoàn thiện 4 box tiện ích chuẩn mẫu IPM và gắn Popup hướng dẫn hỏi mua sách khi click "CÁCH HỎI MUA SÁCH":
+  - Modal dialog `<dialog>` HTML5 bo góc 20px, bóng đổ mềm, backdrop mờ, nút đóng ✕ góc phải và nút "Đã hiểu" ở chân.
+  - Header có hình minh họa liên hệ dạng tròn (120px desktop / 95px mobile) kèm tiêu đề "Cách hỏi mua sách tại Mẹ Mây" font Baloo 2 đỏ thương hiệu `#9B1C28`.
+  - 4 khung thẻ timeline dọc liên tiếp nối bằng đường line dọc:
+    - B1: Thêm sách vào “Danh sách quan tâm”
+    - B2: Vào “Danh sách quan tâm” chọn sách cần kiểm tra video tình trạng thật
+    - B3: Bấm “Chuẩn bị nội dung hỏi mua”
+    - B4: Gửi tin nhắn qua Zalo Hotline (Sao chép nội dung ➔ Mở Zalo ➔ Dán & gửi)
+  - Vitest 42/42 test files (231/231 tests PASS, thêm test suite `how-to-buy-dialog.spec.ts`); build SSR và Workers 0 warning, 0 error.
+  - CDP headless visual test chụp `how-to-buy-dialog-desktop.png` (1280px) và `how-to-buy-dialog-mobile.png` (390px) xác nhận chuẩn visual.
+  - Gỡ bỏ hoàn toàn route `/cach-mua`, link "Cách mua" trên Desktop Header / Mobile Sidebar / Footer, và section `.how` cũ ở cuối trang Home (`/`). Chưa merge vào `dev`.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 
