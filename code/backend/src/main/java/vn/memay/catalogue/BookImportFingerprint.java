@@ -12,7 +12,7 @@ public final class BookImportFingerprint {
         return digest(groups,1);
     }
     public static String digest(List<ImportGroup> groups,int version) {
-        if(version!=1 && version!=2)throw new IllegalArgumentException("Unknown import schema");
+        if(version<1 || version>3)throw new IllegalArgumentException("Unknown import schema");
         var canonical=groups.stream().sorted(Comparator.comparing(ImportGroup::key))
                 .map(g->List.of(g.key(),g.write(),g.collectionSlugs())).toList();
         try {

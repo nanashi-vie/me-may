@@ -1697,3 +1697,143 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   workflow/build Docker thật hoặc gọi API Dokploy. HTTP2xx chưa là deploy hoàn tất.
 - Bàn giao trực tiếp main theo yêu cầu user, gồm workflow và docs trong cùng commit;
   push origin/main. Việc tiếp theo: cấu hình secrets và kiểm run/deployment thật.
+
+### S042-C01 — 06/11/2026 — rà soát Excel với form nhập sách
+
+- Mục tiêu user: đối chiếu import với form mới, ưu tiên giảm thời gian metadata
+  vì ảnh vẫn upload từng cuốn. Phạm vi audit trên dev, không đổi nghiệp vụ/file gốc.
+- Đã fast-forward dev từ origin tới 892f0e9; cây sạch khi bắt đầu. Đọc contract,
+  parser/validator/form và workbook input/me-may-sach-v2.xlsx ở chế độ chỉ đọc.
+- Đang kiểm chứng parser và khác biệt giá/ghi chú/tồn/cảnh báo; chưa triển khai
+  format mới hoặc thay dropdown. Graph MCP lỗi Transport closed, dùng source trực tiếp.
+
+### S042-C02 — 06/11/2026 — kết quả đối chiếu import/form
+
+- Đã audit workbook gốc và parser/validator/form. Import tương thích16header cũ
+  nhưng chưa tối ưu theo form mới: không đơn giá/kg/tự tính, tồn1, không cảnh báo
+  trùng tên, hai header tình trạng vẫn cần. Note optional map riêng đúng contract.
+- File chỉ có header, dropdown8thể loại thiếu Kinh Thánh (parser nhận9). Không
+  sửa workbook; SHA256 trước/sau không đổi, ghi tại BOOK_IMPORT_VERIFICATION.
+- Root chạy `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportV2Test,BookLegacyFingerprintTest test`:
+  15PASS/0failure/0error/0skip. Probe Java ignored .local/import-parity-audit chạy
+  parser thật trên bản sao trong bộ nhớ:12ca PASS, gồm giá36.000–41.400 giữ nguyên,
+  trùng dòng riêng, condition trống, note/tuổi/Bible, chặn formula/header mới.
+- Chỉ đổi docs PROGRESS/DEV_LOG/README/BOOK_IMPORT_VERIFICATION; không DB, live,
+  deploy, app source hoặc file Excel. Chưa đo thao tác thực tế/ảnh; chưa triển khai
+  format mới. Đã hỏi đơn giá thường chung lô hay từng cuốn để xác định bước thiết kế.
+- Audit xong; chuẩn bị commit/push dev, user tự merge main/deploy.
+
+### S042-C03 — 06/11/2026 — import tạm thời không cần đơn giá
+
+- User trả lời: phần import Excel tạm thời chưa cần nhập đơn giá. Giữ hai giá
+  trực tiếp; không coi thiếu đơn giá/kg là việc cần triển khai lúc này.
+- Audit docs đã commit/push dev `47a2dc4`; cập nhật quyết định vào PROGRESS và
+  BOOK_IMPORT_VERIFICATION. Không đổi code hoặc workbook; mục tiêu giảm thời gian
+  metadata vì ảnh thêm từng sách giữ nguyên. Kiểm diff/line limits trước commit.
+
+### S042-C04 — 06/11/2026 — giá được tính khi thêm ảnh
+
+- User làm rõ chủ tự nhập đơn giá khi upload ảnh từng sách để tính hai đầu giá.
+  Form edit hiện có thao tác này; import vẫn bắt buộc hai giá trong Excel.
+- Cần chốt việc để trống hai giá trong Excel để tránh nhập hai lần; đây chưa là
+  thay đổi contract được duyệt. Chỉ cập nhật bàn giao, chưa đổi code/file Excel.
+
+### S042-C05 — 06/11/2026 — rút gọn mẫu Excel
+
+- User đồng ý thiếu hai giá khi import và yêu cầu bỏ cột không bắt buộc, giữ
+  NXB/tác giả. Đọc lại BookValidation/BookImportValidator; graph vẫn Transport closed.
+- Viết thiết kế ngắn BOOK_IMPORT_SIMPLIFICATION:6cột title/publisher/author/
+  category/binding/weight, NXB/tác giả optional, binding chỉ Picture Book;
+  thiếu giá giữẨn, thêm ảnh/đơn giá rồi xuất bản; giữ file/receipt cũ.
+- Đăng ký ở README, cập nhật PROGRESS; chưa đổi app/file Excel, chưa chạy test
+  mới vì chỉ thiết kế. Kiểm diff/line limits/liên kết trước commit; chờ duyệt
+  thiết kế rồi writing-plans và thực thi tuần tự trên dev.
+
+### S042-C06 — 06/11/2026 — giữ mô tả sách trong Excel
+
+- User xác nhận giữ mo_ta_sach (không phải chú thích ảnh). Cập nhật thiết kế
+  từ6thành7cột, mô tả/NXB/tác giả đều optional. Không thêm cột mô tả ảnh.
+- Đổi BOOK_IMPORT_SIMPLIFICATION/README/PROGRESS và log; chưa đổi app/workbook.
+  Kiểm diff/line limits và links trước commit; test app chưa chạy vì chỉ sửa
+  thiết kế. Bước tiếp theo user duyệt thiết kế7cột rồi lập plan tuần tự trên dev.
+
+### S042-C07 — 06/11/2026 — duyệt thiết kế và lập kế hoạch importV3
+
+- User duyệt thiết kế7cột; giữ thực thi tuần tự đã chọn. Đọc Writing Plans,
+  kiểm source thực tế parser/validator/command/transaction/template/editor và
+  schema nullable giá; graph MCP Transport closed, fallback direct source.
+- Fetch origin thành công, dev sạch/đồng bộ tại8882e7f trước sửa docs. Kế hoạch
+  BOOK_IMPORT_SIMPLIFICATION_PLAN gồm4task: parserV3, commit null giá, template/UI,
+  tổng kiểm và bàn giao. Không migration/dependency, không đổi canonicalV1/V2.
+- Đã self-review mapping spec/interfaces/5Review Focus vào test/task; chưa đổi
+  app/workbook hoặc chạy test app. Kiểm diff/line limits/links trước commit.
+- Cập nhật spec đã duyệt/README/PROGRESS. Chờ user review plan theo yêu cầu
+  Writing Plans rồi executing-plans tuần tự; không hỏi lại phương thức thực thi.
+
+### S042-C08 — 06/11/2026 — bắt đầu triển khai importV3
+
+- User duyệt plan, yêu cầu không tạo file hướng dẫn riêng vì đã có. Thực thi
+  tuần tự tại checkout dev theo chỉ định; không tạo workspace/branch khác.
+- Bỏ deliverable workbook/hướng dẫn riêng khỏi task3; giữ endpoint template
+  hiện có tương thíchV3. Không ghi đè file user. Ledger ignored theo plan.
+- Đang task1: viết test nhận7cột/null giá và giữ digestV1/V2; chưa đổi app.
+
+### S042-C09 — 06/11/2026 — parserV3 hoàn tất
+
+- Thêm7header/schema3; dùng cùng adapter một dòng một sách, null giá chỉV3,
+  digest3 riêng; V1/V2 JSON/digest giữ nguyên. Giới hạn100dòng choV2/V3.
+- Test BookImportV3Test6ca RED do chưa nhận headers, GREEN cùng suite21test
+  (V3/V2/parser/legacyfingerprint), 0failure/0error/0skip. Có sparse row7,
+  optional metadata/multiline, binding/weight/headers/101dòng, CSV/XLSX/reorder.
+- Thay code backend schema/parser/xlsx/validator/fingerprint/validation và test;
+  chưa chạy DB/ảnh. Bước tiếp theo task2 tạo importẨn null giá và retry/privacy.
+
+### S042-C10 — 06/11/2026 — commit importV3 null giá
+
+- Command/transaction truyền schemaVersion, chỉV3 bỏ yêu cầu giá khi tạoẨn;
+  publish giữ bắt buộc hai giá/ảnh. Không migration hoặc đổi receipt schema.
+- BookImportV3IntegrationTest RED3failure đúng400 khi đòi giá, GREEN22test
+  gồmV3/V2/transaction/API:0failure/0error/0skip trên me_may_test guarded.
+- Xác nhận import không ảnh/null giá, publish thiếu giá400/public404, thêm giá
+  và đủảnh publish200; retry sau edit giữ giá/tồn/note; rollback sách cuối;
+  category stale/STAFF chặn; receipts1/2/3 đồng thời, V1/V2 không ghi đè.
+- Sandbox chặn socket ở lần đầu, chạy lại được cấp quyền local test DB; không
+  đổi DB bán thật. Task2 xong, bước tiếp theo hướng dẫn UI/template hiện có.
+
+### S042-C11 — 06/11/2026 — giao diện import7cột và giá chưa nhập
+
+- Trang import hướng dẫn7cột và nhập đơn giá khi thêm ảnh; previewV3 dùng số
+  dòng thật, confirm sáchẨn vẫn được. List/preview quản trị ghi Chưa nhập giá,
+  formatter public giữ nguyên. Editor đã xử lý null/tính giá/upload đúng, không sửa.
+- Endpoint template hiện có sinh7cột, dropdown thể loại/kiểu bìa, mô tả wrap.
+  Không tạo file hướng dẫn hoặc workbook giao riêng; roundtrip kiểm trong bộ nhớ.
+- RED backend2failure headers16vs7, frontend2failure row/nhãn; GREEN backend28
+  test và frontend37test/3files. Test editor nhận null giá, tính36000/42000 và
+  giữ sửa tay khi upload đã PASS ngay, ghi nhận behavior hiện có.
+- Task3 xong; bắt đầu tổng kiểm, browser QA riêng và review cuối.
+
+### S042-C12 — 06/11/2026 — importV3 kiểm chứng và bàn giao
+
+- User duyệt7cột và không cần file hướng dẫn; triển khai tuần tự trên dev.
+  Source commits9376626/1d0a988/e21d644; V3null giá/receipt3, V1/V2 giữ nguyên.
+- Root clean verify210run/0failure/0error/3live-provider skip; frontend npm test
+  200PASS/39files, npm run build/build:workers/check:workers:proxyPASS. Angular
+  native134/139 và proxyEPERM trong sandbox, rerun ngoài sandbox đạt, không sửa code.
+- Chrome + NodeSSR4011/API8089, schema import_v3_browser_qa/me_may_test, fake
+  provider/OWNER/STAFF/PNG. Import1sách null giá, metadata giữ đúng; upload2ảnh
+  không tính giá; đủảnh thiếu giá publish400;80000/kg×450g→36000/42000,
+  sửa max44000/lưu200, hidden404→publish200/public36000/44000/mô tả đúng.
+- Chọn lại CSV trả MM-000001/cùng receipt, giữ2ảnh/đơn giá/giá; STAFF
+  redirect về danh sách, không link import, options403. ProbeSTAFF đầu chờ
+  thông báo trong trang import timeout vì routeguard đã redirect, sửa probe không sửa app.
+- Browser đã đóng; dừng2service, kiểm JDBC to_regnamespace null và cả2cổng
+  đã đóng:PASS. Không chạm DB/ảnh bán thật/provider thật. Workbook gốc
+  SHA256 không đổi, ghi ở BOOK_IMPORT_VERIFICATION; screenshot output ignored.
+- Review độc lập review_import_v3 trên b393763..e21d644:0Critical/0Important/
+  0Minor. Không re-review; docs/browser cuối tác giả kiểm, live gác ngoài phạm vi.
+- Gộp quyết định vào DATA/BOOK_IMPORT/CATALOGUE/DESIGN/ARCHITECTURE/
+  MASTER_PLAN; bằng chứng vào BOOK_IMPORT_VERIFICATION; README/PROGRESS cập nhật,
+  gỡ spec/plan hết vai trò sau task4. Không tạo file hướng dẫn/workbook riêng.
+- Bàn giao commit/push dev theo workflow; user merge main/deploy. Chưa deploy,
+  chưa đo thao tác chủ tiệm/live-provider. BackendV3 trước frontend; rollback
+  về backendV2 không nhận7cột, dữ liệu Ẩn/null giá vẫn an toàn trong schema cũ.

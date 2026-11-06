@@ -13,6 +13,9 @@ upload vào phiên tạm trước rồi final tạoPUBLISHED nguyên tử; impor
 receipt theo [BOOK_IMPORT](BOOK_IMPORT.md). Không có DRAFT/harddelete sách/order/
 checkout/giữ chỗ/đồng bộ đa kênh. Mã MM là một mục sách với tồn gộp, dùng chung ảnh và khoảng giá.
 Từ06/11 bỏ tình trạng public, ghi chú nội bộ optional; DATA giữ công thức giá/kg. Không lưu hoặc import dữ liệu khách/ngày bán.
+ImportV3/7cột tạo sáchẨn chưa có giá; chỉ đường này bỏ yêu cầu giá khi tạo import.
+Editor nhập đơn giá/kg và ảnh sau; kiểm publish vẫn bắt buộc cặp giá hợp lệ/ảnh.
+V1/V2 giữ giá, validation và receipt cũ; không migration để hỗ trợ giá null.
 
 ## 2. Kiến trúc và giao dịch
 

@@ -92,8 +92,12 @@ public class BookCommandService {
     }
 
     BookDetail createImported(AdminUser actor, BookWrite input, UUID batchId) {
+        return createImported(actor,input,batchId,1);
+    }
+
+    BookDetail createImported(AdminUser actor, BookWrite input, UUID batchId, int schemaVersion) {
         access.requireOwner(actor);
-        var required = validation.metadataErrors(input);
+        var required = schemaVersion==3?validation.importMetadataErrors(input):validation.metadataErrors(input);
         if (!required.isEmpty())
             throw new AdminApiException(400, "validation_error", required, null);
         if (BookValidation.trim(input.language()) == null || input.conditionGrade()!=null && !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")

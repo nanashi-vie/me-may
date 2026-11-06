@@ -28,7 +28,7 @@ public class BookImportTransaction {
         if(inserted.isEmpty())return new CommitResult(store.find(document.fingerprint()).orElseThrow(),false);
         var resolved=resolve(document,true);
         for(var group:resolved.groups()) {
-            var book=commands.createImported(actor,group.write(),id);
+            var book=commands.createImported(actor,group.write(),id,document.schemaVersion());
             jdbc.update("insert into book_import_item(batch_id,group_key,book_id,book_code,title) values(?,?,?,?,?)",id,group.key(),Long.parseLong(book.id()),book.bookCode(),book.title());
         }
         return new CommitResult(store.find(document.fingerprint()).orElseThrow(),true);

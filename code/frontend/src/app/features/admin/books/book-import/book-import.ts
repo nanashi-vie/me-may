@@ -7,7 +7,7 @@ import { Subscription } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { BookImportApi } from '../book-import-api';
 import { ImportIssue,ImportOptions,ImportPreview,ImportReceipt,ImportWrite } from '../book-import-models';
-import { formatPriceRange } from '../book-copy';
+import { formatAdminPriceRange } from '../book-copy';
 
 @Component({selector:'app-book-import',imports:[RouterLink,ReactiveFormsModule],templateUrl:'./book-import.html',styleUrl:'./book-import.scss'})
 export class BookImport {
@@ -18,7 +18,7 @@ export class BookImport {
   readonly uncertain=signal(false);readonly retryable=signal(false);readonly retryAfter=signal('');readonly needsLogin=signal(false);
   readonly loginBusy=signal(false);
   readonly loginForm=new FormGroup({email:new FormControl('',{nonNullable:true}),password:new FormControl('',{nonNullable:true})});
-  readonly editable=computed(()=>this.auth.user()?.role==='OWNER');readonly price=formatPriceRange;
+  readonly editable=computed(()=>this.auth.user()?.role==='OWNER');readonly price=formatAdminPriceRange;
   readonly canConfirm=computed(()=>this.editable()&&!this.busy()&&!this.needsLogin()&&!this.retryable()&&!!this.preview()?.document.fingerprint&&this.totalIssues()===0&&!this.receipt()&&!!this.selectedFile());
   readonly totalStock=computed(()=>this.totalIssues()?null:this.preview()?.document.groups.reduce((sum,g)=>sum+g.write.variants.reduce((n,v)=>n+(v.stock??0),0),0));
   readonly metadata:{label:string;key:keyof ImportWrite}[]=[

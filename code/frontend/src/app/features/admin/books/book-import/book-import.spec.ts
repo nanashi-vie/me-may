@@ -81,6 +81,18 @@ describe('BookImport file and session boundaries',()=>{
     const f=setup();ready(f.componentInstance);f.detectChanges();
     expect(f.nativeElement.querySelector('[aria-labelledby="preview-title"] summary')?.textContent).toContain('A · Synthetic');
   });
+  it('previews unpriced V3 by source row and allows confirmation',()=>{
+    const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'minimal.csv'));c.checkFile();
+    const document=valid().document;
+    previews[0].next({receipt:null,document:{...document,schemaVersion:3,groups:[{...document.groups[0],key:'R001',rows:[7],write:{...document.groups[0].write,priceMinVnd:null,priceMaxVnd:null,description:'Mô tả giữ lại'}}]}});
+    f.detectChanges();const root=f.nativeElement as HTMLElement;
+    const summary=root.querySelector('[aria-labelledby="preview-title"] summary')?.textContent;
+    expect(summary).toContain('Dòng 7');expect(summary).toContain('Chưa nhập giá');expect(c.canConfirm()).toBe(true);
+    expect(root.textContent).toContain('Mô tả giữ lại');
+    expect(Array.from(root.querySelectorAll('[aria-labelledby="fields-title"] tbody code')).map(e=>e.textContent)).toEqual([
+      'ten_sach','nha_xuat_ban','tac_gia','the_loai','kieu_bia','trong_luong_g','mo_ta_sach',
+    ]);
+  });
   it('does not allow STAFF or detached late responses to change state',()=>{
     const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'books.csv'));c.checkFile();f.destroy();previews[0].next(valid());expect(c.preview()).toBeNull();
     user.set({id:3,email:'staff@qa.test',role:'STAFF'});const other=setup().componentInstance;other.select(new File(['csv'],'books.csv'));other.checkFile();expect(api.preview).toHaveBeenCalledTimes(1);

@@ -27,7 +27,7 @@ public class BookImportParser {
                 while(iterator.hasNext()) {
                     var record=iterator.next();
                     if(record.toList().stream().allMatch(String::isBlank))continue;
-                    int max=version==2?100:500;
+                    int max=version>=2?100:500;
                     if(rows.size()>=max)throw BookImportException.file(413,"row_limit","Tối đa "+max+" dòng dữ liệu.");
                     var issues=new ArrayList<ImportIssue>();
                     if(record.size()!=headers.size())issues.add(new ImportIssue("CSV",Math.toIntExact(record.getRecordNumber()),"file","columns","Số ô không khớp "+headers.size()+" cột tiêu đề."));

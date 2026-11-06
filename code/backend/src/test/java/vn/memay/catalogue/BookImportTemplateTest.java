@@ -14,6 +14,25 @@ import static org.assertj.core.api.Assertions.*;
 class BookImportTemplateTest {
     final BookImportParser parser=new BookImportParser();
     final BookImportValidator validator=new BookImportValidator(new BookValidation());
+    @Test void currentTemplateSupportsSevenColumnsDropdownsAndUnpricedImport()throws Exception {
+        var categories=List.of("Picture Book","Board Book","Chapter","Bách khoa toàn thư & khoa học","Lịch sử","Tuyển tập truyện","Tập đọc","Nấu ăn - thủ công - activity book","Kinh Thánh");
+        var options=new ImportOptions(new Taxonomy(categories.stream().map(s->new Option(s,s,0)).toList(),List.of(),
+                List.of(new Option("PAPERBACK","Paperback",0),new Option("HARDCOVER","Hardcover",1)),List.of()),List.of());
+        var template=new BookImportTemplate();
+        for(var ext:List.of("csv","xlsx"))assertThat(parser.parse("a."+ext,template.render(ext,options))).isEmpty();
+        try(var book=new XSSFWorkbook(new ByteArrayInputStream(template.render("xlsx",options)));var out=new ByteArrayOutputStream()) {
+            var sheet=book.getSheet("Sach");var headers=new ArrayList<String>();sheet.getRow(0).forEach(c->headers.add(c.getStringCellValue()));
+            assertThat(headers).containsExactly("ten_sach","nha_xuat_ban","tac_gia","the_loai","kieu_bia","trong_luong_g","mo_ta_sach");
+            assertThat(sheet.getPhysicalNumberOfRows()).isEqualTo(1);assertThat(sheet.getPaneInformation().isFreezePane()).isTrue();
+            assertThat(sheet.getColumnStyle(6).getWrapText()).isTrue();
+            assertThat(sheet.getDataValidations()).hasSize(2);
+            assertThat(Arrays.asList(sheet.getDataValidations().get(0).getValidationConstraint().getExplicitListValues())).containsExactlyElementsOf(categories);
+            assertThat(sheet.getDataValidations().get(1).getValidationConstraint().getExplicitListValues()).containsExactly("Paperback","Hardcover");
+            var row=sheet.createRow(1);for(int c=0;c<headers.size();c++)row.createCell(c).setCellValue(BookImportV3Test.values().get(headers.get(c)));
+            book.write(out);var doc=validator.normalize(parser.parse("filled.xlsx",out.toByteArray()));
+            assertThat(doc.issues()).isEmpty();assertThat(doc.schemaVersion()).isEqualTo(3);assertThat(doc.groups().getFirst().write().priceMinVnd()).isNull();
+        }
+    }
     static byte[] workbook(Consumer<XSSFSheet> mutate) throws IOException {
         try(var book=new XSSFWorkbook();var out=new ByteArrayOutputStream()) {
             var sheet=book.createSheet("Sach");var header=sheet.createRow(0);var data=sheet.createRow(1);

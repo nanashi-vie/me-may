@@ -1,5 +1,97 @@
 # Kiểm chứng import CSV/XLSX
 
+## ImportV3/7cột và hoàn thiện giá khi thêm ảnh — 06/11/2026
+
+- User duyệt thiết kế/plan, thực thi tuần tự trên dev; không tạo file hướng dẫn
+  hoặc workbook giao riêng. Contract chuyển vào DATA/BOOK_IMPORT/CATALOGUE/DESIGN.
+-7cột tên/NXB/tác giả/thể loại/kiểu bìa/gram/mô tả; NXB/tác giả/mô tả optional.
+  V3 hai giá null/tồn1/Tiếng Anh/Ẩn; editor hiện có nhận đơn giá và tính giá.
+  V1/V2 parser/giá/canonical/digest/receipt giữ nguyên. Không migration/dependency.
+
+| Kiểm tra | Lệnh/nơi chạy | Kết quả |
+|---|---|---|
+| ParserV3 + V2/legacy | root run-local với `-Dtest=BookImportV3Test,BookImportV2Test,BookImportParserTest,BookLegacyFingerprintTest test` |21PASS;6caV3 RED do chưa nhận header rồi GREEN |
+| Transaction/API | root run-local với `-Dtest=BookImportV3IntegrationTest,BookImportV2IntegrationTest,BookImportTransactionTest,BookImportApiTest test` |22PASS; RED3ca thiếu giá400 rồi GREEN |
+| Template/roundtrip | root run-local với `-Dtest=BookImportTemplateTest,BookImportV2Test,BookImportV3Test test` |28PASS, CSV/XLSX7header/dropdown/wrap/roundtrip; không file mẫu riêng |
+| UI import/editor/list | frontend `npm test` với3include tương ứng |37PASS; RED2ca source-row/nhãn rồi GREEN; editor null-price đã hoạt động sẵn |
+| Backend toàn bộ | root `bash code/backend/run-local.sh -B -ntp clean verify` |210run/0failure/0error/3live-provider skip |
+| Frontend toàn bộ | code/frontend `npm test` |200PASS/39files |
+| SSR/Workers | code/frontend `npm run build`, `npm run build:workers` |PASS,0warning; native process lỗi134/139 trong sandbox, chạy ngoài sandbox đạt |
+| Proxy | code/frontend `npm run check:workers:proxy` |PASS POST/query/cookie/CSRF/multipart/server-time/no-store/context/backend-down |
+
+Parser kiểm optional trống/multiline, labels/code, reorder dòng/cột, duplicate
+rows không gộp, sparseXLSX row7, thiếu/trùng/lạ header,101dòng, formula/extra cell.
+DB integration dùng guard me_may_test; confirm không ảnh/null giá, thiếu giá dù
+đủ FRONT/BACK publish400/public404; thêm giá publish200, rollback sách cuối,
+stale category/STAFF403; receipt1/2/3 và retry sau edit giữ giá/tồn/note/version.
+
+Browser Chrome dùng API8089 + NodeSSR4011, schema import_v3_browser_qa trên
+me_may_test, FakeMediaGateway/in-memory assets và OWNER/STAFF giả. Không gọi
+Cloudinary thật hoặc dùng sách/ảnh bán thật. Tạo schema mới, ảnhPNG640×800 giả.
+
+- OWNER import CSV7cột → preview Dòng2/Chưa nhập giá/tồn1 → receipt MM-000001.
+  Editor giữ NXB/tác giả/mô tả/trọng lượng450, hai giá trống khi load và sau upload.
+- Upload FRONT/BACK xong vẫn publish400 khi thiếu giá. Nhập80000/kg cho
+ 36000/42000; sửa giá đến44000, lưu200. SáchẨn public404, sau publish200
+  public nhận36000/44000 và mô tả đúng. Screenshot ignored
+  `output/playwright/import-v3-published.png`; không là ảnh sản phẩm thật.
+- Chọn lại CSV sau edit/publish: nhận cùng MM-000001, giữ2ảnh, đơn giá80000
+  và giá36000/44000, không tạo thêm sách. STAFF bị route guard chuyển về
+  /admin/sach, không có link import; options API403. Probe đầu chờ thông báo
+  trong trang import bị timeout vì đã redirect đúng, sửa kỳ vọng probe, không sửa app.
+- Browser QA ban đầu mở nhầm /admin/login nên404; dùng /admin/dang-nhap đúng.
+  Console có404 đó và400 publish chủ động thử, không coi là lỗi mới của feature.
+
+Browser đã đóng, schema QA đã xóa và2cổng4011/8089 đã đóng, JDBC/socketcheckPASS.
+
+Review độc lập toàn source b393763..e21d644:0Critical/0Important/0Minor;
+reviewer kiểm5Review Focus, không rerun suite hoặc sửa checkout. Docs/browser
+cuối do tác giả kiểm, không gọi đó là review độc lập. Live deploy/provider và
+gate release chưa kiểm; rollout backendV3 trước frontend. Rollback backend về
+V2 sẽ không nhận file7cột, dữ liệuẨn/null giá vẫn giữ được trong schema hiện có.
+Workbook gốcV2 giữ SHA256 a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd.
+
+## Đối chiếu form mới và workbook user — 06/11/2026
+
+Audit trên dev `892f0e9`, không thay app hoặc contract. Mục tiêu user: giảm thời
+gian nhập metadata vì ảnh vẫn thêm từng cuốn. File `input/me-may-sach-v2.xlsx`
+chỉ có sheet Sach, A1:P1/16 header, chưa có dòng sách hoặc công thức.
+
+| Nội dung | Form hiện hành | Import V2/file được cung cấp |
+|---|---|---|
+| Giá | Đơn giá/kg optional × gram; +15%, làm tròn lên1.000đ; sửa tay | Chưa có đơn giá/kg; phải nhập hai giá, giữ nguyên giá file |
+| Tồn | Tổng tồn nhập/sửa được, không tự gộp theo tên | Mỗi dòng tồn1, trùng tên vẫn tạo sách riêng; chủ sửa sau |
+| Ghi chú | Ghi chú nội bộ optional | mo_ta_tinh_trang optional, map note riêng; header cũ vẫn bắt buộc |
+| Tình trạng | Đã bỏ khỏi form/public | tinh_trang vẫn bắt buộc header; giá trị để trống được |
+| Trùng tên | Cảnh báo không chặn | Chưa cảnh báo trùng tên trong lô hoặc với sách có sẵn |
+| Ngôn ngữ | Mặc định Tiếng Anh, sửa được | Mặc định Tiếng Anh, V2 không có cột đổi |
+| Độ tuổi | Chọn nhiều | Dropdown một mục; parser nhận nhiều mục ngăn bằng dấu chấm phẩy |
+| Thể loại |9mục, gồm Kinh Thánh | Dropdown file này8mục, thiếu Kinh Thánh; parser vẫn nhận tên đó |
+| Ảnh/xuất bản | Nhập cùng ảnh rồi xuất bản | Tạo sáchẨn, thêm ảnh từng sách rồi xuất bản |
+
+- Không dùng công thức Excel để thay tính giá của form: parser chặn formula,
+  kể cả cached result. Không thể tự thêm/đổi tên cột vì schema16header nghiêm ngặt.
+- Khác biệt giá/headers/duplicate là tương thích có chủ ý của lần triển khai
+  trước, chưa phải lỗi regression. Chưa duyệt format mới hoặc tự gộp tồn.
+- Kiểm từ root: `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportV2Test,BookLegacyFingerprintTest test`
+  PASS15test/0failure/0error/0skip. Không kết nối DB hoặc chạy import thật.
+- Probe Java riêng tại `.local/import-parity-audit/ImportParityAudit.java` chạy
+  parser/validator hiện hành với bytes gốc và bản sao POI trong bộ nhớ:12ca PASS.
+  Xác nhận header gốc nhận được nhưng file rỗng không import; condition trống,
+  multi-age, note, English/tồn1, hai dòng giống nhau, Kinh Thánh, giữ giá
+  36.000–41.400; chặn thêm đơn giá, đổi note header, bỏ header và công thức.
+- SHA256 trước/sau của file gốc không đổi:
+  `a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd`.
+- Chưa đo thời gian thao tác chủ tiệm hoặc upload ảnh, chưa test UI mới vì
+  không đổi UI. User chốt sau audit: import Excel tạm thời chưa cần nhập đơn giá;
+  code hiện vẫn nhận hai giá trực tiếp, khác biệt này đã được xác định so với form.
+  Kết quả audit không tự cấp quyền thay headers, cảnh báo hoặc triển khai format mới.
+- User làm rõ: khi thêm ảnh từng sách sẽ nhập đơn giá/kg để tính hai giá.
+  Hiện Excel vẫn bắt buộc hai giá trước import, nên có thao tác giá trùng bước.
+  Chưa chốt có cho phép trống hai giá trong Excel; chưa thay contract/validation.
+
+## Bằng chứng triển khai trước đây
+
 Ngày31/10–01/11/2026, code candidate dev7aa8679; kiểm local, không deploy/migrate online.
 [Contract](BOOK_IMPORT.md), [schema file](DATA.md#format-file-import--contract-duyệt31102026),
 [rolloutV11/gate](DEPLOYMENT.md#import-csvxlsx--v11). Không nghiệm thu toàn bộ MVP.

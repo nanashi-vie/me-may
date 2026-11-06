@@ -77,7 +77,32 @@ bằng chứng và gate online ở [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFI
 
 ## Format file import — contract duyệt31/10/2026
 
-V2/16cột là format hiện hành01/11, cùng schema cho CSV UTF-8 (BOM tùy chọn) và
+### V3/7cột — duyệt06/11/2026
+
+Format mặc định cho CSV/XLSX; nhận diện riêng schema3. Đúng7header bên dưới,
+được đổi thứ tự; thiếu/trùng/cột lạ bị chặn. Giữ alias kiểu bìa nhưV2.
+
+| Header | Bắt buộc giá trị | Quy tắc |
+|---|---|---|
+| ten_sach | Có | Text trim≤300 |
+| nha_xuat_ban | Không | Text≤200 |
+| tac_gia | Không | Text≤200 |
+| the_loai | Có | Nhãn/code của9thể loại hiện hành |
+| kieu_bia | Chỉ Picture Book | Paperback/Hardcover; loại khác để trống |
+| trong_luong_g | Có | Gram nguyên1..9007199254740991 |
+| mo_ta_sach | Không | Mô tả sách public≤10000, giữ xuống dòng; khác ghi chú nội bộ |
+
+Mỗi dòng tạo một sáchẨn, Tiếng Anh/tồn1, hai giá và đơn giá/kg null; không dùng
+giá0/giá giả. Không gộp tên; chủ tự tăng tồn. Khi thêm ảnh từng sách, chủ nhập
+đơn giá/kg, form tính giá theo công thức bên dưới và cho sửa tay; load/upload
+không tính lại. Thiếu giá/ảnh không xuất bản, sáchẨn không lộ public.
+V3 giữ2MiB/100dòng, luật cell/CSV/XLSX và textlength nhưV2. Digest3 riêng,
+retry cùng metadata trả receipt cũ, không ghi đè sách đã sửa. Không tạo file
+hướng dẫn/workbook giao riêng theo yêu cầu user; endpoint template hiện có dùngV3.
+
+### Tương thích V2/16cột
+
+V2/16cột vẫn nhận nguyên contract01/11, cùng schema cho CSV UTF-8 (BOM tùy chọn) và
 XLSX sheet `Sach`/headerhàng1. Không nhận xls/xlsm, công thức/macro/date/boolean/
 error/merge/external links. Sheet `HuongDan` chỉ hướng dẫn, không là dữ liệu.
 Header trim, cho đổi thứ tự; đúng16cột, không thiếu/trùng/cộtlạ. Alias đúng
@@ -122,7 +147,7 @@ mặc địnhV2. nhom_sach là ASCII1–50 chữ/số/`_-`, phân biệt hoa th�
 một biến thể, cùng nhóm phải lặp đầy đủ thông tin chung, tên riêng khi nhiều dòng.
 Tồn nguyên0..999999; tên biến thể≤100. Tốiđa500rows/100groups/100variantsnhóm.
 Không đổi semanticdigest/receiptV1; retry file cũ vẫn trả mã cũ, không cập nhật sách.
-Không coi đổi nội dung hoặc đổi schemaV1→V2 là yêu cầu update lô cũ.
+Không coi đổi nội dung hoặc đổi schemaV1/V2/V3 là yêu cầu update lô cũ.
 
 ## Quy trình pilot thật và đầu ra cần ghi
 

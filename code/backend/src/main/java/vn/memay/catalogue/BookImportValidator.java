@@ -12,12 +12,12 @@ public class BookImportValidator {
 
     public ImportDocument normalize(List<CellRow> input) {
         int version=input.isEmpty()?1:input.getFirst().schemaVersion();
-        if(input.stream().anyMatch(row->row.schemaVersion()!=version) || (version!=1 && version!=2))
-            throw BookImportException.file(422,"headers","Không trộn hai format trong cùng file.");
-        return version==2?normalizeV2(input):normalizeLegacy(input);
+        if(input.stream().anyMatch(row->row.schemaVersion()!=version) || version<1 || version>3)
+            throw BookImportException.file(422,"headers","Không trộn các format trong cùng file.");
+        return version>=2?normalizeSingleRows(input,version):normalizeLegacy(input,false);
     }
-    private ImportDocument normalizeV2(List<CellRow> input) {
-        if(input.size()>100)throw BookImportException.file(413,"row_limit","Tối đa 100 dòng sách V2.");
+    private ImportDocument normalizeSingleRows(List<CellRow> input,int version) {
+        if(input.size()>100)throw BookImportException.file(413,"row_limit","Tối đa 100 dòng sách.");
         var adapted=new ArrayList<CellRow>();
         for(int i=0;i<input.size();i++) {
             var row=input.get(i);var cells=new LinkedHashMap<String,String>(row.cells());
@@ -28,15 +28,15 @@ public class BookImportValidator {
             cells.put("nhom_sach","R"+i);cells.put("ngon_ngu","Tiếng Anh");cells.put("bien_the",null);cells.put("ton_kho","1");
             adapted.add(new CellRow(row.sheet(),row.row(),cells,row.issues()));
         }
-        var legacy=normalizeLegacy(adapted);
+        var legacy=normalizeLegacy(adapted,version==3);
         var sorted=new ArrayList<>(legacy.groups());sorted.sort(Comparator.comparing(BookImportFingerprint::semanticContent));
         var groups=new ArrayList<ImportGroup>();
         for(int i=0;i<sorted.size();i++) {
             var group=sorted.get(i);groups.add(new ImportGroup(String.format(Locale.ROOT,"R%03d",i+1),group.write(),group.collectionSlugs(),group.rows()));
         }
-        return new ImportDocument(List.copyOf(groups),legacy.issues(),legacy.totalIssues(),input.size(),legacy.valid()?BookImportFingerprint.digest(groups,2):null,2);
+        return new ImportDocument(List.copyOf(groups),legacy.issues(),legacy.totalIssues(),input.size(),legacy.valid()?BookImportFingerprint.digest(groups,version):null,version);
     }
-    private ImportDocument normalizeLegacy(List<CellRow> input) {
+    private ImportDocument normalizeLegacy(List<CellRow> input,boolean unpriced) {
         var errors=new ArrayList<ImportIssue>();
         var grouped=new TreeMap<String,List<CellRow>>();
         if(input.isEmpty()) issue(errors,null,"file","empty","File không có dữ liệu sách.");
@@ -64,10 +64,11 @@ public class BookImportValidator {
                 if(c.get("tinh_trang")!=null && !Set.of("HIGH_FRESHNESS","MINOR_FLAWS").contains(c.get("tinh_trang"))) issue(errors,row,"tinh_trang","invalid","Dùng HIGH_FRESHNESS hoặc MINOR_FLAWS.");
                 var variants=List.of(new VariantWrite(null,c.get("bien_the"),number(c.get("ton_kho"),0,999999,"ton_kho",row,errors)));
                 var write=new BookWrite(c.get("ten_sach"),c.get("isbn"),c.get("nha_xuat_ban"),c.get("tac_gia"),c.get("ngon_ngu"),
-                        c.get("kieu_bia"),c.get("tinh_trang"),c.get("mo_ta_tinh_trang"),number(c.get("gia_tu"),1,999999999999L,"gia_tu",row,errors),
-                        number(c.get("gia_den"),1,999999999999L,"gia_den",row,errors),number(c.get("trong_luong_g"),1,9007199254740991L,"trong_luong_g",row,errors),
+                        c.get("kieu_bia"),c.get("tinh_trang"),c.get("mo_ta_tinh_trang"),unpriced?null:number(c.get("gia_tu"),1,999999999999L,"gia_tu",row,errors),
+                        unpriced?null:number(c.get("gia_den"),1,999999999999L,"gia_den",row,errors),number(c.get("trong_luong_g"),1,9007199254740991L,"trong_luong_g",row,errors),
                         c.get("mo_ta_sach"),c.get("the_loai"),split(c.get("do_tuoi")),c.get("trinh_do_doc"),c.get("link_video"),List.of(),variants);
-                validation.metadataErrors(write).forEach((field,messages)->messages.forEach(message->issue(errors,row,BookImportSchema.FIELDS.getOrDefault(field,field),"required",message)));
+                var required=unpriced?validation.importMetadataErrors(write):validation.metadataErrors(write);
+                required.forEach((field,messages)->messages.forEach(message->issue(errors,row,BookImportSchema.FIELDS.getOrDefault(field,field),"required",message)));
                 validation.writeErrors(write).forEach((field,messages)->messages.forEach(message->issue(errors,row,BookImportSchema.FIELDS.getOrDefault(field,field),"invalid",message)));
                 if(c.get("bien_the")!=null && c.get("bien_the").length()>100) issue(errors,row,"bien_the","length","Tối đa 100 ký tự.");
                 var collections=split(c.get("bo_suu_tap"));slugs.add(collections);

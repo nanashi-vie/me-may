@@ -128,6 +128,15 @@ describe('BookEditor safe final saves', () => {
     expect(e.form.controls.priceMinVnd.value).toBe(37000);expect(e.form.controls.priceMaxVnd.value).toBe(45000);
     e.form.controls.unitPricePerKgVnd.setValue(null);e.calculatePrices();expect(e.form.controls.priceMaxVnd.value).toBe(45000);
   });
+  it('completes an unpriced imported book without recalculating on photo upload',()=>{
+    const e=editor();e.accept({...saved,publication:'ARCHIVED',priceMinVnd:null,priceMaxVnd:null,unitPricePerKgVnd:null,weightG:450});
+    expect(e.form.controls.priceMinVnd.value).toBeNull();expect(e.form.controls.priceMaxVnd.value).toBeNull();expect(e.canPublish()).toBe(false);
+    e.form.controls.unitPricePerKgVnd.setValue(80000);e.calculatePrices();
+    expect(e.form.controls.priceMinVnd.value).toBe(36000);expect(e.form.controls.priceMaxVnd.value).toBe(42000);
+    e.form.controls.priceMaxVnd.setValue(44000);e.priceEdited('max');e.finishPrice('max');
+    e.photos.updates.next({...saved,publication:'ARCHIVED',priceMinVnd:null,priceMaxVnd:null,weightG:450,version:1});
+    expect(e.form.controls.priceMinVnd.value).toBe(36000);expect(e.form.controls.priceMaxVnd.value).toBe(44000);
+  });
   it('shows duplicate warning without making the form invalid or blocking save',async()=>{
     vi.useFakeTimers();
     try {

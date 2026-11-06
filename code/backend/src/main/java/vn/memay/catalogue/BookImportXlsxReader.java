@@ -138,7 +138,7 @@ final class BookImportXlsxReader {
                     var raw=new ArrayList<String>();for(int i=0;i<width;i++)raw.add(values.getOrDefault(i,""));
                     headers.addAll(BookImportSchema.canonicalHeaders(raw));version=BookImportSchema.version(headers);
                 } else if(!issues.isEmpty() || values.values().stream().anyMatch(v->!v.isBlank())) {
-                    if(headers.isEmpty())bad("Thiếu hàng tiêu đề số 1.");int max=version==2?100:500;
+                    if(headers.isEmpty())bad("Thiếu hàng tiêu đề số 1.");int max=version>=2?100:500;
                     if(rows.size()>=max)limit("Tối đa "+max+" dòng dữ liệu.");
                     var mapped=new LinkedHashMap<String,String>();for(int i=0;i<headers.size();i++)mapped.put(headers.get(i),values.getOrDefault(i,""));
                     rows.add(new CellRow(sheet,row,mapped,List.copyOf(issues),version));
