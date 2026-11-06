@@ -1982,3 +1982,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Fetch origin dev không đổi từ390cd9c; chưa commit tại checkpoint này. Sẽ commit/pushdev
   theo workflow đã cho phép. Chưa production migration/deploy; user merge main,
   chọn candidate/backup/restore/backendV15 trướcfrontend và smoke/cachepurge riêng.
+
+### S043-C08 — 06/11/2026 — bàn giao dev
+
+- Source/contract/evidence commit15d1138 trên dev,60files, không dependency mới.
+  Baseline390cd9c; origin/main4e5e84d không bị sửa/merge/push trong task này.
+- Hoàn tất local; không còn task triển khai S043 dang dở. Chưa liveCloudinary/
+  thiết bị thật/production migration/deploy; giữ gate release ở PROGRESS/DEPLOYMENT.
+- Bản bàn giao docs cuối cùng theo sau sourcecommit, pushdev theo workflow;
+  user merge main và phê duyệt rolloutV15 riêng. Không dùng backend cũ chưa lọc
+  internal media làm rollback sau khi tiệm đã nhập ảnh nội bộ.

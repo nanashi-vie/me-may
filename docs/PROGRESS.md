@@ -12,7 +12,8 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Backend227run/0failure/0error/3live skip, frontend217PASS; SSR/Workers/proxyPASS.
   Reviewer3Important đã sửa và regression; browserChrome desktop/390px đã kiểm
   8ảnh/public6/internal404/save-only/publish/hide/priority/PUTlost-response.
-- QA đã dọn, schema/cổng/browser đóng; đang commit/pushdev, chưa migrate/deployproduction.
+- QA đã dọn, schema/cổng/browser đóng; source15d1138 trên dev, bàn giao/push theo
+  workflow. Chưa migrate/deployproduction; user merge main và cho phép rolloutV15.
   ContractCATALOGUE/DATA/DESIGN, rolloutBOOK_ENTRY_ROLLOUT; checkpointS043.
 
 ## Import Excel8cột/đơn giá optional — đã triển khai06/11/2026
