@@ -25,49 +25,62 @@
         <span class="nav-text">Tổng quan</span>
       </a>
 
-      <a
-        routerLink="/admin/sach"
-        routerLinkActive="active"
-        class="nav-item"
-      >
-        <span class="nav-icon" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
-        </span>
-        <span class="nav-text">Sách</span>
-      </a>
-
-      @if (auth.user()?.role === 'OWNER') {
-        <a
-          routerLink="/admin/bo-suu-tap"
-          routerLinkActive="active"
-          class="nav-item"
+      <div class="nav-group">
+        <button
+          type="button"
+          class="nav-item nav-group-btn"
+          (click)="toggleBookMenu()"
+          [attr.aria-expanded]="bookMenuOpen()"
+          aria-controls="book-management-submenu"
         >
           <span class="nav-icon" aria-hidden="true">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-              <polyline points="2 17 12 22 22 17"></polyline>
-              <polyline points="2 12 12 17 22 12"></polyline>
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
             </svg>
           </span>
-          <span class="nav-text">Bộ sưu tập</span>
-        </a>
+          <span class="nav-text">Quản lý sách</span>
+          <span class="nav-chevron" [class.open]="bookMenuOpen()" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
+        </button>
 
-        <a
-          routerLink="/admin/flash-sale"
-          routerLinkActive="active"
-          class="nav-item"
+        <div
+          id="book-management-submenu"
+          class="nav-sub-group"
+          [class.collapsed]="!bookMenuOpen()"
+          role="region"
+          aria-label="Các mục Quản lý sách"
         >
-          <span class="nav-icon" aria-hidden="true">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-          </span>
-          <span class="nav-text">Flash Sale</span>
-        </a>
-      }
+          <a
+            routerLink="/admin/sach"
+            routerLinkActive="active"
+            class="nav-sub-item"
+          >
+            Sách
+          </a>
+
+          @if (auth.user()?.role === 'OWNER') {
+            <a
+              routerLink="/admin/bo-suu-tap"
+              routerLinkActive="active"
+              class="nav-sub-item"
+            >
+              Bộ sưu tập
+            </a>
+
+            <a
+              routerLink="/admin/flash-sale"
+              routerLinkActive="active"
+              class="nav-sub-item"
+            >
+              Flash sale
+            </a>
+          }
+        </div>
+      </div>
 
       <div class="sidebar-divider" role="separator"></div>
 

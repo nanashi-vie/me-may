@@ -230,6 +230,13 @@ Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên,
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
 
+## Thanh điều hướng Admin Sidebar — 06/11/2026
+
+- **Cấu trúc phân cấp / Accordion**: Thêm mục cha "Quản lý sách" dạng accordion có mũi tên xoay (`v` khi mở, `>` khi đóng), mặc định mở sẵn khi truy cập trang quản trị.
+- **Mục con (Submenu)**: Thụt lề với đường kẻ dọc tree-line thanh lịch (`#E8E2D8`), phong cách clean text gồm: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiển thị mục phân quyền cho OWNER).
+- **Trạng thái Active**: Nền đỏ pastel vừa vặn (`#FDE8E8`), bo góc dạng pill (`border-radius: 8px`), chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left` indicator).
+- **Responsive mobile**: Tự động chuyển layout linh hoạt khi màn hình hẹp ($\le 768px$).
+
 ## Trạng thái UX dùng chung
 
 Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit đều cần mô tả/test khi chuyển thành technical spec. Focus rõ, nút có nhãn, form có label, badge không dựa duy nhất vào màu. Public đọc được từ HTML đầu tiên theo chiến lược render đã qua spike; browser API của wishlist/clipboard không chạy trong server initialization.

@@ -33,27 +33,57 @@ describe('AdminLayout', () => {
     expect(text).toContain('Mẹ Mây');
     expect(text).toContain('Trang quản trị');
     expect(text).toContain('Tổng quan');
+    expect(text).toContain('Quản lý sách');
     expect(text).toContain('Sách');
     expect(text).toContain('Bộ sưu tập');
-    expect(text).toContain('Flash Sale');
+    expect(text).toContain('Flash sale');
     expect(text).toContain('Xem website');
     expect(text).toContain('owner@memay.vn');
     expect(text).toContain('OWNER');
 
     const svgIcons = fixture.nativeElement.querySelectorAll('.nav-icon svg');
-    expect(svgIcons.length).toBe(5);
+    expect(svgIcons.length).toBe(3);
+
+    const chevron = fixture.nativeElement.querySelector('.nav-chevron svg');
+    expect(chevron).toBeTruthy();
 
     const avatar = fixture.nativeElement.querySelector('.account-avatar');
     expect(avatar?.textContent?.trim()).toBe('O');
   });
 
-  it('hides OWNER-only links (Bộ sưu tập, Flash Sale) when signed in as STAFF', () => {
+  it('toggles book management accordion on button click', () => {
+    const { fixture, component } = setup();
+    expect(component.bookMenuOpen()).toBe(true);
+
+    const toggleBtn = fixture.nativeElement.querySelector('.nav-group-btn') as HTMLButtonElement;
+    expect(toggleBtn.getAttribute('aria-expanded')).toBe('true');
+
+    const submenu = fixture.nativeElement.querySelector('#book-management-submenu');
+    expect(submenu.classList.contains('collapsed')).toBe(false);
+
+    toggleBtn.click();
+    fixture.detectChanges();
+
+    expect(component.bookMenuOpen()).toBe(false);
+    expect(toggleBtn.getAttribute('aria-expanded')).toBe('false');
+    expect(submenu.classList.contains('collapsed')).toBe(true);
+
+    toggleBtn.click();
+    fixture.detectChanges();
+
+    expect(component.bookMenuOpen()).toBe(true);
+    expect(toggleBtn.getAttribute('aria-expanded')).toBe('true');
+    expect(submenu.classList.contains('collapsed')).toBe(false);
+  });
+
+  it('hides OWNER-only links (Bộ sưu tập, Flash sale) when signed in as STAFF', () => {
     const { fixture } = setup({ id: 2, email: 'staff@memay.vn', role: 'STAFF' });
     const text = fixture.nativeElement.textContent;
     expect(text).toContain('Tổng quan');
+    expect(text).toContain('Quản lý sách');
     expect(text).toContain('Sách');
     expect(text).not.toContain('Bộ sưu tập');
-    expect(text).not.toContain('Flash Sale');
+    expect(text).not.toContain('Flash sale');
     expect(text).toContain('staff@memay.vn');
     expect(text).toContain('STAFF');
   });

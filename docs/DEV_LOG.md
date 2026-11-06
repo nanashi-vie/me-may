@@ -1431,3 +1431,29 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
      - Ảnh chụp kiểm chứng: admin-book-list-filters.png, public-home-header.png, public-mobile-sidebar.png. Đã dừng Chrome và test server.
 4. Việc dang dở / blocker: Không có.
 5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.
+
+### S038-C05 — 06/11/2026 — Sidebar Admin phân cấp Accordion Tree View và tinh chỉnh Active State
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C05. Mục tiêu: điều chỉnh thanh Sidebar /admin theo cấu trúc phân cấp (Accordion Tree View) giống mẫu tham chiếu, tạo mục cha "Quản lý sách" chứa các mục con "Sách", "Bộ sưu tập", "Flash sale", làm đậm màu nền đỏ active và bỏ đường viền nhỏ bên trái.
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Nhóm phân cấp Accordion "Quản lý sách":
+     - Mục cha: button "Quản lý sách" có icon sách + mũi tên chevron SVG (v khi mở, > khi đóng), mặc định mở sẵn (bookMenuOpen = signal(true)), hỗ trợ click đóng/mở mượt mà với aria-expanded và aria-controls.
+     - Submenu lồng bên trong: thụt lề 1.45rem, có đường kẻ dọc tree-line mảnh (#E8E2D8), hiển thị clean text gồm 3 mục: "Sách" (/admin/sach), "Bộ sưu tập" (/admin/bo-suu-tap), "Flash sale" (/admin/flash-sale) (hai mục sau chỉ hiển thị với OWNER).
+   - Tinh chỉnh Active State:
+     - Nền active: đổi sang màu đỏ pastel vừa phải #FDE8E8 (đậm hơn nền cũ #FDF2F2, tương phản rõ nét với chữ đỏ đô #9B1C28).
+     - Bỏ hoàn toàn đường viền nhỏ 3px bên trái (border-left indicator) theo ảnh mẫu của user, active item thành hình khối bo tròn mềm mại (pill / rounded rect border-radius 8px / 6px).
+     - Bổ sung responsive linh hoạt cho mobile view.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: npm test (cwd code/frontend trong worktree dev-ui) -> 38/38 files, 194/194 tests PASS (bổ sung test toggle accordion và quyền OWNER/STAFF).
+   - Frontend build: npm run build và npm run build:workers hoàn tất 0 error, 0 warning.
+   - Visual verification qua Chrome headless CDP:
+     - Chụp ảnh admin-sidebar-accordion.png (asideWidth 240px, parentGroup 'Quản lý sách', subItems ['Sách', 'Bộ sưu tập', 'Flash sale'], activeItem 'Sách', icons: 3).
+     - Kiểm chứng trực quan: mục "Sách" active có nền đỏ pastel #FDE8E8, không có viền đỏ trái, đường kẻ dọc thụt lề chuẩn mẫu.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push nhánh dev-ui lên GitHub.
