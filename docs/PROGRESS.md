@@ -34,6 +34,16 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Checkpoint S041-C13 trong DEV_LOG. Hoàn tất trên dev theo workflow commit/push;
   user merge main/deploy. Spec/plan đã gộp và gỡ, không còn việc triển khai S041.
 
+## Box tiện ích & hỗ trợ bên dưới Banner Hero Trang chủ (chuẩn mẫu IPM) — 06/11/2026 (trên worktree dev-ui)
+
+- Triển khai 4 box tiện ích & hỗ trợ dưới banner Hero trang chủ (`/`) chuẩn theo mẫu IPM:
+  - 4 box desktop (`repeat(4, 1fr)`), 2x2 grid mobile (`repeat(2, 1fr)`).
+  - Bo góc vuông 4px, viền đỏ thương hiệu 1px `#9B1C28`, nền trắng `#FFFFFF`, hover bóng đổ nhẹ và chuyển sắc đỏ đậm `#7D131E`.
+  - Icon SVG trần (không viền/nền phụ) màu đỏ `#9B1C28`. Tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
+  - 4 mục: "ƯU ĐÃI VẬN CHUYỂN" (icon xe tải), "CÁCH HỎI MUA SÁCH" (icon tin nhắn), "CỘNG ĐỒNG MẸ MÂY" (link Zalo Group), "HOTLINE" (icon điện thoại đặc kèm 3 sóng âm chuẩn IPM, tiêu đề `HOTLINE:` và 2 số điện thoại `0966 075 005` / `0703 260 005` in đậm căn giữa).
+  - Vitest 40/40 test files (204/204 tests PASS); build SSR (`npm run build`) và Cloudflare Workers (`npm run build:workers`) hoàn tất 0 error, 0 warning.
+  - CDP headless visual verification xác nhận chuẩn bố cục desktop (1280px) và mobile (390px). Chưa merge vào `dev`.
+
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 
 - Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:

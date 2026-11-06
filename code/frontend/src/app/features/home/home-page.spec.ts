@@ -34,11 +34,11 @@ describe('HomePage banner info boxes', () => {
     const items = el.querySelectorAll('.info-box-item');
     expect(items.length).toBe(4);
 
-    const titles = Array.from(el.querySelectorAll('.box-title')).map((t) => t.textContent?.trim());
-    expect(titles).toContain('Ưu đãi vận chuyển');
-    expect(titles).toContain('Cách hỏi mua sách');
-    expect(titles).toContain('Cộng đồng Mẹ Mây');
-    expect(titles).toContain('Hotline hỗ trợ:');
+    const titles = Array.from(el.querySelectorAll('.box-title')).map((t) => t.textContent?.replace(/\s+/g, ' ').trim());
+    expect(titles).toContain('ƯU ĐÃI VẬN CHUYỂN');
+    expect(titles).toContain('CÁCH HỎI MUA SÁCH');
+    expect(titles).toContain('CỘNG ĐỒNG MẸ MÂY');
+    expect(titles).toContain('HOTLINE:');
   });
 
   it('binds Zalo group link from contact config to Community box', () => {
@@ -67,3 +67,4 @@ describe('HomePage banner info boxes', () => {
     expect(link2.textContent?.trim()).toBe('0703 260 005');
   });
 });
+
