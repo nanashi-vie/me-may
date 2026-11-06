@@ -297,11 +297,12 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 ## Import CSV/XLSX —31/10
 
 [BOOK_IMPORT](BOOK_IMPORT.md#api-và-lưu-trữ) là nguồn API/schemaV11/retry/quota hiện hành;
-[DATA](DATA.md#format-file-import--contract-duyệt31102026) giữV3/7cột mặc định,
-V2/16cột vàV1/20cột tương thích. Parser bounded, canonicalSHA256 theo schema;
-V2/V3 không gộp dòng giốngnhau; một transaction tạo ARCHIVED/variants/audit/receipt,
-không Cloudinary. V3 null giá dùng schema hiện có; createImported nhận version,
-chỉV3 bỏ required-price gate, publish vẫn kiểm đủ giá/ảnh. Không đổi digest cũ.
+[DATA](DATA.md#format-file-import--contract-duyệt31102026) giữV4/8cột mặc định,
+V3/7cột,V2/16cột,V1/20cột tương thích. Parser bounded, canonicalSHA256 theo schema;
+V2–V4 không gộp dòng giốngnhau; một transaction tạo ARCHIVED/variants/audit/receipt,
+không Cloudinary. V3/V4 cho null giá; V4 có unit thì tính BigInteger trong validator.
+ImportGroup mang unit ngoài BookWrite qua resolve/create/audit; digest4 chứa unit,
+V1–V3 canonical giữ nguyên. Schema DB đã hỗ trợ unit/null giá, publish kiểm đủ giá/ảnh.
 Tái sử dụng aggregate/validation/editor/publish; private no-store và OWNER/CSRF.
 [Kiểm chứng](BOOK_IMPORT_VERIFICATION.md) gồm rollback100sách, mất phản hồi và giới hạn host.
 

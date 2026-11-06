@@ -30,8 +30,8 @@
 > **Bổ sung01/11–04/11:** import16cột, mỗi dòng=một sáchẨn/defaultTiếngAnh/tồn1;
 > nhãn dễđọc/code và receiptV1 tương thích. Thêm Tập đọc, Nấu ăn - thủ công -
 > activity book (V12) và Kinh Thánh (V13) vào thểloại chung. Contract ở DATA/BOOK_IMPORT, gate ởPROGRESS.
-> **06/11:** importV3 rút7cột, NXB/tác giả/mô tả optional; giá nhập khi thêm ảnh,
-> thiếu giá giữẨn. FileV1/V2 và receipt cũ tương thích; DATA/BOOK_IMPORT giữ chi tiết.
+> **06/11:** importV4/8cột thêm don_gia_kg optional, tự tính giá hoặc bổ sung khi thêm ảnh;
+> NXB/tác giả/mô tả optional, giữẨn; fileV1–V3/receipt cũ tương thích. DATA/BOOK_IMPORT giữ chi tiết.
 
 ### Phạm vi M1 local đã thực hiện
 

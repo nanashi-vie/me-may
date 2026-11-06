@@ -259,17 +259,17 @@ Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn t
 ## Import CSV/Excel —31/10
 
 OWNER mở Import sách từ danh sách; xem bảng field ngắn và mã lựa chọn thu gọn,
-xem7cột (mỗi dòng=một sách, mặc định Tiếng Anh/tồn1), nhận nhãn dropdown,
+xem8cột (mỗi dòng=một sách, mặc định Tiếng Anh/tồn1), nhận nhãn dropdown,
 chọn file, kiểm toàn file rồi xác nhận
 nhập sách Ẩn. Bỏ bước chuẩn bị/nút tải mẫu theo yêu cầu01/11. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
 File chỉ ở memory tab; mất phản hồi có retry đúng file/fingerprint, hết phiên giữ
 file để đăng nhập và kiểm lại. Receipt dẫn editor từng sách; không bulk publish.
 Danh sách có lọc/nhãn Chưa xuất bản và placeholder; ARCHIVED+publishedAtnull
 dùng nút Xuất bản, sách từng công khai dùng Hiện sách. Ảnh/editor giữ nguyên.
-V3 giữ NXB/tác giả/mô tả sách optional, không cần giá trong Excel. Preview/list
-quản trị hiện Chưa nhập giá; chủ nhập đơn giá/kg khi thêm ảnh để tính hai giá,
-sửa tay được. Load/upload ảnh không tính lại giá; thiếu giá vẫn chặn xuất bản.
-File16/20cột cũ tiếp tục được nhận, giữ giá và receipt, không tự gộp dòng trùng tên.
+V4 giữ NXB/tác giả/mô tả sách optional, thêm don_gia_kg optional. Có thì preview
+hiện đơn giá và hai giá tự tính; trống hiện Chưa nhập giá và bổ sung khi thêm ảnh.
+Form sửa tay được; load/upload ảnh không tính lại giá, thiếu giá chặn xuất bản.
+File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng trùng tên.
 [Contract và hướng dẫn](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026).
 
 

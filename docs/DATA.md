@@ -77,10 +77,11 @@ bằng chứng và gate online ở [BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFI
 
 ## Format file import — contract duyệt31/10/2026
 
-### V3/7cột — duyệt06/11/2026
+### V4/8cột — đơn giá optional06/11/2026
 
-Format mặc định cho CSV/XLSX; nhận diện riêng schema3. Đúng7header bên dưới,
-được đổi thứ tự; thiếu/trùng/cột lạ bị chặn. Giữ alias kiểu bìa nhưV2.
+Format mặc định cho CSV/XLSX; nhận diện riêng schema4. Đúng8header bên dưới,
+được đổi thứ tự; thiếu/trùng/cột lạ bị chặn. Có thể bỏ don_gia_kg để dùng
+V3/7cột cũ; các header khác vẫn cần đủ. Giữ alias kiểu bìa nhưV2.
 
 | Header | Bắt buộc giá trị | Quy tắc |
 |---|---|---|
@@ -91,14 +92,19 @@ Format mặc định cho CSV/XLSX; nhận diện riêng schema3. Đúng7header b
 | kieu_bia | Chỉ Picture Book | Paperback/Hardcover; loại khác để trống |
 | trong_luong_g | Có | Gram nguyên1..9007199254740991 |
 | mo_ta_sach | Không | Mô tả sách public≤10000, giữ xuống dòng; khác ghi chú nội bộ |
+| don_gia_kg | Không | NguyênVND/kg1..999999999999, không dấu nhóm; trống được |
 
-Mỗi dòng tạo một sáchẨn, Tiếng Anh/tồn1, hai giá và đơn giá/kg null; không dùng
-giá0/giá giả. Không gộp tên; chủ tự tăng tồn. Khi thêm ảnh từng sách, chủ nhập
-đơn giá/kg, form tính giá theo công thức bên dưới và cho sửa tay; load/upload
+Mỗi dòng tạo một sáchẨn, Tiếng Anh/tồn1. Có don_gia_kg thì tính hai giá bằng
+BigInteger theo công thức form bên dưới, lưu đơn giá cùng giá; ví dụ80000/450g
+→36000/42000. Giá tính vượt giới hạn thì lỗi đúng cột đơn giá, chặn cảfile.
+Trống hoặc dùngV3 thì hai giá/đơn giá null, bổ sung khi thêm ảnh; không giá giả.
+Không gộp tên; chủ tự tăng tồn. Form vẫn sửa đơn giá/hai giá được; load/upload
 không tính lại. Thiếu giá/ảnh không xuất bản, sáchẨn không lộ public.
-V3 giữ2MiB/100dòng, luật cell/CSV/XLSX và textlength nhưV2. Digest3 riêng,
-retry cùng metadata trả receipt cũ, không ghi đè sách đã sửa. Không tạo file
-hướng dẫn/workbook giao riêng theo yêu cầu user; endpoint template hiện có dùngV3.
+V3/V4 giữ2MiB/100dòng, luật cell/CSV/XLSX và textlength nhưV2. Digest4 gồm cả
+đơn giá khi hai giá làm tròn trùng; digestV1–V3 giữ nguyên. Retry cùng file trả
+receipt cũ, không ghi đè sửa tay. Đổi schema7→8cột hoặc đổi đơn giá là lô mới,
+không cập nhật sách đã nhập. Không tạo hướng dẫn/workbook giao riêng;
+endpoint template hiện có dùngV4. Nhập số như80000, không80000đ/80.000/80,000.
 
 ### Tương thích V2/16cột
 

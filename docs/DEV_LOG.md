@@ -1865,3 +1865,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   unit81000/giá40000–48000/tồn4/note rồi retry giữ nguyên; unit khác giá làm tròn
   giống vẫn lưu riêng; một dòng lỗi chặn cảfile, không receipt/sách.
 - Bước tiếp theo review độc lập, buildWorkers/proxy và gộp contract/bàn giao dev.
+
+### S042-C15 — 06/11/2026 — hoàn tất đơn giá/kg optional khi import
+
+- Reviewer độc lập review_import_unit trên2f8b89b..3d5894a không finding
+  Critical/Important/Minor; xác nhận math/canonical/persistence/audit/retry.
+- Backend219run/0failure/0error/3live-provider skip; frontend201PASS/39files,
+  SSR/Workers build0warning và proxyPASS. Không chạy lại suite sau docs vì
+  source app không đổi sau kiểm full; không tạo service/database QA riêng.
+- Không manualbrowser/deviceV4 mới: DOM import18test và realHTTP integration3test
+  là bằng chứng mới; browserV3 trước đây không được tính là kiểm mớiV4.
+- Gộp contractV4 vào DATA/BOOK_IMPORT/ARCHITECTURE/CATALOGUE/DESIGN/MASTER_PLAN,
+  chỉ mục README, snapshot PROGRESS, evidence BOOK_IMPORT_VERIFICATION. Không
+  tạo file hướng dẫn/workbook riêng; originalV2 SHA256 giữ nguyên.
+- Source commit3d5894a; tài liệu bàn giao commit/pushdev cùng task. Chưa deploy,
+  không migration/dependency/provider thật. BackendV4 trước frontend; receipt
+  cũ giữ nguyên, đổi7→8cột hoặc đổi đơn giá vẫn là lô mới, không update sách cũ.

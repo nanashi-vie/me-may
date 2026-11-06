@@ -1,5 +1,40 @@
 # Kiểm chứng import CSV/XLSX
 
+## ImportV4 — don_gia_kg optional06/11/2026
+
+- User yêu cầu bổ sung đơn giá optional vào format rút gọn; source `3d5894a`,
+  thực thi tuần tự trên dev. Không tạo file hướng dẫn/workbook giao riêng.
+- Nhận8cột gồm don_gia_kg; bỏ cột này vẫn nhận V3/7cột. Ô trống giữ null, có số
+  nguyên hợp lệ thì lưu đơn giá và tính hai giá bằng BigInteger đúng công thức TS.
+  V1–V3 BookWrite canonical/hash giữ byte-compatible, V4 hash gồm đơn giá riêng.
+
+| Kiểm tra | Lệnh/nơi chạy | Kết quả |
+|---|---|---|
+| Parser/pricing/legacy/template | root run-local với `-Dtest=BookImportUnitPriceTest,BookImportV3Test,BookImportV2Test,BookImportTemplateTest,BookLegacyFingerprintTest test` |35PASS; unit RED5headers, template RED2 rồi GREEN |
+| Tích hợp đơn giá | BookImportUnitPriceIntegrationTest qua HTTP trên me_may_test |3PASS; RED3failure422 rồi GREEN trong full verify |
+| UI import | frontend `npm test -- --include='**/book-import.spec.ts'` |18PASS; RED2preview/header rồi GREEN |
+| Backend toàn bộ | root `bash code/backend/run-local.sh -B -ntp clean verify` |219run/0failure/0error/3live-provider skip |
+| Frontend toàn bộ | code/frontend `npm test` |201PASS/39files |
+| SSR/Workers/proxy | code/frontend `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` |PASS0warning, proxyPASS |
+
+- Kiểm80000×450g→36000/42000;81000×450g→37000/42000 theo base chưa làm tròn
+  của form. Đơn giá1/1g, maxunit/1g; blankCSV/XLSX, numericExcel/formula,
+  số0/âm/lẻ/dấu nhóm/exponent/ngoài range và computedoverflow đều kiểm đúng.
+- Hai đơn giá80000/81000 cùng1g cho cùng1000/1000 vẫn khácfingerprint;
+  đổi thứ tự cột/dòng/CSV-XLSX không đổi digest. Golden V2/V3 chụp trước sửa giữ
+  `5d40b9e7429576a3591a9f4cc194c6d728a7482334eb7305e9888be44a5cfcf6` và
+  `79c643c0ddc33676fc3a547582075c2012fc4261bd1d96b921bfbe9d9517cac2`.
+- API xác nhận unit80000 và giá36000/42000, dòng unit trống/null giá, sáchẨn/
+  khôngảnh; sửa unit81000/giá40000–48000/tồn4/note rồi retry giữ nguyên. Unit
+  khác nhau không bị mất qua sort/resolve; một dòng lỗi chặn cảfile/no receipt.
+- Reviewer độc lập `review_import_unit` trên2f8b89b..3d5894a:0Critical/0Important/
+  0Minor; không rerun tests/build. Docs cuối tác giả kiểm. Không chạy lại manual
+  browser/device choV4; DOM component tests và realHTTP integration là bằng chứng
+  mới, browserV3 bên dưới là bằng chứng phiên trước, không thay cho kiểmV4.
+- Chưa deploy/provider thật; không migration/dependency. Rollout backendV4
+  trước frontend; đổi7→8cột hoặc đổi đơn giá là lô mới, không cập nhật sách cũ.
+  WorkbookV2 gốc giữ nguyên SHA256 đã ghi ở phầnV3 bên dưới.
+
 ## ImportV3/7cột và hoàn thiện giá khi thêm ảnh — 06/11/2026
 
 - User duyệt thiết kế/plan, thực thi tuần tự trên dev; không tạo file hướng dẫn
