@@ -2040,3 +2040,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bảo toàn localedituser bằng gỡ p.eyebrow/h2 rỗng và sectionthừa; giữ mô tả.
 - Code đang local dev840a78f, chuẩn bị commit/push theo workflow. Chưa iPhone vật lý
   sau sửa hoặc cập nhật memaybooks.com; user merge main/deploy rồi test máy thật.
+
+### S044-C05 — 06/11/2026 — source đã pushdev
+
+- Commit5844b4e đã push origin/dev;9file gồm code/tests và tài liệu bàn giao.
+  Frontend221PASS, SSR/Workers/proxyPASS, WebKitmobile actualcopy/paste2luồng và
+  offline guardPASS, review0finding; không appcode đổi sau verification.
+- User vẫn cần merge main/deploy trước khi test lại Safari trên memaybooks.com.
+  Snapshot docs chốt sau sourcecommit; chưa deploy hoặc kiểm iPhone vật lý sau sửa.

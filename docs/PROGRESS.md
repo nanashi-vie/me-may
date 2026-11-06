@@ -9,7 +9,7 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   chọn đầy đủ nội dung. Gỡ p/h2 rỗng theo localedit user, giữ description.
 - Frontend221PASS; SSR/Workers/proxyPASS; reviewer0finding. WebKitmobile copy/paste
   detail/wishlist và offline guard PASS. Chưa kiểm iPhone vật lý hoặc deploy.
-- Bằng chứng CONTACT_VERIFICATION; đang commit/pushdev theo workflow, user merge main.
+- Bằng chứng CONTACT_VERIFICATION; source5844b4e đã pushdev, user merge main/deploy.
 
 ## 8ảnh, lưu/xuất bản và đặc điểm sách — triển khai local06/11/2026
 
