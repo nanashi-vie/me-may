@@ -1,5 +1,5 @@
 import {AuthService} from '../../../../core/auth/auth.service';
-import { formatPriceRange } from '../book-copy';
+import { formatAdminPriceRange } from '../book-copy';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -16,7 +16,7 @@ import { PUBLICATION_LABELS } from '../book-copy';
 })
 export class BookList {
   readonly auth=inject(AuthService);
-  readonly price = formatPriceRange;
+  readonly price = formatAdminPriceRange;
   private readonly api = inject(BookApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

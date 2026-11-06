@@ -36,3 +36,7 @@ export function formatPriceRange(min: number | null, max: number | null): string
   if (min === null || max === null) return '—';
   return (min === max ? vndFormat.format(min) : vndFormat.format(min) + ' - ' + vndFormat.format(max)) + ' đ';
 }
+
+export function formatAdminPriceRange(min: number | null, max: number | null): string {
+  return min === null || max === null ? 'Chưa nhập giá' : formatPriceRange(min, max);
+}

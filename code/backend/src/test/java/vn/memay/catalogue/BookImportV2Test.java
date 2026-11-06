@@ -129,11 +129,11 @@ class BookImportV2Test {
         assertThat(doc.fingerprint()).isEqualTo("7eeb28ad04e84becf333f10f1960783d696d9eb76fbe63417e340d3699f992fc");
         assertThat(doc.groups().getFirst().key()).isEqualTo("A");
     }
-    @Test void privateTemplateApiNowProducesTheSixteenColumnFormat()throws Exception {
+    @Test void privateTemplateApiProducesTheCurrentSevenColumnFormat()throws Exception {
         var options=new ImportOptions(new vn.memay.taxonomy.TaxonomyDtos.Taxonomy(List.of(),List.of(),List.of(),List.of()),List.of());
         var bytes=new BookImportTemplate().render("xlsx",options);
         try(var book=new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
-            assertThat(book.getSheet("Sach").getRow(0).getLastCellNum()).isEqualTo((short)16);
+            assertThat(book.getSheet("Sach").getRow(0).getLastCellNum()).isEqualTo((short)7);
         }
         assertThat(parser.parse("a.xlsx",bytes)).isEmpty();
     }

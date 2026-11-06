@@ -15,7 +15,7 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Mẫu mới chỉ giữ7cột: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
   NXB/tác giả/mô tả optional. [Thiết kế](BOOK_IMPORT_SIMPLIFICATION.md) đã duyệt,
   [plan tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) đã duyệt, đang thực thi tuần tự.
-  Task1 PASS21test, task2 PASS22test; đang task3 UI/template; giữ tương thích file cũ, không tạo file hướng dẫn riêng. Checkpoint S042-C08.
+  Task1 PASS21, task2 PASS22, task3 backend28/frontend37; đang tổng kiểm; giữ tương thích file cũ, không tạo file hướng dẫn riêng. Checkpoint S042-C08.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 

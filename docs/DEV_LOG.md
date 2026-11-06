@@ -1799,3 +1799,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   category stale/STAFF chặn; receipts1/2/3 đồng thời, V1/V2 không ghi đè.
 - Sandbox chặn socket ở lần đầu, chạy lại được cấp quyền local test DB; không
   đổi DB bán thật. Task2 xong, bước tiếp theo hướng dẫn UI/template hiện có.
+
+### S042-C11 — 06/11/2026 — giao diện import7cột và giá chưa nhập
+
+- Trang import hướng dẫn7cột và nhập đơn giá khi thêm ảnh; previewV3 dùng số
+  dòng thật, confirm sáchẨn vẫn được. List/preview quản trị ghi Chưa nhập giá,
+  formatter public giữ nguyên. Editor đã xử lý null/tính giá/upload đúng, không sửa.
+- Endpoint template hiện có sinh7cột, dropdown thể loại/kiểu bìa, mô tả wrap.
+  Không tạo file hướng dẫn hoặc workbook giao riêng; roundtrip kiểm trong bộ nhớ.
+- RED backend2failure headers16vs7, frontend2failure row/nhãn; GREEN backend28
+  test và frontend37test/3files. Test editor nhận null giá, tính36000/42000 và
+  giữ sửa tay khi upload đã PASS ngay, ghi nhận behavior hiện có.
+- Task3 xong; bắt đầu tổng kiểm, browser QA riêng và review cuối.

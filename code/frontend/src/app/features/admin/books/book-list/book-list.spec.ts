@@ -6,6 +6,12 @@ import { vi } from 'vitest';
 import { BookList } from './book-list';
 import { BookApi } from '../book-api';
 describe('BookList', () => {
+  it('identifies an imported book without a price',()=>{
+    TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+      {provide:BookApi,useValue:{list:()=>of({items:[{id:'7',bookCode:'MM-000007',title:'Imported',priceMinVnd:null,priceMaxVnd:null,publication:'ARCHIVED',publishedAt:null,totalStock:1,version:0,updatedAt:'2026-11-06T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1})}}]});
+    const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.textContent).toContain('Chưa nhập giá');
+    expect(f.nativeElement.textContent).not.toContain('0 đ');
+  });
   it('restores filters and page from the URL', () => {
     const list = vi.fn(() => of({ items: [], page: 2, size: 20, totalElements: 0, totalPages: 0 }));
     TestBed.configureTestingModule({
