@@ -1449,3 +1449,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Backend tests: 15/15 tests PASS.
   - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs quản lý: PASS.
 - Bước tiếp theo: hoàn tất commit merge trên `dev`, sẵn sàng push `origin/dev`.
+
+
+### S041-C04 — 06/11/2026 — User duyệt thiết kế, lập kế hoạch triển khai
+
+1. User trả lời “tôi duyệt” cho BOOK_ENTRY_SIMPLIFICATION_DESIGN; chuyển trạng
+   thái spec sang đã duyệt, dùng Superpowers writing-plans. Phạm vi như S041-C02.
+2. Kiểm môi trường: branch dev sạch, HEAD84c8c53 sau merge dev-ui ở checkpoint
+   C03; không quay về base cũ hoặc ghi đè các thay đổi UI mới. Đã đọc checkpoint
+   mới và khám phá lại BookDtos/Command/Validation/Mapper/VariantStore/Query qua
+   MCP graph, đối chiếu import fingerprint, form và contact hiện hành.
+3. Đã viết BOOK_ENTRY_SIMPLIFICATION_PLAN7task: quyết định API presence/null,
+   ánh xạ tồn theo sức chứa dòng cũ, giá tính chính xác và bảo vệ ghi chú ở public.
+   Chưa sửa code, chạy dịch vụ, migration hay deploy; test ứng dụng chưa chạy.
+4. Self-review đối chiếu spec→task, interfaces/presence/limits và5Review Focus
+   có test phụ trách; pin hash legacy trước đổi DTO, không lấy hash mới làm expected.
+   Kiểm markdown trần400dòng (trừ DEV_LOG), local targets của link docs đổi và
+   git diff --check: PASS. Plan283dòng; không chạy test/build ứng dụng.
+   Một lần script sửa docs lỗi encoding stdin trước khi ghi; dùng apply_patch
+   rồi kiểm lại. Không ảnh hưởng runtime hoặc dữ liệu ứng dụng.
+5. Bước tiếp: user review plan/chọn cách thực thi theo writing-plans; khuyến nghị
+   native tuần tự vì chung DTO/fingerprint. Thiết kế đã duyệt, không hỏi duyệt lại
+   nghiệp vụ. Tài liệu bàn giao trên dev, chưa push/deploy; gate release giữ nguyên.

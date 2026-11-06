@@ -1,6 +1,6 @@
 # Đơn giản hóa nhập sách và tồn gộp
 
-Ngày 06/11/2026, session S041 (trao đổi từ05/11). Trạng thái: **chờ user duyệt thiết kế**.
+Ngày 06/11/2026, session S041 (trao đổi từ05/11). Trạng thái: **user đã duyệt06/11/2026**.
 Đây là phạm vi mới user yêu cầu sau khi khép MVP; chưa là contract đã triển khai.
 Sau khi duyệt, tài liệu này thay quyết định liên quan tình trạng/biến thể/nhập giá
 trong MASTER_PLAN, DATA, CATALOGUE, DESIGN, ARCHITECTURE và BOOK_IMPORT.
@@ -42,8 +42,8 @@ bản/tình trạng sẽ thiết kế riêng; tổng tồn mới không tự kh�
   cảnh báo không chặn lưu hoặc xuất bản.
 - Chọn hướng tương thích an toàn, giữ cấu trúc biến thể bên trong.
 
-Các quy tắc chi tiết ở mục 4–8 là đề xuất của agent để user duyệt cùng tài liệu;
-không ghi nhận chúng như yêu cầu nguyên văn đã được user xác nhận.
+Các quy tắc chi tiết ở mục4–8 do agent đề xuất, được user duyệt cùng toàn bộ
+thiết kế06/11/2026. Không coi là bằng chứng code đã được triển khai.
 
 ## 4. Ghi chú nội bộ và loại bỏ tình trạng public
 
@@ -189,5 +189,5 @@ không ghi nhận chúng như yêu cầu nguyên văn đã được user xác nh
 - Chi tiết layout giữ style form hiện tại, không thêm dependency/framework.
 - Bộ test, dữ liệu QA cách ly và rollout/rollback cụ thể.
 
-Thiết kế cần user duyệt trước khi lập plan và sửa code. Việc chọn hướng tương
-thích ở hội thoại chưa là duyệt toàn bộ các đề xuất chi tiết trong tài liệu này.
+User đã duyệt toàn bộ thiết kế06/11/2026. Kế hoạch triển khai tại
+[BOOK_ENTRY_SIMPLIFICATION_PLAN](BOOK_ENTRY_SIMPLIFICATION_PLAN.md); chưa sửa code.
