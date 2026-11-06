@@ -11,7 +11,9 @@ public final class BookImportDtos {
         public CellRow(String sheet,int row,Map<String,String> cells,List<ImportIssue> issues) {this(sheet,row,cells,issues,1);}
     }
     public record ImportIssue(String sheet,Integer row,String column,String code,String message) {}
-    public record ImportGroup(String key,BookWrite write,List<String> collectionSlugs,List<Integer> rows) {}
+    public record ImportGroup(String key,BookWrite write,List<String> collectionSlugs,List<Integer> rows,Long unitPricePerKgVnd) {
+        public ImportGroup(String key,BookWrite write,List<String> collectionSlugs,List<Integer> rows) {this(key,write,collectionSlugs,rows,null);}
+    }
     public record ImportDocument(List<ImportGroup> groups,List<ImportIssue> issues,int totalIssues,int rowCount,String fingerprint,int schemaVersion) {
         public ImportDocument(List<ImportGroup> groups,List<ImportIssue> issues,int totalIssues,int rowCount,String fingerprint){this(groups,issues,totalIssues,rowCount,fingerprint,1);}
         public boolean valid() { return totalIssues == 0; }

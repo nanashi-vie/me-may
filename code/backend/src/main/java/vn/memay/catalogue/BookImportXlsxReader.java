@@ -120,7 +120,7 @@ final class BookImportXlsxReader {
                         if(styles!=null && DateUtil.isADateFormat(styles.getStyleAt(style).getDataFormat(),styles.getStyleAt(style).getDataFormatString()))throw new IllegalArgumentException();
                         long n=new BigDecimal(value).longValueExact();if(n<0 || n>9007199254740991L)throw new IllegalArgumentException();
                         if(row==1 || (col<headers.size() && Set.of("isbn","nhom_sach").contains(headers.get(col))))problem="Nhập ô dạng text để giữ nguyên mã và số 0 đầu.";
-                        else if(col<headers.size() && !Set.of("gia_tu","gia_den","trong_luong_g","ton_kho").contains(headers.get(col)))problem="Cột này cần text.";
+                        else if(col<headers.size() && !Set.of("gia_tu","gia_den","trong_luong_g","ton_kho","don_gia_kg").contains(headers.get(col)))problem="Cột này cần text.";
                         value=Long.toString(n);
                     } catch(Exception e) {problem="Ô số không nguyên, mất độ chính xác, ngày hoặc vượt giới hạn.";}
                 }

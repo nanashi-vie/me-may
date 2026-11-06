@@ -96,14 +96,18 @@ public class BookCommandService {
     }
 
     BookDetail createImported(AdminUser actor, BookWrite input, UUID batchId, int schemaVersion) {
+        return createImported(actor,input,batchId,schemaVersion,null);
+    }
+
+    BookDetail createImported(AdminUser actor, BookWrite input, UUID batchId, int schemaVersion, Long unitPrice) {
         access.requireOwner(actor);
-        var required = schemaVersion==3?validation.importMetadataErrors(input):validation.metadataErrors(input);
+        var required = schemaVersion>=3?validation.importMetadataErrors(input):validation.metadataErrors(input);
         if (!required.isEmpty())
             throw new AdminApiException(400, "validation_error", required, null);
         if (BookValidation.trim(input.language()) == null || input.conditionGrade()!=null && !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")
                 .contains(input.conditionGrade()))
             throw AdminApiException.field("import", "Kiểm tra ngôn ngữ và tình trạng trong file.");
-        var aggregate = createAggregate(actor, input);
+        var aggregate = createAggregate(actor, input, unitPrice);
         var result = mapper.detail(aggregate.book(), aggregate.listing());
         var snapshot = audit.snapshot(result);
         snapshot.put("source", "IMPORT");

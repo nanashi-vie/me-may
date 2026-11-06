@@ -3,6 +3,13 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Cột đơn giá/kg khi import — đang thực hiện06/11/2026
+
+- User yêu cầu don_gia_kg optional: có thì tính/lưu hai giá, trống giữ null.
+- Giữ file7/16/20cột và receipt cũ; không migration, không file hướng dẫn mới.
+- Checkpoint S042-C14; backend219run/0error/3live skip, frontend201PASS, SSRPASS;
+  đang review cuối và cập nhật contract.
+
 ## Import Excel7cột — đã triển khai06/11/2026
 
 - User duyệt: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;

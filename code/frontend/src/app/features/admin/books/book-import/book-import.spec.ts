@@ -90,8 +90,18 @@ describe('BookImport file and session boundaries',()=>{
     expect(summary).toContain('Dòng 7');expect(summary).toContain('Chưa nhập giá');expect(c.canConfirm()).toBe(true);
     expect(root.textContent).toContain('Mô tả giữ lại');
     expect(Array.from(root.querySelectorAll('[aria-labelledby="fields-title"] tbody code')).map(e=>e.textContent)).toEqual([
-      'ten_sach','nha_xuat_ban','tac_gia','the_loai','kieu_bia','trong_luong_g','mo_ta_sach',
+      'ten_sach','nha_xuat_ban','tac_gia','the_loai','kieu_bia','trong_luong_g','mo_ta_sach','don_gia_kg',
     ]);
+  });
+  it('previews imported unit price and calculated prices for V4',()=>{
+    const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'unit.csv'));c.checkFile();
+    const document=valid().document;
+    const group={...document.groups[0],unitPricePerKgVnd:80000,key:'R001',rows:[2],write:{...document.groups[0].write,priceMinVnd:36000,priceMaxVnd:42000}};
+    previews[0].next({receipt:null,document:{...document,schemaVersion:4,groups:[group]}});f.detectChanges();
+    const root=f.nativeElement.querySelector('[aria-labelledby="preview-title"]') as HTMLElement;
+    expect(root.querySelector('summary')?.textContent).toContain('Dòng 2');
+    expect(root.querySelector('summary')?.textContent).toContain('36.000 - 42.000 đ');
+    expect(root.textContent).toContain('80.000 đ/kg');expect(c.canConfirm()).toBe(true);
   });
   it('does not allow STAFF or detached late responses to change state',()=>{
     const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'books.csv'));c.checkFile();f.destroy();previews[0].next(valid());expect(c.preview()).toBeNull();
