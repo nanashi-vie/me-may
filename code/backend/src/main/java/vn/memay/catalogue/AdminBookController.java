@@ -42,6 +42,11 @@ public class AdminBookController {
         return ResponseEntity.created(URI.create("/api/v1/admin/books/" + result.id())).body(result);
     }
 
+    @GetMapping("/title-duplicate")
+    public TitleDuplicate titleDuplicate(Authentication a,@RequestParam String title,@RequestParam(required=false) Long excludeId) {
+        return new TitleDuplicate(queries.titleDuplicate(actors.current(a),title,excludeId));
+    }
+
     @GetMapping("/{id}")
     public BookDetail detail(Authentication a, @PathVariable long id) {
         return queries.detail(id, actors.current(a));

@@ -21,6 +21,8 @@ public final class BookDtos {
                         List<VariantWrite> variants) {
         }
 
+        public record TitleDuplicate(boolean duplicate) {}
+
         public record VariantWrite(String id, String name, Long stock) {
         }
 

@@ -1504,3 +1504,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - TDD RED2test tồn gộp400→GREEN;13test contract/variant PASS, gồm tổng1999998,
   mixed/null/fraction/over-limit, no-op và concurrency409. Không đổi schema tồn.
 - T1 commit50fccc3. T2 đang bàn giao commit trên dev; tiếp T3 cảnh báo tên.
+
+### S041-C08 — 06/11/2026 — T3 lookup tên trùng
+
+- Endpoint admin title-duplicate exact lower(trim), excludeId, query tham số hóa,
+  gồm ẩn/hết hàng; OWNER/STAFF đọc, anonymous401, response no-store/boolean.
+- Test mới RED400→GREEN200;8test contract PASS. Không đặt unique title hoặc
+  thay đường ghi save/publish. T2 commit8cf5275; tiếp T4 form/giá trên frontend.

@@ -80,4 +80,17 @@ class BookEntryContractTest extends CatalogueTestSupport {
         }
         assertThat(queries.detail(Long.parseLong(b.id()),owner).version()).isEqualTo(b.version());
     }
+    @Test void titleDuplicateIsAdvisoryAcrossAllStatuses() throws Exception {
+        var api=ownerApi();var b=ready();long id=Long.parseLong(b.id());
+        jdbc.update("update book_copy set title='Same',availability='SOLD' where id=?",id);
+        var r=api.send("GET","/api/v1/admin/books/title-duplicate?title=%20SAME%20",null,false);
+        assertThat(r.statusCode()).isEqualTo(200);assertThat(tree(r).path("duplicate").asBoolean()).isTrue();
+        assertThat(r.headers().firstValue("cache-control").orElse("")).contains("no-store");
+        assertThat(tree(api.send("GET","/api/v1/admin/books/title-duplicate?title=same&excludeId="+id,null,false)).path("duplicate").asBoolean()).isFalse();
+        assertThat(tree(api.send("GET","/api/v1/admin/books/title-duplicate?title=%25",null,false)).path("duplicate").asBoolean()).isFalse();
+        assertThat(tree(api.send("GET","/api/v1/admin/books/title-duplicate?title=Sa%20me",null,false)).path("duplicate").asBoolean()).isFalse();
+        assertThat(api.send("GET","/api/v1/admin/books/title-duplicate?title="+"x".repeat(301),null,false).statusCode()).isEqualTo(400);
+        api.login("staff@catalogue.test");assertThat(api.send("GET","/api/v1/admin/books/title-duplicate?title=same",null,false).statusCode()).isEqualTo(200);
+        assertThat(new AdminHttpClient(port).send("GET","/api/v1/admin/books/title-duplicate?title=same",null,false).statusCode()).isEqualTo(401);
+    }
 }

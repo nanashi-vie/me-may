@@ -33,6 +33,16 @@ public class BookQueryService {
         return mapper.detail(b, listings.findByBookCopyId(id).orElseThrow());
     }
 
+    public boolean titleDuplicate(AdminUser actor,String title,Long excludeId) {
+        String name=BookValidation.trim(title);
+        if(name==null) return false;
+        if(name.length()>300 || excludeId!=null && excludeId<1)
+            throw AdminApiException.field("title","Invalid title lookup");
+        if(excludeId==null)
+            return Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from book_copy where lower(trim(title))=lower(?))",Boolean.class,name));
+        return Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from book_copy where lower(trim(title))=lower(?) and id<>?)",Boolean.class,name,excludeId));
+    }
+
     public static void page(int page, int size) {
         if (page < 0)
             throw AdminApiException.field("page", "Trang không hợp lệ");
