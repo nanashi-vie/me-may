@@ -15,7 +15,7 @@
 @if (editable()) {
   <section aria-labelledby="fields-title">
     <h2 id="fields-title">Hướng dẫn các field</h2>
-    <p>File cần đủ 7 cột bên dưới; các trường không bắt buộc có thể để trống. Mỗi dòng tạo một sách riêng.</p>
+    <p>Mẫu gồm 8 cột bên dưới; có thể bỏ cột don_gia_kg để dùng file 7 cột. Các trường không bắt buộc có thể để trống. Mỗi dòng tạo một sách riêng.</p>
     <p>Mặc định ngôn ngữ <strong>Tiếng Anh</strong> và <strong>tồn 1</strong>. Khi thêm ảnh, bạn có thể sửa ngôn ngữ và chỉnh tồn gộp trước khi xuất bản.</p>
     <div class="table-scroll"><table>
       <thead><tr><th scope="col">Field</th><th scope="col">Cách nhập</th></tr></thead>
@@ -26,9 +26,10 @@
         <tr><td><code>the_loai</code>, <code>kieu_bia</code></td><td>Thể loại bắt buộc, ví dụ Board Book hoặc Picture Book. Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kiểu bìa.</td></tr>
         <tr><td><code>trong_luong_g</code></td><td>Bắt buộc. Trọng lượng gram nguyên dương, không dùng dấu phân nhóm nghìn.</td></tr>
         <tr><td><code>mo_ta_sach</code></td><td>Không bắt buộc. Mô tả sách.</td></tr>
+        <tr><td><code>don_gia_kg</code></td><td>Không bắt buộc. Số nguyên VND/kg, ví dụ 80000; không dùng dấu phân nhóm nghìn. Tự tính Giá từ/Giá đến theo trọng lượng, cộng 15% và làm tròn lên 1.000đ như form.</td></tr>
       </tbody>
     </table></div>
-    <p>Chưa cần nhập giá trong file. Khi thêm ảnh từng sách, nhập đơn giá/kg để tính Giá từ/Giá đến; bạn vẫn có thể sửa giá. Sách cần đủ giá và ảnh trước khi xuất bản.</p>
+    <p>Nếu chưa nhập đơn giá trong file, bạn có thể bổ sung khi thêm ảnh từng sách. Đơn giá và hai mức giá vẫn sửa được trong form. Sách cần đủ giá và ảnh trước khi xuất bản.</p>
     <p>Nhận CSV UTF-8 (dấu phẩy) hoặc Excel .xlsx (sheet <code>Sach</code>); không dùng công thức. Tối đa 2 MiB và 100 dòng sách. File 16 hoặc 20 cột cũ vẫn được hỗ trợ và giữ nguyên giá.</p>
     <details><summary>Tên và mã lựa chọn</summary>
       <p>Có thể nhập tên dễ đọc hoặc mã chuẩn. Các lựa chọn không phân biệt hoa/thường và bỏ khoảng trắng đầu/cuối.</p>
@@ -69,8 +70,8 @@
     <section aria-labelledby="preview-title"><h2 id="preview-title">2. Xem trước và xác nhận</h2>
       <p>{{ result.document.rowCount }} dòng · {{ result.document.groups.length }} sách · Tổng tồn: {{ display(totalStock()) }}</p>
       @for (group of result.document.groups; track group.key) {
-        <details><summary>{{ result.document.schemaVersion === 2 || result.document.schemaVersion === 3 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · Tồn {{ stock(group.write) }}</summary>
-          <dl>@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
+        <details><summary>{{ (result.document.schemaVersion ?? 1) >= 2 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · Tồn {{ stock(group.write) }}</summary>
+          <dl>@if (group.unitPricePerKgVnd != null) {<dt>Đơn giá/kg</dt><dd>{{ price(group.unitPricePerKgVnd,group.unitPricePerKgVnd) }}/kg</dd>}@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
         </details>
       }
       <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="!canConfirm()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã kiểm tra thông tin. Các sách sẽ được tạo ở trạng thái Ẩn; tôi sẽ thêm ảnh và tự xuất bản sau.</label>

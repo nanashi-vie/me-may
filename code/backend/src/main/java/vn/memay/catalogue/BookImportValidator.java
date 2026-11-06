@@ -2,6 +2,7 @@ package vn.memay.catalogue;
 
 import org.springframework.stereotype.Component;
 import java.util.*;
+import java.math.BigInteger;
 import vn.memay.catalogue.BookDtos.*;
 import vn.memay.catalogue.BookImportDtos.*;
 
@@ -12,9 +13,9 @@ public class BookImportValidator {
 
     public ImportDocument normalize(List<CellRow> input) {
         int version=input.isEmpty()?1:input.getFirst().schemaVersion();
-        if(input.stream().anyMatch(row->row.schemaVersion()!=version) || version<1 || version>3)
+        if(input.stream().anyMatch(row->row.schemaVersion()!=version) || version<1 || version>4)
             throw BookImportException.file(422,"headers","Không trộn các format trong cùng file.");
-        return version>=2?normalizeSingleRows(input,version):normalizeLegacy(input,false);
+        return version>=2?normalizeSingleRows(input,version):normalizeLegacy(input,1);
     }
     private ImportDocument normalizeSingleRows(List<CellRow> input,int version) {
         if(input.size()>100)throw BookImportException.file(413,"row_limit","Tối đa 100 dòng sách.");
@@ -28,15 +29,16 @@ public class BookImportValidator {
             cells.put("nhom_sach","R"+i);cells.put("ngon_ngu","Tiếng Anh");cells.put("bien_the",null);cells.put("ton_kho","1");
             adapted.add(new CellRow(row.sheet(),row.row(),cells,row.issues()));
         }
-        var legacy=normalizeLegacy(adapted,version==3);
+        var legacy=normalizeLegacy(adapted,version);
         var sorted=new ArrayList<>(legacy.groups());sorted.sort(Comparator.comparing(BookImportFingerprint::semanticContent));
         var groups=new ArrayList<ImportGroup>();
         for(int i=0;i<sorted.size();i++) {
-            var group=sorted.get(i);groups.add(new ImportGroup(String.format(Locale.ROOT,"R%03d",i+1),group.write(),group.collectionSlugs(),group.rows()));
+            var group=sorted.get(i);groups.add(new ImportGroup(String.format(Locale.ROOT,"R%03d",i+1),group.write(),group.collectionSlugs(),group.rows(),group.unitPricePerKgVnd()));
         }
         return new ImportDocument(List.copyOf(groups),legacy.issues(),legacy.totalIssues(),input.size(),legacy.valid()?BookImportFingerprint.digest(groups,version):null,version);
     }
-    private ImportDocument normalizeLegacy(List<CellRow> input,boolean unpriced) {
+    private ImportDocument normalizeLegacy(List<CellRow> input,int version) {
+        boolean unpriced=version>=3;
         var errors=new ArrayList<ImportIssue>();
         var grouped=new TreeMap<String,List<CellRow>>();
         if(input.isEmpty()) issue(errors,null,"file","empty","File không có dữ liệu sách.");
@@ -45,6 +47,7 @@ public class BookImportValidator {
             errors.addAll(row.issues());
             var cells=new LinkedHashMap<String,String>();
             for(String column:BookImportSchema.HEADERS) cells.put(column,BookValidation.trim(row.cells().get(column)));
+            if(version==4)cells.put("don_gia_kg",BookValidation.trim(row.cells().get("don_gia_kg")));
             var clean=new CellRow(row.sheet(),row.row(),cells);
             String key=cells.get("nhom_sach");
             if(key==null || !key.matches("[A-Za-z0-9_-]{1,50}")) issue(errors,clean,"nhom_sach","invalid","Dùng khóa nhóm 1–50 ký tự chữ/số ASCII, _ hoặc -.");
@@ -54,6 +57,7 @@ public class BookImportValidator {
         var groups=new ArrayList<ImportGroup>();
         for(var entry:grouped.entrySet()) {
             var rows=entry.getValue();var writes=new ArrayList<BookWrite>();var slugs=new ArrayList<List<String>>();
+            Long unitPrice=null;
             if(rows.size()>BookImportSchema.MAX_VARIANTS) issue(errors,rows.getFirst(),"bien_the","limit","Tối đa 100 biến thể mỗi sách.");
             for(var row:rows) {
                 var c=row.cells();
@@ -67,6 +71,10 @@ public class BookImportValidator {
                         c.get("kieu_bia"),c.get("tinh_trang"),c.get("mo_ta_tinh_trang"),unpriced?null:number(c.get("gia_tu"),1,999999999999L,"gia_tu",row,errors),
                         unpriced?null:number(c.get("gia_den"),1,999999999999L,"gia_den",row,errors),number(c.get("trong_luong_g"),1,9007199254740991L,"trong_luong_g",row,errors),
                         c.get("mo_ta_sach"),c.get("the_loai"),split(c.get("do_tuoi")),c.get("trinh_do_doc"),c.get("link_video"),List.of(),variants);
+                if(version==4 && c.get("don_gia_kg")!=null) {
+                    unitPrice=number(c.get("don_gia_kg"),1,999999999999L,"don_gia_kg",row,errors);
+                    if(unitPrice!=null && write.weightG()!=null)write=withCalculatedPrices(write,unitPrice,row,errors);
+                }
                 var required=unpriced?validation.importMetadataErrors(write):validation.metadataErrors(write);
                 required.forEach((field,messages)->messages.forEach(message->issue(errors,row,BookImportSchema.FIELDS.getOrDefault(field,field),"required",message)));
                 validation.writeErrors(write).forEach((field,messages)->messages.forEach(message->issue(errors,row,BookImportSchema.FIELDS.getOrDefault(field,field),"invalid",message)));
@@ -92,12 +100,26 @@ public class BookImportValidator {
                 if(v.name()!=null && !names.add(v.name().toLowerCase(Locale.ROOT))) issue(errors,rows.get(i),"bien_the","duplicate","Tên biến thể bị trùng.");
             }
             variants.sort(Comparator.comparing(VariantWrite::name,Comparator.nullsFirst(Comparator.naturalOrder())));
-            groups.add(new ImportGroup(entry.getKey(),withVariants(first,variants),slugs.getFirst(),rows.stream().map(CellRow::row).toList()));
+            groups.add(new ImportGroup(entry.getKey(),withVariants(first,variants),slugs.getFirst(),rows.stream().map(CellRow::row).toList(),unitPrice));
         }
         return new ImportDocument(List.copyOf(groups),List.copyOf(errors.subList(0,Math.min(errors.size(),1000))),errors.size(),input.size(),errors.isEmpty()?BookImportFingerprint.digest(groups):null);
     }
     private static void issue(List<ImportIssue> errors,CellRow row,String column,String code,String message) {
         errors.add(new ImportIssue(row==null?null:row.sheet(),row==null?null:row.row(),column,code,message));
+    }
+    private static BookWrite withCalculatedPrices(BookWrite w,long unit,CellRow row,List<ImportIssue> errors) {
+        var product=BigInteger.valueOf(unit).multiply(BigInteger.valueOf(w.weightG()));
+        var min=roundedPrice(product,1000000);
+        var max=roundedPrice(product.multiply(BigInteger.valueOf(115)),100000000);
+        if(max.compareTo(BigInteger.valueOf(999999999999L))>0) {
+            issue(errors,row,"don_gia_kg","price_limit","Giá tính từ đơn giá và trọng lượng vượt giới hạn 999999999999đ.");
+            return w;
+        }
+        return new BookWrite(w.title(),w.isbn(),w.publisher(),w.author(),w.language(),w.binding(),w.conditionGrade(),w.conditionNote(),
+                min.longValueExact(),max.longValueExact(),w.weightG(),w.description(),w.categoryCode(),w.ageGroups(),w.readingLevel(),w.readingVideoUrl(),w.collectionIds(),w.variants());
+    }
+    private static BigInteger roundedPrice(BigInteger numerator,long denominator) {
+        return numerator.add(BigInteger.valueOf(denominator-1)).divide(BigInteger.valueOf(denominator)).multiply(BigInteger.valueOf(1000));
     }
     private static Long number(String value,long min,long max,String column,CellRow row,List<ImportIssue> errors) {
         try { if(value==null || !value.matches("[0-9]+")) throw new NumberFormatException();

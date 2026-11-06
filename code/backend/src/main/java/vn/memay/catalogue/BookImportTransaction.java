@@ -28,7 +28,7 @@ public class BookImportTransaction {
         if(inserted.isEmpty())return new CommitResult(store.find(document.fingerprint()).orElseThrow(),false);
         var resolved=resolve(document,true);
         for(var group:resolved.groups()) {
-            var book=commands.createImported(actor,group.write(),id,document.schemaVersion());
+            var book=commands.createImported(actor,group.write(),id,document.schemaVersion(),group.unitPricePerKgVnd());
             jdbc.update("insert into book_import_item(batch_id,group_key,book_id,book_code,title) values(?,?,?,?,?)",id,group.key(),Long.parseLong(book.id()),book.bookCode(),book.title());
         }
         return new CommitResult(store.find(document.fingerprint()).orElseThrow(),true);
@@ -51,7 +51,7 @@ public class BookImportTransaction {
                 if(collection==null || !Boolean.TRUE.equals(collection.get("active")))for(int row:group.rows())errors.add(new ImportIssue(null,row,"bo_suu_tap","reference","Bộ sưu tập không tồn tại hoặc đã ngừng dùng."));
                 else ids.add(collection.get("id").toString());
             }
-            result.add(new ImportGroup(group.key(),BookImportValidator.withCollections(group.write(),List.copyOf(ids)),group.collectionSlugs(),group.rows()));
+            result.add(new ImportGroup(group.key(),BookImportValidator.withCollections(group.write(),List.copyOf(ids)),group.collectionSlugs(),group.rows(),group.unitPricePerKgVnd()));
         }
         if(!errors.isEmpty())throw invalid(errors,errors.size());return new ResolvedImport(List.copyOf(result));
     }

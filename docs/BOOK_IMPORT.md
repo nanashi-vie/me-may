@@ -1,6 +1,6 @@
 # Import CSV/Excel — contract hiện hành
 
-Triển khai local31/10–06/11/2026; chưa deployV3 online.
+Triển khai local31/10–06/11/2026; chưa deployV4 online.
 [Bằng chứng](BOOK_IMPORT_VERIFICATION.md) và [rollout](DEPLOYMENT.md#import-csvxlsx--v11).
 
 ## 1. Mục tiêu và quyết định
@@ -22,14 +22,14 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 
 ## 2. Format file
 
-V3/7cột là mặc định06/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
+V4/8cột là mặc định06/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
 Một dòng=một sáchẨn, mặc định Tiếng Anh/một biến thểkhôngtên/tồn1; thêmảnh rồi sửa
-tồn gộp, nhập đơn giá/kg để tính hai giá và tựpublish. V3 không có cột giá;
-hai giá null cho đến khi chủ bổ sung trong editor, thiếu giá không được publish.
+tồn gộp và tựpublish. Cột don_gia_kg optional: có thì tính/lưu hai giá như form,
+trống thì bổ sung trong editor khi thêm ảnh; thiếu giá không được publish.
 Giữ NXB/tác giả/mô tả sách optional. Không tự gộp sách theo tên.
-V2/16cột vàV1/20cột vẫn nhận với giá đã nhập, không rewrite digest/receipt.
-UI hướng dẫn ngắn7field/nhãn, không có bước/nút tải mẫu; không tạo hướng dẫn/file
-giao riêng theo yêu cầu user. Endpoint template hiện có dùng7cột/dropdown.
+V3/7cột (không đơn giá), V2/16cột vàV1/20cột vẫn nhận, không rewrite giá/digest/receipt.
+UI hướng dẫn ngắn8field/nhãn, không có bước/nút tải mẫu; không tạo hướng dẫn/file
+giao riêng theo yêu cầu user. Endpoint template hiện có dùng8cột/dropdown.
 
 ## 3. Kiểm file và xác nhận
 
@@ -65,8 +65,10 @@ Lỗi giữa lô không để lại một phần sách. Sequence có thể bỏ 
 không hứa mã liên tiếp. Slug/mã dùng cơ chế hiện có, không lấy tên làm khóa.
 
 FingerprintSHA256 gồm schema version và nội dung đãnormalize. V1 giữ groupkey và
-serialization cũ. V2/V3 normalize nhãn/defaults/numbers/sets, sort semanticcontent rồi
+serialization cũ. V2/V3/V4 normalize nhãn/defaults/numbers/sets, sort semanticcontent rồi
 cấp khóa nội bộR001..R100; các dòng giống nhau vẫn có occurrence riêng, khôngdedupe.
+V4 thêm đơn giá ngoài BookWrite canonical, bao gồm khi sort/hash; không dùng
+giá đã làm tròn để suy ngược đơn giá. V1–V3 canonical/hash không đổi.
 Không gồm tênfile/đườngdẫn/thứtựheader/dòng hoặc filetype; CSV/XLSX hoặc nhãn/code
 tương đương trong cùngschema cho cùngreceipt. Đổi schema/nội dung là lô mới,
 không đoán sách trùng theo title/ISBN và không dùng import để update sách đãcó.
@@ -115,7 +117,7 @@ Mã sách được cấp sớm khi import là thay đổi riêng của đường
 ## 6. Giới hạn vận hành
 
 Đồng bộ request, không thêm job framework. Mỗi file tối đa2MiB upload,
-V2/V3 tốiđa100dòng sách. V1 giữ500dòng/100nhóm/100biến thểnhóm. File trống,
+V2/V3/V4 tốiđa100dòng sách. V1 giữ500dòng/100nhóm/100biến thểnhóm. File trống,
 dòng trống giữa file bỏ qua; dòng có ô dữ liệu vượt giới hạn bị lỗi, không cắt.
 XLSX giới hạn tổng XML giải nén20MiB, cell text≤10000 ký tự; giới hạn zip-entry/
 tỉ lệ nén, số sheet và số ô được kiểm trước/trong parse để không nạp vô hạn.
@@ -187,7 +189,7 @@ Trước rollout phải hoàn tất gate host/backup/migration tại DEPLOYMENT.
 ## Format V2 — chốt01/11
 
 Phần này giữ contract tương thích fileV2, không là mẫu mặc định sau06/11.
-FormatV3 rút gọn theo DATA và mục2 ở trên, giữ nguyên fingerprintV1/V2.
+FormatV3/V4 rút gọn theo DATA và mục2 ở trên, giữ nguyên fingerprintV1/V2.
 
 **Trạng thái: đã triển khai local01/11.**
 

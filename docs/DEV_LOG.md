@@ -1837,3 +1837,47 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bàn giao commit/push dev theo workflow; user merge main/deploy. Chưa deploy,
   chưa đo thao tác chủ tiệm/live-provider. BackendV3 trước frontend; rollback
   về backendV2 không nhận7cột, dữ liệu Ẩn/null giá vẫn an toàn trong schema cũ.
+
+### S042-C13 — 06/11/2026 — bổ sung don_gia_kg optional khi import
+
+- User yêu cầu thêm cột don_gia_kg tùy chọn theo đề xuất đã chốt: có đơn giá
+  thì tính/lưu giá như form, để trống vẫnẨn/null giá; giữ file7cột/receipt cũ.
+- Phạm vi một bổ sung nhỏ vào importer hiện có, thực thi tuần tự trên dev;
+  không tạo hướng dẫn/workbook giao riêng. Bắt đầu từ dev sạch tại2f8b89b.
+- Graph MCP Transport closed, đọc source trực tiếp; DB đã có cột unit price,
+  backend chưa có hàm tính giá. Sẽ dùng BigInteger theo đúng công thức TS hiện có.
+- TDD: kiểm8cột optional/giá/giới hạn/rounding/persistence/retry; fingerprint4
+  giữ nguyên canonicalV1–V3. Chưa đổi code; chưa chạy kiểm tra mới.
+
+### S042-C14 — 06/11/2026 — don_gia_kg optional đã triển khai và kiểm tự động
+
+- SchemaV4/8cột nhận don_gia_kg optional; V3/7cột vẫn nhận nguyên fingerprint.
+  Long đơn giá nằm ngoài BookWrite canonical, được mang qua group/resolve/commit
+  và lưu trước audit; fingerprint4 gồm đơn giá, kể cả khi hai giá làm tròn trùng.
+- BigInteger tính cùng form: B=U×W/1000, hai giá ceil1.000đ từB vàB×1,15;
+  lỗi unit/giá vượt giới hạn gắn đúng don_gia_kg/dòng, không clamp hoặc ghi lô lỗi.
+- Template endpoint/UI thêm cột/preview đơn giá, để trống vẫn null; không file
+  hướng dẫn/workbook mới. Giữ JSON BookWrite và fingerprintV1–V3 byte-compatible.
+- RED: unit5ca lỗi headers; integration3failure422; template2failure; UI2failure.
+  GREEN scoped35backend/18UI; root clean verify219run/0failure/0error/3live skips,
+  frontend201PASS/39files, SSR buildPASS. Golden V2/V3 chụp trước sửa đều giữ đúng.
+- API thật trên me_may_test: persist80000/36000/42000, optionalblank null; sửa
+  unit81000/giá40000–48000/tồn4/note rồi retry giữ nguyên; unit khác giá làm tròn
+  giống vẫn lưu riêng; một dòng lỗi chặn cảfile, không receipt/sách.
+- Bước tiếp theo review độc lập, buildWorkers/proxy và gộp contract/bàn giao dev.
+
+### S042-C15 — 06/11/2026 — hoàn tất đơn giá/kg optional khi import
+
+- Reviewer độc lập review_import_unit trên2f8b89b..3d5894a không finding
+  Critical/Important/Minor; xác nhận math/canonical/persistence/audit/retry.
+- Backend219run/0failure/0error/3live-provider skip; frontend201PASS/39files,
+  SSR/Workers build0warning và proxyPASS. Không chạy lại suite sau docs vì
+  source app không đổi sau kiểm full; không tạo service/database QA riêng.
+- Không manualbrowser/deviceV4 mới: DOM import18test và realHTTP integration3test
+  là bằng chứng mới; browserV3 trước đây không được tính là kiểm mớiV4.
+- Gộp contractV4 vào DATA/BOOK_IMPORT/ARCHITECTURE/CATALOGUE/DESIGN/MASTER_PLAN,
+  chỉ mục README, snapshot PROGRESS, evidence BOOK_IMPORT_VERIFICATION. Không
+  tạo file hướng dẫn/workbook riêng; originalV2 SHA256 giữ nguyên.
+- Source commit3d5894a; tài liệu bàn giao commit/pushdev cùng task. Chưa deploy,
+  không migration/dependency/provider thật. BackendV4 trước frontend; receipt
+  cũ giữ nguyên, đổi7→8cột hoặc đổi đơn giá vẫn là lô mới, không update sách cũ.

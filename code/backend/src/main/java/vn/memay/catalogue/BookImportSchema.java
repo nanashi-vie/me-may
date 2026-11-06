@@ -12,12 +12,14 @@ public final class BookImportSchema {
     public static final List<String> V2_HEADERS=List.of("ten_sach","isbn","nha_xuat_ban","tac_gia","the_loai","kieu_bia",
             "gia_tu","gia_den","trong_luong_g","tinh_trang","mo_ta_tinh_trang","do_tuoi","mo_ta_sach","trinh_do_doc","link_video","bo_suu_tap");
     public static final List<String> V3_HEADERS=List.of("ten_sach","nha_xuat_ban","tac_gia","the_loai","kieu_bia","trong_luong_g","mo_ta_sach");
+    public static final List<String> V4_HEADERS=List.of("ten_sach","nha_xuat_ban","tac_gia","the_loai","kieu_bia","trong_luong_g","mo_ta_sach","don_gia_kg");
     public static int version(List<String> headers) {
         var set=new HashSet<>(headers);
         if(headers.size()==20 && set.size()==20 && set.equals(new HashSet<>(HEADERS)))return 1;
         if(headers.size()==16 && set.size()==16 && set.equals(new HashSet<>(V2_HEADERS)))return 2;
         if(headers.size()==7 && set.size()==7 && set.equals(new HashSet<>(V3_HEADERS)))return 3;
-        throw BookImportException.file(422,"headers","File cần đúng 7 cột V3 (hoặc 16 cột V2, 20 cột V1), không cột lạ, thiếu hoặc trùng.");
+        if(headers.size()==8 && set.size()==8 && set.equals(new HashSet<>(V4_HEADERS)))return 4;
+        throw BookImportException.file(422,"headers","File cần đúng 8 cột V4 (hoặc 7 cột V3, 16 cột V2, 20 cột V1), không cột lạ, thiếu hoặc trùng.");
     }
     public static List<String> canonicalHeaders(List<String> input) {
         var trimmed=input.stream().map(String::trim).toList();

@@ -3,20 +3,20 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Import Excel7cột — đã triển khai06/11/2026
+## Import Excel8cột/đơn giá optional — đã triển khai06/11/2026
 
-- User duyệt: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
-  NXB/tác giả/mô tả optional. V3 tạo Ẩn/null giá, Tiếng Anh/tồn1.
-- Chủ nhập đơn giá/kg khi thêm ảnh; giá tự tính/sửa tay, thiếu giá không
-  xuất bản. File16/20cột và receipt cũ giữ nguyên, không ghi đè sau edit.
-- Backend210run/0failure/0error/3live-provider skip, frontend200PASS, SSR/Workers/
-  proxyPASS. Chrome QA thật với provider giả: import→ảnh→giá→publish/retry/
-  STAFFPASS; schema QA và services đã dọn, review độc lập không có finding.
+- User bổ sung don_gia_kg optional vào7cột rút gọn: có số thì tính/lưu hai giá,
+  trống/bỏ cột vẫn được. NXB/tác giả/mô tả optional, sáchẨn/Tiếng Anh/tồn1.
+- File7/16/20cột và receipt cũ giữ nguyên, không ghi đè sau edit. Chủ vẫn sửa
+  đơn giá/hai giá khi thêm ảnh, thiếu giá không xuất bản; không tự gộp tên.
+- Backend219run/0failure/0error/3live-provider skip, frontend201PASS, SSR/Workers/
+  proxyPASS. V4 realHTTP/DOM tests và review độc lập không finding; chưa browser/
+  deviceV4 mới. BrowserV3 trước đó đã kiểm, QA schema/services đã dọn.
 - Không tạo file hướng dẫn/workbook giao riêng; workbookV2 gốc không đổi.
   [Contract](BOOK_IMPORT.md), [schema](DATA.md#format-file-import--contract-duyệt31102026),
   [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Không migration/dependency/deploy.
-- Checkpoint S042-C12; source9376626/1d0a988/e21d644 trên dev; user merge/deploy.
-  Bước tiếp theo rollout backendV3 trước frontend, kiểm file7cột online.
+- Checkpoint S042-C15; source3d5894a trên dev; user merge/deploy. Bước tiếp theo
+  rollout backendV4 trước frontend, smoke file8cột có/không đơn giá online.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 

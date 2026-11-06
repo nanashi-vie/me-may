@@ -15,14 +15,14 @@ public class BookImportTemplate {
         try {
             if("csv".equals(format)) {
                 var writer=new StringWriter();writer.write('\ufeff');
-                try(var printer=CSVFormat.RFC4180.print(writer)){printer.printRecord(BookImportSchema.V3_HEADERS);}
+                try(var printer=CSVFormat.RFC4180.print(writer)){printer.printRecord(BookImportSchema.V4_HEADERS);}
                 return writer.toString().getBytes(StandardCharsets.UTF_8);
             }
             if(!"xlsx".equals(format))throw BookImportException.file(400,"template_format","Chọn csv hoặc xlsx.");
             try(var book=new XSSFWorkbook();var out=new ByteArrayOutputStream()) {
                 var sheet=book.createSheet("Sach");var row=sheet.createRow(0);
                 var text=book.createCellStyle();text.setDataFormat(book.createDataFormat().getFormat("@"));
-                for(int i=0;i<BookImportSchema.V3_HEADERS.size();i++){row.createCell(i).setCellValue(BookImportSchema.V3_HEADERS.get(i));sheet.setDefaultColumnStyle(i,text);sheet.setColumnWidth(i,24*256);}
+                for(int i=0;i<BookImportSchema.V4_HEADERS.size();i++){row.createCell(i).setCellValue(BookImportSchema.V4_HEADERS.get(i));sheet.setDefaultColumnStyle(i,text);sheet.setColumnWidth(i,24*256);}
                 var description=book.createCellStyle();description.cloneStyleFrom(text);description.setWrapText(true);
                 sheet.setDefaultColumnStyle(6,description);sheet.setColumnWidth(6,50*256);
                 var helper=sheet.getDataValidationHelper();
@@ -42,14 +42,14 @@ public class BookImportTemplate {
         } catch(BookImportException e){throw e;}catch(IOException e){throw new IllegalStateException("import_template_failed",e);}
     }
     public static List<String> instructions() {
-        return List.of("Mẹ Mây — import schema 3. Chỉ điền dữ liệu vào sheet Sach, giữ đủ 7 header.",
+        return List.of("Mẹ Mây — import schema 4. Sheet Sach có 8 header; có thể bỏ cột don_gia_kg để dùng file 7 cột.",
                 "Mỗi dòng là một sách riêng, tối đa 100 sách/2 MiB. Không ghép theo tên hoặc ISBN.",
                 "Tự điền Tiếng Anh và tồn 1. Thêm ảnh, chỉnh tồn gộp rồi tự xuất bản.",
                 "Bắt buộc: ten_sach, the_loai, trong_luong_g. nha_xuat_ban, tac_gia, mo_ta_sach để trống được.",
                 "Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kieu_bia.",
                 "Có thể dùng nhãn dễ đọc hoặc code chuẩn. Trọng lượng gram nguyên dương, không dấu phân nhóm.",
-                "Chưa cần giá khi import. Khi thêm ảnh từng sách, nhập đơn giá/kg để tính hai giá; vẫn sửa tay được. Đủ giá và ảnh mới xuất bản.",
-                "File cũ 16 hoặc 20 cột vẫn được hỗ trợ, giữ nguyên giá đã nhập trong file.",
+                "don_gia_kg không bắt buộc. Nhập số nguyên VND/kg không dấu nhóm, ví dụ 80000; tự tính hai giá theo trọng lượng và làm tròn như form. Trống thì bổ sung khi thêm ảnh.",
+                "Khi thêm ảnh vẫn sửa đơn giá và hai giá được; đủ giá và ảnh mới xuất bản. File cũ 7, 16 hoặc 20 cột vẫn được hỗ trợ, giữ nguyên receipt và giá cũ.",
                 "Không công thức, macro, ngày, ô gộp hoặc external link. CSV UTF-8, dấu phẩy; quote kép khi ô có dấu phẩy/xuống dòng.",
                 "Dòng CSV tính theo bản ghi logic, header=1; XLSX dùng số hàng thật. Sửa lỗi ngoài website rồi kiểm lại, cả file hợp lệ mới nhập.",
                 "Import tạo sách Ẩn; cùng nội dung thử lại trả biên nhận cũ. Đổi nội dung là lô mới, không dùng để cập nhật sách cũ.");
