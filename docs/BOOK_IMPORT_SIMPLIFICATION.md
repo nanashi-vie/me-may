@@ -9,13 +9,14 @@ hành chỉ sau triển khai/kiểm chứng; nguồn nền ở [BOOK_IMPORT](BOO
 - Excel chưa cần đơn giá/kg. Chủ nhập đơn giá ở bước thêm ảnh, tính hai đầu giá
   theo công thức form đã duyệt, làm tròn lên1.000đ và cho sửa tay.
 - Cho phép thiếu hai giá khi import, giữ sáchẨn; phải có giá hợp lệ khi xuất bản.
-- Bỏ các cột không bắt buộc khỏi mẫu mới, riêng Nhà xuất bản/Tác giả vẫn giữ.
+- Bỏ các cột không bắt buộc khỏi mẫu mới, riêng Nhà xuất bản/Tác giả/Mô tả sách
+  vẫn giữ; ba trường này vẫn optional.
 - Giữ hướng tương thích an toàn với file và receipt import cũ.
 
 ## Hướng được chọn và phương án khác
 
-- Mẫu tối thiểu: theo yêu cầu bỏ cột optional, giữ hai ngoại lệ nêu trên; giảm
-  từ16 xuống6cột. Không cần chủ phân biệt cột nào nên điền trong mẫu dài.
+- Mẫu tối thiểu: theo yêu cầu bỏ cột optional, giữ ba ngoại lệ nêu trên; giảm
+  từ16 xuống7cột. Không cần chủ phân biệt cột nào nên điền trong mẫu dài.
 - Giữ16cột và nới validation cũng hỗ trợ giá trống, nhưng vẫn giữ các cột user
   đã yêu cầu loại bỏ. Chỉ giữ khả năng đọc file cũ cho tương thích.
 
@@ -29,8 +30,9 @@ hành chỉ sau triển khai/kiểm chứng; nguồn nền ở [BOOK_IMPORT](BOO
 | the_loai | Thể loại | Có |
 | kieu_bia | Paperback/Hardcover | Chỉ Picture Book |
 | trong_luong_g | Trọng lượng nguyên gram | Có |
+| mo_ta_sach | Mô tả sách | Không |
 
-- Bỏ ISBN, hai giá, hai cột tình trạng, độ tuổi, mô tả sách, trình độ đọc,
+- Bỏ ISBN, hai giá, hai cột tình trạng, độ tuổi, trình độ đọc,
   link video và bộ sưu tập khỏi mẫu. Những field hiện có trên form vẫn sửa được.
 - Mỗi dòng vẫn tạo một sáchẨn, mặc định Tiếng Anh/tồn1. Không tự gộp theo tên.
 - Tạo mẫu mới riêng, giữ workbook gốc user cung cấp; dropdown thể loại đủ9mục.
@@ -45,7 +47,7 @@ hành chỉ sau triển khai/kiểm chứng; nguồn nền ở [BOOK_IMPORT](BOO
 - Khi chủ nhập đơn giá/kg, form tính từ trọng lượng có sẵn; sửa hai giá được.
 - Chỉ nới thiếu giá cho import tạo sáchẨn; giữ kiểm tra các giá trị đã nhập,
   các field bắt buộc khác, quyền/CSRF/atomic commit và giới hạn file hiện hành.
-- Kiểm parser CSV/XLSX6cột, conditional binding, null giá tới edit/publish;
+- Kiểm parser CSV/XLSX7cột, mô tả optional, conditional binding, null giá tới edit/publish;
   old-format receipts/retry, giá cũ và privacy. Không đổi luồng upload ảnh.
 
 ## Bước tiếp theo

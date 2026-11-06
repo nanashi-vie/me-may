@@ -1748,3 +1748,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đăng ký ở README, cập nhật PROGRESS; chưa đổi app/file Excel, chưa chạy test
   mới vì chỉ thiết kế. Kiểm diff/line limits/liên kết trước commit; chờ duyệt
   thiết kế rồi writing-plans và thực thi tuần tự trên dev.
+
+### S042-C06 — 06/11/2026 — giữ mô tả sách trong Excel
+
+- User xác nhận giữ mo_ta_sach (không phải chú thích ảnh). Cập nhật thiết kế
+  từ6thành7cột, mô tả/NXB/tác giả đều optional. Không thêm cột mô tả ảnh.
+- Đổi BOOK_IMPORT_SIMPLIFICATION/README/PROGRESS và log; chưa đổi app/workbook.
+  Kiểm diff/line limits và links trước commit; test app chưa chạy vì chỉ sửa
+  thiết kế. Bước tiếp theo user duyệt thiết kế7cột rồi lập plan tuần tự trên dev.

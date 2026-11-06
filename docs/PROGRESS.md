@@ -11,13 +11,10 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   nhập sẵn hai giá; note dùng header cũ, tồn1, chưa cảnh báo tên trùng.
 -15test và12ca probe PASS; file gốc chỉ có header, giữ nguyên SHA256. Chi tiết ở
   [bằng chứng import](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026).
-- User chốt import tạm thời chưa cần đơn giá/kg; code hiện nhận hai giá trực tiếp.
-- User làm rõ sẽ nhập đơn giá ở bước thêm ảnh; Excel hiện vẫn bắt buộc hai giá,
-  cần chốt có cho trống hai giá trước khi thay validation, tránh nhập giá hai lần.
-  Chưa đổi code/format; giảm thao tác metadata và thêm ảnh từng sách vẫn là mục tiêu.
-  Checkpoint S042-C03; audit docs đã đưa lên dev.
-- User đồng ý thiếu giá trước thêm ảnh và yêu cầu bỏ cột optional, giữ NXB/tác giả.
-  [Thiết kế6cột](BOOK_IMPORT_SIMPLIFICATION.md) chờ duyệt, chưa đổi app/workbook.
+- User đồng ý thiếu hai giá khi import; nhập đơn giá/kg ở bước thêm ảnh từng sách.
+- Mẫu mới chỉ giữ7cột: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
+  NXB/tác giả/mô tả optional. [Thiết kế](BOOK_IMPORT_SIMPLIFICATION.md) chờ duyệt,
+  chưa đổi app/workbook; giữ tương thích file cũ. Checkpoint S042-C06.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
