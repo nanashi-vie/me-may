@@ -1,17 +1,29 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+# Tiến độ Mẹ Mây
+
+Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Đơn giản hóa nhập sách — thiết kế chờ duyệt06/11/2026
+## Đơn giản hóa nhập sách — thiết kế chờ duyệt 06/11/2026
 
 - User chọn tồn gộp/tự tăng tồn, giữ cấu trúc biến thể bên trong để tương thích;
   bỏ tình trạng public/form, ghi chú nội bộ optional giữ mô tả cũ.
-- Đơn giá/kg × gram → giá từ; giá đến +15%, làm tròn lên1.000đ; hai giá sửa được.
+- Đơn giá/kg × gram → giá từ; giá đến +15%, làm tròn lên 1.000đ; hai giá sửa được.
   Trùng tên chỉ cảnh báo theo style hiện tại, vẫn lưu/publish được.
 - [Thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md) đã qua builder check, chờ user
   duyệt các đề xuất chi tiết trước lập plan/code. Không đổi baseline/runtime.
 - Checkpoint S041-C02 trong DEV_LOG. Tài liệu trên dev, chưa push/deploy.
+
+## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
+
+- Đã hoàn tất trên worktree `dev-ui` và gộp vào `dev`:
+  - Cập nhật nhãn CTA lưu sách rõ ràng: `♡ Thêm vào danh sách quan tâm` (khi đã lưu đổi thành `♥ Đã thêm vào danh sách`); đổi header public layout thành `Danh sách quan tâm` kèm badge số lượng.
+  - Bổ sung 2 kệ sách liên quan dưới trang chi tiết `/sach/:slug`: `SÁCH CÙNG NHÀ XUẤT BẢN` và `SÁCH CÙNG THỂ LOẠI` với đường kẻ ngang phân cách hai bên tiêu đề.
+  - Carousel ngang desktop 5 thẻ `app-book-card` kèm nút trượt `<` / `>`, tablet 3 thẻ, mobile 2 thẻ hoặc vuốt mượt mà; link `Xem thêm >>` góc phải dẫn tới `/sach?q={publisher}` hoặc `/sach?category={code}`; fallback thông báo rõ khi rỗng.
+  - Backend cung cấp endpoint `GET /api/v1/books/{slug}/related` và mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
+  - Fix type inference & generic ambiguities cho Language Server: kiểu dữ liệu tường minh `List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`, explicit cast varargs.
+  - Kiểm chứng: Vitest 37/37 files (189/189 tests PASS), backend integration tests PASS, `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
 
 ## Rà soát project — 05/11/2026
 

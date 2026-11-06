@@ -26,6 +26,8 @@ public class PublicCatalogueService {
             + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
             + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code";
 
+    private record RelatedTarget(long bookCopyId, String publisher, Long categoryId) {}
+
     public BookDtos.Page<Book> list(String q, String category, String binding, List<String> ages, String sort, int page,
             String collection) {
         return list(q, category, binding, ages, sort, page, collection, false);
@@ -54,9 +56,11 @@ public class PublicCatalogueService {
         StringBuilder where = new StringBuilder(" where l.publication_status='PUBLISHED'");
         List<Object> args = new ArrayList<>();
         if (q != null) {
-            where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\')");
+            where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\'))");
             args.add(q);
-            args.add("%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%");
+            var escaped = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            args.add(escaped);
+            args.add(escaped);
         }
         if (category != null) {
             where.append(" and c.code=?");
@@ -94,12 +98,45 @@ public class PublicCatalogueService {
     }
 
     public Book detail(String slug) {
-        var found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
+        List<Book> found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
                 (r, n) -> book(r, n, true),
                 slug);
         if (found.isEmpty())
             throw new AdminApiException(404, "not_found");
         return found.getFirst();
+    }
+
+    public RelatedBooks related(String slug) {
+        List<RelatedTarget> current = jdbc.query(
+                "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED'",
+                (r, n) -> new RelatedTarget(r.getLong("id"), r.getString("publisher"), r.getObject("category_id", Long.class)),
+                slug);
+        if (current.isEmpty())
+            throw new AdminApiException(404, "not_found");
+        RelatedTarget first = current.getFirst();
+        long currentId = first.bookCopyId();
+        String publisher = first.publisher();
+        Long categoryId = first.categoryId();
+
+        List<Book> samePublisher = List.of();
+        if (publisher != null && !publisher.isBlank()) {
+            samePublisher = jdbc.query(
+                    SELECT + FROM
+                            + " where l.publication_status='PUBLISHED' and b.id != ? and lower(trim(b.publisher)) = lower(trim(?)) order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                    this::book,
+                    currentId, publisher.trim());
+        }
+
+        List<Book> sameCategory = List.of();
+        if (categoryId != null) {
+            sameCategory = jdbc.query(
+                    SELECT + FROM
+                            + " where l.publication_status='PUBLISHED' and b.id != ? and l.category_id = ? order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                    this::book,
+                    currentId, categoryId);
+        }
+
+        return new RelatedBooks(samePublisher, sameCategory);
     }
 
     public List<Book> lookup(List<String> codes) {
@@ -115,12 +152,12 @@ public class PublicCatalogueService {
             }
         }
         var ordered = new LinkedHashSet<>(codes);
-        var books = jdbc.query(
+        List<Book> books = jdbc.query(
                 SELECT + FROM + " where l.publication_status='PUBLISHED' and b.book_code in ("
                         + String.join(",", Collections.nCopies(ordered.size(), "?")) + ")",
-                this::book, ordered.toArray());
+                this::book, (Object[]) ordered.toArray());
         var byCode = new HashMap<String, Book>();
-        for (var book : books)
+        for (Book book : books)
             byCode.put(book.bookCode(), book);
         return ordered.stream().filter(byCode::containsKey).map(byCode::get).toList();
     }
@@ -132,9 +169,9 @@ public class PublicCatalogueService {
     private Book book(ResultSet r, int n, boolean includeVariants) throws SQLException {
         long id = r.getLong("id"), listing = r.getLong("listing_id");
         String slug = r.getString("slug");
-        var ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
+        List<String> ages = jdbc.queryForList("select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
-        var media = jdbc.query(
+        List<Media> media = jdbc.query(
                 "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
                 (m, i) -> new Media(m.getString("role"), m.getString("alt"),
                         "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),

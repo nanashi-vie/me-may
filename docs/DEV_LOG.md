@@ -1364,6 +1364,38 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    các việc tiếp theo, không coi local PASS là đóng gate production.
    Bàn giao tài liệu trong cùng commit trên dev, push origin/dev theo quy ước.
 
+### S040-C03 — 05/11/2026 — CTA Danh sách quan tâm và Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách
+
+1. Ngày: 05/11/2026 (Asia/Ho_Chi_Minh). Session worktree `dev-ui` (`/Users/daoquanghung/Projects/me-may.worktrees/dev-ui`).
+2. Phạm vi được yêu cầu:
+   - Đổi nhãn button "Quan tâm" thành CTA rõ ràng, dễ hiểu: "♡ Thêm vào danh sách quan tâm" (khi đã lưu đổi thành "♥ Đã thêm vào danh sách").
+   - Đổi "Quan tâm" ở Header thành "Danh sách quan tâm".
+   - Tại trang chi tiết sách (`/sach/:slug`), thêm 2 section bên dưới theo mẫu ảnh đính kèm: "SÁCH CÙNG NHÀ XUẤT BẢN" và "SÁCH CÙNG THỂ LOẠI".
+   - Chốt qua grill-me và thống nhất Phương án A: Backend cung cấp endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, loại trừ cuốn hiện tại, ưu tiên `AVAILABLE` trước, sắp xếp `published_at DESC`. Mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
+   - Kệ dùng carousel ngang với 5 thẻ `app-book-card` chuẩn trên desktop, nút trượt `<` và `>`, link "Xem thêm >>" góc phải dẫn tới search publisher hoặc category.
+3. Thay đổi code:
+   - Frontend:
+     - `wishlist-button.ts`: đổi nhãn nút thành "♡ Thêm vào danh sách quan tâm" (active: "♥ Đã thêm vào danh sách"), `aria-label` tương ứng; cập nhật test `wishlist-button.spec.ts`.
+     - `public-layout.html`: đổi nhãn Header "Quan tâm" thành "Danh sách quan tâm".
+     - `public.models.ts` & `public-api.ts`: thêm model `RelatedBooks` và method `related(slug: string)`.
+     - `book-detail.ts`, `book-detail.html`, `book-detail.scss`: tích hợp 2 kệ sách liên quan, divider đường kẻ ngang flanking tiêu đề, carousel trượt, nút điều hướng `<` / `>`, link "Xem thêm >>", fallback empty; thêm test trong `book-detail.spec.ts`.
+     - `angular.json`: nâng budget style `anyComponentStyle` `maximumWarning: 6kB`, `maximumError: 10kB`.
+   - Backend:
+     - `PublicCatalogueDtos.java`: thêm DTO record `RelatedBooks(List<PublicBookSummary> samePublisherBooks, List<PublicBookSummary> sameCategoryBooks)`.
+     - `PublicCatalogueService.java`: thêm `related(String slug)` và mở rộng logic tìm kiếm `q` khớp cả publisher.
+     - `PublicCatalogueController.java`: thêm endpoint `@GetMapping("/books/{slug}/related")`.
+     - `PublicCatalogueApiTest.java`: thêm 2 test cases kiểm tra `/related` và tìm kiếm publisher qua `q`.
+   - Tài liệu:
+     - Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+4. Kiểm tra đã chạy:
+   - Frontend Vitest: 37/37 test files, 189/189 tests PASS.
+   - Frontend build: `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
+   - Backend Maven tests: `PublicCatalogueApiTest`, `PublicMediaApiTest`, `PublicCacheInvalidationTest` (15/15 tests PASS).
+   - Fix type inference & generic ambiguities cho Eclipse JDT / VS Code: thay thế `var` và raw `Object[]` bằng explicit generics (`List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`), `(Object[])` varargs cast.
+   - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs: PASS.
+5. Việc dang dở / blocker: Không có.
+6. Bước tiếp theo: Push nhánh `dev-ui` lên remote theo yêu cầu user.
+
 
 ### S041-C01 — 05/11/2026 — Brainstorm tình trạng và tồn gộp
 
@@ -1404,3 +1436,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    Test/build ứng dụng chưa chạy vì không thay code/schema/API/runtime.
 5. Bước tiếp: user duyệt thiết kế rồi dùng writing-plans; chưa triển khai hoặc
    chạy migration, không truy cập/đổi live. Bàn giao docs trên dev; chưa push.
+
+
+### S041-C03 — 06/11/2026 — Merge worktree dev-ui vào dev
+
+- Yêu cầu user: merge nhánh `dev-ui` (từ worktree `dev-ui`) vào `dev`, xử lý conflict `docs/DEV_LOG.md` và `docs/PROGRESS.md`.
+- Thay đổi:
+  - Tích hợp toàn bộ tính năng từ `dev-ui`: CTA "Thêm vào danh sách quan tâm", header "Danh sách quan tâm", 2 kệ sách liên quan ở chân trang chi tiết ("Sách cùng Nhà xuất bản" & "Sách cùng thể loại"), backend endpoint `/books/{slug}/related`, mở rộng tìm kiếm `q` khớp publisher, cùng các bản vá type inference & generic ambiguities cho Language Server.
+  - Giải quyết merge conflict tại `docs/DEV_LOG.md` và `docs/PROGRESS.md` theo trật tự thời gian và giữ nguyên đầy đủ nội dung bàn giao.
+- Kiểm tra:
+  - `npm test` và `npm run build` trên `dev`: 37/37 test files (189/189 tests PASS), 0 warning, 0 error.
+  - Backend tests: 15/15 tests PASS.
+  - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs quản lý: PASS.
+- Bước tiếp theo: hoàn tất commit merge trên `dev`, sẵn sàng push `origin/dev`.

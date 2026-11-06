@@ -70,4 +70,42 @@ class PublicCatalogueApiTest extends CatalogueTestSupport {
   assertThat(java.time.Duration.between(now, expiry).toMillis()).isBetween(1L, 10000L);
   assertThat(policy.path("enabled").asBoolean()).isFalse();
  }
+
+ @Test void relatedReturnsBooksWithSamePublisherAndCategoryExcludingCurrent() throws Exception {
+  var b1 = published();
+  var b2 = published();
+  var b3 = published();
+  var b4 = ready();
+  jdbc.update("update book_copy set publisher='Kim Đồng' where id in (?, ?, ?)", Long.parseLong(b1.id()), Long.parseLong(b2.id()), Long.parseLong(b4.id()));
+  jdbc.update("update listing set category_id=(select id from category where code='BOARD_BOOK') where book_copy_id=?", Long.parseLong(b2.id()));
+  jdbc.update("update book_copy set publisher='Nhã Nam' where id=?", Long.parseLong(b3.id()));
+
+  var res = anon.send("GET", "/api/v1/books/" + b1.slug() + "/related", null, false);
+  assertThat(res.statusCode()).isEqualTo(200);
+  var body = tree(res);
+  var pubBooks = body.path("samePublisherBooks");
+  assertThat(pubBooks.size()).isEqualTo(1);
+  assertThat(pubBooks.get(0).path("bookCode").asString()).isEqualTo(b2.bookCode());
+
+  var catBooks = body.path("sameCategoryBooks");
+  assertThat(catBooks.size()).isEqualTo(1);
+  assertThat(catBooks.get(0).path("bookCode").asString()).isEqualTo(b3.bookCode());
+
+  assertThat(anon.send("GET", "/api/v1/books/non-existent-slug/related", null, false).statusCode()).isEqualTo(404);
+
+  var noPub = published();
+  jdbc.update("update book_copy set publisher=null where id=?", Long.parseLong(noPub.id()));
+  var resNoPub = anon.send("GET", "/api/v1/books/" + noPub.slug() + "/related", null, false);
+  assertThat(resNoPub.statusCode()).isEqualTo(200);
+  assertThat(tree(resNoPub).path("samePublisherBooks").size()).isEqualTo(0);
+ }
+
+ @Test void searchQueryMatchesPublisher() throws Exception {
+  var b = published();
+  jdbc.update("update book_copy set publisher='Usborne Publishing' where id=?", Long.parseLong(b.id()));
+  var res = anon.send("GET", "/api/v1/books?q=Usborne", null, false);
+  assertThat(res.statusCode()).isEqualTo(200);
+  assertThat(tree(res).path("totalElements").asInt()).isEqualTo(1);
+  assertThat(tree(res).path("items").get(0).path("bookCode").asString()).isEqualTo(b.bookCode());
+ }
 }
