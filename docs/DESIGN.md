@@ -287,3 +287,13 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   tắt animation; lỗi chuyển sang PublicError hiện hành, không giữ skeleton vô hạn.
 - Detail chỉ tải ảnh lớn được chọn; thumbnail ưu tiên WebP320. URL cùng asset/
   size/format/cacheKey ổn định để tái sử dụng cache và xác thực ETag.
+
+## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06/11/2026
+
+- **Vị trí & Bố cục**: Đặt ngay dưới Banner Hero trên Trang chủ (`/`), 4 box ngang trên Desktop (`repeat(4, 1fr)`) và lưới 2x2 trên Mobile (`repeat(2, 1fr)`).
+- **Thẻ thông tin**: Nền trắng `#FFFFFF`, viền mảnh `#E8E2D8` bo góc 12px, hover viền đỏ `#9B1C28` và bóng đổ nhẹ. Icon SVG đỏ thương hiệu `#9B1C28` trên nền đỏ pastel `#FDF2F2`.
+- **4 nội dung**:
+  1. "Ưu đãi vận chuyển" (icon 🚚): sẵn sàng gắn popup ở giai đoạn 2.
+  2. "Cách hỏi mua sách" (icon 💬): sẵn sàng gắn popup ở giai đoạn 2.
+  3. "Cộng đồng Mẹ Mây" (icon 👥): link mở Zalo Group từ cấu hình `contactConfig.groupUrl` (tab mới).
+  4. "Hotline hỗ trợ" (icon 📞): 2 dòng số `0966 075 005` và `0703 260 005` (link `tel:` trực tiếp).

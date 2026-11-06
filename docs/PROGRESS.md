@@ -136,6 +136,14 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
   - Nút quay về `/admin` trên trang public (`/` và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng `/admin` (khi đã login) hoặc `/admin/dang-nhap`.
   - Kiểm chứng: Vitest 38/38 files (194/194 tests PASS), `npm run build` và `npm run build:workers` (0 warning), Visual QA qua headless Chrome CDP đạt 100%.
 
+## Box tiện ích & hỗ trợ dưới banner trang chủ (trên worktree dev-ui 06/11/2026)
+
+- Đã hoàn tất trên worktree `dev-ui`:
+  - 4 box tiện ích theo phong cách IPM đặt ngay dưới banner Hero: "Ưu đãi vận chuyển" (icon xe tải 🚚), "Cách hỏi mua sách" (icon tin nhắn 💬), "Cộng đồng Mẹ Mây" (icon nhóm 👥, link Group Zalo từ `contactConfig.groupUrl`), "Hotline hỗ trợ" (icon điện thoại 📞 kèm 2 số `0966 075 005` và `0703 260 005` link `tel:` trực tiếp).
+  - Responsive: Desktop 4 cột thẳng hàng (`repeat(4, 1fr)`), Mobile lưới 2x2 (`repeat(2, 1fr)`) cân đối, dễ chạm bấm.
+  - Tông màu đỏ thương hiệu Mẹ Mây `#9B1C28`, nền trắng bo góc 12px viền `#E8E2D8`, hover nổi nhẹ. Hai box đầu sẵn sàng tích hợp popup ở giai đoạn 2.
+  - Kiểm chứng: Vitest 40/40 files (204/204 tests PASS), `npm run build` và `npm run build:workers` hoàn tất 0 warning 0 error, Visual QA Chrome headless CDP (Desktop 1280px & Mobile 390px) đạt 100%.
+
 ## Tối ưu UI — chi tiết sách gom ảnh + nút, khung BookCard, thể loại Kinh Thánh và bộ font Baloo 2 + Nunito (đã triển khai 04/11)
 
 - `/sach/:slug`: một ảnh lớn + thumbnail, `Quan tâm`/`Liên hệ` dưới ảnh (sticky desktop, thanh dưới mobile), bộ chọn biến thể lên trên mô tả; `Liên hệ` nhắc chọn biến thể thay vì bị khóa. Đổi `VNĐ` → `đ` toàn bộ UI/tài liệu hiện hành; thêm nhãn `(nếu có)` cho Nhà xuất bản/Tác giả và sửa header mobile `390px` cho icon `♡ + badge`.
