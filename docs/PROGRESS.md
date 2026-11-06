@@ -12,8 +12,8 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - User đã duyệt toàn bộ [thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md)06/11.
   [Plan7task](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã viết và tự rà; đề xuất chạy
   native tuần tự vì cùng DTO/fingerprint; user đã chọn thực thi tuần tự06/11.
-- Checkpoint S041-C06 trong DEV_LOG. T1 backend191run/0failure/0error/3skip PASS;
-  baseline frontend189/189 PASS. Tiếp T2 tồn gộp; chưa deploy/migrate dữ liệu thật.
+- Checkpoint S041-C07 trong DEV_LOG. T1 backend191run/0failure/0error/3skip PASS;
+  T2 contract/variant13test PASS; tiếp T3 tên trùng. Chưa deploy dữ liệu thật.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 

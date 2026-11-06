@@ -1496,3 +1496,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Một lần vô ý chạy chồng test backend trên TEST_DB gây race login/cleanup;
   loại bỏ cả hai kết quả và đã chạy lại toàn suite tuần tự PASS. Không chạy
   song song database test ở các bước sau. Tiếp theo T2 tồn gộp; chưa deploy.
+
+### S041-C07 — 06/11/2026 — T2 tồn gộp
+
+- Thêm stock/stockLimit quản trị và adapter stock→dòng legacy; giữ UUID/tên/
+  thứ tự, tăng từ dòng đầu và giảm từ dòng cuối. Metadata thiếu stock giữ tồn.
+- TDD RED2test tồn gộp400→GREEN;13test contract/variant PASS, gồm tổng1999998,
+  mixed/null/fraction/over-limit, no-op và concurrency409. Không đổi schema tồn.
+- T1 commit50fccc3. T2 đang bàn giao commit trên dev; tiếp T3 cảnh báo tên.

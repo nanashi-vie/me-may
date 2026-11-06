@@ -19,6 +19,30 @@ public class BookVariantStore {
                 (r, n) -> new VariantView(r.getString(1), r.getString(2), r.getLong(3)), bookId);
     }
 
+    public long stockLimit(long bookId) {
+        return Math.min(9007199254740991L,(long)read(bookId).size()*999999L);
+    }
+
+    public List<VariantWrite> pooledRows(long bookId,long stock) {
+        var rows=read(bookId);
+        long limit=Math.min(9007199254740991L,(long)rows.size()*999999L);
+        if(stock<0 || stock>limit) throw AdminApiException.field("stock","Stock exceeds available row capacity");
+        long delta=stock-rows.stream().mapToLong(VariantView::stock).sum();
+        var values=new ArrayList<>(rows.stream().map(v -> new VariantWrite(v.id(),v.name(),v.stock())).toList());
+        if(delta>0) {
+            for(int i=0;i<values.size() && delta>0;i++) {
+                var v=values.get(i);long add=Math.min(delta,999999-v.stock());
+                values.set(i,new VariantWrite(v.id(),v.name(),v.stock()+add));delta-=add;
+            }
+        } else {
+            for(int i=values.size()-1;i>=0 && delta<0;i--) {
+                var v=values.get(i);long remove=Math.min(-delta,v.stock());
+                values.set(i,new VariantWrite(v.id(),v.name(),v.stock()-remove));delta+=remove;
+            }
+        }
+        return List.copyOf(values);
+    }
+
     public List<VariantView> save(long bookId, List<VariantWrite> rows) {
         var existing = read(bookId).stream().map(VariantView::id).collect(java.util.stream.Collectors.toSet());
         var incoming = rows.stream().map(VariantWrite::id).filter(Objects::nonNull)

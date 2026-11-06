@@ -14,8 +14,8 @@ public class BookEntryInput {
     private final ObjectMapper json;
     public BookEntryInput(ObjectMapper json) { this.json=json; }
     public record Options(boolean noteSupplied,String note,boolean gradeSupplied,
-                          boolean unitSupplied,Long unitPrice) {
-        public static Options legacy() { return new Options(true,null,true,false,null); }
+                          boolean unitSupplied,Long unitPrice,boolean stockSupplied,Long stock,boolean variantsSupplied) {
+        public static Options legacy() { return new Options(true,null,true,false,null,false,null,true); }
     }
     public record Create(BookCreate body,Options options) {}
     public record Update(BookUpdate body,Options options) {}
@@ -49,19 +49,36 @@ public class BookEntryInput {
                 throw AdminApiException.field("unitPricePerKgVnd","Enter a positive integer VND/kg");
             price=n.asLong();
         }
+        boolean stock=node.has("stock"), variants=node.has("variants");Long quantity=null;
+        if(stock) {
+            var n=node.get("stock");
+            if(n.isNull() || !n.isIntegralNumber() || !n.canConvertToLong() || n.asLong()<0 || n.asLong()>9007199254740991L)
+                throw AdminApiException.field("stock","Enter a non-negative integer stock");
+            if(variants && !node.get("variants").isNull()) throw AdminApiException.field("stock","Send stock or variants, not both");
+            quantity=n.asLong();node.remove("variants");
+        }
+        node.remove("stock");
         node.remove("unitPricePerKgVnd");
-        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price);
+        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price,stock,quantity,variants);
     }
     private String text(JsonNode node,String field) {
         if(node.isNull()) return null;
         if(!node.isString()) throw AdminApiException.field(field,"Expected text");
         return BookValidation.trim(node.asString());
     }
-    public static BookWrite resolve(BookWrite w,BookDetail before,Options o) {
+    public static BookWrite resolve(BookWrite w,BookDetail before,Options o,BookVariantStore store) {
+        var rows=w.variants();
+        if(o.stockSupplied()) {
+            if(before==null) {
+                if(o.stock()>999999) throw AdminApiException.field("stock","Maximum stock is 999999");
+                rows=java.util.List.of(new VariantWrite(null,null,o.stock()));
+            } else rows=store.pooledRows(Long.parseLong(before.id()),o.stock());
+        } else if(!o.variantsSupplied() && before!=null)
+            rows=before.variants().stream().map(v -> new VariantWrite(v.id(),v.name(),v.stock())).toList();
         return new BookWrite(w.title(),w.isbn(),w.publisher(),w.author(),w.language(),w.binding(),
             o.gradeSupplied()?w.conditionGrade():before==null?null:before.conditionGrade(),
             o.noteSupplied()?w.conditionNote():before==null?null:before.conditionNote(),
             w.priceMinVnd(),w.priceMaxVnd(),w.weightG(),w.description(),w.categoryCode(),w.ageGroups(),
-            w.readingLevel(),w.readingVideoUrl(),w.collectionIds(),w.variants());
+            w.readingLevel(),w.readingVideoUrl(),w.collectionIds(),rows);
     }
 }

@@ -118,7 +118,7 @@ public class BookCommandService {
         access.requireOwner(actor);
         if (input == null || input.uploadSessionId() == null)
             throw AdminApiException.field("uploadSessionId", "Thiếu phiên ảnh");
-        var w = timings.measure("validation", () -> validation.normalize(BookEntryInput.resolve(input.write(),null,options)));
+        var w = timings.measure("validation", () -> validation.normalize(BookEntryInput.resolve(input.write(),null,options,variants)));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
         String fingerprint = timings.measure("fingerprint", () -> {
@@ -214,7 +214,7 @@ public class BookCommandService {
         if (b.version != version)
             throw AdminApiException.conflict(b.version);
         var before = mapper.detail(b, l);
-        var w = validation.normalize(BookEntryInput.resolve(input,before,options));
+        var w = validation.normalize(BookEntryInput.resolve(input,before,options,variants));
         Long unitPrice=options.unitSupplied()?options.unitPrice():b.unitPricePerKgVnd;
         timings.measure("validation", () -> {
             validation.validateWrite(w);

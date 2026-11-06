@@ -72,6 +72,10 @@ public final class BookDtos {
                         List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd) {
                 @com.fasterxml.jackson.annotation.JsonProperty("internalNote")
                 public String internalNote() { return conditionNote; }
+                @com.fasterxml.jackson.annotation.JsonProperty("stock")
+                public long stock() { return totalStock; }
+                @com.fasterxml.jackson.annotation.JsonProperty("stockLimit")
+                public long stockLimit() { return Math.min(9007199254740991L,(long)variants.size()*999999L); }
         }
 
         public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd,

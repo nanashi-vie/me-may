@@ -44,4 +44,40 @@ class BookEntryContractTest extends CatalogueTestSupport {
         assertThat(tree(r).path("priceMinVnd").asLong()).isEqualTo(40000);assertThat(tree(r).path("priceMaxVnd").asLong()).isEqualTo(48000);
         assertThat(tree(r).path("unitPricePerKgVnd").asLong()).isEqualTo(80000);
     }
+    @Test void pooledStockPreservesLegacyRows() throws Exception {
+        var api=ownerApi();var b=ready();long id=Long.parseLong(b.id());
+        jdbc.update("update book_variant set name='A',stock=2 where book_copy_id=?",id);
+        jdbc.update("insert into book_variant(book_copy_id,name,stock,sort_order) values(?,'B',3,1)",id);
+        var originals=queries.detail(id,owner).variants();
+        for(long desired:new long[]{4,6,0}) {
+            var current=queries.detail(id,owner);var w=body(current);w.remove("variants");w.put("stock",desired);
+            var r=api.send("PUT","/api/v1/admin/books/"+id,json(w),true);assertThat(r.statusCode()).isEqualTo(200);
+            var saved=queries.detail(id,owner);assertThat(saved.totalStock()).isEqualTo(desired);
+            assertThat(saved.variants()).extracting(BookDtos.VariantView::id).containsExactlyElementsOf(originals.stream().map(BookDtos.VariantView::id).toList());
+            assertThat(saved.variants()).extracting(BookDtos.VariantView::name).containsExactly("A","B");
+            if(desired==4) assertThat(saved.variants()).extracting(BookDtos.VariantView::stock).containsExactly(2L,2L);
+            if(desired==6) assertThat(saved.variants()).extracting(BookDtos.VariantView::stock).containsExactly(4L,2L);
+            assertThat(saved.availability().name()).isEqualTo(desired==0?"SOLD":"AVAILABLE");
+        }
+    }
+    @Test void largeLegacyStockRemainsEditable() throws Exception {
+        var api=ownerApi();var b=ready();long id=Long.parseLong(b.id());
+        jdbc.update("update book_variant set name='A',stock=999999 where book_copy_id=?",id);
+        jdbc.update("insert into book_variant(book_copy_id,name,stock,sort_order) values(?,'B',999999,1)",id);
+        var current=queries.detail(id,owner);var w=body(current);w.remove("variants");w.remove("conditionNote");w.put("internalNote","remember");
+        var r=api.send("PUT","/api/v1/admin/books/"+id,json(w),true);assertThat(r.statusCode()).isEqualTo(200);
+        assertThat(tree(r).path("stock").asLong()).isEqualTo(1999998);assertThat(tree(r).path("stockLimit").asLong()).isEqualTo(1999998);
+        w.put("version",tree(r).path("version").asLong());w.put("stock",1999999);
+        assertThat(api.send("PUT","/api/v1/admin/books/"+id,json(w),true).statusCode()).isEqualTo(400);
+        assertThat(queries.detail(id,owner).totalStock()).isEqualTo(1999998);
+    }
+    @Test void rejectsMixedNullAndFractionalPooledStock() throws Exception {
+        var api=ownerApi();var b=ready();var w=body(b);w.put("stock",1);
+        assertThat(api.send("PUT","/api/v1/admin/books/"+b.id(),json(w),true).statusCode()).isEqualTo(400);
+        w.remove("variants");
+        for(Object value:Arrays.asList(null,-1,1.5,"2",1000000)) {
+            w.put("stock",value);assertThat(api.send("PUT","/api/v1/admin/books/"+b.id(),json(w),true).statusCode()).isEqualTo(400);
+        }
+        assertThat(queries.detail(Long.parseLong(b.id()),owner).version()).isEqualTo(b.version());
+    }
 }
