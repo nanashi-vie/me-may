@@ -247,7 +247,7 @@ loopback/me_may_dev. Cách chạy ở DEPLOYMENT; future auth không triển kha
 ### M5 aggregate và media tạm — local29/10
 
 - V6 đổi giá thành min/max, thêm weight_g và INSIDE→INSIDE_1; V7 thêm upload_session/temporary_media; V8 DRAFT→ARCHIVED; V9 thêm request_key/fingerprint ảnh tạm. Không sửa checksum V1–V5. Dữ liệu cũ giữ ID/asset/giá và published_at; nullweight không tựẩn.
-- OWNER mọi ghi, STAFF đọc. Phiên24giờ, intent→provider ngoài transaction→READY; final khóa phiên/kiểm owner/expiry, attachmedia+tạoPUBLISHED+audit+consume cùngtransaction. Cùngnormalizedpayload retry trảcùngbook; khác409. Cleanup cùngsessionlock, UPLOADING/ambiguous giữgrace1giờ.
+- OWNER mọi ghi, STAFF đọc. Phiên24giờ, intent→provider ngoài transaction→READY; final khóa phiên/kiểm owner/expiry, attachmedia+tạoARCHIVED/PUBLISHED+audit+consume cùngtransaction. Cùngnormalizedpayload retry trảcùngbook; khác409. Cleanup cùngsessionlock, UPLOADING/ambiguous giữgrace1giờ.
 - Reorder theo mediaID/version, tất cả mapping/audit nguyên tử. QueueclientID riêngserverID, uploadtuần tự, metadata lưu trước final; retry ảnh tạm dùngrequestKey/hash để không chiếm thêm slot khi mấtresponse.
 - Public detail seed dữ liệu publicSSR trong TransferState riêng; luôn revalidate no-store, giữ DOM khi cùngslug, khóa contact đến dữliệumới. Admin/wishlist vẫn không transfercache. Logo WebP208; favicon dùng cùngasset.
 
@@ -336,3 +336,11 @@ Giới hạn/thứtự/nhãn ở DATA; rolloutbackend trướcfrontend và gate 
   Sale vẫn lấy giờ mới; metadata replay không chỉnh đồng hồ ngược mỗi lần đọc.
 - CDN cache chỉ bật trong production config; local/preview mặc định không bật.
   Thiết lập và smoke online nằm DEPLOYMENT. Chưa có đo cải thiện sau deploy.
+
+## Media/save/features —06/11/2026
+
+V15 mở rộng2internal roles và feature catalogue/mapping; giữ Angular/Spring/JDBC,
+không dependency mới. Aggregate PUT gộp content/mediaMetadata/features/publication
+trong transaction/version/audit; public features SQL aggregate không thêm per-book
+query. Contract/bảo mật/idempotency ở [CATALOGUE](CATALOGUE.md), UX ở DESIGN,
+rollout/rollbackV15 ở [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).

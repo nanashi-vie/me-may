@@ -158,7 +158,7 @@ M4 duyệt24/10: trái tim chung card/detail có nhãn truy cập/aria-pressed; 
 
 SOLD hiện ảnh/tên/giá public với cảnh báo, checkbox bị khóa. Mã nháp/ẩn/không tồn tại chỉ hiện mã + “Không còn hiển thị”, không snapshot tên/ảnh/giá cũ. Có loading/empty/error/retry; xóa được mã không public. Storage hỏng báo rõ, storage chặn/quota dùng bộ nhớ và cảnh báo mất khi tải lại; không hứa đồng bộ khác browser/thiết bị.
 
-Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công.
+Format copy một cuốn: `Mã | Tên | Giá tham khảo | URL`. Nhiều cuốn: một dòng/cuốn và câu cuối đề nghị tiệm xác nhận còn/giá. Cuốn sold/hidden được loại khỏi danh sách hỏi mua còn sẵn và báo lý do; khi API lỗi không âm thầm gửi giá cũ. Clipboard lỗi có ô văn bản để chọn/copy thủ công. Safari gọi clipboard.write ngay click bằng ClipboardItem promise, chỉ cung cấp nội dung sau xác minh; fallback chọn toàn bộ text và hướng dẫn nhấn giữ.
 
 “Chuẩn bị nội dung hỏi mua” lookup lại các mã được chọn rồi mới mở nội dung; giá thay đổi cập nhật, cuốn vừa sold/hidden bị loại và giải thích. Zero valid không copy. Text có mục đích hỏi, các dòng mã/tên/giá tham khảo/URL canonical và câu cuối nhờ xác nhận. Native dialog có nút copy riêng sau tải (giữ user gesture), textarea manual fallback, hotline có cấu hình mới hiện link; thiếu hotline vẫn copy được. Không tự gửi.
 
@@ -186,9 +186,9 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 Danh sách sách quản trị hiển thị cột “Tồn kho” bằng tổng tồn các biến thể, gồm cả 0;
 bộ lọc Còn hàng/Hết hàng vẫn dựa trên khả dụng dẫn xuất từ tổng tồn.
 
-Cột nội dung chính: chọn/thả nhiều file 2–6 ảnh lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; nút Đăng sách nằm cuối form sau xác nhận.
+Cột nội dung chính: chọn/thả nhiều file tối đa8ảnh (6công khai+2nội bộ) lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, riêng Picture book bắt buộc chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; hai nút lưu nằm cuối form; xác nhận bộ ảnh khi xuất bản.
 
-Mã bất biến sau khi tạo. Không lưu nháp. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có DRAFT. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa nếu Picture book, 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Không cho lưu Picture book thiếu kiểu bìa hoặc có giá trị “Tất cả”. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ### Nhập giá theo kg và tồn gộp — duyệt06/11
 
@@ -287,3 +287,33 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   tắt animation; lỗi chuyển sang PublicError hiện hành, không giữ skeleton vô hạn.
 - Detail chỉ tải ảnh lớn được chọn; thumbnail ưu tiên WebP320. URL cùng asset/
   size/format/cacheKey ổn định để tái sử dụng cache và xác thực ETag.
+
+## Lưu/xuất bản, nhóm ảnh và tags —06/11/2026
+
+- Mới/ARCHIVED: “Lưu thay đổi” secondary trái và “Lưu và xuất bản” đỏ primary phải,
+  grid50:50 cùng cao48px. PUBLISHED: một “Lưu thay đổi” toàn chiều rộng; giữẨn sách,
+  bỏ nútXuất bản trùng bên dưới. Trạng thái gần nút: Chưa từng xuất bản/Đang ẩn/Đã xuất bản.
+- Save-only cho thiếu metadata ở ARCHIVED; publish mới kiểm đủ và checkbox đúngảnh.
+  Đang lưu khóa thao tác xung đột, loading theo hành động, lỗi giữform/ảnh.
+  Kết quả chưa rõ phải kiểm session/book trước retry, không tự báo xuất bản.
+- Hai nhóm “Ảnh công khai (tối đa 6)” và “Ảnh nội bộ (tối đa 2)”; ảnh nội bộ có
+  khóa và “Chỉ nội bộ”. Giữ multi-file/drop/replace/remove/role dropdown/largeview/
+  retry/metadata;8file mới mặc định6public+2internal, xóa không đổirole ảnh khác.
+- Fieldset “Đặc điểm sách” checkbox, đếm n/3; chọn tối đa3, nút “Đặt nổi bật”
+  đưa tag chọn lên đầu, không cần drag. Không tự gắn theo tên hoặc thể loại.
+- Book card Home/catalogue/collection/related: tối đa1tag đầu ở góc dưới trái ảnh,
+  nềncream/chữđỏ có tương phản; không chồng giá/discount/stock/wishlist, pointer-events
+  none, text dài ellipsis, label đầy đủ vẫn screenreader đọc và titletooltip.
+- Detail dưới tiêu đề hiện tất cảtags theo thứ tự, wrap/mobile, khônglink/filter.
+  Khôngfeatures khôngplaceholder; khungảnh giữ kích thước, không layoutshift đáng kể.
+- Preview mô phỏng khách chỉ public roles và tags; khôngnote/internalmedia/sourceRef.
+
+## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06/11/2026 (chuẩn mẫu IPM)
+
+- **Vị trí & Bố cục**: Đặt ngay dưới Banner Hero trên Trang chủ (`/`), 4 box ngang trên Desktop (`repeat(4, 1fr)`) và lưới 2x2 trên Mobile (`repeat(2, 1fr)`).
+- **Thẻ thông tin**: Nền trắng `#FFFFFF`, viền đỏ thương hiệu 1px `#9B1C28`, bo góc vuông 4px chuẩn mẫu IPM, hover bóng đổ nhẹ và đổi sắc đỏ đậm `#7D131E`. Icon SVG đỏ trần (không nền phụ), tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
+- **4 nội dung**:
+  1. "ƯU ĐÃI VẬN CHUYỂN" (icon 🚚): sẵn sàng gắn popup ở giai đoạn 2.
+  2. "CÁCH HỎI MUA SÁCH" (icon 💬): sẵn sàng gắn popup ở giai đoạn 2.
+  3. "CỘNG ĐỒNG MẸ MÂY" (icon 👥): link mở Zalo Group từ cấu hình `contactConfig.groupUrl` (tab mới).
+  4. "HOTLINE" (icon 📞 đặc kèm 3 sóng âm IPM): tiêu đề `HOTLINE:` và 2 dòng số `0966 075 005` / `0703 260 005` in đậm căn giữa (link `tel:` trực tiếp).

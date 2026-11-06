@@ -38,6 +38,7 @@ describe('BookEditor safe final saves', () => {
             create,
             update,
             cancelSession: () => of(null),
+            session:()=>of({id:'session',state:'OPEN',media:[],expiresAt:''}),
             get: () => throwError(() => new HttpErrorResponse({ status: 404 })),
             taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }),
             audit: () => of({items:[],page:0,size:20,totalElements:0,totalPages:0}),
@@ -102,7 +103,7 @@ describe('BookEditor safe final saves', () => {
   it('sends one pooled stock and never sends legacy condition or variant fields', async () => {
     vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
     const e=editor();ready(e);expect(e.form.controls.stock.value).toBe(1);
-    e.form.controls.stock.setValue(3);await e.save();
+    e.form.controls.stock.setValue(3);await e.save(true);
     const write=create.mock.calls[0][0].write;
     expect(write.stock).toBe(3);expect(write.internalNote).toBeNull();
     expect(write).not.toHaveProperty('variants');expect(write).not.toHaveProperty('conditionNote');
@@ -113,7 +114,7 @@ describe('BookEditor safe final saves', () => {
     expect(e.form.controls.stock.value).toBe(1999998);expect(e.form.valid).toBe(true);
     e.form.controls.stock.setValue(1999997);e.form.markAsDirty();
     update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
-    await e.save();expect(e.form.controls.stock.value).toBe(1999997);expect(e.form.dirty).toBe(true);
+    await e.save(true);expect(e.form.controls.stock.value).toBe(1999997);expect(e.form.dirty).toBe(true);
   });
   it('calculates only on input edits and permits manual adjustments',()=>{
     const e=editor();e.accept({...saved,priceMinVnd:36450,priceMaxVnd:41918});
@@ -145,7 +146,7 @@ describe('BookEditor safe final saves', () => {
       e.form.controls.title.setValue('Duplicate');await vi.advanceTimersByTimeAsync(300);fixture.detectChanges();
       expect(e.titleWarning()).toContain('Tên sách đã tồn tại');expect(e.form.valid).toBe(true);
       expect(fixture.nativeElement.querySelector('.field-title.has-error')).not.toBeNull();
-      vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);await e.save();expect(create).toHaveBeenCalledTimes(1);
+      vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);await e.save(true);expect(create).toHaveBeenCalledTimes(1);
     } finally {vi.useRealTimers();}
   });
   it('cancels stale title lookups and permits saving when the lookup fails',async()=>{
@@ -165,8 +166,8 @@ describe('BookEditor safe final saves', () => {
     const e = editor();
     ready(e);
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    await e.save();
-    await e.save();
+    await e.save(true);
+    await e.save(true);
     expect(create).toHaveBeenCalledTimes(1);
     expect(create.mock.calls[0][0]).toMatchObject({
       uploadSessionId: 'session',
@@ -185,13 +186,13 @@ describe('BookEditor safe final saves', () => {
     const e = editor();
     ready(e);
     e.form.markAsDirty();
-    await e.save();
+    await e.save(true);
     const original = create.mock.calls[0][0];
-    await e.save();
+    await e.save(true);
     expect(create).toHaveBeenCalledTimes(1);
     expect(e.createUncertain()).toBe(true);
     expect(e.photos.locked()).toBe(true);
-    e.retryCreate();
+    await e.retryCreate();
     expect(create).toHaveBeenCalledTimes(2);
     expect(create.mock.calls[1][0]).toBe(original);
     expect(e.form.controls.title.value).toBe('New');
@@ -200,16 +201,16 @@ describe('BookEditor safe final saves', () => {
     const e = editor();
     ready(e);
     e.confirmed.set(false);
-    await e.save();
+    await e.save(true);
     expect(create).not.toHaveBeenCalled();
     e.confirmed.set(true);
     e.photos.rows.update((r) => r.slice(0, 1));
-    await e.save();
+    await e.save(true);
     expect(create).not.toHaveBeenCalled();
     role = 'STAFF';
     const staff = editor();
     ready(staff);
-    await staff.save();
+    await staff.save(true);
     expect(create).not.toHaveBeenCalled();
   });
   it('preserves dirty content on a conflict and expired login', async () => {
@@ -218,11 +219,11 @@ describe('BookEditor safe final saves', () => {
     e.form.controls.title.setValue('Changed');
     e.form.markAsDirty();
     update.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 409 })));
-    await e.save();
+    await e.save(true);
     expect(e.form.dirty).toBe(true);
     expect(e.form.controls.title.value).toBe('Changed');
     update.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 401 })));
-    await e.save();
+    await e.save(true);
     expect(e.needsLogin()).toBe(true);
   });
   it('never creates a new book when an existing route failed to load', async () => {
@@ -233,7 +234,7 @@ describe('BookEditor safe final saves', () => {
     const e = editor();
     e.ngOnInit();
     ready(e);
-    await e.save();
+    await e.save(true);
     expect(create).not.toHaveBeenCalled();
   });
   it('warns before leaving unsaved text or photos', () => {
@@ -249,7 +250,7 @@ describe('BookEditor safe final saves', () => {
     create.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 410 })));
     const e = editor();
     ready(e);
-    await e.save();
+    await e.save(true);
     expect(e.photos.expired()).toBe(true);
     expect(e.photos.paused()).toBe(true);
     expect(e.form.controls.title.value).toBe('New');
@@ -257,10 +258,80 @@ describe('BookEditor safe final saves', () => {
   });
   it('does not accept or navigate a publish response from an earlier login',async()=>{
     const pending=new Subject<BookDetail>();create.mockReturnValueOnce(pending);
-    const e=editor();ready(e);await e.save();
+    const e=editor();ready(e);await e.save(true);
     const auth=TestBed.inject(AuthService);(auth.epoch as any).set(1);
     pending.next(saved);pending.complete();expect(e.book()).toBeNull();expect(e.createUncertain()).toBe(true);
     expect(e.error()).toContain('Phiên đăng nhập đã thay đổi');
+  });
+  it('saves a title-only new book as ARCHIVED using an empty upload session',async()=>{
+    const e=editor();e.form.controls.title.setValue('Unfinished');
+    const session=vi.fn(()=>of({id:'empty-session',state:'OPEN',expiresAt:'',media:[]}));
+    (TestBed.inject(BookApi) as any).createSession=session;
+    create.mockReturnValue(of({...saved,publication:'ARCHIVED',publishedAt:null}));
+    vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    await e.save();
+    expect(create.mock.calls[0][0]).toMatchObject({publication:'ARCHIVED',uploadSessionId:'empty-session',media:[],confirmedActualCopy:false,write:{title:'Unfinished',weightG:null}});
+    expect(e.notice()).not.toContain('Đã xuất bản');
+  });
+  it('checks consumed session before retry and opens the confirmed record without another create',async()=>{
+    create.mockReturnValue(throwError(()=>new HttpErrorResponse({status:0})));
+    const e=editor();ready(e);await e.save(true);
+    vi.spyOn(TestBed.inject(BookApi),'session').mockReturnValue(of({id:'session',state:'CONSUMED',bookId:saved.id,media:[],expiresAt:''}));
+    vi.spyOn(TestBed.inject(BookApi),'get').mockReturnValue(of(saved));
+    vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    await e.retryCreate();expect(create).toHaveBeenCalledTimes(1);expect(e.book()?.id).toBe(saved.id);expect(e.notice()).toContain('Đã xuất bản');
+  });
+  it('keeps dirty media metadata inside the aggregate update when publication fails',async()=>{
+    const e=editor();e.accept({...saved,publication:'ARCHIVED',media:[{id:'front',role:'FRONT',alt:'Old',sourceRef:null,contentPath:'/a'},{id:'back',role:'BACK',alt:null,sourceRef:null,contentPath:'/b'}]});
+    e.confirmed.set(true);e.photos.setMetadata(e.photos.rows()[0].id,'alt','New private description');
+    const metadata=vi.fn(()=>of(saved));(TestBed.inject(BookApi) as any).updateMedia=metadata;
+    update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:400})));
+    await e.save(true);
+    expect(metadata).not.toHaveBeenCalled();expect(update.mock.calls[0][6]).toEqual([{mediaId:'front',alt:'New private description',sourceRef:null}]);
+    expect(e.photos.rows()[0].alt).toBe('New private description');expect(e.book()?.version).toBe(saved.version);
+  });
+  it('checks a committed update after its response is lost before allowing another mutation',async()=>{
+    const e=editor();e.accept(saved);e.form.controls.title.setValue('Changed');e.form.markAsDirty();
+    update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:0})));
+    await e.save();await e.save();expect(update).toHaveBeenCalledTimes(1);expect(e.updateUncertain()).toBe(true);
+    vi.spyOn(TestBed.inject(BookApi),'get').mockReturnValue(of({...saved,title:'Changed',version:saved.version+1}));
+    await e.reconcileUpdate();expect(e.updateUncertain()).toBe(false);expect(e.book()?.version).toBe(saved.version+1);expect(e.form.dirty).toBe(false);
+  });
+  it('preserves edits when the uncertain saved record contains a different change',async()=>{
+    const e=editor();e.accept(saved);e.form.controls.title.setValue('Local');e.form.markAsDirty();
+    update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:0})));await e.save();
+    vi.spyOn(TestBed.inject(BookApi),'get').mockReturnValue(of({...saved,title:'Other owner',version:saved.version+1}));
+    await e.reconcileUpdate();expect(e.form.controls.title.value).toBe('Local');expect(e.form.dirty).toBe(true);expect(e.updateUncertain()).toBe(true);
+  });
+  it('offers two save actions for hidden books and only one for published books',()=>{
+    const f=TestBed.createComponent(BookEditor);const e=f.componentInstance;f.detectChanges();
+    expect(f.nativeElement.querySelectorAll('.save-actions button').length).toBe(2);
+    expect(f.nativeElement.textContent).toContain('Chưa từng xuất bản');
+    e.accept({...saved,publication:'ARCHIVED',publishedAt:'2026-11-01T00:00:00Z'});f.detectChanges();
+    expect(f.nativeElement.textContent).toContain('Đang ẩn');
+    expect(f.nativeElement.querySelector('app-book-status-actions .status-actions .buttons button')).toBeNull();
+    e.accept(saved);f.detectChanges();
+    expect(f.nativeElement.querySelectorAll('.save-actions button').length).toBe(1);
+    expect(f.nativeElement.textContent).toContain('Đã xuất bản');
+  });
+  it('sends content and selected features with one atomic publish update',async()=>{
+    const e=editor();e.accept({...saved,publication:'ARCHIVED',media:[
+      {id:'front',role:'FRONT',alt:null,sourceRef:null,contentPath:'/a'},
+      {id:'back',role:'BACK',alt:null,sourceRef:null,contentPath:'/b'}]});
+    e.form.controls.featureCodes.setValue(['SPIN','SOUND']);e.confirmed.set(true);
+    await e.save(true);
+    expect(update.mock.calls[0]).toEqual([saved.id,saved.version,expect.objectContaining({featureCodes:['SPIN','SOUND']}),undefined,true,true,[]]);
+  });
+  it('keeps hidden weight optional and prevents publishing without it',async()=>{
+    const e=editor();e.accept({...saved,publication:'ARCHIVED',weightG:null});
+    expect(e.form.valid).toBe(true);await e.save(true);expect(update).not.toHaveBeenCalled();
+    await e.save();expect(update).toHaveBeenCalledTimes(1);
+  });
+  it('limits features to three and lets the owner promote the first tag',()=>{
+    const e=editor();e.toggleFeature('SOUND',true);e.toggleFeature('FLAP',true);e.toggleFeature('SLIDE',true);e.toggleFeature('SPIN',true);
+    expect(e.form.controls.featureCodes.value).toEqual(['SOUND','FLAP','SLIDE']);
+    e.prioritizeFeature('SLIDE');expect(e.form.controls.featureCodes.value).toEqual(['SLIDE','SOUND','FLAP']);
+    e.toggleFeature('SOUND',false);expect(e.form.controls.featureCodes.value).toEqual(['SLIDE','FLAP']);
   });
   it('renders modern admin fields with notched outline field labels and custom Picture book submenu', () => {
     const fixture = TestBed.createComponent(BookEditor);

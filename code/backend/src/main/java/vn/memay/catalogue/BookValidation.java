@@ -74,7 +74,9 @@ public class BookValidation {
         return values;
     }
 
-    public Map<String, List<String>> writeErrors(BookWrite w) {
+    public Map<String, List<String>> writeErrors(BookWrite w) { return writeErrors(w, false); }
+
+    private Map<String, List<String>> writeErrors(BookWrite w, boolean optionalWeight) {
         var errors = new LinkedHashMap<String,List<String>>();
         textError(errors, "title", w.title(), 300);
         textError(errors, "isbn", w.isbn(), 32);
@@ -99,7 +101,7 @@ public class BookValidation {
         if ((w.priceMinVnd() == null) != (w.priceMaxVnd() == null) ||
                 w.priceMinVnd() != null && w.priceMinVnd() > w.priceMaxVnd())
             errors.put("priceMaxVnd", List.of("Nhập đủ hai đầu khoảng giá và giá đến không nhỏ hơn giá từ"));
-        if (w.weightG() == null || w.weightG() < 1 || w.weightG() > 9007199254740991L)
+        if (w.weightG() == null ? !optionalWeight : w.weightG() < 1 || w.weightG() > 9007199254740991L)
             errors.put("weightG", List.of("Nhập trọng lượng nguyên gram lớn hơn 0"));
         if (w.ageGroups().size() > 4 || w.ageGroups().stream().anyMatch(Objects::isNull)
                 || new HashSet<>(w.ageGroups()).size() != w.ageGroups().size() || !AGES.containsAll(w.ageGroups()))
@@ -126,6 +128,11 @@ public class BookValidation {
 
     private static void textError(Map<String,List<String>> errors,String key,String value,int max) {
         if(value!=null && value.length()>max) errors.put(key,List.of("Tối đa " + max + " ký tự"));
+    }
+
+    public void validateArchived(BookWrite w) {
+        var errors=writeErrors(w,true);
+        if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
     }
 
     public void validateWrite(BookWrite w) {
@@ -159,7 +166,7 @@ public class BookValidation {
     public void validatePublished(BookDetail b) {
         var errors=requiredMetadata(b.title(),b.categoryCode(),b.weightG(),b.priceMinVnd(),b.priceMaxVnd(),b.conditionNote());
         if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
-        var roles = b.media().stream().map(BookDtos.MediaView::role).toList();
+        var roles = b.media().stream().map(BookDtos.MediaView::role).filter(vn.memay.media.MediaDtos.MediaRole::isPublic).toList();
         if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
                 || !roles.containsAll(
                         List.of(vn.memay.media.MediaDtos.MediaRole.FRONT, vn.memay.media.MediaDtos.MediaRole.BACK)))

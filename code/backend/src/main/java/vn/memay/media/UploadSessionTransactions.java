@@ -39,11 +39,15 @@ public class UploadSessionTransactions {
   jdbc.update("insert into upload_session(id,owner_id,created_at,expires_at) values(?,?,?,?)",id,actor.getId(),Timestamp.from(now),Timestamp.from(now.plusSeconds(86400)));
   return view(id);
  }
- @Transactional public UploadSession get(UUID id,AdminUser actor) {lock(id,actor,true);return view(id);}
+ @Transactional public UploadSession get(UUID id,AdminUser actor) {
+  var session=lock(id,actor,false);
+  if(!"CONSUMED".equals(session.get("state"))) lock(id,actor,true);
+  return view(id);
+ }
  private UploadSession view(UUID id) {
-  var row=jdbc.queryForMap("select state,expires_at from upload_session where id=?",id);
+  var row=jdbc.queryForMap("select state,expires_at,book_id from upload_session where id=?",id);
   var media=jdbc.query("select * from temporary_media where session_id=? and state in ('UPLOADING','READY') order by created_at,id",(r,n)->new TemporaryMedia(r.getString("id"),r.getString("state"),r.getString("alt"),r.getString("source_ref"),r.getObject("width",Integer.class),r.getObject("height",Integer.class),"/api/v1/admin/upload-sessions/"+id+"/media/"+r.getString("id")),id);
-  return new UploadSession(id.toString(),row.get("state").toString(),((Timestamp)row.get("expires_at")).toInstant(),media);
+  return new UploadSession(id.toString(),row.get("state").toString(),((Timestamp)row.get("expires_at")).toInstant(),media,row.get("book_id")==null?null:row.get("book_id").toString());
  }
  private String text(String field,String value,int max) {
   value=vn.memay.catalogue.BookValidation.trim(value);
@@ -66,7 +70,7 @@ public class UploadSessionTransactions {
    if(!Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from temporary_media where id=? and session_id=? and state='READY')",Boolean.class,replace,session)))throw new AdminApiException(404,"not_found");
    if(Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from temporary_media where replaces_id=? and state='UPLOADING')",Boolean.class,replace)))throw new AdminApiException(409,"replacement_in_progress");
   }
-  if(count>=(replace==null?6:7))throw new AdminApiException(409,"media_limit");
+  if(count>=(replace==null?8:9))throw new AdminApiException(409,"media_limit");
   UUID id=UUID.randomUUID();Instant now=clock.instant();String key=namespace+"/"+id;
   jdbc.update("insert into temporary_media(id,session_id,state,storage_public_id,replaces_id,alt,source_ref,created_at,updated_at,delete_after) values(?,?,'UPLOADING',?,?,?,?,?,?,?)",id,session,key,replace,text("alt",alt,300),text("sourceRef",sourceRef,500),Timestamp.from(now),Timestamp.from(now),Timestamp.from(now.plusSeconds(3600)));
   jdbc.update("update temporary_media set request_key=?,request_fingerprint=? where id=?",requestKey,fingerprint,id);

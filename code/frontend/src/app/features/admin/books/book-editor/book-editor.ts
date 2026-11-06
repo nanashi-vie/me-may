@@ -1,5 +1,5 @@
 import { BookDetailHandoff } from '../book-detail-handoff';
-import { Subscription, of, timer, switchMap, map, catchError } from 'rxjs';
+import { firstValueFrom, Subscription, of, timer, switchMap, map, catchError } from 'rxjs';
 import {calculatedBookPrices,roundPriceUp} from '../book-pricing';
 import { VndInput } from '../vnd-input';
 import { BookUploadQueue } from '../book-upload-queue';
@@ -59,6 +59,7 @@ export class BookEditor {
   });
   readonly collections = signal<CollectionDto[]>([]);
   readonly busy = signal(false);
+  readonly saveAction=signal<"save"|"publish">("save");
   readonly otherBusy = signal(false);
   readonly photos = inject(BookUploadQueue);
   readonly mediaDirty = this.photos.dirty;
@@ -71,6 +72,8 @@ export class BookEditor {
   readonly fields = signal<Record<string, string[]>>({});
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
+  readonly updateUncertain=signal(false);
+  private pendingUpdate:{version:number;publish:boolean}|null=null;
   readonly openMenu = signal<'category' | 'reading' | null>(null);
   readonly pictureSubmenuOpen = signal(false);
   readonly priceNote = PRICE_NOTE;
@@ -80,7 +83,7 @@ export class BookEditor {
     password: new FormControl('', { nonNullable: true }),
   });
   readonly editable = computed(() => !this.loadFailed() && this.auth.user()?.role === 'OWNER');
-  readonly formDisabled = computed(() => this.busy() || this.otherBusy() || this.loading() || !this.editable() || this.createUncertain());
+  readonly formDisabled = computed(() => this.busy() || this.otherBusy() || this.loading() || !this.editable() || this.createUncertain() || this.updateUncertain());
   pictureBindings(): { code: Binding; label: string }[] {
     const list = this.taxonomy().bindings;
     return list.length
@@ -187,7 +190,7 @@ export class BookEditor {
           catchError(()=>of('Chưa kiểm tra được tên trùng')));
       }), takeUntilDestroyed()
     ).subscribe(message=>this.titleWarning.set(message));
-    this.form.controls.weightG.addValidators(Validators.required);
+
     this.photos.updates.pipe(takeUntilDestroyed()).subscribe((book) => this.book.set(book));
     this.photos.failures.pipe(takeUntilDestroyed()).subscribe((error) => this.fail(error));
     this.form.controls.categoryCode.valueChanges.pipe(takeUntilDestroyed()).subscribe((c) => {
@@ -234,13 +237,13 @@ export class BookEditor {
     this.book.set(b);
     this.photos.configure(b);
     this.photos.locked.set(false);
-    this.createUncertain.set(false);
+    this.createUncertain.set(false);this.updateUncertain.set(false);this.pendingUpdate=null;
     this.pendingCreate = null;
     const limit=b.stockLimit ?? b.variants.length*999999;
     this.stockLimit.set(limit);
     this.form.controls.stock.setValidators([Validators.required,Validators.min(0),Validators.max(limit),
       c=>Number.isSafeInteger(c.value)?null:{integer:true}]);
-    this.form.reset({...b, stock:b.totalStock,
+    this.form.reset({...b, featureCodes:(b.features??[]).map(f=>f.code), stock:b.totalStock,
       internalNote:b.internalNote !== undefined ? b.internalNote : b.conditionNote ?? null,
       unitPricePerKgVnd:b.unitPricePerKgVnd ?? null},{emitEvent:false});
     this.titleWarning.set('');this.pricingError.set('');this.priceEdits={min:false,max:false};
@@ -288,25 +291,47 @@ export class BookEditor {
     values.setValue(checked ? [...values.value, id] : values.value.filter((c) => c !== id));
     values.markAsDirty();
   }
+  publicationLabel() {
+    const b=this.book();
+    return b?.publication==='PUBLISHED'?'Đã xuất bản':b?.publishedAt?'Đang ẩn':'Chưa từng xuất bản';
+  }
+  featureOptions() {
+    const options=[...(this.taxonomy().features??[])];
+    for(const feature of this.book()?.features??[]) if(!options.some(f=>f.code===feature.code))
+      options.push({...feature,sortOrder:options.length});
+    return options;
+  }
+  toggleFeature(code:string,checked:boolean) {
+    if(this.formDisabled()) return;
+    const c=this.form.controls.featureCodes;
+    if(checked && (c.value.length>=3 || c.value.includes(code))) return;
+    c.setValue(checked?[...c.value,code]:c.value.filter(v=>v!==code));c.markAsDirty();
+  }
+  prioritizeFeature(code:string) {
+    if(this.formDisabled()) return;
+    const c=this.form.controls.featureCodes;if(!c.value.includes(code))return;
+    c.setValue([code,...c.value.filter(v=>v!==code)]);c.markAsDirty();
+  }
   canPublish() {
     const w = toBookWrite(this.form);
     return (
       this.form.valid &&
       !!w.title &&
       !!w.categoryCode &&
+      w.weightG!==null &&
       w.priceMinVnd !== null &&
       w.priceMaxVnd !== null &&
       this.photos.ready() &&
       this.confirmed()
     );
   }
-  async save() {
+  async save(publish=false) {
     if (
       this.busy() ||
       this.otherBusy() ||
       this.loading() ||
       !this.editable() ||
-      this.createUncertain() ||
+      this.createUncertain() || this.updateUncertain() ||
       this.photos.pending()
     )
       return;
@@ -316,13 +341,18 @@ export class BookEditor {
     this.notice.set('');
     this.fields.set({});
     const existing = this.book();
-    if (this.form.invalid || (!existing && !this.canPublish())) {
+    const needsPublished=publish || existing?.publication==='PUBLISHED';
+    const hasPublishedMetadata=!!this.form.controls.title.value?.trim() && !!this.form.controls.categoryCode.value &&
+      this.form.controls.weightG.value!==null && this.form.controls.priceMinVnd.value!==null && this.form.controls.priceMaxVnd.value!==null;
+    if (this.form.invalid || (needsPublished && (!hasPublishedMetadata || (existing?.publication!=='PUBLISHED' && !this.canPublish()))) ||
+        (!existing && !this.form.controls.title.value?.trim() && !this.photos.rows().length)) {
       this.error.set(
         'Nhập đủ thông tin, khoảng giá, trọng lượng; tải xong bìa/lưng và xác nhận đúng cuốn sách.',
       );
       this.focusInvalid();
       return;
     }
+    this.saveAction.set(publish?"publish":"save");
     this.busy.set(true);
     this.photos.locked.set(true);
     try {
@@ -330,31 +360,35 @@ export class BookEditor {
       if (!existing) {
         this.pendingCreate = {
           write: toBookWrite(this.form),
-          uploadSessionId: this.photos.sessionId()!,
+          uploadSessionId: await this.photos.ensureSession(),
           media: this.photos.assignments(),
-          confirmedActualCopy: true,
+          confirmedActualCopy: publish && this.confirmed(),
+          publication: publish?'PUBLISHED':'ARCHIVED',
         };
         this.sendCreate();
         return;
       }
       const current = this.book()!;
+      this.pendingUpdate={version:current.version,publish};
       this.api
         .update(
           current.id,
           current.version,
           toBookWrite(this.form),
           this.photos.dirty() ? this.photos.assignments() : undefined,
+          publish, this.confirmed(), this.photos.metadataAssignments(),
         )
         .pipe(takeUntilDestroyed(this.destroy))
         .subscribe({
           next: (saved) => {
             this.busy.set(false);
             this.accept(saved);
-            this.notice.set('Đã lưu sách.');
+            this.notice.set(publish && saved.publication==='PUBLISHED'?'Đã lưu và xuất bản sách.':'Đã lưu thay đổi.');
           },
           error: (e) => {
             this.busy.set(false);
-            this.photos.locked.set(false);
+            const uncertain=e.status===0 || e.status>=500;
+            this.updateUncertain.set(uncertain);this.photos.locked.set(uncertain);
             this.fail(e);
           },
         });
@@ -364,11 +398,53 @@ export class BookEditor {
       this.fail(e as HttpErrorResponse);
     }
   }
-  retryCreate() {
-    if (!this.pendingCreate || this.busy() || !this.editable()) return;
+  async reconcileUpdate() {
+    const b=this.book(),pending=this.pendingUpdate;
+    if(!b || !pending || this.busy()) return;
     this.busy.set(true);
-    this.photos.locked.set(true);
-    this.sendCreate();
+    try {
+      const current=await firstValueFrom(this.api.get(b.id));
+      if(current.version===pending.version) {
+        this.updateUncertain.set(false);this.photos.locked.set(false);
+        this.notice.set('Chưa ghi nhận lần lưu này. Có thể kiểm tra rồi lưu lại.');return;
+      }
+      const form=buildBookForm();form.reset({...current,stock:current.totalStock,internalNote:current.internalNote!==undefined?current.internalNote:current.conditionNote??null,featureCodes:(current.features??[]).map(f=>f.code)},{emitEvent:false});
+      const media=this.photos.assignments(), actual=current.media.map(m=>({mediaId:m.id,role:m.role}));
+      const metadata=this.photos.metadataAssignments();
+      const metadataMatches=metadata.every(m=>current.media.some(photo=>photo.id===m.mediaId && photo.alt===m.alt && photo.sourceRef===m.sourceRef));
+      if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media)===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
+        this.accept(current);this.notice.set(current.publication==='PUBLISHED'?'Đã xác nhận lưu sách đang xuất bản.':'Đã xác nhận lưu thay đổi.');
+      } else this.error.set('Bản đã lưu có thay đổi khác. Nội dung đang sửa được giữ; mở bản đã lưu ở tab khác để đối chiếu.');
+    } catch(e) {this.fail(e as HttpErrorResponse);}
+    finally {this.busy.set(false);}
+  }
+  async retryCreate() {
+    if (!this.pendingCreate || this.busy() || !this.editable()) return;
+    const original=this.pendingCreate,epoch=this.auth.epoch();
+    this.busy.set(true);this.photos.locked.set(true);
+    try {
+      const session=await firstValueFrom(this.api.session(original.uploadSessionId));
+      if(epoch!==this.auth.epoch()) throw new Error('Phiên đăng nhập đã thay đổi.');
+      if(session.state==='CONSUMED' && session.bookId) {
+        const saved=await firstValueFrom(this.api.get(session.bookId));
+        this.created(saved,epoch);return;
+      }
+      if(session.state!=='OPEN') throw new Error('Phiên ảnh đã đóng. Kiểm tra danh sách sách trước khi tiếp tục.');
+      this.sendCreate();
+    } catch(e) {
+      this.busy.set(false);this.createUncertain.set(true);this.photos.locked.set(true);
+      this.fail(e as HttpErrorResponse);
+    }
+  }
+  private created(saved:BookDetail,epoch:number) {
+    this.busy.set(false);
+    if(epoch!==this.auth.epoch()) {
+      this.createUncertain.set(true);this.photos.locked.set(true);
+      this.error.set('Phiên đăng nhập đã thay đổi. Kiểm tra sách đã lưu trước khi tiếp tục.');return;
+    }
+    this.handoff.put(saved);this.photos.markConsumed();this.accept(saved);
+    this.notice.set(saved.publication==='PUBLISHED'?'Đã xuất bản sách.':'Đã lưu thay đổi. Sách chưa công khai.');
+    void this.router.navigate(['/admin/sach', saved.id]);
   }
   private sendCreate() {
     if (!this.pendingCreate) return;
@@ -378,16 +454,7 @@ export class BookEditor {
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (saved) => {
-          this.busy.set(false);
-          if(epoch!==this.auth.epoch()) {
-            this.createUncertain.set(true);this.photos.locked.set(true);
-            this.error.set('Phiên đăng nhập đã thay đổi. Kiểm tra sách đã lưu trước khi tiếp tục.');return;
-          }
-          this.handoff.put(saved);
-          this.photos.markConsumed();
-          this.accept(saved);
-          this.notice.set('Đã đăng sách.');
-          void this.router.navigate(['/admin/sach', saved.id]);
+          this.created(saved,epoch);
         },
         error: (e) => {
           this.busy.set(false);
@@ -417,9 +484,10 @@ export class BookEditor {
       this.error.set(
         'Dữ liệu đã thay đổi ở nơi khác. Nội dung đang sửa vẫn được giữ; mở bản đã lưu ở tab khác để đối chiếu.',
       );
+    else if (this.updateUncertain()) this.error.set('Chưa xác định kết quả lưu. Kiểm tra bản đã lưu trước khi thử lại; nội dung đang sửa được giữ.');
     else if (this.createUncertain())
       this.error.set(
-        'Chưa nhận được xác nhận đăng sách. Thử lại đúng lần đăng này; thông tin và ảnh được giữ nguyên để tránh tạo trùng.',
+        'Chưa nhận được xác nhận lưu sách. Kiểm tra danh sách rồi thử lại đúng lần lưu này; thông tin và ảnh được giữ nguyên để tránh tạo trùng.',
       );
     else this.error.set(body?.message || 'Chưa lưu được. Nội dung đang sửa được giữ nguyên.');
     this.focusInvalid();

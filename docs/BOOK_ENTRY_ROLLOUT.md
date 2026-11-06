@@ -50,3 +50,24 @@ Contract06/11/2026 ở [DATA](DATA.md), [CATALOGUE](CATALOGUE.md) và
 - Local đã có migration/schema restore; chưa drill rollback app/schema/data
   online, retention/offhost backup hoặc nghiệm thu hosting. Giữ các gate
   [PROGRESS](PROGRESS.md), không đánh dấu production hoàn tất từ test local.
+
+## Bổ sung V15 —8ảnh/save/features06/11
+
+- User chọn candidate/merge dev→main và cho phép deploy/migrate production riêng.
+  Kiểm backup/restore DB/media, currentFlyway/checksum/schema thật trước thao tác.
+- BackendV15 trước frontend: role constraint thêm INTERNAL_1/2, hai bảng features
+  và6seed; không sửa migration đã chạy, không backfill tags hoặc đổi sách cũ.
+- Không bật upload nội bộ trước khi backend mới, public boundary và cachepurge
+  đã được smoke: public list/detail/home/related/collection/lookup/flashsale/preview
+  khônginternal roles/URL/storageID/sourceRef/note; direct INTERNAL_1/2 luôn404,
+  OWNER/STAFF xemadmin, STAFF mọi ghi403. Kiểm anonymous thực tế từng endpoint.
+- Frontend: save-only mới→Ẩn, atomic save+publish, publishedAt giữ qua hide/restore,
+  đủ8ảnh/replace/retry/metadata/role và0–3tags đúngorder; mobile badge khôngtràn.
+- Kiểm legacycreate bỏpublication vẫnPUBLISHED, finalretry khôngtrùng, importXLSX
+  V1–V4/receipt cũ giữ nguyên. TabJS cũ cần reload để thấy nhómảnh/tags.
+- Giữ V15 khi rollbackfrontend. Không rollback backend về bản chưa lọc internal
+  sau khi đã upload ảnh riêng: bản cũ có thể xuất internal qua public JSON/endpoint
+  hoặc lỗi enum. Chỉ dùng revision rollback có boundary tương đương; nếu chưa có
+  thì tạm dừngpublic theo thao tác vận hành đã duyệt và sửa forward.
+- Không drop2bảng hoặc thu hẹp roleconstraint khi còn dữ liệu; restore cần đối
+  chiếu ghi mới. Smoke/cachepurge/offhostbackup/restore/host/device vẫn gateonline.

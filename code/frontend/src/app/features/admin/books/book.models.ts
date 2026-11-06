@@ -1,6 +1,6 @@
 export type Publication = 'PUBLISHED' | 'ARCHIVED';
 export type Availability = 'AVAILABLE' | 'SOLD';
-export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3';
+export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3' | 'INTERNAL_1' | 'INTERNAL_2';
 export type Binding = 'PAPERBACK' | 'HARDCOVER';
 export type CategoryCode =
   | 'BOARD_BOOK'
@@ -16,7 +16,9 @@ export type AgeGroup = 'AGE_0_3' | 'AGE_4_6' | 'AGE_7_9' | 'AGE_10_PLUS';
 export type ReadingLevel = 'PRE_A1' | 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export interface BookVariantWrite { id: string | null; name: string | null; stock: number; }
 export interface BookVariant extends BookVariantWrite { id: string; }
+export interface BookFeature { code: string; label: string; }
 export interface BookWrite {
+  featureCodes?: string[];
   variants?: BookVariantWrite[];
   stock?: number;
   internalNote?: string | null;
@@ -47,6 +49,7 @@ export interface MediaView {
   contentPath: string;
 }
 export interface BookDetail extends BookWrite {
+  features?: BookFeature[];
   variants: BookVariant[];
   totalStock: number;
   stockLimit?: number;
@@ -91,6 +94,7 @@ export interface Page<T> {
   totalPages: number;
 }
 export interface PreviewBook {
+  features?: BookFeature[];
   variants: BookVariant[];
   totalStock: number;
   bookCode: string;
@@ -127,6 +131,7 @@ export interface TaxonomyOption<T extends string = string> {
   sortOrder: number;
 }
 export interface Taxonomy {
+  features?: TaxonomyOption[];
   categories: TaxonomyOption<CategoryCode>[];
   ageGroups: TaxonomyOption<AgeGroup>[];
   bindings: TaxonomyOption<Binding>[];
@@ -139,7 +144,8 @@ export interface AdminApiError {
   currentVersion?: number;
 }
 
+export interface MediaMetadata {mediaId:string;alt:string|null;sourceRef:string|null;}
 export interface MediaAssignment { mediaId: string; role: MediaRole; }
-export interface BookCreate { write: BookWrite; uploadSessionId: string; media: MediaAssignment[]; confirmedActualCopy: boolean; }
+export interface BookCreate { publication?: Publication; write: BookWrite; uploadSessionId: string; media: MediaAssignment[]; confirmedActualCopy: boolean; }
 export interface TemporaryMedia { id: string; state: 'READY' | 'UPLOADING'; alt: string | null; sourceRef: string | null; width: number | null; height: number | null; contentPath: string; }
-export interface UploadSession { id: string; state: string; expiresAt: string; media: TemporaryMedia[]; }
+export interface UploadSession { bookId?:string|null; id: string; state: string; expiresAt: string; media: TemporaryMedia[]; }

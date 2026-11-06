@@ -4,7 +4,7 @@ import { HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/
 import { firstValueFrom, filter, tap, Subject } from 'rxjs';
 import { BookApi } from './book-api';
 import { BookDetail, MediaRole, MediaAssignment, TemporaryMedia } from './book.models';
-import { MEDIA_ROLES, MEDIA_LABELS } from './book-copy';
+import { MEDIA_ROLES, MEDIA_LABELS, isPublicMedia } from './book-copy';
 import { prepareImage, prepareValidatedImage, SourceImageInfo, sourceImageInfo } from './image-upload';
 export const PREPARE_BOOK_IMAGE = new InjectionToken<(file:File,info?:SourceImageInfo)=>Promise<Blob>>('Prepare book image', {
   providedIn: 'root',
@@ -56,10 +56,10 @@ export class BookUploadQueue {
   readonly pending = computed(() => this.rows().some((r) => r.state !== 'READY'));
   readonly ready = computed(
     () =>
-      !!this.sessionId() &&
+      (!!this.persisted() || !!this.sessionId()) &&
       !this.expired() &&
       this.rows().length >= 2 &&
-      this.rows().length <= 6 &&
+      this.rows().length <= 8 &&
       !this.pending() &&
       ['FRONT', 'BACK'].every((role) => this.rows().some((r) => r.role === role)),
   );
@@ -116,8 +116,8 @@ export class BookUploadQueue {
   }
   add(files: File[]) {
     if (this.locked() || this.destroyed || !files.length) return;
-    if (this.rows().length + files.length > 6) {
-      this.error.set('Tối đa 6 ảnh. Đợt ảnh vừa chọn chưa được thêm; ảnh hiện có vẫn được giữ.');
+    if (this.rows().length + files.length > 8) {
+      this.error.set('Tối đa 8 ảnh. Đợt ảnh vừa chọn chưa được thêm; ảnh hiện có vẫn được giữ.');
       return;
     }
     const free = MEDIA_ROLES.filter((role) => !this.rows().some((r) => r.role === role));
@@ -144,6 +144,10 @@ export class BookUploadQueue {
     if (this.locked() || !MEDIA_ROLES.includes(role)) return;
     const item = this.rows().find((r) => r.id === id);
     if (!item) return;
+    const swapping=this.rows().find(r=>r.role===role && r.id!==id);
+    if(this.persisted() && [item,swapping].some(r=>r && (r.state==='uploading' || r.uncertain || !!r.previous) && isPublicMedia(r.role)!==isPublicMedia(role===r.role?item.role:role))) {
+      this.error.set('Ảnh đang tải hoặc chưa rõ kết quả. Kiểm tra xong trước khi đổi nhóm ảnh.');return;
+    }
     this.rows.update((rows) =>
       rows.map((r) =>
         r.id === id ? { ...r, role } : r.role === role ? { ...r, role: item.role } : r,
@@ -160,6 +164,10 @@ export class BookUploadQueue {
     if (this.locked()) return;
     const old = this.rows().find((r) => r.id === id);
     if (!old || old.state !== 'READY') return;
+    const stored=this.persisted()?.media.find(m=>m.id===old.mediaId);
+    if(stored && isPublicMedia(stored.role)!==isPublicMedia(old.role)) {
+      this.error.set('Lưu vai trò ảnh trước khi thay ảnh sang nhóm công khai/nội bộ.');return;
+    }
     this.rows.update((rows) =>
       rows.map((r) =>
         r.id === id
@@ -233,6 +241,7 @@ export class BookUploadQueue {
       this.report(e);
     }
   }
+  async ensureSession() {return this.session();}
   private async session() {
     if (this.sessionId()) return this.sessionId()!;
     if (!this.sessionPromise)
@@ -313,8 +322,8 @@ export class BookUploadQueue {
             const existing = book.media.find((m) => m.id === row!.mediaId);
             const role =
               existing?.role ??
-              MEDIA_ROLES.find((role) => !book.media.some((m) => m.role === role));
-            if (!role) throw Error('Sách đã có đủ 6 ảnh.');
+              MEDIA_ROLES.find((role) => isPublicMedia(role)===isPublicMedia(row!.role) && !book.media.some((m) => m.role === role));
+            if (!role) throw Error('Nhóm ảnh đã đầy. Lưu vai trò ảnh trước khi tải thêm.');
             this.patch(id, { uploadRole: role });
             const saved = await firstValueFrom(
               this.api.upload(book.id, role, book.version, body).pipe(
@@ -455,36 +464,20 @@ export class BookUploadQueue {
     if (http?.status === 401 || http?.status === 403) this.paused.set(true);
     if (http) this.failures.next(http);
   }
+  metadataAssignments() {
+    return this.rows().filter(r=>r.state==='READY' && (r.alt.trim()!==r.storedAlt || r.sourceRef.trim()!==r.storedSource))
+      .map(r=>({mediaId:r.mediaId!,alt:r.alt.trim()||null,sourceRef:r.sourceRef.trim()||null}));
+  }
   async flushMetadata() {
+    if(this.persisted()) return;
     for (const row of this.rows().filter(
       (r) =>
         r.state === 'READY' &&
         (r.alt.trim() !== r.storedAlt || r.sourceRef.trim() !== r.storedSource),
     )) {
-      const book = this.persisted();
-      let m: TemporaryMedia | BookDetail['media'][number];
-      if (book) {
-        const role = book.media.find((m) => m.id === row.mediaId)!.role;
-        const saved = await firstValueFrom(
-          this.api.updateMedia(
-            book.id,
-            role,
-            book.version,
-            row.alt.trim() || null,
-            row.sourceRef.trim() || null,
-          ),
-        );
-        this.updateBook(saved);
-        m = saved.media.find((m) => m.id === row.mediaId)!;
-      } else
-        m = await firstValueFrom(
-          this.api.updateTemporaryMetadata(
-            this.sessionId()!,
-            row.mediaId!,
-            row.alt.trim() || null,
-            row.sourceRef.trim() || null,
-          ),
-        );
+      const m = await firstValueFrom(
+        this.api.updateTemporaryMetadata(this.sessionId()!,row.mediaId!,row.alt.trim()||null,row.sourceRef.trim()||null),
+      );
       this.patch(row.id, {
         alt: m.alt ?? '',
         sourceRef: m.sourceRef ?? '',

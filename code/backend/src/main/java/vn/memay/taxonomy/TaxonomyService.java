@@ -7,6 +7,7 @@ import vn.memay.catalogue.BookValidation;
 
 @Service
 public class TaxonomyService {
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final CategoryRepository categories;
 
     public TaxonomyService(CategoryRepository categories) {
@@ -20,7 +21,9 @@ public class TaxonomyService {
                 options(BookValidation.AGES, List.of("0–3", "4–6", "7–9", "10+")),
                 options(List.of("PAPERBACK", "HARDCOVER"), List.of("Paperback", "Hardcover")),
                 options(BookValidation.LEVELS, List.of("Starters · Pre A1", "Movers · A1", "Flyers / Key · A2",
-                        "Preliminary · B1", "First · B2", "Advanced · C1", "Proficiency · C2")));
+                        "Preliminary · B1", "First · B2", "Advanced · C1", "Proficiency · C2")),
+                jdbc.query("select code,label,sort_order from book_feature where active order by sort_order,code",
+                    (r,n)->new Option(r.getString(1),r.getString(2),r.getInt(3))));
     }
 
     private List<Option> options(List<String> codes, List<String> labels) {

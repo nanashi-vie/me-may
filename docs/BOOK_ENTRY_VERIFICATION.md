@@ -101,3 +101,144 @@ bằng chứng. Quy tắc hiện hành tại DATA/CATALOGUE/DESIGN/ARCHITECTURE;
   đầu phiên bị loại, mọi kết quả dùng bàn giao là các lần chạy tuần tự.
 - Browser STAFF đọc được ghi chú nhưng toàn bộ field/save bị khóa; server
   mutation403 đã có test. Runtime QA/browser đã dừng, dữ liệu test được dọn.
+
+## 8 ảnh, lưu/xuất bản và đặc điểm sách —06/11/2026
+
+Phạm vi S043: spec chủ tiệm approved, user chốt mọi ARCHIVED được thiếu weight,
+kể cả từng xuất bản. Baseline dev390cd9c; origin/main4e5e84d đã chứa dev.
+Contract hiện hành ở CATALOGUE/DATA/DESIGN/ARCHITECTURE; rollout ở BOOK_ENTRY_ROLLOUT.
+
+### Kiểm tự động S043
+
+- Root: `bash code/backend/run-local.sh -q clean verify`:
+  **227 tests / 0 failure / 0 error / 3 live-provider skipped** sau sửa review.
+- `code/frontend`: `npm test`: **217 PASS / 40 files** sau guard preparing cuối.
+- Frontend `npm run build`, `npm run build:workers`: PASS, không warning Angular.
+  `npm run check:workers:proxy`: PASS (POST/query/cookie/CSRF/multipart/Set-Cookie/
+  server-time/no-store/context/backend-down). Proxy code không đổi sau smoke.
+- Maven trực tiếp ban đầu thiếu TEST_DB_URL; dùng run-local.sh đúng env. Socket DB
+  và workerd bị sandbox EPERM; Angular native exit134 trước output. Rerun ngoài
+  sandbox đạt, không sửa app để xử lý hạn chế môi trường.
+- Migration `BookMediaFeatureMigrationTest`: V14→V15 giữ nguyên book_copy/listing/
+  media và publishedAt, sáu feature seed, sách cũ không tags; FK/unique/position
+  chặn tag trùng/vị trí trùng/ngoài1–3/code lạ, INTERNAL roles lưu được.
+
+| Điều kiện bắt buộc | Bằng chứng |
+|---|---|
+| Create ARCHIVED thiếu metadata, chỉ tên hoặc chỉ ảnh; rỗng bị từ chối | BookMediaFeatureContractTest + browser title-only |
+| Create PUBLISHED đủ dữ liệu; legacy bỏ publication | BookCreateFinalizationTest 2/6ảnh + contract8ảnh |
+| ARCHIVED→PUBLISHED đủ/thiếu dữ liệu, save-only giữẨn | Contract + BookStatusIntegrationTest + browser |
+| PUBLISHED lưu giữpublic, hide/restore giữ publishedAt | Contract + browser hide/republish |
+| Atomic rollback nội dung/ảnh/metadata/tag/version/audit | Contract audit constraint failure; UI không PATCH metadata riêng |
+| Retry create không trùng, fingerprint cũ và order tags | Finalization/contract + BookLegacyFingerprintTest/import suites |
+| Tối đa8ảnh; replacement tại8 vẫn8final | Contract/UploadSessionApiTest + queue + browser |
+| Public INTERNAL_1/2 luôn404; JSON/gallery/preview chỉ6public | Contract + direct browserHTTP + previewDOM |
+| Admin OWNER/STAFF xemảnh, STAFF không ghi | Contract và quyền hiện hành integration |
+| Tags0–3/không trùng/code hợp lệ/order/[]/omitted | Contract + migration + editor tests |
+| Home/list/detail/related/collection/lookup dùng cùng projection | PublicCatalogueService SQL JSON aggregation; public API regression |
+| Không feature/sách cũ bình thường, import XLSX không đổi | DOM fixture cũ + full importV1–V4/receipt suites |
+| Hai nút50:50, published1nút, loading/error/no accidentalpublish | Editor DOM tests + browser đo width/height |
+| Upload8/đổirole/replace/retry, giữroles khi xóa | Queue tests + browser8ảnh/503replacementretry |
+| Card tagđầu/detail tấtcả/mobile không tràn | DOM tests + Chrome390px screenshot/overflow check |
+
+### Browser và review S043
+
+- Chrome headed riêng, SSR4011/API8089, schema `s043_browser_qa` trong me_may_test;
+  fake provider và PNG giả, không credential/media/database bán thật.
+- Tạo chỉ tên: ARCHIVED, weight/publishedAt null, public404. Upload8 ảnh,2label
+  Chỉ nội bộ; save+publish200, một nútSave toànwidth; admin8/public6 ảnh.
+- Direct /api/v1/books/mm-000001/media/INTERNAL_1 và INTERNAL_2:404 khi PUBLISHED.
+  Preview6 ảnh, Home/card có feature đầu; detail hai tags. Chọn SLIDE nổi bật,
+  hide→republish giữ publishedAt. Hai nút khiẨn đo cùng width/height.
+- Cố ý PUT commit200 rồi abortresponse: UI khóa ghi, GET đối chiếu và xác nhận
+  version/content/publication; không PUT trùng. Thay INTERNAL_1 giả503, retry
+  đối chiếu rồi upload thành công, vẫn8ảnh.
+- Màn hình390×844: catalogue/detail không tràn ngang; tag không chồng CTA/giá/
+  stock/wishlist. Đã xem screenshot sau splash hidden. Chưa thiết bị thật/iOS/in-app.
+- Probe đầu dùng PNG sai header literal bị từ chối đúng; sửa fixture rồi upload đạt.
+  Hai probe chờ label/preview quá sớm timeout; sửa locator/chờ DOM, không sửa app.
+- Reviewer độc lập `review_media_features`:0Critical/3Important/0Minor; đã sửa cả3:
+  visibility replacement/in-flight, metadata transaction, uncertain PUT reconciliation.
+  Guard replacement preparing có test RED→GREEN riêng; frontend217PASS sau guard.
+- Browser layout/public/recovery chạy trên code trước guard preparing cuối; thay đổi
+  cuối chỉ khóa thêm cửa sổ preparing và được regressionunit, SSR/Workers build lại.
+- Browser đã đóng, API/SSR đã dừng; JDBC xác minh `to_regnamespace` null và
+  cổng8089/4011 đều đóng. Tool/screenshot/log QA nằm ignored .local/output.
+
+### Migration, tương thích và rollout S043
+
+- V15__internal_media_and_book_features.sql: mở role constraint thêm INTERNAL_1/2,
+  tạo book_feature/listing_feature và6seed; không sửa checksum migration cũ/backfill.
+- POST /admin/books thêm publication optional, mặc địnhPUBLISHED legacy; write thêm
+  featureCodes. PUT thêm featureCodes/publishAfterSave/confirmedActualCopy/
+  mediaMetadata; thiếu featureCodes giữtags, []xóa. Response thêm features[{code,label}].
+- GET upload-session đã CONSUMED trả bookId cho đúngOWNER để kiểm trước retry;
+  optimistic locking/OWNER/STAFF/CSRF và import canonical/fingerprints giữ nguyên.
+- Không dependency mới. Chưa live-provider (3skip), migrate/deployproduction, cache
+  purge/live smoke, restore/rollbackonline hoặc owner pilot với sách thật.
+- User cần chọn candidate/merge dev→main và cho phép deploy/migrate riêng; backup/
+  restore, backendV15 trướcfrontend, direct INTERNAL404/cache purge rồi mới bật ghi.
+  Không rollback backend về revision chưa biết lọc INTERNAL sau khi đã có ảnh riêng.
+
+### Changed files S043
+
+- `code/backend/src/main/java/vn/memay/audit/AuditService.java`
+- `code/backend/src/main/java/vn/memay/catalogue/AdminBookController.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookCommandService.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookDtos.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookEntryInput.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookFeatureStore.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookMapper.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookQueryService.java`
+- `code/backend/src/main/java/vn/memay/catalogue/BookValidation.java`
+- `code/backend/src/main/java/vn/memay/catalogue/PublicCatalogueController.java`
+- `code/backend/src/main/java/vn/memay/catalogue/PublicCatalogueDtos.java`
+- `code/backend/src/main/java/vn/memay/catalogue/PublicCatalogueService.java`
+- `code/backend/src/main/java/vn/memay/media/MediaDtos.java`
+- `code/backend/src/main/java/vn/memay/media/UploadSessionDtos.java`
+- `code/backend/src/main/java/vn/memay/media/UploadSessionTransactions.java`
+- `code/backend/src/main/java/vn/memay/taxonomy/TaxonomyDtos.java`
+- `code/backend/src/main/java/vn/memay/taxonomy/TaxonomyService.java`
+- `code/backend/src/main/resources/db/migration/V15__internal_media_and_book_features.sql`
+- `code/backend/src/test/java/vn/memay/catalogue/BookEntryContractTest.java`
+- `code/backend/src/test/java/vn/memay/catalogue/BookImportTemplateTest.java`
+- `code/backend/src/test/java/vn/memay/catalogue/BookImportV2Test.java`
+- `code/backend/src/test/java/vn/memay/catalogue/BookMediaFeatureMigrationTest.java`
+- `code/backend/src/test/java/vn/memay/catalogue/BookVariantIntegrationTest.java`
+- `code/backend/src/test/java/vn/memay/media/BookMediaFeatureContractTest.java`
+- `code/backend/src/test/java/vn/memay/media/UploadSessionApiTest.java`
+- `code/backend/src/test/java/vn/memay/support/PgTestData.java`
+- `code/frontend/src/app/features/admin/books/book-api.ts`
+- `code/frontend/src/app/features/admin/books/book-copy.ts`
+- `code/frontend/src/app/features/admin/books/book-editor/book-editor.html`
+- `code/frontend/src/app/features/admin/books/book-editor/book-editor.scss`
+- `code/frontend/src/app/features/admin/books/book-editor/book-editor.spec.ts`
+- `code/frontend/src/app/features/admin/books/book-editor/book-editor.ts`
+- `code/frontend/src/app/features/admin/books/book-form.ts`
+- `code/frontend/src/app/features/admin/books/book-media-panel/book-media-panel.html`
+- `code/frontend/src/app/features/admin/books/book-media-panel/book-media-panel.scss`
+- `code/frontend/src/app/features/admin/books/book-media-panel/book-media-panel.ts`
+- `code/frontend/src/app/features/admin/books/book-preview/book-preview.html`
+- `code/frontend/src/app/features/admin/books/book-status-actions/book-status-actions.html`
+- `code/frontend/src/app/features/admin/books/book-status-actions/book-status-actions.ts`
+- `code/frontend/src/app/features/admin/books/book-upload-queue.spec.ts`
+- `code/frontend/src/app/features/admin/books/book-upload-queue.ts`
+- `code/frontend/src/app/features/admin/books/book.models.ts`
+- `code/frontend/src/app/features/catalogue/book-card/book-card.html`
+- `code/frontend/src/app/features/catalogue/book-card/book-card.scss`
+- `code/frontend/src/app/features/catalogue/book-card/book-card.spec.ts`
+- `code/frontend/src/app/features/catalogue/book-detail/book-detail.html`
+- `code/frontend/src/app/features/catalogue/book-detail/book-detail.scss`
+- `code/frontend/src/app/features/catalogue/book-detail/book-detail.spec.ts`
+- `code/frontend/src/app/features/catalogue/public.models.ts`
+- `docs/ARCHITECTURE.md`
+- `docs/BOOK_ENTRY_ROLLOUT.md`
+- `docs/BOOK_ENTRY_VERIFICATION.md`
+- `docs/CATALOGUE.md`
+- `docs/DATA.md`
+- `docs/DEPLOYMENT.md`
+- `docs/DESIGN.md`
+- `docs/DEV_LOG.md`
+- `docs/MASTER_PLAN.md`
+- `docs/PROGRESS.md`
+- `docs/README.md`

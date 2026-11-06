@@ -20,6 +20,7 @@ public class BookCommandService {
     @org.springframework.beans.factory.annotation.Autowired
     private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
+    @org.springframework.beans.factory.annotation.Autowired private BookFeatureStore features;
     private final BookCopyRepository books;
     private final BookVariantStore variants;
     private final ListingRepository listings;
@@ -65,9 +66,13 @@ public class BookCommandService {
     }
 
     private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice) {
+        return createAggregate(actor,input,unitPrice,false);
+    }
+
+    private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice, boolean archived) {
         var w = validation.normalize(input);
         timings.measure("validation", () -> {
-            validation.validateWrite(w);
+            if(archived) validation.validateArchived(w); else validation.validateWrite(w);
             return null;
         });
         var b = new BookCopy();
@@ -123,16 +128,26 @@ public class BookCommandService {
 
     @Transactional
     public BookDetail createPublished(AdminUser actor, BookCreate input, BookEntryInput.Options options) {
+        return createPublished(actor,input,options,null);
+    }
+
+    @Transactional
+    public BookDetail createPublished(AdminUser actor, BookCreate input, BookEntryInput.Options options, Publication publication) {
+        Publication target=publication==null?Publication.PUBLISHED:publication;
         access.requireOwner(actor);
         if (input == null || input.uploadSessionId() == null)
             throw AdminApiException.field("uploadSessionId", "Thiếu phiên ảnh");
         var w = timings.measure("validation", () -> validation.normalize(BookEntryInput.resolve(input.write(),null,options,variants)));
         var assignments = assignments(input.media());
         var canonical = new BookCreate(w, input.uploadSessionId(), assignments, input.confirmedActualCopy());
+        Object fingerprintInput=options.unitSupplied()?java.util.Arrays.asList(canonical,options.unitPrice()):canonical;
+        if(publication!=null || options.featuresSupplied())
+            fingerprintInput=java.util.Arrays.asList(fingerprintInput,publication,options.featuresSupplied()?options.featureCodes():null);
+        final Object normalizedFingerprint=fingerprintInput;
         String fingerprint = timings.measure("fingerprint", () -> {
             try {
                 return java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256")
-                        .digest(json.writeValueAsBytes(options.unitSupplied() ? java.util.Arrays.asList(canonical,options.unitPrice()) : canonical)));
+                        .digest(json.writeValueAsBytes(normalizedFingerprint)));
             } catch (java.security.NoSuchAlgorithmException e) {
                 throw new IllegalStateException(e);
             }
@@ -145,11 +160,7 @@ public class BookCommandService {
             return mapper.detail(books.findById(id).orElseThrow(), listings.findByBookCopyId(id).orElseThrow());
         }
         uploads.lock(input.uploadSessionId(), actor, true);
-        timings.measure("validation", () -> {
-            validation.validateWrite(w);
-            return null;
-        });
-        if (!input.confirmedActualCopy())
+        if (target==Publication.PUBLISHED && !input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
         var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
                 input.uploadSessionId());
@@ -160,7 +171,11 @@ public class BookCommandService {
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
             selected.put(assignment.mediaId(), photo);
         }
-        var aggregate = createAggregate(actor, w, options.unitPrice());
+        if(target==Publication.ARCHIVED && w.title()==null && assignments.isEmpty())
+            throw AdminApiException.field("title","Nhập tên sách hoặc ít nhất một ảnh");
+        var codes=features.validate(options.featureCodes(),List.of());
+        var aggregate = createAggregate(actor, w, options.unitPrice(),target==Publication.ARCHIVED);
+        features.save(aggregate.listing().id,codes);
         var b = aggregate.book();
         var l = aggregate.listing();
         long id = b.id;
@@ -175,15 +190,17 @@ public class BookCommandService {
             jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
         var prepared = mapper.detail(b, l);
-        validation.validatePublished(prepared);
-        l.publicationStatus = Publication.PUBLISHED;
-        l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
-        em.flush();
-        var result = mapper.published(prepared, l.publishedAt);
+        if(target==Publication.PUBLISHED) {
+            validation.validatePublished(prepared);
+            l.publicationStatus = Publication.PUBLISHED;
+            l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+            em.flush();
+        }
+        var result = target==Publication.PUBLISHED?mapper.published(prepared, l.publishedAt):prepared;
         var snapshot = audit.snapshot(result);
-        snapshot.put("confirmedActualCopy", true);
+        snapshot.put("confirmedActualCopy", input.confirmedActualCopy());
         audit.record(actor, "BOOK", id, "CREATE", Map.of(), snapshot, b.version);
-        audit.record(actor, "BOOK", id, "PUBLISHED", Map.of(), snapshot, b.version);
+        if(target==Publication.PUBLISHED) audit.record(actor, "BOOK", id, "PUBLISHED", Map.of(), snapshot, b.version);
         jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?", id,
                 fingerprint, input.uploadSessionId());
         jdbc.update(
@@ -193,14 +210,12 @@ public class BookCommandService {
     }
 
     private List<MediaAssignment> assignments(List<MediaAssignment> input) {
-        if (input == null || input.size() < 2 || input.size() > 6
+        if (input == null || input.size() > 8
                 || input.stream().anyMatch(m -> m == null || m.mediaId() == null || m.role() == null))
-            throw AdminApiException.field("media", "Cần từ 2 đến 6 ảnh hợp lệ");
+            throw AdminApiException.field("media", "Tối đa 8 ảnh hợp lệ");
         if (input.stream().map(MediaAssignment::mediaId).distinct().count() != input.size()
-                || input.stream().map(MediaAssignment::role).distinct().count() != input.size()
-                || !input.stream().map(MediaAssignment::role).toList()
-                        .containsAll(List.of(MediaDtos.MediaRole.FRONT, MediaDtos.MediaRole.BACK)))
-            throw AdminApiException.field("media", "Ảnh/vai trò không được trùng, bắt buộc bìa và lưng");
+                || input.stream().map(MediaAssignment::role).distinct().count() != input.size())
+            throw AdminApiException.field("media", "Ảnh/vai trò không được trùng");
         return input.stream().sorted(Comparator.comparingInt(m -> m.role().ordinal())).toList();
     }
 
@@ -216,6 +231,11 @@ public class BookCommandService {
 
     @Transactional
     public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media, BookEntryInput.Options options) {
+        return update(id,version,actor,input,media,options,false,false,List.of());
+    }
+
+    @Transactional
+    public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media, BookEntryInput.Options options, boolean publishAfterSave, boolean confirmedActualCopy, List<MediaMetadata> mediaMetadata) {
         var b = books.findById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
         var l = listings.findByBookCopyId(id).orElseThrow();
         access.requireWritable(actor, l.publicationStatus);
@@ -225,29 +245,66 @@ public class BookCommandService {
         var w = validation.normalize(BookEntryInput.resolve(input,before,options,variants));
         Long unitPrice=options.unitSupplied()?options.unitPrice():b.unitPricePerKgVnd;
         timings.measure("validation", () -> {
-            validation.validateWrite(w);
+            if(l.publicationStatus==Publication.ARCHIVED) validation.validateArchived(w); else validation.validateWrite(w);
             return null;
         });
+        var codes=options.featuresSupplied()?features.validate(options.featureCodes(),before.features()):before.features().stream().map(Feature::code).toList();
+        boolean metadataChanged=metadataChanged(before,mediaMetadata);
+        boolean featureChanged=!codes.equals(before.features().stream().map(Feature::code).toList());
+        boolean publishing=publishAfterSave && l.publicationStatus==Publication.ARCHIVED;
+        if(publishing && !confirmedActualCopy) throw AdminApiException.field("confirmedActualCopy","Xác nhận bộ ảnh của mục sách");
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && !reordered.equals(
                 before.media().stream().map(m -> new MediaAssignment(UUID.fromString(m.id()), m.role())).toList());
-        if (mapper.write(before).equals(w) && !mediaChanged && Objects.equals(unitPrice,b.unitPricePerKgVnd))
+        if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd))
             return before;
         apply(b, l, w);
         b.unitPricePerKgVnd=unitPrice;
         b.availability = availability(w);
         mappings(l, w);
         variants.save(id, w.variants());
+        if(featureChanged) features.save(l.id,codes);
+        if(metadataChanged) {
+            var active=images.findByBookCopyIdAndState(id,MediaDtos.MediaState.ACTIVE);
+            for(var metadata:mediaMetadata) {
+                var photo=active.stream().filter(m->m.id.equals(metadata.mediaId())).findFirst().orElseThrow();
+                photo.alt=BookValidation.trim(metadata.alt());photo.sourceRef=BookValidation.trim(metadata.sourceRef());photo.updatedAt=clock.instant();
+            }
+        }
         b.touch(clock.instant());
         l.updatedAt = b.updatedAt;
         em.flush();
         if (mediaChanged)
             reorder(id, reordered);
         var after = mapper.detail(b, l);
-        if (l.publicationStatus == Publication.PUBLISHED)
+        if (l.publicationStatus == Publication.PUBLISHED || publishing) {
+            validation.validateWrite(w);
             validation.validatePublished(after);
+        }
+        if(publishing) {
+            l.publicationStatus=Publication.PUBLISHED;
+            if(l.publishedAt==null) l.publishedAt=clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
+            em.flush();
+            after=mapper.published(after,l.publishedAt);
+            var published=audit.snapshot(after);published.put("confirmedActualCopy",true);
+            audit.record(actor,"BOOK",id,"PUBLICATION_CHANGED",audit.snapshot(before),published,b.version);
+        }
         audit.record(actor, "BOOK", id, "UPDATE", audit.snapshot(before), audit.snapshot(after), b.version);
         return after;
+    }
+
+    private boolean metadataChanged(BookDetail before,List<MediaMetadata> metadata) {
+        if(metadata==null || metadata.size()>8) throw AdminApiException.field("mediaMetadata","Tối đa 8 ảnh");
+        var ids=new HashSet<UUID>();boolean changed=false;
+        for(var row:metadata) {
+            if(row==null || row.mediaId()==null || !ids.add(row.mediaId())) throw AdminApiException.field("mediaMetadata","ID ảnh không hợp lệ hoặc trùng");
+            var photo=before.media().stream().filter(m->m.id().equals(row.mediaId().toString())).findFirst()
+                .orElseThrow(()->AdminApiException.field("mediaMetadata","Ảnh không thuộc sách"));
+            var alt=BookValidation.trim(row.alt());var source=BookValidation.trim(row.sourceRef());
+            if(alt!=null && alt.length()>300 || source!=null && source.length()>500) throw AdminApiException.field("mediaMetadata","Mô tả tối đa 300 ký tự, nguồn tối đa 500 ký tự");
+            changed|=!Objects.equals(photo.alt(),alt) || !Objects.equals(photo.sourceRef(),source);
+        }
+        return changed;
     }
 
     private void reorder(long id, List<MediaAssignment> assignments) {

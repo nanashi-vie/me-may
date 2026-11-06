@@ -9,7 +9,7 @@ public final class TaxonomyDtos {
         }
 
         public record Taxonomy(List<Option> categories, List<Option> ageGroups, List<Option> bindings,
-                        List<Option> readingLevels) {
+                        List<Option> readingLevels, List<Option> features) {
         }
 
         public record CollectionDto(String id, String name, String slug, int sortOrder, boolean active, long version,

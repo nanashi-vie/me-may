@@ -1,7 +1,6 @@
 # Triển khai — Workers + homelab Dell
 
 ## Đích hiện hành — user xác nhận 04/11/2026
-
 - Backend: Dell cũ làm homelab, Dokploy; Cloudflare Tunnel → dokploy-network →
   Spring Boot:8080, hostname `https://api.memaybooks.com`.
 - Frontend: `https://memaybooks.com`, browser giữ `/api` cùng origin qua Worker.
@@ -32,7 +31,6 @@ Code được agent bàn giao trên `dev`; user tự merge qua `main` khi sẵn 
 service production vẫn theo branch `main`, không tự đổi deployment sang dev.
 
 ### GitHub Actions → Dokploy — 05/11/2026
-
 - Workflow `.github/workflows/publish-backend.yml` chỉ có main, thêm ở `64b7b4a`,
   sửa `1b2a1b9`/`4be7bda`; chưa từng bị xóa trên dev. Dev không cần để chạy local.
 - Test backend/PostgreSQL17 trên PR main; push main lọc backend/workflow. Sau test,
@@ -52,7 +50,6 @@ service production vẫn theo branch `main`, không tự đổi deployment sang 
 - Nguồn: [Dokploy external registry/API](https://docs.dokploy.com/docs/core/applications/going-production#external-registry).
 
 ## 1. Cloudflare Workers Git integration
-
 - Repository: `nanashi-vie/me-may` (Git remote hiện hành), production branch `main`.
 - Root directory/Path: `code/frontend` (ảnh dashboard đang chọn thư mục frontend).
 - Worker name: **me-may**, phải khớp `wrangler.jsonc`.
@@ -108,7 +105,6 @@ File `.local/render.env` (0600, ignored) đã được tạo cho môi trường 
 Trong Render Environment dùng **Add from .env** để nhập nội dung file này qua editor;
 không gửi file/secret vào chat hoặc commit. File là dotenv cho import, không phải
 shell script để source. Nó chứa:
-
 - SPRING_PROFILES_ACTIVE=render, SERVER_ADDRESS=0.0.0.0.
 - NEON_JDBC_URL: pooled, NEON_JDBC_URL_UNPOOLED: direct; cùng user/password tách riêng
   NEON_DB_USER/NEON_DB_PASSWORD. TLS verify-full + JVM trusted CA + channel binding.
@@ -194,7 +190,6 @@ Nguồn đối chiếu: [Cloudflare Builds](https://developers.cloudflare.com/wo
 [Neon pooling](https://neon.com/docs/connect/connection-pooling).
 
 ## 5. Kết quả online và bước chốt M5 — 27/10/2026
-
 - [Website](https://me-may.dqhungg8357.workers.dev), [admin](https://me-may.dqhungg8357.workers.dev/admin/dang-nhap), [API health](https://me-may-api.onrender.com/actuator/health).
 - Render Live `e264523`; Worker version `e4f62cc2`,100%Ready, nguồn build main.
   Health/SSR/privacy/auth smoke đạt; chi tiết và giới hạn ở [VERIFICATION](VERIFICATION.md#m5-online--27102026).

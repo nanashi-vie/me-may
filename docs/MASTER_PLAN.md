@@ -65,7 +65,7 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 5. **Tình trạng khả dụng** tính từ tổng tồn biến thể: >0 là `AVAILABLE`, 0 là `SOLD`; chủ cập nhật tồn sau bán ngoài web. Không có Đang giữ; dữ liệu vẫn có thể trễ so với Page/livestream.
 6. **Sách hết hàng** tiếp tục có trang chi tiết hiển thị “Hết hàng” để giữ link cũ, mặc định không ưu tiên trong danh sách. Chủ vẫn có thể ẩn riêng mục đăng.
 7. **Tuổi/thể loại và mức đọc** do chủ chọn thủ công theo mục 3.1; độc lập với nhau. Không tự suy mức đọc từ tuổi/thể loại hoặc tự gán tuổi khi thiếu căn cứ. Mức đọc không bắt buộc để xuất bản.
-8. **Nhập thủ công trong MVP**, 2–6 ảnh thật, bắt buộc bìa và lưng mới được xuất bản; ghi chú nội bộ optional, không hiển thị public. Import CSV/Excel triển khai ngay sau MVP.
+8. **Nhập thủ công trong MVP**, tối đa8ảnh (6công khai/2nội bộ), bắt buộc bìa và lưng mới được xuất bản; ghi chú nội bộ optional, không hiển thị public. Import CSV/Excel triển khai ngay sau MVP.
 
 Các quy tắc trên là baseline MVP đã duyệt; không suy thêm cam kết về chính sách giao hàng, hoàn trả hay thời hạn giữ sách. Nội dung chính sách chỉ công bố khi tiệm cung cấp nội dung hợp lệ.
 
@@ -141,7 +141,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 - Search theo tên/mã, case-insensitive; hỗ trợ tiếng Việt không dấu nếu có thể thực hiện bằng PostgreSQL unaccent hoặc giải pháp tương đương; chỉ công khai published listing.
 - Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa nằm trong Picture book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
 - Mã sách/slug ổn định; HTML ban đầu cho trang sách/danh sách có SEO title/description/canonical/OG image bằng giải pháp render được **kiểm chứng trên Cloudflare** (SSR hoặc SSG với cập nhật phù hợp).
-- Detail hiển thị 2–6 ảnh thật: FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3; FRONT/BACK bắt buộc, các vai trò còn lại tùy chọn, mỗi vai trò tối đa một ảnh. Kiểm tra tình trạng/lỗi trước đăng. Ảnh/video bổ sung trao đổi qua Zalo, không xây gallery ảnh lỗi riêng trong MVP.
+- Detail hiển thị 2–6 ảnh thật: FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3; FRONT/BACK bắt buộc, các vai trò còn lại tùy chọn, mỗi vai trò tối đa một ảnh. Kiểm tra tình trạng/lỗi trước đăng. Ảnh/video bổ sung trao đổi qua Zalo, hai role INTERNAL_1/INTERNAL_2 chỉ admin, không public.
 - Tiêu đề ghép `Tên | NXB | Tác giả | Độ tuổi`, lưu các trường riêng và bỏ phần thiếu/dấu phân cách thừa. Có mô tả, độ tuổi, mức đọc tham khảo, link video đọc sách tùy chọn và giá tham khảo.
 - Trái tim wishlist; “Liên hệ” khi còn hàng / “Tư vấn sách tương đương” khi hết hàng; “Tham gia cộng đồng để nhận thông tin ưu đãi” mở nhóm Zalo. Chuẩn bị nội dung/copy theo mục 0.1; không tự gửi, không giữ hàng; tiệm xác nhận giá và khả dụng. Link hotline và nhóm thật là đầu vào trước nghiệm thu.
 
@@ -153,7 +153,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 - Không giới thiệu là giỏ hàng, không có số lượng, không cộng phí ship, không tạo đơn.
 
 **Admin**
-- Owner/Staff login. `STAFF`: chỉ đọc; `OWNER`: mọi thao tác ghi. Upload tạm 24 giờ không tạo BookCopy/Listing/mã; final xác nhận tạo PUBLISHED nguyên tử và retry cùng payload trả cùng sách.
+- Owner/Staff login. `STAFF`: chỉ đọc; `OWNER`: mọi thao tác ghi. Upload tạm 24 giờ không tạo BookCopy/Listing/mã; final tạo ARCHIVED hoặc xác nhận tạo PUBLISHED nguyên tử và retry cùng payload trả cùng sách.
 - Nhập thủ công cuốn + listing; ba vị trí ảnh bìa trước/mặt sau/trang nội dung, thay ảnh và alt text; bìa trước làm thumbnail. Ghi chú nội bộ optional, không có importer trong MVP.
 - Cập nhật giá/trạng thái; tìm theo code; xem trước/ẩn/khôi phục; audit giá/trạng thái và người chỉnh sửa.
 - Taxonomy tuổi/thể loại/mức đọc theo mục 3.1 và bộ sưu tập biên tập; không làm CMS tổng quát hoặc thêm bộ lọc chủ đề.
@@ -225,7 +225,7 @@ erDiagram
 - `publication_status` (PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Ghi chú nội bộ optional, không thay xác nhận bản cụ thể qua tin nhắn.
 - Khoảng giá tham khảo gồm **hai số nguyên VND**, 1..999999999999 và min≤max, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
 - Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc do tiệm chọn thủ công, không yêu cầu trường căn cứ.
-- Xuất bản cần tên, mã, thể loại, khoảng giá, trọng lượng gram nguyên dương và 2–6 ảnh thật có FRONT/BACK; ghi chú nội bộ optional, không public. Contract chi tiết ở CATALOGUE/DATA.
+- Xuất bản cần tên, mã, thể loại, khoảng giá, trọng lượng gram nguyên dương và 2–6 ảnh thật có FRONT/BACK; ghi chú nội bộ optional, không public. Save-only ARCHIVED cho thiếu dữ liệu;0–3feature tags có thứ tự. Contract ở CATALOGUE/DATA.
 - `optimistic locking` (`version`/ETag) tránh người thứ hai ghi đè form đang cũ.
 - Nếu triển khai C về sau, `OrderItem` tham chiếu ID cuốn và **snapshot mã/tên/giá**; transaction/lock chỉ bảo vệ cập nhật trong web, không thể bảo vệ dữ liệu Facebook chưa đồng bộ.
 

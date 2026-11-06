@@ -30,8 +30,10 @@ export function formatPrice(value: number | null): string {
   return value === null ? '—' : vndFormat.format(value) + ' đ';
 }
 
-export const MEDIA_ROLES = ['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3'] as const;
-export const MEDIA_LABELS = { FRONT:'Bìa', BACK:'Lưng', SPINE:'Gáy', INSIDE_1:'Nội dung 1', INSIDE_2:'Nội dung 2', INSIDE_3:'Nội dung 3' };
+export const PUBLIC_MEDIA_ROLES = ['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3'] as const;
+export const MEDIA_ROLES = [...PUBLIC_MEDIA_ROLES,'INTERNAL_1','INTERNAL_2'] as const;
+export function isPublicMedia(role:string) {return (PUBLIC_MEDIA_ROLES as readonly string[]).includes(role);}
+export const MEDIA_LABELS = { FRONT:'Bìa', BACK:'Lưng', SPINE:'Gáy', INSIDE_1:'Nội dung 1', INSIDE_2:'Nội dung 2', INSIDE_3:'Nội dung 3', INTERNAL_1:'Nội bộ 1', INTERNAL_2:'Nội bộ 2' };
 export function formatPriceRange(min: number | null, max: number | null): string {
   if (min === null || max === null) return '—';
   return (min === max ? vndFormat.format(min) : vndFormat.format(min) + ' - ' + vndFormat.format(max)) + ' đ';

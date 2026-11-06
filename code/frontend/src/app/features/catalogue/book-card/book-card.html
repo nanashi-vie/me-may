@@ -1,4 +1,5 @@
 <article class="book-card">
+  <div class="cover-wrap">
   <a [routerLink]="['/sach', book().slug]" class="cover-link" tabindex="-1" aria-hidden="true">
     @if (front()) {
       <picture>
@@ -17,6 +18,8 @@
       </picture>
     }
   </a>
+  @if(book().features?.[0];as feature) {<span class="feature-tag" [title]="feature.label">{{feature.label}}</span>}
+  </div>
   <p class="book-code">{{ book().bookCode }}</p>
   <h3>
     <a [routerLink]="['/sach', book().slug]">{{ book().title }}</a>

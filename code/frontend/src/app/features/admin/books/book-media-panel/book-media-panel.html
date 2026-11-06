@@ -1,8 +1,8 @@
 <section aria-labelledby="photo-heading">
   <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Từ 2 đến 6 ảnh, bắt buộc bìa và lưng. Thứ tự mặc định: bìa, lưng, gáy, nội dung 1, nội dung 2,
-    nội dung 3.
+    Tối đa 8 ảnh: 6 ảnh công khai và 2 ảnh chỉ nội bộ. Khi xuất bản cần bìa và lưng;
+    có thể lưu sách ẩn khi bộ ảnh chưa hoàn thiện.
   </p>
   @if (!readonly()) {
     <div
@@ -40,12 +40,15 @@
     </button>
   }
   <p role="status" aria-live="polite">{{ photos.announcement() }}</p>
+  @for (group of groups; track group.internal) {
+  <h3 class="photo-group-heading">{{group.label}}</h3>
   <div class="photo-grid">
-    @for (row of photos.sorted(); track row.id; let i = $index) {
+    @for (row of groupRows(group.internal); track row.id; let i = $index) {
       <article
         class="photo-slot"
       >
-        <h3>{{ i + 1 }}. {{ labels[row.role] }}</h3>
+        <h3>{{ labels[row.role] }}</h3>
+        @if(group.internal) {<p class="private-photo"><span aria-hidden="true">🔒</span> Chỉ nội bộ</p>}
         @if (row.preview) {
           <div class="preview-wrap">
           @defer (on viewport) {
@@ -157,6 +160,7 @@
       </article>
     }
   </div>
+  }
   <dialog #viewer aria-labelledby="photo-viewer-title" (cancel)="closePhoto()" (close)="selectedPhoto.set(null)">
     <div class="viewer-heading">
       <h3 id="photo-viewer-title">Xem ảnh chi tiết</h3>

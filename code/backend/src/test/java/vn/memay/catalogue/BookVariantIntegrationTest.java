@@ -14,7 +14,7 @@ class BookVariantIntegrationTest extends CatalogueTestSupport {
     }
     Map<String,Object> body(BookDtos.BookDetail b,List<?> variants) {
         var w=new LinkedHashMap<String,Object>(JSON.convertValue(b,Map.class));
-        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock","stock","stockLimit","internalNote","unitPricePerKgVnd"))w.remove(key);
+        for(String key:List.of("id","bookCode","slug","publication","availability","publishedAt","createdAt","updatedAt","media","totalStock","stock","stockLimit","internalNote","unitPricePerKgVnd","features"))w.remove(key);
         w.put("variants",variants);return w;
     }
     @Test void publicVariantsUseOwnStockAndSharedPrice() throws Exception {

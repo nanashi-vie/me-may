@@ -1881,3 +1881,216 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Source commit3d5894a; tài liệu bàn giao commit/pushdev cùng task. Chưa deploy,
   không migration/dependency/provider thật. BackendV4 trước frontend; receipt
   cũ giữ nguyên, đổi7→8cột hoặc đổi đơn giá vẫn là lô mới, không update sách cũ.
+
+### S043-C01 — 06/11/2026 — bắt đầu8ảnh/lưu/xuất bản/features
+
+- User cung cấp spec Approved for implementation, yêu cầu kiểm tra/làm rõ rồi tiến hành.
+  Đã đọc chỉ mục, snapshot/checkpointS042, MASTER_PLAN/CATALOGUE và graph/source liên quan.
+- User chốt mọi ARCHIVED kể cả từng đăng được thiếu trọng lượng; publish vẫn đủ dữ liệu.
+- dev390cd9c sạch, fetch originPASS; origin/main4e5e84d chứa toàn bộ dev, chỉ khác merge/CI;
+  local mainb791511 cũ, không dùng làm baseline. Làm trên dev theo workflow đã cho phép.
+- Spec/plan hiện hành BOOK_MEDIA_FEATURE_SPEC/PLAN đăng ký README; tuần tự database/contract,
+  backend, frontend, tests; giữ canonical/fingerprint importV1–V4 và legacy create retry.
+- Chưa chạy test mới; chưa đổi code/migration. Không chạm DB/media thật, không deploy/main.
+
+### S043-C02 — 06/11/2026 — backend8ảnh/save/features lần đầu
+
+- Baseline frontend editor17PASS; backend thiếu TEST_DB_URL khi gọi Maven trực tiếp,
+  dùng run-local.sh rồi sandbox chặn socket (Operation not permitted); rerun ngoài
+  sandbox15test cũPASS,5test mớiRED đúng missing ARCHIVED/eight-photo behavior.
+- V15 thêm INTERNAL roles và feature catalogue/mapping (unique code/position1–3).
+  HTTP extras publication/publishAfterSave/featureCodes không đổi canonical BookWrite.
+- Implement atomic update+publish, optional-weight ARCHIVED riêng; import validateWrite
+  giữ nguyên. Public/preview role allowlist, internal endpoint404 trước gateway;
+  ordered features chiếu SQL không thêm JDBC query mỗi sách; audit includes features.
+- Scoped20tests:5test mớiPASS/6test cũfail do helper gửi DTO read mới features về write;
+  sửa helper bỏ read-only field. Chưa fullverify/frontend mới/browser/review.
+- Thay đổi còn local dev, chưa commit/deploy. Tiếp tục frontend và regression backend.
+
+### S043-C03 — 06/11/2026 — hồi quy và UI
+
+- Clean backend verify224run/0failure/0error/3live skip sau cập nhật fixture/features
+  và constructorTaxonomy test. Legacy create2/6ảnh và fingerprint/import suitesPASS.
+- Frontend210PASS/40files: hai save action, ARCHIVED partial, atomic publish payload,
+  max3/order tags,8ảnh/replacement/role stable, card first/detail all/no-feature.
+- Bổ sung test8ảnh thay slot và audit failure rollback content/tags/mediaPASS.
+  Consumed session recoveryRED (GET trả409 trước sửa); mở GET đã consumed trả bookId
+  có kiểm owner; frontend kiểm session trước retry, GET book đã lưu thay vì POST lại.
+- Đang chạy scoped session regression và SSR build; chưa browser/mobile/review cuối.
+- Code còn local dev. Spec/plan còn thực thi, không deploy/main.
+
+### S043-C04 — 06/11/2026 — review độc lập và sửa ba finding
+
+- Reviewer review_media_features:0Critical/3Important/0Minor. Privacy replacement
+  sau đổi nhóm chưa lưu/in-flight role; metadata preflush riêng transaction; PUT
+  timeout chưa reconcile. Đã nhận, viết regression tests trước sửa.
+- Sửa: chặn replacement qua visibility chưa lưu và đổi nhóm ảnh đang upload/uncertain;
+  mediaMetadata trong PUT validateID/length và lưu cùng aggregate/audit; metadata tạm
+  vẫn flush session trước final. GET lại book sau PUT không rõ kết quả, đối chiếu
+  nội dung/ảnh/tag/publication rồi mới accept hoặc mở retry, giữ edits khi khác.
+- Backend metadataRED400 unknown field trước sửa, đang kiểmGREEN/whole suite; UI
+  REDmissing recovery methods, đang chạy scoped. Chưa claim hoàn thành fix pass.
+- MigrationV14→V15 và scoped7contractPASS trước bổ sung metadata; frontend211PASS
+  trước fixreview; SSR/Workers/proxyPASS ngoài sandbox (native134/EPERM trong sandbox).
+- QA schema s043_browser_qa/me_may_test, fake provider API8089 và SSR4011 đã khởi
+  chạy, browserChrome riêngs043 đã mở login; chưa nghiệm thu luồng browser.
+- Code/doc còn local dev; không production/main.
+
+### S043-C05 — 06/11/2026 — browser candidate cuối
+
+- Chrome headed/SSR4011/API8089/schemaQA riêng: title-only saveARCHIVED/nullweight
+  và public404PASS; upload8ảnh persisted xong,6public/2internal đúng UI.
+- Atomic save+publish200, một nútSavePUBLISHED; APIadmin8/public6, featureSOUND/SLIDE
+  đúngorder/label, direct INTERNAL_1/2 đều404 trên PUBLISHED.
+- Cố ý routefetch PUTcommit200 rồi abortresponse: UI khóa ghi và hiện kiểm kết quả;
+  GETreconcile đúng nội dung/version/publication, không PUTtrùng:PASS.
+- FixturePNG QA đầu tạo saiheader literal\\x89 bị app từ chối đúng; đã sửa binary,
+  gỡ8file lỗi và upload8PNG đúng. Probe locator giá label thay đổi helper gây timeout,
+  dùng formControlName có trong DOM; không sửa app để qua probe. Browser CLI qua
+  Python subprocess trong sandbox ENOTFOUNDnpm, chuyển wrapper trực tiếp đã duyệt.
+- Backend227run/0failure/0error/3live skip, frontend216PASS, SSR/Workers/proxyPASS
+  trên code saufixreview. Không suite lại khi chỉ sửa docs.
+- Đang kiểmhide/republish/publishedAt, tagpriority/mobile/public; chưa cleanupQA/commit.
+
+### S043-C06 — 06/11/2026 — chốt kiểm chứng và gộp tài liệu
+
+- Hide→ARCHIVED/2 nút đều width-height, priority SLIDE→republish/publishedAt giữ nguyên PASS.
+  Home/card390px tag đầu, detail2tag wrap/nooverflow và preview6public PASS.
+  Screenshot chờ startup-splash hidden; lần chụp sớm thấy logo nên chụp lại.
+- Hoàn thiện finding privacy: replacement preparing cũng phải khóa đổi nhóm.
+  Regression RED nhận INTERNAL_1 thay FRONT; thêm guard previous, full frontend
+  GREEN217PASS/40files. Không thay UX public hoặc thêm feature ngoài spec.
+- Backend cuối227run/0failure/0error/3live skip; không đổi source sau kiểm.
+  SSR/Workers rebuild cuối PASS sau guard; proxy PASS trước guard, không đổi proxy code.
+  Browser layout/public kiểm trên candidate trước guard cuối; preparing được unit regression.
+- Browser thay INTERNAL_1: giả503, retry đối chiếu GET rồi upload thành công, vẫn8ảnh PASS.
+  PUT mất response đã reconcile; lỗiconsole dự kiến từ404/503/abort QA, không lỗi app mới.
+- Gộp contract CATALOGUE/DATA/DESIGN/ARCHITECTURE/MASTER_PLAN, rolloutV15 vào
+  BOOK_ENTRY_ROLLOUT. Đang chuyển evidence, cleanupQA rồi commit/pushdev; chưa deploy.
+
+### S043-C07 — 06/11/2026 — hoàn tất kiểm chứng local, chuẩn bị commit
+
+- Backend227run/0failure/0error/3live-provider skip; frontend217PASS/40files;
+  SSR/Workers build cuối PASS, proxy smoke PASS. Review3Important đã sửa,
+  preparing regression RED→GREEN; không còn findingCritical/Important chưa xử lý.
+- Chrome desktop/mobile390px,8ảnh/public6/internal404, preview, tags Home/catalogue/
+  detail, save-only/publish/hide/publishedAt/50:50, lostPUT/reconcile và503retry PASS.
+  Browser đã đóng; QA_SCHEMA_REMOVED=true,8089/4011 CLOSED=true xác minh qua JDBC/socket.
+- Chuyển đủ contract/acceptance/evidence và60file manifest vào tài liệu chuẩn;
+  gỡ spec/plan hết vai trò, README trỏ contract/evidence/rollout. Markdown≤400 trừ
+  DEV_LOG, local links, git diff --check, ignored env/tools và public sourceassets PASS.
+- Fetch origin dev không đổi từ390cd9c; chưa commit tại checkpoint này. Sẽ commit/pushdev
+  theo workflow đã cho phép. Chưa production migration/deploy; user merge main,
+  chọn candidate/backup/restore/backendV15 trướcfrontend và smoke/cachepurge riêng.
+
+### S043-C08 — 06/11/2026 — bàn giao dev
+
+- Source/contract/evidence commit15d1138 trên dev,60files, không dependency mới.
+  Baseline390cd9c; origin/main4e5e84d không bị sửa/merge/push trong task này.
+- Hoàn tất local; không còn task triển khai S043 dang dở. Chưa liveCloudinary/
+  thiết bị thật/production migration/deploy; giữ gate release ở PROGRESS/DEPLOYMENT.
+- Bản bàn giao docs cuối cùng theo sau sourcecommit, pushdev theo workflow;
+  user merge main và phê duyệt rolloutV15 riêng. Không dùng backend cũ chưa lọc
+  internal media làm rollback sau khi tiệm đã nhập ảnh nội bộ.
+
+### S044-C01 — 06/11/2026 — sửa sao chép mobile và markup detail
+
+- User báo Sao chép nội dung mobile lỗi; yêu cầu tối ưu sau khi bỏ p/h2.
+  dev840a78f, local detail HTML giữ2thẻ rỗng do user sửa; không ghi đè nội dung này.
+- Graph MCP Transport closed; fallback source: ContactDialog.copy await verifyText
+  (network) trước clipboard.writeText, trái user-gesture boundary Safari/WebKit.
+  Cả detail và wishlist dùng chung component; phải giữ revalidation giá/tình trạng.
+- Đã hỏi thêm loại máy/browser/thông báo; đang làm regression tests. Sửa theo
+  ClipboardItem promise-data khởi tạo write ngay click và selection fallback; không
+  bỏ kiểm dữ liệu, không dependency/backend/migration. Chưa chạy test mới.
+
+### S044-C02 — 06/11/2026 — clipboard RED/GREEN và thông tin máy thật
+
+- User xác nhận iPhone/Safari; ảnh Brave báo Đã sao chép, Safari báo fallback thủ công
+  trên memaybooks.com. Bản đang sửa local, chưa deploy lên URL đó.
+- TestRED3case: deferred write chưa gọi trước network, verifyfail không hủy payload,
+  fallback chưa selectfull. GREEN38scoped; thêm execCommandthrow RED rồi xử lý chọn
+  thủ công vẫn hoạt động. Fullfrontend221PASS/40files, backend không đổi.
+- Dùng ClipboardItem text/plain promise + clipboard.write gọi ngay trong click,
+  chỉ resolve Blob sau verify; empty/offline/stale không ghi clipboard. Khóa doublecopy
+  trong khi clipboardpending; writeText cho browserlegacy, select/execCommand/manualfallback.
+- Gỡ p.eyebrow/h2 rỗng và wrappersection thừa theo localedit user, giữdescription.
+  SSR sandbox esbuild native lỗi; rerun ngoài sandbox đang kiểm. WebKit chưa cài,
+  đang chuẩn bị browserQA riêng, không giả lập rồi coi là iPhone thật.
+
+### S044-C03 — 06/11/2026 — WebKit mobile copy/paste
+
+- Cài WebKit27.2 cho Playwright (toolcache, không repo dependency); API8091 giả
+  delay150ms + builtSSR4012, không database/credential/media thật. Fixturecollections
+  ban đầu trảobject làm Angular iteratorerror; sửa fixture vềarray, không sửaapp.
+- WebKitmobile detail: clickcopy qua networkdelay150ms báo thành công; dán lại bằng
+  Meta+V vào textarea QA so sánh toàn bộ chuỗi mã/tên/giá/URL khớp:PASS. Không
+  stubClipboard hoặc cấp quyềnclipboardread, không đọc/dump clipboard trước thao tácQA.
+- Detail giữdescription, bỏ hai thẻempty; review độc lập0finding. Đang kiểmwishlist
+  và failurepath trước cleanup/commitdev. Chưa Safari iPhone vật lý sau sửa/deploy.
+
+### S044-C04 — 06/11/2026 — hoàn tất local, bàn giao dev
+
+- WebKit27.2 mobile copy/paste toànchuỗi detail và wishlist qua network150ms PASS;
+  lookup503 xóa text/báo chưa xác nhận PASS. NativeClipboard không stub/không đọc
+  clipboard trước QA. Browser đóng, SSR4012/API8091 dừng; không DB/media thật.
+- Fullfrontend221PASS/40files, SSR/Workers/proxyPASS; reviewer0finding. Backend
+  không đổi, không chạy Maven. Docs/contract DESIGN và CONTACT_VERIFICATION, README
+  đăng ký bằng chứng; không spec/plan mới, không dependency/migration/deploy.
+- Bảo toàn localedituser bằng gỡ p.eyebrow/h2 rỗng và sectionthừa; giữ mô tả.
+- Code đang local dev840a78f, chuẩn bị commit/push theo workflow. Chưa iPhone vật lý
+  sau sửa hoặc cập nhật memaybooks.com; user merge main/deploy rồi test máy thật.
+
+### S044-C05 — 06/11/2026 — source đã pushdev
+
+- Commit5844b4e đã push origin/dev;9file gồm code/tests và tài liệu bàn giao.
+  Frontend221PASS, SSR/Workers/proxyPASS, WebKitmobile actualcopy/paste2luồng và
+  offline guardPASS, review0finding; không appcode đổi sau verification.
+- User vẫn cần merge main/deploy trước khi test lại Safari trên memaybooks.com.
+  Snapshot docs chốt sau sourcecommit; chưa deploy hoặc kiểm iPhone vật lý sau sửa.
+
+### S038-C06 — 06/11/2026 — Box tiện ích & hỗ trợ dưới banner trang chủ (IPM style)
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C06. Mục tiêu: đồng bộ với nhánh `dev`, triển khai 4 box tiện ích dưới banner Hero theo phong cách IPM trên worktree `dev-ui` (Ưu đãi vận chuyển, Cách hỏi mua sách, Cộng đồng Mẹ Mây, Hotline), giữ trên `dev-ui` chưa merge `dev` chờ user review.
+2. Quyết định & chi tiết kỹ thuật (chốt qua /grill-me):
+   - Bố cục & Responsive: Desktop 4 cột thẳng hàng (grid-template-columns: repeat(4, 1fr)), Mobile hiển thị dạng lưới 2x2 cân đối (grid-template-columns: repeat(2, 1fr)).
+   - Phong cách & Màu sắc: Nền trắng #FFFFFF, viền mềm #E8E2D8 bo góc 12px, hover viền đỏ Mẹ Mây #9B1C28 và nổi nhẹ translateY(-2px). Icon SVG đỏ Mẹ Mây trên nền tròn bo góc đỏ pastel #FDF2F2.
+   - Nội dung 4 box:
+     1. "Ưu đãi vận chuyển" (icon xe tải 🚚): kèm dòng phụ "Giao hàng toàn quốc", sẵn sàng mở popup ở giai đoạn 2.
+     2. "Cách hỏi mua sách" (icon tin nhắn 💬): kèm dòng phụ "Hướng dẫn đặt nhanh", sẵn sàng mở popup ở giai đoạn 2.
+     3. "Cộng đồng Mẹ Mây" (icon nhóm 👥): kèm dòng phụ "Tham gia nhóm Zalo", link mở tab mới trỏ đến contactConfig.groupUrl (từ biến môi trường CONTACT_ZALO_GROUP_URL).
+     4. "Hotline hỗ trợ:" (icon điện thoại 📞): 2 dòng số riêng biệt 0966 075 005 và 0703 260 005, mỗi số có link tel: trực tiếp chuẩn mẫu IPM.
+   - Files thay đổi:
+     - code/frontend/src/app/features/home/home-page.html
+     - code/frontend/src/app/features/home/home-page.ts
+     - code/frontend/src/app/features/home/home-page.scss
+     - code/frontend/src/app/features/home/home-page.spec.ts
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend Vitest: 40/40 test files, 204/204 tests PASS (thêm 3 test cases cho banner boxes).
+   - Frontend builds: npm run build và npm run build:workers hoàn tất 0 warning, 0 error.
+   - Chrome headless CDP visual test: chụp ảnh màn hình Desktop (home-banner-boxes-desktop.png) và Mobile (home-banner-boxes-mobile.png) kiểm chứng layout, grid, font và kích thước chuẩn.
+4. Việc dang dở / blocker: Không có. Chưa merge vào dev theo yêu cầu của user.
+5. Bước tiếp theo: Bàn giao trên nhánh dev-ui, chuẩn bị giai đoạn 2 (popup khi click vào box).
+
+### S038-C07 — 06/11/2026 — Tinh chỉnh góc vuông 4px, in đậm tiêu đề và Hotline chuẩn 100% mẫu IPM
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C07. Mục tiêu: tinh chỉnh 4 box tiện ích theo ảnh mẫu IPM đính kèm (media_1793973818208_0849018b.png): giảm bán kính bo góc xuống 4px (vuông vức), viền đỏ thương hiệu 1px #9B1C28 cho cả 4 thẻ, in đậm toàn bộ tiêu đề in hoa (font-weight: 800), bỏ nền đỏ pastel của icon (icon trần sắc nét), và thiết kế box Hotline hoàn toàn giống mẫu IPM (icon điện thoại đặc với 3 sóng âm, chữ `HOTLINE:` và 2 số điện thoại căn giữa in đậm).
+2. Chi tiết thay đổi:
+   - `code/frontend/src/app/features/home/home-page.html`:
+     - Chuyển tiêu đề các box thành chữ in hoa 2 dòng: `ƯU ĐÃI <br />VẬN CHUYỂN`, `CÁCH HỎI <br />MUA SÁCH`, `CỘNG ĐỒNG <br />MẸ MÂY`.
+     - Hotline box: dùng icon điện thoại đặc (fill="currentColor") kèm 3 cung sóng âm radiating góc trên bên phải (stroke-width="2"), tiêu đề `HOTLINE:` và 2 link tel `0966 075 005` / `0703 260 005`.
+   - `code/frontend/src/app/features/home/home-page.scss`:
+     - Đổi `border: 1px solid #9b1c28;`, `border-radius: 4px;`, loại bỏ nền phụ `.box-icon` để icon đỏ đứng trần trên nền trắng.
+     - `.box-title` và `.hotline-link`: dùng font `Plus Jakarta Sans`, `font-weight: 800;`, `letter-spacing: 0.02em`, căn giữa cân đối cả chiều dọc và ngang.
+     - Responsive mobile (<= 540px): giữ nguyên lưới 2x2, `border-radius: 4px;`, cỡ chữ 0.84rem và icon 26px đảm bảo không vỡ layout.
+   - `code/frontend/src/app/features/home/home-page.spec.ts`:
+     - Cập nhật assertion khớp tiêu đề in hoa mới.
+   - Docs: Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+3. Kiểm tra đã chạy:
+   - Unit tests: Vitest 40/40 files, 204/204 tests PASS.
+   - Build tests: `npm run build` (SSR) và `npm run build:workers` (Cloudflare) đều thành công 0 warning, 0 error.
+   - Visual regression & CDP screenshot: Chạy lại `verify-banner-boxes.mjs` chụp `home-banner-boxes-desktop.png` và `home-banner-boxes-mobile.png`, đối chiếu với `media_1793973818208_0849018b.png` đạt 100% độ tương đồng về bố cục, icon và font.
+4. Trạng thái & Bước tiếp theo:
+   - Commit và push lên `origin/dev-ui`. Không tự ý merge vào `dev`.
+   - Chờ user duyệt visual và hướng dẫn tiếp theo cho giai đoạn popup.

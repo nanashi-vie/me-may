@@ -13,6 +13,7 @@ export class BookStatusActions {
   readonly book = input.required<BookDetail>();
   readonly role = input<string>();
   readonly dirty = input(false);
+  readonly allowPublish=input(true);
   readonly disabled = input(false);
   readonly changed = output<BookDetail>();
   readonly failed = output<HttpErrorResponse>();

@@ -9,6 +9,7 @@
     <p class="error">Sách này chưa đủ điều kiện xuất bản.</p>
   }
   <h1>{{ title() || 'Chưa có tên sách' }}</h1>
+  @if(b.features?.length) {<ul class="preview-features" aria-label="Đặc điểm sách">@for(f of b.features;track f.code){<li>{{f.label}}</li>}</ul>}
   <p class="muted">
     {{ b.bookCode }} · {{ b.availability === 'AVAILABLE' ? 'Còn hàng' : 'Hết hàng' }}
   </p>

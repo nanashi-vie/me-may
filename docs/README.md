@@ -19,6 +19,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
 | Nhập giá/kg, tồn gộp, ghi chú nội bộ06/11 | [DATA](DATA.md#nhập-giá-theo-kg-và-sửa-tay-06112026), [CATALOGUE](CATALOGUE.md#payload-nhập-sách-và-field-optional-0611), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
 | Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
+| Sao chép hỏi sách trên Safari/mobile | [Contract](DESIGN.md#chi-tiết-cuốn--khách-mobile), [bằng chứng](CONTACT_VERIFICATION.md) |
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
 | Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V4/8cột, đơn giá optional và V1–V3compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md), [đối chiếu form06/11](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026) |
 | Chạy local, auth, lệnh test/build | [ARCHITECTURE — chạy local và Auth M1](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1), [CATALOGUE](CATALOGUE.md) |
@@ -29,6 +30,11 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |
 
 ## Phần còn thực thi
+
+- 8ảnh/lưu/features06/11 đã gộp vào [CATALOGUE](CATALOGUE.md), [DATA](DATA.md),
+  [DESIGN](DESIGN.md); [bằng chứng](BOOK_ENTRY_VERIFICATION.md),
+  [rolloutV15](BOOK_ENTRY_ROLLOUT.md). Chưa deployproduction.
+
 
 - ImportV4/8cột/đơn giá optional đã triển khai/kiểm local; [contract](BOOK_IMPORT.md),
   [schema](DATA.md#format-file-import--contract-duyệt31102026),

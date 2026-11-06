@@ -12,6 +12,7 @@ import java.util.*;
 public class BookMapper {
     @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
+        @org.springframework.beans.factory.annotation.Autowired private BookFeatureStore features;
         private final JdbcTemplate jdbc;
         private final BookVariantStore variants;
         private final CategoryRepository categories;
@@ -50,7 +51,7 @@ public class BookMapper {
                                 l.readingLevel, l.readingVideoUrl, cols, l.publicationStatus, b.availability,
                                 l.publishedAt,
                                 b.createdAt, b.updatedAt, images, stock,
-                                stock.stream().mapToLong(VariantView::stock).sum(), b.unitPricePerKgVnd);
+                                stock.stream().mapToLong(VariantView::stock).sum(), b.unitPricePerKgVnd, features.read(l.id));
         }
 
         public BookDetail published(BookDetail d,java.time.Instant publishedAt) {
@@ -58,7 +59,7 @@ public class BookMapper {
                         d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceMinVnd(),
                         d.priceMaxVnd(),d.weightG(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),
                         d.readingVideoUrl(),d.collectionIds(),Publication.PUBLISHED,d.availability(),publishedAt,
-                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock(),d.unitPricePerKgVnd());
+                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock(),d.unitPricePerKgVnd(),d.features());
         }
 
         public BookWrite write(BookDetail d) {

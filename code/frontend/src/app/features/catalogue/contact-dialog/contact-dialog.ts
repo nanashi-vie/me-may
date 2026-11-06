@@ -19,11 +19,13 @@ import { ContactConfig, PublicBook } from '../public.models';
   styleUrl: './contact-dialog.scss',
 })
 export class ContactDialog {
+  @ViewChild('enquiry') enquiry!: ElementRef<HTMLTextAreaElement>;
   @ViewChild('dialog') dialog!: ElementRef<HTMLDialogElement>;
   readonly book = input<PublicBook | null>(null);
   readonly preparedText = input<string | null>(null);
   readonly verifyText = input<(() => Promise<string>) | null>(null);
   readonly checking = signal(false);
+  readonly copying = signal(false);
   readonly verified = signal<string | null>(null);
   readonly busy = input(false);
   readonly notice = input('');
@@ -67,35 +69,62 @@ export class ContactDialog {
       : '';
   }
   select(event: Event) {
-    (event.target as HTMLTextAreaElement).select();
+    const area=event.target as HTMLTextAreaElement;
+    area.select();area.setSelectionRange(0,area.value.length);
   }
-  async copy() {
-    if (this.busy() || this.checking()) return;
-    let text = this.text();
-    const verify = this.verifyText();
-    if (verify) {
+  private async checkedText() {
+    let text=this.text();
+    const verify=this.verifyText();
+    if(verify) {
       this.checking.set(true);
       try {
-        text = await verify();
+        text=await verify();
         this.verified.set(text);
-        this.message.set(text ? '' : 'Các cuốn đã chọn không còn sẵn hoặc không còn hiển thị.');
+        this.message.set(text?'':'Các cuốn đã chọn không còn sẵn hoặc không còn hiển thị.');
       } catch {
         this.verified.set('');
         this.message.set('Chưa xác nhận được giá và tình trạng. Thử sao chép lại khi có mạng.');
-        return;
-      } finally {
-        this.checking.set(false);
-      }
+        return '';
+      } finally {this.checking.set(false);}
     }
-    if (!text || this.busy()) return;
+    return this.busy()?'':text;
+  }
+  async copy() {
+    if(this.busy() || this.checking() || this.copying()) return;
+    this.copying.set(true);this.message.set('');
+    const view=this.document.defaultView;
+    const clipboard=view?.navigator.clipboard;
+    const Item=view?.ClipboardItem;
+    const ready=this.checkedText();
+    let text='';
     try {
-      const clipboard = this.document.defaultView?.navigator.clipboard;
-      if (!clipboard) throw new Error();
-      await clipboard.writeText(text);
-      if (text === this.text()) this.message.set('Đã sao chép. Mở Zalo, dán và gửi cho tiệm.');
+      if(this.verifyText() && clipboard?.write && Item) {
+        // Safari requires write() during the tap; resolve the verified payload later.
+        const data=ready.then(value=>{
+          if(!value || this.busy() || value!==this.text()) throw new Error('Enquiry changed');
+          return new Blob([value],{type:'text/plain'});
+        });
+        // A synchronous API/constructor rejection must also consume the payload rejection.
+        void data.catch(()=>{});
+        await clipboard.write([new Item({'text/plain':data})]);
+        text=await ready;
+      } else {
+        text=await ready;
+        if(!text) return;
+        if(!clipboard) throw new Error('Clipboard unavailable');
+        await clipboard.writeText(text);
+      }
+      if(text===this.text()) this.message.set('Đã sao chép. Mở Zalo, dán và gửi cho tiệm.');
     } catch {
-      if (text === this.text())
-        this.message.set('Chưa sao chép tự động được. Chọn nội dung trong ô để sao chép thủ công.');
-    }
+      text=await ready;
+      if(!text || text!==this.text()) return;
+      const area=this.enquiry.nativeElement;
+      area.value=text;area.focus({preventScroll:true});
+      area.select();area.setSelectionRange(0,text.length);
+      let copied=false;
+      try {copied=typeof this.document.execCommand==='function' && this.document.execCommand('copy');} catch { /* Keep the selected text available. */ }
+      this.message.set(copied?'Đã sao chép. Mở Zalo, dán và gửi cho tiệm.':
+        'Chưa sao chép tự động được. Nội dung đã được chọn để sao chép thủ công; nhấn giữ trong ô và chọn Sao chép.');
+    } finally {this.copying.set(false);}
   }
 }

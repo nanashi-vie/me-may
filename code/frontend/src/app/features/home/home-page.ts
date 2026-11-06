@@ -1,10 +1,10 @@
 import { PublicSkeleton } from '../catalogue/public-skeleton/public-skeleton';
 import { Subscription } from 'rxjs';
-import { Component, inject, signal, effect, RESPONSE_INIT, DestroyRef } from '@angular/core';
+import { Component, inject, signal, computed, effect, RESPONSE_INIT, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PublicApi } from '../catalogue/public-api';
-import { FlashSale, HomeData } from '../catalogue/public.models';
+import { ContactConfig, FlashSale, HomeData } from '../catalogue/public.models';
 import { PublicClock } from '../catalogue/public-clock';
 import { countdown, countdownParts } from '../catalogue/catalogue-state';
 import { BookCard } from '../catalogue/book-card/book-card';
@@ -29,6 +29,8 @@ export class HomePage {
   readonly saleError = signal(false);
   readonly error = signal(false);
   readonly loading = signal(true);
+  readonly contact = signal<ContactConfig | null>(null);
+  readonly groupUrl = computed(() => this.contact()?.groupUrl || '');
   readonly countdown = countdown;
   readonly countdownParts = countdownParts;
   private expired = '';
@@ -40,6 +42,7 @@ export class HomePage {
     );
     this.load();
     this.loadSale();
+    this.loadContact();
     effect(() => {
       const sale = this.sale();
       if (
@@ -109,5 +112,15 @@ export class HomePage {
             (this.clock.now() || Date.parse(this.sale()!.serverNow)),
         )
       : 0;
+  }
+  loadContact() {
+    if (typeof this.api.contact !== 'function') return;
+    this.api
+      .contact()
+      .pipe(takeUntilDestroyed(this.destroy))
+      .subscribe({
+        next: (c) => this.contact.set(c),
+        error: () => this.contact.set(null),
+      });
   }
 }

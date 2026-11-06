@@ -13,6 +13,7 @@ import vn.memay.catalogue.PublicCatalogueDtos.Collection;
 @Service
 @Transactional(readOnly = true)
 public class PublicCatalogueService {
+    @org.springframework.beans.factory.annotation.Autowired private tools.jackson.databind.ObjectMapper json;
     private final JdbcTemplate jdbc;
 
     public PublicCatalogueService(JdbcTemplate jdbc) {
@@ -24,7 +25,8 @@ public class PublicCatalogueService {
     private static final String SELECT = "select b.id,b.book_code,b.title,b.publisher,b.author,b.binding,b.availability,b.weight_g,l.id listing_id,l.slug,"
             + "l.price_min_vnd,l.price_max_vnd,case when " + SALE
             + " then fi.sale_price_vnd end sale_price_vnd,case when " + SALE
-            + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code";
+            + " then fs.ends_at end sale_ends_at,l.description,l.reading_level,l.reading_video_url,c.code category_code,"
+            + "coalesce((select jsonb_agg(jsonb_build_object('code',f.code,'label',f.label) order by lf.position) from listing_feature lf join book_feature f on f.code=lf.feature_code where lf.listing_id=l.id),'[]'::jsonb)::text features";
 
     private record RelatedTarget(long bookCopyId, String publisher, Long categoryId) {
     }
@@ -172,7 +174,7 @@ public class PublicCatalogueService {
                 "select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
         List<Media> media = jdbc.query(
-                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
+                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' and role in ('FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3') order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
                 (m, i) -> new Media(m.getString("role"), m.getString("alt"),
                         "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),
                 id);
@@ -184,7 +186,7 @@ public class PublicCatalogueService {
                 r.getTimestamp("sale_ends_at") == null ? null : r.getTimestamp("sale_ends_at").toInstant(),
                 r.getObject("weight_g", Long.class), r.getString("description"), r.getString("reading_level"),
                 r.getString("reading_video_url"),
-                r.getString("availability"), media, List.of());
+                r.getString("availability"), media, List.of(), json.readValue(r.getString("features"),json.getTypeFactory().constructCollectionType(List.class,BookDtos.Feature.class)));
     }
 
     public List<Collection> collections() {

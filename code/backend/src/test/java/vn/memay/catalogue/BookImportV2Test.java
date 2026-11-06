@@ -130,7 +130,7 @@ class BookImportV2Test {
         assertThat(doc.groups().getFirst().key()).isEqualTo("A");
     }
     @Test void privateTemplateApiProducesTheCurrentEightColumnFormat()throws Exception {
-        var options=new ImportOptions(new vn.memay.taxonomy.TaxonomyDtos.Taxonomy(List.of(),List.of(),List.of(),List.of()),List.of());
+        var options=new ImportOptions(new vn.memay.taxonomy.TaxonomyDtos.Taxonomy(List.of(),List.of(),List.of(),List.of(),List.of()),List.of());
         var bytes=new BookImportTemplate().render("xlsx",options);
         try(var book=new XSSFWorkbook(new ByteArrayInputStream(bytes))) {
             assertThat(book.getSheet("Sach").getRow(0).getLastCellNum()).isEqualTo((short)8);
