@@ -168,7 +168,14 @@ Refresh khi vào trang/retry/foreground/codes thay đổi; hủy response cũ. S
 
 ## Bảng quản trị — desktop
 
-Sidebar nhỏ: Sách, Bộ sưu tập, Danh mục, Tài khoản (Owner), Cấu hình (Owner). Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
+Sidebar Modern Clean (rộng 240px, nền be kem #FBF8F2, viền phải #E8E2D8, sticky 100vh):
+- Đầu sidebar: logo Mẹ Mây font Baloo 2 đỏ + nhãn "Trang quản trị".
+- Menu điều hướng kèm icon SVG trực quan: Tổng quan (📊), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
+- Mục Active: nền đỏ kem nhạt #FDF2F2, chữ và icon đỏ thương hiệu #9B1C28 (font-weight 700), viền trái đỏ 3px. Hover: nền be sáng #F3EDE2.
+- Đáy sidebar: Thẻ tài khoản (avatar chữ cái đầu, email, badge OWNER/STAFF) và nút Đăng xuất. Bỏ thanh admin-header phía trên để không gian nội dung bên phải rộng rãi.
+- Nút "Quản trị" trên trang public (/ và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng /admin hoặc /admin/dang-nhap.
+
+Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
 
 MVP chỉ nhập thủ công, không có nút import CSV/Excel. Import là bước ngay sau MVP: tạo mới thành nháp, mã trùng báo lỗi, không ghi đè; file mẫu/preview/lỗi sẽ đặc tả riêng. Cập nhật sách đang có qua import để giai đoạn sau.
 

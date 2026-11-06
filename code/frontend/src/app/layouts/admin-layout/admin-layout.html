@@ -1,24 +1,122 @@
 <div class="admin-shell">
-  <aside>
-    <a class="brand" routerLink="/admin">Mẹ Mây</a>
-    <nav aria-label="Quản trị">
-      <a routerLink="/admin">Tổng quan</a><a routerLink="/admin/sach">Sách</a>
+  <aside class="admin-sidebar">
+    <div class="sidebar-header">
+      <a class="brand" routerLink="/admin">
+        <span class="brand-title">Mẹ Mây</span>
+        <span class="brand-subtitle">Trang quản trị</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Quản trị">
+      <a
+        routerLink="/admin"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        class="nav-item"
+      >
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="9"></rect>
+            <rect x="14" y="3" width="7" height="5"></rect>
+            <rect x="14" y="12" width="7" height="9"></rect>
+            <rect x="3" y="16" width="7" height="5"></rect>
+          </svg>
+        </span>
+        <span class="nav-text">Tổng quan</span>
+      </a>
+
+      <a
+        routerLink="/admin/sach"
+        routerLinkActive="active"
+        class="nav-item"
+      >
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Sách</span>
+      </a>
+
       @if (auth.user()?.role === 'OWNER') {
-        <a routerLink="/admin/bo-suu-tap">Bộ sưu tập</a
-        ><a routerLink="/admin/flash-sale">Flash Sale</a>
+        <a
+          routerLink="/admin/bo-suu-tap"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+              <polyline points="2 17 12 22 22 17"></polyline>
+              <polyline points="2 12 12 17 22 12"></polyline>
+            </svg>
+          </span>
+          <span class="nav-text">Bộ sưu tập</span>
+        </a>
+
+        <a
+          routerLink="/admin/flash-sale"
+          routerLinkActive="active"
+          class="nav-item"
+        >
+          <span class="nav-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+            </svg>
+          </span>
+          <span class="nav-text">Flash Sale</span>
+        </a>
       }
-      <a routerLink="/">Xem website</a>
+
+      <div class="sidebar-divider" role="separator"></div>
+
+      <a routerLink="/" class="nav-item nav-external" target="_blank" rel="noopener">
+        <span class="nav-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+        </span>
+        <span class="nav-text">Xem website</span>
+        <span class="nav-arrow" aria-hidden="true">↗</span>
+      </a>
     </nav>
+
+    <div class="sidebar-footer">
+      @if (auth.user(); as u) {
+        <div class="account-card">
+          <div class="account-avatar" aria-hidden="true">{{ userInitials() }}</div>
+          <div class="account-info">
+            <span class="account-email" [title]="u.email">{{ u.email }}</span>
+            <span class="account-role-badge" [class.owner]="u.role === 'OWNER'">{{ u.role }}</span>
+          </div>
+        </div>
+      }
+      <button
+        type="button"
+        class="logout-button"
+        (click)="logout()"
+        [disabled]="busy()"
+        aria-label="Đăng xuất khỏi trang quản trị"
+      >
+        <span class="logout-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+            <polyline points="16 17 21 12 16 7"></polyline>
+            <line x1="21" y1="12" x2="9" y2="12"></line>
+          </svg>
+        </span>
+        <span class="logout-text">{{ busy() ? 'Đang thoát…' : 'Đăng xuất' }}</span>
+      </button>
+    </div>
   </aside>
-  <div>
-    <header class="admin-header">
-      <span>{{ auth.user()?.email }} · {{ auth.user()?.role }}</span
-      ><button class="secondary" (click)="logout()" [disabled]="busy()">Đăng xuất</button>
-    </header>
+
+  <div class="admin-main-wrap">
     @if (error()) {
-      <p class="error" role="alert">{{ error() }}</p>
+      <p class="error admin-layout-error" role="alert">{{ error() }}</p>
     }
     <main class="admin-content"><router-outlet /></main>
   </div>
 </div>
-

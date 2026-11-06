@@ -1395,3 +1395,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - Kiểm tra trần 400 dòng markdown cho toàn bộ file docs: PASS.
 5. Việc dang dở / blocker: Không có.
 6. Bước tiếp theo: Push nhánh `dev-ui` lên remote theo yêu cầu user.
+
+### S038-C04 — 06/11/2026 — thiết kế lại Admin Sidebar Modern Clean và nút quay về /admin trên trang Public
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C04. Mục tiêu: thiết kế lại thanh Sidebar /admin theo phong cách Modern Clean ấm áp (nền be kem, icon SVG, tab active đỏ thương hiệu, thẻ tài khoản và nút đăng xuất ở đáy, bỏ admin-header phía trên) và thêm nút quay về /admin trên trang chủ / public layout (nhận diện phiên đăng nhập).
+2. Phạm vi & Quyết định (chốt qua /grill-me):
+   - Admin Sidebar redesign:
+     - Nền be kem nhạt #FBF8F2, viền phải mảnh #E8E2D8, sticky cố định 100vh, rộng 240px.
+     - Header sidebar: logo Mẹ Mây font Baloo 2 đỏ đậm #9B1C28 kèm nhãn phụ "Trang quản trị" chữ in hoa nhỏ.
+     - Menu điều hướng dạng thẻ bo góc 8px với icon SVG: Tổng quan (📊, exact match), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
+     - Trạng thái Active: nền đỏ kem nhạt #FDF2F2, viền chỉ báo trái đỏ 3px, chữ và icon màu đỏ #9B1C28 đậm (font weight 700). Hover: nền be sáng #F3EDE2.
+     - Đáy sidebar: Thẻ tài khoản người dùng (avatar tròn chữ cái đầu, email, role badge OWNER/STAFF) và nút Đăng xuất kèm icon logout.
+     - Xóa bỏ thanh admin-header phía trên để mở rộng tối đa không gian làm việc cho vùng nội dung bên phải.
+   - Nút quay về /admin trên Public:
+     - Desktop header: đặt cạnh nút "Nhắn tiệm ↗", tự động nhận diện nếu đã đăng nhập (auth.user() tồn tại) thì hiện nổi bật kèm chấm xanh active và dẫn thẳng /admin; nếu chưa đăng nhập thì dẫn vào /admin/dang-nhap.
+     - Mobile sidebar: thêm mục ⚙️ Quản trị ở cuối menu trượt mobile (bên dưới Cách mua, Liên hệ), tự động dẫn vào /admin hoặc /admin/dang-nhap.
+   - Files thay đổi:
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.html
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.ts
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.scss
+     - code/frontend/src/app/layouts/admin-layout/admin-layout.spec.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.html
+     - code/frontend/src/app/layouts/public-layout/public-layout.ts
+     - code/frontend/src/app/layouts/public-layout/public-layout.scss
+     - code/frontend/src/app/app.spec.ts
+     - code/frontend/src/styles.scss
+     - docs/DESIGN.md, docs/PROGRESS.md, docs/DEV_LOG.md
+3. Kiểm tra đã chạy:
+   - Frontend tests: npm test (cwd code/frontend trong worktree) -> 38/38 files, 193/193 tests PASS (bao gồm 4 test cases mới cho AdminLayout).
+   - Frontend builds: npm run build và npm run build:workers -> hoàn tất với 0 errors, 0 warnings.
+   - Browser QA qua Chrome headless CDP (1280x800 & 390x844) với Angular SSR local + mock API:
+     - Sidebar /admin: asideWidth 240px, brand 'Mẹ Mây - Trang quản trị', tab 'Sách' active đỏ #9b1c28, 5 icons SVG, accountEmail 'admin@memay.vn', roleBadge 'OWNER', logoutBtn 'Đăng xuất'.
+     - Public desktop header: nút "⚙️ Quản trị" hiển thị ngay cạnh "Nhắn tiệm ↗".
+     - Public mobile sidebar: link "⚙️ Quản trị" hiển thị ở đáy menu trượt.
+     - Ảnh chụp kiểm chứng: admin-book-list-filters.png, public-home-header.png, public-mobile-sidebar.png. Đã dừng Chrome và test server.
+4. Việc dang dở / blocker: Không có.
+5. Bước tiếp theo: Commit và push lên nhánh dev-ui, báo cáo cho user nghiệm thu.

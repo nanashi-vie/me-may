@@ -9,6 +9,7 @@ import { DEFAULT_CATEGORIES } from '../../features/catalogue/catalogue-state';
 import { CategoryCode, Collection, Taxonomy } from '../../features/catalogue/public.models';
 import { WishlistStore } from '../../features/wishlist/wishlist-store';
 import { TaxonomyOption } from '../../features/admin/books/book.models';
+import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-public-layout',
@@ -18,6 +19,9 @@ import { TaxonomyOption } from '../../features/admin/books/book.models';
 })
 export class PublicLayout {
   readonly wishlist = inject(WishlistStore);
+  readonly auth = inject(AuthService);
+  readonly isLoggedInAdmin = computed(() => !!this.auth.user());
+  readonly adminLink = computed(() => (this.isLoggedInAdmin() ? '/admin' : '/admin/dang-nhap'));
   q = '';
   readonly collections = signal<Collection[]>([]);
   readonly taxonomy = signal<Taxonomy | null>(null);
