@@ -94,10 +94,10 @@ try {
   assert.match(upload.headers['content-type'], /^multipart\/form-data; boundary=/);
   assert.ok(upload.body.includes('probe-image'));
   assert.ok(upload.body.includes('filename="probe.txt"'));
-  const page = await fetch(origin + '/cach-mua');
+  const page = await fetch(origin + '/lien-he');
   assert.equal(page.status, 200);
   assert.ok(
-    (await page.text()).includes('href="http://127.0.0.1:8788/cach-mua"'),
+    (await page.text()).includes('href="http://127.0.0.1:8788/lien-he"'),
     'request context canonical',
   );
   await new Promise((resolve) => backend.close(resolve));

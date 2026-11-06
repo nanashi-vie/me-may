@@ -2130,3 +2130,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 4. Trạng thái & Bước tiếp theo:
    - Commit và push lên nhánh `origin/dev-ui`. Giữ nguyên chưa merge vào `dev` theo yêu cầu.
 
+### S038-C09 — 06/11/2026 — Gỡ bỏ hoàn toàn /cach-mua và section Cách hỏi mua ở cuối trang chủ
+
+1. Ngày: 06/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S038-C09. Mục tiêu: gỡ bỏ hoàn toàn route `/cach-mua` và section cách mua cũ ở cuối trang Home (`/`) theo yêu cầu user, thay thế bằng popup hướng dẫn tương tác mở từ box tiện ích.
+2. Chi tiết thay đổi:
+   - `code/frontend/src/app/features/home/home-page.html`: Xóa bỏ toàn bộ `<section class="how">` (gồm 3 bước dạng văn bản và link `Xem hướng dẫn hỏi mua →`).
+   - `code/frontend/src/app/features/home/home-page.scss`: Xóa bỏ các quy tắc CSS `.how` ở cả desktop và mobile `@media (max-width: 560px)`.
+   - `code/frontend/src/app/app.routes.ts`: Xóa bỏ định nghĩa route `path: 'cach-mua'`.
+   - `code/frontend/src/app/layouts/public-layout/public-layout.html`: Xóa liên kết `Cách mua` trên thanh điều hướng desktop, menu trượt mobile và chân trang footer.
+   - `code/frontend/src/app/layouts/public-layout/public-layout.ts`: Bỏ case `'how'` trong hàm `isActive()`.
+   - `code/frontend/src/worker-runtime.spec.ts`: Chuyển path test mẫu từ `/cach-mua` sang `/lien-he`.
+   - `code/frontend/scripts/check-ssr.mjs` & `check-worker-proxy.mjs`: Cập nhật route kiểm tra từ `/cach-mua` sang `/lien-he`.
+   - Docs: Cập nhật `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+3. Kiểm tra đã chạy:
+   - Unit tests: Vitest 42/42 test files, 231/231 tests PASS.
+   - Builds: `npm run build` (SSR) và `npm run build:workers` (Cloudflare) đều thành công 0 warning, 0 error.
+   - SSR probe: Chạy server SSR và `check-ssr.mjs`, kiểm chứng `/` và `/lien-he` trả về HTML 200 hợp lệ, đồng thời truy cập `/cach-mua` trả về HTTP 404 chuẩn xác.
+4. Trạng thái: Sẵn sàng commit và push lên nhánh `origin/dev-ui`. Chờ user duyệt trước khi merge `dev`.
+

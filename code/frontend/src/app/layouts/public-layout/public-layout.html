@@ -159,12 +159,6 @@
     </div>
   </div>
   <a
-    routerLink="/cach-mua"
-    [class.active]="isActive('how')"
-    [attr.aria-current]="isActive('how') ? 'page' : null"
-    >Cách mua</a
-  >
-  <a
     routerLink="/lien-he"
     [class.active]="isActive('contact')"
     [attr.aria-current]="isActive('contact') ? 'page' : null"
@@ -293,13 +287,6 @@
         }
       </div>
       <a
-        routerLink="/cach-mua"
-        [class.active]="isActive('how')"
-        [attr.aria-current]="isActive('how') ? 'page' : null"
-        (click)="closeSidebar()"
-        >Cách mua</a
-      >
-      <a
         routerLink="/lien-he"
         [class.active]="isActive('contact')"
         [attr.aria-current]="isActive('contact') ? 'page' : null"
@@ -328,8 +315,7 @@
     <p>Mỗi cuốn sách, một lần khám phá mới.</p>
   </div>
   <nav aria-label="Thông tin tiệm">
-    <a routerLink="/sach">Khám phá sách</a><a routerLink="/cach-mua">Cách hỏi mua</a
-    ><a routerLink="/lien-he">Liên hệ</a><a routerLink="/admin">Quản trị</a>
+    <a routerLink="/sach">Khám phá sách</a><a routerLink="/lien-he">Liên hệ</a><a routerLink="/admin">Quản trị</a>
   </nav>
   <small>Tiệm xác nhận giá và tình trạng khi trao đổi. Website không giữ sách.</small>
 </footer>

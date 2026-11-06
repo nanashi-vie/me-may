@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const origin = process.argv[2] ?? process.env.SSR_ORIGIN ?? 'http://127.0.0.1:4200';
 for (const [path, title, heading] of [
   ['/', 'Mẹ Mây — Sách ngoại văn cho bé', 'Khám phá thế giới lớn.'],
-  ['/cach-mua', 'Cách hỏi mua sách | Mẹ Mây', 'Chọn sách và nhắn tiệm'],
+  ['/lien-he', 'Liên hệ | Mẹ Mây', 'Nhắn tiệm nhé.'],
 ]) {
   const response = await fetch(new URL(path, origin));
   assert.equal(response.status, 200, path);

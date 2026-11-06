@@ -11,7 +11,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/bo-suu-tap/:slug` | Nhóm biên tập | Duyệt các cuốn thuộc nhóm |
 | `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–6 ảnh, trọng lượng và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
-| `/gioi-thieu`, `/cach-mua`, `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
+| `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
 | `/admin/sach` | Bảng quản trị | Tìm mã, mở editor, xem trạng thái |
 | `/admin/sach/moi`, `/admin/sach/:id` | Editor | Nhập cuốn/listing, ảnh, preview, xuất bản/ẩn theo quyền |
@@ -63,7 +63,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” trên desktop (>720px); ẩn trên mobile (≤720px). Không tự nhận freeship/giảm giá.
 2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Danh sách quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
-   - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Cách mua · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
+   - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ; gỡ mục `Cách mua` vì đã tích hợp popup trực tiếp từ box tiện ích Home). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
    - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
    - Mobile (≤720px): `<dialog>` native mở bằng `showModal()`, trượt từ trái (~80vw, tối đa 320px), nền `--red`, chữ trắng IN HOA, nút Đóng ✕; `Tất cả sách ›` và `Bộ sưu tập ›` mở accordion tại chỗ; đóng khi Escape, chạm backdrop, bấm ✕, chọn link hoặc đổi route, khóa cuộn nền và trả focus về ☰; tắt animation khi `prefers-reduced-motion: reduce`.
 4. **Hero ngang:** một banner tĩnh ban đầu, thông điệp giới thiệu sách cũ/ảnh thật; CTA “Xem tất cả sách”. Không cần autoplay/carousel ở MVP. Banner là asset thương hiệu được duyệt sau, không lấy ảnh sale của mẫu.

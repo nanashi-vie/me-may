@@ -66,7 +66,8 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
     - B3: Bấm “Chuẩn bị nội dung hỏi mua”
     - B4: Gửi tin nhắn qua Zalo Hotline (Sao chép nội dung ➔ Mở Zalo ➔ Dán & gửi)
   - Vitest 42/42 test files (231/231 tests PASS, thêm test suite `how-to-buy-dialog.spec.ts`); build SSR và Workers 0 warning, 0 error.
-  - CDP headless visual test chụp `how-to-buy-dialog-desktop.png` (1280px) và `how-to-buy-dialog-mobile.png` (390px) xác nhận chuẩn visual. Chưa merge vào `dev`.
+  - CDP headless visual test chụp `how-to-buy-dialog-desktop.png` (1280px) và `how-to-buy-dialog-mobile.png` (390px) xác nhận chuẩn visual.
+  - Gỡ bỏ hoàn toàn route `/cach-mua`, link "Cách mua" trên Desktop Header / Mobile Sidebar / Footer, và section `.how` cũ ở cuối trang Home (`/`). Chưa merge vào `dev`.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 
