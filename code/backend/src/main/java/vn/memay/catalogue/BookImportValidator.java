@@ -58,7 +58,7 @@ public class BookImportValidator {
             for(var row:rows) {
                 var c=row.cells();
                 c.forEach((key,value)->{if(value!=null && value.length()>BookImportSchema.MAX_CELL) issue(errors,row,key,"length","Tối đa 10000 ký tự mỗi ô.");});
-                for(String key:List.of("ten_sach","ngon_ngu","the_loai","tinh_trang","mo_ta_tinh_trang"))
+                for(String key:List.of("ten_sach","ngon_ngu","the_loai"))
                     if(c.get(key)==null) issue(errors,row,key,"required","Chưa nhập trường bắt buộc.");
                 if(c.get("the_loai")!=null && !BookImportSchema.CATEGORIES.contains(c.get("the_loai"))) issue(errors,row,"the_loai","invalid","Mã thể loại không hợp lệ.");
                 if(c.get("tinh_trang")!=null && !Set.of("HIGH_FRESHNESS","MINOR_FLAWS").contains(c.get("tinh_trang"))) issue(errors,row,"tinh_trang","invalid","Dùng HIGH_FRESHNESS hoặc MINOR_FLAWS.");

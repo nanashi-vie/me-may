@@ -16,14 +16,14 @@
   <section aria-labelledby="fields-title">
     <h2 id="fields-title">Hướng dẫn các field</h2>
     <p>File cần đủ 16 cột bên dưới; cột không bắt buộc có thể để trống. Mỗi dòng tạo một sách riêng.</p>
-    <p>Mặc định ngôn ngữ <strong>Tiếng Anh</strong>, một biến thể chưa đặt tên và <strong>tồn 1</strong>. Khi thêm ảnh, bạn có thể sửa ngôn ngữ, chỉnh tồn và thêm biến thể trước khi xuất bản.</p>
+    <p>Mặc định ngôn ngữ <strong>Tiếng Anh</strong> và <strong>tồn 1</strong>. Khi thêm ảnh, bạn có thể sửa ngôn ngữ và chỉnh tồn gộp trước khi xuất bản.</p>
     <div class="table-scroll"><table>
       <thead><tr><th scope="col">Field</th><th scope="col">Cách nhập</th></tr></thead>
       <tbody>
         <tr><td><code>ten_sach</code></td><td>Bắt buộc. Tên sách.</td></tr>
         <tr><td><code>the_loai</code>, <code>kieu_bia</code></td><td>Thể loại bắt buộc, ví dụ Board Book hoặc Picture Book. Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kiểu bìa.</td></tr>
         <tr><td><code>gia_tu</code>, <code>gia_den</code>, <code>trong_luong_g</code></td><td>Bắt buộc. Giá nguyên VND, giá từ ≤ giá đến; trọng lượng gram nguyên dương. Không dùng dấu phân nhóm nghìn.</td></tr>
-        <tr><td><code>tinh_trang</code>, <code>mo_ta_tinh_trang</code></td><td>Bắt buộc. Chọn Độ mới cao hoặc Có lỗi nhẹ, kèm mô tả rõ tình trạng/lỗi.</td></tr>
+        <tr><td><code>tinh_trang</code>, <code>mo_ta_tinh_trang</code></td><td>Không bắt buộc. Cột tình trạng cũ có thể để trống; mô tả được giữ làm ghi chú nội bộ, chỉ quản trị xem.</td></tr>
         <tr><td><code>isbn</code>, <code>nha_xuat_ban</code>, <code>tac_gia</code>, <code>mo_ta_sach</code></td><td>Không bắt buộc. ISBN nhập dạng text để giữ số 0 đầu.</td></tr>
         <tr><td><code>do_tuoi</code>, <code>trinh_do_doc</code>, <code>bo_suu_tap</code>, <code>link_video</code></td><td>Không bắt buộc. Tuổi ví dụ 0-3; mức đọc ví dụ Starters · Pre A1. Nhiều độ tuổi/slug bộ sưu tập ngăn bằng dấu ;. Video là URL HTTPS.</td></tr>
       </tbody>
@@ -68,9 +68,8 @@
     <section aria-labelledby="preview-title"><h2 id="preview-title">2. Xem trước và xác nhận</h2>
       <p>{{ result.document.rowCount }} dòng · {{ result.document.groups.length }} sách · Tổng tồn: {{ display(totalStock()) }}</p>
       @for (group of result.document.groups; track group.key) {
-        <details><summary>{{ result.document.schemaVersion === 2 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · {{ group.write.variants.length }} biến thể</summary>
+        <details><summary>{{ result.document.schemaVersion === 2 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · Tồn {{ stock(group.write) }}</summary>
           <dl>@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
-          <table><thead><tr><th>Biến thể</th><th>Tồn kho</th></tr></thead><tbody>@for (variant of group.write.variants; track $index) {<tr><td>{{ variant.name || 'Mặc định' }}</td><td>{{ display(variant.stock) }}</td></tr>}</tbody></table>
         </details>
       }
       <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="!canConfirm()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã kiểm tra thông tin. Các sách sẽ được tạo ở trạng thái Ẩn; tôi sẽ thêm ảnh và tự xuất bản sau.</label>

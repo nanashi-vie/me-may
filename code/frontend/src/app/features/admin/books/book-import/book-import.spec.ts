@@ -74,7 +74,7 @@ describe('BookImport file and session boundaries',()=>{
     expect(preview.querySelector('summary')?.textContent).toContain('Dòng 7');
     expect(preview.querySelector('summary')?.textContent).not.toContain('R001');
     expect(preview.textContent).toContain('Tiếng Anh');
-    expect(preview.querySelector('tbody tr')?.textContent?.replace(/\s/g,'')).toBe('Mặcđịnh1');
+    expect(preview.querySelector('summary')?.textContent).toContain('Tồn 1');
     expect(c.canConfirm()).toBe(true);
   });
   it('keeps source group labels for the legacy preview',()=>{

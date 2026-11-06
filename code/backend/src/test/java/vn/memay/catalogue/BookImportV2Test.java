@@ -90,8 +90,16 @@ class BookImportV2Test {
             assertThat(doc.issues()).isEmpty();assertThat(doc.groups().getFirst().write().ageGroups()).containsExactly(entry.getValue());
         }
     }
+    @Test void conditionFieldsAreOptionalInBothFileFormats() {
+        var v2=change(change(values(),"tinh_trang",""),"mo_ta_tinh_trang","");
+        var doc=read(csv(List.of(v2),COLUMNS),"csv");
+        assertThat(doc.issues()).isEmpty();assertThat(doc.groups().getFirst().write().conditionNote()).isNull();
+        var old=BookImportValidationTest.row(2,"A","","1");
+        var cells=new LinkedHashMap<>(old.cells());cells.put("tinh_trang","");cells.put("mo_ta_tinh_trang","");
+        assertThat(validator.normalize(List.of(new CellRow(old.sheet(),old.row(),cells))).issues()).isEmpty();
+    }
     @Test void reportsMissingRequiredAndUnknownLabelsWithoutGuessing() {
-        for(String column:List.of("ten_sach","the_loai","gia_tu","gia_den","trong_luong_g","tinh_trang","mo_ta_tinh_trang")) {
+        for(String column:List.of("ten_sach","the_loai","gia_tu","gia_den","trong_luong_g")) {
             var doc=read(csv(List.of(change(values(),column,"")),COLUMNS),"csv");assertThat(doc.fingerprint()).isNull();assertThat(doc.issues()).extracting(ImportIssue::column).contains(column);
         }
         for(String column:List.of("the_loai","tinh_trang","do_tuoi","trinh_do_doc","kieu_bia"))

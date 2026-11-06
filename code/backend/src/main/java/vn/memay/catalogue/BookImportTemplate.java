@@ -37,8 +37,8 @@ public class BookImportTemplate {
     public static List<String> instructions() {
         return List.of("Mẹ Mây — import schema 2. Chỉ điền dữ liệu vào sheet Sach, giữ đủ 16 header.",
                 "Mỗi dòng là một sách riêng, tối đa 100 sách/2 MiB. Không ghép theo tên hoặc ISBN.",
-                "Tự điền Tiếng Anh, một biến thể không tên và tồn 1. Thêm ảnh, chỉnh tồn/thêm biến thể rồi tự xuất bản.",
-                "Bắt buộc: ten_sach, the_loai, gia_tu, gia_den, trong_luong_g, tinh_trang, mo_ta_tinh_trang.",
+                "Tự điền Tiếng Anh và tồn 1. Thêm ảnh, chỉnh tồn gộp rồi tự xuất bản.",
+                "Bắt buộc: ten_sach, the_loai, gia_tu, gia_den, trong_luong_g. tinh_trang và mo_ta_tinh_trang để trống được; mô tả cũ là ghi chú nội bộ.",
                 "Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kieu_bia.",
                 "Tình trạng: Độ mới cao hoặc Có lỗi nhẹ. Có thể dùng nhãn dễ đọc hoặc code chuẩn.",
                 "Các cột khác có thể trống; ISBN dạng text giữ số 0 đầu. Giá VND/trọng lượng gram nguyên dương, không dấu phân nhóm; giá từ≤giá đến.",

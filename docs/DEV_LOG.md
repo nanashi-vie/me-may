@@ -1537,3 +1537,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Giữ related shelves và publisher search. Metadata fallback không dùng note;
   frontend scrub payload cũ khi accept. Chưa chạy SSR/browser QA ở bước này.
 - T4 commit421f69e; tiếp T6 import tương thích, chưa deploy.
+
+### S041-C11 — 06/11/2026 — T6 import tương thích
+
+- V1/V2 giữ header/digest/receipt, cho note/grade rỗng; note có dữ liệu lưu
+  nội bộ, đơn giá null và giữ hai giá file. Guide/preview import hiển thị tồn
+  gộp, không bảng chọn biến thể. Không yêu cầu đổi workbook hoặc thêm cột.
+- Hai test optional mới RED required→GREEN;56test import/golden PASS, gồm
+  legacy hash, receipt retry/collection inactive và hai dòng trùng tạo riêng.
+  Frontend192test PASS; cập nhật hai kỳ vọng cũ về bảng/biến thể public.
+- T5 commit16dde1b; tiếp T7 kiểm tổng thể, browser QA và tài liệu. Chưa deploy.

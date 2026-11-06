@@ -14,7 +14,8 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   native tuần tự vì cùng DTO/fingerprint; user đã chọn thực thi tuần tự06/11.
 - Checkpoint S041-C07 trong DEV_LOG. T1 backend191run/0failure/0error/3skip PASS;
   T2 contract/variant13test, T3 contract8test và T4frontend193test PASS;
-  T5backend24test/frontend192test PASS; tiếp T6 import. Chưa browserQA/deploy.
+  T5backend24test/frontend192test, T6import56test PASS; đang T7 kiểm tổng thể,
+  browserQA và gộp tài liệu. Chưa deploy/migrate dữ liệu thật.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 

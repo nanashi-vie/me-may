@@ -96,8 +96,8 @@ public class BookCommandService {
         var required = validation.metadataErrors(input);
         if (!required.isEmpty())
             throw new AdminApiException(400, "validation_error", required, null);
-        if (BookValidation.trim(input.language()) == null || !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")
-                .contains(input.conditionGrade() == null ? "" : input.conditionGrade()))
+        if (BookValidation.trim(input.language()) == null || input.conditionGrade()!=null && !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")
+                .contains(input.conditionGrade()))
             throw AdminApiException.field("import", "Nhập đủ ngôn ngữ và tình trạng theo mẫu.");
         var aggregate = createAggregate(actor, input);
         var result = mapper.detail(aggregate.book(), aggregate.listing());
