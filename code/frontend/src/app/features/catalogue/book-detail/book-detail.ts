@@ -12,12 +12,12 @@ import {
   makeStateKey,
   PLATFORM_ID,
 } from '@angular/core';
-import { DOCUMENT, isPlatformServer } from '@angular/common';
+import { isPlatformServer } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { catchError, map, of, switchMap, combineLatest, Subject, startWith } from 'rxjs';
 import { PublicApi, PUBLIC_SITE_ORIGIN } from '../public-api';
-import { PublicBook, PublicVariant, ContactConfig } from '../public.models';
+import { PublicBook, ContactConfig } from '../public.models';
 import { PageMetadata } from '../../../core/page-metadata';
 import { PublicError } from '../public-error';
 import { ContactDialog } from '../contact-dialog/contact-dialog';
@@ -43,11 +43,8 @@ import {
 export class BookDetail {
   readonly mediaUrl = publicMediaUrl;
   readonly api = inject(PublicApi);
-  readonly selectedVariantId = signal<string|null>(null);
-  readonly variantNotice = signal('');
   readonly selectedMedia = signal(0);
   readonly related = signal<RelatedBooks | null>(null);
-  private readonly doc = inject(DOCUMENT);
   mainMedia() {
     const m = this.book()?.media ?? [];
     return m[Math.min(this.selectedMedia(), m.length - 1)] ?? null;
@@ -59,41 +56,17 @@ export class BookDetail {
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: 'smooth' });
   }
   onContact(contact: ContactDialog) {
-    const b = this.book();
-    if (!b || this.verifying()) return;
-    if (b.availability !== 'SOLD' && !this.selectedVariant()?.available) {
-      this.variantNotice.set('Vui lòng chọn tình trạng còn hàng trước khi liên hệ.');
-      this.doc.getElementById('variant-selector')?.scrollIntoView?.({ block: 'center' });
-      return;
-    }
-    contact.open();
+    if(this.canContact()) contact.open();
   }
-  selectedVariant(): PublicVariant | null {
-    return this.book()?.variants.find(v=>v.id===this.selectedVariantId()) ?? null;
-  }
-  selectVariant(id: string) {
-    if (this.verifying() || !this.book()?.variants.some(v=>v.id===id && v.available)) return;
-    this.selectedVariantId.set(id); this.variantNotice.set('');
-  }
-  canContact() {
-    const b=this.book();
-    return !!b && !this.verifying() && (b.availability==='SOLD' || !!this.selectedVariant()?.available);
-  }
+  canContact() { return !!this.book() && !this.verifying(); }
   readonly verifyContact = async () => {
-    const current = this.book(), selectedId=this.selectedVariantId();
-    if (!current) return '';
-    const fresh = await firstValueFrom(this.api.detail(current.slug));
-    if (this.book()?.id !== current.id || this.selectedVariantId() !== selectedId ||
-        fresh.id !== current.id || fresh.slug !== this.route.snapshot.paramMap.get('slug')) return '';
-    const selected = fresh.variants.find(v=>v.id===selectedId);
+    const current=this.book();
+    if(!current) return '';
+    const fresh=await firstValueFrom(this.api.detail(current.slug));
+    if(this.book()?.id!==current.id || fresh.id!==current.id ||
+       fresh.slug!==this.route.snapshot.paramMap.get('slug')) return '';
     this.accept(fresh);
-    if (fresh.availability !== 'SOLD' && !selected?.available) {
-      this.selectedVariantId.set(null);
-      this.variantNotice.set('Biến thể đã chọn đã hết hàng hoặc thay đổi. Vui lòng chọn lại tình trạng còn hàng.');
-      return '';
-    }
-    return enquiryText(effectiveBook(fresh, this.clock.now() || Date.now()),
-      this.origin + '/sach/' + fresh.slug, fresh.availability==='SOLD' ? undefined : selected);
+    return enquiryText(effectiveBook(fresh,this.clock.now() || Date.now()),this.origin+'/sach/'+fresh.slug);
   };
 
   readonly clock = inject(PublicClock);
@@ -175,17 +148,12 @@ export class BookDetail {
   accept(b: PublicBook | null, error = 0) {
     this.loading.set(false);
     this.verifying.set(false);
+    if(b) b={...b,conditionNote:null,conditionGrade:null,variants:[]};
     if (this.server && b) this.state.set(this.stateKey, b);
     this.error.set(error);
     const previous=this.book();
     this.book.set(b);
-    if (!b || b.id !== previous?.id) { this.selectedVariantId.set(null); this.variantNotice.set(''); this.selectedMedia.set(0); }
-    if (b && this.selectedVariantId() && !b.variants.some(v=>v.id===this.selectedVariantId() && v.available)) {
-      this.selectedVariantId.set(null);
-      this.variantNotice.set('Biến thể đã chọn đã hết hàng. Vui lòng chọn lại.');
-    }
-    if (b && b.variants.length===1 && b.variants[0].available && !this.selectedVariantId())
-      this.selectedVariantId.set(b.variants[0].id);
+    if (!b || b.id !== previous?.id) this.selectedMedia.set(0);
     if (error) {
       this.related.set(null);
       if (this.response) this.response.status = error;
@@ -195,7 +163,7 @@ export class BookDetail {
     if (b)
       this.meta.set(
         bookTitle(b) + ' | Mẹ Mây',
-        b.description?.slice(0, 180) || `${b.title} — ${b.conditionNote}`,
+        b.description?.slice(0, 180) || b.title,
         '/sach/' + b.slug,
         b.media[0]?.contentPath,
       );

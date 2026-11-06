@@ -21,7 +21,7 @@ export interface PublicBook {
   categoryCode: CategoryCode;
   binding: Binding | null;
   conditionGrade: string | null;
-  conditionNote: string;
+  conditionNote: string | null;
   priceMinVnd: number | null;
   priceMaxVnd: number | null;
   salePriceVnd: number | null;

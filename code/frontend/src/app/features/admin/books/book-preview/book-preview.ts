@@ -36,7 +36,6 @@ export class BookPreview {
       !b.title ||
       !b.categoryCode ||
       !b.priceMinVnd || !b.priceMaxVnd || !b.weightG ||
-      !b.conditionNote ||
       (b.categoryCode === 'PICTURE_BOOK' && !b.binding) ||
       b.media.length < 2 || b.media.length > 6 || !['FRONT','BACK'].every(role => b.media.some(m => m.role === role))
     );

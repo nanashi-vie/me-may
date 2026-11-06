@@ -1525,3 +1525,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Upload queue đã so sánh toàn bộ DTO trừ media/version/updatedAt nên field mới
   tự tham gia kiểm chống adopt version sai; không thêm cơ chế handoff song song.
 - Tiếp T5 public/preview; chưa deploy hoặc nhập ghi chú riêng trên live.
+
+### S041-C10 — 06/11/2026 — T5 public và preview
+
+- Backend không query/trả note/grade, variants public rỗng; preview không trả
+  nhóm tồn hoặc note. Frontend bỏ selector/condition block/guard; enquiry chỉ
+  mã/tên/giá/URL, vẫn refresh availability và chống response sai route.
+- Privacy marker RED→GREEN cho list/detail/lookup/home/related/preview;
+  admin detail vẫn đọc ghi chú. Backend24test PASS, frontend38file/192test PASS;
+  số test giảm1do thay3case chọn biến thể cũ bằng2case liên hệ theo sách.
+- Giữ related shelves và publisher search. Metadata fallback không dùng note;
+  frontend scrub payload cũ khi accept. Chưa chạy SSR/browser QA ở bước này.
+- T4 commit421f69e; tiếp T6 import tương thích, chưa deploy.

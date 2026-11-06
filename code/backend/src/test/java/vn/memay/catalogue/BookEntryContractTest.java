@@ -93,4 +93,17 @@ class BookEntryContractTest extends CatalogueTestSupport {
         api.login("staff@catalogue.test");assertThat(api.send("GET","/api/v1/admin/books/title-duplicate?title=same",null,false).statusCode()).isEqualTo(200);
         assertThat(new AdminHttpClient(port).send("GET","/api/v1/admin/books/title-duplicate?title=same",null,false).statusCode()).isEqualTo(401);
     }
+    @Test void privateNotesAndLegacyGroupsNeverReachPublicOrPreview() throws Exception {
+        var api=ownerApi();var b=ready();long id=Long.parseLong(b.id());
+        jdbc.update("update book_copy set condition_note='PRIVATE_NOTE_SENTINEL',condition_grade='HIGH_FRESHNESS',unit_price_per_kg_vnd=80000 where id=?",id);
+        jdbc.update("update book_variant set name='PRIVATE_GROUP_SENTINEL' where book_copy_id=?",id);
+        jdbc.update("update listing set publication_status='PUBLISHED',published_at=current_timestamp where book_copy_id=?",id);
+        for(String path:List.of("/api/v1/books","/api/v1/books/"+b.slug(),"/api/v1/books/lookup?code="+b.bookCode(),"/api/v1/books/"+b.slug()+"/related","/api/v1/home","/api/v1/admin/books/"+id+"/preview")) {
+            var r=api.send("GET",path,null,false);assertThat(r.statusCode()).as(path).isEqualTo(200);
+            assertThat(r.body()).as(path).doesNotContain("PRIVATE_NOTE_SENTINEL","PRIVATE_GROUP_SENTINEL","HIGH_FRESHNESS","unitPricePerKgVnd","internalNote");
+        }
+        var detail=tree(api.send("GET","/api/v1/books/"+b.slug(),null,false));
+        assertThat(detail.path("conditionNote").isNull()).isTrue();assertThat(detail.path("variants").size()).isZero();
+        assertThat(api.send("GET","/api/v1/admin/books/"+id,null,false).body()).contains("PRIVATE_NOTE_SENTINEL");
+    }
 }

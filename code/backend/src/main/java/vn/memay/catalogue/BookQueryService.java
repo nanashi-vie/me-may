@@ -93,11 +93,11 @@ public class BookQueryService {
     public PreviewBook preview(long id, AdminUser actor) {
         var b = detail(id, actor);
         return new PreviewBook(b.bookCode(), b.slug(), b.title(), b.publisher(), b.author(), b.ageGroups(),
-                b.categoryCode(), b.binding(), b.conditionGrade(), b.conditionNote(), b.priceMinVnd(), b.priceMaxVnd(),
+                b.categoryCode(), b.binding(), null, null, b.priceMinVnd(), b.priceMaxVnd(),
                 b.weightG(), b.description(),
                 b.readingLevel(), b.readingVideoUrl(), b.availability(),
                 b.media().stream().map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
-                b.variants(), b.totalStock());
+                List.of(), 0);
     }
 
     public Page<AuditSummary> audit(long id, AdminUser actor, int page, int size) {

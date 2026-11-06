@@ -62,7 +62,6 @@
         <small>Tiệm xác nhận tình trạng và giá qua Zalo. Liên hệ không giữ sách.</small>
       </div>
       <app-contact-dialog
-        [variant]="selectedVariant()"
         #contact
         [book]="b"
         [verifyText]="verifyContact"
@@ -105,24 +104,6 @@
         }
         <small>{{ priceNote }}</small>
       </div>
-      @if (b.variants.length > 1 || b.variants[0]?.name) {
-        <fieldset class="variant-selector" id="variant-selector">
-          <legend>Chọn tình trạng</legend>
-          @for (v of b.variants; track v.id) {
-            <label [class.unavailable]="!v.available">
-              <input type="radio" name="book-variant" [value]="v.id" [checked]="selectedVariantId() === v.id"
-                [disabled]="!v.available || verifying()" (change)="selectVariant(v.id)" />
-              {{ v.name }} {{ v.available ? '' : '· Hết hàng' }}
-            </label>
-          }
-          <small>Các biến thể dùng chung khoảng giá và bộ ảnh. Tiệm xác nhận tình trạng cụ thể khi liên hệ.</small>
-        </fieldset>
-      }
-      @if (variantNotice()) { <p role="status">{{ variantNotice() }}</p> }
-      <section class="condition">
-        <h2>Tình trạng thực tế</h2>
-        <p>{{ b.conditionNote }}</p>
-      </section>
       @if (b.description) {
         <section>
           <h2>Về cuốn sách</h2>

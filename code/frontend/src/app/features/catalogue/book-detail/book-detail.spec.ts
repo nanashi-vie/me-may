@@ -32,35 +32,23 @@ const a: PublicBook = {
 };
 describe('Detail refresh and public origin', () => {
   const variants=[{id:'high',name:'Độ mới cao',available:true},{id:'corner',name:'Có cấn góc',available:true}];
-  it('asksForSelectedVariantAtSharedPrice', async () => {
-    let current={...a,variants};
+  it('contacts without a selection and hides private condition data', async()=>{
     TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
-      {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
+      {provide:PublicApi,useValue:{detail:()=>of({...a,variants,conditionNote:'PRIVATE_NOTE_SENTINEL'}),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
     const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
-    expect(c.selectedVariantId()).toBeNull();expect(c.canContact()).toBe(false);
-    c.selectVariant('corner');expect(c.canContact()).toBe(true);
-    expect(await c.verifyContact()).toContain('Biến thể: Có cấn góc');
-    expect(await c.verifyContact()).toContain('10.000 đ');
-    current={...current,variants:[{...variants[0],available:false},variants[1]]};
-    c.accept(current);c.selectVariant('high');expect(c.selectedVariantId()).toBe('corner');
+    expect(c.canContact()).toBe(true);expect(await c.verifyContact()).not.toContain('Biến thể:');
+    expect(h.routeNativeElement!.querySelector('#variant-selector')).toBeNull();
+    expect(h.routeNativeElement!.textContent).not.toContain('PRIVATE_NOTE_SENTINEL');
+    expect(document.querySelector('meta[name="description"]')?.getAttribute('content')).not.toContain('PRIVATE_NOTE_SENTINEL');
   });
-  it('doesNotCopyStaleVariant', async () => {
+  it('refreshes availability before copying and stops contact for missing books',async()=>{
     let current={...a,variants};
     TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
       {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
     const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
-    c.selectVariant('high');current={...current,variants:[{...variants[0],available:false},variants[1]]};
-    expect(await c.verifyContact()).toBe('');expect(c.selectedVariantId()).toBeNull();expect(c.variantNotice()).toContain('hết hàng');
     current={...current,availability:'SOLD'};
     expect(await c.verifyContact()).toContain('tư vấn sách tương đương');
-  });
-  it('uses the fresh name for a single named variant and clears selection on 404', async()=>{
-    let current={...a,variants:[{id:'single',name:'Tên ban đầu',available:true}]};
-    TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
-      {provide:PublicApi,useValue:{detail:()=>of(current),contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
-    const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
-    expect(c.selectedVariantId()).toBe('single');current={...current,variants:[{...current.variants[0],name:'Tên đã sửa'}]};
-    expect(await c.verifyContact()).toContain('Biến thể: Tên đã sửa');c.accept(null,404);expect(c.selectedVariantId()).toBeNull();
+    c.accept(null,404);expect(c.canContact()).toBe(false);expect(await c.verifyContact()).toBe('');
   });
   it('does not return an old enquiry when navigation overtakes verification', async()=>{
     const pending=new Subject<PublicBook>();
@@ -69,8 +57,8 @@ describe('Detail refresh and public origin', () => {
     TestBed.configureTestingModule({providers:[provideRouter([{path:'sach/:slug',component:BookDetail}]),
       {provide:PublicApi,useValue:{detail,contact:()=>of({hotlineUrl:null,groupUrl:null})}}]});
     const h=await RouterTestingHarness.create();const c=await h.navigateByUrl('/sach/mm-000001',BookDetail);
-    c.selectVariant('high');const text=c.verifyContact();await h.navigateByUrl('/sach/mm-000002',BookDetail);pending.next({...a,variants});
-    expect(await text).toBe('');expect(c.selectedVariantId()).toBeNull();
+    const text=c.verifyContact();await h.navigateByUrl('/sach/mm-000002',BookDetail);pending.next({...a,variants});
+    expect(await text).toBe('');
   });
   it('reserves a portrait gallery frame while keeping the entire source visible', async () => {
     TestBed.configureTestingModule({
@@ -191,7 +179,7 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.pricing .discount')?.textContent?.trim()).toBe('-55%');
     expect(el.querySelector('.pricing del')?.textContent).toContain('35.000 - 40.000 đ');
   });
-  it('groups one main image with thumbnails and actions, and prompts for a variant before contact', async () => {
+  it('groups one main image with thumbnails and actions, and opens contact directly', async () => {
     const media = ['FRONT', 'BACK', 'SPINE'].map((role) => ({ role, contentPath: '/' + role + '.jpg', alt: role }));
     const variants = [{ id: 'high', name: 'Độ mới cao', available: true }, { id: 'corner', name: 'Có cấn góc', available: true }];
     TestBed.configureTestingModule({
@@ -217,9 +205,10 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.gallery figure img')?.getAttribute('src')).toBe('/BACK.jpg?size=640&format=jpg');
     expect(thumbs[1].getAttribute('aria-pressed')).toBe('true');
     expect(el.querySelector('.media-col .contact-actions app-wishlist-button')).not.toBeNull();
+    const modal=el.querySelector('dialog')!;modal.showModal=vi.fn();
     el.querySelector<HTMLButtonElement>('.contact-actions > button')!.click();
     h.detectChanges();
-    expect(c.variantNotice()).toContain('chọn tình trạng');
+    expect(modal.showModal).toHaveBeenCalledOnce();
   });
   it('renders related publisher and category shelves with see-more links', async () => {
     const bookWithPub: PublicBook = { ...a, publisher: 'Kim Đồng', categoryCode: 'PICTURE_BOOK' };
