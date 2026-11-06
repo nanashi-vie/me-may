@@ -51,7 +51,7 @@ public class BookStatusService {
             throw new AdminApiException(409, "transition_conflict");
         if (target == Publication.PUBLISHED) {
             if (!confirmedActualCopy)
-                throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
+                throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
             validation.validatePublished(before);
             validation.validateWrite(mapper.write(before));
             if (l.publishedAt == null)

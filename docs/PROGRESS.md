@@ -3,7 +3,7 @@
 Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Đơn giản hóa nhập sách — thiết kế đã duyệt, plan chờ thực thi06/11/2026
+## Đơn giản hóa nhập sách — đã triển khai local, review cuối06/11/2026
 
 - User chọn tồn gộp/tự tăng tồn, giữ cấu trúc biến thể bên trong để tương thích;
   bỏ tình trạng public/form, ghi chú nội bộ optional giữ mô tả cũ.
@@ -11,11 +11,10 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   Trùng tên chỉ cảnh báo theo style hiện tại, vẫn lưu/publish được.
 - User đã duyệt toàn bộ [thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md)06/11.
   [Plan7task](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã viết và tự rà; đề xuất chạy
-  native tuần tự vì cùng DTO/fingerprint; user đã chọn thực thi tuần tự06/11.
-- Checkpoint S041-C07 trong DEV_LOG. T1 backend191run/0failure/0error/3skip PASS;
-  T2 contract/variant13test, T3 contract8test và T4frontend193test PASS;
-  T5backend24test/frontend192test, T6import56test PASS; đang T7 kiểm tổng thể,
-  browserQA và gộp tài liệu. Chưa deploy/migrate dữ liệu thật.
+  native tuần tự vì cùng DTO/fingerprint; user đã chọn và đã thực thi T1–T7.
+- Checkpoint S041-C12 trong DEV_LOG. Backend clean verify199run/0failure/
+  0error/3skip; frontend192test, SSR/Workers/proxy và browser QA PASS. Migration
+  V13→V14/schema restore QA PASS. Đang review độc lập cuối, chưa deploy/live.
 
 ## Danh sách quan tâm & Kệ sách cùng NXB, cùng Thể loại ở Chi tiết sách (đã gộp vào dev 06/11/2026)
 
@@ -153,7 +152,7 @@ ghi riêng bên dưới, không mở lại phạm vi tính năng khác.
 
 | Gate | Bằng chứng còn thiếu / điều kiện đóng |
 |---|---|
-| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V13 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
+| Rollout bản hiện hành | Chưa có xác nhận online candidateV6–V14 và frontend/backend đồng bộ; backup/counts/fingerprint/sequence trước migration, dừng ghi khi đổi payloadvariants; smoke origin/canonical/enquiry sau entryadmin và public, OWNER/STAFF/media/tồn/retry sau deploy |
 | Backfill ảnh public |63ACTIVE media mới dryrunpending63, chưaapplyv2 đủ320/640×JPEG/WebP; verify MIME/magic/dimensions trước frontendpicture, không dùng checkpointJPEG640 cũ |
 | Hiệu năng public |Lighthouse Mobile3run mỗi Home/detail cố định/wishlist; từngrun LCP≤2,5s/CLS≤0,1; detail lần đo online cuối FAIL, wishlist cóoutlier; sourcefix local chưa có đo lại online, cold Render/Neon đo riêng |
 | Backup vận hành |Dump21sách/63mediarefs đãrestorelocal và nguồn63JPG verify; còn lịch backup/retention/người phụ trách/bản saooffhost và bằng chứng khôi phục theo chính sách đó; scratchrestore cũ đã xóa theo user |

@@ -397,3 +397,4 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 
 Rà soát tổng thể local05/11 (test/build/audit/workflow), giới hạn và gate:
 [DEV_LOG S040-C02](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow).
+[Nhập giá/kg, tồn gộp và note riêng06/11](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026).

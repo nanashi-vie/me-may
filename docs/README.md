@@ -17,12 +17,13 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
-| Nhập giá/kg, tồn gộp, ghi chú nội bộ (thiết kế đã duyệt, chưa thực thi) | [Thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md), [kế hoạch](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) |
-| Tồn kho/biến thể | [DATA](DATA.md#tồn-kho-và-biến-thể--quyết-định-30102026), [ARCHITECTURE](ARCHITECTURE.md#tồn-theo-biến-thể--contract-30102026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
+| Nhập giá/kg, tồn gộp, ghi chú nội bộ (đã triển khai local, review cuối) | [Thiết kế](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md), [kế hoạch](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) |
+| Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
 | Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
 | Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V2/16cột và V1compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md) |
 | Chạy local, auth, lệnh test/build | [ARCHITECTURE — chạy local và Auth M1](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1), [CATALOGUE](CATALOGUE.md) |
 | GitHub Actions, chênh lệch dev/main | [DEPLOYMENT — Git workflow](DEPLOYMENT.md#git-workflow), [DEV_LOG — rà soát](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow) |
+| Rollout nhập sách06/11/V14 và privacy ghi chú | [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
 | Rollout migration/backfill, recovery/rollback | [DEPLOYMENT](DEPLOYMENT.md), [PROGRESS](PROGRESS.md) |
 | Đo hiệu năng và smoke sau UI | [DEPLOYMENT — đo QA](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện), [smoke](DEPLOYMENT.md#smoke-còn-mở-sau-rollout-và-sau-ui-cuối), [bằng chứng nhập/publish](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md) |
 | Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |
@@ -40,7 +41,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 - Gate còn mở và điều kiện đóng chỉ theo [PROGRESS](PROGRESS.md); thao tác/tiêu chí
   chi tiết ở DEPLOYMENT. Thiết kế nhập sách mới đã duyệt06/11 tại
   [BOOK_ENTRY_SIMPLIFICATION_DESIGN](BOOK_ENTRY_SIMPLIFICATION_DESIGN.md);
-  [plan triển khai](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã viết, chưa sửa runtime.
+  [plan triển khai](BOOK_ENTRY_SIMPLIFICATION_PLAN.md) đã thực thi local, chờ review cuối.
 - Spec/plan M2, M5 completion và hiệu năng nhập/publish đã gộp thành contract,
   quy trình đo và bằng chứng rồi gỡ01/11; không tạo archive hoặc plan trùng.
 - Tối ưu UI: đợt 1 (navbar desktop dropdown 8 thể loại, mobile header + sidebar `<dialog>`,

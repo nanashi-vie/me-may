@@ -1,7 +1,7 @@
 # Đơn giản hóa nhập sách và tồn gộp
 
 Ngày 06/11/2026, session S041 (trao đổi từ05/11). Trạng thái: **user đã duyệt06/11/2026**.
-Đây là phạm vi mới user yêu cầu sau khi khép MVP; chưa là contract đã triển khai.
+Đây là phạm vi mới user yêu cầu sau khi khép MVP; đã triển khai local và gộp contract vào docs chuẩn.
 Sau khi duyệt, tài liệu này thay quyết định liên quan tình trạng/biến thể/nhập giá
 trong MASTER_PLAN, DATA, CATALOGUE, DESIGN, ARCHITECTURE và BOOK_IMPORT.
 Các phần khác và gate release trong PROGRESS giữ nguyên.
@@ -190,4 +190,4 @@ thiết kế06/11/2026. Không coi là bằng chứng code đã được triển
 - Bộ test, dữ liệu QA cách ly và rollout/rollback cụ thể.
 
 User đã duyệt toàn bộ thiết kế06/11/2026. Kế hoạch triển khai tại
-[BOOK_ENTRY_SIMPLIFICATION_PLAN](BOOK_ENTRY_SIMPLIFICATION_PLAN.md); chưa sửa code.
+[BOOK_ENTRY_SIMPLIFICATION_PLAN](BOOK_ENTRY_SIMPLIFICATION_PLAN.md); đang review cuối sau kiểm local.

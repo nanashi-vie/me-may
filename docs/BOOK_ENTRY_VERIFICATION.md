@@ -1,9 +1,9 @@
-# Kiểm chứng nhập sách, tồn kho và biến thể
+# Kiểm chứng nhập sách và tồn kho
 
 Ngày 30/10/2026, checkpoint S025; chỉ local/test, chưa migrate hoặc deploy online.
-Quyết định hiện hành ở [DATA](DATA.md#tồn-kho-và-biến-thể--quyết-định-30102026),
-[DESIGN](DESIGN.md#tối-ưu-nhập-sách-và-biến-thể-duyệt3010) và
-[ARCHITECTURE](ARCHITECTURE.md#tồn-theo-biến-thể--contract-30102026).
+Quyết định hiện hành ở [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026),
+[DESIGN](DESIGN.md#nhập-giá-theo-kg-và-tồn-gộp--duyệt0611) và
+[ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026).
 
 ## Tự động
 
@@ -55,3 +55,49 @@ Quyết định hiện hành ở [DATA](DATA.md#tồn-kho-và-biến-thể--quy�
   integration, không lặp toàn bộ màn hình cấu hình chiến dịch trong browser phiên này.
 - M5 online performance/recovery/vận hành vẫn tạm gác; unit/local không thay nghiệm thu
   production. Rollout V10 cần backup, restore scratch và dừng ghi theo [DEPLOYMENT](DEPLOYMENT.md).
+
+## Nhập sách, tồn gộp và ghi chú nội bộ — 06/11/2026
+
+Thiết kế user duyệt, thực thi tuần tự S041; chỉ local/test. Contract mới thay
+phần tình trạng/biến thể của checkpoint30/10 phía trên; lịch sử được giữ làm
+bằng chứng. Quy tắc hiện hành tại DATA/CATALOGUE/DESIGN/ARCHITECTURE;
+[rollout riêng](BOOK_ENTRY_ROLLOUT.md) chưa chạy online.
+
+- TDD backend:4test ghi chú/unit mới RED400→GREEN; create đơn giá bắt lỗi
+  version trả về0/DB1, sửa gán field trước insert. Giữ BookWrite serialization
+  legacy,3golden hash final/importV1/V2 không đổi; final retry không nhân sách.
+- Tồn gộp: giữ UUID/tên/thứ tự; metadata giữ phân bổ, tăng/giảm/0 chính xác;
+  tổng1999998 vẫn sửa được, null/float/mixed/over-limit bị từ chối; no-op,
+  aggregate concurrency409 và audit rollback được kiểm.
+- Lookup tên trùng qua mọi publication/availability, trim/case/exclude chính
+  ID, literal wildcard, OWNER/STAFF/anonymous; cảnh báo không unique/chặn lưu.
+- Frontend38file/192test PASS sau bỏ3test chọn biến thể cũ và thêm2test liên hệ
+  theo sách. Có giá cơ sở chưa làm tròn, BigInt overflow, manual min/max,
+  load/upload không tính lại, note trống publish, tồn lớn/conflict và stale lookup.
+- Backend `bash code/backend/run-local.sh -B -ntp clean verify`:199run/0failure/
+  0error/3live-provider skipped, gồm migration V13→V14 riêng1PASS. Bản cuối
+  sau sửa copy xác nhận đã clean verify; review ghi ở DEV_LOG.
+- NodeSSR/Workers builds và workerd proxy PASS. Sandbox lần đầu chặn socket/
+  build; chạy lại ngoài sandbox đạt. Không cài dependency hoặc đổi framework.
+- Migration V13→V14 đối chiếu toàn bộ BookCopy, listing, variants, media và
+  sequence: cột mới null, dữ liệu cũ giữ nguyên; constraint0/vượt max bị từ chối.
+- Dump me_may_test dạng custom, restore schema QA mới trong cùng DB: counts và
+  full-row fingerprints book_copy/listing/book_variant/book_media/admin_user
+  khớp5/5. Role không có CREATEDB nên không restore sang database mới; schema
+  restore dùng chính role test và được dọn. Không nghiệm thu restore production.
+- Playwright Chrome desktop1280×900 và public390×844 với Spring test runtime,
+  PostgreSQL me_may_test và FakeMediaGateway; dữ liệu/ảnh hoàn toàn giả lập.
+  Kiểm80000×450→36000..42000, manual min36500→37000..43000,
+  max44100→45000; save/reload giữ giá, tăng/giảm tồn, note rỗng/có và warning đỏ.
+- Browser đã tạo/publish mục trùng tên với note trống,2ảnh fake, tồn1 và version0;
+  edit sách legacy tổng5→4→7, note riêng và hai giá thủ công được giữ khi reload.
+- Public mobile không overflow hoặc hiện note/selector; liên hệ mở thẳng và
+  enquiry không có note/tên biến thể; wishlist lookup vẫn giữ đúng sách.
+- SSR smoke9đường HTML/API gồm detail/OG, home, list, lookup, related và
+  admin-preview/wishlist noindex: không marker note/field nội bộ. Provider fake
+  không thay chứng cứ media WebP/Lighthouse/thiết bị thật hoặc smoke production.
+- Ảnh QA ignored trong output/playwright; không đưa note/credential thật vào log.
+  Không chạy đồng thời các test backend vì dùng chung TEST_DB; hai lần overlap
+  đầu phiên bị loại, mọi kết quả dùng bàn giao là các lần chạy tuần tự.
+- Browser STAFF đọc được ghi chú nhưng toàn bộ field/save bị khóa; server
+  mutation403 đã có test. Runtime QA/browser đã dừng, dữ liệu test được dọn.

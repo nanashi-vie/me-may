@@ -257,7 +257,7 @@
     <p class="error">{{ entry.key }}: {{ entry.message }}</p>
   }
   @if (!book() && editable()) {
-    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã đối chiếu bộ ảnh của mục sách cho sách và các biến thể này.</label>
+    <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="busy() || createUncertain()" (change)="confirmed.set($any($event.target).checked)" />Tôi xác nhận bộ ảnh đúng với mục sách này.</label>
   }
   @if (editable()) {
   <button

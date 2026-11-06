@@ -1547,3 +1547,29 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   legacy hash, receipt retry/collection inactive và hai dòng trùng tạo riêng.
   Frontend192test PASS; cập nhật hai kỳ vọng cũ về bảng/biến thể public.
 - T5 commit16dde1b; tiếp T7 kiểm tổng thể, browser QA và tài liệu. Chưa deploy.
+
+
+### S041-C12 — 06/11/2026 — T7 QA và gộp contract
+
+- Backend clean verify199run/0failure/0error/3live-provider skip PASS; frontend
+  38file/192test, NodeSSR/Workers builds và workerd proxy PASS. Chạy ngoài sandbox
+  sau khi lần sandbox bị chặn build/socket. Không chạy DB tests song song.
+- Migration V13→V14 giữ toàn bộ book/listing/variants/media/sequence, unit null;
+  test constraint0/vượt max đạt. Dump me_may_test custom, restore schema QA mới,
+  count/full-row fingerprint5bảng khớp; role không có CREATEDB nên dùng schema
+  cùng DB test, không nâng quyền. Schema QA restore đã dọn; chưa restore production.
+- Playwright desktop1280×900/public390×844 + Spring test/FakeMediaGateway:
+  giá80000/kg×450g→36000..42000; manual min36500→37000..43000, max44100→45000;
+  edit note/tồn5→4→7, reload giữ giá; tạo/publish trùng tên/note trống/2ảnh fake
+  thành công version0. Liên hệ mở thẳng, enquiry không biến thể/note; wishlist
+  lookup/related shelves còn hoạt động; STAFF xem note nhưng không sửa/lưu.
+- SSR smoke9đường HTML/API/OG/admin-preview/wishlist không marker note/private
+  fields. Không dùng fake media để nhận kết quả WebP/Lighthouse/live provider.
+  Runtime/browser/source harness QA đã dừng/dọn, chỉ artifacts ignored còn giữ
+  cho review. Lần HMR đổi refs cần snapshot lại, không coi là lỗi sản phẩm.
+- QA phát hiện copy xác nhận còn chữ biến thể: sửa editor/status và thông báo
+  backend, đã kiểm lại frontend/build/backend. Không thay validation xác nhận ảnh.
+- Đã gộp quyết định vào MASTER_PLAN/DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT;
+  DEPLOYMENT gần trần400 nên thêm BOOK_ENTRY_ROLLOUT theo trách nhiệm, đăng ký
+  README và link evidence BOOK_ENTRY_VERIFICATION/VERIFICATION. Chờ review cuối
+  trước xóa spec/plan đã chuyển hết nội dung. Chưa push/deploy, giữ mọi gate release.

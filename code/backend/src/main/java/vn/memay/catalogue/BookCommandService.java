@@ -98,7 +98,7 @@ public class BookCommandService {
             throw new AdminApiException(400, "validation_error", required, null);
         if (BookValidation.trim(input.language()) == null || input.conditionGrade()!=null && !Set.of("HIGH_FRESHNESS", "MINOR_FLAWS")
                 .contains(input.conditionGrade()))
-            throw AdminApiException.field("import", "Nhập đủ ngôn ngữ và tình trạng theo mẫu.");
+            throw AdminApiException.field("import", "Kiểm tra ngôn ngữ và tình trạng trong file.");
         var aggregate = createAggregate(actor, input);
         var result = mapper.detail(aggregate.book(), aggregate.listing());
         var snapshot = audit.snapshot(result);
@@ -142,7 +142,7 @@ public class BookCommandService {
             return null;
         });
         if (!input.confirmedActualCopy())
-            throw AdminApiException.field("confirmedActualCopy", "Xác nhận đúng ảnh và tình trạng cuốn sách");
+            throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
         var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
                 input.uploadSessionId());
         var selected = new LinkedHashMap<UUID, Map<String, Object>>();

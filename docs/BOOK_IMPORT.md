@@ -24,7 +24,7 @@ Contract này thay đặc tả triển khai31/10; DATA giữ schema file hiện 
 
 V2/16cột đã triển khai local01/11; format/validation tại [DATA](DATA.md#format-file-import--contract-duyệt31102026).
 Một dòng=một sáchẨn, mặc định Tiếng Anh/một biến thểkhôngtên/tồn1; thêmảnh rồi sửa
-biếnthể/tồn và tựpublish. V1/20cột vẫn nhận để retrylôcũ, không rewrite digest/receipt.
+tồn gộp và tựpublish. V1/20cột vẫn nhận để retrylôcũ, không rewrite digest/receipt.
 UI hướng dẫn ngắn16field/nhãn, không có bước/nút tải mẫu.
 
 ## 3. Kiểm file và xác nhận
@@ -34,7 +34,7 @@ Chọn một file → bấm “Kiểm tra file”. Chưa tạo sách, mã, ảnh
 Backend là nguồn kiểm tra chính thức, response no-store.
 
 Kết quả gồm tên file hiển thị an toàn, số dòng/nhóm/biến thể/tổng tồn,
-các nhóm preview (thông tin chung và từng biến thể), và lỗi theo sheet/dòng/cột.
+các nhóm preview (thông tin chung và tổng tồn), và lỗi theo sheet/dòng/cột.
 Dòng là dòng logic bản ghi CSV (header1; ô multiline vẫn thuộc một bản ghi),
 hoặc hàng Excel thật. Nhãn UI nói rõ quy ước CSV. Báo tất cả lỗi xác định được,
 tối đa1000 chi tiết và số lỗi còn lại; không bỏ kiểm dữ liệu sau lỗi đầu.
@@ -191,15 +191,15 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 
 - Một dòng tạo một sách ARCHIVED, một biến thể không tên/tồn1, language="Tiếng Anh".
   Bỏ nhom_sach/ngon_ngu/bien_the/ton_kho khỏi16cột mới. Không gộp tên/ISBN;
-  hai dòng giống nhau vẫn là hai sách. Khi thêmảnh, OWNER sửa tồn/thêm biến thể,
+  hai dòng giống nhau vẫn là hai sách. Khi thêmảnh, OWNER sửa tồn gộp,
   lưu rồi tựpublish; giữ giá khoảng và bộảnh chung, không auto-publish.
 - Header canonical: ten_sach,isbn,nha_xuat_ban,tac_gia,the_loai,kieu_bia,gia_tu,
   gia_den,trong_luong_g,tinh_trang,mo_ta_tinh_trang,do_tuoi,mo_ta_sach,
   trinh_do_doc,link_video,bo_suu_tap. Giữ đủ16cột, cho đổi thứ tự; optional đểtrống.
   Nhận thêm đúng aliasheader `kieu_bia (nếu là picture book)` của fileuser thành
   kieu_bia; không tựđoán headerlạ hoặc cho haiheader cùngtrường.
-- Bắt buộc7field: ten_sach/the_loai/gia_tu/gia_den/trong_luong_g/tinh_trang/
-  mo_ta_tinh_trang. Picturebook cần kiểu bìa, thể loại khác đểtrống. Optional
+- Bắt buộc5field: ten_sach/the_loai/gia_tu/gia_den/trong_luong_g.
+  Từ06/11 grade/note để trống được, header vẫn giữ; note là nội bộ. Optional
   ISBN/NXB/tácgiả/tuổi/môtả/level/video/collection giữ validationdomain cũ.
 - Nhận cả codechuẩn và nhãn dropdown, trim đầu/cuối và so không phân biệt hoa
   thường; nhãn không biết báo lỗi dòng/cột, không fuzzyguess hoặc tự gán default.
@@ -231,3 +231,14 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 - UI chỉ hướng dẫn16field/nhãn, không khôi phục nút tải mẫu. Đã kiểm parser/alias/
   labels/defaults/duperows/reorder/V1retry và flowảnh→variants→publish;
   bằng chứng/giới hạn và sparseXLSXcoverage còn thiếu ở BOOK_IMPORT_VERIFICATION.
+
+## Tương thích nhập sách06/11
+
+- Không thêm cột đơn giá hoặc sửa workbook chủ đang dùng; đơn giá mới null,
+  giá từ/đến trong file được giữ nguyên, không suy ngược đơn giá từ giá làm tròn.
+- tinh_trang chỉ còn legacy, có giá trị thì kiểm mã; mo_ta_tinh_trang optional,
+  map ghi chú nội bộ. Cả hai header vẫn phải có theo V1/V2.
+- Giữ nguyên BookWrite canonical và digest V1/V2, không invalidate receipt cũ;
+  retry file đã nhập trả cùng mã/ID, không thay note/giá/tồn user đã sửa sau đó.
+- V1 nhiều dòng vẫn giữ variants trong storage, editor mới hiện tổng; import
+  preview không còn bảng tên biến thể. Không tự gộp dòng hoặc thêm title lookup lô.
