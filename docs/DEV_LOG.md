@@ -1769,3 +1769,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   app/workbook hoặc chạy test app. Kiểm diff/line limits/links trước commit.
 - Cập nhật spec đã duyệt/README/PROGRESS. Chờ user review plan theo yêu cầu
   Writing Plans rồi executing-plans tuần tự; không hỏi lại phương thức thực thi.
+
+### S042-C08 — 06/11/2026 — bắt đầu triển khai importV3
+
+- User duyệt plan, yêu cầu không tạo file hướng dẫn riêng vì đã có. Thực thi
+  tuần tự tại checkout dev theo chỉ định; không tạo workspace/branch khác.
+- Bỏ deliverable workbook/hướng dẫn riêng khỏi task3; giữ endpoint template
+  hiện có tương thíchV3. Không ghi đè file user. Ledger ignored theo plan.
+- Đang task1: viết test nhận7cột/null giá và giữ digestV1/V2; chưa đổi app.
+
+### S042-C09 — 06/11/2026 — parserV3 hoàn tất
+
+- Thêm7header/schema3; dùng cùng adapter một dòng một sách, null giá chỉV3,
+  digest3 riêng; V1/V2 JSON/digest giữ nguyên. Giới hạn100dòng choV2/V3.
+- Test BookImportV3Test6ca RED do chưa nhận headers, GREEN cùng suite21test
+  (V3/V2/parser/legacyfingerprint), 0failure/0error/0skip. Có sparse row7,
+  optional metadata/multiline, binding/weight/headers/101dòng, CSV/XLSX/reorder.
+- Thay code backend schema/parser/xlsx/validator/fingerprint/validation và test;
+  chưa chạy DB/ảnh. Bước tiếp theo task2 tạo importẨn null giá và retry/privacy.

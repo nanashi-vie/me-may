@@ -42,7 +42,7 @@ Angular21/Vitest; không thêm dependency.
 - book-editor/book-list: tái dùng null giá/tính giá; chỉ sửa nếu test chỉ ra thiếu.
 - Tests backend/frontend xác nhận contract, privacy, retry và bước hoàn thiện giá.
 
-### Task1: Parser và validationV3
+### Task 1: Parser và validationV3
 
 **Files** (backend paths relative `code/backend/src/`):
 - Modify main/java/vn/memay/catalogue/BookImportSchema.java,
@@ -73,7 +73,7 @@ không bắt buộc giá; `metadataErrors(BookWrite)` và publish giữ nguyên.
   tất cả PASS, digestV1 fixture cố định không đổi.
 - [ ] Cập nhật log/progress rồi commit `feat: parse minimal seven-column book imports`.
 
-### Task2: Commit sáchẨn chưa có giá và tương thích
+### Task 2: Commit sáchẨn chưa có giá và tương thích
 
 **Files:** backend main/java/vn/memay/catalogue/BookCommandService.java,
 BookImportTransaction.java; create test/java/vn/memay/catalogue/BookImportV3IntegrationTest.java.
@@ -98,7 +98,7 @@ Reuse BookImportV2IntegrationTest/BookImportTransactionTest/BookImportApiTest.
   PASS trên me_may_test với PgTestData guard; không chạy trên DB dev/bán thật.
 - [ ] Cập nhật log/progress rồi commit `feat: create unpriced hidden books from import v3`.
 
-### Task3: Hướng dẫn, preview/editor và mẫu mới
+### Task 3: Hướng dẫn, preview/editor và mẫu mới
 
 **Files:** backend BookImportTemplate.java/BookImportTemplateTest.java;
 frontend `code/frontend/src/app/features/admin/books/`:
@@ -129,7 +129,7 @@ hiện có giữ nguyên. Editor dùng calculatedBookPrices hiện có, không t
 - [ ] Run template/UI tests PASS, cập nhật log/progress, commit
   `feat: streamline import guidance and seven-column templates`.
 
-### Task4: Kiểm chứng tổng thể và bàn giao
+### Task 4: Kiểm chứng tổng thể và bàn giao
 
 **Files:** docs/BOOK_IMPORT.md, DATA.md, CATALOGUE.md, DESIGN.md,
 BOOK_IMPORT_VERIFICATION.md, README.md, PROGRESS.md, DEV_LOG.md.
@@ -158,3 +158,5 @@ BOOK_IMPORT_VERIFICATION.md, README.md, PROGRESS.md, DEV_LOG.md.
   ngoài thiết kế đã duyệt; hành vi mỗi dòng riêng giữ nguyên.
 - User đã chọn thực thi tuần tự. Chờ review kế hoạch theo Writing Plans,
   rồi dùng executing-plans trong phiên hiện tại, không hỏi lại phương thức.
+
+User duyệt plan06/11; không tạo file hướng dẫn hoặc workbook giao riêng.

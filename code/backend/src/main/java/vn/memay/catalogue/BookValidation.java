@@ -137,6 +137,12 @@ public class BookValidation {
         return requiredMetadata(w.title(),w.categoryCode(),w.weightG(),w.priceMinVnd(),w.priceMaxVnd(),w.conditionNote());
     }
 
+    public Map<String,List<String>> importMetadataErrors(BookWrite w) {
+        var errors=metadataErrors(w);
+        errors.remove("priceMinVnd");
+        return errors;
+    }
+
     private static Map<String,List<String>> requiredMetadata(String title,String category,Long weight,Long min,Long max,String note) {
         var errors=new LinkedHashMap<String,List<String>>();
         if (trim(title) == null)
