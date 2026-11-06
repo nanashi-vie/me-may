@@ -1668,3 +1668,32 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - Frontend Vitest: 38/38 test files PASS.
    - Frontend builds: `npm run build` và `npm run build:workers` hoàn tất 0 error, 0 warning.
 4. Trạng thái: Đã merge thành công vào `dev`.
+### S041-C01 — 05/11/2026 — bắt đầu nối publish GHCR với Dokploy
+
+- User xác nhận Auto Deploy vẫn giữ deployment cũ sau push backend main; yêu cầu
+  sửa publish-backend.yml và commit trực tiếp main, ngoại lệ workflow dev thường lệ.
+- Phạm vi: thêm API trigger sau publish thành công, cấu hình qua GitHub secrets;
+  kiểm YAML/shell với request giả, cập nhật docs. Không đọc/ghi secret vào log.
+- Main đã fast-forward origin/main tại `4b50288`; đang thực hiện, chưa gọi Dokploy.
+
+### S041-C02 — 05/11/2026 — nối GitHub Actions publish với Dokploy API
+
+- Nguyên nhân xác định từ workflow: pipeline dừng ở GHCR publish, chưa gọi Dokploy.
+  User báo Auto Deploy bật nhưng deployment cũ; không truy cập dashboard nên chưa
+  loại trừ lỗi source/tag/pull credential/network khác trên Dokploy.
+- Thay đổi `.github/workflows/publish-backend.yml`: job deploy needs publish,
+  chỉ main/non-PR, permissions rỗng, timeout3phút; POST application.deploy với
+  applicationId qua jq JSON, x-api-key từ secret. Curl chỉ HTTPS, connect10s/max60s,
+  HTTP2xx mới nhận; không in response/secret, không tự retry POST gây lặp deploy.
+- Ba secrets cần cấu hình: DOKPLOY_URL/API_KEY/APPLICATION_ID. Không tìm giá trị
+  hoặc đưa secrets vào repo/log. Docs DEPLOYMENT/PROGRESS cập nhật cách setup,
+  Docker image :main, network/pull permissions và kiểm logs/digest/health.
+- Kiểm tra root: YAML BaseLoader + bash -n PASS; chạy chính shell step với curl giả:
+  200/202 nhận;302/HTTP500/timeout thất bại; thiếu từng3secret dừng trước request.
+  Kiểm POST URL/headers/JSON escaping và không lộ API key trong output: PASS.
+  Assertion trước sửa FAIL đúng lỗi thiếu deploy job; sau sửa PASS toàn bộ8ca.
+- `git diff --check`, markdown line limits/links: kiểm trước commit. Không đổi app
+  source nên không lặp backend/frontend suite đã PASS S040; chưa chạy GitHub-hosted
+  workflow/build Docker thật hoặc gọi API Dokploy. HTTP2xx chưa là deploy hoàn tất.
+- Bàn giao trực tiếp main theo yêu cầu user, gồm workflow và docs trong cùng commit;
+  push origin/main. Việc tiếp theo: cấu hình secrets và kiểm run/deployment thật.

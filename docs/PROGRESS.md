@@ -28,6 +28,13 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   - Backend cung cấp endpoint `GET /api/v1/books/{slug}/related` và mở rộng tìm kiếm `q` khớp cả Nhà xuất bản.
   - Fix type inference & generic ambiguities cho Language Server: kiểu dữ liệu tường minh `List<RelatedTarget>`, `List<Book>`, `List<Timestamp>`, explicit cast varargs.
   - Kiểm chứng: Vitest 37/37 files (189/189 tests PASS), backend integration tests PASS, `npm run build` và `npm run build:workers` hoàn tất 0 warning, 0 error.
+## CI/CD Dokploy — 05/11/2026
+
+- Theo ngoại lệ user duyệt: sửa workflow trực tiếp main, thêm API deploy sau GHCR
+  publish thành công; PR/dev không deploy. YAML/shell và8ca request giả PASS.
+- Cần Actions secrets DOKPLOY_URL/API_KEY/APPLICATION_ID và source Docker
+  `ghcr.io/nanashi-vie/me-may-api:main`; hướng dẫn tại DEPLOYMENT.
+- Chưa xác minh secret/live deployment. API2xx chỉ nhận yêu cầu, không là đã deploy.
 
 ## Rà soát project — 05/11/2026
 

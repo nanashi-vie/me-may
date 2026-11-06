@@ -31,21 +31,25 @@ service qua dashboard27/10; online smoke đạt, M5 chưa đóng. Local DB_URL/T
 Code được agent bàn giao trên `dev`; user tự merge qua `main` khi sẵn sàng. Hai
 service production vẫn theo branch `main`, không tự đổi deployment sang dev.
 
-### GitHub Actions — đối chiếu 05/11/2026
+### GitHub Actions → Dokploy — 05/11/2026
 
-- `origin/main` có `.github/workflows/publish-backend.yml`; `dev` chưa từng có file
-  này, không có commit xóa. File thêm trực tiếp main ở `64b7b4a` (01/11), sửa ở
-  `1b2a1b9`/`4be7bda` (03/11); các commit riêng main chưa tích hợp về dev.
-- Workflow test backend với PostgreSQL17 trên PR vào main; push main chỉ chạy khi
-  backend/workflow đổi. Publish GHCR `:main` và `:${github.sha}` sau test, chỉ ở main
-  ngoài sự kiện PR; manual dispatch dev (nếu có file) cũng không publish.
-- Dev không cần workflow để chạy app/build local; main vẫn giữ workflow khi merge
-  dev bình thường vì dev chưa từng xóa file. Nên đồng bộ nguyên file từ main về dev
-  để quản lý cùng code; muốn CI trên push dev phải thêm trigger riêng. Chưa thay
-  workflow/trigger trong đợt rà soát; không bật auto deploy dev.
-- Publish image không chứng minh Dokploy đã pull/redeploy image đó. Phải kiểm
-  revision/image digest thực tế; frontend build/deploy qua Cloudflare riêng.
-- Nguồn trigger: [GitHub workflow syntax](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax).
+- Workflow `.github/workflows/publish-backend.yml` chỉ có main, thêm ở `64b7b4a`,
+  sửa `1b2a1b9`/`4be7bda`; chưa từng bị xóa trên dev. Dev không cần để chạy local.
+- Test backend/PostgreSQL17 trên PR main; push main lọc backend/workflow. Sau test,
+  publish GHCR `:main`/`:${github.sha}`, rồi gọi Dokploy API. PR/dev không deploy.
+- User cho phép riêng sửa/commit workflow trực tiếp main05/11. Job deploy cần
+  publish thành công, timeout3phút; thiếu secret hoặc HTTP ngoài2xx sẽ FAIL.
+- GitHub repository → Settings → Secrets and variables → Actions: thêm secrets
+  `DOKPLOY_URL` (origin HTTPS dashboard Dokploy, không phải hostname API Spring),
+  `DOKPLOY_API_KEY` (token từ profile Dokploy), `DOKPLOY_APPLICATION_ID` (ID ứng dụng
+  backend; lấy trong Dokploy hoặc GET `/api/project.all`). Không commit giá trị.
+- Dokploy source Docker phải dùng `ghcr.io/nanashi-vie/me-may-api:main`, có quyền
+  pull nếu private; runner GitHub cần truy cập được API Dokploy qua HTTPS.
+- POST `/api/application.deploy` chỉ xác nhận enqueue2xx, không chứng minh deploy
+  đã xong; kiểm deployment logs, image digest và health sau đó. Không tự retry POST.
+- Chưa xác minh secrets/live deployment. Frontend deploy Cloudflare riêng; bật
+  Auto Deploy đơn lẻ chưa nối GHCR với Dokploy. Nên đồng bộ workflow về dev sau.
+- Nguồn: [Dokploy external registry/API](https://docs.dokploy.com/docs/core/applications/going-production#external-registry).
 
 ## 1. Cloudflare Workers Git integration
 
