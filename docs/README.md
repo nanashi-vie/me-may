@@ -30,8 +30,8 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
-- [Rút gọn import Excel](BOOK_IMPORT_SIMPLIFICATION.md): thiết kế ngắn chờ duyệt,
-  mẫu7cột và nhập giá khi thêm ảnh; chưa thay contract hoặc code hiện hành.
+- [Rút gọn import Excel](BOOK_IMPORT_SIMPLIFICATION.md): thiết kế7cột đã duyệt;
+  [plan tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) chờ review, chưa đổi app/workbook.
 
 - Cache public và trạng thái tải đã gộp contract vào [ARCHITECTURE](ARCHITECTURE.md#cache-public-và-giảm-request--04112026),
   thao tác bật/smoke ở [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026),

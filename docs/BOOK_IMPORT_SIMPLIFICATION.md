@@ -1,6 +1,6 @@
 # Rút gọn Excel và nhập giá khi thêm ảnh
 
-Trạng thái: thiết kế ngắn chờ user duyệt, 06/11/2026. Thay contract import hiện
+Trạng thái: user đã duyệt, 06/11/2026. Thay contract import hiện
 hành chỉ sau triển khai/kiểm chứng; nguồn nền ở [BOOK_IMPORT](BOOK_IMPORT.md).
 
 ## Mục tiêu và quyết định của user
@@ -52,4 +52,5 @@ hành chỉ sau triển khai/kiểm chứng; nguồn nền ở [BOOK_IMPORT](BOO
 
 ## Bước tiếp theo
 
-User duyệt thiết kế ngắn này, sau đó lập kế hoạch triển khai tuần tự trên dev.
+[Kế hoạch triển khai tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) đã lập,
+chờ review trước khi thực thi trên dev.

@@ -1756,3 +1756,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đổi BOOK_IMPORT_SIMPLIFICATION/README/PROGRESS và log; chưa đổi app/workbook.
   Kiểm diff/line limits và links trước commit; test app chưa chạy vì chỉ sửa
   thiết kế. Bước tiếp theo user duyệt thiết kế7cột rồi lập plan tuần tự trên dev.
+
+### S042-C07 — 06/11/2026 — duyệt thiết kế và lập kế hoạch importV3
+
+- User duyệt thiết kế7cột; giữ thực thi tuần tự đã chọn. Đọc Writing Plans,
+  kiểm source thực tế parser/validator/command/transaction/template/editor và
+  schema nullable giá; graph MCP Transport closed, fallback direct source.
+- Fetch origin thành công, dev sạch/đồng bộ tại8882e7f trước sửa docs. Kế hoạch
+  BOOK_IMPORT_SIMPLIFICATION_PLAN gồm4task: parserV3, commit null giá, template/UI,
+  tổng kiểm và bàn giao. Không migration/dependency, không đổi canonicalV1/V2.
+- Đã self-review mapping spec/interfaces/5Review Focus vào test/task; chưa đổi
+  app/workbook hoặc chạy test app. Kiểm diff/line limits/links trước commit.
+- Cập nhật spec đã duyệt/README/PROGRESS. Chờ user review plan theo yêu cầu
+  Writing Plans rồi executing-plans tuần tự; không hỏi lại phương thức thực thi.

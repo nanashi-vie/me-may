@@ -13,8 +13,9 @@ Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   [bằng chứng import](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026).
 - User đồng ý thiếu hai giá khi import; nhập đơn giá/kg ở bước thêm ảnh từng sách.
 - Mẫu mới chỉ giữ7cột: tên/NXB/tác giả/thể loại/kiểu bìa/trọng lượng/mô tả sách;
-  NXB/tác giả/mô tả optional. [Thiết kế](BOOK_IMPORT_SIMPLIFICATION.md) chờ duyệt,
-  chưa đổi app/workbook; giữ tương thích file cũ. Checkpoint S042-C06.
+  NXB/tác giả/mô tả optional. [Thiết kế](BOOK_IMPORT_SIMPLIFICATION.md) đã duyệt,
+  [plan tuần tự](BOOK_IMPORT_SIMPLIFICATION_PLAN.md) chờ review theo Writing Plans.
+  Chưa đổi app/workbook; giữ tương thích file cũ. Checkpoint S042-C07.
 
 ## Đơn giản hóa nhập sách — đã triển khai local06/11/2026
 
