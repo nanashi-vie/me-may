@@ -1787,3 +1787,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   optional metadata/multiline, binding/weight/headers/101dòng, CSV/XLSX/reorder.
 - Thay code backend schema/parser/xlsx/validator/fingerprint/validation và test;
   chưa chạy DB/ảnh. Bước tiếp theo task2 tạo importẨn null giá và retry/privacy.
+
+### S042-C10 — 06/11/2026 — commit importV3 null giá
+
+- Command/transaction truyền schemaVersion, chỉV3 bỏ yêu cầu giá khi tạoẨn;
+  publish giữ bắt buộc hai giá/ảnh. Không migration hoặc đổi receipt schema.
+- BookImportV3IntegrationTest RED3failure đúng400 khi đòi giá, GREEN22test
+  gồmV3/V2/transaction/API:0failure/0error/0skip trên me_may_test guarded.
+- Xác nhận import không ảnh/null giá, publish thiếu giá400/public404, thêm giá
+  và đủảnh publish200; retry sau edit giữ giá/tồn/note; rollback sách cuối;
+  category stale/STAFF chặn; receipts1/2/3 đồng thời, V1/V2 không ghi đè.
+- Sandbox chặn socket ở lần đầu, chạy lại được cấp quyền local test DB; không
+  đổi DB bán thật. Task2 xong, bước tiếp theo hướng dẫn UI/template hiện có.
