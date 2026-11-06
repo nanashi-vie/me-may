@@ -33,8 +33,11 @@ chỉ có sheet Sach, A1:P1/16 header, chưa có dòng sách hoặc công thức
   `a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd`.
 - Chưa đo thời gian thao tác chủ tiệm hoặc upload ảnh, chưa test UI mới vì
   không đổi UI. User chốt sau audit: import Excel tạm thời chưa cần nhập đơn giá;
-  tiếp tục nhập hai giá trực tiếp, khác biệt này có chủ ý so với form.
+  code hiện vẫn nhận hai giá trực tiếp, khác biệt này đã được xác định so với form.
   Kết quả audit không tự cấp quyền thay headers, cảnh báo hoặc triển khai format mới.
+- User làm rõ: khi thêm ảnh từng sách sẽ nhập đơn giá/kg để tính hai giá.
+  Hiện Excel vẫn bắt buộc hai giá trước import, nên có thao tác giá trùng bước.
+  Chưa chốt có cho phép trống hai giá trong Excel; chưa thay contract/validation.
 
 ## Bằng chứng triển khai trước đây
 

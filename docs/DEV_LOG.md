@@ -1730,3 +1730,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Audit docs đã commit/push dev `47a2dc4`; cập nhật quyết định vào PROGRESS và
   BOOK_IMPORT_VERIFICATION. Không đổi code hoặc workbook; mục tiêu giảm thời gian
   metadata vì ảnh thêm từng sách giữ nguyên. Kiểm diff/line limits trước commit.
+
+### S042-C04 — 06/11/2026 — giá được tính khi thêm ảnh
+
+- User làm rõ chủ tự nhập đơn giá khi upload ảnh từng sách để tính hai đầu giá.
+  Form edit hiện có thao tác này; import vẫn bắt buộc hai giá trong Excel.
+- Cần chốt việc để trống hai giá trong Excel để tránh nhập hai lần; đây chưa là
+  thay đổi contract được duyệt. Chỉ cập nhật bàn giao, chưa đổi code/file Excel.
