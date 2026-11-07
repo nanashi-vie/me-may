@@ -14,6 +14,7 @@ export class BookImport {
   readonly auth=inject(AuthService);private readonly api=inject(BookImportApi);private readonly destroy=inject(DestroyRef);
   readonly selectedFile=signal<File|null>(null);readonly preview=signal<ImportPreview|null>(null);readonly receipt=signal<ImportReceipt|null>(null);
   readonly options=signal<ImportOptions|null>(null);readonly busy=signal(false);readonly confirmed=signal(false);
+  readonly reviewed=signal(false);
   readonly error=signal('');readonly notice=signal('');readonly issues=signal<ImportIssue[]>([]);readonly totalIssues=signal(0);
   readonly uncertain=signal(false);readonly retryable=signal(false);readonly retryAfter=signal('');readonly needsLogin=signal(false);
   readonly loginBusy=signal(false);
@@ -45,24 +46,49 @@ export class BookImport {
   }
   ngOnInit(){if(this.editable())this.loadOptions();}
   private cancel(){++this.sequence;this.request?.unsubscribe();this.busy.set(false);}
-  private clearResult(){this.preview.set(null);this.receipt.set(null);this.issues.set([]);this.totalIssues.set(0);this.confirmed.set(false);this.previewFile=null;this.previewEpoch=-1;this.pending=null;this.retryable.set(false);this.uncertain.set(false);this.retryAfter.set('');}
+  private clearResult(){this.reviewed.set(false);this.preview.set(null);this.receipt.set(null);this.issues.set([]);this.totalIssues.set(0);this.confirmed.set(false);this.previewFile=null;this.previewEpoch=-1;this.pending=null;this.retryable.set(false);this.uncertain.set(false);this.retryAfter.set('');}
   select(file:File|null){this.cancel();this.clearResult();this.selectedFile.set(file);this.error.set('');this.notice.set('');if(file&&!this.validFile(file))this.error.set('Dùng file .csv hoặc .xlsx không rỗng, tối đa 2 MiB.');}
   fileChanged(event:Event){this.select((event.target as HTMLInputElement).files?.item(0)??null);}
   private validFile(file:File){return /\.(csv|xlsx)$/i.test(file.name)&&file.size>0&&file.size<=2097152;}
   private current(sequence:number,epoch:number,file:File){return sequence===this.sequence&&epoch===this.auth.epoch()&&file===this.selectedFile()&&this.editable();}
-  checkFile(){
+  checkFile(recheck=false,recover=false){
     const file=this.selectedFile();if(!file||!this.validFile(file)||this.busy()||!this.editable()||this.needsLogin())return;
-    this.clearResult();this.error.set('');this.notice.set('');this.busy.set(true);const sequence=++this.sequence,epoch=this.auth.epoch();
+    const previous=recheck ? this.preview()?.document.fingerprint : null;
+    if(recheck && (!this.canConfirm() || !this.confirmed() || !previous)) return;
+    if (!recover) this.clearResult();
+    this.error.set('');this.notice.set('');this.busy.set(true);const sequence=++this.sequence,epoch=this.auth.epoch();
     this.request=this.api.preview(file).pipe(takeUntilDestroyed(this.destroy)).subscribe({
-      next:result=>{if(!this.current(sequence,epoch,file))return;this.busy.set(false);this.preview.set(result);this.receipt.set(result.receipt);this.issues.set(result.document.issues);this.totalIssues.set(result.document.totalIssues);this.previewFile=file;this.previewEpoch=epoch;},
-      error:e=>{if(sequence!==this.sequence)return;if(!this.acceptFailure(epoch,e))return;this.failed(e,false);}});
+      next:result=>{if(!this.current(sequence,epoch,file))return;this.busy.set(false);if(recover)this.clearResult();this.preview.set(result);this.receipt.set(result.receipt);this.issues.set(result.document.issues);this.totalIssues.set(result.document.totalIssues);this.previewFile=file;this.previewEpoch=epoch;
+        if (recheck && !result.receipt && !result.document.totalIssues) {
+          if (result.document.fingerprint===previous) this.reviewed.set(true);
+          else this.notice.set('Kết quả đã thay đổi. Xem lại danh sách trước khi xác nhận.');
+        }
+      },
+      error:e=>{
+        if(sequence!==this.sequence || !this.acceptFailure(epoch,e))return;
+        if(recover && e.status!==401) {
+          this.busy.set(false);
+          this.retryAfter.set(e.headers?.get('Retry-After')??'');
+          this.error.set('Chưa kiểm tra được biên nhận. Thử kiểm tra lại.');
+          return;
+        }
+        this.failed(e,false);
+      }});
   }
   confirm(){
     const fingerprint=this.preview()?.document.fingerprint,file=this.selectedFile();
-    if(!this.canConfirm()||!this.confirmed()||!fingerprint||!file||file!==this.previewFile||this.previewEpoch!==this.auth.epoch())return;
+    if(!this.canConfirm()||!this.reviewed()||!fingerprint||!file||file!==this.previewFile||this.previewEpoch!==this.auth.epoch())return;
     this.pending={file,fingerprint,epoch:this.auth.epoch()};this.sendCommit();
   }
-  retryCommit(){if(this.retryable())this.sendCommit();}
+  retryCommit(){
+    if(!this.retryable() || this.busy()) return;
+    this.checkFile(false,true);
+  }
+  discard(input:HTMLInputElement){
+    if (this.pending) return;
+    this.select(null);
+    input.value='';
+  }
   private sendCommit(){
     const pending=this.pending;if(!pending||this.busy()||!this.editable()||pending.file!==this.selectedFile()||pending.epoch!==this.auth.epoch())return;
     this.busy.set(true);this.error.set('');this.retryAfter.set('');const sequence=++this.sequence;
@@ -76,10 +102,10 @@ export class BookImport {
     this.error.set(e.status===403?"Chỉ chủ tiệm được tải mẫu và mã lựa chọn.":"Chưa tải được mẫu hoặc mã lựa chọn. Bạn có thể thử lại; file đang kiểm tra được giữ nguyên.");
   }
   private failed(e:HttpErrorResponse,commit:boolean){
-    this.busy.set(false);this.confirmed.set(false);this.retryAfter.set(e.headers?.get('Retry-After')??'');
+    this.busy.set(false);this.confirmed.set(false);this.reviewed.set(false);this.retryAfter.set(e.headers?.get('Retry-After')??'');
     if(e.status===401){this.needsLogin.set(true);this.clearResult();this.error.set('Phiên đã hết hạn. File được giữ trong tab; đăng nhập lại rồi kiểm tra file.');return;}
     if(e.status===429){this.retryable.set(commit);this.error.set('Đang có import khác hoặc đã đạt giới hạn. Giữ file và thử lại sau.');return;}
-    if(commit&&(e.status===0||e.status>=500)){this.retryable.set(true);this.uncertain.set(true);this.error.set('Chưa nhận được xác nhận. Thử lại đúng lần import này với cùng file để tránh tạo trùng.');return;}
+    if(commit&&(e.status===0||e.status>=500)){this.retryable.set(true);this.uncertain.set(true);this.error.set('Chưa rõ kết quả import. Kiểm tra biên nhận trước khi tiếp tục.');return;}
     this.pending=null;this.retryable.set(false);this.preview.set(null);this.previewFile=null;
     const body=e.error;this.issues.set(Array.isArray(body?.issues)?body.issues:[]);this.totalIssues.set(body?.totalIssues??this.issues().length);
     this.error.set(e.status===409?'File hoặc dữ liệu đã đổi. Kiểm tra lại file trước khi import.':e.status===403?'Chỉ chủ tiệm được import sách.':e.status===413?'File vượt giới hạn. Tách thành file nhỏ hơn theo mẫu.':'Chưa kiểm tra hoặc import được. Sửa các lỗi trong file rồi tải lại.');
@@ -110,6 +136,13 @@ export class BookImport {
     }});
   }
   display(value:unknown){return value===null||value===undefined||value===''?'—':Array.isArray(value)?value.join('; '):String(value);}
-  canLeave(){return ((!this.selectedFile()||!!this.receipt())&&!this.busy()&&!this.loginBusy())||typeof window==='undefined'||window.confirm('File hoặc lần import chưa được xác nhận sẽ không còn trên màn hình. Lô đã gửi có thể vẫn được xử lý; chọn lại cùng file để kiểm tra biên nhận. Rời trang?');}
+  canLeave(){
+    if(this.pending && this.busy()) return false;
+    if((!this.selectedFile()||this.receipt())&&!this.busy()&&!this.loginBusy()) return true;
+    if(typeof window==='undefined') return true;
+    return window.confirm(this.pending
+      ? 'Chưa rõ kết quả ghi. Khi quay lại, chọn cùng file để kiểm tra biên nhận. Rời trang?'
+      : 'Rời trang sẽ hủy lần kiểm tra này. Bạn muốn rời trang?');
+  }
   @HostListener('window:beforeunload',['$event']) beforeUnload(event:BeforeUnloadEvent){if((this.selectedFile()&&!this.receipt())||this.busy()||this.loginBusy()){event.preventDefault();event.returnValue='';}}
 }

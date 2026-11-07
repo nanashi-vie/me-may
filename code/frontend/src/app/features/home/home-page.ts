@@ -11,14 +11,16 @@ import { BookCard } from '../catalogue/book-card/book-card';
 import { PublicError } from '../catalogue/public-error';
 import { PageMetadata } from '../../core/page-metadata';
 import { HowToBuyDialog } from './how-to-buy-dialog/how-to-buy-dialog';
+import { ShippingPromoDialog } from './shipping-promo-dialog/shipping-promo-dialog';
 
 @Component({
   selector: 'app-home-page',
-  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog, ShippingPromoDialog],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
 export class HomePage {
+  @ViewChild('shippingPromoDialog') shippingPromoDialog?: ShippingPromoDialog;
   @ViewChild('howToBuyDialog') howToBuyDialog?: HowToBuyDialog;
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
@@ -127,6 +129,10 @@ export class HomePage {
         next: (c) => this.contact.set(c),
         error: () => this.contact.set(null),
       });
+  }
+
+  openShippingPromo(trigger?: HTMLElement | null) {
+    this.shippingPromoDialog?.open(trigger);
   }
 
   openHowToBuy(trigger?: HTMLElement | null) {

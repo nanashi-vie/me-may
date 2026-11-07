@@ -41,7 +41,7 @@ public class BookMapper {
                                 .sorted(Comparator.comparing(x -> x.role.ordinal()))
                                 .map(m -> new MediaView(m.id.toString(), m.role,
                                                 m.alt, m.sourceRef,
-                                                "/api/v1/admin/books/" + b.id + "/media/" + m.role + "/content"))
+                                                "/api/v1/admin/books/" + b.id + "/media/" + m.role + "/content",m.showOnProduct))
                                 .toList();
                 var stock = variants.read(b.id);
                 return new BookDetail(b.id.toString(), b.bookCode, l.slug, b.version, b.title, b.isbn, b.publisher,

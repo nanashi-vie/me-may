@@ -2195,3 +2195,109 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Hai test HTTP dùng XLSX V4 trong `BookImportUnitPriceIntegrationTest` tái hiện 2 lỗi trước sửa. Sau sửa cả hai đạt, gồm trường hợp sách được đăng giữa xem trước và xác nhận. Đổi fixture trùng tên trong các test V1–V4 cũ sang tên riêng để giữ phạm vi kiểm tra giá, transaction và biên nhận.
 - `mvn test` tại `code/backend` với PostgreSQL test local: 231 ca, 0 lỗi, 3 ca live bỏ qua. `npm test -- --watch=false` tại `code/frontend`: 234/234 đạt. `git diff --check` đạt. Chưa smoke trình duyệt hay production.
 - Cập nhật contract `docs/BOOK_IMPORT.md` và snapshot `docs/PROGRESS.md`. Bàn giao cùng thay đổi backend trên `dev`. Bước tiếp theo theo workflow là user merge `dev` qua `main` và smoke import Excel sau rollout backend.
+
+### S047-C01 — 07/11/2026 — Chốt hướng hàng chờ xuất bản
+
+- User chọn danh sách ghim bên phải kèm nút xuất bản rồi mở cuốn tiếp theo.
+- Ghi thiết kế tại `docs/BOOK_ADMIN_WORKFLOW_SPEC.md`, đăng ký trong chỉ mục
+  và tiến độ. Đối chiếu bộ lọc chưa từng xuất bản, thứ tự và luồng lưu hiện
+  có trên `dev` tại `c2282c8`. Chưa sửa code hay chạy test ứng dụng.
+- Chờ duyệt hành vi cụ thể trong thiết kế trước khi lập kế hoạch triển khai.
+
+### S047-C02 — 07/11/2026 — Thời hạn Thùng rác
+
+- User yêu cầu tự xóa sau 7 ngày và có cảnh báo khi bấm icon xóa. Bổ sung
+  thời hạn, xác nhận, tác vụ dọn có thử lại và cách hiển thị biên nhận cũ
+  trong `BOOK_ADMIN_WORKFLOW_SPEC.md`.
+- Đọc schema FK và luồng `MediaCleanupJob`. Biên nhận import cần giữ
+  lịch sử khi bản ghi sách được dọn. Chưa sửa code hay chạy test ứng dụng.
+- Chờ duyệt thiết kế cập nhật trước khi lập kế hoạch triển khai.
+
+### S047-C03 — 07/11/2026 — Duyệt thiết kế và lập kế hoạch
+
+- User duyệt thiết kế cả bốn phần. Lập `BOOK_ADMIN_WORKFLOW_PLAN.md`,
+  cập nhật chỉ mục và tiến độ. Chia riêng bước dọn dữ liệu hết hạn để
+  kiểm tra giao dịch, biên nhận và khả năng thử lại xóa ảnh.
+- Đối chiếu code editor, media/public projection, schema migration và các
+  API hiện có trên `dev`. `git diff --check` đạt. Chưa sửa code ứng dụng,
+  chưa chạy test ứng dụng. Tiếp theo thực hiện các bước trong kế hoạch.
+
+### S047-C04 — 07/11/2026 — Bắt đầu triển khai tuần tự
+
+- User duyệt thực thi và bổ sung bước kiểm tra lại trước khi ghi import.
+  Bắt đầu từ `157dd49` trên `dev`. Phạm vi ảnh, đặc điểm, Thùng rác,
+  hàng chờ và rà soát import. Chưa chạy test cho checkpoint này.
+
+### S047-C05 — 07/11/2026 — Nghiệm thu local và bàn giao
+
+- Triển khai V17–V19, hiển thị tùy chọn của hai ảnh bổ sung, đặc điểm
+  mới và SPIN legacy, Thùng rác OWNER có version, khôi phục trước hạn,
+  dọn dữ liệu sau hạn và chuyển ảnh sang hàng đợi dọn đang có. Receipt
+  giữ snapshot, không còn link đến cuốn đã dọn.
+- Thêm hàng chờ trên editor và thao tác xuất bản rồi mở cuốn tiếp. Thêm
+  bước rà soát import chỉ đọc. Hủy hoặc rời trang trước xác nhận không
+  ghi sách. Sau khi đã gửi xác nhận mà mất phản hồi, UI chỉ tra biên nhận.
+- Review độc lập phát hiện dữ liệu cuốn cũ trên route được tái sử dụng,
+  trạng thái tra biên nhận bị mất khi lookup lỗi, candidate Flash Sale và
+  phân trang sau xóa. Đã sửa các điểm này. Dùng record ảnh rời sách để
+  tái sử dụng MediaCleanupJob và giữ cơ chế thử lại.
+- `mvn test` tại backend: 232 ca, 0 lỗi, 3 live skip. Sau khi bổ sung ca
+  retry ảnh rời sách, chạy `mvn -Dtest=MediaCleanupIntegrationTest test`:
+  5/5 đạt. `npm test -- --watch=false` tại frontend: 237/237 đạt.
+  `npm run build`, `npm run build:workers` và `git diff --check` đạt.
+- Chrome fixture local kiểm xuất bản cuốn 1 rồi tự mở cuốn 2, panel còn
+  một cuốn, dialog ở 390×844 và cảnh báo có tên/mã/7 ngày khi bấm icon.
+  Bấm Hủy, đóng browser và dừng fixture. Chưa smoke production hoặc dọn
+  ảnh Cloudinary live. Backend đã kiểm với PostgreSQL test và gateway giả.
+- Gộp contract vào CATALOGUE/DATA/DESIGN/BOOK_IMPORT và rollout V17–V19,
+  gỡ spec/plan đã hết vai trò. Bước tiếp theo là user merge dev qua main
+  và rollout backend trước frontend theo BOOK_ENTRY_ROLLOUT.
+
+
+## 2026-11-07 — S048-C01 — Bắt đầu triển khai Popup "Ưu đãi vận chuyển" trên trang chủ (`/`)
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Triển khai popup modal `<dialog>` cho nút "ƯU ĐÃI VẬN CHUYỂN" dưới banner trang chủ (`/`), đã chốt thiết kế qua `/grill-me`.
+- **Phạm vi & quyết định:**
+  - Đồng bộ nhánh `dev-ui` với `dev` (`57c89ad`).
+  - Header popup: sử dụng SVG xe tải giao hàng do user cung cấp, chuyển đổi bảng màu xanh dương/neon gốc sang bảng màu ấm thương hiệu Mẹ Mây (`#9B1C28` đỏ burgundy chủ đạo, `#FBE4E6` hồng phấn thân xe, `#E06C78` bánh xe, `#F59E0B` / `#D97706` / `#E05260` họa tiết lấp lánh), tiêu đề `"Ưu đãi vận chuyển tại Mẹ Mây"`.
+  - Bố cục 5 khung:
+    1. Lưới 2x2 ở trên cho 4 mức đơn hàng:
+       - `Đơn dưới 150k` — `Ship 25k`
+       - `Đơn 150k - 300k` — `Ship 20k`
+       - `Đơn 300k - 500k` — `Ship 16k`
+       - `Đơn trên 500k` — `Hỗ trợ 50% ship không quá 50k`
+    2. Khung thứ 5 trải ngang toàn chiều rộng (`grid-column: 1 / -1`) ở dưới:
+       - `Quy định khối lượng` — `Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`
+    3. Cả 5 khung đều dùng icon SVG trắng trong vòng tròn đỏ `#9B1C28` bên trái.
+- **Kiểm tra đã chạy:** Chưa chạy (bắt đầu triển khai).
+- **Trạng thái:** Đang thực hiện trên worktree `dev-ui`.
+
+
+## 2026-11-07 — S048-C02 — Hoàn tất Popup "Ưu đãi vận chuyển" (`ShippingPromoDialog`)
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Hoàn thiện component `ShippingPromoDialog`, cập nhật chấm tròn nhỏ `.step-dot` cho tất cả 5 khung theo yêu cầu bổ sung của user, kiểm thử unit test, build SSR/Workers và visual QA trên Chrome headless.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/home/shipping-promo-dialog/shipping-promo-dialog.{ts,html,scss,spec.ts}` (mới)
+  - `code/frontend/src/app/features/home/home-page.{ts,html,spec.ts}`
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - `cd /Users/daoquanghung/Projects/me-may.worktrees/dev-ui/code/frontend && npm test -- --watch=false`: **44/44 test files PASS (244/244 tests PASS)**.
+  - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
+  - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp và kiểm tra trực quan `shipping-promo-dialog-desktop.png` (760x572px) và `shipping-promo-dialog-mobile.png` (352x644px) — **PASS**.
+- **Trạng thái & Bước tiếp theo:** Thay đổi sẵn sàng trên worktree `dev-ui`; chờ user xem kết quả hoặc yêu cầu merge qua `dev`.
+
+
+## 2026-11-07 — S048-C03 — Căn giữa chữ khung thứ 5 trong `ShippingPromoDialog` và gộp vào `dev`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Căn giữa nội dung của khung thứ 5 (`Quy định khối lượng`) trong popup "Ưu đãi vận chuyển" và merge từ `dev-ui` sang `dev`.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/home/shipping-promo-dialog/shipping-promo-dialog.{html,scss}`
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - `npm test -- --watch=false`: **44/44 test files PASS (244/244 tests PASS)**.
+  - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
+  - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp lại `shipping-promo-dialog-desktop.png` (760x577px) và `shipping-promo-dialog-mobile.png` (352x650px), xác nhận khung thứ 5 căn giữa hài hòa — **PASS**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge sang `dev` và push lên `origin/dev` và `origin/dev-ui`.

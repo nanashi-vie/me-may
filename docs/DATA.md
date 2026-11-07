@@ -33,7 +33,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | reading_level | Listing | Một trong Pre A1 / A1 / A2 / B1 / B2 / C1 / C2 hoặc chưa xác định; nhãn Cambridge theo bảng bên dưới |
 | reading_video_url | Listing | Link ngoài tới video đọc sách, tùy chọn; không upload video hoặc lưu bản sách trong MVP |
 | collection | Mapping | Bộ sưu tập biên tập; không phải bộ lọc chủ đề của MVP |
-| ảnh tối đa8vai trò | BookMedia | FRONT/BACK bắt buộc khi xuất bản; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 công khai tùy chọn, INTERNAL_1/INTERNAL_2 nội bộ tùy chọn; bìa trước là thumbnail; fixture không có ảnh |
+| ảnh tối đa8vai trò | BookMedia | FRONT/BACK bắt buộc khi xuất bản; SPINE/INSIDE_1/INSIDE_2/INSIDE_3 công khai tùy chọn, INTERNAL_1/INTERNAL_2 bổ sung tùy chọn, mặc định ẩn; bìa trước là thumbnail; fixture không có ảnh |
 | media type/order/alt | BookMedia | Sáu vai trò theo thứ tự FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, thêm INTERNAL_1/INTERNAL_2, mỗi vai trò tối đa một ảnh ACTIVE; metadata từng ảnh, không gom URL thành chuỗi. Ghi chú riêng nằm trong condition_note; ảnh/video/tình trạng bản cụ thể xác nhận qua Zalo |
 | source_ref | BookMedia | Tùy chọn, tham chiếu nguồn ảnh nội bộ không chứa dữ liệu khách; không public mặc định |
 | version/timestamps/actor | Server/audit | Server quản lý khi triển khai, không tin giá trị client tự gửi làm audit |
@@ -224,7 +224,7 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
   và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách--06112026).
 - Sách cũ không tự có tag. Không suy từ tên/category; sách có cơ chế hỏng cần
   mô tả trung thực, tag không phải cam kết mọi bản đang hoạt động hoàn hảo.
-- Sáu public roles và2internal roles độc lập thứ tự; tối đa8ACTIVE, public≤6.
+- Sáu vai trò công khai và hai vai trò bổ sung, tối đa tám ACTIVE. Hai ảnh bổ sung dùng cờ show_on_product mặc định false.
   TạoARCHIVED cần tên hoặc ảnh, weight/price/category thiếu được; các giá trị đã
   nhập vẫn phải hợp lệ. ImportXLSX giữ riêng metadata/weight/schema/receipt cũ.
 
@@ -232,3 +232,7 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 
 - Bảng `home_featured_config(id PK CHECK id=1, version BIGINT DEFAULT 0)` quản lý optimistic locking cho cấu hình kệ sách nổi bật.
 - Bảng `home_featured_item(shelf_key VARCHAR(160), position INT CHECK 0..9, listing_id FK listing ON DELETE CASCADE, PK(shelf_key, position), UNIQUE(shelf_key, listing_id))` lưu danh sách tối đa 10 cuốn ghim ưu tiên cho từng kệ (`NEWEST`, `CATEGORY:BOARD_BOOK`, `CATEGORY:PICTURE_BOOK`, `COLLECTION:<slug>`).
+
+`book_copy.deleted_at` xác định Thùng rác và hạn khôi phục sau 7 ngày.
+Sau khi dọn, snapshot mã/ID/tên trên receipt và audit tiếp tục tra được.
+Ảnh chờ dọn có thể có `book_copy_id` rỗng và không được ở trạng thái ACTIVE.

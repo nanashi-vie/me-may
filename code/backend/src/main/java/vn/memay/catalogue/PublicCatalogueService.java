@@ -174,7 +174,7 @@ public class PublicCatalogueService {
                 "select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
         List<Media> media = jdbc.query(
-                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' and role in ('FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3') order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 else 5 end",
+                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' and (role not in ('INTERNAL_1','INTERNAL_2') or show_on_product) order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 when 'INSIDE_3' then 5 when 'INTERNAL_1' then 6 else 7 end",
                 (m, i) -> new Media(m.getString("role"), m.getString("alt"),
                         "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),
                 id);

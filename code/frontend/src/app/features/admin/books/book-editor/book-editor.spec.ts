@@ -22,11 +22,12 @@ const saved = {
   priceMaxVnd: 30000,
 } as BookDetail;
 describe('BookEditor safe final saves', () => {
-  let create: ReturnType<typeof vi.fn>, update: ReturnType<typeof vi.fn>, role: string;
+  let create: ReturnType<typeof vi.fn>, update: ReturnType<typeof vi.fn>, list: ReturnType<typeof vi.fn>, role: string;
   beforeEach(() => {
     role = 'OWNER';
     create = vi.fn(() => of(saved));
     update = vi.fn(() => of(saved));
+    list = vi.fn(() => of({items:[],page:0,size:20,totalElements:0,totalPages:0}));
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -37,6 +38,7 @@ describe('BookEditor safe final saves', () => {
             titleDuplicate: () => of({duplicate:false}),
             create,
             update,
+            list,
             cancelSession: () => of(null),
             session:()=>of({id:'session',state:'OPEN',media:[],expiresAt:''}),
             get: () => throwError(() => new HttpErrorResponse({ status: 404 })),
@@ -83,6 +85,23 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
+  it('opens the first unfiltered pending book only after a successful publish', async () => {
+    const navigate=vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const e=editor();
+    e.accept({...saved,publication:'ARCHIVED',publishedAt:null});
+    ready(e);
+    e.queueSearch.setValue('khác');
+    const response=new Subject<BookDetail>();
+    update.mockReturnValue(response);
+    list.mockImplementation((filter: {size?:number}) => of({
+      items:filter.size===1 ? [{id:'92'}] : [],page:0,size:1,totalElements:1,totalPages:1,
+    }));
+    await e.save(true,true);
+    expect(navigate).not.toHaveBeenCalled();
+    response.next(saved);
+    expect(list).toHaveBeenCalledWith({unpublishedOnly:true,page:0,size:1});
+    expect(navigate).toHaveBeenCalledWith(['/admin/sach','92'],{queryParamsHandling:'preserve'});
+  });
   it('defaults language and makes private notes optional', () => {
     const fixture=TestBed.createComponent(BookEditor);const e=fixture.componentInstance;
     expect(e.form.controls.language.value).toBe('Tiếng Anh');ready(e);fixture.detectChanges();

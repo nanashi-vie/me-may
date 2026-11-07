@@ -55,7 +55,7 @@ public class BookQueryService {
         String q = BookValidation.trim(filter.q());
         if (q != null && q.length() > 200)
             throw AdminApiException.field("q", "Tối đa 200 ký tự");
-        var where = new StringBuilder(" from book_copy b join listing l on l.book_copy_id=b.id where true");
+        var where = new StringBuilder(" from book_copy b join listing l on l.book_copy_id=b.id where b.deleted_at is null");
         List<Object> args = new ArrayList<>();
         if (q != null) {
             where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\')");
@@ -96,7 +96,7 @@ public class BookQueryService {
                 b.categoryCode(), b.binding(), null, null, b.priceMinVnd(), b.priceMaxVnd(),
                 b.weightG(), b.description(),
                 b.readingLevel(), b.readingVideoUrl(), b.availability(),
-                b.media().stream().filter(m -> m.role().isPublic()).map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
+                b.media().stream().filter(MediaView::visibleOnProduct).map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
                 List.of(), 0, b.features());
     }
 

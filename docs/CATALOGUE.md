@@ -51,7 +51,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 | listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
 | collection | bigint identity PK; name varchar(100) NOT NULL; slug varchar(120) UNIQUE NOT NULL; sort_order integer >=0; active boolean; version bigint; timestamps |
 | listing_collection | listing_id FK + collection_id FK, composite PK |
-| book_media | UUID PK; book_copy_id FK NOT NULL; role CHECK FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3/INTERNAL_1/INTERNAL_2; state CHECK UPLOADING/ACTIVE/DELETE_PENDING; storage_public_id UNIQUE NOT NULL; cloud asset ID/format/bytes/dimensions nullable trước upload; alt varchar(300), source_ref varchar(500) nullable; created_at/updated_at |
+| book_media | UUID PK; book_copy_id FK, có thể rỗng khi chờ dọn; show_on_product BOOLEAN mặc định false; role CHECK FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3/INTERNAL_1/INTERNAL_2; state CHECK UPLOADING/ACTIVE/DELETE_PENDING; storage_public_id UNIQUE NOT NULL; cloud asset ID/format/bytes/dimensions nullable trước upload; alt varchar(300), source_ref varchar(500) nullable; created_at/updated_at |
 | book_variant | UUID PK; book_copy_id FK; name tối đa100; stock0..999999; thứ tự và unique tên trong sách; chi tiết ở ARCHITECTURE/DATA |
 | audit_event | bigint identity PK; actor_id FK admin_user; target_type/target_id; action; before/after JSONB chỉ chứa field cho phép; aggregate_version; created_at |
 
@@ -277,13 +277,14 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 
 ### Roles, upload và bảo mật
 
-- Sáu role công khai giữ nguyên; INTERNAL_1/INTERNAL_2 chỉ admin xác thực OWNER/STAFF.
+- Sáu role công khai giữ nguyên. INTERNAL_1/INTERNAL_2 mặc định ẩn, mỗi ảnh có cờ `showOnProduct` độc lập.
   Mỗi role tối đa1ACTIVE, tổng8; không phân visibility bằng vị trí mảng.
 - Upload session tối đa8 READY/UPLOADING; cho1replacement đang xử lý (9raw) khi8final.
   Giữ requestKey/hash chống trùng, Cloudinary cleanup/rollback và hạn24giờ.
-- Public list/detail/home/related/collection/lookup/flashsale và preview chỉ6role công khai.
-  Public image INTERNAL_1/INTERNAL_2 luôn404 trước gọi gateway, kể cả PUBLISHED;
-  không URL/storageID/sourceRef/note nội bộ. Gallery/thumbnail dùng dữ liệu đã lọc.
+- Detail và preview chỉ nhận ảnh có quyền hiển thị. Ảnh bổ sung đã bật nằm
+  sau sáu role công khai. Public image role bổ sung tắt trả 404 trước gọi
+  gateway. Ảnh bổ sung không dùng cache ảnh tại edge. Gallery không trả
+  storage ID, sourceRef hoặc ghi chú nội bộ.
 - Chọn8file mặc định6public rồi2internal; xóa ảnh không đổi role/visibility ảnh còn lại.
   Khi đổi nhóm ảnh persisted chưa lưu, phải lưu role trước thay ảnh; chặn đổi nhóm
   của ảnh đang upload/chưa rõ kết quả để tránh UI nội bộ nhưng server public.
@@ -293,7 +294,8 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - V15 thêm book_feature(codePK,label,active,sort_order), listing_feature(listing_idFK,
   feature_codeFK,position1–3); unique(listing_id,feature_code)/(listing_id,position).
 - Seed SOUND=Âm thanh, FLAP=Lật mở, SLIDE=Kéo đẩy, POP_UP=Pop-up,
-  TOUCH=Chạm & cảm nhận, SPIN=Xoay chuyển. Không backfill sách cũ.
+  V17 đổi TOUCH thành Sờ chạm/Đục lỗ, thêm SEARCH=Tìm kiếm và
+  OTHER_INTERACTION=Tương tác khác. SPIN=Xoay chuyển chỉ giữ trên sách đã gắn.
 - HTTP write.featureCodes trên create, featureCodes trên PUT:0–3code hợp lệ,
   không trùng/free text, giữ thứ tự; bỏ fieldPUT giữ tags, []xóa. Existing inactive
   tag có thể giữ/gỡ; không gán mới inactive. Taxonomy.features chỉ catalogue active.
@@ -310,3 +312,14 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - `GET /api/v1/admin/home-featured`: trả `version` và danh sách các kệ trên Home kèm các cuốn đang ghim và cờ `activeOnHome`.
 - `GET /api/v1/admin/home-featured/candidates?shelfKey=...&q=...`: gợi ý tối đa 20 sách `PUBLISHED` + `AVAILABLE` thuộc phạm vi kệ khớp từ khóa `q` (mã sách, tên sách, NXB).
 - `PUT /api/v1/admin/home-featured`: chỉ `OWNER`, kiểm tra `version` (409 nếu lệch), tối đa 10 mã sách/kệ, không trùng mã trong cùng kệ, đúng phạm vi thể loại/bộ sưu tập; ghi audit `HOME_FEATURED` và kích hoạt `PublicCacheInvalidation`.
+
+## Thùng rác sách
+
+- OWNER chuyển vào Thùng rác và khôi phục tại `/admin/sach`. API
+  `GET /api/v1/admin/books/trash` phân trang. `PATCH /api/v1/admin/books/{id}/trash`
+  nhận `{version, trashed}`. Cập nhật version, audit và cache cùng luồng ghi.
+- Xóa mềm chuyển listing sang Ẩn và loại khỏi danh sách thường. Khôi phục
+  trước hạn đưa về Ẩn, giữ ngày xuất bản đầu tiên, ghim và Flash Sale.
+- Hạn là bảy ngày kể từ lúc xóa. Job mặc định chạy mỗi mười phút, khóa dòng
+  và dọn theo lô. Ảnh giữ trạng thái dọn để có thể thử lại khi Cloudinary lỗi.
+  Audit và receipt giữ dấu vết lịch sử. Tên sách được dùng lại sau khi dọn.

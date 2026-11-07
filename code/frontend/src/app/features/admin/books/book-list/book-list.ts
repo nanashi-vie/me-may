@@ -6,7 +6,7 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookApi } from '../book-api';
-import { Availability, BookFilter, BookSummary, Page, Publication } from '../book.models';
+import { Availability, BookFilter, BookSummary, Page, Publication, TrashBook } from '../book.models';
 import { PUBLICATION_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-list',
@@ -31,7 +31,13 @@ export class BookList {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly labels = PUBLICATION_LABELS;
+  readonly trashOpen = signal(false);
+  readonly trashResult = signal<Page<TrashBook> | null>(null);
+  readonly mutationBusy = signal(false);
+  readonly target = signal<BookSummary | null>(null);
+  private filter: BookFilter = {};
   private sequence = 0;
+  private trashSequence = 0;
   constructor() {
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
       const publication = p.get('publication'),
@@ -42,7 +48,7 @@ export class BookList {
         availability: availability ?? '',
         unpublishedOnly: p.get('unpublishedOnly')==='true',
       });
-      const filter: BookFilter = {
+      this.filter = {
         ...(p.get('unpublishedOnly')==='true'?{unpublishedOnly:true}:{}),
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
@@ -53,15 +59,23 @@ export class BookList {
           ? (availability as Availability)
           : undefined,
       };
+      this.loadBooks();
+    });
+  }
+  private loadBooks() {
       const seq = ++this.sequence;
       this.loading.set(true);
       this.error.set('');
       this.api
-        .list(filter)
+        .list(this.filter)
         .pipe(takeUntilDestroyed(this.destroy))
         .subscribe({
           next: (r) => {
             if (seq === this.sequence) {
+              if (r.page > 0 && !r.items.length) {
+                this.search(Math.max(0, r.totalPages - 1));
+                return;
+              }
               this.result.set(r);
               this.loading.set(false);
             }
@@ -73,6 +87,46 @@ export class BookList {
             }
           },
         });
+  }
+  showTrash(page=0) {
+    if (this.mutationBusy()) return;
+    this.trashOpen.set(true);
+    this.error.set('');
+    const sequence = ++this.trashSequence;
+    this.api.trash(page).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: result => {
+        if (sequence !== this.trashSequence) return;
+        if (page && !result.items.length) this.showTrash(page - 1);
+        else this.trashResult.set(result);
+      },
+      error: () => { if (sequence === this.trashSequence) this.error.set('Chưa tải được Thùng rác.'); },
+    });
+  }
+  askTrash(book:BookSummary, dialog:HTMLDialogElement) {
+    this.target.set(book);
+    dialog.showModal();
+  }
+  expired(book:TrashBook) {
+    return Date.parse(book.expiresAt) <= Date.now();
+  }
+  changeTrash(book:BookSummary | TrashBook, trashed:boolean, dialog?:HTMLDialogElement) {
+    if (this.mutationBusy()) return;
+    this.mutationBusy.set(true);
+    this.error.set('');
+    this.api.changeTrash(book.id,book.version,trashed).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: () => {
+        this.mutationBusy.set(false);
+        dialog?.close();
+        if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
+        this.loadBooks();
+      },
+      error: error => {
+        this.mutationBusy.set(false);
+        dialog?.close();
+        this.loadBooks();
+        if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
+        this.error.set(error.status === 409 ? 'Trạng thái sách đã đổi hoặc đã hết hạn khôi phục. Danh sách đang được làm mới.' : 'Chưa xác nhận được thao tác. Kiểm tra danh sách rồi thử lại.');
+      },
     });
   }
   search(page = 0) {

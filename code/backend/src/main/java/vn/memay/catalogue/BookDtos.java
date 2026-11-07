@@ -31,7 +31,9 @@ public final class BookDtos {
         public record VariantView(String id, String name, long stock) {
         }
 
-        public record MediaAssignment(java.util.UUID mediaId, MediaRole role) {
+        public record MediaAssignment(java.util.UUID mediaId, MediaRole role,
+                        @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL) Boolean showOnProduct) {
+                public MediaAssignment(java.util.UUID mediaId,MediaRole role) { this(mediaId,role,null); }
         }
 
         public record BookCreate(BookWrite write, java.util.UUID uploadSessionId, List<MediaAssignment> media,
@@ -65,7 +67,11 @@ public final class BookDtos {
 
         public record MediaMetadata(java.util.UUID mediaId,String alt,String sourceRef) {}
 
-        public record MediaView(String id, MediaRole role, String alt, String sourceRef, String contentPath) {
+        public record MediaView(String id, MediaRole role, String alt, String sourceRef, String contentPath, boolean showOnProduct) {
+                public MediaView(String id,MediaRole role,String alt,String sourceRef,String contentPath) {
+                        this(id,role,alt,sourceRef,contentPath,false);
+                }
+                public boolean visibleOnProduct() { return role.isPublic() || showOnProduct; }
         }
 
         public record BookDetail(String id, String bookCode, String slug, long version, String title, String isbn,

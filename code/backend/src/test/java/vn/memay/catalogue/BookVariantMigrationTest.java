@@ -25,7 +25,7 @@ class BookVariantMigrationTest {
             assertThat(jdbc.queryForList("select stock from book_variant order by book_copy_id", Long.class)).containsExactly(1L, 0L);
             assertThat(jdbc.queryForObject("select count(distinct id) from book_variant", Long.class)).isEqualTo(2L);
             var after=jdbc.queryForList("select b.*,l.slug,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at from book_copy b join listing l on l.book_copy_id=b.id order by b.id");
-            after.forEach(row -> {assertThat(row.remove("unit_price_per_kg_vnd")).isNull();});
+            after.forEach(row -> {assertThat(row.remove("unit_price_per_kg_vnd")).isNull(); assertThat(row.remove("deleted_at")).isNull();});
             assertThat(after).isEqualTo(before);
             assertThat(jdbc.queryForObject("select last_value from book_code_seq", Long.class)).isEqualTo(sequence);
             assertThat(jdbc.queryForObject("select storage_public_id from book_media where id=?", String.class, media)).isEqualTo("saved-asset");

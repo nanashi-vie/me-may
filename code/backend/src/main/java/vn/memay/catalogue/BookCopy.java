@@ -5,6 +5,7 @@ import java.time.Instant;
 
 @Entity
 @Table(name = "book_copy")
+@org.hibernate.annotations.SQLRestriction("deleted_at is null")
 public class BookCopy {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

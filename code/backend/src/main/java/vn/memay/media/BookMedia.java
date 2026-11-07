@@ -8,7 +8,6 @@ import java.time.Instant;
 public class BookMedia {
     @Id
     public java.util.UUID id;
-    @Column(nullable = false)
     public Long bookCopyId;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
@@ -29,6 +28,7 @@ public class BookMedia {
     public String alt;
     @Column(length = 500)
     public String sourceRef;
+    public boolean showOnProduct;
     @Column(nullable = false)
     public Instant createdAt;
     @Column(nullable = false)

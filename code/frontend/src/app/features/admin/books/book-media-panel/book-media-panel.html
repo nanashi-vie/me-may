@@ -1,7 +1,7 @@
 <section aria-labelledby="photo-heading">
   <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Tối đa 8 ảnh: 6 ảnh công khai và 2 ảnh chỉ nội bộ. Khi xuất bản cần bìa và lưng;
+    Tối đa 8 ảnh: 6 ảnh công khai và 2 ảnh bổ sung mặc định ẩn. Khi xuất bản cần bìa và lưng;
     có thể lưu sách ẩn khi bộ ảnh chưa hoàn thiện.
   </p>
   @if (!readonly()) {
@@ -48,7 +48,7 @@
         class="photo-slot"
       >
         <h3>{{ labels[row.role] }}</h3>
-        @if(group.internal) {<p class="private-photo"><span aria-hidden="true">🔒</span> Chỉ nội bộ</p>}
+        @if(group.internal) {<p class="private-photo"><span aria-hidden="true">🔒</span> {{ row.showOnProduct ? "Hiện trên trang sách" : "Chỉ nội bộ" }}</p>}
         @if (row.preview) {
           <div class="preview-wrap">
           @defer (on viewport) {
@@ -111,6 +111,10 @@
                 }
               </select></label
             >
+            @if(group.internal) {
+              <label><input type="checkbox" [checked]="row.showOnProduct ?? false" [disabled]="row.state !== 'READY'"
+                (change)="photos.setProductVisibility(row.id, $any($event.target).checked)" /> Hiện trên trang sách</label>
+            }
             <div class="actions">
               <button
                 type="button"

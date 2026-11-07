@@ -18,7 +18,7 @@ class BookImportMigrationTest {
             var before=jdbc.queryForList("select b.*,l.slug,l.published_at from book_copy b join listing l on l.book_copy_id=b.id");
             config.target(MigrationVersion.LATEST).load().migrate();
             var after=jdbc.queryForList("select b.*,l.slug,l.published_at from book_copy b join listing l on l.book_copy_id=b.id");
-            after.forEach(row -> {assertThat(row.remove("unit_price_per_kg_vnd")).isNull();});
+            after.forEach(row -> {assertThat(row.remove("unit_price_per_kg_vnd")).isNull(); assertThat(row.remove("deleted_at")).isNull();});
             assertThat(after).isEqualTo(before);
             assertThat(jdbc.queryForObject("select count(*) from book_import_batch",Long.class)).isZero();
             assertThat(jdbc.queryForObject("select count(*) from book_import_item",Long.class)).isZero();

@@ -13,8 +13,8 @@ public class BookImportStore {
         if(fingerprint==null)return Optional.empty();
         var batches=jdbc.queryForList("select id,created_at from book_import_batch where fingerprint=?",fingerprint);
         if(batches.isEmpty())return Optional.empty();var batch=batches.getFirst();var id=(UUID)batch.get("id");
-        var items=new ArrayList<>(jdbc.query("select group_key,book_id::text,book_code,title from book_import_item where batch_id=?",
-                (r,n)->new ImportedBook(r.getString(1),r.getString(2),r.getString(3),r.getString(4)),id));
+        var items=new ArrayList<>(jdbc.query("select i.group_key,i.book_id::text,i.book_code,i.title,b.id is null from book_import_item i left join book_copy b on b.id=i.book_id where i.batch_id=?",
+                (r,n)->new ImportedBook(r.getString(1),r.getString(2),r.getString(3),r.getString(4),r.getBoolean(5)),id));
         items.sort(Comparator.comparing(ImportedBook::groupKey));
         return Optional.of(new ImportReceipt(id,fingerprint,((java.sql.Timestamp)batch.get("created_at")).toInstant(),List.copyOf(items)));
     }

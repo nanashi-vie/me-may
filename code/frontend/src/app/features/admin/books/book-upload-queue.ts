@@ -23,6 +23,7 @@ export interface UploadItem {
   sourceRef: string;
   storedAlt: string;
   storedSource: string;
+  showOnProduct?: boolean;
   uploadRole?: MediaRole;
   prepared?: Blob;
   previous?: UploadItem;
@@ -72,7 +73,7 @@ export class BookUploadQueue {
       : this.pending() ||
         this.metadataDirty() ||
         JSON.stringify(this.assignments()) !==
-          JSON.stringify(this.persisted()!.media.map((m) => ({ mediaId: m.id, role: m.role }))),
+          JSON.stringify(this.persisted()!.media.map((m) => mediaAssignment(m.id,m.role,m.showOnProduct))),
   );
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dispose());
@@ -86,14 +87,14 @@ export class BookUploadQueue {
   private revoke(url: string) {
     if (url.startsWith('blob:')) URL.revokeObjectURL(url);
   }
-  configure(book: BookDetail) {
+  configure(book: BookDetail | null) {
     this.rows().forEach((r) => {
       this.revoke(r.preview);
       if (r.previous) this.revoke(r.previous.preview);
     });
     this.persisted.set(book);
     this.rows.set(
-      book.media.map((m) => ({
+      book?.media.map((m) => ({
         id: crypto.randomUUID(),
         role: m.role,
         file: null,
@@ -104,15 +105,21 @@ export class BookUploadQueue {
         error: '',
         alt: m.alt ?? '',
         sourceRef: m.sourceRef ?? '',
+        showOnProduct: m.showOnProduct,
         storedAlt: m.alt ?? '',
         storedSource: m.sourceRef ?? '',
-      })),
+      })) ?? [],
     );
   }
   assignments(): MediaAssignment[] {
     return this.sorted()
       .filter((r) => r.mediaId !== null)
-      .map((r) => ({ mediaId: r.mediaId!, role: r.role }));
+      .map((r) => {
+        const stored = this.persisted()?.media.find(m => m.id === r.mediaId);
+        return !isPublicMedia(r.role) && !r.showOnProduct && stored?.showOnProduct
+          ? {mediaId:r.mediaId!,role:r.role,showOnProduct:false}
+          : mediaAssignment(r.mediaId!,r.role,r.showOnProduct);
+      });
   }
   add(files: File[]) {
     if (this.locked() || this.destroyed || !files.length) return;
@@ -150,10 +157,17 @@ export class BookUploadQueue {
     }
     this.rows.update((rows) =>
       rows.map((r) =>
-        r.id === id ? { ...r, role } : r.role === role ? { ...r, role: item.role } : r,
+        r.id === id ? { ...r, role, showOnProduct: isPublicMedia(r.role) === isPublicMedia(role) ? r.showOnProduct : false }
+          : r.role === role ? { ...r, role: item.role, showOnProduct: isPublicMedia(r.role) === isPublicMedia(item.role) ? r.showOnProduct : false } : r,
       ),
     );
     this.announcement.set('Đã gán vai trò ' + MEDIA_LABELS[role] + '.');
+  }
+  setProductVisibility(id: string, showOnProduct: boolean) {
+    const row = this.rows().find(r => r.id === id);
+    if (row?.state === 'READY' && !isPublicMedia(row.role) && !this.locked()) {
+      this.patch(id, {showOnProduct});
+    }
   }
   setMetadata(id: string, key: 'alt' | 'sourceRef', value: string) {
     const r = this.rows().find((r) => r.id === id);
@@ -178,6 +192,7 @@ export class BookUploadQueue {
               preview: this.preview(file),
               prepared: undefined,
               previous: old,
+              showOnProduct: false,
               state: 'queued',
               progress: 0,
               error: '',
@@ -528,4 +543,8 @@ export class BookUploadQueue {
     if (this.sessionId() && !this.consumed)
       this.api.cancelSession(this.sessionId()!).subscribe({ error: () => {} });
   }
+}
+
+export function mediaAssignment(mediaId: string, role: MediaRole, visible?: boolean): MediaAssignment {
+  return isPublicMedia(role) || !visible ? {mediaId,role} : {mediaId,role,showOnProduct:true};
 }

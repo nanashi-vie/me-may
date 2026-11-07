@@ -1,6 +1,8 @@
+<div class="editor-layout" [class.with-queue]="(routeBookId() || book()) && editable()">
+<div class="editor-main">
 <a routerLink="/admin/sach" queryParamsHandling="preserve">← Danh sách sách</a>
 <div class="heading-row">
-  <h1>{{ book() ? (editable() ? 'Chỉnh sửa sách' : 'Thông tin sách') : 'Thêm sách' }}</h1>
+  <h1>{{ book() ? (editable() ? 'Chỉnh sửa sách' : 'Thông tin sách') : (routeBookId() ? 'Chỉnh sửa sách' : 'Thêm sách') }}</h1>
   <span class="code">{{ book()?.bookCode || 'Mã tự sinh khi lưu' }}</span>
 </div>
 @if (loading()) {
@@ -30,6 +32,7 @@
   </p>
   <a [href]="'/admin/sach/' + b.id" target="_blank" rel="noopener">Mở bản đã lưu trong tab khác</a>
 }
+@if (!routeBookId() || book()) {
 <button type="button" class="secondary" [disabled]="formDisabled()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
 <form [formGroup]="form" (ngSubmit)="save()" class="book-form">
   <app-book-media-panel [readonly]="!editable()" [disabled]="formDisabled()" />
@@ -286,6 +289,9 @@
       <button type="button" [disabled]="formDisabled() || photos.pending()" (click)="save(true)">
         {{ busy() && saveAction() === 'publish' ? 'Đang lưu và xuất bản…' : 'Lưu và xuất bản' }}
       </button>
+      @if(book() && !book()?.publishedAt) {
+        <button type="button" class="secondary" [disabled]="formDisabled() || photos.pending()" (click)="save(true,true)">Xuất bản và mở cuốn tiếp theo</button>
+      }
     }
   </div>
   <p class="publication-state" role="status">{{publicationLabel()}}</p>
@@ -294,6 +300,7 @@
     <p class="muted">Chỉ chủ tiệm được thêm và sửa sách. Tài khoản STAFF chỉ xem.</p>
   }
 </form>
+}
 @if (needsLogin()) {
   <section class="reauth">
     <h2>Đăng nhập lại</h2>
@@ -329,3 +336,37 @@
     (busyChange)="otherBusy.set($event)"
   /><app-book-audit-panel [bookId]="saved.id" [version]="saved.version" (failed)="fail($event)" />
 }
+</div>
+@if ((routeBookId() || book()) && editable()) {
+  <aside class="unpublished-sidebar" aria-label="Hàng chờ xuất bản">
+    <ng-container [ngTemplateOutlet]="queueContent" />
+  </aside>
+  <button type="button" class="secondary unpublished-toggle" (click)="queueDialog.showModal()">
+    Chưa xuất bản @if(queueTotal() !== null) { ({{ queueTotal() }}) }
+  </button>
+  <dialog #queueDialog class="unpublished-dialog" aria-label="Hàng chờ xuất bản">
+    <button type="button" class="secondary" autofocus (click)="queueDialog.close()">Đóng danh sách</button>
+    <ng-container [ngTemplateOutlet]="queueContent" />
+  </dialog>
+  <ng-template #queueContent>
+    <h2>Chưa xuất bản @if(queueTotal() !== null) { ({{ queueTotal() }}) }</h2>
+    <form (submit)="$event.preventDefault(); loadQueue()">
+      <label>Tên hoặc mã sách <input type="search" maxlength="200" [formControl]="queueSearch" /></label>
+      <button type="submit" class="secondary">Tìm</button>
+    </form>
+    @if (queueError()) { <p role="alert">{{ queueError() }}</p> }
+    @if (queue(); as pending) {
+      <ul>
+        @for (item of pending.items; track item.id) {
+          <li>
+            @if(item.id === book()?.id) { <strong aria-current="page">{{ item.title || 'Chưa có tên' }} · {{ item.bookCode }}</strong> }
+            @else { <a [routerLink]="['/admin/sach',item.id]" queryParamsHandling="preserve" (click)="queueDialog.close()">{{ item.title || 'Chưa có tên' }} · {{ item.bookCode }}</a> }
+          </li>
+        } @empty { <li>Không có sách phù hợp.</li> }
+      </ul>
+      <button type="button" class="secondary" [disabled]="pending.page === 0" (click)="loadQueue(pending.page - 1)">Trước</button>
+      <button type="button" class="secondary" [disabled]="pending.page + 1 >= pending.totalPages" (click)="loadQueue(pending.page + 1)">Sau</button>
+    }
+  </ng-template>
+}
+</div>

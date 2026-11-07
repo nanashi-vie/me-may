@@ -3,8 +3,27 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
+  @if(auth.user()?.role === 'OWNER') { <div><button type="button" class="secondary" (click)="trashOpen() ? trashOpen.set(false) : showTrash()">{{ trashOpen() ? "Danh sách sách" : "Thùng rác" }}</button> <a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
+@if (trashOpen()) {
+  <section aria-labelledby="trash-heading">
+    <h2 id="trash-heading">Thùng rác</h2>
+    <p>Sách được dọn sau 7 ngày kể từ khi chuyển vào Thùng rác.</p>
+    @if (error()) { <p role="alert">{{ error() }}</p> }
+    @if (trashResult(); as trash) {
+      <ul>
+        @for (book of trash.items; track book.id) {
+          <li>{{ book.title || 'Chưa có tên' }} · {{ book.bookCode }} · Hạn khôi phục
+            {{ book.expiresAt | date:'dd/MM/yyyy HH:mm':'+0700' }}
+            <button type="button" [disabled]="mutationBusy() || expired(book)" (click)="changeTrash(book,false)">Khôi phục</button>
+          </li>
+        } @empty { <li>Thùng rác trống.</li> }
+      </ul>
+      <button type="button" [disabled]="trash.page === 0 || mutationBusy()" (click)="showTrash(trash.page - 1)">Trang trước</button>
+      <button type="button" [disabled]="trash.page + 1 >= trash.totalPages || mutationBusy()" (click)="showTrash(trash.page + 1)">Trang sau</button>
+    }
+  </section>
+} @else {
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label class="admin-field"><span class="field-label">Tên hoặc mã sách</span><input formControlName="q" maxlength="200" type="search" /></label
   ><label class="admin-field"
@@ -38,6 +57,7 @@
           <th>Xuất bản</th>
           <th>Tồn kho</th>
           <th>Cập nhật</th>
+          @if (auth.user()?.role === "OWNER") { <th scope="col">Thao tác</th> }
         </tr>
       </thead>
       <tbody>
@@ -64,10 +84,15 @@
             <td>{{ book.publication === 'ARCHIVED' && !book.publishedAt ? 'Chưa xuất bản' : labels[book.publication] }}</td>
             <td>{{ book.totalStock }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
+            @if (auth.user()?.role === 'OWNER') {
+              <td><button type="button" class="secondary" [disabled]="mutationBusy()"
+                [attr.aria-label]="'Chuyển ' + book.bookCode + ' vào Thùng rác'" (click)="askTrash(book,trashDialog)">
+                <span aria-hidden="true">🗑</span></button></td>
+            }
           </tr>
         } @empty {
           <tr>
-            <td colspan="5">Chưa có sách phù hợp.</td>
+            <td [attr.colspan]="auth.user()?.role === 'OWNER' ? 6 : 5">Chưa có sách phù hợp.</td>
           </tr>
         }
       </tbody>
@@ -90,3 +115,12 @@
     </button>
   </nav>
 }
+}
+<dialog #trashDialog aria-labelledby="trash-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
+  @if (target(); as book) {
+    <h2 id="trash-dialog-heading">Chuyển vào Thùng rác?</h2>
+    <p>{{ book.title || 'Chưa có tên' }} ({{ book.bookCode }}) sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
+    <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="trashDialog.close()">Hủy</button>
+    <button type="button" [disabled]="mutationBusy()" (click)="changeTrash(book,true,trashDialog)">Chuyển vào Thùng rác</button>
+  }
+</dialog>

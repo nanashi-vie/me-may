@@ -26,7 +26,7 @@ public class AuditService {
             "categoryCode", "ageGroups",
             "readingLevel", "readingVideoUrl", "collectionIds", "publication", "availability", "media", "variants",
             "features", "totalStock", "internalNote", "unitPricePerKgVnd",
-            "confirmedActualCopy", "name", "slug", "sortOrder", "active", "enabled", "startsAt", "endsAt", "items", "shelves", "source", "importBatchId");
+            "confirmedActualCopy", "name", "slug", "sortOrder", "active", "enabled", "startsAt", "endsAt", "items", "shelves", "source", "importBatchId", "deletedAt");
 
     public Map<String, Object> snapshot(Object value) {
         var result = new LinkedHashMap<String, Object>();

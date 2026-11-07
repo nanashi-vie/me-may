@@ -31,6 +31,10 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
+- Ảnh bổ sung, đặc điểm, Thùng rác và hàng chờ tại [CATALOGUE](CATALOGUE.md)
+  và [DESIGN](DESIGN.md). Rà soát import tại [BOOK_IMPORT](BOOK_IMPORT.md).
+  Rollout V17–V19 tại [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).
+
 - 8ảnh/lưu/features06/11 đã gộp vào [CATALOGUE](CATALOGUE.md), [DATA](DATA.md),
   [DESIGN](DESIGN.md); [bằng chứng](BOOK_ENTRY_VERIFICATION.md),
   [rolloutV15](BOOK_ENTRY_ROLLOUT.md). Chưa deployproduction.

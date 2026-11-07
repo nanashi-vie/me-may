@@ -92,7 +92,7 @@ Home lấy bố cục từ ảnh `docs/assets/nxbkimdong.com.vn.png` do người
 | Home | `/` | Header/search, menu danh mục, banner ngang lớn, các hàng sách/bộ sưu tập và banner xen kẽ theo ảnh tham khảo người dùng; xem DESIGN.md |
 | Catalogue | `/sach` | Grid, search, filter, sort, pagination; URL giữ filter |
 | Collection | `/bo-suu-tap/:slug` | Tập sách chủ/nhân viên biên tập |
-| Detail | `/sach/:slug` | 2–6 ảnh thật, trọng lượng gram, tiêu đề ghép, giá tham khảo/mã/khả dụng, mô tả, mức đọc, link video đọc sách, trái tim và CTA Zalo |
+| Detail | `/sach/:slug` | 2–8 ảnh thật, trọng lượng gram, tiêu đề ghép, giá tham khảo/mã/khả dụng, mô tả, mức đọc, link video đọc sách, trái tim và CTA Zalo |
 | Wishlist | `/quan-tam` | Danh sách lưu trên thiết bị; xóa sách; refresh trạng thái; copy danh sách |
 | About/How to buy | `/gioi-thieu`, `/cach-mua`, `/lien-he` | Nội dung và link thật do tiệm cung cấp |
 | Admin | `/admin/...` | Login, dashboard thao tác, danh sách sản phẩm, editor, media, taxonomy |
@@ -141,7 +141,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 - Search theo tên/mã, case-insensitive; hỗ trợ tiếng Việt không dấu nếu có thể thực hiện bằng PostgreSQL unaccent hoặc giải pháp tương đương; chỉ công khai published listing.
 - Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa nằm trong Picture book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
 - Mã sách/slug ổn định; HTML ban đầu cho trang sách/danh sách có SEO title/description/canonical/OG image bằng giải pháp render được **kiểm chứng trên Cloudflare** (SSR hoặc SSG với cập nhật phù hợp).
-- Detail hiển thị 2–6 ảnh thật: FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3; FRONT/BACK bắt buộc, các vai trò còn lại tùy chọn, mỗi vai trò tối đa một ảnh. Kiểm tra tình trạng/lỗi trước đăng. Ảnh/video bổ sung trao đổi qua Zalo, hai role INTERNAL_1/INTERNAL_2 chỉ admin, không public.
+- Detail hiển thị 2–8 ảnh thật. FRONT/BACK bắt buộc. Hai vai trò ảnh bổ sung mặc định ẩn và có thể bật riêng. Contract ảnh, xóa mềm và hạn Thùng rác ở CATALOGUE.
 - Tiêu đề ghép `Tên | NXB | Tác giả | Độ tuổi`, lưu các trường riêng và bỏ phần thiếu/dấu phân cách thừa. Có mô tả, độ tuổi, mức đọc tham khảo, link video đọc sách tùy chọn và giá tham khảo.
 - Trái tim wishlist; “Liên hệ” khi còn hàng / “Tư vấn sách tương đương” khi hết hàng; “Tham gia cộng đồng để nhận thông tin ưu đãi” mở nhóm Zalo. Chuẩn bị nội dung/copy theo mục 0.1; không tự gửi, không giữ hàng; tiệm xác nhận giá và khả dụng. Link hotline và nhóm thật là đầu vào trước nghiệm thu.
 

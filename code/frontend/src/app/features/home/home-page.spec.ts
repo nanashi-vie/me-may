@@ -67,6 +67,19 @@ describe('HomePage banner info boxes', () => {
     expect(link2.textContent?.trim()).toBe('0703 260 005');
   });
 
+  it('opens shipping-promo dialog when clicking "Ưu đãi vận chuyển" box', () => {
+    const { fixture, component } = setup();
+    const el = fixture.nativeElement as HTMLElement;
+    const button = el.querySelector('button.info-box-item[aria-label="Ưu đãi vận chuyển"]') as HTMLButtonElement;
+    expect(button).toBeTruthy();
+
+    expect(component.shippingPromoDialog).toBeTruthy();
+    const openSpy = vi.spyOn(component.shippingPromoDialog!, 'open');
+
+    button.click();
+    expect(openSpy).toHaveBeenCalledWith(button);
+  });
+
   it('opens how-to-buy dialog when clicking "Cách hỏi mua sách" box', () => {
     const { fixture, component } = setup();
     const el = fixture.nativeElement as HTMLElement;
