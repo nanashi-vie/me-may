@@ -200,19 +200,47 @@ public class PublicCatalogueService {
     }
 
     public Home home() {
-        var shelves = new ArrayList<Shelf>();
-        shelf(shelves, "Sách mới đăng", "/sach", null, null);
-        shelf(shelves, "Board books cho bé nhỏ", "/sach?category=BOARD_BOOK", "BOARD_BOOK", null);
-        shelf(shelves, "Picture books", "/sach?category=PICTURE_BOOK", "PICTURE_BOOK", null);
-        for (var c : collections().stream().limit(2).toList())
-            shelf(shelves, c.name(), "/bo-suu-tap/" + c.slug(), null, c.slug());
+        List<Shelf> shelves = new ArrayList<>();
+        shelf(shelves, "NEWEST", "Sách mới đăng", "/sach", null, null);
+        shelf(shelves, "CATEGORY:BOARD_BOOK", "Board books cho bé nhỏ", "/sach?category=BOARD_BOOK", "BOARD_BOOK", null);
+        shelf(shelves, "CATEGORY:PICTURE_BOOK", "Picture books", "/sach?category=PICTURE_BOOK", "PICTURE_BOOK", null);
+        for (Collection c : collections().stream().limit(2).toList())
+            shelf(shelves, "COLLECTION:" + c.slug(), c.name(), "/bo-suu-tap/" + c.slug(), null, c.slug());
         return new Home(shelves);
     }
 
-    private void shelf(List<Shelf> rows, String title, String href, String category, String collection) {
-        var books = list(null, category, null, List.of(), "newest", 0, collection, true).items().stream().limit(5)
-                .toList();
-        if (!books.isEmpty())
-            rows.add(new Shelf(title, href, books));
+    private void shelf(List<Shelf> rows, String shelfKey, String title, String href, String category, String collection) {
+        StringBuilder pinnedWhere = new StringBuilder(
+                " join home_featured_item hfi on hfi.listing_id=l.id where hfi.shelf_key=? and l.publication_status='PUBLISHED' and b.availability='AVAILABLE'");
+        List<Object> args = new ArrayList<>();
+        args.add(shelfKey);
+        if (category != null) {
+            pinnedWhere.append(" and c.code=?");
+            args.add(category);
+        }
+        if (collection != null) {
+            pinnedWhere.append(
+                    " and exists(select 1 from listing_collection lc join collection co on co.id=lc.collection_id where lc.listing_id=l.id and co.active and co.slug=?)");
+            args.add(collection);
+        }
+        List<Book> pinned = jdbc.query(
+                SELECT + FROM + pinnedWhere + " order by hfi.position asc limit 10",
+                this::book,
+                (Object[]) args.toArray());
+        List<Book> combined = new ArrayList<>(pinned);
+        if (combined.size() < 10) {
+            Set<String> seenIds = new HashSet<>();
+            for (Book b : combined)
+                seenIds.add(b.id());
+            List<Book> autoItems = list(null, category, null, List.of(), "newest", 0, collection, true).items();
+            for (Book b : autoItems) {
+                if (combined.size() >= 10)
+                    break;
+                if (seenIds.add(b.id()))
+                    combined.add(b);
+            }
+        }
+        if (!combined.isEmpty())
+            rows.add(new Shelf(title, href, List.copyOf(combined)));
     }
 }

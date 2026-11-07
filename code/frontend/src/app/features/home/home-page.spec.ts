@@ -79,5 +79,86 @@ describe('HomePage banner info boxes', () => {
     button.click();
     expect(openSpy).toHaveBeenCalledWith(button);
   });
+
+  it('renders up to 10 books in shelf carousel and scrolls 1 book per click with disabled edge buttons', () => {
+    const books = Array.from({ length: 10 }, (_, i) => ({
+      id: String(i + 1),
+      bookCode: `MM-0000${String(i + 1).padStart(2, '0')}`,
+      slug: `book-${i + 1}`,
+      title: `Book ${i + 1}`,
+      publisher: null,
+      author: null,
+      ageGroups: ['AGE_4_6'],
+      categoryCode: 'PICTURE_BOOK',
+      binding: 'HARDCOVER',
+      conditionGrade: null,
+      conditionNote: null,
+      priceMinVnd: 20000,
+      priceMaxVnd: 20000,
+      salePriceVnd: null,
+      saleEndsAt: null,
+      weightG: 200,
+      description: null,
+      readingLevel: null,
+      readingVideoUrl: null,
+      availability: 'AVAILABLE' as const,
+      media: [],
+      collectionSlugs: [],
+      features: [],
+    }));
+
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        {
+          provide: PublicApi,
+          useValue: {
+            home: () =>
+              of({
+                shelves: [{ title: 'Sách mới đăng', href: '/sach', books }],
+              }),
+            sale: () => of({ serverNow: new Date().toISOString(), endsAt: null, items: [] }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+
+    const fixture = TestBed.createComponent(HomePage);
+    fixture.detectChanges();
+    const el = fixture.nativeElement as HTMLElement;
+
+    const cards = el.querySelectorAll('.shelf .carousel-item');
+    expect(cards.length).toBe(10);
+
+    const prevBtn = el.querySelector('.shelf .carousel-nav.prev') as HTMLButtonElement;
+    const nextBtn = el.querySelector('.shelf .carousel-nav.next') as HTMLButtonElement;
+    expect(prevBtn).toBeTruthy();
+    expect(nextBtn).toBeTruthy();
+    expect(prevBtn.disabled).toBe(true);
+    expect(nextBtn.disabled).toBe(false);
+
+    const track = el.querySelector('.shelf .shelf-carousel') as HTMLElement;
+    const scrollSpy = vi.fn();
+    track.scrollBy = scrollSpy;
+
+    nextBtn.click();
+    fixture.detectChanges();
+    expect(scrollSpy).toHaveBeenCalledTimes(1);
+    expect(prevBtn.disabled).toBe(false);
+    expect(nextBtn.disabled).toBe(false);
+
+    for (let i = 0; i < 4; i++) {
+      nextBtn.click();
+      fixture.detectChanges();
+    }
+    expect(prevBtn.disabled).toBe(false);
+    expect(nextBtn.disabled).toBe(true);
+
+    prevBtn.click();
+    fixture.detectChanges();
+    expect(nextBtn.disabled).toBe(false);
+  });
 });
 

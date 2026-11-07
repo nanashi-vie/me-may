@@ -303,3 +303,10 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
   query mỗi book. Bao phủ list/detail/home/related/collection/lookup/flashsale.
 - Tag không thay category/binding/grade/flashsale; không filter/search/AI tự gán.
   UI và tiêu chí accessibility ở DESIGN; migration/rollout ở BOOK_ENTRY_ROLLOUT.
+
+## 13. Kệ sách Trang chủ 10 cuốn & Cấu hình sách nổi bật (`V16`) — 07/11/2026
+
+- `GET /api/v1/home`: mỗi kệ trả tối đa **10 cuốn**. Hệ thống lấy các sách đã ghim trong `home_featured_item` theo `position ASC` đang thỏa `PUBLISHED` + `AVAILABLE` và đúng phạm vi thể loại/bộ sưu tập của kệ trước; nếu chưa đủ 10 cuốn thì tự động lấy bù sách mới nhất (`preferAvailable = true`, không trùng lặp) cho đủ tối đa 10 cuốn.
+- `GET /api/v1/admin/home-featured`: trả `version` và danh sách các kệ trên Home kèm các cuốn đang ghim và cờ `activeOnHome`.
+- `GET /api/v1/admin/home-featured/candidates?shelfKey=...&q=...`: gợi ý tối đa 20 sách `PUBLISHED` + `AVAILABLE` thuộc phạm vi kệ khớp từ khóa `q` (mã sách, tên sách, NXB).
+- `PUT /api/v1/admin/home-featured`: chỉ `OWNER`, kiểm tra `version` (409 nếu lệch), tối đa 10 mã sách/kệ, không trùng mã trong cùng kệ, đúng phạm vi thể loại/bộ sưu tập; ghi audit `HOME_FEATURED` và kích hoạt `PublicCacheInvalidation`.

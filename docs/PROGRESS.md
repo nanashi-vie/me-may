@@ -1,7 +1,13 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 06/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+## Carousel 10 cuốn trên Home & Mục "Hiển thị sách nổi bật" ở /admin — đã triển khai local 07/11/2026 (trên worktree dev-ui)
+
+- S045-C01: Hoàn tất thanh trượt ngang tối đa 10 cuốn (desktop hiện 5 thẻ, tablet 3 thẻ, mobile 2 thẻ; click `<` / `>` trượt đúng 1 cuốn, tự động mờ/khóa nút ở đầu/cuối dãy, ẩn nút khi `≤ 5` cuốn) cho toàn bộ các kệ trên Home (`Sách mới đăng`, `Board books cho bé nhỏ`, `Picture books`, các `Bộ sưu tập` đang bật, và khối `Flash Sale`).
+- Thêm migration `V16__home_featured_shelves.sql` và trang `/admin/sach-noi-bat` ("Hiển thị sách nổi bật", quyền `OWNER`) cho phép tìm kiếm trực quan theo tên/mã/NXB, ghim tối đa 10 cuốn/kệ, sắp xếp `↑`/`↓` và tự động lấy bù sách mới nhất còn hàng khi ghim `< 10` cuốn hoặc khi sách ghim đã bán (`SOLD`)/ẩn (`ARCHIVED`).
+- Kiểm chứng: Backend `HomeFeaturedApiTest` & `PublicCatalogueApiTest` (11/11 PASS); Frontend Vitest 43/43 files (234/234 tests PASS); `npm run build` và `npm run build:workers` 0 warning, 0 error.
 
 ## Sao chép mobile và markup detail — đã sửa local06/11/2026
 

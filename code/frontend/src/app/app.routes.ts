@@ -29,6 +29,20 @@ export const routes: Routes = [
           import('./features/admin/flash-sale/flash-sale').then((m) => m.FlashSaleEditor),
       },
       {
+        path: 'sach-noi-bat',
+        title: 'Hiển thị sách nổi bật | Mẹ Mây',
+        canDeactivate: [pendingBookChanges],
+        canActivate: [
+          () =>
+            inject(AuthService).user()?.role === 'OWNER' ||
+            inject(Router).createUrlTree(['/admin/sach']),
+        ],
+        loadComponent: () =>
+          import('./features/admin/home-featured/home-featured').then(
+            (m) => m.HomeFeaturedEditor,
+          ),
+      },
+      {
         path: 'bo-suu-tap',
         title: 'Bộ sưu tập | Mẹ Mây',
         canActivate: [

@@ -97,9 +97,39 @@
         </div>
         <a class="see-all" routerLink="/flash-sale">Xem tất cả <span aria-hidden="true">›</span></a>
       </header>
-      <div class="shelf-grid">
-        @for (b of sale()!.items.slice(0, 5); track b.id) {
-          <app-book-card [book]="b" [now]="clock.now()" />
+      <div class="carousel-container">
+        @if (sale()!.items.slice(0, 10).length > 5) {
+          <button
+            type="button"
+            class="carousel-nav prev"
+            aria-label="Trượt sang trái Flash Sale"
+            [disabled]="isAtStart('FLASH_SALE')"
+            (click)="scrollShelf(flashTrack, -1, 'FLASH_SALE', sale()!.items.slice(0, 10).length)"
+          >
+            ‹
+          </button>
+        }
+        <div
+          class="shelf-grid shelf-carousel"
+          #flashTrack
+          (scroll)="onShelfScroll(flashTrack, 'FLASH_SALE', sale()!.items.slice(0, 10).length)"
+        >
+          @for (b of sale()!.items.slice(0, 10); track b.id) {
+            <div class="carousel-item">
+              <app-book-card [book]="b" [now]="clock.now()" />
+            </div>
+          }
+        </div>
+        @if (sale()!.items.slice(0, 10).length > 5) {
+          <button
+            type="button"
+            class="carousel-nav next"
+            aria-label="Trượt sang phải Flash Sale"
+            [disabled]="isAtEnd('FLASH_SALE', sale()!.items.slice(0, 10).length)"
+            (click)="scrollShelf(flashTrack, 1, 'FLASH_SALE', sale()!.items.slice(0, 10).length)"
+          >
+            ›
+          </button>
         }
       </div>
     </div>
@@ -124,9 +154,39 @@
           >Xem tất cả →</a
         >
       </header>
-      <div class="shelf-grid">
-        @for (b of s.books; track b.id) {
-          <app-book-card [book]="b" [now]="clock.now()" />
+      <div class="carousel-container">
+        @if (s.books.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav prev"
+            [attr.aria-label]="'Trượt sang trái ' + s.title"
+            [disabled]="isAtStart(s.href)"
+            (click)="scrollShelf(shelfTrack, -1, s.href, s.books.length)"
+          >
+            ‹
+          </button>
+        }
+        <div
+          class="shelf-grid shelf-carousel"
+          #shelfTrack
+          (scroll)="onShelfScroll(shelfTrack, s.href, s.books.length)"
+        >
+          @for (b of s.books.slice(0, 10); track b.id) {
+            <div class="carousel-item">
+              <app-book-card [book]="b" [now]="clock.now()" />
+            </div>
+          }
+        </div>
+        @if (s.books.length > 5) {
+          <button
+            type="button"
+            class="carousel-nav next"
+            [attr.aria-label]="'Trượt sang phải ' + s.title"
+            [disabled]="isAtEnd(s.href, s.books.length)"
+            (click)="scrollShelf(shelfTrack, 1, s.href, s.books.length)"
+          >
+            ›
+          </button>
         }
       </div>
     </section>
