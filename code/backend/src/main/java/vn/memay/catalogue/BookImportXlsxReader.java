@@ -96,7 +96,6 @@ final class BookImportXlsxReader {
                 if(++cellCount>budget)limit("Tối đa 20000 ô toàn workbook.");
                 String ref=a.getValue("r");if(ref==null || !ref.matches("[A-Z]{1,3}"+row))bad("Địa chỉ ô không hợp lệ.");
                 int n=0;for(char ch:ref.replaceAll("[0-9]","").toCharArray())n=n*26+ch-'A'+1;col=n-1;
-                if(col>=20 && sheet.equals("Sach"))bad("Sheet Sach chỉ có 20 cột theo mẫu.");
                 if(values.containsKey(col))bad("Ô bị trùng.");
                 type=a.getValue("t");style=a.getValue("s")==null?0:Integer.parseInt(a.getValue("s"));formula=false;text.setLength(0);
             }
@@ -124,6 +123,8 @@ final class BookImportXlsxReader {
                         value=Long.toString(n);
                     } catch(Exception e) {problem="Ô số không nguyên, mất độ chính xác, ngày hoặc vượt giới hạn.";}
                 }
+                if(col>=20 && sheet.equals("Sach") && (problem!=null || !value.isBlank()))
+                    bad("Sheet Sach chỉ có 20 cột theo mẫu.");
                 if(problem!=null) {
                     if(row==1 || !sheet.equals("Sach"))bad(problem);
                     issues.add(new ImportIssue(sheet,row,col<headers.size()?headers.get(col):"file","cell_type",problem));value="";

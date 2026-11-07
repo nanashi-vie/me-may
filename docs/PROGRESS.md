@@ -3,6 +3,10 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Sửa lỗi import ô Excel trống ngoài mẫu — 07/11/2026
+
+- S050: parser bỏ qua ô trống có định dạng ở ngoài cột T. File gốc đọc được 7 dòng V4, không lỗi kiểm tra nội dung. Bộ test import đạt trên PostgreSQL kiểm thử. Chưa triển khai production.
+
 ## Thao tác Thùng rác hàng loạt — đã kiểm local 07/11/2026
 
 - S049-C01: Chọn từng sách hoặc cả trang để xóa mềm. Dọn sách đã chọn hoặc toàn bộ Thùng rác sau xác nhận. Backend 7 ca liên quan và frontend 245 ca đạt. Chưa rollout production.

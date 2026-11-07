@@ -2316,3 +2316,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   phát hiện lỗi đọc kiểu payload, đã sửa để dùng ID dạng chuỗi. Frontend
   `npm test -- --watch=false` đạt 245/245. Chưa chạy smoke trình duyệt
   hoặc thử xóa dữ liệu production. Bàn giao qua dev.
+
+### S050-C01 — 07/11/2026 — Kiểm file Excel báo xlsx_invalid
+
+- dev64c2017 sạch. Probe Java với file user tái hiện lỗi giới hạn 20 cột vì hai ô trống ở U. Đang thêm test và sửa parser; chưa ghi dữ liệu.
+
+### S050-C02 — 07/11/2026 — Xác minh parser Excel
+
+- BookImportXlsxReader kiểm giới hạn 20 cột sau khi đọc giá trị. Ô trống có định dạng được bỏ qua và ô có dữ liệu hoặc lỗi kiểu vẫn bị từ chối. Thêm ca hồi quy ô trống ở cột U trong BookImportTemplateTest.
+- Probe Java trên file gốc: trước sửa xlsx_invalid tại U2/U3, sau sửa 7 dòng V4 và 0 lỗi chuẩn hóa. Không ghi dữ liệu từ file này.
+- Maven scoped 45 ca đạt. Lượt rộng ban đầu thiếu TEST_DB_URL. Chạy lại tại code/backend với cấu hình test local và bộ BookImport*Test đạt, không lỗi. Bàn giao qua dev, chưa deploy.

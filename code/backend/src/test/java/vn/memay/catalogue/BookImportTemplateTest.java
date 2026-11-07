@@ -41,6 +41,16 @@ class BookImportTemplateTest {
             mutate.accept(sheet);book.write(out);return out.toByteArray();
         }
     }
+    @Test void ignoresFormattedBlankCellsBeyondColumnTwenty() throws Exception {
+        var bytes=workbook(sheet -> {
+            var style=sheet.getWorkbook().createCellStyle();
+            style.setWrapText(true);
+            sheet.getRow(1).createCell(20).setCellStyle(style);
+            sheet.createRow(993).createCell(20).setCellStyle(style);
+        });
+        assertThat(parser.parse("formatted.xlsx",bytes)).extracting(CellRow::row).containsExactly(2);
+    }
+
     @Test void templatesContainNoImportableExampleRows() throws Exception {
         var options=new ImportOptions(new Taxonomy(List.of(new Option("BOARD_BOOK","Board book",0)),List.of(),List.of(),List.of(),List.of()),List.of(new CollectionOption("moi-ve","Mới về")));
         var template=new BookImportTemplate();
