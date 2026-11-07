@@ -142,3 +142,4 @@ describe('HomeFeaturedEditor', () => {
     http.verify();
   });
 });
+

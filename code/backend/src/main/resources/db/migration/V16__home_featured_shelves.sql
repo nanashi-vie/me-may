@@ -12,3 +12,4 @@ CREATE TABLE home_featured_item (
  UNIQUE (shelf_key, listing_id)
 );
 CREATE INDEX home_featured_item_listing ON home_featured_item(listing_id);
+

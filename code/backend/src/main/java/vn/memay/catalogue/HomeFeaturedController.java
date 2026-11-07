@@ -34,3 +34,4 @@ public class HomeFeaturedController {
         return featured.update(actors.current(a), body);
     }
 }
+

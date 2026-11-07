@@ -128,3 +128,4 @@ class HomeFeaturedApiTest extends CatalogueTestSupport {
                 .isEqualTo(403);
     }
 }
+
