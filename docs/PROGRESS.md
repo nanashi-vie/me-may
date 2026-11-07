@@ -3,6 +3,11 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Tối ưu luồng chỉnh sửa sách — đang duyệt thiết kế 07/11/2026
+
+- Đã chốt panel ghim bên phải và nút xuất bản rồi mở cuốn tiếp theo.
+- [Thiết kế](BOOK_ADMIN_WORKFLOW_SPEC.md) đang chờ duyệt. Chưa sửa code.
+
 ## Kiểm tra tên sách khi import Excel — đã kiểm local 07/11/2026
 
 - S046-C01: CSV/XLSX V1–V4 chặn trùng tên trong lô và với danh mục ở bước

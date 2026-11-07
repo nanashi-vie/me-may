@@ -2195,3 +2195,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Hai test HTTP dùng XLSX V4 trong `BookImportUnitPriceIntegrationTest` tái hiện 2 lỗi trước sửa. Sau sửa cả hai đạt, gồm trường hợp sách được đăng giữa xem trước và xác nhận. Đổi fixture trùng tên trong các test V1–V4 cũ sang tên riêng để giữ phạm vi kiểm tra giá, transaction và biên nhận.
 - `mvn test` tại `code/backend` với PostgreSQL test local: 231 ca, 0 lỗi, 3 ca live bỏ qua. `npm test -- --watch=false` tại `code/frontend`: 234/234 đạt. `git diff --check` đạt. Chưa smoke trình duyệt hay production.
 - Cập nhật contract `docs/BOOK_IMPORT.md` và snapshot `docs/PROGRESS.md`. Bàn giao cùng thay đổi backend trên `dev`. Bước tiếp theo theo workflow là user merge `dev` qua `main` và smoke import Excel sau rollout backend.
+
+### S047-C01 — 07/11/2026 — Chốt hướng hàng chờ xuất bản
+
+- User chọn danh sách ghim bên phải kèm nút xuất bản rồi mở cuốn tiếp theo.
+- Ghi thiết kế tại `docs/BOOK_ADMIN_WORKFLOW_SPEC.md`, đăng ký trong chỉ mục
+  và tiến độ. Đối chiếu bộ lọc chưa từng xuất bản, thứ tự và luồng lưu hiện
+  có trên `dev` tại `c2282c8`. Chưa sửa code hay chạy test ứng dụng.
+- Chờ duyệt hành vi cụ thể trong thiết kế trước khi lập kế hoạch triển khai.
