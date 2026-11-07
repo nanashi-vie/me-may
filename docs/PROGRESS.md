@@ -5,7 +5,7 @@ Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 ## Tối ưu luồng chỉnh sửa sách — đang duyệt thiết kế 07/11/2026
 
-- Đã chốt panel ghim bên phải và nút xuất bản rồi mở cuốn tiếp theo.
+- Đã chốt panel ghim, nút xuất bản rồi mở cuốn tiếp theo, cảnh báo trước khi xóa và tự dọn Thùng rác sau 7 ngày.
 - [Thiết kế](BOOK_ADMIN_WORKFLOW_SPEC.md) đang chờ duyệt. Chưa sửa code.
 
 ## Kiểm tra tên sách khi import Excel — đã kiểm local 07/11/2026

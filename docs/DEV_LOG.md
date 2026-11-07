@@ -2203,3 +2203,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   và tiến độ. Đối chiếu bộ lọc chưa từng xuất bản, thứ tự và luồng lưu hiện
   có trên `dev` tại `c2282c8`. Chưa sửa code hay chạy test ứng dụng.
 - Chờ duyệt hành vi cụ thể trong thiết kế trước khi lập kế hoạch triển khai.
+
+### S047-C02 — 07/11/2026 — Thời hạn Thùng rác
+
+- User yêu cầu tự xóa sau 7 ngày và có cảnh báo khi bấm icon xóa. Bổ sung
+  thời hạn, xác nhận, tác vụ dọn có thử lại và cách hiển thị biên nhận cũ
+  trong `BOOK_ADMIN_WORKFLOW_SPEC.md`.
+- Đọc schema FK và luồng `MediaCleanupJob`. Biên nhận import cần giữ
+  lịch sử khi bản ghi sách được dọn. Chưa sửa code hay chạy test ứng dụng.
+- Chờ duyệt thiết kế cập nhật trước khi lập kế hoạch triển khai.

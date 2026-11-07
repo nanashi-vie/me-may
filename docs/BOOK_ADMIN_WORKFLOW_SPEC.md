@@ -57,6 +57,10 @@ sách ghim và nút sang cuốn tiếp theo.
 - Icon thùng rác bên phải cột **Cập nhật** tại `/admin/sach`, có nhãn trợ
   năng và xác nhận theo tên/mã sách. Chỉ OWNER được xóa và khôi phục. Giữ
   mã sách, ảnh, tồn, dấu mốc xuất bản và audit. Kiểm tra version khi ghi.
+- Bấm icon mở hộp thoại: “Chuyển «{tên sách}» ({mã sách}) vào Thùng rác?
+  Sách sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.”
+  Hai nút **Hủy** và **Chuyển vào Thùng rác**. Đóng hộp thoại có tác dụng như
+  Hủy. Chỉ gửi yêu cầu sau khi chủ tiệm xác nhận.
 - Sách vào **Thùng rác**, rời danh sách thông thường, hàng chờ, kết quả chọn
   sách quản trị, catalogue công khai và endpoint ảnh công khai. Vô hiệu
   cache sau commit. Link public của sách đã xóa trả 404.
@@ -65,9 +69,18 @@ sách ghim và nút sang cuốn tiếp theo.
 - Đề xuất giữ cấu hình ghim và Flash Sale đã gán như khi Ẩn. Sách vắng mặt
   khỏi các kệ và Flash Sale trong lúc bị xóa hoặc Ẩn. Sau khi chủ tiệm chủ
   động đăng lại, cấu hình còn hiệu lực mới có thể hiển thị trở lại.
-- Đề xuất giữ tên sách trong Thùng rác trong phạm vi kiểm tra trùng để có
-  thể khôi phục theo mã cũ. Import lại đúng file cũ vẫn trả biên nhận đã
-  lưu. Kiểm tra quyền, xóa/khôi phục sách từng đăng, ảnh public và hàng chờ.
+- Tính 7 ngày từ lúc chuyển vào Thùng rác. Hiển thị thời điểm hết hạn theo
+  giờ Việt Nam. Chủ tiệm có thể khôi phục trước hạn. Từ thời điểm hết hạn,
+  khóa khôi phục và dọn trong lượt tác vụ backend kế tiếp. Tác vụ kiểm tra
+  lại hạn và trạng thái trong giao dịch để tránh tranh chấp với khôi phục.
+- Dọn dữ liệu sách và các liên kết còn lại. Đưa việc xóa ảnh Cloudinary vào
+  luồng dọn có thể thử lại khi lỗi. Giữ audit và thông tin lịch sử tối thiểu
+  trên biên nhận import. Biên nhận hiển thị **Đã xóa vĩnh viễn** thay cho
+  liên kết tới sách đã dọn. Gửi lại đúng file cũ vẫn trả biên nhận.
+- Đề xuất giữ tên sách trong phạm vi kiểm tra trùng suốt thời gian ở Thùng
+  rác để khôi phục theo mã cũ. Sau khi dọn dữ liệu sách, tên có thể dùng
+  lại cho lô mới. Kiểm tra quyền, hủy hộp thoại, khôi phục trước hạn, dọn
+  sau hạn, lỗi Cloudinary, biên nhận cũ, ảnh public và hàng chờ.
 
 Chi tiết migration, API và tên trường lưu trữ sẽ được chọn ở bước lập kế
 hoạch, sau khi thiết kế được duyệt.
