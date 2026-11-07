@@ -16,6 +16,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 |---|---|
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
+| Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế đang duyệt](BOOK_COMPLETENESS_SPEC.md) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
 | Nhập giá/kg, tồn gộp, ghi chú nội bộ06/11 | [DATA](DATA.md#nhập-giá-theo-kg-và-sửa-tay-06112026), [CATALOGUE](CATALOGUE.md#payload-nhập-sách-và-field-optional-0611), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
 | Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |

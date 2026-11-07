@@ -3,6 +3,12 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Rà sách thiếu thông tin và kiểu bìa — thiết kế 07/11/2026
+
+- S051: User chốt danh sách Thiếu thông tin một thao tác. Đã ghi thiết kế
+  hàng chờ, kiểu bìa và nút lưu/quay lại tại [spec](BOOK_COMPLETENESS_SPEC.md).
+  Chờ duyệt tài liệu trước khi lập kế hoạch triển khai.
+
 ## Sửa lỗi import ô Excel trống ngoài mẫu — 07/11/2026
 
 - S050: parser bỏ qua ô trống có định dạng ở ngoài cột T. File gốc đọc được 7 dòng V4, không lỗi kiểm tra nội dung. Bộ test import đạt trên PostgreSQL kiểm thử. Chưa triển khai production.

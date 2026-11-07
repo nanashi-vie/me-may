@@ -2326,3 +2326,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - BookImportXlsxReader kiểm giới hạn 20 cột sau khi đọc giá trị. Ô trống có định dạng được bỏ qua và ô có dữ liệu hoặc lỗi kiểu vẫn bị từ chối. Thêm ca hồi quy ô trống ở cột U trong BookImportTemplateTest.
 - Probe Java trên file gốc: trước sửa xlsx_invalid tại U2/U3, sau sửa 7 dòng V4 và 0 lỗi chuẩn hóa. Không ghi dữ liệu từ file này.
 - Maven scoped 45 ca đạt. Lượt rộng ban đầu thiếu TEST_DB_URL. Chạy lại tại code/backend với cấu hình test local và bộ BookImport*Test đạt, không lỗi. Bàn giao qua dev, chưa deploy.
+
+### S051-C01 — 07/11/2026 — Thiết kế danh sách Thiếu thông tin
+
+- User chốt dùng một danh sách tổng hợp, bỏ qua ISBN và ghi chú nội bộ.
+  Ghi thiết kế hàng chờ, mở rộng kiểu bìa và khôi phục vị trí sau lưu trong
+  BOOK_COMPLETENESS_SPEC. Cập nhật chỉ mục và tiến độ.
+- Đối chiếu Git, quy tắc kiểu bìa hiện hành, contract nhập và hàng chờ.
+  Chưa chạy test ứng dụng vì thay đổi chỉ gồm tài liệu. Bước tiếp theo là
+  duyệt spec rồi lập kế hoạch triển khai trên dev.
