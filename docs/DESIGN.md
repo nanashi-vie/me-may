@@ -328,3 +328,14 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   - Bước 3: Bấm “Chuẩn bị nội dung hỏi mua” để hệ thống tự động soạn sẵn thông tin.
   - Bước 4: Gửi tin nhắn qua Zalo Hotline (`Sao chép nội dung` ➔ `Mở Zalo` ➔ `Dán & gửi`).
 - **Phần chân (Footer)**: Nút chính `Đã hiểu` đỏ thương hiệu `#9B1C28` căn giữa. Mobile thân thiện, cuộn êm trong `max-height: 94vh`.
+
+## Carousel 10 cuốn trên Trang chủ & Quản trị "Hiển thị sách nổi bật" — 07/11/2026
+
+- **Trang chủ (`/`)**:
+  - Tất cả các kệ sách (`Sách mới đăng`, `Board books cho bé nhỏ`, `Picture books`, tối đa 2 `Bộ sưu tập` đang bật, và khối `Flash Sale`) hiển thị tối đa **10 cuốn** trên một thanh trượt ngang (`scroll-snap-type: x mandatory`).
+  - Khung nhìn hiển thị 5 thẻ trên Desktop, 3 thẻ trên Tablet (`≤ 850px`), 2 thẻ trên Mobile (`≤ 560px`).
+  - Nút mũi tên tròn hai bên (`‹` / `›`): mỗi lần bấm trượt đúng **1 cuốn sách** (`1 card width + gap`); tự động làm mờ và khóa (`disabled`) nút trái khi ở đầu dãy hoặc nút phải khi ở cuối dãy; ẩn nút nếu kệ có từ 5 cuốn trở xuống.
+- **Quản trị `/admin/sach-noi-bat` ("Hiển thị sách nổi bật")**:
+  - Nằm trong nhóm menu **Quản lý sách**, chỉ dành cho quyền `OWNER`.
+  - Cho phép tìm kiếm trực quan theo tên sách, mã sách hoặc NXB (lọc theo đúng thể loại/bộ sưu tập của kệ), bấm `+ Ghim` tối đa 10 cuốn/kệ, sắp xếp thứ tự ưu tiên bằng nút `↑` / `↓` hoặc `Bỏ`.
+  - Hiển thị nhãn trạng thái từng cuốn ghim: `Đang hiển thị trên Home` (khi `PUBLISHED` & `AVAILABLE`) hoặc cảnh báo `Đã bán / Đang ẩn — tự động nhường chỗ trên Home`.

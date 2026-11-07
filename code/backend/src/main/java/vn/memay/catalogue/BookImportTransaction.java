@@ -26,6 +26,8 @@ public class BookImportTransaction {
         var inserted=jdbc.queryForList("insert into book_import_batch(id,fingerprint,schema_version,owner_id) values(?,?,?,?) on conflict(fingerprint) do nothing returning id",
                 id,document.fingerprint(),document.schemaVersion(),actor.getId());
         if(inserted.isEmpty())return new CommitResult(store.find(document.fingerprint()).orElseThrow(),false);
+        // Keep title validation and insertion serialized across concurrent imports.
+        jdbc.execute("select pg_advisory_xact_lock(hashtext('memay.book-import.titles'))");
         var resolved=resolve(document,true);
         for(var group:resolved.groups()) {
             var book=commands.createImported(actor,group.write(),id,document.schemaVersion(),group.unitPricePerKgVnd());
@@ -35,6 +37,7 @@ public class BookImportTransaction {
     }
     public ResolvedImport resolve(ImportDocument document,boolean lock) {
         var errors=new ArrayList<ImportIssue>();var allSlugs=new TreeSet<String>();
+        validateTitles(document.groups(),errors);
         document.groups().forEach(g->allSlugs.addAll(g.collectionSlugs()));
         Set<String> categories=new HashSet<>(jdbc.queryForList("select code from category",String.class));
         var collections=new HashMap<String,Map<String,Object>>();
@@ -55,6 +58,41 @@ public class BookImportTransaction {
         }
         if(!errors.isEmpty())throw invalid(errors,errors.size());return new ResolvedImport(List.copyOf(result));
     }
+
+    private void validateTitles(List<ImportGroup> groups,List<ImportIssue> errors) {
+        var titledGroups=groups.stream().filter(group->group.write().title()!=null).toList();
+        if(titledGroups.isEmpty())return;
+
+        var arguments=new ArrayList<String>();
+        for(var group:titledGroups) {
+            arguments.add(group.key());
+            arguments.add(group.write().title());
+        }
+        // Match titles using the same PostgreSQL comparison as the single-book editor.
+        String values=String.join(",",Collections.nCopies(titledGroups.size(),"(?,lower(trim(?)))"));
+        String sql="""
+                with incoming(group_key,title) as (values %s),
+                counted as (
+                    select group_key,title,count(*) over (partition by title) as occurrences
+                    from incoming
+                )
+                select group_key,occurrences>1 as in_file,
+                    exists(select 1 from book_copy where lower(trim(book_copy.title))=counted.title) as in_catalogue
+                from counted
+                """.formatted(values);
+        var groupsByKey=new HashMap<String,ImportGroup>();
+        for(var group:titledGroups)groupsByKey.put(group.key(),group);
+        jdbc.query(sql, row->{
+            var group=groupsByKey.get(row.getString("group_key"));
+            for(int sourceRow:group.rows()) {
+                if(row.getBoolean("in_file"))
+                    errors.add(new ImportIssue(null,sourceRow,"ten_sach","duplicate","Tên sách bị trùng trong file."));
+                if(row.getBoolean("in_catalogue"))
+                    errors.add(new ImportIssue(null,sourceRow,"ten_sach","duplicate","Tên sách đã tồn tại trong danh mục."));
+            }
+        },arguments.toArray());
+    }
+
     static BookImportException invalid(List<ImportIssue> issues,int total) {
         return new BookImportException(422,"import_validation_error",issues.subList(0,Math.min(1000,issues.size())),total);
     }

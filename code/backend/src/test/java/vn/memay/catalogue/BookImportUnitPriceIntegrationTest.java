@@ -14,6 +14,42 @@ class BookImportUnitPriceIntegrationTest extends CatalogueTestSupport {
         return api.multipart("/api/v1/admin/book-imports/"+action,"books.csv",bytes,
                 fingerprint==null?Map.of():Map.of("fingerprint",fingerprint),true);
     }
+    @Test void flagsBothExcelRowsWithTheSameTitle() throws Exception {
+        var first=BookImportUnitPriceTest.values("80000","450");
+        var second=BookImportV2Test.change(BookImportUnitPriceTest.values("81000","450"),"ten_sach","  SÁCH MẪU  ");
+        var file=BookImportV3Test.xlsx(List.of(first,second),BookImportUnitPriceTest.COLUMNS,s->{});
+        var response=api.multipart("/api/v1/admin/book-imports/preview","books.xlsx",file,Map.of(),true);
+        assertThat(response.statusCode()).isEqualTo(200);
+        var document=tree(response).path("document");
+        assertThat(document.path("fingerprint").isNull()).isTrue();
+        assertThat(document.path("issues").values())
+                .allSatisfy(issue->assertThat(issue.path("column").asString()).isEqualTo("ten_sach"))
+                .extracting(issue->issue.path("row").asInt()).containsExactlyInAnyOrder(2,3);
+    }
+
+    @Test void rejectsExcelTitlePublishedAfterPreview() throws Exception {
+        var row=BookImportV2Test.change(BookImportUnitPriceTest.values("80000","450"),"ten_sach"," REAL BOOK ");
+        var file=BookImportV3Test.xlsx(List.of(row),BookImportUnitPriceTest.COLUMNS,s->{});
+        String endpoint="/api/v1/admin/book-imports/";
+        var preview=api.multipart(endpoint+"preview","books.xlsx",file,Map.of(),true);
+        String digest=tree(preview).path("document").path("fingerprint").asString();
+        assertThat(digest).hasSize(64);
+
+        var existing=ready();
+        var publish=Map.of("version",existing.version(),"status","PUBLISHED","confirmedActualCopy",true);
+        assertThat(api.send("PATCH","/api/v1/admin/books/"+existing.id()+"/publication",json(publish),true).statusCode()).isEqualTo(200);
+
+        var updated=api.multipart(endpoint+"preview","books.xlsx",file,Map.of(),true);
+        assertThat(tree(updated).path("document").path("fingerprint").isNull()).isTrue();
+        var confirm=api.multipart(endpoint+"confirm","books.xlsx",file,Map.of("fingerprint",digest),true);
+        assertThat(confirm.statusCode()).isEqualTo(422);
+        var issue=tree(confirm).path("issues").get(0);
+        assertThat(issue.path("row").asInt()).isEqualTo(2);
+        assertThat(issue.path("column").asString()).isEqualTo("ten_sach");
+        assertThat(jdbc.queryForObject("select count(*) from book_copy",Long.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject("select count(*) from book_import_batch",Long.class)).isZero();
+    }
+
     @Test void persistsOptionalUnitPriceAndReplayNeverOverwritesLaterEdits()throws Exception {
         var blank=BookImportV2Test.change(BookImportUnitPriceTest.values("","450"),"ten_sach","Blank unit");
         byte[] data=BookImportUnitPriceTest.csv(List.of(BookImportUnitPriceTest.values("80000","450"),blank));
@@ -40,7 +76,8 @@ class BookImportUnitPriceIntegrationTest extends CatalogueTestSupport {
         assertThat(jdbc.queryForObject("select count(*) from book_copy",Long.class)).isEqualTo(2);
     }
     @Test void distinctUnitPricesRemainDistinctEvenWhenRoundedPricesMatch()throws Exception {
-        byte[] data=BookImportUnitPriceTest.csv(List.of(BookImportUnitPriceTest.values("80000","1"),BookImportUnitPriceTest.values("81000","1")));
+        byte[] data=BookImportUnitPriceTest.csv(List.of(BookImportUnitPriceTest.values("80000","1"),
+                BookImportV2Test.change(BookImportUnitPriceTest.values("81000","1"),"ten_sach","Second book")));
         var preview=request("preview",data,null);assertThat(preview.statusCode()).isEqualTo(200);
         var response=request("confirm",data,tree(preview).path("document").path("fingerprint").asString());
         assertThat(response.statusCode()).isEqualTo(201);

@@ -26,8 +26,9 @@ class BookImportV2IntegrationTest extends CatalogueTestSupport {
         assertThat(book.conditionNote()).isNull();assertThat(book.unitPricePerKgVnd()).isNull();assertThat(book.priceMinVnd()).isEqualTo(21000);
         assertThat(request("confirm",input,digest).statusCode()).isEqualTo(200);assertThat(count("book_copy")).isEqualTo(1);
     }
-    @Test void duplicateRowsCommitAsSeparateHiddenBooksAndReplayDoesNotOverwrite()throws Exception {
-        var values=BookImportV2Test.values();byte[] file=file(List.of(values,values));
+    @Test void distinctRowsCommitAsSeparateHiddenBooksAndReplayDoesNotOverwrite()throws Exception {
+        var values=BookImportV2Test.values();
+        var second=BookImportV2Test.change(values,"ten_sach","Second book");byte[] file=file(List.of(values,second));
         var preview=request("preview",file,null);assertThat(preview.statusCode()).isEqualTo(200);
         assertThat(tree(preview).path("document").path("schemaVersion").asInt()).isEqualTo(2);
         assertThat(count("book_copy")).isZero();String digest=tree(preview).path("document").path("fingerprint").asString();
@@ -43,7 +44,7 @@ class BookImportV2IntegrationTest extends CatalogueTestSupport {
         jdbc.update("update book_copy set title='Owner edited',version=7 where id=?",id);jdbc.update("update book_variant set stock=9 where book_copy_id=?",id);
         var codes=BookImportV2Test.change(BookImportV2Test.change(values,"the_loai","BOARD_BOOK"),"tinh_trang","HIGH_FRESHNESS");
         var headers=new ArrayList<>(BookImportV2Test.COLUMNS);Collections.reverse(headers);
-        var replay=request("confirm",BookImportV2Test.csv(List.of(codes,codes),headers),digest);
+        var replay=request("confirm",BookImportV2Test.csv(List.of(codes,BookImportV2Test.change(codes,"ten_sach","Second book")),headers),digest);
         assertThat(replay.statusCode()).isEqualTo(200);assertThat(tree(replay).path("id").asString()).isEqualTo(tree(first).path("id").asString());
         assertThat(count("book_copy")).isEqualTo(2);assertThat(queries.detail(id,owner).title()).isEqualTo("Owner edited");
         assertThat(queries.detail(id,owner).totalStock()).isEqualTo(9);assertThat(queries.detail(id,owner).version()).isEqualTo(7);

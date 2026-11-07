@@ -2163,3 +2163,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - CDP Visual Test: Chạy `scratch/verify-how-to-buy-dialog.mjs`, chụp ảnh desktop (`how-to-buy-dialog-desktop.png` - 760x554px) và mobile (`how-to-buy-dialog-mobile.png` - 352x618px).
 4. Trạng thái & Bước tiếp theo:
    - Sẵn sàng commit và push `origin/dev-ui`. Chờ user duyệt trước khi merge vào `dev`.
+
+
+### S045-C01 — 07/11/2026 — Hoàn tất Carousel 10 cuốn trên Home & Mục "Hiển thị sách nổi bật" ở /admin (trên worktree dev-ui)
+
+1. Ngày: 07/11/2026 (Asia/Ho_Chi_Minh), Checkpoint S045-C01.
+2. Phạm vi & Các file thay đổi:
+   - Backend:
+     - `code/backend/src/main/resources/db/migration/V16__home_featured_shelves.sql`: Thêm bảng `home_featured_config` và `home_featured_item`.
+     - `code/backend/src/main/java/vn/memay/catalogue/HomeFeaturedService.java` & `HomeFeaturedController.java`: API `GET /api/v1/admin/home-featured`, `GET /api/v1/admin/home-featured/candidates`, `PUT /api/v1/admin/home-featured` (quyền `OWNER`, kiểm tra `version`, phạm vi kệ, tối đa 10 cuốn/kệ, ghi audit `HOME_FEATURED` và xóa cache).
+     - `code/backend/src/main/java/vn/memay/catalogue/PublicCatalogueService.java`: Cập nhật `home()` và `shelf()` trả tối đa 10 cuốn/kệ (ưu tiên sách ghim `PUBLISHED` + `AVAILABLE` theo thứ tự rồi tự động bù sách mới nhất không trùng lặp).
+     - `code/backend/src/main/java/vn/memay/audit/AuditService.java`: Thêm `"shelves"` vào `FIELDS`.
+     - `code/backend/src/test/java/vn/memay/support/PgTestData.java` & `code/backend/src/test/java/vn/memay/catalogue/HomeFeaturedApiTest.java`: Dọn bảng test và kiểm thử tích hợp đầy đủ.
+   - Frontend:
+     - `code/frontend/src/app/features/home/home-page.{ts,html,scss,spec.ts}`: Chuyển các kệ trên Home và khối Flash Sale sang thanh trượt tối đa 10 cuốn (desktop 5 thẻ, tablet 3 thẻ, mobile 2 thẻ), nút mũi tên `<` / `>` trượt đúng 1 cuốn/lần, tự động làm mờ/vô hiệu hóa khi ở đầu hoặc cuối dãy.
+     - `code/frontend/src/app/features/admin/home-featured/home-featured.{ts,html,scss,spec.ts}`: Trang quản trị "Hiển thị sách nổi bật" (`/admin/sach-noi-bat`) tìm kiếm gợi ý sách theo phạm vi kệ, ghim tối đa 10 cuốn, đổi thứ tự `↑`/`↓`, bỏ ghim và hiển thị nhãn trạng thái.
+     - `code/frontend/src/app/layouts/admin-layout/admin-layout.html` & `code/frontend/src/app/app.routes.ts`: Thêm menu con "Hiển thị sách nổi bật" dưới "Quản lý sách" và route `/admin/sach-noi-bat` cho `OWNER`.
+   - Docs: Cập nhật `docs/DESIGN.md`, `docs/DATA.md`, `docs/CATALOGUE.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+3. Kiểm tra đã chạy:
+   - Backend (`code/backend`): `./mvnw test -Dtest=HomeFeaturedApiTest,PublicCatalogueApiTest` -> 11/11 tests PASS.
+   - Frontend (`code/frontend`): `npm test -- --watch=false` -> 43/43 test files, 234/234 tests PASS.
+   - Frontend builds (`code/frontend`): `npm run build` (SSR) và `npm run build:workers` (Cloudflare) -> 0 warning, 0 error.
+4. Bước tiếp theo:
+   - Commit trên nhánh `dev-ui` (hoặc push/merge theo yêu cầu tiếp theo của user).
+
+### S046-C01 — 07/11/2026 — Kiểm tra tên sách khi import Excel
+
+- Bắt đầu trên `dev` tại `f4472c6`. Phạm vi: validation tên khi xem trước và xác nhận import, giữ tương thích biên nhận cũ và nhập lẻ.
+- Đã đọc contract và đối chiếu code: import chỉ phát hiện lô đã nhập theo fingerprint, form nhập lẻ dùng so khớp tên không phân biệt hoa thường. Chưa chạy kiểm thử hồi quy.
+- Thêm kiểm tra tên theo lô trong `BookImportTransaction` cho CSV/XLSX V1–V4. So khớp theo trim và lower của PostgreSQL như nhập lẻ, kiểm cả danh mục và tính mỗi nhóm biến thể V1 là một sách. Báo cột `ten_sach` theo dòng, xác nhận kiểm lại trong transaction và tuần tự hóa các lần import mới. Biên nhận cũ được trả trước bước kiểm tra.
+- Hai test HTTP dùng XLSX V4 trong `BookImportUnitPriceIntegrationTest` tái hiện 2 lỗi trước sửa. Sau sửa cả hai đạt, gồm trường hợp sách được đăng giữa xem trước và xác nhận. Đổi fixture trùng tên trong các test V1–V4 cũ sang tên riêng để giữ phạm vi kiểm tra giá, transaction và biên nhận.
+- `mvn test` tại `code/backend` với PostgreSQL test local: 231 ca, 0 lỗi, 3 ca live bỏ qua. `npm test -- --watch=false` tại `code/frontend`: 234/234 đạt. `git diff --check` đạt. Chưa smoke trình duyệt hay production.
+- Cập nhật contract `docs/BOOK_IMPORT.md` và snapshot `docs/PROGRESS.md`. Bàn giao cùng thay đổi backend trên `dev`. Bước tiếp theo theo workflow là user merge `dev` qua `main` và smoke import Excel sau rollout backend.

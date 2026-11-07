@@ -12,7 +12,7 @@ class BookImportTransactionTest extends CatalogueTestSupport {
     @Autowired BookImportTransaction imports;
     @Autowired BookImportStore receipts;
     final BookImportValidator validator=new BookImportValidator(new BookValidation());
-    ImportDocument document() {return validator.normalize(List.of(BookImportValidationTest.row(2,"A","Mới","2"),BookImportValidationTest.row(3,"A","Lỗi","1"),BookImportValidationTest.row(4,"B","","0")));}
+    ImportDocument document() {return validator.normalize(List.of(BookImportValidationTest.row(2,"A","Mới","2"),BookImportValidationTest.row(3,"A","Lỗi","1"),BookImportValidationTest.change(BookImportValidationTest.row(4,"B","","0"),"ten_sach","Second book")));}
     long count(String table){return jdbc.queryForObject("select count(*) from "+table,Long.class);}
     @Test void createsHiddenBooksWithoutAnyImageSessionOrPublishedAudit() {
         var result=imports.commit(owner,document());assertThat(result.created()).isTrue();

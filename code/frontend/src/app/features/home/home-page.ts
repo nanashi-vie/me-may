@@ -36,6 +36,8 @@ export class HomePage {
   readonly groupUrl = computed(() => this.contact()?.groupUrl || '');
   readonly countdown = countdown;
   readonly countdownParts = countdownParts;
+  readonly shelfIndices = signal<Record<string, number>>({});
+  readonly shelfEdges = signal<Record<string, { atStart: boolean; atEnd: boolean }>>({});
   private expired = '';
   constructor() {
     inject(PageMetadata).set(
@@ -129,5 +131,62 @@ export class HomePage {
 
   openHowToBuy(trigger?: HTMLElement | null) {
     this.howToBuyDialog?.open(trigger);
+  }
+
+  isAtStart(key: string): boolean {
+    const edge = this.shelfEdges()[key];
+    if (edge) return edge.atStart;
+    return (this.shelfIndices()[key] ?? 0) <= 0;
+  }
+
+  isAtEnd(key: string, total: number): boolean {
+    const maxIdx = Math.max(0, Math.min(total, 10) - 5);
+    const edge = this.shelfEdges()[key];
+    if (edge) return edge.atEnd;
+    return (this.shelfIndices()[key] ?? 0) >= maxIdx;
+  }
+
+  scrollShelf(track: HTMLElement, dir: -1 | 1, key: string, total: number) {
+    const cappedTotal = Math.min(total, 10);
+    const maxIdx = Math.max(0, cappedTotal - 5);
+    const currentIdx = this.shelfIndices()[key] ?? 0;
+    const nextIdx = Math.max(0, Math.min(maxIdx, currentIdx + dir));
+    this.shelfIndices.update((m) => ({ ...m, [key]: nextIdx }));
+
+    const firstItem = track.querySelector('.carousel-item') as HTMLElement | null;
+    const styles = typeof getComputedStyle === 'function' ? getComputedStyle(track) : null;
+    const gap = parseFloat(styles?.columnGap || styles?.gap || '12.8') || 12.8;
+    const itemWidth =
+      firstItem?.getBoundingClientRect().width ||
+      (track.clientWidth > 0 ? (track.clientWidth - gap * 4) / 5 : 220);
+    const step = itemWidth + gap;
+
+    if (typeof track.scrollBy === 'function') {
+      track.scrollBy({ left: dir * step, behavior: 'smooth' });
+    } else {
+      track.scrollLeft += dir * step;
+    }
+
+    this.shelfEdges.update((m) => ({
+      ...m,
+      [key]: { atStart: nextIdx <= 0, atEnd: nextIdx >= maxIdx },
+    }));
+  }
+
+  onShelfScroll(track: HTMLElement, key: string, total: number) {
+    if (track.scrollWidth > track.clientWidth) {
+      const atStart = track.scrollLeft <= 4;
+      const atEnd = track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      this.shelfEdges.update((m) => ({ ...m, [key]: { atStart, atEnd } }));
+      const firstItem = track.querySelector('.carousel-item') as HTMLElement | null;
+      const styles = typeof getComputedStyle === 'function' ? getComputedStyle(track) : null;
+      const gap = parseFloat(styles?.columnGap || styles?.gap || '12.8') || 12.8;
+      const step = (firstItem?.getBoundingClientRect().width || 200) + gap;
+      if (step > 0) {
+        const maxIdx = Math.max(0, Math.min(total, 10) - 5);
+        const approxIdx = Math.max(0, Math.min(maxIdx, Math.round(track.scrollLeft / step)));
+        this.shelfIndices.update((m) => ({ ...m, [key]: approxIdx }));
+      }
+    }
   }
 }

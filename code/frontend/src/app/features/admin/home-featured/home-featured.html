@@ -1,0 +1,196 @@
+<div class="featured-header">
+  <div>
+    <p class="eyebrow">Cấu hình trang chủ</p>
+    <h1>Hiển thị sách nổi bật</h1>
+    <p class="lead">
+      Ghim ưu tiên tối đa <strong>10 cuốn</strong> cho từng kệ trên trang Home. Nếu ghim ít hơn 10
+      cuốn, hệ thống tự động bù thêm sách mới nhất còn hàng thuộc kệ đó cho đủ 10 cuốn.
+    </p>
+  </div>
+  <div class="header-actions">
+    <button type="button" class="secondary" (click)="load()" [disabled]="busy()">
+      Tải lại dữ liệu
+    </button>
+    @if (config()) {
+      <button type="button" class="primary-save" (click)="save()" [disabled]="busy()">
+        {{ busy() ? 'Đang lưu…' : 'Lưu thay đổi' }}
+      </button>
+    }
+  </div>
+</div>
+
+@if (error()) {
+  <p class="error" role="alert">{{ error() }}</p>
+}
+@if (notice()) {
+  <p class="notice" role="status">{{ notice() }}</p>
+}
+
+@if (config()) {
+  <div class="shelves-list">
+    @for (shelf of shelves; track shelf.shelfKey) {
+      <section class="shelf-card" [attr.aria-label]="shelf.title">
+        <header class="shelf-card-header">
+          <div>
+            <h2>{{ shelf.title }}</h2>
+            <span class="shelf-meta">
+              @if (shelf.categoryCode) {
+                Thể loại: {{ shelf.categoryCode }}
+              } @else if (shelf.collectionSlug) {
+                Bộ sưu tập: /bo-suu-tap/{{ shelf.collectionSlug }}
+              } @else {
+                Tất cả thể loại
+              }
+            </span>
+          </div>
+          <span class="pin-counter" [class.full]="shelf.items.length >= 10">
+            Đã ghim {{ shelf.items.length }} / 10 cuốn
+          </span>
+        </header>
+
+        <div class="search-bar">
+          <label class="admin-field search-field">
+            <span class="field-label">Tìm sách để ghim vào kệ "{{ shelf.title }}"</span>
+            <input
+              type="text"
+              [name]="'search_' + shelf.shelfKey"
+              [(ngModel)]="searchQuery[shelf.shelfKey]"
+              (focus)="searchCandidates(shelf.shelfKey)"
+              (keydown.enter)="$event.preventDefault(); searchCandidates(shelf.shelfKey)"
+              placeholder="Nhập tên sách, mã MM-000001 hoặc NXB…"
+              [disabled]="busy() || shelf.items.length >= 10"
+            />
+          </label>
+          <button
+            type="button"
+            class="secondary search-btn"
+            (click)="searchCandidates(shelf.shelfKey)"
+            [disabled]="busy() || shelf.items.length >= 10"
+          >
+            Tìm sách
+          </button>
+          @if (openDropdown() === shelf.shelfKey) {
+            <button
+              type="button"
+              class="secondary close-search-btn"
+              (click)="closeCandidates(shelf.shelfKey)"
+            >
+              Đóng gợi ý
+            </button>
+          }
+        </div>
+
+        @if (openDropdown() === shelf.shelfKey) {
+          <div class="candidates-panel" role="region" [attr.aria-label]="'Gợi ý sách cho ' + shelf.title">
+            @if (searching()[shelf.shelfKey]) {
+              <p class="candidates-empty">Đang tìm sách phù hợp…</p>
+            } @else if (availableCandidates(shelf).length === 0) {
+              <p class="candidates-empty">
+                Không còn sách công khai & còn hàng nào khớp từ khóa (hoặc đã ghim hết).
+              </p>
+            } @else {
+              <ul class="candidate-list">
+                @for (cand of availableCandidates(shelf); track cand.bookCode) {
+                  <li class="candidate-item">
+                    <div class="book-thumb">
+                      @if (cand.coverUrl) {
+                        <img [src]="cand.coverUrl" [alt]="cand.title" loading="lazy" />
+                      } @else {
+                        <span class="no-thumb">Bìa</span>
+                      }
+                    </div>
+                    <div class="book-info">
+                      <strong>{{ cand.title }}</strong>
+                      <small>{{ cand.bookCode }} · {{ priceLabel(cand) }}</small>
+                    </div>
+                    <button
+                      type="button"
+                      class="add-pin-btn"
+                      (click)="addBook(shelf, cand)"
+                      [disabled]="busy() || shelf.items.length >= 10"
+                    >
+                      + Ghim
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        }
+
+        @if (shelf.items.length > 0) {
+          <ol class="pinned-list">
+            @for (item of shelf.items; track item.bookCode; let idx = $index) {
+              <li class="pinned-item" [class.inactive]="!item.activeOnHome">
+                <span class="pin-rank">#{{ idx + 1 }}</span>
+                <div class="book-thumb">
+                  @if (item.coverUrl) {
+                    <img [src]="item.coverUrl" [alt]="item.title" loading="lazy" />
+                  } @else {
+                    <span class="no-thumb">Bìa</span>
+                  }
+                </div>
+                <div class="book-info">
+                  <strong>{{ item.title }}</strong>
+                  <div class="book-sub">
+                    <span class="code-tag">{{ item.bookCode }}</span>
+                    <span>{{ priceLabel(item) }}</span>
+                    @if (item.activeOnHome) {
+                      <span class="status-badge active">Đang hiển thị trên Home</span>
+                    } @else if (item.availability === 'SOLD') {
+                      <span class="status-badge warning">Đã bán — tự động nhường chỗ trên Home</span>
+                    } @else {
+                      <span class="status-badge warning">Đang ẩn — tự động nhường chỗ trên Home</span>
+                    }
+                  </div>
+                </div>
+                <div class="pin-actions">
+                  <button
+                    type="button"
+                    class="secondary icon-btn"
+                    (click)="moveUp(shelf, idx)"
+                    [disabled]="busy() || idx === 0"
+                    [attr.aria-label]="'Đưa ' + item.bookCode + ' lên trên'"
+                    title="Lên trên"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary icon-btn"
+                    (click)="moveDown(shelf, idx)"
+                    [disabled]="busy() || idx === shelf.items.length - 1"
+                    [attr.aria-label]="'Đưa ' + item.bookCode + ' xuống dưới'"
+                    title="Xuống dưới"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    class="secondary remove-btn"
+                    (click)="removeBook(shelf, idx)"
+                    [disabled]="busy()"
+                    [attr.aria-label]="'Bỏ ghim ' + item.bookCode"
+                  >
+                    Bỏ
+                  </button>
+                </div>
+              </li>
+            }
+          </ol>
+        } @else {
+          <p class="shelf-empty-note">
+            Chưa ghim cuốn nào. Kệ này đang tự động lấy 10 cuốn mới nhất còn hàng.
+          </p>
+        }
+      </section>
+    }
+  </div>
+
+  <div class="footer-save-bar">
+    <small>Phiên bản cấu hình {{ config()!.version }}</small>
+    <button type="button" class="primary-save" (click)="save()" [disabled]="busy()">
+      {{ busy() ? 'Đang lưu…' : 'Lưu hiển thị nổi bật' }}
+    </button>
+  </div>
+}

@@ -227,3 +227,8 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 - Sáu public roles và2internal roles độc lập thứ tự; tối đa8ACTIVE, public≤6.
   TạoARCHIVED cần tên hoặc ảnh, weight/price/category thiếu được; các giá trị đã
   nhập vẫn phải hợp lệ. ImportXLSX giữ riêng metadata/weight/schema/receipt cũ.
+
+## Ghim sách nổi bật trên Trang chủ (`V16`) — 07/11/2026
+
+- Bảng `home_featured_config(id PK CHECK id=1, version BIGINT DEFAULT 0)` quản lý optimistic locking cho cấu hình kệ sách nổi bật.
+- Bảng `home_featured_item(shelf_key VARCHAR(160), position INT CHECK 0..9, listing_id FK listing ON DELETE CASCADE, PK(shelf_key, position), UNIQUE(shelf_key, listing_id))` lưu danh sách tối đa 10 cuốn ghim ưu tiên cho từng kệ (`NEWEST`, `CATEGORY:BOARD_BOOK`, `CATEGORY:PICTURE_BOOK`, `COLLECTION:<slug>`).
