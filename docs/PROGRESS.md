@@ -3,6 +3,10 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Thao tác Thùng rác hàng loạt — đã kiểm local 07/11/2026
+
+- S049-C01: Chọn từng sách hoặc cả trang để xóa mềm. Dọn sách đã chọn hoặc toàn bộ Thùng rác sau xác nhận. Backend 7 ca liên quan và frontend 245 ca đạt. Chưa rollout production.
+
 ## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
 
 - S048-C03: Hoàn tất `ShippingPromoDialog` mở từ box "ƯU ĐÃI VẬN CHUYỂN" trên trang chủ (`/`), đã gộp vào `dev`:

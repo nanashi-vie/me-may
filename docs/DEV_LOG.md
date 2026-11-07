@@ -2301,3 +2301,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
   - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp lại `shipping-promo-dialog-desktop.png` (760x577px) và `shipping-promo-dialog-mobile.png` (352x650px), xác nhận khung thứ 5 căn giữa hài hòa — **PASS**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge sang `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+### S049-C01 — 07/11/2026 — Thao tác Thùng rác hàng loạt
+
+- User chốt chọn từng cuốn/chọn cả trang để xóa mềm và dọn ngay sách đã
+  chọn hoặc toàn bộ Thùng rác, kể cả chưa đủ 7 ngày. Mỗi thao tác có xác
+  nhận, hiển thị số cuốn. Tái sử dụng giao dịch dọn và hàng đợi ảnh.
+- Bắt đầu trên dev. Chưa chạy kiểm thử cho thay đổi này.
+- API chốt danh sách ID/version khi mở hộp thoại. Cả lô dừng nếu version
+  lệch hoặc sách đã rời Thùng rác. Xác nhận dọn dùng cùng đường purge DB
+  và hàng đợi ảnh, giữ audit/receipt. Không cần migration mới.
+- Kiểm thử: `mvn -Dtest=BookTrashApiTest,MediaCleanupIntegrationTest test`
+  tại backend đạt 7/7 với PostgreSQL test và gateway giả. Hai lần đầu
+  phát hiện lỗi đọc kiểu payload, đã sửa để dùng ID dạng chuỗi. Frontend
+  `npm test -- --watch=false` đạt 245/245. Chưa chạy smoke trình duyệt
+  hoặc thử xóa dữ liệu production. Bàn giao qua dev.

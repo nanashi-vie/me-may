@@ -34,6 +34,8 @@ export class BookList {
   readonly trashOpen = signal(false);
   readonly trashResult = signal<Page<TrashBook> | null>(null);
   readonly mutationBusy = signal(false);
+  readonly selected = signal<ReadonlySet<string>>(new Set());
+  readonly bulkTarget = signal<{items: readonly {id:string;version:number}[]; permanent:boolean; all:boolean} | null>(null);
   readonly target = signal<BookSummary | null>(null);
   private filter: BookFilter = {};
   private sequence = 0;
@@ -63,6 +65,7 @@ export class BookList {
     });
   }
   private loadBooks() {
+      this.selected.set(new Set());
       const seq = ++this.sequence;
       this.loading.set(true);
       this.error.set('');
@@ -90,6 +93,7 @@ export class BookList {
   }
   showTrash(page=0) {
     if (this.mutationBusy()) return;
+    this.selected.set(new Set());
     this.trashOpen.set(true);
     this.error.set('');
     const sequence = ++this.trashSequence;
@@ -101,6 +105,67 @@ export class BookList {
       },
       error: () => { if (sequence === this.trashSequence) this.error.set('Chưa tải được Thùng rác.'); },
     });
+  }
+  closeTrash() {
+    this.trashOpen.set(false);
+    this.selected.set(new Set());
+  }
+  toggle(id:string, checked:boolean) {
+    const selected=new Set(this.selected());
+    if (checked) selected.add(id);
+    else selected.delete(id);
+    this.selected.set(selected);
+  }
+  selectPage(items:readonly {id:string}[], checked:boolean) {
+    this.selected.set(new Set(checked ? items.map(item=>item.id) : []));
+  }
+  askBulk(dialog:HTMLDialogElement, permanent:boolean, all=false) {
+    if (this.mutationBusy()) return;
+    const open=(items: readonly {id:string;version:number}[])=>{
+      if (!items.length) return;
+      this.bulkTarget.set({items,permanent,all});
+      dialog.showModal();
+    };
+    if (!all) {
+      const page=permanent ? this.trashResult() : this.result();
+      open((page?.items ?? []).filter(item=>this.selected().has(item.id))
+        .map(({id,version})=>({id,version})));
+      return;
+    }
+    this.mutationBusy.set(true);
+    this.error.set('');
+    this.api.trashSelection().pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: items=>{
+        this.mutationBusy.set(false);
+        if (items.length) open(items);
+        else this.showTrash();
+      },
+      error: ()=>{
+        this.mutationBusy.set(false);
+        this.error.set('Chưa tải được danh sách sách cần dọn.');
+      },
+    });
+  }
+  confirmBulk(dialog:HTMLDialogElement) {
+    const target=this.bulkTarget();
+    if (!target || this.mutationBusy()) return;
+    this.mutationBusy.set(true);
+    this.api.bulkTrash(target.items,target.permanent).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: ()=>this.finishBulk(dialog),
+      error: error=>{
+        this.finishBulk(dialog);
+        this.error.set(error.status===409
+          ? 'Danh sách đã thay đổi. Hãy chọn và xác nhận lại.'
+          : 'Chưa xác nhận được thao tác. Hãy kiểm tra danh sách trước khi thử lại.');
+      },
+    });
+  }
+  private finishBulk(dialog:HTMLDialogElement) {
+    this.mutationBusy.set(false);
+    this.bulkTarget.set(null);
+    dialog.close();
+    this.loadBooks();
+    if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
   }
   askTrash(book:BookSummary, dialog:HTMLDialogElement) {
     this.target.set(book);

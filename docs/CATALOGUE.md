@@ -323,3 +323,13 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - Hạn là bảy ngày kể từ lúc xóa. Job mặc định chạy mỗi mười phút, khóa dòng
   và dọn theo lô. Ảnh giữ trạng thái dọn để có thể thử lại khi Cloudinary lỗi.
   Audit và receipt giữ dấu vết lịch sử. Tên sách được dùng lại sau khi dọn.
+
+- OWNER có thể chọn từng sách hoặc toàn bộ trang hiện tại để chuyển vào
+  Thùng rác. Trong Thùng rác, **Dọn** áp dụng cho sách đã chọn. **Dọn tất
+  cả** tải danh sách mọi trang qua `GET /api/v1/admin/books/trash/selection`.
+  Hộp thoại xác nhận số cuốn, phạm vi và xóa ảnh vĩnh viễn, kể cả trước hạn.
+- `POST /api/v1/admin/books/trash/bulk` nhận `{items: [{id, version}], permanent}`.
+  Ghi theo lô trong một giao dịch. Dọn vĩnh viễn chỉ nhận sách còn trong
+  Thùng rác với đúng version. Sách vào Thùng rác sau khi mở hộp thoại
+  không thuộc lần dọn đó. DB xóa sách khi xác nhận thành công và tác vụ
+  ảnh thử lại Cloudinary nếu nhà cung cấp chưa xác nhận đã xóa.

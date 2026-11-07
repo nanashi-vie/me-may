@@ -30,6 +30,26 @@ describe('BookList', () => {
     dialog.querySelectorAll('button')[1].click();
     expect(changeTrash).toHaveBeenCalledExactlyOnceWith('7',2,true);
   });
+  it('confirms the full trash snapshot rather than only the visible page',()=>{
+    const bulkTrash=vi.fn(()=>of(undefined));
+    const trashSelection=vi.fn(()=>of([{id:'7',version:2},{id:'8',version:3}]));
+    const item={id:'7',bookCode:'MM-000007',title:'Imported',version:2,expiresAt:'2099-01-01'};
+    TestBed.configureTestingModule({providers:[provideRouter([]),
+      {provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},
+      {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+      {provide:BookApi,useValue:{bulkTrash,trashSelection,list:()=>of({items:[],page:0,totalPages:0}),
+        trash:()=>of({items:[item],page:0,totalPages:2,totalElements:2})}}]});
+    const f=TestBed.createComponent(BookList);f.componentInstance.showTrash();f.detectChanges();
+    const root=f.nativeElement as HTMLElement;
+    const dialog=root.querySelectorAll('dialog')[1];
+    dialog.showModal=vi.fn();dialog.close=vi.fn();
+    Array.from(root.querySelectorAll('button')).find(b=>b.textContent.trim()==='Dọn tất cả')!.click();
+    f.detectChanges();
+    expect(dialog.textContent).toContain('Dọn vĩnh viễn 2 cuốn');
+    expect(bulkTrash).not.toHaveBeenCalled();
+    dialog.querySelectorAll('button')[1].click();
+    expect(bulkTrash).toHaveBeenCalledExactlyOnceWith([{id:'7',version:2},{id:'8',version:3}],true);
+  });
   it('restores filters and page from the URL', () => {
     const list = vi.fn(() => of({ items: [], page: 2, size: 20, totalElements: 0, totalPages: 0 }));
     TestBed.configureTestingModule({

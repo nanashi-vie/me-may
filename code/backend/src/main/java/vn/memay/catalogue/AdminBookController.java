@@ -58,6 +58,20 @@ public class AdminBookController {
         return trash.list(actors.current(a), page, size);
     }
 
+    public record TrashBulk(@jakarta.validation.constraints.NotEmpty java.util.List<BookTrashService.Selection> items,
+            @jakarta.validation.constraints.NotNull Boolean permanent) {}
+
+    @GetMapping("/trash/selection")
+    public java.util.List<BookTrashService.Selection> trashSelection(Authentication a) {
+        return trash.selection(actors.current(a));
+    }
+
+    @PostMapping("/trash/bulk")
+    public ResponseEntity<Void> bulkTrash(Authentication a, @Valid @RequestBody TrashBulk body) {
+        trash.bulk(actors.current(a),body.items(),body.permanent());
+        return ResponseEntity.noContent().build();
+    }
+
     @PatchMapping("/{id}/trash")
     public ResponseEntity<Void> changeTrash(Authentication a, @PathVariable long id, @Valid @RequestBody TrashChange body) {
         trash.change(actors.current(a), id, body.version(), body.trashed());
