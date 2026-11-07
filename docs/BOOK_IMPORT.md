@@ -47,8 +47,10 @@ UI hiển thị plain text, không render HTML/formula từ ô.
 
 Có lỗi → disable xác nhận, sửa file bên ngoài rồi chọn lại. Chọn file mới xóa
 kết quả cũ ngay; response kiểm tra đến muộn không được áp vào file mới.
-Không có lỗi → hiện nút “Import N sách ẩn”; cần xác nhận chưa công khai và sẽ
-thêm ảnh từng sách. Form không gửi dữ liệu sách đã sửa bằng frontend làm nguồn.
+Không có lỗi → cho xem từng dòng và đánh dấu đã rà soát. **Kiểm tra lại
+trước khi import** gọi lại preview chỉ đọc. Chỉ mở bước **Xác nhận import**
+khi kết quả còn hợp lệ và fingerprint khớp. Hủy hoặc rời trang trước xác
+nhận sẽ bỏ kết quả trong tab. Form dùng file làm nguồn khi xác nhận.
 
 Xác nhận gửi lại cùng file và fingerprint preview; backend parse/normalize lại,
 đối chiếu fingerprint, kiểm quyền, tên sách và tham chiếu hiện tại rồi commit.
@@ -74,8 +76,11 @@ tương đương trong cùng schema cho cùng biên nhận. Đổi schema hoặc
 
 Bảng biên nhận có unique fingerprint, trạng thái commit, actor/time và liên kết
 ID sách đã tạo. Hai xác nhận đồng thời cùng fingerprint chỉ tạo một lô; bên
-còn lại trả biên nhận đã có. Commit xong mất response → thử lại cùng file trả
-các ID/mã cũ, không tạo lại hoặc ghi đè. Xem/nhận biên nhận vẫn chỉ OWNER.
+còn lại trả biên nhận đã có. Mất phản hồi sau khi gửi xác nhận → dùng
+**Kiểm tra biên nhận** để tra cùng file qua preview. Nút tra cứu không gửi
+lại yêu cầu ghi. Khi quay lại trang có thể chọn cùng file để kiểm tra.
+Xem/nhận biên nhận vẫn chỉ OWNER. Biên nhận giữ mã và tên lịch sử của sách
+đã dọn sau thời hạn Thùng rác.
 Preview nếu nhận ra lô đã nhập thì hiển thị biên nhận, không mời tạo lần nữa.
 Retry lô đã commit được nhận diện trước khi yêu cầu dữ liệu tham chiếu còn active;
 không lỗi giả chỉ vì sách/collection đã thay đổi sau lần nhập thành công.

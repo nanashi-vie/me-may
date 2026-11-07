@@ -3,10 +3,13 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Tối ưu luồng chỉnh sửa sách — đã duyệt thiết kế 07/11/2026
+## Tối ưu luồng chỉnh sửa sách và import — đã kiểm local 07/11/2026
 
-- Đã chốt panel ghim, nút xuất bản rồi mở cuốn tiếp theo, cảnh báo trước khi xóa và tự dọn Thùng rác sau 7 ngày.
-- User đã duyệt [thiết kế](BOOK_ADMIN_WORKFLOW_SPEC.md). Đã lập [kế hoạch triển khai](BOOK_ADMIN_WORKFLOW_PLAN.md), chưa sửa code.
+- S047: Hai ảnh bổ sung mặc định ẩn, bộ đặc điểm mới, Thùng rác 7 ngày có
+  cảnh báo và hàng chờ xuất bản. Import kiểm tra lại chỉ đọc rồi mới ghi
+  khi xác nhận. Tra lại biên nhận sau lỗi không gửi lại yêu cầu ghi.
+- Kiểm qua HTTP/PostgreSQL test, DOM, build SSR/Workers và Chrome với fixture.
+  Bàn giao `dev`. Rollout V17–V19 còn mở tại [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).
 
 ## Kiểm tra tên sách khi import Excel — đã kiểm local 07/11/2026
 

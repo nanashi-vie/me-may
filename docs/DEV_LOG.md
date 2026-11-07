@@ -2221,3 +2221,34 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đối chiếu code editor, media/public projection, schema migration và các
   API hiện có trên `dev`. `git diff --check` đạt. Chưa sửa code ứng dụng,
   chưa chạy test ứng dụng. Tiếp theo thực hiện các bước trong kế hoạch.
+
+### S047-C04 — 07/11/2026 — Bắt đầu triển khai tuần tự
+
+- User duyệt thực thi và bổ sung bước kiểm tra lại trước khi ghi import.
+  Bắt đầu từ `157dd49` trên `dev`. Phạm vi ảnh, đặc điểm, Thùng rác,
+  hàng chờ và rà soát import. Chưa chạy test cho checkpoint này.
+
+### S047-C05 — 07/11/2026 — Nghiệm thu local và bàn giao
+
+- Triển khai V17–V19, hiển thị tùy chọn của hai ảnh bổ sung, đặc điểm
+  mới và SPIN legacy, Thùng rác OWNER có version, khôi phục trước hạn,
+  dọn dữ liệu sau hạn và chuyển ảnh sang hàng đợi dọn đang có. Receipt
+  giữ snapshot, không còn link đến cuốn đã dọn.
+- Thêm hàng chờ trên editor và thao tác xuất bản rồi mở cuốn tiếp. Thêm
+  bước rà soát import chỉ đọc. Hủy hoặc rời trang trước xác nhận không
+  ghi sách. Sau khi đã gửi xác nhận mà mất phản hồi, UI chỉ tra biên nhận.
+- Review độc lập phát hiện dữ liệu cuốn cũ trên route được tái sử dụng,
+  trạng thái tra biên nhận bị mất khi lookup lỗi, candidate Flash Sale và
+  phân trang sau xóa. Đã sửa các điểm này. Dùng record ảnh rời sách để
+  tái sử dụng MediaCleanupJob và giữ cơ chế thử lại.
+- `mvn test` tại backend: 232 ca, 0 lỗi, 3 live skip. Sau khi bổ sung ca
+  retry ảnh rời sách, chạy `mvn -Dtest=MediaCleanupIntegrationTest test`:
+  5/5 đạt. `npm test -- --watch=false` tại frontend: 237/237 đạt.
+  `npm run build`, `npm run build:workers` và `git diff --check` đạt.
+- Chrome fixture local kiểm xuất bản cuốn 1 rồi tự mở cuốn 2, panel còn
+  một cuốn, dialog ở 390×844 và cảnh báo có tên/mã/7 ngày khi bấm icon.
+  Bấm Hủy, đóng browser và dừng fixture. Chưa smoke production hoặc dọn
+  ảnh Cloudinary live. Backend đã kiểm với PostgreSQL test và gateway giả.
+- Gộp contract vào CATALOGUE/DATA/DESIGN/BOOK_IMPORT và rollout V17–V19,
+  gỡ spec/plan đã hết vai trò. Bước tiếp theo là user merge dev qua main
+  và rollout backend trước frontend theo BOOK_ENTRY_ROLLOUT.

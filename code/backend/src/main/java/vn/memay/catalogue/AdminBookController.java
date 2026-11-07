@@ -18,13 +18,15 @@ public class AdminBookController {
     private final BookCommandService commands;
     private final BookStatusService status;
     private final BookQueryService queries;
+    private final BookTrashService trash;
 
     public AdminBookController(AdminActorResolver actors, BookCommandService commands, BookStatusService status,
-            BookQueryService queries) {
+            BookQueryService queries, BookTrashService trash) {
         this.actors = actors;
         this.commands = commands;
         this.status = status;
         this.queries = queries;
+        this.trash = trash;
     }
 
     @GetMapping
@@ -45,6 +47,21 @@ public class AdminBookController {
     @GetMapping("/title-duplicate")
     public TitleDuplicate titleDuplicate(Authentication a,@RequestParam String title,@RequestParam(required=false) Long excludeId) {
         return new TitleDuplicate(queries.titleDuplicate(actors.current(a),title,excludeId));
+    }
+
+    public record TrashChange(@jakarta.validation.constraints.NotNull @jakarta.validation.constraints.PositiveOrZero Long version,
+            @jakarta.validation.constraints.NotNull Boolean trashed) {}
+
+    @GetMapping("/trash")
+    public Page<BookTrashService.TrashBook> trash(Authentication a, @RequestParam(defaultValue="0") int page,
+            @RequestParam(defaultValue="20") int size) {
+        return trash.list(actors.current(a), page, size);
+    }
+
+    @PatchMapping("/{id}/trash")
+    public ResponseEntity<Void> changeTrash(Authentication a, @PathVariable long id, @Valid @RequestBody TrashChange body) {
+        trash.change(actors.current(a), id, body.version(), body.trashed());
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/{id}")

@@ -113,3 +113,14 @@ small {
 .feature-choice label {margin:0;}
 .feature-choice button {font-size:.8rem;padding:.4rem .6rem;}
 .feature-choices p {flex-basis:100%;font-size:.85rem;}
+
+.editor-main { min-width: 0; }
+.unpublished-sidebar { display: none; }
+.unpublished-toggle { position: sticky; bottom: 0.5rem; }
+.unpublished-dialog { max-height: 85dvh; max-width: calc(100vw - 2rem); }
+.unpublished-sidebar li, .unpublished-dialog li { margin-block: 0.65rem; }
+@media (min-width: 72rem) {
+  .editor-layout.with-queue { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 23rem); gap: 1.5rem; }
+  .unpublished-sidebar { display: block; position: sticky; top: 1rem; align-self: start; max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem; border: 1px solid #d8d2c9; }
+  .unpublished-toggle { display: none; }
+}

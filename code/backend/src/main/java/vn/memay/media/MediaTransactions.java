@@ -96,7 +96,7 @@ public class MediaTransactions {
         b.touch(clock.instant());
         em.flush();
         var m = em.find(BookMedia.class, intent.id(), LockModeType.PESSIMISTIC_WRITE);
-        if (m == null || m.state != MediaState.UPLOADING || m.bookCopyId != bookId)
+        if (m == null || m.state != MediaState.UPLOADING || !java.util.Objects.equals(m.bookCopyId, bookId))
             throw new AdminApiException(409, "media_conflict");
         if (!m.storagePublicId.equals(uploaded.publicId()) || uploaded.assetId() == null || uploaded.format() == null
                 || uploaded.bytes() < 1 || uploaded.width() < 1 || uploaded.height() < 1)

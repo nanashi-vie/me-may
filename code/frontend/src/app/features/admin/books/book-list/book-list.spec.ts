@@ -12,6 +12,24 @@ describe('BookList', () => {
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.textContent).toContain('Chưa nhập giá');
     expect(f.nativeElement.textContent).not.toContain('0 đ');
   });
+  it('warns before trashing and only sends a mutation after confirmation',()=>{
+    const changeTrash=vi.fn(()=>of(undefined));
+    const item={id:'7',bookCode:'MM-000007',title:'Imported',publication:'ARCHIVED',version:2};
+    TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},
+      {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+      {provide:BookApi,useValue:{changeTrash,list:()=>of({items:[item],page:0,size:20,totalElements:1,totalPages:1})}}]});
+    const f=TestBed.createComponent(BookList);f.detectChanges();
+    const root=f.nativeElement as HTMLElement;
+    const dialog=root.querySelector('dialog')!;
+    dialog.showModal=vi.fn();dialog.close=vi.fn();
+    root.querySelector<HTMLButtonElement>('button[aria-label*="MM-000007"]')!.click();f.detectChanges();
+    expect(dialog.textContent).toContain('MM-000007');
+    expect(dialog.textContent).toContain('7 ngày');
+    dialog.querySelectorAll('button')[0].click();
+    expect(changeTrash).not.toHaveBeenCalled();
+    dialog.querySelectorAll('button')[1].click();
+    expect(changeTrash).toHaveBeenCalledExactlyOnceWith('7',2,true);
+  });
   it('restores filters and page from the URL', () => {
     const list = vi.fn(() => of({ items: [], page: 2, size: 20, totalElements: 0, totalPages: 0 }));
     TestBed.configureTestingModule({

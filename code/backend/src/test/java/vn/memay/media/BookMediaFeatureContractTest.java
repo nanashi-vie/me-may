@@ -67,6 +67,21 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         var pub=tree(a.send("GET","/api/v1/books/"+slug,null,false));assertThat(pub.path("media").size()).isEqualTo(6);
         assertThat(pub.path("features").get(0).path("code").asString()).isEqualTo("SLIDE");
         assertThat(pub.path("features").get(1).path("label").asString()).isEqualTo("Âm thanh");
+        var update=updateBody(b);
+        var assignments=new ArrayList<Map<String,Object>>();
+        for(var photo:b.path("media").values()) assignments.add(new LinkedHashMap<>(Map.of(
+                "mediaId",photo.path("id").asString(),"role",photo.path("role").asString())));
+        assignments.get(6).put("showOnProduct",true);
+        update.put("media",assignments);
+        var exposed=a.send("PUT","/api/v1/admin/books/"+id,json(update),true);
+        assertThat(exposed.statusCode()).isEqualTo(200);
+        assertThat(tree(a.send("GET","/api/v1/books/"+slug,null,false)).path("media").size()).isEqualTo(7);
+        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_1",null,false).statusCode()).isEqualTo(200);
+        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_2",null,false).statusCode()).isEqualTo(404);
+        assignments.get(6).put("showOnProduct",false);
+        update=updateBody(tree(exposed));update.put("media",assignments);
+        assertThat(a.send("PUT","/api/v1/admin/books/"+id,json(update),true).statusCode()).isEqualTo(200);
+        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_1",null,false).statusCode()).isEqualTo(404);
         a.login("staff@catalogue.test");assertThat(a.send("GET","/api/v1/admin/books/"+id+"/media/INTERNAL_1/content",null,false).statusCode()).isEqualTo(200);
         assertThat(a.send("PUT","/api/v1/admin/books/"+id,json(updateBody(b)),true).statusCode()).isEqualTo(403);
     }
@@ -111,9 +126,9 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         for(Object codes:Arrays.asList(List.of("SOUND","SOUND"),List.of("FAKE"),List.of("SOUND","FLAP","SLIDE","SPIN"),"SOUND",null)) {
             w.put("featureCodes",codes);assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(400);
         }
-        w.put("featureCodes",List.of("TOUCH","SPIN"));var r=a.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);
-        assertThat(tree(r).path("features").get(0).path("label").asString()).isEqualTo("Chạm & cảm nhận");
-        w.put("featureCodes",List.of("SPIN","TOUCH"));assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(409);
+        w.put("featureCodes",List.of("TOUCH","SEARCH"));var r=a.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);
+        assertThat(tree(r).path("features").get(0).path("label").asString()).isEqualTo("Sờ chạm/Đục lỗ");
+        w.put("featureCodes",List.of("SEARCH","TOUCH"));assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(409);
         assertThat(a.send("GET","/api/v1/admin/taxonomy",null,false).body()).contains("Âm thanh","POP_UP");
     }
 }

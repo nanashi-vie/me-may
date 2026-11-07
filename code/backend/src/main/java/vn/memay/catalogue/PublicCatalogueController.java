@@ -119,11 +119,10 @@ public class PublicCatalogueController {
     public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
             @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format,
             @RequestParam(required = false) String v) {
-        if(!role.isPublic()) throw new AdminApiException(404,"not_found");
         if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
         List<String> keys = jdbc.queryForList(
-                "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=? and (cast(? as text) is null or m.id::text=?)",
+                "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=? and (m.role not in ('INTERNAL_1','INTERNAL_2') or m.show_on_product) and (cast(? as text) is null or m.id::text=?)",
                 String.class, slug, role.name(), v, v);
         if (keys.isEmpty())
             throw new AdminApiException(404, "not_found");
@@ -135,7 +134,7 @@ public class PublicCatalogueController {
         };
         return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg")
                 .header("Cache-Control", "no-store")
-                .header("X-Memay-Public-Cache", publicCache.enabled() && v != null ? "30" : "0")
+                .header("X-Memay-Public-Cache", publicCache.enabled() && v != null && role.isPublic() ? "30" : "0")
                 .header("X-Content-Type-Options", "nosniff").body(body);
     }
 }

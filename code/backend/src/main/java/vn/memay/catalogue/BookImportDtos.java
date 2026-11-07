@@ -18,7 +18,7 @@ public final class BookImportDtos {
         public ImportDocument(List<ImportGroup> groups,List<ImportIssue> issues,int totalIssues,int rowCount,String fingerprint){this(groups,issues,totalIssues,rowCount,fingerprint,1);}
         public boolean valid() { return totalIssues == 0; }
     }
-    public record ImportedBook(String groupKey,String id,String bookCode,String title) {}
+    public record ImportedBook(String groupKey,String id,String bookCode,String title,boolean purged) {}
     public record ImportReceipt(UUID id,String fingerprint,Instant createdAt,List<ImportedBook> books) {}
     public record ImportPreview(ImportDocument document,ImportReceipt receipt) {}
     public record ResolvedImport(List<ImportGroup> groups) {}

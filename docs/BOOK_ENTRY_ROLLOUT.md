@@ -71,3 +71,11 @@ Contract06/11/2026 ở [DATA](DATA.md), [CATALOGUE](CATALOGUE.md) và
   thì tạm dừngpublic theo thao tác vận hành đã duyệt và sửa forward.
 - Không drop2bảng hoặc thu hẹp roleconstraint khi còn dữ liệu; restore cần đối
   chiếu ghi mới. Smoke/cachepurge/offhostbackup/restore/host/device vẫn gateonline.
+
+## V17–V19
+
+Triển khai backend và migration trước frontend. Smoke ảnh bổ sung tắt/bật/tắt
+với khách, nhóm đặc điểm legacy, xóa mềm/khôi phục, receipt và hàng chờ.
+Dọn hết hạn là thao tác xóa dữ liệu và media. Kiểm tra sao lưu trước rollout
+và dùng dữ liệu giả để smoke dọn theo hạn. Khi xử lý sự cố, ngừng tác vụ
+dọn trước khi rollback ứng dụng. Phục hồi dữ liệu đã dọn cần bản sao lưu.

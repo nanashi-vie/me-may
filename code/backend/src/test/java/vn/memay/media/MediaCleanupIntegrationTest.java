@@ -7,6 +7,20 @@ class MediaCleanupIntegrationTest extends MediaTestSupport {
  UUID intent(String book,String state,boolean stale){UUID id=UUID.randomUUID();jdbc.update("insert into book_media(id,book_copy_id,role,state,storage_public_id,updated_at) values (?,?,'FRONT',?,?,current_timestamp - cast(? as interval))",id,Long.parseLong(book),state,"memay/test/"+id,stale?"2 hours":"0 seconds");return id;}
  @Test void restartRecoversStaleUploadingAndNotFoundIsSuccess(){var b=seed(owner,BookFixtures.draft("A"));var stale=intent(b.id(),"UPLOADING",true);var fresh=intent(b.id(),"UPLOADING",false);cleanup.runOnce();assertThat(jdbc.queryForList("select id from book_media",UUID.class)).containsExactly(fresh);}
  @Test void retryDoesNotDeleteWinner(){var b=seed(owner,BookFixtures.draft("A"));var loser=intent(b.id(),"DELETE_PENDING",true);var winner=intent(b.id(),"ACTIVE",true);fake.assets.put("memay/test/"+winner,new byte[]{1});fake.failDelete=true;cleanup.runOnce();assertThat(jdbc.queryForObject("select count(*) from book_media",Integer.class)).isEqualTo(2);fake.failDelete=false;cleanup.runOnce();assertThat(jdbc.queryForList("select id from book_media",UUID.class)).containsExactly(winner);assertThat(fake.assets).containsKey("memay/test/"+winner);}
+ @Test void retriesDetachedTrashImageWhenProviderDeleteFails() {
+  UUID id=UUID.randomUUID();
+  String key="memay/test/"+id;
+  jdbc.update("insert into book_media(id,role,state,storage_public_id) values (?,'FRONT','DELETE_PENDING',?)",id,key);
+  fake.assets.put(key,new byte[]{1});
+  fake.failDelete=true;
+  cleanup.runOnce();
+  assertThat(jdbc.queryForList("select id from book_media where book_copy_id is null",UUID.class)).containsExactly(id);
+  assertThat(fake.assets).containsKey(key);
+  fake.failDelete=false;
+  cleanup.runOnce();
+  assertThat(jdbc.queryForList("select id from book_media where book_copy_id is null",UUID.class)).isEmpty();
+  assertThat(fake.assets).doesNotContainKey(key);
+ }
  @Test void cleanupBatchIsBounded(){var b=seed(owner,BookFixtures.draft("A"));for(int i=0;i<105;i++)intent(b.id(),"DELETE_PENDING",true);cleanup.runOnce();assertThat(jdbc.queryForObject("select count(*) from book_media",Integer.class)).isEqualTo(5);}
  @org.springframework.beans.factory.annotation.Autowired MediaTransactions transactions;
  @Test void cleanupClaimCannotRaceAttach()throws Exception{

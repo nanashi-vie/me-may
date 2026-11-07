@@ -28,25 +28,38 @@ describe('BookImport file and session boundaries',()=>{
   });
   function setup(){const f=TestBed.createComponent(BookImport);f.detectChanges();return f;}
   function ready(c:BookImport){const file=new File(['csv'],'books.csv');c.select(file);c.checkFile();previews[0].next(valid());return file;}
+  function review(c:BookImport){
+    c.confirmed.set(true);c.checkFile(true);previews.at(-1)!.next(valid());
+  }
+  it('does not write before the second check and drops an interrupted check',()=>{
+    const f=setup(),c=f.componentInstance;ready(c);c.confirmed.set(true);c.confirm();
+    expect(api.confirm).not.toHaveBeenCalled();
+    c.checkFile(true);f.destroy();previews[1].next(valid());
+    expect(api.confirm).not.toHaveBeenCalled();
+  });
   it('latePreviewCannotEnableAnotherFile',()=>{
     const f=setup(),c=f.componentInstance;const a=new File(['a'],'a.csv'),b=new File(['b'],'b.csv');
     c.select(a);c.checkFile();c.select(b);previews[0].next(valid());f.detectChanges();
     expect(c.selectedFile()).toBe(b);expect(c.preview()).toBeNull();expect(c.canConfirm()).toBe(false);
   });
-  it('lostCommitResponseRetriesExactFileAndFingerprint',()=>{
-    const f=setup(),c=f.componentInstance,file=ready(c);c.confirmed.set(true);c.confirm();c.confirm();
+  it('lostCommitResponseChecksReceiptWithoutResendingWrite',()=>{
+    const f=setup(),c=f.componentInstance,file=ready(c);review(c);c.confirm();c.confirm();
     expect(api.confirm).toHaveBeenCalledTimes(1);commits[0].error(new HttpErrorResponse({status:0}));f.detectChanges();
-    expect(c.uncertain()).toBe(true);c.retryCommit();expect(api.confirm).toHaveBeenLastCalledWith(file,'a'.repeat(64));
-    commits[1].next(receipt);f.detectChanges();expect(c.receipt()?.books[0].id).toBe('7');
+    expect(c.uncertain()).toBe(true);c.retryCommit();expect(api.preview).toHaveBeenLastCalledWith(file);
+    expect(api.confirm).toHaveBeenCalledTimes(1);
+    previews[2].error(new HttpErrorResponse({status:429}));
+    expect(c.uncertain()).toBe(true);expect(c.retryable()).toBe(true);
+    c.retryCommit();previews[3].next({...valid(),receipt});
+    expect(api.confirm).toHaveBeenCalledTimes(1);f.detectChanges();expect(c.receipt()?.books[0].id).toBe('7');
     expect(f.nativeElement.querySelector('a[href="/admin/sach/7"]')).not.toBeNull();
   });
   it('drops preview and late commit result across authentication epochs',()=>{
-    const f=setup(),c=f.componentInstance;ready(c);c.confirmed.set(true);c.confirm();
+    const f=setup(),c=f.componentInstance;ready(c);review(c);c.confirm();
     epoch.set(1);user.set({id:2,email:'other@qa.test',role:'OWNER'});f.detectChanges();commits[0].next(receipt);f.detectChanges();
     expect(c.receipt()).toBeNull();expect(c.preview()).toBeNull();expect(c.canConfirm()).toBe(false);expect(c.selectedFile()).toBeNull();
   });
   it.each([401,403,409,422,429])('handles status %s without enabling a new confirmation',(status)=>{
-    const f=setup(),c=f.componentInstance,file=ready(c);c.confirmed.set(true);c.confirm();
+    const f=setup(),c=f.componentInstance,file=ready(c);review(c);c.confirm();
     commits[0].error(new HttpErrorResponse({status,headers:new HttpHeaders({'Retry-After':'60'}),error:{issues:[{sheet:'CSV',row:2,column:'gia_tu',code:'required',message:'Nhập giá'}],totalIssues:1}}));f.detectChanges();
     expect(c.canConfirm()).toBe(false);expect(c.error()).not.toBe('');
     if(status===401){expect(c.selectedFile()).toBe(file);expect(c.needsLogin()).toBe(true);}
@@ -114,7 +127,7 @@ describe('BookImport file and session boundaries',()=>{
   });
   it('options download failure cannot unlock an in-flight commit',()=>{
     const options=new Subject();api.options.mockReturnValue(options);const f=setup(),c=f.componentInstance;
-    ready(c);c.confirmed.set(true);c.confirm();options.error(new HttpErrorResponse({status:500}));
+    ready(c);review(c);c.confirm();options.error(new HttpErrorResponse({status:500}));
     expect(c.busy()).toBe(true);commits[0].next(receipt);expect(c.receipt()?.id).toBe('batch');
   });
   it('registers the import page before the book id route',async()=>{

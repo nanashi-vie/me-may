@@ -42,15 +42,15 @@
       }
       <button type="button" class="secondary" (click)="loadOptions()">Làm mới mã lựa chọn</button>
     </details>
-    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung là lô mới, không cập nhật sách cũ. Các dòng trùng tên hoặc ISBN vẫn tạo sách riêng.</p>
+    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung là lô mới, không cập nhật sách cũ. Tên trùng sẽ được báo ở từng dòng cần sửa.</p>
   </section>
   <section aria-labelledby="file-title"><h2 id="file-title">1. Kiểm tra file</h2>
-    <label>File CSV/Excel<input type="file" accept=".csv,.xlsx" [disabled]="busy()" (change)="fileChanged($event)" /></label>
+    <label>File CSV/Excel<input type="file" #fileInput accept=".csv,.xlsx" [disabled]="busy()" (change)="fileChanged($event)" /></label>
     @if (selectedFile(); as file) {<p>Đã chọn: {{ file.name }} · {{ file.size }} bytes</p>}
     <button type="button" (click)="checkFile()" [disabled]="!selectedFile() || busy() || needsLogin() || retryable()">Kiểm tra file</button>
     @if (busy()) {<p role="status">Đang xử lý… File và lần import đang được kiểm tra.</p>}
     @if (retryAfter()) {<p>Thử lại sau {{ retryAfter() }} giây.</p>}
-    @if (retryable()) {<button type="button" [disabled]="busy()" (click)="retryCommit()">Thử lại lần import này</button>}
+    @if (retryable()) {<button type="button" [disabled]="busy()" (click)="retryCommit()">Kiểm tra biên nhận</button>}
   </section>
   @if (issues().length) {
     <section aria-labelledby="issues-title"><h2 id="issues-title">Có {{ totalIssues() }} lỗi cần sửa</h2>
@@ -63,19 +63,30 @@
   @if (receipt(); as saved) {
     <section aria-labelledby="receipt-title"><h2 id="receipt-title">Lô đã được nhập</h2>
       <p>Biên nhận {{ saved.id }} · {{ saved.books.length }} sách. Nếu đây là lần thử lại, mã sách được giữ nguyên; trạng thái hiện tại xem ở từng sách.</p>
-      <ul>@for (book of saved.books; track book.id) {<li><a [routerLink]="['/admin/sach',book.id]">{{ book.bookCode }} · {{ book.title }}</a></li>}</ul>
+      <ul>@for (book of saved.books; track book.id) {<li>@if (book.purged) { {{ book.bookCode }} · {{ book.title }} · Đã xóa vĩnh viễn }
+        @else { <a [routerLink]="['/admin/sach',book.id]">{{ book.bookCode }} · {{ book.title }}</a> }</li>}</ul>
       <a routerLink="/admin/sach" [queryParams]="{unpublishedOnly:true}">Mở danh sách chưa xuất bản</a>
     </section>
   } @else if (preview(); as result) {
-    <section aria-labelledby="preview-title"><h2 id="preview-title">2. Xem trước và xác nhận</h2>
+    <section aria-labelledby="preview-title"><h2 id="preview-title">2. Xem trước và kiểm tra lại</h2>
       <p>{{ result.document.rowCount }} dòng · {{ result.document.groups.length }} sách · Tổng tồn: {{ display(totalStock()) }}</p>
       @for (group of result.document.groups; track group.key) {
         <details><summary>{{ (result.document.schemaVersion ?? 1) >= 2 ? 'Dòng ' + group.rows[0] : group.key }} · {{ group.write.title || 'Chưa có tên' }} · {{ price(group.write.priceMinVnd,group.write.priceMaxVnd) }} · Tồn {{ stock(group.write) }}</summary>
           <dl>@if (group.unitPricePerKgVnd != null) {<dt>Đơn giá/kg</dt><dd>{{ price(group.unitPricePerKgVnd,group.unitPricePerKgVnd) }}/kg</dd>}@for (field of metadata; track field.key) {<dt>{{ field.label }}</dt><dd>{{ display(group.write[field.key]) }}</dd>}<dt>Bộ sưu tập</dt><dd>{{ display(group.collectionSlugs) }}</dd></dl>
         </details>
       }
-      <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="!canConfirm()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã kiểm tra thông tin. Các sách sẽ được tạo ở trạng thái Ẩn; tôi sẽ thêm ảnh và tự xuất bản sau.</label>
-      <button type="button" [disabled]="!canConfirm() || !confirmed()" (click)="confirm()">Import {{ result.document.groups.length }} sách ẩn</button>
+      @if (!reviewed()) {
+        <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="!canConfirm()" (change)="confirmed.set($any($event.target).checked)" />Tôi đã xem lại thông tin các cuốn sách.</label>
+        <button type="button" [disabled]="!canConfirm() || !confirmed()" (click)="checkFile(true)">Kiểm tra lại trước khi import</button>
+      }
     </section>
+    @if (reviewed()) {
+      <section aria-labelledby="final-import-title">
+        <h2 id="final-import-title">3. Xác nhận import</h2>
+        <p>Đã kiểm tra lại file. Sách sẽ được tạo ở trạng thái Ẩn sau khi bạn xác nhận.</p>
+        <button type="button" class="secondary" [disabled]="busy()" (click)="discard(fileInput)">Hủy import</button>
+        <button type="button" [disabled]="!canConfirm()" (click)="confirm()">Xác nhận import {{ result.document.groups.length }} sách ẩn</button>
+      </section>
+    }
   }
 } @else if (!needsLogin()) {<p>Chỉ chủ tiệm được import sách.</p>}

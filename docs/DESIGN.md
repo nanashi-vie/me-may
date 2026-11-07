@@ -9,7 +9,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/` | Home nhiều hàng sách | Tìm kiếm, mở nhóm, xem cuốn |
 | `/sach` | Catalogue đầy đủ | Tìm/lọc/sắp xếp/phân trang; filter lưu URL |
 | `/bo-suu-tap/:slug` | Nhóm biên tập | Duyệt các cuốn thuộc nhóm |
-| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–6 ảnh, trọng lượng và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
+| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–8 ảnh, trọng lượng và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
 | `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
@@ -123,7 +123,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–6 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
+Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -339,3 +339,17 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   - Nằm trong nhóm menu **Quản lý sách**, chỉ dành cho quyền `OWNER`.
   - Cho phép tìm kiếm trực quan theo tên sách, mã sách hoặc NXB (lọc theo đúng thể loại/bộ sưu tập của kệ), bấm `+ Ghim` tối đa 10 cuốn/kệ, sắp xếp thứ tự ưu tiên bằng nút `↑` / `↓` hoặc `Bỏ`.
   - Hiển thị nhãn trạng thái từng cuốn ghim: `Đang hiển thị trên Home` (khi `PUBLISHED` & `AVAILABLE`) hoặc cảnh báo `Đã bán / Đang ẩn — tự động nhường chỗ trên Home`.
+
+## Hàng chờ và Thùng rác
+
+- Trang sửa sách có hàng chờ ghim bên phải trên desktop. Màn hình hẹp mở
+  hộp thoại qua nút Chưa xuất bản. Danh sách lọc sách Ẩn chưa từng đăng,
+  hỗ trợ tìm tên/mã và phân trang.
+- **Xuất bản và mở cuốn tiếp theo** chuyển cuốn sau khi xác nhận ghi
+  thành công. Chọn cuốn đầu tiên trong hàng chờ theo thứ tự cập nhật mới
+  nhất và ID giảm dần, bỏ qua từ khóa trong panel. Hàng chờ hết hoặc tải lỗi
+  thì ở lại. **Lưu và xuất bản** ở lại cuốn hiện tại. Đổi cuốn dùng kiểm
+  tra thay đổi chưa lưu và thao tác ảnh đang chạy.
+- Icon thùng rác nằm bên phải Cập nhật, mở hộp thoại tên/mã và cảnh báo
+  xóa vĩnh viễn sau 7 ngày. Hạn hiển thị theo giờ Việt Nam.
+- Hai ảnh bổ sung có checkbox **Hiện trên trang sách**, mặc định tắt.

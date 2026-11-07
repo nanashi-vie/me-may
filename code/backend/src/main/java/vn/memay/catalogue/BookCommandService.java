@@ -157,7 +157,7 @@ public class BookCommandService {
             if (!fingerprint.equals(session.get("request_fingerprint")))
                 throw new AdminApiException(409, "upload_session_consumed");
             long id = ((Number) session.get("book_id")).longValue();
-            return mapper.detail(books.findById(id).orElseThrow(), listings.findByBookCopyId(id).orElseThrow());
+            return mapper.detail(books.findById(id).orElseThrow(() -> new AdminApiException(404,"not_found")), listings.findByBookCopyId(id).orElseThrow());
         }
         uploads.lock(input.uploadSessionId(), actor, true);
         if (target==Publication.PUBLISHED && !input.confirmedActualCopy())
@@ -182,11 +182,11 @@ public class BookCommandService {
         for (var assignment : assignments) {
             var m = selected.get(assignment.mediaId());
             jdbc.update(
-                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
+                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at,show_on_product) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?,?)",
                     assignment.mediaId(), id, assignment.role().name(), m.get("storage_public_id"), m.get("asset_id"),
                     m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
                     m.get("alt") == null ? assignment.role().label() + " " + b.bookCode : m.get("alt"),
-                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
+                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"), supplementalVisibility(assignment,false));
             jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
         var prepared = mapper.detail(b, l);
@@ -254,8 +254,10 @@ public class BookCommandService {
         boolean publishing=publishAfterSave && l.publicationStatus==Publication.ARCHIVED;
         if(publishing && !confirmedActualCopy) throw AdminApiException.field("confirmedActualCopy","Xác nhận bộ ảnh của mục sách");
         var reordered = media == null ? null : assignments(media);
-        boolean mediaChanged = reordered != null && !reordered.equals(
-                before.media().stream().map(m -> new MediaAssignment(UUID.fromString(m.id()), m.role())).toList());
+        boolean mediaChanged = reordered != null && (reordered.size() != before.media().size() ||
+                reordered.stream().anyMatch(a -> before.media().stream().noneMatch(m ->
+                        a.mediaId().toString().equals(m.id()) && a.role()==m.role()
+                                && supplementalVisibility(a,m.showOnProduct())==m.showOnProduct())));
         if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd))
             return before;
         apply(b, l, w);
@@ -307,6 +309,10 @@ public class BookCommandService {
         return changed;
     }
 
+    private static boolean supplementalVisibility(MediaAssignment assignment, boolean previous) {
+        return !assignment.role().isPublic() && Objects.requireNonNullElse(assignment.showOnProduct(),previous);
+    }
+
     private void reorder(long id, List<MediaAssignment> assignments) {
         var active = images.findByBookCopyIdAndState(id, MediaDtos.MediaState.ACTIVE);
         if (active.size() != assignments.size()
@@ -319,7 +325,9 @@ public class BookCommandService {
         }
         em.flush();
         for (var m : active) {
-            m.role = assignments.stream().filter(a -> a.mediaId().equals(m.id)).findFirst().orElseThrow().role();
+            var assignment = assignments.stream().filter(a -> a.mediaId().equals(m.id)).findFirst().orElseThrow();
+            m.showOnProduct = supplementalVisibility(assignment,!m.role.isPublic() && m.showOnProduct);
+            m.role = assignment.role();
             m.state = MediaDtos.MediaState.ACTIVE;
         }
         em.flush();

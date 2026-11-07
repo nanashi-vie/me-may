@@ -71,7 +71,7 @@ public class FlashSaleService {
                     || item.salePriceVnd() == null || item.salePriceVnd() < 1 || item.salePriceVnd() > 999999999999L)
                 throw AdminApiException.field("items", "Mã trùng hoặc giá không hợp lệ");
             var rows = jdbc.queryForList(
-                    "select l.id,l.price_min_vnd,l.publication_status,b.availability from listing l join book_copy b on b.id=l.book_copy_id where lower(b.book_code)=lower(?)",
+                    "select l.id,l.price_min_vnd,l.publication_status,b.availability from listing l join book_copy b on b.id=l.book_copy_id where lower(b.book_code)=lower(?) and (b.deleted_at is null or exists(select 1 from flash_sale_item f where f.listing_id=l.id))",
                     item.bookCode().trim());
             if (rows.isEmpty())
                 throw AdminApiException.field("items", "Không tìm thấy mã " + item.bookCode());

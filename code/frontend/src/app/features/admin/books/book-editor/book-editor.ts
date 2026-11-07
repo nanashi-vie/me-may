@@ -1,8 +1,10 @@
+import { NgTemplateOutlet } from '@angular/common';
+import type { BookSummary, Page } from '../book.models';
 import { BookDetailHandoff } from '../book-detail-handoff';
 import { firstValueFrom, Subscription, of, timer, switchMap, map, catchError } from 'rxjs';
 import {calculatedBookPrices,roundPriceUp} from '../book-pricing';
 import { VndInput } from '../vnd-input';
-import { BookUploadQueue } from '../book-upload-queue';
+import { BookUploadQueue, mediaAssignment } from '../book-upload-queue';
 import { BookCreate } from '../book.models';
 import { Validators } from '@angular/forms';
 import {
@@ -30,7 +32,7 @@ import { PRICE_NOTE, READING_NOTE } from '../book-copy';
 @Component({
   selector: 'app-book-editor',
   providers: [BookUploadQueue],
-  imports: [VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
+  imports: [NgTemplateOutlet, VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
   templateUrl: './book-editor.html',
   styleUrl: './book-editor.scss',
 })
@@ -200,10 +202,58 @@ export class BookEditor {
       }
     });
   }
+  readonly routeBookId = signal<string | null>(null);
+  readonly queue = signal<Page<BookSummary> | null>(null);
+  readonly queueError = signal('');
+  readonly queueTotal = signal<number | null>(null);
+  readonly queueSearch = new FormControl('', {nonNullable:true});
+  private queueSequence = 0;
+
   ngOnInit() {
     this.loadMetadata();
-    const id = this.route.snapshot.paramMap.get('id');
-    if(id){const seed=this.handoff.take(id);if(seed)this.accept(seed);else this.load(id);}
+    const open = (id:string|null) => {
+      if (!id) return;
+      ++this.loadSequence;
+      this.routeBookId.set(id);
+      this.book.set(null);
+      this.photos.configure(null);
+      this.error.set('');
+      this.loadFailed.set(false);
+      this.confirmed.set(false);
+      const seed=this.handoff.take(id);
+      if (seed) { this.accept(seed); this.loading.set(false); }
+      else this.load(id);
+      if (this.editable()) this.loadQueue();
+    };
+    if (this.route.paramMap) this.route.paramMap.pipe(takeUntilDestroyed(this.destroy)).subscribe(params=>open(params.get('id')));
+    else open(this.route.snapshot.paramMap.get('id'));
+  }
+  loadQueue(page=0) {
+    const sequence=++this.queueSequence;
+    const q=this.queueSearch.value.trim();
+    this.queueError.set('');
+    this.api.list({unpublishedOnly:true,q,page}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: result => {
+        if (sequence!==this.queueSequence) return;
+        this.queue.set(result);
+        if (!q) this.queueTotal.set(result.totalElements);
+      },
+      error: () => {
+        if (sequence===this.queueSequence) this.queueError.set('Chưa tải được danh sách. Thử lại.');
+      },
+    });
+  }
+  private openNextBook() {
+    const current=this.book()?.id;
+    this.api.list({unpublishedOnly:true,page:0,size:1}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: result => {
+        if (this.book()?.id!==current || this.loading()) return;
+        const next=result.items[0];
+        if (next) void this.router.navigate(['/admin/sach',next.id],{queryParamsHandling:'preserve'});
+        else this.notice.set('Đã xuất bản sách. Hàng chờ đã hết.');
+      },
+      error: () => this.notice.set('Đã xuất bản sách. Chưa tải được cuốn tiếp theo.'),
+    });
   }
   loadMetadata(refresh=false) {
     this.metadataRequests.unsubscribe();this.metadataRequests=new Subscription();
@@ -325,7 +375,7 @@ export class BookEditor {
       this.confirmed()
     );
   }
-  async save(publish=false) {
+  async save(publish=false, openNext=false) {
     if (
       this.busy() ||
       this.otherBusy() ||
@@ -384,6 +434,10 @@ export class BookEditor {
             this.busy.set(false);
             this.accept(saved);
             this.notice.set(publish && saved.publication==='PUBLISHED'?'Đã lưu và xuất bản sách.':'Đã lưu thay đổi.');
+            if (publish && saved.publication==='PUBLISHED') {
+              this.loadQueue();
+              if (openNext) this.openNextBook();
+            }
           },
           error: (e) => {
             this.busy.set(false);
@@ -409,10 +463,10 @@ export class BookEditor {
         this.notice.set('Chưa ghi nhận lần lưu này. Có thể kiểm tra rồi lưu lại.');return;
       }
       const form=buildBookForm();form.reset({...current,stock:current.totalStock,internalNote:current.internalNote!==undefined?current.internalNote:current.conditionNote??null,featureCodes:(current.features??[]).map(f=>f.code)},{emitEvent:false});
-      const media=this.photos.assignments(), actual=current.media.map(m=>({mediaId:m.id,role:m.role}));
+      const media=this.photos.assignments(), actual=current.media.map(m=>mediaAssignment(m.id,m.role,m.showOnProduct));
       const metadata=this.photos.metadataAssignments();
       const metadataMatches=metadata.every(m=>current.media.some(photo=>photo.id===m.mediaId && photo.alt===m.alt && photo.sourceRef===m.sourceRef));
-      if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media)===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
+      if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media.map(m=>mediaAssignment(m.mediaId,m.role,m.showOnProduct)))===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
         this.accept(current);this.notice.set(current.publication==='PUBLISHED'?'Đã xác nhận lưu sách đang xuất bản.':'Đã xác nhận lưu thay đổi.');
       } else this.error.set('Bản đã lưu có thay đổi khác. Nội dung đang sửa được giữ; mở bản đã lưu ở tab khác để đối chiếu.');
     } catch(e) {this.fail(e as HttpErrorResponse);}
@@ -525,8 +579,10 @@ export class BookEditor {
     });
   }
   canLeave() {
+    if (this.busy() || this.otherBusy() || this.photos.processing() ||
+        this.photos.rows().some(row => row.state === 'removing' || row.state === 'uploading')) return false;
     return (
-      (!this.form.dirty && !this.mediaDirty()) ||
+      (!this.form.dirty && !this.mediaDirty() && !this.createUncertain() && !this.updateUncertain()) ||
       typeof window === 'undefined' ||
       window.confirm('Nội dung chưa lưu sẽ mất khi rời trang. Bạn muốn rời trang?')
     );
