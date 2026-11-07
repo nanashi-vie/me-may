@@ -31,7 +31,8 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 ## Phần còn thực thi
 
-- [Thiết kế ảnh bổ sung, đặc điểm, thùng rác và hàng chờ](BOOK_ADMIN_WORKFLOW_SPEC.md) đang chờ duyệt.
+- Ảnh bổ sung, đặc điểm, thùng rác và hàng chờ đã duyệt [thiết kế](BOOK_ADMIN_WORKFLOW_SPEC.md).
+  Xem [kế hoạch triển khai](BOOK_ADMIN_WORKFLOW_PLAN.md).
 
 - 8ảnh/lưu/features06/11 đã gộp vào [CATALOGUE](CATALOGUE.md), [DATA](DATA.md),
   [DESIGN](DESIGN.md); [bằng chứng](BOOK_ENTRY_VERIFICATION.md),

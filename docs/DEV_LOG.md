@@ -2212,3 +2212,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đọc schema FK và luồng `MediaCleanupJob`. Biên nhận import cần giữ
   lịch sử khi bản ghi sách được dọn. Chưa sửa code hay chạy test ứng dụng.
 - Chờ duyệt thiết kế cập nhật trước khi lập kế hoạch triển khai.
+
+### S047-C03 — 07/11/2026 — Duyệt thiết kế và lập kế hoạch
+
+- User duyệt thiết kế cả bốn phần. Lập `BOOK_ADMIN_WORKFLOW_PLAN.md`,
+  cập nhật chỉ mục và tiến độ. Chia riêng bước dọn dữ liệu hết hạn để
+  kiểm tra giao dịch, biên nhận và khả năng thử lại xóa ảnh.
+- Đối chiếu code editor, media/public projection, schema migration và các
+  API hiện có trên `dev`. `git diff --check` đạt. Chưa sửa code ứng dụng,
+  chưa chạy test ứng dụng. Tiếp theo thực hiện các bước trong kế hoạch.

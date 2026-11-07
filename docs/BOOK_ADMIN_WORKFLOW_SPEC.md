@@ -1,7 +1,6 @@
 # Ảnh bổ sung, đặc điểm, thùng rác và hàng chờ xuất bản
 
-Đề xuất 07/11/2026. Đã chốt hướng danh sách ghim bên phải kèm nút xuất bản
-và mở cuốn tiếp theo. Các hành vi cụ thể bên dưới chờ duyệt trước khi viết code.
+Đã duyệt 07/11/2026. Xem [kế hoạch triển khai](BOOK_ADMIN_WORKFLOW_PLAN.md).
 
 ## Hướng đã chọn
 
@@ -82,5 +81,4 @@ sách ghim và nút sang cuốn tiếp theo.
   lại cho lô mới. Kiểm tra quyền, hủy hộp thoại, khôi phục trước hạn, dọn
   sau hạn, lỗi Cloudinary, biên nhận cũ, ảnh public và hàng chờ.
 
-Chi tiết migration, API và tên trường lưu trữ sẽ được chọn ở bước lập kế
-hoạch, sau khi thiết kế được duyệt.
+Chi tiết migration, API và các ca kiểm thử nằm trong kế hoạch triển khai.
