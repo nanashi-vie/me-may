@@ -2335,3 +2335,30 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đối chiếu Git, quy tắc kiểu bìa hiện hành, contract nhập và hàng chờ.
   Chưa chạy test ứng dụng vì thay đổi chỉ gồm tài liệu. Bước tiếp theo là
   duyệt spec rồi lập kế hoạch triển khai trên dev.
+
+### S051-C02 — 07/11/2026 — Bắt đầu triển khai
+
+- User duyệt triển khai và yêu cầu nhận cột kiểu bìa cho CSV/Excel.
+  File hiện có cột kieu_bia; cần mở rộng quy tắc nhận giá trị cho các thể
+  loại ngoài Board book. Đang làm bước đầu theo BOOK_COMPLETENESS_PLAN.
+  Chưa kiểm thử thay đổi.
+
+### S051-C03 — 07/11/2026 — Kiểu bìa và luồng rà sách
+
+- CSV/XLSX dùng cột kieu_bia hiện có. Form, preview và bộ lọc khách dùng
+  hai kiểu bìa ngoài Board book. Giữ sách đã đăng còn thiếu kiểu bìa để
+  bổ sung dần. Thay đổi không cần migration.
+- Admin gom điều kiện trong Bộ lọc, dùng một danh sách Thiếu thông tin và
+  hiển thị lý do. Hàng chờ có hai mục. Sau khi lưu, truy vấn tìm trang
+  theo thứ tự hiện tại hoặc giữ trang cũ nếu sách rời kết quả.
+- Kiểm tại code/backend bằng `mvn test` với PostgreSQL test local, 237 ca,
+  0 lỗi, 3 skip. Lượt đầu trong sandbox bị chặn kết nối local và Mockito
+  attach. Lượt chạy có quyền kết nối phát hiện hai fixture cần kiểu bìa
+  khi xuất bản, đã cập nhật và chạy lại.
+- Tại code/frontend, `npm test -- --watch=false` đạt 246 ca.
+  `CI=1 NO_COLOR=1 NODE_OPTIONS=--max-old-space-size=4096 npm run build`
+  đạt sau khi lượt sandbox dừng mã 134. Chưa smoke thao tác cuộn trên
+  trình duyệt thực, chưa deploy. Bàn giao qua dev.
+- Rà soát mã phát hiện và đã chỉnh ba điểm: lưu vị trí cuộn lúc bấm mở
+  sách, trả lý do thiếu cả ở danh sách chưa lọc, giữ nguyên cuốn khi đối
+  chiếu lại một yêu cầu xuất bản chưa rõ kết quả.

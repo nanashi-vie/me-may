@@ -13,6 +13,29 @@ import vn.memay.catalogue.BookDtos.*;
 @Service
 @Transactional(readOnly = true)
 public class BookQueryService {
+    private static final String MISSING_FIELDS = """
+            array_remove(array[
+              case when nullif(btrim(b.title),'') is null then 'Tên sách' end,
+              case when c.code is null then 'Thể loại' end,
+              case when c.code <> 'BOARD_BOOK' and b.binding is null then 'Kiểu bìa' end,
+              case when nullif(btrim(b.publisher),'') is null then 'Nhà xuất bản' end,
+              case when nullif(btrim(b.author),'') is null then 'Tác giả' end,
+              case when nullif(btrim(b.language),'') is null then 'Ngôn ngữ' end,
+              case when l.price_min_vnd is null or l.price_max_vnd is null then 'Khoảng giá' end,
+              case when b.weight_g is null then 'Trọng lượng' end,
+              case when b.unit_price_per_kg_vnd is null then 'Đơn giá/kg' end,
+              case when nullif(btrim(l.description),'') is null then 'Mô tả' end,
+              case when not exists(select 1 from listing_age_group a where a.listing_id=l.id) then 'Nhóm tuổi' end,
+              case when nullif(btrim(l.reading_level),'') is null then 'Trình độ đọc' end,
+              case when nullif(btrim(l.reading_video_url),'') is null then 'Link video' end,
+              case when not exists(select 1 from listing_collection lc where lc.listing_id=l.id) then 'Bộ sưu tập' end,
+              case when not exists(select 1 from listing_feature lf where lf.listing_id=l.id) then 'Đặc điểm' end,
+              case when not exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') then 'Ảnh bìa' end,
+              case when not exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='BACK' and m.state='ACTIVE') then 'Ảnh lưng' end
+            ],null)
+            """;
+    private static final String ADMIN_ORDER = "b.updated_at desc,b.id desc";
+
     private final JdbcTemplate jdbc;
     private final BookCopyRepository books;
     private final ListingRepository listings;
@@ -50,12 +73,13 @@ public class BookQueryService {
             throw AdminApiException.field("size", "Chọn từ 1 đến 100");
     }
 
+    @Transactional(readOnly = true, isolation = org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public Page<BookSummary> list(AdminUser actor, BookFilter filter) {
         page(filter.page(), filter.size());
         String q = BookValidation.trim(filter.q());
         if (q != null && q.length() > 200)
             throw AdminApiException.field("q", "Tối đa 200 ký tự");
-        var where = new StringBuilder(" from book_copy b join listing l on l.book_copy_id=b.id where b.deleted_at is null");
+        var where = new StringBuilder(" from book_copy b join listing l on l.book_copy_id=b.id left join category c on c.id=l.category_id where b.deleted_at is null");
         List<Object> args = new ArrayList<>();
         if (q != null) {
             where.append(" and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\')");
@@ -71,12 +95,32 @@ public class BookQueryService {
             args.add(filter.availability().name());
         }
         if(Boolean.TRUE.equals(filter.unpublishedOnly()))where.append(" and l.publication_status='ARCHIVED' and l.published_at is null");
+        if (filter.category() != null) {
+            where.append(" and c.code=?");
+            args.add(filter.category());
+        }
+        if (filter.binding() != null) {
+            where.append(" and b.binding=?");
+            args.add(filter.binding());
+        }
+        boolean missingOnly = Boolean.TRUE.equals(filter.missingOnly());
+        if (missingOnly) where.append(" and cardinality(").append(MISSING_FIELDS).append(")>0");
         long total = jdbc.queryForObject("select count(*)" + where, Long.class, args.toArray());
+        int requestedPage = filter.page();
+        if (filter.focusId() != null) {
+            var focusArgs = new ArrayList<>(args);
+            focusArgs.add(filter.focusId());
+            var ranks = jdbc.queryForList("select ordinal from (select b.id, row_number() over(order by "
+                    + ADMIN_ORDER + ") - 1 ordinal" + where + ") ranked where id=?", Long.class, focusArgs.toArray());
+            if (!ranks.isEmpty()) requestedPage = Math.toIntExact(ranks.getFirst() / filter.size());
+            else requestedPage = (int) Math.min(requestedPage, Math.max(0, (total - 1) / filter.size()));
+        }
         args.add(filter.size());
-        args.add((long) filter.page() * filter.size());
+        args.add((long) requestedPage * filter.size());
         var items = jdbc.query(
                 "select b.id,b.book_code,b.title,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
-                        + where + " order by b.updated_at desc,b.id desc limit ? offset ?",
+                        + ", " + MISSING_FIELDS + " missing_fields"
+                        + where + " order by " + ADMIN_ORDER + " limit ? offset ?",
                 (r, n) -> new BookSummary(r.getString("id"), r.getString("book_code"), r.getString("title"),
                         r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class),
                         Publication.valueOf(r.getString("publication_status")),
@@ -84,9 +128,10 @@ public class BookQueryService {
                         r.getTimestamp("updated_at").toInstant(),
                         r.getBoolean("has_front") ? "/api/v1/admin/books/" + r.getString("id") + "/media/FRONT/content"
                                 : null,
-                        r.getLong("total_stock"),r.getTimestamp("published_at")==null?null:r.getTimestamp("published_at").toInstant()),
+                        r.getLong("total_stock"),r.getTimestamp("published_at")==null?null:r.getTimestamp("published_at").toInstant(),
+                        Arrays.asList((String[]) r.getArray("missing_fields").getArray())),
                 args.toArray());
-        return new Page<>(items, filter.page(), filter.size(), total,
+        return new Page<>(items, requestedPage, filter.size(), total,
                 (int) ((total + filter.size() - 1) / filter.size()));
     }
 

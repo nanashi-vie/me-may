@@ -33,8 +33,10 @@ public class AdminBookController {
     public Page<BookSummary> list(Authentication a, @RequestParam(required = false) String q,
             @RequestParam(required = false) Publication publication,
             @RequestParam(required = false) Availability availability, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,@RequestParam(required=false) Boolean unpublishedOnly) {
-        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size,unpublishedOnly));
+            @RequestParam(defaultValue = "20") int size,@RequestParam(required=false) Boolean unpublishedOnly,
+            @RequestParam(required=false) Boolean missingOnly, @RequestParam(required=false) String category,
+            @RequestParam(required=false) String binding, @RequestParam(required=false) Long focusId) {
+        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size, unpublishedOnly, missingOnly, category, binding, focusId));
     }
 
     @PostMapping

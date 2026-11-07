@@ -3,11 +3,11 @@ import { formatAdminPriceRange } from '../book-copy';
 import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { DatePipe } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookApi } from '../book-api';
 import { Availability, BookFilter, BookSummary, Page, Publication, TrashBook } from '../book.models';
-import { PUBLICATION_LABELS } from '../book-copy';
+import { CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -21,10 +21,18 @@ export class BookList {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
+  private readonly document = inject(DOCUMENT);
+  readonly categories = Object.entries(CATEGORY_LABELS);
+  readonly notice = signal('');
+  private focusId?: string;
+  private returnScroll = 0;
   readonly filters = new FormGroup({
     q: new FormControl('', { nonNullable: true }),
     publication: new FormControl('', { nonNullable: true }),
     availability: new FormControl('', { nonNullable: true }),
+    category: new FormControl('', { nonNullable: true }),
+    binding: new FormControl('', { nonNullable: true }),
+    missingOnly: new FormControl(false, { nonNullable: true }),
     unpublishedOnly: new FormControl(false,{nonNullable:true}),
   });
   readonly result = signal<Page<BookSummary> | null>(null);
@@ -41,6 +49,9 @@ export class BookList {
   private sequence = 0;
   private trashSequence = 0;
   constructor() {
+    const state = this.router.currentNavigation?.()?.extras.state;
+    this.focusId = typeof state?.['savedBookId'] === 'string' ? state['savedBookId'] : undefined;
+    this.returnScroll = typeof state?.['returnScroll'] === 'number' ? state['returnScroll'] : 0;
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
       const publication = p.get('publication'),
         availability = p.get('availability');
@@ -48,9 +59,16 @@ export class BookList {
         q: p.get('q') ?? '',
         publication: publication ?? '',
         availability: availability ?? '',
+        category: p.get('category') ?? '',
+        binding: p.get('binding') ?? '',
+        missingOnly: p.get('missingOnly') === 'true',
         unpublishedOnly: p.get('unpublishedOnly')==='true',
       });
       this.filter = {
+        ...(this.focusId ? {focusId: this.focusId} : {}),
+        ...(this.filters.controls.category.value ? {category: this.filters.controls.category.value} : {}),
+        ...(this.filters.controls.binding.value ? {binding: this.filters.controls.binding.value} : {}),
+        ...(this.filters.controls.missingOnly.value ? {missingOnly: true} : {}),
         ...(p.get('unpublishedOnly')==='true'?{unpublishedOnly:true}:{}),
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
@@ -81,6 +99,7 @@ export class BookList {
               }
               this.result.set(r);
               this.loading.set(false);
+              this.focusSavedBook(r);
             }
           },
           error: () => {
@@ -91,6 +110,44 @@ export class BookList {
           },
         });
   }
+  editUrl(id: string) {
+    return this.router.serializeUrl(this.router.createUrlTree(['/admin/sach', id],
+      {queryParamsHandling:'preserve'}));
+  }
+
+  openBook(event: MouseEvent, id: string) {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    void this.router.navigate(['/admin/sach', id], {queryParamsHandling:'preserve',
+      state:{returnScroll: this.document.defaultView?.scrollY ?? 0}});
+  }
+
+  private focusSavedBook(result: Page<BookSummary>) {
+    const id = this.focusId;
+    if (!id) return;
+    this.focusId = undefined;
+    this.filter.focusId = undefined;
+    const found = result.items.some(book => book.id === id);
+    this.notice.set(found ? 'Đã lưu thay đổi.' : 'Đã lưu thay đổi. Cuốn vừa lưu đã rời kết quả lọc.');
+    if (result.page !== this.filter.page) {
+      void this.router.navigate([], {relativeTo: this.route, queryParams: {page: result.page},
+        queryParamsHandling: 'merge', replaceUrl: true}).then(() => this.scrollToSaved(id, found));
+    } else this.scrollToSaved(id, found);
+  }
+
+  private scrollToSaved(id: string, found: boolean) {
+    const view = this.document.defaultView;
+    view?.requestAnimationFrame(() => {
+      const row = found ? this.document.getElementById('admin-book-' + id) : null;
+      if (row) {
+        row.classList.add('saved-book');
+        row.scrollIntoView({block: 'center'});
+      } else {
+        view.scrollTo({top: this.returnScroll});
+      }
+    });
+  }
+
   showTrash(page=0) {
     if (this.mutationBusy()) return;
     this.selected.set(new Set());

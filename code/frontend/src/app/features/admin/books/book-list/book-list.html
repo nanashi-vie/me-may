@@ -31,8 +31,9 @@
 } @else {
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label class="admin-field"><span class="field-label">Tên hoặc mã sách</span><input formControlName="q" maxlength="200" type="search" /></label
-  ><label class="admin-field"
-    ><span class="field-label">Xuất bản</span><select formControlName="publication">
+  ><details #filterPanel>
+    <summary>Bộ lọc</summary>
+    <label class="admin-field"><span class="field-label">Xuất bản</span><select formControlName="publication">
       <option value="">Tất cả</option>
       <option value="PUBLISHED">Công khai</option>
       <option value="ARCHIVED">Ẩn</option>
@@ -43,11 +44,30 @@
       <option value="AVAILABLE">Còn hàng</option>
       <option value="SOLD">Hết hàng</option>
     </select></label
-  ><label class="unpublished-filter"><input type="checkbox" formControlName="unpublishedOnly" />Chưa xuất bản</label><button type="submit">Tìm sách</button>
+  >
+    <label class="admin-field"><span class="field-label">Thể loại</span>
+      <select formControlName="category">
+        <option value="">Tất cả</option>
+        @for (category of categories; track category[0]) { <option [value]="category[0]">{{ category[1] }}</option> }
+      </select>
+    </label>
+    <label class="admin-field"><span class="field-label">Kiểu bìa</span>
+      <select formControlName="binding">
+        <option value="">Tất cả</option>
+        <option value="PAPERBACK">Paperback</option>
+        <option value="HARDCOVER">Hardcover</option>
+      </select>
+    </label>
+    <label><input type="checkbox" formControlName="unpublishedOnly" /> Chưa xuất bản</label>
+    <label><input type="checkbox" formControlName="missingOnly" /> Thiếu thông tin</label>
+    <button type="button" (click)="search(); filterPanel.open = false">Áp dụng</button>
+  </details>
+  <button type="submit">Tìm sách</button>
 </form>
 @if (error()) {
   <p role="alert" class="error">{{ error() }}</p>
 }
+@if (notice()) { <p role="status">{{ notice() }}</p> }
 @if (loading()) {
   <p role="status">Đang tải sách…</p>
 }
@@ -73,7 +93,7 @@
       </thead>
       <tbody>
         @for (book of data.items; track book.id) {
-          <tr>
+          <tr [id]="'admin-book-' + book.id">
             <td>
               @if (auth.user()?.role === 'OWNER') {
                 <input type="checkbox" [attr.aria-label]="'Chọn ' + book.bookCode" [checked]="selected().has(book.id)"
@@ -88,10 +108,11 @@
               } @else {
                 <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
               }
-              <a [routerLink]="['/admin/sach', book.id]" queryParamsHandling="preserve">{{
+              <a [href]="editUrl(book.id)" (click)="openBook($event, book.id)">{{
                 book.title || 'Chưa có tên'
               }}</a
               ><small>{{ book.bookCode }}</small>
+              @if (book.missingFields?.length) { <small>Thiếu {{ book.missingFields?.join(' · ') }}</small> }
             </td>
             <td>
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}

@@ -75,7 +75,7 @@
               role="option"
               [attr.aria-selected]="form.controls.categoryCode.value === null"
               [class.selected]="form.controls.categoryCode.value === null"
-              (mouseenter)="pictureSubmenuOpen.set(false)"
+              (mouseenter)="bindingCategory.set(null)"
               (click)="selectCategory(null, $event)"
             >
               <span class="item-text">Chưa xác định</span>
@@ -84,37 +84,40 @@
               }
             </button>
             @for (c of taxonomy().categories; track c.code) {
-              @if (c.code === 'PICTURE_BOOK') {
-                <div class="dropdown-submenu-wrap" (mouseenter)="pictureSubmenuOpen.set(true)">
+              @if (c.code !== 'BOARD_BOOK') {
+                <div class="dropdown-submenu-wrap">
                   <button
                     type="button"
                     class="dropdown-item has-submenu"
-                    [class.selected]="form.controls.categoryCode.value === 'PICTURE_BOOK'"
-                    [class.submenu-active]="pictureSubmenuOpen()"
-                    [attr.aria-expanded]="pictureSubmenuOpen()"
-                    (click)="togglePictureSubmenu($event)"
+                    [class.selected]="form.controls.categoryCode.value === c.code"
+                    [class.submenu-active]="bindingCategory() === c.code"
+                    [attr.aria-expanded]="bindingCategory() === c.code"
+                    (click)="toggleBindingSubmenu(c.code, $event)"
                   >
                     <span class="item-text">{{ c.label }}</span>
                     <span class="item-right">
-                      @if (form.controls.categoryCode.value === 'PICTURE_BOOK') {
+                      @if (form.controls.categoryCode.value === c.code) {
                         <span class="item-check" aria-hidden="true">✓</span>
                       }
                       <span class="item-arrow" aria-hidden="true">›</span>
                     </span>
                   </button>
-                  @if (pictureSubmenuOpen()) {
-                    <div class="dropdown-submenu" role="listbox" aria-label="Kiểu Picture book">
-                      @for (b of pictureBindings(); track b.code) {
+                  @if (bindingCategory() === c.code) {
+                    <div class="dropdown-submenu" role="listbox" aria-label="Kiểu bìa">
+                      <button type="button" class="dropdown-item" role="option"
+                        [attr.aria-selected]="form.controls.categoryCode.value === c.code && !form.controls.binding.value"
+                        (click)="selectBinding(c.code, null, $event)">Chưa xác định</button>
+                      @for (b of bindingOptions(); track b.code) {
                         <button
                           type="button"
                           class="dropdown-item"
                           role="option"
-                          [attr.aria-selected]="form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code"
-                          [class.selected]="form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code"
-                          (click)="selectPictureBinding(b.code, $event)"
+                          [attr.aria-selected]="form.controls.categoryCode.value === c.code && form.controls.binding.value === b.code"
+                          [class.selected]="form.controls.categoryCode.value === c.code && form.controls.binding.value === b.code"
+                          (click)="selectBinding(c.code, b.code, $event)"
                         >
                           <span class="item-text">{{ b.label }}</span>
-                          @if (form.controls.categoryCode.value === 'PICTURE_BOOK' && form.controls.binding.value === b.code) {
+                          @if (form.controls.categoryCode.value === c.code && form.controls.binding.value === b.code) {
                             <span class="item-check" aria-hidden="true">✓</span>
                           }
                         </button>
@@ -129,7 +132,7 @@
                   role="option"
                   [attr.aria-selected]="form.controls.categoryCode.value === c.code"
                   [class.selected]="form.controls.categoryCode.value === c.code"
-                  (mouseenter)="pictureSubmenuOpen.set(false)"
+                  (mouseenter)="bindingCategory.set(null)"
                   (click)="selectCategory(c.code, $event)"
                 >
                   <span class="item-text">{{ c.label }}</span>
@@ -141,8 +144,8 @@
             }
           </div>
         }
-        @if (form.hasError('binding') && form.touched) {
-          <small class="helper-text" id="binding-error">Chọn Paperback hoặc Hardcover trong Picture book.</small>
+        @if (fields()['binding']?.length) {
+          <small class="helper-text" id="binding-error">{{ fields()['binding'][0] }}</small>
         }
       </div>
       <label class="admin-field field-weight"><span class="field-label">Trọng lượng sách (g)</span><input type="number" formControlName="weightG" (input)="calculatePrices()" min="1" step="1" />@if (book()?.weightG == null) { <small class="helper-text">Chưa cập nhật</small> }</label>
@@ -281,10 +284,16 @@
     <label class="confirmation"><input type="checkbox" [checked]="confirmed()" [disabled]="formDisabled()" (change)="confirmed.set($any($event.target).checked)" />Tôi xác nhận bộ ảnh đúng với mục sách này.</label>
   }
   @if (editable()) {
-  <div class="save-actions" [class.single]="book()?.publication === 'PUBLISHED'">
+  <div class="save-actions">
     <button type="submit" [class.secondary]="book()?.publication !== 'PUBLISHED'" [disabled]="formDisabled() || photos.pending()">
       {{ busy() && saveAction() === 'save' ? 'Đang lưu…' : 'Lưu thay đổi' }}
     </button>
+    @if(book()) {
+      <button type="button" class="secondary" [disabled]="formDisabled() || photos.pending()" (click)="save(false,false,true)">Lưu thay đổi và quay lại</button>
+      @if(missingQueue()) {
+        <button type="button" class="secondary" [disabled]="formDisabled() || photos.pending()" (click)="save(false,true)">Lưu và mở cuốn tiếp theo</button>
+      }
+    }
     @if(book()?.publication !== 'PUBLISHED') {
       <button type="button" [disabled]="formDisabled() || photos.pending()" (click)="save(true)">
         {{ busy() && saveAction() === 'publish' ? 'Đang lưu và xuất bản…' : 'Lưu và xuất bản' }}
@@ -338,18 +347,22 @@
 }
 </div>
 @if ((routeBookId() || book()) && editable()) {
-  <aside class="unpublished-sidebar" aria-label="Hàng chờ xuất bản">
+  <aside class="unpublished-sidebar" aria-label="Hàng chờ sách">
     <ng-container [ngTemplateOutlet]="queueContent" />
   </aside>
   <button type="button" class="secondary unpublished-toggle" (click)="queueDialog.showModal()">
-    Chưa xuất bản @if(queueTotal() !== null) { ({{ queueTotal() }}) }
+    Hàng chờ sách
   </button>
-  <dialog #queueDialog class="unpublished-dialog" aria-label="Hàng chờ xuất bản">
+  <dialog #queueDialog class="unpublished-dialog" aria-label="Hàng chờ sách">
     <button type="button" class="secondary" autofocus (click)="queueDialog.close()">Đóng danh sách</button>
     <ng-container [ngTemplateOutlet]="queueContent" />
   </dialog>
   <ng-template #queueContent>
-    <h2>Chưa xuất bản @if(queueTotal() !== null) { ({{ queueTotal() }}) }</h2>
+    <div class="queue-tabs" role="group" aria-label="Nhóm hàng chờ">
+      <button type="button" class="secondary" [attr.aria-pressed]="!missingQueue()" (click)="chooseQueue(false)">Chưa xuất bản</button>
+      <button type="button" class="secondary" [attr.aria-pressed]="missingQueue()" (click)="chooseQueue(true)">Thiếu thông tin</button>
+    </div>
+    <h2>{{ missingQueue() ? 'Thiếu thông tin' : 'Chưa xuất bản' }} @if(queueTotal() !== null) { ({{ queueTotal() }}) }</h2>
     <form (submit)="$event.preventDefault(); loadQueue()">
       <label>Tên hoặc mã sách <input type="search" maxlength="200" [formControl]="queueSearch" /></label>
       <button type="submit" class="secondary">Tìm</button>
@@ -361,6 +374,7 @@
           <li>
             @if(item.id === book()?.id) { <strong aria-current="page">{{ item.title || 'Chưa có tên' }} · {{ item.bookCode }}</strong> }
             @else { <a [routerLink]="['/admin/sach',item.id]" queryParamsHandling="preserve" (click)="queueDialog.close()">{{ item.title || 'Chưa có tên' }} · {{ item.bookCode }}</a> }
+            @if (item.missingFields?.length) { <small>Thiếu {{ item.missingFields?.join(' · ') }}</small> }
           </li>
         } @empty { <li>Không có sách phù hợp.</li> }
       </ul>

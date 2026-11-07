@@ -60,7 +60,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - Thêm index listing(publication_status, published_at), book_copy(availability), updated_at/id và FK/mapping phục vụ bảng quản trị.
 - Seed category codes: BOARD_BOOK, PICTURE_BOOK, ENCYCLOPEDIA_SCIENCE, HISTORY, CHAPTER, STORY_COLLECTION, READING_PRACTICE, COOKING_CRAFT_ACTIVITY, BIBLE; nhãn theo DATA.
 - age_group codes: AGE_0_3, AGE_4_6, AGE_7_9, AGE_10_PLUS; một cuốn chọn nhiều, có thể để trống nếu chưa xác định.
-- binding: PAPERBACK/HARDCOVER; category PICTURE_BOOK bắt buộc đúng một binding cả khi lưu sách ẩn; category khác phải binding=null.
+- binding: PAPERBACK/HARDCOVER khi xuất bản cho mọi thể loại ngoài Board book. Sách ẩn có thể thiếu. Sách cũ đang đăng và thiếu kiểu bìa được lưu khi giữ nguyên thể loại.
 - Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
 - condition_grade chỉ là legacy; form mới không nhập. condition_note là ghi chú riêng optional; public/preview không nhận nội dung.
 - reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; không yêu cầu căn cứ khi gán mức.

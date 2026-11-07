@@ -15,7 +15,7 @@ Fixture CSV và wireframe M0 được giữ làm bằng chứng thiết kế tr�
 | book_code | BookCopy | Website tự sinh mã tăng dần, duy nhất và bất biến sau khi tạo; dùng để dán nhãn/trao đổi với tiệm. Không lấy từ tên sách, ISBN hoặc mã khách; fixture có prefix DEMO để không nhầm mã vận hành |
 | title | BookCopy | Bắt buộc khi publish; giữ tên sách nguồn |
 | category_id | Listing | Đúng một thể loại: Board book / Picture book / Bách khoa toàn thư & khoa học / Lịch sử / Chapter / Tuyển tập truyện / Tập đọc / Nấu ăn - thủ công - activity book / Kinh Thánh; bắt buộc khi publish |
-| binding | BookCopy | Khi nhập Picture book bắt buộc đúng một kiểu Paperback hoặc Hardcover; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
+| binding | BookCopy | Mọi thể loại ngoài Board book dùng Paperback hoặc Hardcover khi xuất bản; “Tất cả” chỉ là bộ lọc, không lưu vào sách |
 | language | BookCopy | Form tạo mới điền sẵn “Tiếng Anh”, có thể sửa/xóa; mở sách cũ giữ nguyên ngôn ngữ đã lưu |
 | isbn | BookCopy | Tùy chọn; trùng giữa các cuốn là hợp lệ; xác minh khi dùng dữ liệu thật |
 | author, publisher | BookCopy | Tùy chọn; không suy đoán |
@@ -62,7 +62,7 @@ Mức đọc do chủ chọn thủ công; không suy từ tuổi/thể loại. �
 - Cuốn còn hàng/hết hàng; published/lưu trữ độc lập. Không nhập trạng thái HELD từ fixture cũ vào baseline MVP.
 - Thiếu ISBN/author/publisher; không chặn tạo sách khi đủ trường bắt buộc.
 - Tên dài, thiếu NXB/tác giả không tạo dấu phân cách thừa; dữ liệu tiếng Việt/Anh; tuổi chưa xác định hoặc gán nhiều nhóm.
-- Mỗi cuốn đúng một thể loại; Picture book thiếu kiểu bìa hoặc dùng “Tất cả” bị từ chối; Paperback và Hardcover đều xuất hiện ở bộ lọc “Tất cả”.
+- Mỗi cuốn đúng một thể loại. Khi xuất bản, mọi thể loại ngoài Board book cần Paperback hoặc Hardcover. “Tất cả” là lựa chọn bộ lọc.
 - Mức đọc chưa xác định vẫn publish được khi đủ các điều kiện khác; không yêu cầu căn cứ, không suy mức đọc từ tuổi/thể loại.
 - Thiếu FRONT/BACK, trọng lượng, lỗi chưa xác minh hoặc khoảng giá rỗng: không cho publish thật; không bắt có mức đọc/link video.
 - Cuốn đang ở wishlist rồi bị sold hoặc ẩn.
@@ -89,7 +89,7 @@ V3/7cột cũ; các header khác vẫn cần đủ. Giữ alias kiểu bìa như
 | nha_xuat_ban | Không | Text≤200 |
 | tac_gia | Không | Text≤200 |
 | the_loai | Có | Nhãn/code của9thể loại hiện hành |
-| kieu_bia | Chỉ Picture Book | Paperback/Hardcover; loại khác để trống |
+| kieu_bia | Tùy chọn khi import | Paperback/Hardcover; Board book để trống |
 | trong_luong_g | Có | Gram nguyên1..9007199254740991 |
 | mo_ta_sach | Không | Mô tả sách public≤10000, giữ xuống dòng; khác ghi chú nội bộ |
 | don_gia_kg | Không | NguyênVND/kg1..999999999999, không dấu nhóm; trống được |
@@ -126,7 +126,7 @@ editor rồi tự xuất bản. Hai dòng giống nhau vẫn tạo hai sách tro
 | nha_xuat_ban | Không | Text tối đa200 |
 | tac_gia | Không | Text tối đa200 |
 | the_loai | Có | Nhãn dễ đọc hoặc code chuẩn của9thểloại hiện hành |
-| kieu_bia | Có điều kiện | Paperback/Hardcover hoặc code tương ứng khi Picture Book; thểloại khác đểtrống |
+| kieu_bia | Có điều kiện | Paperback/Hardcover hoặc Bìa mềm/Bìa cứng; Board book để trống |
 | gia_tu | Có | NguyênVND1..999999999999 |
 | gia_den | Có | Cùng giới hạn, không nhỏ hơn gia_tu |
 | trong_luong_g | Có | Gram nguyên1..9007199254740991 |
@@ -205,7 +205,7 @@ Public tính giá theo giờ database: chỉ sale đang hiệu lực, PUBLISHED,
 
 V12 append2category (01/11), V13 append `BIBLE` (04/11), giữ6categorycũ/ID/slug/thứtự và dữ liệu sách. Không tự phân
 loại lại sách hoặc suy mức đọc từ thểloại. Tập đọc, nhómactivity và Kinh Thánh không có binding;
-chỉ Picture Book cần Paperback/Hardcover.
+mọi thể loại ngoài Board book dùng Paperback/Hardcover khi xuất bản.
 
 | Code | Nhãn | Slug | sort_order |
 |---|---|---|---:|

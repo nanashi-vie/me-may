@@ -18,7 +18,7 @@ export function readFilters(p: ParamMap): CatalogueFilter {
     q: (p.get('q') || '').trim().slice(0, 200),
     category,
     binding:
-      category === 'PICTURE_BOOK' && ['PAPERBACK', 'HARDCOVER'].includes(p.get('binding') || '')
+      category && category !== 'BOARD_BOOK' && ['PAPERBACK', 'HARDCOVER'].includes(p.get('binding') || '')
         ? p.get('binding')!
         : '',
     age: [...new Set(p.getAll('age').filter((a) => a in AGE_LABELS))],
@@ -30,7 +30,7 @@ export function filterParams(f: CatalogueFilter): Params {
   return {
     ...(f.q ? { q: f.q } : {}),
     ...(f.category ? { category: f.category } : {}),
-    ...(f.category === 'PICTURE_BOOK' && f.binding ? { binding: f.binding } : {}),
+    ...(f.category && f.category !== 'BOARD_BOOK' && f.binding ? { binding: f.binding } : {}),
     ...(f.age.length ? { age: f.age } : {}),
     ...(f.sort !== 'newest' ? { sort: f.sort } : {}),
     ...(f.page > 1 ? { page: f.page } : {}),

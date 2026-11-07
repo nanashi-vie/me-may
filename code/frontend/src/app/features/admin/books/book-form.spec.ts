@@ -1,9 +1,9 @@
 import { buildBookForm, toBookWrite } from './book-form';
 describe('Book form', () => {
-  it('pictureBookRequiresOneBinding', () => {
+  it('allows a draft without binding', () => {
     const f = buildBookForm();
     f.controls.categoryCode.setValue('PICTURE_BOOK');
-    expect(f.invalid).toBe(true);
+    expect(f.valid).toBe(true);
     f.controls.binding.setValue('PAPERBACK');
     expect(f.valid).toBe(true);
   });

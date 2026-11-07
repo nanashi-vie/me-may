@@ -7,7 +7,7 @@ import static org.assertj.core.api.Assertions.*;
 class BookCommandIntegrationTest extends CatalogueTestSupport {
  @Test void validatesPictureBindingOnUpdateAndNormalizesTitle(){
   var a=seed(owner,draft("Legacy"));long id=Long.parseLong(a.id());
-  for(String binding:new String[]{null,"ALL"})assertThatThrownBy(()->update(id,a.version(),owner,write("Picture","PICTURE_BOOK",binding,100L,null,null,List.of(),List.of()))).hasMessageContaining("binding");
+  assertThatThrownBy(()->update(id,a.version(),owner,write("Picture","PICTURE_BOOK","ALL",100L,null,null,List.of(),List.of()))).hasMessageContaining("binding");
   var updated=update(id,a.version(),owner,write("  Picture  ","PICTURE_BOOK","PAPERBACK",1L,"A1",null,List.of("AGE_7_9","AGE_4_6"),List.of()));
   assertThat(updated.title()).isEqualTo("Picture");assertThat(updated.ageGroups()).containsExactly("AGE_4_6","AGE_7_9");
  }

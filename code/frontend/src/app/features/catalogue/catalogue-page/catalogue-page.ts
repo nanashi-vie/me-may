@@ -152,7 +152,7 @@ export class CataloguePage {
 
   apply(page = 1) {
     const f = { ...this.draft, page };
-    if (f.category !== 'PICTURE_BOOK') f.binding = '';
+    if (!f.category || f.category === 'BOARD_BOOK') f.binding = '';
     void this.router.navigate([], { relativeTo: this.route, queryParams: filterParams(f) });
   }
 

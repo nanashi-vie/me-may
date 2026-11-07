@@ -12,7 +12,7 @@ import {
 import { PublicBook } from './public.models';
 it.each(['READING_PRACTICE','COOKING_CRAFT_ACTIVITY','BIBLE'])('preserves the new category %s through URL filters',(category)=>{
   const filters=readFilters(convertToParamMap({category,binding:'HARDCOVER'}));
-  expect(filters.category).toBe(category);expect(filters.binding).toBe('');
+  expect(filters.category).toBe(category);expect(filters.binding).toBe('HARDCOVER');
   expect(filterParams(filters)['category']).toBe(category);
 });
 const book: PublicBook = {
@@ -37,7 +37,7 @@ const book: PublicBook = {
   media: [],
 };
 describe('Public catalogue state', () => {
-  it('normalizes invalid filters and keeps picture binding only with picture books', () => {
+  it('normalizes invalid filters and drops binding for an invalid category', () => {
     expect(
       readFilters(
         convertToParamMap({

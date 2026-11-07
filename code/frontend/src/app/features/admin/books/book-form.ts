@@ -51,7 +51,6 @@ export function buildBookForm() {
         const w = group.value as BookWrite;
         const errors: Record<string, boolean> = {};
         if ((w.priceMinVnd === null) !== (w.priceMaxVnd === null) || (w.priceMinVnd !== null && w.priceMaxVnd !== null && w.priceMinVnd > w.priceMaxVnd)) errors['priceMaxVnd'] = true;
-        if (w.categoryCode === 'PICTURE_BOOK' && !w.binding) errors['binding'] = true;
         if (w.readingVideoUrl?.trim()) {
           try {
             const u = new URL(w.readingVideoUrl.trim());
@@ -85,7 +84,7 @@ export function toBookWrite(form: BookForm): BookWrite {
     language: trim(w.language),
     internalNote: trim(w.internalNote),
     description: trim(w.description),
-    binding: w.categoryCode === 'PICTURE_BOOK' ? w.binding : null,
+    binding: w.categoryCode && w.categoryCode !== 'BOARD_BOOK' ? w.binding : null,
     readingVideoUrl: trim(w.readingVideoUrl),
   };
 }

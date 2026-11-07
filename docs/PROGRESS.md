@@ -3,11 +3,12 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Rà sách thiếu thông tin và kiểu bìa — thiết kế 07/11/2026
+## Rà sách thiếu thông tin và kiểu bìa — đã kiểm tự động 07/11/2026
 
-- S051: User chốt danh sách Thiếu thông tin một thao tác. Đã ghi thiết kế
-  hàng chờ, kiểu bìa và nút lưu/quay lại tại [spec](BOOK_COMPLETENESS_SPEC.md).
-  Chờ duyệt tài liệu trước khi lập kế hoạch triển khai.
+- S051: Nhận kiểu bìa cho CSV/Excel, mở rộng form và lọc khách. Admin có bộ
+  lọc tổng hợp, hai nhóm hàng chờ và lưu/quay lại theo đúng trang chứa sách.
+- Backend PostgreSQL 234 đạt, 3 bỏ qua. Frontend 246 đạt. Chưa smoke trên
+  trình duyệt thực hoặc rollout. Xem [thiết kế](BOOK_COMPLETENESS_SPEC.md).
 
 ## Sửa lỗi import ô Excel trống ngoài mẫu — 07/11/2026
 

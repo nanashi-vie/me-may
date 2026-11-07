@@ -52,7 +52,7 @@ public class PublicCatalogueService {
         if (category != null
                 && !jdbc.queryForObject("select exists(select 1 from category where code=?)", Boolean.class, category))
             throw AdminApiException.field("category", "Thể loại không hợp lệ");
-        if (!"PICTURE_BOOK".equals(category))
+        if (!BookValidation.usesBinding(category))
             binding = null;
         if (binding != null && !List.of("ALL", "PAPERBACK", "HARDCOVER").contains(binding))
             throw AdminApiException.field("binding", "Kiểu bìa không hợp lệ");

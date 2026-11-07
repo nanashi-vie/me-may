@@ -34,7 +34,7 @@ public final class BookImportSchema {
             "the_loai",labels(Map.of("Board Book","BOARD_BOOK","Picture Book","PICTURE_BOOK","Chapter","CHAPTER",
                     "Bách khoa toàn thư & khoa học","ENCYCLOPEDIA_SCIENCE","Lịch sử","HISTORY","Tuyển tập truyện","STORY_COLLECTION",
                     "Tập đọc","READING_PRACTICE","Nấu ăn - thủ công - activity book","COOKING_CRAFT_ACTIVITY","Kinh Thánh","BIBLE")),
-            "kieu_bia",labels(Map.of("Paperback","PAPERBACK","Hardcover","HARDCOVER")),
+            "kieu_bia",labels(Map.of("Paperback","PAPERBACK","Hardcover","HARDCOVER","Bìa mềm","PAPERBACK","Bìa cứng","HARDCOVER")),
             "tinh_trang",labels(Map.of("Độ mới cao","HIGH_FRESHNESS","Có lỗi nhẹ","MINOR_FLAWS")),
             "do_tuoi",labels(Map.of("0-3","AGE_0_3","0–3","AGE_0_3","4-6","AGE_4_6","4–6","AGE_4_6","7-9","AGE_7_9","7–9","AGE_7_9","10+","AGE_10_PLUS")),
             "trinh_do_doc",labels(Map.of("Starters · Pre A1","PRE_A1","Movers · A1","A1","Flyers / Key · A2","A2",
