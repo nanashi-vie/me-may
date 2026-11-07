@@ -3,6 +3,20 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
+
+- S048-C03: Hoàn tất `ShippingPromoDialog` mở từ box "ƯU ĐÃI VẬN CHUYỂN" trên trang chủ (`/`), đã gộp vào `dev`:
+  - Đồng bộ SVG xe giao hàng do user cung cấp sang bảng màu thương hiệu Mẹ Mây (`#9B1C28`, `#FBE4E6`, `#E06C78`, `#F59E0B`, `#D97706`, `#E05260`) trong vòng tròn 105px (85px mobile) kèm tiêu đề `"Ưu đãi vận chuyển tại Mẹ Mây"`.
+  - Bố cục 5 khung (lưới 2x2 cho 4 mức đơn hàng ở trên + khung thứ 5 trải ngang `grid-column: 1 / -1` căn giữa ở dưới; mobile `<= 640px` xếp 1 cột), bên trái mỗi khung là chấm tròn nhỏ `.step-dot` viền đỏ `#9B1C28`: `Đơn dưới 150k` (`Ship 25k`), `Đơn 150k - 300k` (`Ship 20k`), `Đơn 300k - 500k` (`Ship 16k`), `Đơn trên 500k` (`Hỗ trợ 50% ship không quá 50k`), `Quy định khối lượng` (`Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`).
+  - Kiểm chứng: Vitest 44/44 test files (244/244 tests PASS), `npm run build` và `npm run build:workers` 0 warning, 0 error; Chrome headless CDP visual QA đạt trên Desktop (`1280x850`) và Mobile (`390x844`).
+
+## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
+
+- S048-C03: Hoàn tất `ShippingPromoDialog` mở từ box "ƯU ĐÃI VẬN CHUYỂN" trên trang chủ (`/`), đã gộp vào `dev`:
+  - Đồng bộ SVG xe giao hàng do user cung cấp sang bảng màu thương hiệu Mẹ Mây (`#9B1C28`, `#FBE4E6`, `#E06C78`, `#F59E0B`, `#D97706`, `#E05260`) trong vòng tròn 105px (85px mobile) kèm tiêu đề `"Ưu đãi vận chuyển tại Mẹ Mây"`.
+  - Bố cục 5 khung (lưới 2x2 cho 4 mức đơn hàng ở trên + khung thứ 5 trải ngang `grid-column: 1 / -1` căn giữa ở dưới; mobile `<= 640px` xếp 1 cột), bên trái mỗi khung là chấm tròn nhỏ `.step-dot` viền đỏ `#9B1C28`: `Đơn dưới 150k` (`Ship 25k`), `Đơn 150k - 300k` (`Ship 20k`), `Đơn 300k - 500k` (`Ship 16k`), `Đơn trên 500k` (`Hỗ trợ 50% ship không quá 50k`), `Quy định khối lượng` (`Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`).
+  - Kiểm chứng: Vitest 44/44 test files (244/244 tests PASS), `npm run build` và `npm run build:workers` 0 warning, 0 error; Chrome headless CDP visual QA đạt trên Desktop (`1280x850`) và Mobile (`390x844`).
+
 ## Tối ưu luồng chỉnh sửa sách và import — đã kiểm local 07/11/2026
 
 - S047: Hai ảnh bổ sung mặc định ẩn, bộ đặc điểm mới, Thùng rác 7 ngày có

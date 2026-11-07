@@ -308,26 +308,34 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   Khôngfeatures khôngplaceholder; khungảnh giữ kích thước, không layoutshift đáng kể.
 - Preview mô phỏng khách chỉ public roles và tags; khôngnote/internalmedia/sourceRef.
 
-## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06/11/2026 (chuẩn mẫu IPM)
+## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06–07/11/2026 (chuẩn mẫu IPM)
 
 - **Vị trí & Bố cục**: Đặt ngay dưới Banner Hero trên Trang chủ (`/`), 4 box ngang trên Desktop (`repeat(4, 1fr)`) và lưới 2x2 trên Mobile (`repeat(2, 1fr)`).
 - **Thẻ thông tin**: Nền trắng `#FFFFFF`, viền đỏ thương hiệu 1px `#9B1C28`, bo góc vuông 4px chuẩn mẫu IPM, hover bóng đổ nhẹ và đổi sắc đỏ đậm `#7D131E`. Icon SVG đỏ trần (không nền phụ), tiêu đề in hoa đậm 2 dòng (`font-weight: 800`).
 - **4 nội dung**:
-  1. "ƯU ĐÃI VẬN CHUYỂN" (icon 🚚): sẵn sàng gắn popup ở giai đoạn 2.
-  2. "CÁCH HỎI MUA SÁCH" (icon 💬): mở popup hướng dẫn 4 bước hỏi mua sách.
+  1. "ƯU ĐÃI VẬN CHUYỂN" (icon 🚚): mở popup chi tiết ưu đãi vận chuyển (`ShippingPromoDialog`).
+  2. "CÁCH HỎI MUA SÁCH" (icon 💬): mở popup hướng dẫn 4 bước hỏi mua sách (`HowToBuyDialog`).
   3. "CỘNG ĐỒNG MẸ MÂY" (icon 👥): link mở Zalo Group từ cấu hình `contactConfig.groupUrl` (tab mới).
   4. "HOTLINE" (icon 📞 đặc kèm 3 sóng âm IPM): tiêu đề `HOTLINE:` và 2 dòng số `0966 075 005` / `0703 260 005` in đậm căn giữa (link `tel:` trực tiếp).
 
-### Popup "Cách hỏi mua sách" — 06/11/2026
+### Popup "Ưu đãi vận chuyển" & "Cách hỏi mua sách" — 06–07/11/2026
 
-- **Khung & Backdrop**: Modal `<dialog>` HTML5 bo góc 20px, bóng đổ mềm `0 16px 48px rgba(41, 39, 36, 0.22)`, backdrop `rgba(30, 27, 24, 0.65)` kèm `backdrop-filter: blur(3px)`. Nút ✕ tròn góc trên bên phải, hỗ trợ phím Escape và click backdrop đóng tự nhiên.
-- **Phần đầu (Header)**: Hình minh họa liên hệ dạng tròn đường kính 120px (95px trên mobile) có viền trắng và bóng đổ, tiêu đề `Cách hỏi mua sách tại Mẹ Mây` font `Baloo 2` đỏ thương hiệu `#9B1C28`, phụ đề dẫn ngắn gọn.
-- **4 khung thẻ Timeline**: Xếp dọc liên tiếp, mỗi bước là khung thẻ bo góc 10px nền `#FAF8F5`, bên trái có huy hiệu tròn số 1–4 màu đỏ `#9B1C28` nối bằng đường line dọc:
-  - Bước 1: Thêm sách vào “Danh sách quan tâm” (bấm nút `♡ Thêm vào danh sách quan tâm`).
-  - Bước 2: Vào “Danh sách quan tâm” chọn sách cần kiểm tra video tình trạng thật.
-  - Bước 3: Bấm “Chuẩn bị nội dung hỏi mua” để hệ thống tự động soạn sẵn thông tin.
-  - Bước 4: Gửi tin nhắn qua Zalo Hotline (`Sao chép nội dung` ➔ `Mở Zalo` ➔ `Dán & gửi`).
-- **Phần chân (Footer)**: Nút chính `Đã hiểu` đỏ thương hiệu `#9B1C28` căn giữa. Mobile thân thiện, cuộn êm trong `max-height: 94vh`.
+- **Khung & Backdrop dùng chung**: Modal `<dialog>` HTML5 rộng `min(760px, calc(100% - 32px))`, bo góc 20px, bóng đổ mềm `0 16px 48px rgba(41, 39, 36, 0.22)`, backdrop `rgba(30, 27, 24, 0.65)` kèm `backdrop-filter: blur(3px)`. Nút ✕ tròn góc trên bên phải, nút chính `Đã hiểu` đỏ thương hiệu `#9B1C28` ở chân, hỗ trợ phím Escape và click backdrop đóng tự nhiên và trả focus về nút kích hoạt.
+- **Popup "Ưu đãi vận chuyển" (`ShippingPromoDialog`)**:
+  - **Header**: Hình tròn 105px (85px mobile) nền `#FDF2F2` chứa SVG xe tải giao hàng đồng bộ bảng màu Mẹ Mây (`#9B1C28`, `#FBE4E6`, `#E06C78`, `#F59E0B`), tiêu đề `Ưu đãi vận chuyển tại Mẹ Mây` font `Baloo 2` đỏ `#9B1C28`.
+  - **5 khung thông tin** (lưới 2x2 cho 4 mức đơn ở trên + khung thứ 5 trải ngang `grid-column: 1 / -1` ở dưới; mobile `<= 640px` xếp 1 cột), bên trái mỗi khung là chấm tròn nhỏ `.step-dot` viền đỏ `#9B1C28`:
+    1. `Đơn dưới 150k` — `Ship 25k`
+    2. `Đơn 150k - 300k` — `Ship 20k`
+    3. `Đơn 300k - 500k` — `Ship 16k`
+    4. `Đơn trên 500k` — `Hỗ trợ 50% ship không quá 50k`
+    5. `Quy định khối lượng` — `Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`
+- **Popup "Cách hỏi mua sách" (`HowToBuyDialog`)**:
+  - **Header**: Hình minh họa liên hệ tròn (`/images/how-to-buy-contact.jpg`), tiêu đề `Cách hỏi mua sách tại Mẹ Mây` font `Baloo 2` đỏ `#9B1C28`.
+  - **4 khung bước** (lưới 2x2 trên desktop, 1 cột trên mobile `<= 640px`), huy hiệu tròn đỏ đánh số 1–4:
+    - Bước 1: `Thêm sách vào “Danh sách quan tâm”`
+    - Bước 2: `Vào “Danh sách quan tâm” chọn tất cả sách cần kiểm tra video tình trạng thật`
+    - Bước 3: `Bấm “Chuẩn bị nội dung hỏi mua”`
+    - Bước 4: `Gửi yêu cầu qua Zalo Hotline` (`Bấm “Sao chép nội dung” => “Mở zalo” => Dán & gửi tin nhắn yêu cầu cho tiệm qua hotline zalo`)
 
 ## Carousel 10 cuốn trên Trang chủ & Quản trị "Hiển thị sách nổi bật" — 07/11/2026
 

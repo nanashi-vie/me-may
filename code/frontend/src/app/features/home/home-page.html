@@ -18,7 +18,12 @@
 
 <section class="banner-info-boxes" aria-label="Tiện ích & Hỗ trợ">
   <div class="info-boxes-grid">
-    <button type="button" class="info-box-item" aria-label="Ưu đãi vận chuyển">
+    <button
+      type="button"
+      class="info-box-item"
+      aria-label="Ưu đãi vận chuyển"
+      (click)="openShippingPromo($any($event.currentTarget))"
+    >
       <div class="box-icon" aria-hidden="true">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
           <rect x="1" y="3" width="15" height="13"></rect>
@@ -198,4 +203,5 @@
   </section>
 }
 
+<app-shipping-promo-dialog #shippingPromoDialog />
 <app-how-to-buy-dialog #howToBuyDialog />

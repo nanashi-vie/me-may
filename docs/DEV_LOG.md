@@ -2252,3 +2252,52 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Gộp contract vào CATALOGUE/DATA/DESIGN/BOOK_IMPORT và rollout V17–V19,
   gỡ spec/plan đã hết vai trò. Bước tiếp theo là user merge dev qua main
   và rollout backend trước frontend theo BOOK_ENTRY_ROLLOUT.
+
+
+## 2026-11-07 — S048-C01 — Bắt đầu triển khai Popup "Ưu đãi vận chuyển" trên trang chủ (`/`)
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Triển khai popup modal `<dialog>` cho nút "ƯU ĐÃI VẬN CHUYỂN" dưới banner trang chủ (`/`), đã chốt thiết kế qua `/grill-me`.
+- **Phạm vi & quyết định:**
+  - Đồng bộ nhánh `dev-ui` với `dev` (`57c89ad`).
+  - Header popup: sử dụng SVG xe tải giao hàng do user cung cấp, chuyển đổi bảng màu xanh dương/neon gốc sang bảng màu ấm thương hiệu Mẹ Mây (`#9B1C28` đỏ burgundy chủ đạo, `#FBE4E6` hồng phấn thân xe, `#E06C78` bánh xe, `#F59E0B` / `#D97706` / `#E05260` họa tiết lấp lánh), tiêu đề `"Ưu đãi vận chuyển tại Mẹ Mây"`.
+  - Bố cục 5 khung:
+    1. Lưới 2x2 ở trên cho 4 mức đơn hàng:
+       - `Đơn dưới 150k` — `Ship 25k`
+       - `Đơn 150k - 300k` — `Ship 20k`
+       - `Đơn 300k - 500k` — `Ship 16k`
+       - `Đơn trên 500k` — `Hỗ trợ 50% ship không quá 50k`
+    2. Khung thứ 5 trải ngang toàn chiều rộng (`grid-column: 1 / -1`) ở dưới:
+       - `Quy định khối lượng` — `Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`
+    3. Cả 5 khung đều dùng icon SVG trắng trong vòng tròn đỏ `#9B1C28` bên trái.
+- **Kiểm tra đã chạy:** Chưa chạy (bắt đầu triển khai).
+- **Trạng thái:** Đang thực hiện trên worktree `dev-ui`.
+
+
+## 2026-11-07 — S048-C02 — Hoàn tất Popup "Ưu đãi vận chuyển" (`ShippingPromoDialog`)
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Hoàn thiện component `ShippingPromoDialog`, cập nhật chấm tròn nhỏ `.step-dot` cho tất cả 5 khung theo yêu cầu bổ sung của user, kiểm thử unit test, build SSR/Workers và visual QA trên Chrome headless.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/home/shipping-promo-dialog/shipping-promo-dialog.{ts,html,scss,spec.ts}` (mới)
+  - `code/frontend/src/app/features/home/home-page.{ts,html,spec.ts}`
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - `cd /Users/daoquanghung/Projects/me-may.worktrees/dev-ui/code/frontend && npm test -- --watch=false`: **44/44 test files PASS (244/244 tests PASS)**.
+  - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
+  - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp và kiểm tra trực quan `shipping-promo-dialog-desktop.png` (760x572px) và `shipping-promo-dialog-mobile.png` (352x644px) — **PASS**.
+- **Trạng thái & Bước tiếp theo:** Thay đổi sẵn sàng trên worktree `dev-ui`; chờ user xem kết quả hoặc yêu cầu merge qua `dev`.
+
+
+## 2026-11-07 — S048-C03 — Căn giữa chữ khung thứ 5 trong `ShippingPromoDialog` và gộp vào `dev`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-07
+- **Mục tiêu:** Căn giữa nội dung của khung thứ 5 (`Quy định khối lượng`) trong popup "Ưu đãi vận chuyển" và merge từ `dev-ui` sang `dev`.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/home/shipping-promo-dialog/shipping-promo-dialog.{html,scss}`
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - `npm test -- --watch=false`: **44/44 test files PASS (244/244 tests PASS)**.
+  - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
+  - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp lại `shipping-promo-dialog-desktop.png` (760x577px) và `shipping-promo-dialog-mobile.png` (352x650px), xác nhận khung thứ 5 căn giữa hài hòa — **PASS**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge sang `dev` và push lên `origin/dev` và `origin/dev-ui`.
