@@ -2186,3 +2186,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    - Frontend builds (`code/frontend`): `npm run build` (SSR) và `npm run build:workers` (Cloudflare) -> 0 warning, 0 error.
 4. Bước tiếp theo:
    - Commit trên nhánh `dev-ui` (hoặc push/merge theo yêu cầu tiếp theo của user).
+
+### S046-C01 — 07/11/2026 — Kiểm tra tên sách khi import Excel
+
+- Bắt đầu trên `dev` tại `f4472c6`. Phạm vi: validation tên khi xem trước và xác nhận import, giữ tương thích biên nhận cũ và nhập lẻ.
+- Đã đọc contract và đối chiếu code: import chỉ phát hiện lô đã nhập theo fingerprint, form nhập lẻ dùng so khớp tên không phân biệt hoa thường. Chưa chạy kiểm thử hồi quy.
+- Thêm kiểm tra tên theo lô trong `BookImportTransaction` cho CSV/XLSX V1–V4. So khớp theo trim và lower của PostgreSQL như nhập lẻ, kiểm cả danh mục và tính mỗi nhóm biến thể V1 là một sách. Báo cột `ten_sach` theo dòng, xác nhận kiểm lại trong transaction và tuần tự hóa các lần import mới. Biên nhận cũ được trả trước bước kiểm tra.
+- Hai test HTTP dùng XLSX V4 trong `BookImportUnitPriceIntegrationTest` tái hiện 2 lỗi trước sửa. Sau sửa cả hai đạt, gồm trường hợp sách được đăng giữa xem trước và xác nhận. Đổi fixture trùng tên trong các test V1–V4 cũ sang tên riêng để giữ phạm vi kiểm tra giá, transaction và biên nhận.
+- `mvn test` tại `code/backend` với PostgreSQL test local: 231 ca, 0 lỗi, 3 ca live bỏ qua. `npm test -- --watch=false` tại `code/frontend`: 234/234 đạt. `git diff --check` đạt. Chưa smoke trình duyệt hay production.
+- Cập nhật contract `docs/BOOK_IMPORT.md` và snapshot `docs/PROGRESS.md`. Bàn giao cùng thay đổi backend trên `dev`. Bước tiếp theo theo workflow là user merge `dev` qua `main` và smoke import Excel sau rollout backend.

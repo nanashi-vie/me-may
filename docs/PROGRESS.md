@@ -3,6 +3,13 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Kiểm tra tên sách khi import Excel — đã kiểm local 07/11/2026
+
+- S046-C01: CSV/XLSX V1–V4 chặn trùng tên trong lô và với danh mục ở bước
+  xem trước và xác nhận. Báo lỗi từng dòng, giữ biên nhận đã lưu.
+- Hai ca hồi quy XLSX đạt qua HTTP. Backend 228 đạt, 3 bỏ qua. Frontend 234 đạt.
+  Contract tại [BOOK_IMPORT](BOOK_IMPORT.md). Bàn giao qua `dev`, chờ rollout.
+
 ## Carousel 10 cuốn trên Home & Mục "Hiển thị sách nổi bật" ở /admin — đã triển khai local 07/11/2026 (trên worktree dev-ui)
 
 - S045-C01: Hoàn tất thanh trượt ngang tối đa 10 cuốn (desktop hiện 5 thẻ, tablet 3 thẻ, mobile 2 thẻ; click `<` / `>` trượt đúng 1 cuốn, tự động mờ/khóa nút ở đầu/cuối dãy, ẩn nút khi `≤ 5` cuốn) cho toàn bộ các kệ trên Home (`Sách mới đăng`, `Board books cho bé nhỏ`, `Picture books`, các `Bộ sưu tập` đang bật, và khối `Flash Sale`).

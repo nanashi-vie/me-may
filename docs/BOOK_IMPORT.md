@@ -51,10 +51,10 @@ Không có lỗi → hiện nút “Import N sách ẩn”; cần xác nhận ch
 thêm ảnh từng sách. Form không gửi dữ liệu sách đã sửa bằng frontend làm nguồn.
 
 Xác nhận gửi lại cùng file và fingerprint preview; backend parse/normalize lại,
-đối chiếu fingerprint, kiểm quyền và tham chiếu hiện tại rồi commit. Không tin
-preview cũ nếu collection/taxonomy đổi. Sai fingerprint trả409 và yêu cầu kiểm
-lại, không nhập. Validation lỗi trả422 và lỗi dòng; quá giới hạn413; sai quyền403;
-hết phiên401, giữ file trong tab để đăng nhập/chọn kiểm lại; không lưu file vào
+đối chiếu fingerprint, kiểm quyền, tên sách và tham chiếu hiện tại rồi commit.
+Sai fingerprint trả 409 và yêu cầu kiểm lại. Validation lỗi trả 422 kèm lỗi
+từng dòng. Quá giới hạn trả 413, sai quyền trả 403. Hết phiên trả 401 và giữ
+file trong tab để đăng nhập hoặc kiểm lại. File không được lưu vào
 localStorage/history. CSRF và auth dùng cơ chế admin hiện có.
 
 ## 4. Nguyên tử, thử lại và dữ liệu đã import
@@ -70,8 +70,7 @@ cấp khóa nội bộR001..R100; các dòng giống nhau vẫn có occurrence r
 V4 thêm đơn giá ngoài BookWrite canonical, bao gồm khi sort/hash; không dùng
 giá đã làm tròn để suy ngược đơn giá. V1–V3 canonical/hash không đổi.
 Không gồm tênfile/đườngdẫn/thứtựheader/dòng hoặc filetype; CSV/XLSX hoặc nhãn/code
-tương đương trong cùngschema cho cùngreceipt. Đổi schema/nội dung là lô mới,
-không đoán sách trùng theo title/ISBN và không dùng import để update sách đãcó.
+tương đương trong cùng schema cho cùng biên nhận. Đổi schema hoặc nội dung tạo lô mới.
 
 Bảng biên nhận có unique fingerprint, trạng thái commit, actor/time và liên kết
 ID sách đã tạo. Hai xác nhận đồng thời cùng fingerprint chỉ tạo một lô; bên
@@ -82,10 +81,11 @@ Retry lô đã commit được nhận diện trước khi yêu cầu dữ liệu
 không lỗi giả chỉ vì sách/collection đã thay đổi sau lần nhập thành công.
 Sách đã sửa/xuất bản sau import không bị thay đổi khi nhận lại biên nhận.
 
-Không cho nút “bỏ qua chống trùng” trong bản đầu. File thay nội dung là lô mới;
-UI cảnh báo chỉ nhập sách chưa có, không dùng import để cập nhật. Không thể
-chặn toàn bộ trường hợp người dùng đổi key/dữ liệu rồi nhập lại bằng title/ISBN
-vì quy tắc không tự gộp hiện hành; hướng dẫn nêu giới hạn này rõ ràng.
+Với lô mới CSV/XLSX V1–V4, xem trước và xác nhận đều chặn tên trùng giữa
+các sách trong lô hoặc với sách trong danh mục ở mọi trạng thái. So khớp sau
+khi cắt khoảng trắng hai đầu và không phân biệt hoa/thường như form nhập lẻ.
+Báo lỗi cột `ten_sach` theo từng dòng liên quan, chặn cả lô. Các dòng biến thể
+cùng nhóm V1 được tính là một sách. Import tạo sách mới, không gộp theo ISBN.
 Không lưu file thô trong DB/log; lưu metadata biên nhận/fingerprint và liên kết.
 Audit mỗi sách ghi nguồn import/batchID và snapshot như đường ghi domain.
 Không log ô dữ liệu, file, cookie, token hoặc connection string.
@@ -250,4 +250,4 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 - Giữ nguyên BookWrite canonical và digest V1/V2, không invalidate receipt cũ;
   retry file đã nhập trả cùng mã/ID, không thay note/giá/tồn user đã sửa sau đó.
 - V1 nhiều dòng vẫn giữ variants trong storage, editor mới hiện tổng; import
-  preview không còn bảng tên biến thể. Không tự gộp dòng hoặc thêm title lookup lô.
+  preview không còn bảng tên biến thể.

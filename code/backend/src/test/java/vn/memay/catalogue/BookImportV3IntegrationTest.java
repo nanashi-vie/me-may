@@ -58,7 +58,7 @@ class BookImportV3IntegrationTest extends CatalogueTestSupport {
         String d1="7eeb28ad04e84becf333f10f1960783d696d9eb76fbe63417e340d3699f992fc";
         long id1=imported(v1,d1);
         byte[] v2=BookImportV2Test.csv(List.of(BookImportV2Test.values()),BookImportV2Test.COLUMNS);String d2=preview(v2);long id2=imported(v2,d2);
-        byte[] v3=BookImportV3Test.csv(List.of(BookImportV3Test.values()));imported(v3,preview(v3));
+        byte[] v3=BookImportV3Test.csv(List.of(BookImportV3Test.change("ten_sach","V3 book")));imported(v3,preview(v3));
         for(long id:List.of(id1,id2)) {
             var original=queries.detail(id,owner);assertThat(original.priceMinVnd()).isNotNull();assertThat(original.priceMaxVnd()).isNotNull();
             jdbc.update("update listing set price_min_vnd=36000,price_max_vnd=42000 where book_copy_id=?",id);
