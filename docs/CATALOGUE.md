@@ -174,7 +174,7 @@ Chọn **upload qua backend**, tránh hai bước client tự attach URL. File n
 
 - Chỉ JPEG/PNG, tối đa 10 MiB/file và 25 megapixel; kiểm magic/decode/kích thước bằng ImageIO, không tin extension/content-type do trình duyệt gửi.
 - UI báo rõ định dạng; HEIC/WebP/PDF/SVG/video bị từ chối có hướng dẫn đổi JPEG/PNG. Không cài bộ chuyển HEIC trong M2.
-- Upload giới hạn 30 lần/10 phút/admin và tối đa bốn upload provider đồng thời/instance, vượt trả 429 trước gọi cloud; limiter in-memory có dọn entry hết hạn cho bản local một instance. Rate limit login triển khai ở hardening, không coi cơ chế upload đã bảo vệ login.
+- Upload giới hạn 300 lần/10 phút/admin và tối đa tám upload provider đồng thời/instance, vượt trả 429 trước gọi cloud; limiter in-memory có dọn entry hết hạn cho bản local một instance. Rate limit login triển khai ở hardening, không coi cơ chế upload đã bảo vệ login.
 - Backend tạo public_id ngẫu nhiên trong namespace môi trường `memay/dev/<UUID>`; không dùng tên khách hoặc tên file làm key, không overwrite cloud asset cũ.
 - Upload Cloudinary với resource_type=image và delivery type=authenticated; eager tạo admin JPEG1280 và public JPEG/WebP320/640, giữ tỉ lệ, tự xoay theo EXIF và bỏ metadata vị trí.
 - Chỉ chỉnh hướng/kích thước/nén, không retouch che lỗi. Lưu Cloudinary asset ID/public_id và metadata response trong DB; không tin URL client gửi.

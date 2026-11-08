@@ -23,7 +23,7 @@ public class UploadLimiter {
         });
         attempts.values().removeIf(Deque::isEmpty);
         var queue = attempts.computeIfAbsent(actorId, k -> new ArrayDeque<>());
-        if (queue.size() >= 30 || inFlight >= 4)
+        if (queue.size() >= 300 || inFlight >= 8)
             throw new AdminApiException(429, "upload_limit");
         queue.addLast(clock.instant());
         inFlight++;

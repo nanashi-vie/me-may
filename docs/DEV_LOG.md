@@ -2483,3 +2483,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
   - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+
+## 2026-11-08 — S052-C06 — Nâng trần giới hạn tải ảnh tại `UploadLimiter` (300 lần/10 phút, tối đa 8 luồng đồng thời)
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Nâng trần giới hạn tốc độ tải ảnh tại `UploadLimiter.java` từ `30 lượt / 10 phút` (`inFlight >= 4`) lên **`300 lượt / 10 phút`** (`inFlight >= 8`) theo yêu cầu user để chủ tiệm xử lý hàng chờ đăng ảnh liên tục (tối đa 8 ảnh/cuốn) không bị báo lỗi `429 (upload_limit)`.
+- **File thay đổi:**
+  - `code/backend/src/main/java/vn/memay/media/UploadLimiter.java`
+  - `code/backend/src/test/java/vn/memay/media/UploadLimiterTest.java`
+  - `docs/CATALOGUE.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Backend: `./mvnw test -Dtest=UploadLimiterTest` -> **3/3 PASS**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
