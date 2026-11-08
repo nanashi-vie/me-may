@@ -1,6 +1,6 @@
 # Image Storage & Processing
 
-Ngày 08/11/2026. Thiết kế chi tiết để duyệt trước implementation.
+Ngày 08/11/2026. User đã duyệt thiết kế; đang lập kế hoạch, chưa implementation.
 Nguồn: draft Self-hosted Image System user cung cấp và quyết định S054.
 Phần liên quan: [Source Mapping & Disaster Recovery](IMAGE_RECOVERY_SPEC.md).
 
@@ -28,7 +28,7 @@ metadata, không tạo hai hệ quản lý media hoặc hai queue độc lập.
 thêm self-host song song Cloudinary; migrate từng lô; ngừng Cloudinary sau drill.
 Không big-bang vì đường upload, ZIP, gallery, cleanup và rollback đều bị tác động.
 
-Các lựa chọn dưới đây do agent đề xuất, chưa phải cấu hình đã kiểm nghiệm:
+Các lựa chọn dưới đây đã được duyệt; cấu hình tài nguyên vẫn cần kiểm nghiệm:
 - Giữ public gateway Spring và cache tối đa 30 giây như contract hiện tại.
   Nginx phục vụ file ở mạng nội bộ cho gateway; không mở SSD trực tiếp ra web.
   Đây là điều chỉnh so với sơ đồ Nginx public trong draft để giữ quyền theo sách.

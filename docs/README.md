@@ -14,7 +14,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Self-host ảnh, bỏ ảnh nội bộ; thiết kế đang duyệt | [Storage & Processing](IMAGE_STORAGE_SPEC.md), [Source Mapping & DR](IMAGE_RECOVERY_SPEC.md) |
+| Self-host ảnh, bỏ ảnh nội bộ; spec đã duyệt, plan chờ review | [Storage spec](IMAGE_STORAGE_SPEC.md), [Recovery spec](IMAGE_RECOVERY_SPEC.md), [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md) |
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế](BOOK_COMPLETENESS_SPEC.md) |

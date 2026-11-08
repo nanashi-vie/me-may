@@ -2562,3 +2562,34 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bước tiếp: user duyệt hai spec chi tiết; writing-plans rồi triển khai/verification
   theo flow. Chưa coi lời đồng ý hướng tổng thể là duyệt các lựa chọn mới trong spec.
   Bàn giao tài liệu trên dev; không merge main hoặc deploy.
+
+## 2026-11-08 — S054-C04 — Lập kế hoạch từ hai spec đã duyệt
+
+- User duyệt IMAGE_STORAGE_SPEC và IMAGE_RECOVERY_SPEC, yêu cầu qua bước lập plan.
+  Phạm vi phiên: lập hai plan, self-review, cập nhật chỉ mục/trạng thái; chưa code.
+- Skill writing-plans; giữ owner dựng Ubuntu, source bị xóa xử lý thủ công.
+- Git dev sạch ở 5f8925a khi bắt đầu; V19 là migration cuối tại thời điểm đọc.
+- Graph search thử hai lần bị Transport closed; fallback đọc file theo danh sách
+  graph đã tìm ở phiên trước và rg để xác minh tên file/signature thực tế.
+- Đang lập thứ tự phụ thuộc và kiểm coverage; kết quả ghi ở checkpoint kế tiếp.
+
+## 2026-11-08 — S054-C05 — Hoàn tất hai implementation plan
+
+- Tạo IMAGE_STORAGE_PLAN (8 task) và IMAGE_RECOVERY_PLAN (6 task); ghi rõ thứ tự
+  S1–S4 → R1–R2 → S5–S7 → R3–R5 → S8 → R6, Files/interfaces/RED/GREEN/commit.
+  S1 bỏ ảnh nội bộ là deliverable độc lập; server/live gate R6 do owner phối hợp.
+- Đổi trạng thái hai spec thành đã duyệt; cập nhật README/PROGRESS. Chưa viết
+  code, cài dependency, chạy migration hoặc kết nối server/Drive/R2.
+- Self-review theo writing-plans: coverage từng mục spec, consistency record/API,
+  failure modes, độ dài và ranh giới local/live. Bổ sung BookValidation vào S1/S5;
+  chọn variant theo từng ảnh để mixed providers không gọi nhầm size Cloudinary.
+  Không dispatch reviewer vì skill yêu cầu self-review plan.
+- Kiểm tra từ root: git diff --check PASS; script kiểm local links PASS cho 6 file
+  spec/plan/index/progress; số dòng plans 282/226, specs 210/199, README78,
+  PROGRESS323 (đều dưới400). Plan có98 bước unchecked, không giả là đã thực thi.
+- Không chạy test/build ứng dụng vì phiên này chỉ tài liệu; các lệnh test trong
+  plan là bước tương lai. Graph tool unavailable đã ghi ở C04, dùng fallback hợp lệ.
+- Bước tiếp: user review plans và chọn native hoặc subagent-driven, sau đó dùng
+  skill execution tương ứng. Đề xuất native vì các task chia sẻ schema/lifecycle;
+  không làm song song các mutation vào phần chung.
+- Bàn giao commit/push dev cùng spec/log/index theo workflow; không main/deploy.

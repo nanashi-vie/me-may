@@ -5,7 +5,8 @@ Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - S054 (08/11): đã viết và builder-check hai spec
   [Storage & Processing](IMAGE_STORAGE_SPEC.md) và [Source Mapping & DR](IMAGE_RECOVERY_SPEC.md).
-  Chờ duyệt thiết kế chi tiết theo Superpowers, sau đó lập implementation plan.
+  User đã duyệt hai spec; đã lập/self-review [Storage plan](IMAGE_STORAGE_PLAN.md)
+  và [Recovery plan](IMAGE_RECOVERY_PLAN.md), chờ review/chọn cách thực thi.
   User chốt bỏ ảnh nội bộ/ẩn từng ảnh, tối đa 8 ảnh; ảnh cũ hiển thị cùng sách.
   User dựng Ubuntu và xử lý thủ công nguồn Drive bị xóa. Agent làm code/local QA,
   cấu hình mẫu và checklist tích hợp. Chưa sửa code/migrate/deploy.
