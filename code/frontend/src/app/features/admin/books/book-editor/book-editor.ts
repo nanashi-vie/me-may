@@ -60,6 +60,45 @@ export class BookEditor {
     readingLevels: [],
   });
   readonly collections = signal<CollectionDto[]>([]);
+  readonly storageBoxes = signal<number[]>([]);
+  readonly addingBox = signal(false);
+  readonly boxBusy = signal(false);
+  readonly boxError = signal('');
+
+  createStorageBox(raw: string) {
+    const number = Number(raw);
+    if (this.boxBusy() || this.busy() || !this.editable()) return;
+    if (!/^\d+$/.test(raw) || !Number.isInteger(number) || number < 1 || number > 2147483647) {
+      this.boxError.set('Nhập số thùng nguyên dương hợp lệ.');
+      return;
+    }
+    this.boxBusy.set(true);
+    this.boxError.set('');
+    this.api.createStorageBox(number).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: created => {
+        this.storageBoxes.update(boxes => [...new Set([...boxes, created])].sort((a, b) => a - b));
+        this.form.controls.storageBoxNumber.setValue(created);
+        this.form.controls.storageBoxNumber.markAsDirty();
+        this.addingBox.set(false);
+        this.boxBusy.set(false);
+      },
+      error: error => {
+        this.boxBusy.set(false);
+        if (error.status === 409) {
+          this.loadStorageBoxes();
+          this.boxError.set('Thùng này đã tồn tại. Hãy chọn trong danh sách.');
+        } else this.boxError.set('Chưa thêm được thùng. Vui lòng thử lại.');
+      },
+    });
+  }
+
+  loadStorageBoxes() {
+    this.api.storageBoxes().pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: boxes => this.storageBoxes.update(current => [...new Set([...current, ...boxes])].sort((a, b) => a - b)),
+      error: () => this.boxError.set('Chưa tải được danh sách thùng.'),
+    });
+  }
+
   readonly busy = signal(false);
   readonly saveAction=signal<"save"|"publish">("save");
   readonly otherBusy = signal(false);
@@ -182,6 +221,7 @@ export class BookEditor {
     return this.collections().filter((c) => c.active || existing.includes(c.id));
   }
   constructor() {
+    this.loadStorageBoxes();
     this.form.controls.title.valueChanges.pipe(
       switchMap(title=>{
         this.titleWarning.set('');
@@ -304,6 +344,7 @@ export class BookEditor {
     this.form.controls.stock.setValidators([Validators.required,Validators.min(0),Validators.max(limit),
       c=>Number.isSafeInteger(c.value)?null:{integer:true}]);
     this.form.reset({...b, featureCodes:(b.features??[]).map(f=>f.code), stock:b.totalStock,
+      storageBoxNumber: b.storageBoxNumber ?? null,
       internalNote:b.internalNote !== undefined ? b.internalNote : b.conditionNote ?? null,
       unitPricePerKgVnd:b.unitPricePerKgVnd ?? null},{emitEvent:false});
     this.titleWarning.set('');this.pricingError.set('');this.priceEdits={min:false,max:false};
@@ -393,6 +434,7 @@ export class BookEditor {
   async save(publish=false, openNext=false, goBack=false) {
     if (
       this.busy() ||
+      this.boxBusy() ||
       this.otherBusy() ||
       this.loading() ||
       !this.editable() ||

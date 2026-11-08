@@ -1,6 +1,6 @@
 export const PRICE_NOTE = 'Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.';
 export const READING_NOTE =
-  'Trình độ đọc là gợi ý của tiệm, không phải chứng nhận Cambridge cho sách.';
+  'Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.';
 export const PUBLICATION_LABELS = { PUBLISHED: 'Công khai', ARCHIVED: 'Ẩn' };
 export const AVAILABILITY_LABELS = { AVAILABLE: 'Còn hàng', SOLD: 'Hết hàng' };
 export const CATEGORY_LABELS = {

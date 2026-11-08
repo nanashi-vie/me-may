@@ -15,6 +15,7 @@ export function buildBookForm() {
       featureCodes: new FormControl<string[]>([], {nonNullable:true,validators:c=>c.value.length<=3 && new Set(c.value).size===c.value.length?null:{features:true}}),
       stock: new FormControl<number|null>(1,[Validators.required,Validators.min(0),Validators.max(999999),
         c => Number.isSafeInteger(c.value) ? null : {integer:true}]),
+      storageBoxNumber: new FormControl<number | null>(null),
       internalNote: text(4000),
       unitPricePerKgVnd: new FormControl<number|null>(null,[Validators.min(1),Validators.max(999999999999),
         c => c.value === null || Number.isSafeInteger(c.value) ? null : {integer:true}]),

@@ -2562,3 +2562,113 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Bước tiếp: user duyệt hai spec chi tiết; writing-plans rồi triển khai/verification
   theo flow. Chưa coi lời đồng ý hướng tổng thể là duyệt các lựa chọn mới trong spec.
   Bàn giao tài liệu trên dev; không merge main hoặc deploy.
+
+## 2026-11-08 — S054-C04 — Lập kế hoạch từ hai spec đã duyệt
+
+- User duyệt IMAGE_STORAGE_SPEC và IMAGE_RECOVERY_SPEC, yêu cầu qua bước lập plan.
+  Phạm vi phiên: lập hai plan, self-review, cập nhật chỉ mục/trạng thái; chưa code.
+- Skill writing-plans; giữ owner dựng Ubuntu, source bị xóa xử lý thủ công.
+- Git dev sạch ở 5f8925a khi bắt đầu; V19 là migration cuối tại thời điểm đọc.
+- Graph search thử hai lần bị Transport closed; fallback đọc file theo danh sách
+  graph đã tìm ở phiên trước và rg để xác minh tên file/signature thực tế.
+- Đang lập thứ tự phụ thuộc và kiểm coverage; kết quả ghi ở checkpoint kế tiếp.
+
+## 2026-11-08 — S054-C05 — Hoàn tất hai implementation plan
+
+- Tạo IMAGE_STORAGE_PLAN (8 task) và IMAGE_RECOVERY_PLAN (6 task); ghi rõ thứ tự
+  S1–S4 → R1–R2 → S5–S7 → R3–R5 → S8 → R6, Files/interfaces/RED/GREEN/commit.
+  S1 bỏ ảnh nội bộ là deliverable độc lập; server/live gate R6 do owner phối hợp.
+- Đổi trạng thái hai spec thành đã duyệt; cập nhật README/PROGRESS. Chưa viết
+  code, cài dependency, chạy migration hoặc kết nối server/Drive/R2.
+- Self-review theo writing-plans: coverage từng mục spec, consistency record/API,
+  failure modes, độ dài và ranh giới local/live. Bổ sung BookValidation vào S1/S5;
+  chọn variant theo từng ảnh để mixed providers không gọi nhầm size Cloudinary.
+  Không dispatch reviewer vì skill yêu cầu self-review plan.
+- Kiểm tra từ root: git diff --check PASS; script kiểm local links PASS cho 6 file
+  spec/plan/index/progress; số dòng plans 282/226, specs 210/199, README78,
+  PROGRESS323 (đều dưới400). Plan có98 bước unchecked, không giả là đã thực thi.
+- Không chạy test/build ứng dụng vì phiên này chỉ tài liệu; các lệnh test trong
+  plan là bước tương lai. Graph tool unavailable đã ghi ở C04, dùng fallback hợp lệ.
+- Bước tiếp: user review plans và chọn native hoặc subagent-driven, sau đó dùng
+  skill execution tương ứng. Đề xuất native vì các task chia sẻ schema/lifecycle;
+  không làm song song các mutation vào phần chung.
+- Bàn giao commit/push dev cùng spec/log/index theo workflow; không main/deploy.
+
+
+## 2026-11-08 — S055-C01 — Chỉnh UI chi tiết sách (`book-detail`): ẩn trọng lượng, sắp xếp lại Độ tuổi & Trình độ đọc, cập nhật ghi chú tham khảo
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  1. Không hiển thị dòng `Trọng lượng sách` (`b.weightG`) trên trang chi tiết sách phía người dùng (`book-detail.html`), vẫn giữ nguyên ô nhập trọng lượng ở Admin để tính giá theo kg.
+  2. Dời mục `Độ tuổi` xuống dưới `Kiểu bìa`, nằm ngay phía trên mục `Trình độ đọc` (đổi nhãn `<dt>` từ `"Trình độ đọc tham khảo"` thành `"Trình độ đọc"`).
+  3. Đổi nội dung hằng số `READING_NOTE` trong `book-copy.ts` từ `"Trình độ đọc là gợi ý của tiệm, không phải chứng nhận Cambridge cho sách."` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`.
+- Trạng thái: đã hoàn tất và kiểm chứng trên nhánh `dev`.
+- File thay đổi:
+  - `code/frontend/src/app/features/admin/books/book-copy.ts`: cập nhật `READING_NOTE`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.html`: bỏ dòng `Trọng lượng sách`, dời `Độ tuổi` xuống ngay phía trên `Trình độ đọc`, đổi nhãn `<dt>Trình độ đọc tham khảo</dt>` thành `<dt>Trình độ đọc</dt>`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.spec.ts`: thêm unit test xác minh ẩn `weightG`, thứ tự `<dt>` (`Nhà xuất bản`, `Tác giả`, `Kiểu bìa`, `Độ tuổi`, `Trình độ đọc`, `Đọc tham khảo`) và nội dung `READING_NOTE` mới.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: đồng bộ tài liệu và nhật ký bàn giao.
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (251/251 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
+
+## 2026-11-08 — S056-C01 — Brainstorm nơi lưu trữ theo thùng
+
+- User yêu cầu gấp trường Nơi lưu trữ và chốt làm cả cột/bộ lọc admin trong phiên.
+  Một mã có nhiều bản do chủ gom chung thùng; chọn danh sách có sẵn + Thêm thùng,
+  tên chuẩn Thùng N. Không yêu cầu phân bổ tồn hoặc quản lý kho nâng cao.
+- Skill Superpowers brainstorming; tạo BOOK_STORAGE_SPEC.md ngắn, đăng ký README,
+  cập nhật PROGRESS. Thiết kế bổ sung đề xuất optional/admin-only, tạo thùng độc lập,
+  số unique, filter backend, bảo toàn version/audit/retry; chờ duyệt bản thiết kế.
+- Đối chiếu DATA/CATALOGUE/MASTER_PLAN và buildBookForm qua graph; Git dev sạch
+  trước thay đổi. Không sửa code, gọi DB live, migrate hoặc deploy.
+- Kiểm tra: diff whitespace, giới hạn dòng và link mới trước bàn giao.
+  Chưa chạy test/build vì chỉ thiết kế; không dùng kết quả lịch sử làm bằng chứng.
+- Bước tiếp: duyệt thiết kế ngắn rồi writing-plans và thực thi phạm vi đã chọn.
+  Các thay đổi tài liệu còn local trên dev; chưa commit/push.
+
+## 2026-11-08 — S056-C02 — Triển khai nơi lưu trữ
+
+- User duyệt thiết kế và yêu cầu lập plan rồi triển khai. Đã lập BOOK_STORAGE_PLAN.
+- Đang làm trên dev với các thay đổi tài liệu S056-C01 còn local.
+
+- Đã triển khai V20, API danh mục thùng, thêm/chọn ở form, cột/lọc admin.
+  Lưu vị trí cùng version/audit, giữ retry cũ và giữ vị trí nếu PUT thiếu field.
+  Chọn dùng số thùng làm khóa ổn định vì chưa có đổi số/xóa thùng.
+- Kiểm chứng từ code/backend: mvn test với env PostgreSQL me_may_test local,
+  242 ca, 0 fail/error, 3 skip. Lần đầu thiếu env; lần có env phát hiện snapshot
+  migration cũ cần kiểm cột nullable mới và fixture PUT cần bỏ variants rỗng.
+- Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
+  npm run build và npm run build:workers đạt khi chạy ngoài sandbox sau lần
+  build trong sandbox bị dừng. git diff --check đạt từ root.
+- Chưa smoke trực tiếp trên trình duyệt, chưa rollout V20 production.
+  Bước tiếp: smoke form/danh sách trên candidate rồi rollout theo workflow.
+
+
+## 2026-11-08 — S055-C02 — Nâng cấp dải đỏ đầu trang (`utility bar`) và Footer nền tối có mạng xã hội & Facebook `embed_page`
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  1. Dải đỏ đầu trang (`.utility`): bên trái hiển thị 3 icon SVG màu trắng (`Facebook`: `https://www.facebook.com/sachngoaivanmemay/`, `Threads`: `https://www.threads.com/@sachngoaivanmemay`, `TikTok`: `https://www.tiktok.com/@andamdaily`); ở giữa giữ dòng chữ `"Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn"` kèm hiệu ứng trượt ngang (`marquee`); bên phải hiển thị icon phong bì + email `"support@memaybooks.com"` (`mailto:support@memaybooks.com`).
+  2. Footer (`.site-footer`): đổi sang nền tối (`#292724`) tràn toàn chiều ngang như mẫu IPM:
+     - Cột trái: Thương hiệu Mẹ Mây, slogan, điều hướng nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email hỗ trợ và lưu ý xác nhận giá/tình trạng.
+     - Cột phải: Tiêu đề `"KẾT NỐI VỚI CHÚNG TÔI"` + khung Facebook Page Plugin (`embed_page` `340x130px` cho `https://www.facebook.com/sachngoaivanmemay/`) + tiêu đề phụ `"CÁC KÊNH KHÁC"` với 3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`.
+- Trạng thái: đã hoàn tất và kiểm chứng trên nhánh `dev`.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: nâng cấp `.utility` (3 icon trắng `Facebook`, `Threads`, `TikTok` bên trái; `.utility-ticker` chữ chạy ngang ở giữa; icon phong bì + `support@memaybooks.com` bên phải) và `.site-footer` (2 cột nền tối kèm `KẾT NỐI VỚI CHÚNG TÔI`, iframe Facebook `embed_page` `340x130px` cho `sachngoaivanmemay`, và `CÁC KÊNH KHÁC` với 3 nút vuông trắng `.social-box`).
+  - `code/frontend/src/styles.scss` & `code/frontend/src/app/layouts/public-layout/public-layout.scss`: bổ sung style `.utility*`, `@keyframes utility-marquee` (hỗ trợ `prefers-reduced-motion` và tạm dừng khi hover) và `.site-footer*` nền tối `#292724`, giữ `public-layout.scss` gọn dưới ngưỡng budget 6 kB.
+  - `code/frontend/src/app/app.spec.ts`: bổ sung kiểm thử tự động cho dải `.utility` (3 link MXH, email CSKH, chữ chạy ngang) và `.site-footer` (khung `embed_page` Facebook, 3 nút `.social-box`).
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: đồng bộ tài liệu và nhật ký bàn giao.
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
+
+
+## 2026-11-08 — S055-C03 — Tối ưu 3 SVG logo mạng xã hội (`Facebook`, `Threads`, `TikTok`) bằng `<symbol>` + `<use>`
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  - Cập nhật 3 SVG logo `Facebook`, `Threads`, `TikTok` theo đúng mã SVG user gửi, lược bỏ thẻ thừa `SVGRepo_bgCarrier` / `SVGRepo_tracerCarrier`, đổi `fill="currentColor"` và gom vào `<svg style="display:none"><symbol id="icon-facebook|icon-threads|icon-tiktok">` tại đầu `public-layout.html` để tái sử dụng qua `<use href="#...">` ở cả dải `.utility` và `.site-footer` (0 HTTP request phụ, tự đổi màu mượt mà khi hover).
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.

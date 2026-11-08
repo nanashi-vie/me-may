@@ -9,7 +9,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/` | Home nhiều hàng sách | Tìm kiếm, mở nhóm, xem cuốn |
 | `/sach` | Catalogue đầy đủ | Tìm/lọc/sắp xếp/phân trang; filter lưu URL |
 | `/bo-suu-tap/:slug` | Nhóm biên tập | Duyệt các cuốn thuộc nhóm |
-| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–8 ảnh, trọng lượng và mô tả lỗi; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
+| `/sach/:slug` | Chi tiết một cuốn vật lý | Xem 2–8 ảnh và mô tả; trái tim wishlist; liên hệ/tư vấn tương đương qua Zalo; tham gia nhóm |
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
 | `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
@@ -60,7 +60,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 
 ## Desktop — thứ tự từ trên xuống
 
-1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” trên desktop (>720px); ẩn trên mobile (≤720px). Không tự nhận freeship/giảm giá.
+1. **Utility bar:** dải đỏ trên cùng (`.utility`) trên desktop (>720px; ẩn ở ≤720px) chia 3 vùng trong khung `.wrap`: bên trái là 3 icon trắng mạng xã hội (`Facebook`: `sachngoaivanmemay`, `Threads`: `@sachngoaivanmemay`, `TikTok`: `@andamdaily`); ở giữa là thông điệp “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” chạy ngang (`marquee`, tự dừng khi hover hoặc bật `prefers-reduced-motion`); bên phải là icon phong bì kèm email CSKH `support@memaybooks.com` (`mailto:`). Không tự nhận freeship/giảm giá.
 2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Danh sách quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ; gỡ mục `Cách mua` vì đã tích hợp popup trực tiếp từ box tiện ích Home). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
@@ -75,7 +75,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 9. **Sách theo chủ đề:** một hàng của bộ sưu tập được chủ chọn, ví dụ động vật; không tự gắn nhãn bằng AI.
 10. **Banner nhóm 2 + sách cho bé bắt đầu tự đọc:** chỉ hiển thị nếu có cuốn phù hợp; không gán CEFR/Lexile khi thiếu bằng chứng.
 11. **Cách hỏi mua:** 3 bước ngắn: chọn sách → sao chép mã/link → nhắn tiệm xác nhận.
-12. **Footer:** giới thiệu ngắn, hướng dẫn mua, liên hệ và chính sách do tiệm cung cấp. Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
+12. **Footer (cập nhật 08/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (khung nhúng Facebook Page Plugin `embed_page` `340x130px` của fanpage `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
 
 Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ liệu. Không kéo dài Home bằng các nhóm lặp sách chỉ để đủ chiều cao như screenshot.
 
@@ -125,7 +125,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
-Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Mức gợi ý do tiệm tổng hợp, không phải chứng nhận Cambridge cho cuốn sách.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
+Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
 Các nút trên detail:
 

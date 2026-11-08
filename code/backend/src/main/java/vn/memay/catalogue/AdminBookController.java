@@ -29,14 +29,30 @@ public class AdminBookController {
         this.trash = trash;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired private BookStorageBoxes storageBoxes;
+    @org.springframework.beans.factory.annotation.Autowired private BookAccess access;
+
+    @GetMapping("/storage-boxes")
+    public java.util.List<Integer> storageBoxes(Authentication a) {
+        actors.current(a);
+        return storageBoxes.list();
+    }
+
+    @PostMapping("/storage-boxes")
+    public int createStorageBox(Authentication a, @RequestBody tools.jackson.databind.JsonNode payload) {
+        access.requireOwner(actors.current(a));
+        return storageBoxes.create(BookStorageBoxes.positiveNumber(payload.get("storageBoxNumber")));
+    }
+
     @GetMapping
     public Page<BookSummary> list(Authentication a, @RequestParam(required = false) String q,
             @RequestParam(required = false) Publication publication,
             @RequestParam(required = false) Availability availability, @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,@RequestParam(required=false) Boolean unpublishedOnly,
             @RequestParam(required=false) Boolean missingOnly, @RequestParam(required=false) String category,
-            @RequestParam(required=false) String binding, @RequestParam(required=false) Long focusId) {
-        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size, unpublishedOnly, missingOnly, category, binding, focusId));
+            @RequestParam(required=false) String binding, @RequestParam(required=false) Long focusId,
+            @RequestParam(required=false) Integer storageBoxNumber) {
+        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size, unpublishedOnly, missingOnly, category, binding, focusId, storageBoxNumber));
     }
 
     @PostMapping

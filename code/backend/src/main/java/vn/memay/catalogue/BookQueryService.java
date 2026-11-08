@@ -105,6 +105,15 @@ public class BookQueryService {
             where.append(" and b.binding=?");
             args.add(filter.binding());
         }
+        Integer box = filter.storageBoxNumber();
+        if (box != null) {
+            if (box < 0) throw AdminApiException.field("storageBoxNumber", "Số thùng không hợp lệ");
+            if (box == 0) where.append(" and b.storage_box_number is null");
+            else {
+                where.append(" and b.storage_box_number=?");
+                args.add(box);
+            }
+        }
         boolean missingOnly = Boolean.TRUE.equals(filter.missingOnly());
         if (missingOnly) where.append(" and cardinality(").append(MISSING_FIELDS).append(")>0");
         long total = jdbc.queryForObject("select count(*)" + where, Long.class, args.toArray());
@@ -120,7 +129,7 @@ public class BookQueryService {
         args.add(filter.size());
         args.add((long) requestedPage * filter.size());
         var items = jdbc.query(
-                "select b.id,b.book_code,b.title,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
+                "select b.id,b.book_code,b.title,b.storage_box_number,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
                         + ", " + MISSING_FIELDS + " missing_fields"
                         + where + " order by " + ADMIN_ORDER + " limit ? offset ?",
                 (r, n) -> new BookSummary(r.getString("id"), r.getString("book_code"), r.getString("title"),
@@ -131,7 +140,8 @@ public class BookQueryService {
                         r.getBoolean("has_front") ? "/api/v1/admin/books/" + r.getString("id") + "/media/FRONT/content"
                                 : null,
                         r.getLong("total_stock"),r.getTimestamp("published_at")==null?null:r.getTimestamp("published_at").toInstant(),
-                        Arrays.asList((String[]) r.getArray("missing_fields").getArray())),
+                        Arrays.asList((String[]) r.getArray("missing_fields").getArray()),
+                        r.getObject("storage_box_number", Integer.class)),
                 args.toArray());
         return new Page<>(items, requestedPage, filter.size(), total,
                 (int) ((total + filter.size() - 1) / filter.size()));

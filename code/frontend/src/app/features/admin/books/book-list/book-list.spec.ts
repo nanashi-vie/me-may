@@ -16,7 +16,7 @@ describe('BookList', () => {
       provideRouter([]),
       {provide: AuthService, useValue: {user: () => ({role: 'OWNER'}), epoch: () => 0}},
       {provide: ActivatedRoute, useValue: {queryParamMap: of(new Map())}},
-      {provide: BookApi, useValue: {downloadPhotos, list: () => of({items, page: 0, totalPages: 1})}},
+      {provide: BookApi, useValue: { storageBoxes: () => of([]),downloadPhotos, list: () => of({items, page: 0, totalPages: 1})}},
     ]});
     const fixture = TestBed.createComponent(BookList);
     fixture.detectChanges();
@@ -57,7 +57,7 @@ describe('BookList', () => {
   });
   it('identifies an imported book without a price',()=>{
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
-      {provide:BookApi,useValue:{list:()=>of({items:[{id:'7',bookCode:'MM-000007',title:'Imported',priceMinVnd:null,priceMaxVnd:null,publication:'ARCHIVED',publishedAt:null,totalStock:1,version:0,updatedAt:'2026-11-06T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1})}}]});
+      {provide:BookApi,useValue:{ storageBoxes: () => of([]), list:()=>of({items:[{id:'7',bookCode:'MM-000007',title:'Imported',priceMinVnd:null,priceMaxVnd:null,publication:'ARCHIVED',publishedAt:null,totalStock:1,version:0,updatedAt:'2026-11-06T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.textContent).toContain('Chưa nhập giá');
     expect(f.nativeElement.textContent).not.toContain('0 đ');
   });
@@ -66,7 +66,7 @@ describe('BookList', () => {
     const item={id:'7',bookCode:'MM-000007',title:'Imported',publication:'ARCHIVED',version:2};
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},
       {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
-      {provide:BookApi,useValue:{changeTrash,list:()=>of({items:[item],page:0,size:20,totalElements:1,totalPages:1})}}]});
+      {provide:BookApi,useValue:{ storageBoxes: () => of([]), changeTrash,list:()=>of({items:[item],page:0,size:20,totalElements:1,totalPages:1})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();
     const root=f.nativeElement as HTMLElement;
     const dialog=root.querySelector('dialog')!;
@@ -86,7 +86,7 @@ describe('BookList', () => {
     TestBed.configureTestingModule({providers:[provideRouter([]),
       {provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},
       {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
-      {provide:BookApi,useValue:{bulkTrash,trashSelection,list:()=>of({items:[],page:0,totalPages:0}),
+      {provide:BookApi,useValue:{ storageBoxes: () => of([]), bulkTrash,trashSelection,list:()=>of({items:[],page:0,totalPages:0}),
         trash:()=>of({items:[item],page:0,totalPages:2,totalElements:2})}}]});
     const f=TestBed.createComponent(BookList);f.componentInstance.showTrash();f.detectChanges();
     const root=f.nativeElement as HTMLElement;
@@ -117,7 +117,7 @@ describe('BookList', () => {
             ),
           },
         },
-        { provide: BookApi, useValue: { list } },
+        { provide: BookApi, useValue: { storageBoxes: () => of([]), list } },
       ],
     });
     const fixture = TestBed.createComponent(BookList);
@@ -130,7 +130,7 @@ describe('BookList', () => {
     });
   });
   it('lets STAFF inspect books without offering create or draft controls',()=>{
-    TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},{provide:BookApi,useValue:{list:()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0})}}]});
+    TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},{provide:BookApi,useValue:{ storageBoxes: () => of([]), list:()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.querySelector('a[href="/admin/sach/moi"]')).toBeNull();expect(f.nativeElement.querySelector('option[value="DRAFT"]')).toBeNull();
   });
   it('opens category binding submenu on hover and filters immediately when selecting dropdown or chip', () => {
@@ -139,7 +139,7 @@ describe('BookList', () => {
         provideRouter([]),
         { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
-        { provide: BookApi, useValue: { list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
+        { provide: BookApi, useValue: { storageBoxes: () => of([]), list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
       ],
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
@@ -180,7 +180,7 @@ describe('BookList', () => {
         provideRouter([]),
         { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
-        { provide: BookApi, useValue: { list: () => of({ items: [item], page: 0, size: 20, totalElements: 1, totalPages: 1 }) } },
+        { provide: BookApi, useValue: { storageBoxes: () => of([]), list: () => of({ items: [item], page: 0, size: 20, totalElements: 1, totalPages: 1 }) } },
       ],
     });
     const fixture = TestBed.createComponent(BookList);
@@ -205,7 +205,7 @@ describe('BookList', () => {
         provideRouter([]),
         { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
         { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
-        { provide: BookApi, useValue: { list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
+        { provide: BookApi, useValue: { storageBoxes: () => of([]), list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
       ],
     });
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);

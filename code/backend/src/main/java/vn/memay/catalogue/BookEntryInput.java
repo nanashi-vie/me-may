@@ -14,8 +14,9 @@ public class BookEntryInput {
     private final ObjectMapper json;
     public BookEntryInput(ObjectMapper json) { this.json=json; }
     public record Options(boolean noteSupplied,String note,boolean gradeSupplied,
-                          boolean unitSupplied,Long unitPrice,boolean stockSupplied,Long stock,boolean variantsSupplied,boolean featuresSupplied,java.util.List<String> featureCodes) {
-        public static Options legacy() { return new Options(true,null,true,false,null,false,null,true,false,java.util.List.of()); }
+                          boolean unitSupplied,Long unitPrice,boolean stockSupplied,Long stock,boolean variantsSupplied,boolean featuresSupplied,java.util.List<String> featureCodes,
+                          boolean storageBoxSupplied, Integer storageBoxNumber) {
+        public static Options legacy() { return new Options(true,null,true,false,null,false,null,true,false,java.util.List.of(),false,null); }
     }
     public record Create(BookCreate body,Options options,BookDtos.Publication publication) {}
     public record Update(BookUpdate body,Options options,boolean publishAfterSave,boolean confirmedActualCopy,java.util.List<BookDtos.MediaMetadata> mediaMetadata) {}
@@ -87,7 +88,9 @@ public class BookEntryInput {
                 codes.add(code.asString());
             }
         }
-        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price,stock,quantity,variants,features,codes);
+        var box = node.remove("storageBoxNumber");
+        Integer number = box == null || box.isNull() ? null : BookStorageBoxes.positiveNumber(box);
+        return new Options(note||oldNote,value,node.has("conditionGrade"),unit,price,stock,quantity,variants,features,codes,box != null,number);
     }
     private String text(JsonNode node,String field) {
         if(node.isNull()) return null;

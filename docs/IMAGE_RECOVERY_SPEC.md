@@ -1,6 +1,6 @@
 # Source Mapping & Disaster Recovery
 
-Ngày 08/11/2026. Thiết kế chi tiết để duyệt trước implementation.
+Ngày 08/11/2026. User đã duyệt thiết kế; đang lập kế hoạch, chưa implementation.
 Phụ thuộc [Image Storage & Processing](IMAGE_STORAGE_SPEC.md).
 Nguồn: draft user cung cấp; cập nhật quyết định S054-C02/C03.
 
@@ -74,7 +74,7 @@ Credential nằm trong secret/env config, không manifest/source control/log.
 Self-host upload giữ bytes gốc như Storage; owner có thể nhập File ID ngay hoặc
 bổ sung qua metadata sau upload. Chưa mapping vẫn xử lý/preview/lưu sách Ẩn được.
 Publish LOCAL chặn nếu bất kỳ ảnh đính kèm chưa VERIFIED; thông báo chỉ rõ ảnh.
-Đây là đề xuất để bảo đảm mọi ảnh production LOCAL có khả năng phục hồi.
+Đây là điều kiện đã duyệt để bảo đảm mọi ảnh production LOCAL có khả năng phục hồi.
 
 1. Backend ghi inputSha256 khi upload gốc; sourceStatus mặc định UNVERIFIED.
 2. Owner gắn File ID; backend tải file thật và kiểm SHA-256 trùng inputSha256.
@@ -195,5 +195,5 @@ không thay lịch hoặc tuyên bố RPO đã đạt từ cấu hình mẫu.
   API tải blob và kiểm quyền download; manifest không thay quyền truy cập nguồn.
 - Baseline: [DEPLOYMENT](DEPLOYMENT.md), [CATALOGUE](CATALOGUE.md),
   [ARCHITECTURE](ARCHITECTURE.md), [Storage spec](IMAGE_STORAGE_SPEC.md).
-- Các lựa chọn service account/File ID/publish gate ở trên là đề xuất thiết kế,
-  cần duyệt cùng tài liệu trước implementation; cấu hình live owner phụ trách.
+- Các lựa chọn service account/File ID/publish gate đã được user duyệt;
+  cấu hình live owner phụ trách, chưa được xác minh trong phiên lập kế hoạch.

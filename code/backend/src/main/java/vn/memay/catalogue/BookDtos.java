@@ -81,7 +81,7 @@ public final class BookDtos {
                         String readingLevel, String readingVideoUrl, List<String> collectionIds,
                         Publication publication,
                         Availability availability, Instant publishedAt, Instant createdAt, Instant updatedAt,
-                        List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd, List<Feature> features) {
+                        List<MediaView> media, List<VariantView> variants, long totalStock, Long unitPricePerKgVnd, List<Feature> features, Integer storageBoxNumber) {
                 @com.fasterxml.jackson.annotation.JsonProperty("internalNote")
                 public String internalNote() { return conditionNote; }
                 @com.fasterxml.jackson.annotation.JsonProperty("stock")
@@ -93,10 +93,13 @@ public final class BookDtos {
         public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd,
                         Publication publication,
                         Availability availability, long version, Instant updatedAt, String frontContentPath,
-                        long totalStock, Instant publishedAt, List<String> missingFields) {
+                        long totalStock, Instant publishedAt, List<String> missingFields, Integer storageBoxNumber) {
         }
 
-        public record BookFilter(String q, Publication publication, Availability availability, int page, int size, Boolean unpublishedOnly, Boolean missingOnly, String category, String binding, Long focusId) {
+        public record BookFilter(String q, Publication publication, Availability availability, int page, int size, Boolean unpublishedOnly, Boolean missingOnly, String category, String binding, Long focusId, Integer storageBoxNumber) {
+                public BookFilter(String q, Publication publication, Availability availability, int page, int size, Boolean unpublishedOnly, Boolean missingOnly, String category, String binding, Long focusId) {
+                        this(q, publication, availability, page, size, unpublishedOnly, missingOnly, category, binding, focusId, null);
+                }
                 public BookFilter(String q,Publication publication,Availability availability,int page,int size,Boolean unpublishedOnly) {
                         this(q,publication,availability,page,size,unpublishedOnly,null,null,null,null);
                 }

@@ -33,10 +33,13 @@ export class BookList {
   readonly notice = signal('');
   private focusId?: string;
   private returnScroll = 0;
+  readonly storageBoxes = signal<number[]>([]);
+  readonly storageBoxesError = signal(false);
   readonly filters = new FormGroup({
     q: new FormControl('', { nonNullable: true }),
     publication: new FormControl('', { nonNullable: true }),
     availability: new FormControl('', { nonNullable: true }),
+    storageBoxNumber: new FormControl('', { nonNullable: true }),
     category: new FormControl('', { nonNullable: true }),
     binding: new FormControl('', { nonNullable: true }),
     missingOnly: new FormControl(false, { nonNullable: true }),
@@ -59,6 +62,10 @@ export class BookList {
   private sequence = 0;
   private trashSequence = 0;
   constructor() {
+    this.api.storageBoxes().pipe(takeUntilDestroyed()).subscribe({
+      next: boxes => this.storageBoxes.set(boxes),
+      error: () => this.storageBoxesError.set(true),
+    });
     const state = this.router.currentNavigation?.()?.extras.state;
     this.focusId = typeof state?.['savedBookId'] === 'string' ? state['savedBookId'] : undefined;
     this.returnScroll = typeof state?.['returnScroll'] === 'number' ? state['returnScroll'] : 0;
@@ -66,7 +73,10 @@ export class BookList {
       const unpublishedOnly = p.get('unpublishedOnly') === 'true',
         publication = unpublishedOnly ? '' : (p.get('publication') ?? ''),
         availability = p.get('availability');
+      const rawBox = p.get('storageBoxNumber') ?? '';
+      const storageBoxNumber = /^\d+$/.test(rawBox) && Number(rawBox) <= 2147483647 ? rawBox : '';
       this.filters.setValue({
+        storageBoxNumber,
         q: p.get('q') ?? '',
         publication,
         availability: availability ?? '',
@@ -76,6 +86,7 @@ export class BookList {
         unpublishedOnly,
       });
       this.filter = {
+        ...(storageBoxNumber !== '' ? {storageBoxNumber: Number(storageBoxNumber)} : {}),
         ...(this.focusId ? {focusId: this.focusId} : {}),
         ...(this.filters.controls.category.value ? {category: this.filters.controls.category.value} : {}),
         ...(this.filters.controls.binding.value ? {binding: this.filters.controls.binding.value} : {}),

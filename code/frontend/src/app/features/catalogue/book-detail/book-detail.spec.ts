@@ -268,4 +268,38 @@ describe('Detail refresh and public origin', () => {
     expect(el.textContent).toContain('Chưa có sách khác cùng thể loại.');
     expect(el.querySelectorAll('.see-more-wrap a').length).toBe(0);
   });
+  it('hides weightG on public detail, places Độ tuổi above Trình độ đọc, and shows the updated reading note', async () => {
+    const metaBook: PublicBook = {
+      ...a,
+      weightG: 212,
+      publisher: 'Twinkl',
+      author: 'Jane Doe',
+      binding: 'PAPERBACK',
+      ageGroups: ['AGE_4_6'],
+      readingLevel: 'A1',
+      readingVideoUrl: 'https://example.com/video',
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of(metaBook),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    const dts = Array.from(el.querySelectorAll('dl dt')).map((dt) => dt.textContent?.trim());
+    expect(dts).toEqual(['Nhà xuất bản', 'Tác giả', 'Kiểu bìa', 'Độ tuổi', 'Trình độ đọc', 'Đọc tham khảo']);
+    expect(el.querySelector('dl')?.textContent).not.toContain('Trọng lượng sách');
+    expect(el.querySelector('dl')?.textContent).not.toContain('212 g');
+    expect(el.querySelector('dl')?.textContent).toContain(
+      'Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.',
+    );
+  });
 });

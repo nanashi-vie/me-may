@@ -3,9 +3,16 @@
 Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- S055-C03 (08/11): Hoàn tất nâng cấp dải đỏ đầu trang (`utility bar`) và `Footer` nền tối theo kết quả `/grill-me`: dải đỏ bên trái có 3 icon trắng (`Facebook`, `Threads`, `TikTok`), ở giữa có chữ chạy ngang (`marquee`), bên phải là `✉ support@memaybooks.com`; Footer đổi sang nền tối `#292724` tràn chiều ngang kèm khung `KẾT NỐI VỚI CHÚNG TÔI` (nhúng Facebook `embed_page` `340x130px` của `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng `Facebook`, `Threads`, `TikTok`); tối ưu 3 logo SVG mới do user cung cấp bằng `<symbol>` + `<use href="#...">` (0 HTTP request phụ, hỗ trợ `currentColor`). Vitest 44/44 files (252/252 tests PASS), build SSR & Workers 0 warning, 0 error.
+- S056-C02 (08/11): đã triển khai Nơi lưu trữ theo thùng. Form nhập/sửa,
+  cột và bộ lọc admin dùng cùng danh mục Thùng N. Backend 242 ca, 3 skip,
+  frontend 252 đạt, build SSR/Workers đạt. Còn smoke trình duyệt và rollout V20.
+  [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [kế hoạch](BOOK_STORAGE_PLAN.md).
+- S055-C01 (08/11): Hoàn tất chỉnh UI chi tiết sách (`book-detail`) theo kết quả `/grill-me`: ẩn hiển thị `Trọng lượng sách` phía người dùng, dời mục `Độ tuổi` xuống nằm ngay phía trên `Trình độ đọc` (đổi nhãn từ `Trình độ đọc tham khảo`), và cập nhật ghi chú `READING_NOTE` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`. Vitest 44/44 files (251/251 tests PASS), build SSR & Workers 0 warning, 0 error.
 - S054 (08/11): đã viết và builder-check hai spec
   [Storage & Processing](IMAGE_STORAGE_SPEC.md) và [Source Mapping & DR](IMAGE_RECOVERY_SPEC.md).
-  Chờ duyệt thiết kế chi tiết theo Superpowers, sau đó lập implementation plan.
+  User đã duyệt hai spec; đã lập/self-review [Storage plan](IMAGE_STORAGE_PLAN.md)
+  và [Recovery plan](IMAGE_RECOVERY_PLAN.md), chờ review/chọn cách thực thi.
   User chốt bỏ ảnh nội bộ/ẩn từng ảnh, tối đa 8 ảnh; ảnh cũ hiển thị cùng sách.
   User dựng Ubuntu và xử lý thủ công nguồn Drive bị xóa. Agent làm code/local QA,
   cấu hình mẫu và checklist tích hợp. Chưa sửa code/migrate/deploy.

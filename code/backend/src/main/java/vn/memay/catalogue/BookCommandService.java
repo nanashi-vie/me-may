@@ -28,6 +28,7 @@ public class BookCommandService {
     private final BookCodeGenerator codes;
     private final BookValidation validation;
     private final BookAccess access;
+    @org.springframework.beans.factory.annotation.Autowired private BookStorageBoxes storageBoxes;
     private final BookMapper mapper;
     private final AuditService audit;
     private final JdbcTemplate jdbc;
@@ -66,10 +67,10 @@ public class BookCommandService {
     }
 
     private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice) {
-        return createAggregate(actor,input,unitPrice,false);
+        return createAggregate(actor,input,unitPrice,false,null);
     }
 
-    private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice, boolean archived) {
+    private CreatedAggregate createAggregate(AdminUser actor, BookWrite input, Long unitPrice, boolean archived, Integer storageBox) {
         var w = validation.normalize(input);
         timings.measure("validation", () -> {
             if(archived) validation.validateArchived(w); else validation.validateWrite(w);
@@ -78,6 +79,7 @@ public class BookCommandService {
         var b = new BookCopy();
         b.bookCode = codes.nextCode();
         b.unitPricePerKgVnd=unitPrice;
+        b.storageBoxNumber=storageBox;
         b.availability = availability(w);
         b.createdAt = clock.instant()
                 .truncatedTo(java.time.temporal.ChronoUnit.MICROS);
@@ -143,6 +145,8 @@ public class BookCommandService {
         Object fingerprintInput=options.unitSupplied()?java.util.Arrays.asList(canonical,options.unitPrice()):canonical;
         if(publication!=null || options.featuresSupplied())
             fingerprintInput=java.util.Arrays.asList(fingerprintInput,publication,options.featuresSupplied()?options.featureCodes():null);
+        if (options.storageBoxNumber() != null)
+            fingerprintInput = List.of(fingerprintInput, "storageBoxNumber", options.storageBoxNumber());
         final Object normalizedFingerprint=fingerprintInput;
         String fingerprint = timings.measure("fingerprint", () -> {
             try {
@@ -173,8 +177,9 @@ public class BookCommandService {
         }
         if(target==Publication.ARCHIVED && w.title()==null && assignments.isEmpty())
             throw AdminApiException.field("title","Nhập tên sách hoặc ít nhất một ảnh");
+        storageBoxes.requireExisting(options.storageBoxNumber());
         var codes=features.validate(options.featureCodes(),List.of());
-        var aggregate = createAggregate(actor, w, options.unitPrice(),target==Publication.ARCHIVED);
+        var aggregate = createAggregate(actor, w, options.unitPrice(),target==Publication.ARCHIVED,options.storageBoxNumber());
         features.save(aggregate.listing().id,codes);
         var b = aggregate.book();
         var l = aggregate.listing();
@@ -243,6 +248,8 @@ public class BookCommandService {
             throw AdminApiException.conflict(b.version);
         var before = mapper.detail(b, l);
         var w = validation.normalize(BookEntryInput.resolve(input,before,options,variants));
+        Integer storageBox = options.storageBoxSupplied() ? options.storageBoxNumber() : b.storageBoxNumber;
+        storageBoxes.requireExisting(storageBox);
         Long unitPrice=options.unitSupplied()?options.unitPrice():b.unitPricePerKgVnd;
         timings.measure("validation", () -> {
             if (l.publicationStatus == Publication.ARCHIVED) {
@@ -264,11 +271,13 @@ public class BookCommandService {
                 reordered.stream().anyMatch(a -> before.media().stream().noneMatch(m ->
                         a.mediaId().toString().equals(m.id()) && a.role()==m.role()
                                 && supplementalVisibility(a,m.showOnProduct())==m.showOnProduct())));
-        if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd))
+        if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd)
+                && Objects.equals(storageBox,b.storageBoxNumber))
             return before;
         apply(b, l, w);
         b.unitPricePerKgVnd=unitPrice;
         b.availability = availability(w);
+        b.storageBoxNumber = storageBox;
         mappings(l, w);
         variants.save(id, w.variants());
         if(featureChanged) features.save(l.id,codes);
