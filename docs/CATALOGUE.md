@@ -60,7 +60,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - Thêm index listing(publication_status, published_at), book_copy(availability), updated_at/id và FK/mapping phục vụ bảng quản trị.
 - Seed category codes: BOARD_BOOK, PICTURE_BOOK, ENCYCLOPEDIA_SCIENCE, HISTORY, CHAPTER, STORY_COLLECTION, READING_PRACTICE, COOKING_CRAFT_ACTIVITY, BIBLE; nhãn theo DATA.
 - age_group codes: AGE_0_3, AGE_4_6, AGE_7_9, AGE_10_PLUS; một cuốn chọn nhiều, có thể để trống nếu chưa xác định.
-- binding: PAPERBACK/HARDCOVER; category PICTURE_BOOK bắt buộc đúng một binding cả khi lưu sách ẩn; category khác phải binding=null.
+- binding: PAPERBACK/HARDCOVER khi xuất bản cho mọi thể loại ngoài Board book. Sách ẩn có thể thiếu. Sách cũ đang đăng và thiếu kiểu bìa được lưu khi giữ nguyên thể loại.
 - Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
 - condition_grade chỉ là legacy; form mới không nhập. condition_note là ghi chú riêng optional; public/preview không nhận nội dung.
 - reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; không yêu cầu căn cứ khi gán mức.
@@ -323,3 +323,13 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - Hạn là bảy ngày kể từ lúc xóa. Job mặc định chạy mỗi mười phút, khóa dòng
   và dọn theo lô. Ảnh giữ trạng thái dọn để có thể thử lại khi Cloudinary lỗi.
   Audit và receipt giữ dấu vết lịch sử. Tên sách được dùng lại sau khi dọn.
+
+- OWNER có thể chọn từng sách hoặc toàn bộ trang hiện tại để chuyển vào
+  Thùng rác. Trong Thùng rác, **Dọn** áp dụng cho sách đã chọn. **Dọn tất
+  cả** tải danh sách mọi trang qua `GET /api/v1/admin/books/trash/selection`.
+  Hộp thoại xác nhận số cuốn, phạm vi và xóa ảnh vĩnh viễn, kể cả trước hạn.
+- `POST /api/v1/admin/books/trash/bulk` nhận `{items: [{id, version}], permanent}`.
+  Ghi theo lô trong một giao dịch. Dọn vĩnh viễn chỉ nhận sách còn trong
+  Thùng rác với đúng version. Sách vào Thùng rác sau khi mở hộp thoại
+  không thuộc lần dọn đó. DB xóa sách khi xác nhận thành công và tác vụ
+  ảnh thử lại Cloudinary nếu nhà cung cấp chưa xác nhận đã xóa.

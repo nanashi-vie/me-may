@@ -322,7 +322,21 @@ describe('BookEditor safe final saves', () => {
     vi.spyOn(TestBed.inject(BookApi),'get').mockReturnValue(of({...saved,title:'Other owner',version:saved.version+1}));
     await e.reconcileUpdate();expect(e.form.controls.title.value).toBe('Local');expect(e.form.dirty).toBe(true);expect(e.updateUncertain()).toBe(true);
   });
-  it('offers two save actions for hidden books and only one for published books',()=>{
+  it('returns to the filtered list only after a successful save', async () => {
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const e = editor();
+    e.accept(saved);
+    e.form.controls.title.setValue('Changed');
+    update.mockReturnValueOnce(throwError(() => new HttpErrorResponse({status:400})));
+    await e.save(false, false, true);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(e.form.controls.title.value).toBe('Changed');
+    await e.save(false, false, true);
+    expect(navigate).toHaveBeenCalledWith(['/admin/sach'], {
+      queryParamsHandling:'preserve', state:{savedBookId:saved.id, returnScroll:0},
+    });
+  });
+  it('offers save and return for a published book',()=>{
     const f=TestBed.createComponent(BookEditor);const e=f.componentInstance;f.detectChanges();
     expect(f.nativeElement.querySelectorAll('.save-actions button').length).toBe(2);
     expect(f.nativeElement.textContent).toContain('Chưa từng xuất bản');
@@ -330,7 +344,8 @@ describe('BookEditor safe final saves', () => {
     expect(f.nativeElement.textContent).toContain('Đang ẩn');
     expect(f.nativeElement.querySelector('app-book-status-actions .status-actions .buttons button')).toBeNull();
     e.accept(saved);f.detectChanges();
-    expect(f.nativeElement.querySelectorAll('.save-actions button').length).toBe(1);
+    expect(f.nativeElement.querySelectorAll('.save-actions button').length).toBe(2);
+    expect(f.nativeElement.textContent).toContain('Lưu thay đổi và quay lại');
     expect(f.nativeElement.textContent).toContain('Đã xuất bản');
   });
   it('sends content and selected features with one atomic publish update',async()=>{
@@ -386,9 +401,9 @@ describe('BookEditor safe final saves', () => {
     pictureBtn.click();
     fixture.detectChanges();
     const submenuItems = Array.from(categoryField.querySelectorAll('.dropdown-submenu .dropdown-item')) as HTMLButtonElement[];
-    expect(submenuItems.map((b) => b.textContent?.trim())).toEqual(['Paperback', 'Hardcover']);
+    expect(submenuItems.map((b) => b.textContent?.trim())).toEqual(['Chưa xác định', 'Paperback', 'Hardcover']);
 
-    submenuItems[0].click();
+    submenuItems[1].click();
     fixture.detectChanges();
     expect(e.form.controls.categoryCode.value).toBe('PICTURE_BOOK');
     expect(e.form.controls.binding.value).toBe('PAPERBACK');

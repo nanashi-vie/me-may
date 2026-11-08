@@ -46,7 +46,7 @@ public class BookImportTemplate {
                 "Mỗi dòng là một sách riêng, tối đa 100 sách/2 MiB. Không ghép theo tên hoặc ISBN.",
                 "Tự điền Tiếng Anh và tồn 1. Thêm ảnh, chỉnh tồn gộp rồi tự xuất bản.",
                 "Bắt buộc: ten_sach, the_loai, trong_luong_g. nha_xuat_ban, tac_gia, mo_ta_sach để trống được.",
-                "Picture Book cần Paperback hoặc Hardcover; thể loại khác để trống kieu_bia.",
+                "Kiểu bìa: Paperback hoặc Hardcover; Board Book để trống. Có thể bổ sung kiểu bìa trước khi xuất bản.",
                 "Có thể dùng nhãn dễ đọc hoặc code chuẩn. Trọng lượng gram nguyên dương, không dấu phân nhóm.",
                 "don_gia_kg không bắt buộc. Nhập số nguyên VND/kg không dấu nhóm, ví dụ 80000; tự tính hai giá theo trọng lượng và làm tròn như form. Trống thì bổ sung khi thêm ảnh.",
                 "Khi thêm ảnh vẫn sửa đơn giá và hai giá được; đủ giá và ảnh mới xuất bản. File cũ 7, 16 hoặc 20 cột vẫn được hỗ trợ, giữ nguyên receipt và giá cũ.",

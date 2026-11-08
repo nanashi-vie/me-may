@@ -15,6 +15,30 @@ class BookTrashApiTest extends CatalogueTestSupport {
     @Value("${local.server.port}") int port;
     @Autowired BookTrashService trash;
 
+    @Test void bulkPurgeChecksEveryVersionAndNeverIncludesLaterBooks() throws Exception {
+        var api=new AdminHttpClient(port);
+        api.login("owner@catalogue.test");
+        var first=ready();
+        var second=ready();
+        var later=ready();
+        String root="/api/v1/admin/books/trash";
+        var selected=java.util.List.of(Map.of("id",first.id(),"version",first.version()),
+                Map.of("id",second.id(),"version",second.version()));
+        assertThat(api.send("POST",root+"/bulk",json(Map.of("items",selected,"permanent",true)),true).statusCode()).isEqualTo(409);
+        assertThat(api.send("POST",root+"/bulk",json(Map.of("items",selected,"permanent",false)),true).statusCode()).isEqualTo(204);
+        var snapshot=tree(api.send("GET",root+"/selection",null,false));
+        assertThat(snapshot.size()).isEqualTo(2);
+        assertThat(api.send("POST",root+"/bulk",json(Map.of("items",selected,"permanent",true)),true).statusCode()).isEqualTo(409);
+        assertThat(api.send("PATCH","/api/v1/admin/books/"+later.id()+"/trash",
+                json(Map.of("version",later.version(),"trashed",true)),true).statusCode()).isEqualTo(204);
+        api.login("staff@catalogue.test");
+        assertThat(api.send("POST",root+"/bulk",json(Map.of("items",snapshot,"permanent",true)),true).statusCode()).isEqualTo(403);
+        api.login("owner@catalogue.test");
+        assertThat(api.send("POST",root+"/bulk",json(Map.of("items",snapshot,"permanent",true)),true).statusCode()).isEqualTo(204);
+        assertThat(jdbc.queryForList("select id::text from book_copy",String.class)).containsExactly(later.id());
+        assertThat(jdbc.queryForObject("select count(*) from book_media where book_copy_id is null and state='DELETE_PENDING'",Long.class)).isEqualTo(6);
+    }
+
     @Test void hidesRestoresAndPurgesWithDurableImageCleanupAndReceipt() throws Exception {
         var api=new AdminHttpClient(port);
         api.login("owner@catalogue.test");

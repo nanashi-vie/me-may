@@ -29,6 +29,12 @@ export class BookApi {
   trash(page=0) {
     return this.http.get<Page<TrashBook>>('/books/trash',new HttpParams().set('page',page));
   }
+  trashSelection() {
+    return this.http.get<{id:string;version:number}[]>('/books/trash/selection');
+  }
+  bulkTrash(items: readonly {id:string;version:number}[], permanent:boolean) {
+    return this.http.mutate<void>('POST','/books/trash/bulk',{items,permanent});
+  }
   changeTrash(id:string, version:number, trashed:boolean) {
     return this.http.mutate<void>('PATCH',`/books/${id}/trash`,{version,trashed});
   }

@@ -86,11 +86,12 @@ public class BookValidation {
         textError(errors, "conditionNote", w.conditionNote(), 4000);
         textError(errors, "description", w.description(), 10000);
         textError(errors, "readingVideoUrl", w.readingVideoUrl(), 2048);
-        if ("PICTURE_BOOK".equals(w.categoryCode())) {
-            if (!List.of("PAPERBACK", "HARDCOVER").contains(w.binding() == null ? "" : w.binding()))
+        if (w.binding() != null) {
+            if (!usesBinding(w.categoryCode()))
+                errors.put("binding", List.of("Thể loại này không dùng kiểu bìa"));
+            else if (!List.of("PAPERBACK", "HARDCOVER").contains(w.binding()))
                 errors.put("binding", List.of("Chọn Paperback hoặc Hardcover"));
-        } else if (w.binding() != null)
-            errors.put("binding", List.of("Chỉ dùng cho Picture book"));
+        }
         if (w.conditionGrade() != null
                 && !List.of("VERY_GOOD", "GOOD", "FAIR", "HIGH_FRESHNESS", "MINOR_FLAWS").contains(w.conditionGrade()))
             errors.put("conditionGrade", List.of("Không hợp lệ"));
@@ -163,9 +164,19 @@ public class BookValidation {
         return errors;
     }
 
+    static boolean usesBinding(String category) {
+        return category != null && !"BOARD_BOOK".equals(category);
+    }
+
+    void requireBinding(String category, String binding) {
+        if (usesBinding(category) && binding == null)
+            throw AdminApiException.field("binding", "Chọn Paperback hoặc Hardcover");
+    }
+
     public void validatePublished(BookDetail b) {
         var errors=requiredMetadata(b.title(),b.categoryCode(),b.weightG(),b.priceMinVnd(),b.priceMaxVnd(),b.conditionNote());
         if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
+        requireBinding(b.categoryCode(), b.binding());
         var roles = b.media().stream().map(BookDtos.MediaView::role).filter(vn.memay.media.MediaDtos.MediaRole::isPublic).toList();
         if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
                 || !roles.containsAll(

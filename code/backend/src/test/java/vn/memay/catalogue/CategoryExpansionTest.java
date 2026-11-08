@@ -20,11 +20,11 @@ class CategoryExpansionTest extends CatalogueTestSupport {
             assertThat(labels).containsEntry("READING_PRACTICE","Tập đọc").containsEntry("COOKING_CRAFT_ACTIVITY","Nấu ăn - thủ công - activity book").containsEntry("BIBLE","Kinh Thánh");
         }
         for(String code:List.of("READING_PRACTICE","COOKING_CRAFT_ACTIVITY","BIBLE")) {
-            var book=ready();var write=BookFixtures.write("New category "+code,code,null,21000L,null,null,List.of(),List.of());
+            var book=ready();var write=BookFixtures.write("New category "+code,code,"HARDCOVER",21000L,null,null,List.of(),List.of());
             book=update(Long.parseLong(book.id()),book.version(),owner,write);
             book=status.publication(Long.parseLong(book.id()),book.version(),owner,BookDtos.Publication.PUBLISHED,true);
-            assertThat(book.categoryCode()).isEqualTo(code);assertThat(book.binding()).isNull();
-            var response=api.send("GET","/api/v1/books?category="+code,null,false);
+            assertThat(book.categoryCode()).isEqualTo(code);assertThat(book.binding()).isEqualTo("HARDCOVER");
+            var response=api.send("GET","/api/v1/books?binding=HARDCOVER&category="+code,null,false);
             assertThat(response.statusCode()).isEqualTo(200);assertThat(tree(response).path("totalElements").asInt()).isEqualTo(1);
             assertThat(tree(response).path("items").get(0).path("bookCode").asString()).isEqualTo(book.bookCode());
         }

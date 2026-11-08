@@ -73,7 +73,7 @@
         </select>
       </label>
     </header>
-    @if (!isCollection() && applied().category === 'PICTURE_BOOK') {
+    @if (!isCollection() && applied().category && applied().category !== 'BOARD_BOOK') {
       <nav class="binding-chips" aria-label="Kiểu bìa Picture book">
         <a
           routerLink="/sach"

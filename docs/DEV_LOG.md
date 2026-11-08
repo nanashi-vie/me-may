@@ -2301,3 +2301,64 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm run build` & `npm run build:workers`: **PASS (0 warnings, 0 errors)**.
   - Headless Chrome CDP (`verify-shipping-promo-dialog.mjs`): chụp lại `shipping-promo-dialog-desktop.png` (760x577px) và `shipping-promo-dialog-mobile.png` (352x650px), xác nhận khung thứ 5 căn giữa hài hòa — **PASS**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge sang `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+### S049-C01 — 07/11/2026 — Thao tác Thùng rác hàng loạt
+
+- User chốt chọn từng cuốn/chọn cả trang để xóa mềm và dọn ngay sách đã
+  chọn hoặc toàn bộ Thùng rác, kể cả chưa đủ 7 ngày. Mỗi thao tác có xác
+  nhận, hiển thị số cuốn. Tái sử dụng giao dịch dọn và hàng đợi ảnh.
+- Bắt đầu trên dev. Chưa chạy kiểm thử cho thay đổi này.
+- API chốt danh sách ID/version khi mở hộp thoại. Cả lô dừng nếu version
+  lệch hoặc sách đã rời Thùng rác. Xác nhận dọn dùng cùng đường purge DB
+  và hàng đợi ảnh, giữ audit/receipt. Không cần migration mới.
+- Kiểm thử: `mvn -Dtest=BookTrashApiTest,MediaCleanupIntegrationTest test`
+  tại backend đạt 7/7 với PostgreSQL test và gateway giả. Hai lần đầu
+  phát hiện lỗi đọc kiểu payload, đã sửa để dùng ID dạng chuỗi. Frontend
+  `npm test -- --watch=false` đạt 245/245. Chưa chạy smoke trình duyệt
+  hoặc thử xóa dữ liệu production. Bàn giao qua dev.
+
+### S050-C01 — 07/11/2026 — Kiểm file Excel báo xlsx_invalid
+
+- dev64c2017 sạch. Probe Java với file user tái hiện lỗi giới hạn 20 cột vì hai ô trống ở U. Đang thêm test và sửa parser; chưa ghi dữ liệu.
+
+### S050-C02 — 07/11/2026 — Xác minh parser Excel
+
+- BookImportXlsxReader kiểm giới hạn 20 cột sau khi đọc giá trị. Ô trống có định dạng được bỏ qua và ô có dữ liệu hoặc lỗi kiểu vẫn bị từ chối. Thêm ca hồi quy ô trống ở cột U trong BookImportTemplateTest.
+- Probe Java trên file gốc: trước sửa xlsx_invalid tại U2/U3, sau sửa 7 dòng V4 và 0 lỗi chuẩn hóa. Không ghi dữ liệu từ file này.
+- Maven scoped 45 ca đạt. Lượt rộng ban đầu thiếu TEST_DB_URL. Chạy lại tại code/backend với cấu hình test local và bộ BookImport*Test đạt, không lỗi. Bàn giao qua dev, chưa deploy.
+
+### S051-C01 — 07/11/2026 — Thiết kế danh sách Thiếu thông tin
+
+- User chốt dùng một danh sách tổng hợp, bỏ qua ISBN và ghi chú nội bộ.
+  Ghi thiết kế hàng chờ, mở rộng kiểu bìa và khôi phục vị trí sau lưu trong
+  BOOK_COMPLETENESS_SPEC. Cập nhật chỉ mục và tiến độ.
+- Đối chiếu Git, quy tắc kiểu bìa hiện hành, contract nhập và hàng chờ.
+  Chưa chạy test ứng dụng vì thay đổi chỉ gồm tài liệu. Bước tiếp theo là
+  duyệt spec rồi lập kế hoạch triển khai trên dev.
+
+### S051-C02 — 07/11/2026 — Bắt đầu triển khai
+
+- User duyệt triển khai và yêu cầu nhận cột kiểu bìa cho CSV/Excel.
+  File hiện có cột kieu_bia; cần mở rộng quy tắc nhận giá trị cho các thể
+  loại ngoài Board book. Đang làm bước đầu theo BOOK_COMPLETENESS_PLAN.
+  Chưa kiểm thử thay đổi.
+
+### S051-C03 — 07/11/2026 — Kiểu bìa và luồng rà sách
+
+- CSV/XLSX dùng cột kieu_bia hiện có. Form, preview và bộ lọc khách dùng
+  hai kiểu bìa ngoài Board book. Giữ sách đã đăng còn thiếu kiểu bìa để
+  bổ sung dần. Thay đổi không cần migration.
+- Admin gom điều kiện trong Bộ lọc, dùng một danh sách Thiếu thông tin và
+  hiển thị lý do. Hàng chờ có hai mục. Sau khi lưu, truy vấn tìm trang
+  theo thứ tự hiện tại hoặc giữ trang cũ nếu sách rời kết quả.
+- Kiểm tại code/backend bằng `mvn test` với PostgreSQL test local, 237 ca,
+  0 lỗi, 3 skip. Lượt đầu trong sandbox bị chặn kết nối local và Mockito
+  attach. Lượt chạy có quyền kết nối phát hiện hai fixture cần kiểu bìa
+  khi xuất bản, đã cập nhật và chạy lại.
+- Tại code/frontend, `npm test -- --watch=false` đạt 246 ca.
+  `CI=1 NO_COLOR=1 NODE_OPTIONS=--max-old-space-size=4096 npm run build`
+  đạt sau khi lượt sandbox dừng mã 134. Chưa smoke thao tác cuộn trên
+  trình duyệt thực, chưa deploy. Bàn giao qua dev.
+- Rà soát mã phát hiện và đã chỉnh ba điểm: lưu vị trí cuộn lúc bấm mở
+  sách, trả lý do thiếu cả ở danh sách chưa lọc, giữ nguyên cuốn khi đối
+  chiếu lại một yêu cầu xuất bản chưa rõ kết quả.

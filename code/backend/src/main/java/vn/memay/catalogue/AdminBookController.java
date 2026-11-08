@@ -33,8 +33,10 @@ public class AdminBookController {
     public Page<BookSummary> list(Authentication a, @RequestParam(required = false) String q,
             @RequestParam(required = false) Publication publication,
             @RequestParam(required = false) Availability availability, @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,@RequestParam(required=false) Boolean unpublishedOnly) {
-        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size,unpublishedOnly));
+            @RequestParam(defaultValue = "20") int size,@RequestParam(required=false) Boolean unpublishedOnly,
+            @RequestParam(required=false) Boolean missingOnly, @RequestParam(required=false) String category,
+            @RequestParam(required=false) String binding, @RequestParam(required=false) Long focusId) {
+        return queries.list(actors.current(a), new BookFilter(q, publication, availability, page, size, unpublishedOnly, missingOnly, category, binding, focusId));
     }
 
     @PostMapping
@@ -56,6 +58,20 @@ public class AdminBookController {
     public Page<BookTrashService.TrashBook> trash(Authentication a, @RequestParam(defaultValue="0") int page,
             @RequestParam(defaultValue="20") int size) {
         return trash.list(actors.current(a), page, size);
+    }
+
+    public record TrashBulk(@jakarta.validation.constraints.NotEmpty java.util.List<BookTrashService.Selection> items,
+            @jakarta.validation.constraints.NotNull Boolean permanent) {}
+
+    @GetMapping("/trash/selection")
+    public java.util.List<BookTrashService.Selection> trashSelection(Authentication a) {
+        return trash.selection(actors.current(a));
+    }
+
+    @PostMapping("/trash/bulk")
+    public ResponseEntity<Void> bulkTrash(Authentication a, @Valid @RequestBody TrashBulk body) {
+        trash.bulk(actors.current(a),body.items(),body.permanent());
+        return ResponseEntity.noContent().build();
     }
 
     @PatchMapping("/{id}/trash")

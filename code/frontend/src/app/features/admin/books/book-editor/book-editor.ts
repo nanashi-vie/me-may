@@ -75,9 +75,9 @@ export class BookEditor {
   readonly needsLogin = signal(false);
   readonly createUncertain = signal(false);
   readonly updateUncertain=signal(false);
-  private pendingUpdate:{version:number;publish:boolean}|null=null;
+  private pendingUpdate:{version:number;publish:boolean;openNext:boolean;goBack:boolean}|null=null;
   readonly openMenu = signal<'category' | 'reading' | null>(null);
-  readonly pictureSubmenuOpen = signal(false);
+  readonly bindingCategory = signal<CategoryCode | null>(null);
   readonly priceNote = PRICE_NOTE;
   readonly readingNote = READING_NOTE;
   readonly loginForm = new FormGroup({
@@ -86,7 +86,7 @@ export class BookEditor {
   });
   readonly editable = computed(() => !this.loadFailed() && this.auth.user()?.role === 'OWNER');
   readonly formDisabled = computed(() => this.busy() || this.otherBusy() || this.loading() || !this.editable() || this.createUncertain() || this.updateUncertain());
-  pictureBindings(): { code: Binding; label: string }[] {
+  bindingOptions(): { code: Binding; label: string }[] {
     const list = this.taxonomy().bindings;
     return list.length
       ? list
@@ -100,10 +100,10 @@ export class BookEditor {
     if (!code) return 'Chưa xác định';
     const cat = this.taxonomy().categories.find((c) => c.code === code);
     const catLabel = cat?.label ?? (code === 'PICTURE_BOOK' ? 'Picture book' : code);
-    if (code === 'PICTURE_BOOK') {
+    if (code !== 'BOARD_BOOK') {
       const b = this.form.controls.binding.value;
       if (b) {
-        const bLabel = this.pictureBindings().find((x) => x.code === b)?.label ?? (b === 'PAPERBACK' ? 'Paperback' : 'Hardcover');
+        const bLabel = this.bindingOptions().find((x) => x.code === b)?.label ?? (b === 'PAPERBACK' ? 'Paperback' : 'Hardcover');
         return `${catLabel} · ${bLabel}`;
       }
       return catLabel;
@@ -120,15 +120,16 @@ export class BookEditor {
     if (this.formDisabled()) return;
     if (this.openMenu() === menu) {
       this.openMenu.set(null);
-      this.pictureSubmenuOpen.set(false);
+      this.bindingCategory.set(null);
     } else {
       this.openMenu.set(menu);
-      this.pictureSubmenuOpen.set(menu === 'category' && this.form.controls.categoryCode.value === 'PICTURE_BOOK');
+      const category = this.form.controls.categoryCode.value;
+      this.bindingCategory.set(menu === 'category' && category !== 'BOARD_BOOK' ? category : null);
     }
   }
-  togglePictureSubmenu(event: Event) {
+  toggleBindingSubmenu(category: CategoryCode, event: Event) {
     event.stopPropagation();
-    this.pictureSubmenuOpen.update((v) => !v);
+    this.bindingCategory.update((current) => current === category ? null : category);
   }
   selectCategory(code: CategoryCode | null, event: Event) {
     event.stopPropagation();
@@ -136,18 +137,18 @@ export class BookEditor {
     this.form.controls.categoryCode.markAsDirty();
     this.form.controls.categoryCode.markAsTouched();
     this.openMenu.set(null);
-    this.pictureSubmenuOpen.set(false);
+    this.bindingCategory.set(null);
   }
-  selectPictureBinding(binding: Binding, event: Event) {
+  selectBinding(category: CategoryCode, binding: Binding | null, event: Event) {
     event.stopPropagation();
-    this.form.controls.categoryCode.setValue('PICTURE_BOOK');
+    this.form.controls.categoryCode.setValue(category);
     this.form.controls.binding.setValue(binding);
     this.form.controls.categoryCode.markAsDirty();
     this.form.controls.binding.markAsDirty();
     this.form.controls.categoryCode.markAsTouched();
     this.form.controls.binding.markAsTouched();
     this.openMenu.set(null);
-    this.pictureSubmenuOpen.set(false);
+    this.bindingCategory.set(null);
   }
   selectReadingLevel(level: ReadingLevel | null, event: Event) {
     event.stopPropagation();
@@ -161,13 +162,13 @@ export class BookEditor {
     const target = event.target as HTMLElement | null;
     if (!target?.closest('.custom-dropdown')) {
       this.openMenu.set(null);
-      this.pictureSubmenuOpen.set(false);
+      this.bindingCategory.set(null);
     }
   }
   @HostListener('document:keydown.escape') onEscapeKey() {
     if (this.openMenu()) {
       this.openMenu.set(null);
-      this.pictureSubmenuOpen.set(false);
+      this.bindingCategory.set(null);
     }
   }
   fieldErrors() {
@@ -196,13 +197,15 @@ export class BookEditor {
     this.photos.updates.pipe(takeUntilDestroyed()).subscribe((book) => this.book.set(book));
     this.photos.failures.pipe(takeUntilDestroyed()).subscribe((error) => this.fail(error));
     this.form.controls.categoryCode.valueChanges.pipe(takeUntilDestroyed()).subscribe((c) => {
-      if (c !== 'PICTURE_BOOK' && this.form.controls.binding.value) {
+      if ((!c || c === 'BOARD_BOOK') && this.form.controls.binding.value) {
         this.form.controls.binding.setValue(null, { emitEvent: false });
-        this.notice.set('Đã bỏ kiểu bìa vì thể loại mới không phải Picture book.');
+        this.notice.set('Đã bỏ kiểu bìa vì thể loại mới không áp dụng kiểu bìa.');
       }
     });
   }
   readonly routeBookId = signal<string | null>(null);
+  readonly missingQueue = signal(false);
+  private readonly returnScroll = this.router.currentNavigation?.()?.extras.state?.['returnScroll'] ?? 0;
   readonly queue = signal<Page<BookSummary> | null>(null);
   readonly queueError = signal('');
   readonly queueTotal = signal<number | null>(null);
@@ -228,11 +231,18 @@ export class BookEditor {
     if (this.route.paramMap) this.route.paramMap.pipe(takeUntilDestroyed(this.destroy)).subscribe(params=>open(params.get('id')));
     else open(this.route.snapshot.paramMap.get('id'));
   }
+  chooseQueue(missing: boolean) {
+    if (this.missingQueue() === missing) return;
+    this.missingQueue.set(missing);
+    this.queue.set(null);
+    this.queueTotal.set(null);
+    this.loadQueue();
+  }
   loadQueue(page=0) {
     const sequence=++this.queueSequence;
     const q=this.queueSearch.value.trim();
     this.queueError.set('');
-    this.api.list({unpublishedOnly:true,q,page}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+    this.api.list({...(this.missingQueue() ? {missingOnly:true} : {unpublishedOnly:true}),q,page}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: result => {
         if (sequence!==this.queueSequence) return;
         this.queue.set(result);
@@ -243,16 +253,16 @@ export class BookEditor {
       },
     });
   }
-  private openNextBook() {
+  private openNextBook(missing = false) {
     const current=this.book()?.id;
-    this.api.list({unpublishedOnly:true,page:0,size:1}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+    this.api.list(missing ? {missingOnly:true,page:0,size:2} : {unpublishedOnly:true,page:0,size:1}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: result => {
         if (this.book()?.id!==current || this.loading()) return;
-        const next=result.items[0];
+        const next=result.items.find(item => item.id !== current);
         if (next) void this.router.navigate(['/admin/sach',next.id],{queryParamsHandling:'preserve'});
-        else this.notice.set('Đã xuất bản sách. Hàng chờ đã hết.');
+        else this.notice.set(missing ? 'Đã lưu. Hàng chờ đã hết.' : 'Đã xuất bản sách. Hàng chờ đã hết.');
       },
-      error: () => this.notice.set('Đã xuất bản sách. Chưa tải được cuốn tiếp theo.'),
+      error: () => this.notice.set('Đã lưu. Chưa tải được cuốn tiếp theo.'),
     });
   }
   loadMetadata(refresh=false) {
@@ -368,6 +378,7 @@ export class BookEditor {
       this.form.valid &&
       !!w.title &&
       !!w.categoryCode &&
+      (w.categoryCode === 'BOARD_BOOK' || !!w.binding) &&
       w.weightG!==null &&
       w.priceMinVnd !== null &&
       w.priceMaxVnd !== null &&
@@ -375,7 +386,11 @@ export class BookEditor {
       this.confirmed()
     );
   }
-  async save(publish=false, openNext=false) {
+  private returnToList(id: string) {
+    void this.router.navigate(['/admin/sach'], {queryParamsHandling:'preserve',
+      state:{savedBookId:id, returnScroll:this.returnScroll}});
+  }
+  async save(publish=false, openNext=false, goBack=false) {
     if (
       this.busy() ||
       this.otherBusy() ||
@@ -394,6 +409,15 @@ export class BookEditor {
     const needsPublished=publish || existing?.publication==='PUBLISHED';
     const hasPublishedMetadata=!!this.form.controls.title.value?.trim() && !!this.form.controls.categoryCode.value &&
       this.form.controls.weightG.value!==null && this.form.controls.priceMinVnd.value!==null && this.form.controls.priceMaxVnd.value!==null;
+    const category = this.form.controls.categoryCode.value;
+    const bindingRequired = category && category !== 'BOARD_BOOK' && needsPublished &&
+      (publish || existing?.categoryCode !== category || !!existing?.binding);
+    if (bindingRequired && !this.form.controls.binding.value) {
+      this.fields.set({binding: ['Chọn Paperback hoặc Hardcover.']});
+      this.error.set('Chọn kiểu bìa cho cuốn sách.');
+      this.focusInvalid();
+      return;
+    }
     if (this.form.invalid || (needsPublished && (!hasPublishedMetadata || (existing?.publication!=='PUBLISHED' && !this.canPublish()))) ||
         (!existing && !this.form.controls.title.value?.trim() && !this.photos.rows().length)) {
       this.error.set(
@@ -419,7 +443,7 @@ export class BookEditor {
         return;
       }
       const current = this.book()!;
-      this.pendingUpdate={version:current.version,publish};
+      this.pendingUpdate={version:current.version,publish,openNext,goBack};
       this.api
         .update(
           current.id,
@@ -434,10 +458,9 @@ export class BookEditor {
             this.busy.set(false);
             this.accept(saved);
             this.notice.set(publish && saved.publication==='PUBLISHED'?'Đã lưu và xuất bản sách.':'Đã lưu thay đổi.');
-            if (publish && saved.publication==='PUBLISHED') {
-              this.loadQueue();
-              if (openNext) this.openNextBook();
-            }
+            if (goBack) this.returnToList(saved.id);
+            else if (openNext) this.openNextBook(!publish);
+            if (!goBack) this.loadQueue();
           },
           error: (e) => {
             this.busy.set(false);
@@ -468,6 +491,9 @@ export class BookEditor {
       const metadataMatches=metadata.every(m=>current.media.some(photo=>photo.id===m.mediaId && photo.alt===m.alt && photo.sourceRef===m.sourceRef));
       if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media.map(m=>mediaAssignment(m.mediaId,m.role,m.showOnProduct)))===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
         this.accept(current);this.notice.set(current.publication==='PUBLISHED'?'Đã xác nhận lưu sách đang xuất bản.':'Đã xác nhận lưu thay đổi.');
+        if (pending.goBack) this.returnToList(current.id);
+        else if (pending.openNext && !pending.publish) this.openNextBook(true);
+        if (!pending.goBack) this.loadQueue();
       } else this.error.set('Bản đã lưu có thay đổi khác. Nội dung đang sửa được giữ; mở bản đã lưu ở tab khác để đối chiếu.');
     } catch(e) {this.fail(e as HttpErrorResponse);}
     finally {this.busy.set(false);}

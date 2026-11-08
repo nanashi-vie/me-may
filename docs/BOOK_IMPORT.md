@@ -224,7 +224,7 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
 | Picture Book; Board Book; Chapter | PICTURE_BOOK; BOARD_BOOK; CHAPTER |
 | Bách khoa toàn thư & khoa học; Lịch sử; Tuyển tập truyện | ENCYCLOPEDIA_SCIENCE; HISTORY; STORY_COLLECTION |
 | Tập đọc; Nấu ăn - thủ công - activity book; Kinh Thánh | READING_PRACTICE; COOKING_CRAFT_ACTIVITY; BIBLE |
-| Paperback; Hardcover | PAPERBACK; HARDCOVER |
+| Paperback / Bìa mềm; Hardcover / Bìa cứng | PAPERBACK; HARDCOVER |
 | Độ mới cao; Có lỗi nhẹ | HIGH_FRESHNESS; MINOR_FLAWS |
 | 0-3; 4-6; 7-9; 10+ | AGE_0_3; AGE_4_6; AGE_7_9; AGE_10_PLUS |
 | Starters · Pre A1; Movers · A1; Flyers / Key · A2 | PRE_A1; A1; A2 |
@@ -256,3 +256,11 @@ liệu giả để kiểm parser; PostgreSQLintegration và fakeprovider kiểm 
   retry file đã nhập trả cùng mã/ID, không thay note/giá/tồn user đã sửa sau đó.
 - V1 nhiều dòng vẫn giữ variants trong storage, editor mới hiện tổng; import
   preview không còn bảng tên biến thể.
+
+## Kiểu bìa khi nhập — 07/11/2026
+
+Cột `kieu_bia` có trong CSV và Excel V1–V4. Dùng Paperback hoặc Hardcover
+cho các thể loại ngoài Board book. Board book để trống; giá trị nhập ở ô
+này sẽ bị báo lỗi. Các thể loại còn lại có thể để trống để nhập sách ẩn
+rồi bổ sung trước khi xuất bản. Nhãn Bìa mềm/Bìa cứng được nhận ở V2–V4.
+Mẫu cũ và bước rà soát trước xác nhận vẫn dùng được.

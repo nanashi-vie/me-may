@@ -19,10 +19,11 @@ class BookImportVisibilityTest extends MediaTestSupport {
     }
     @Test void v2ImportCanAddVariantsWithSharedPhotosBeforeFirstPublication()throws Exception {
         var values=Map.of("ten_sach","Imported V2 reader","the_loai","Tập đọc","gia_tu","21000","gia_den","25000",
-                "trong_luong_g","300","tinh_trang","Độ mới cao","mo_ta_tinh_trang","Bìa đẹp");
+                "trong_luong_g","300","kieu_bia","Bìa mềm","tinh_trang","Độ mới cao","mo_ta_tinh_trang","Bìa đẹp");
         var doc=new BookImportValidator(new BookValidation()).normalize(List.of(new CellRow("Sach",2,values,List.of(),2)));
         assertThat(doc.issues()).isEmpty();var receipt=imports.commit(owner,doc).receipt();
         long id=Long.parseLong(receipt.books().getFirst().id());var book=queries.detail(id,owner);
+        assertThat(book.binding()).isEqualTo("PAPERBACK");
         assertThat(book.totalStock()).isEqualTo(1);assertThat(book.language()).isEqualTo("Tiếng Anh");
         String originalVariant=book.variants().getFirst().id();
         book=media.upload(id,MediaDtos.MediaRole.FRONT,book.version(),owner,ImageValidatorTest.image("png"),null,null);
@@ -49,6 +50,30 @@ class BookImportVisibilityTest extends MediaTestSupport {
         assertThat(queries.list(owner,new BookFilter(null,Publication.PUBLISHED,null,0,20,true)).items()).isEmpty();
         assertThat(queries.list(owner,new BookFilter(null,null,Availability.SOLD,0,20,true)).items()).isEmpty();
         assertThat(queries.list(owner,new BookFilter(null,null,null,0,20,false)).items()).hasSize(3);
+    }
+    @Test void missingFilterAndFocusedPageIncludePublishedSoldButExcludeTrash() {
+        var older = hidden();
+        var live = ready();
+        long liveId = Long.parseLong(live.id());
+        status.publication(liveId, live.version(), owner, Publication.PUBLISHED, true);
+        jdbc.update("update book_copy set availability='SOLD', updated_at=now() where id=?", liveId);
+        jdbc.update("update book_copy set updated_at=now()-interval '1 day' where id=?", Long.parseLong(older.id()));
+        var page = queries.list(owner, new BookFilter(null, null, null, 0, 1, null, true,
+                null, null, Long.parseLong(older.id())));
+        assertThat(page.totalElements()).isEqualTo(2);
+        assertThat(page.page()).isEqualTo(1);
+        var item = page.items().getFirst();
+        assertThat(item.id()).isEqualTo(older.id());
+        assertThat(item.missingFields()).contains("Trình độ đọc", "Ảnh bìa")
+                .doesNotContain("ISBN", "Ghi chú nội bộ", "Kiểu bìa");
+        var sold = queries.list(owner, new BookFilter(null, Publication.PUBLISHED, Availability.SOLD, 0, 20,
+                null, true, null, null, null));
+        assertThat(sold.items()).extracting(BookSummary::id).containsExactly(live.id());
+        jdbc.update("update book_copy set deleted_at=now() where id=?", Long.parseLong(older.id()));
+        var fallback = queries.list(owner, new BookFilter(null, null, null, 1, 1, null, true,
+                null, null, Long.parseLong(older.id())));
+        assertThat(fallback.page()).isZero();
+        assertThat(fallback.items()).extracting(BookSummary::id).containsExactly(live.id());
     }
     @Test void importedHiddenMediaStaysPrivateUntilFirstPublication()throws Exception {
         var b=hidden();long id=Long.parseLong(b.id());

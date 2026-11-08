@@ -3,6 +3,21 @@
 Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+## Rà sách thiếu thông tin và kiểu bìa — đã kiểm tự động 07/11/2026
+
+- S051: Nhận kiểu bìa cho CSV/Excel, mở rộng form và lọc khách. Admin có bộ
+  lọc tổng hợp, hai nhóm hàng chờ và lưu/quay lại theo đúng trang chứa sách.
+- Backend PostgreSQL 234 đạt, 3 bỏ qua. Frontend 246 đạt. Chưa smoke trên
+  trình duyệt thực hoặc rollout. Xem [thiết kế](BOOK_COMPLETENESS_SPEC.md).
+
+## Sửa lỗi import ô Excel trống ngoài mẫu — 07/11/2026
+
+- S050: parser bỏ qua ô trống có định dạng ở ngoài cột T. File gốc đọc được 7 dòng V4, không lỗi kiểm tra nội dung. Bộ test import đạt trên PostgreSQL kiểm thử. Chưa triển khai production.
+
+## Thao tác Thùng rác hàng loạt — đã kiểm local 07/11/2026
+
+- S049-C01: Chọn từng sách hoặc cả trang để xóa mềm. Dọn sách đã chọn hoặc toàn bộ Thùng rác sau xác nhận. Backend 7 ca liên quan và frontend 245 ca đạt. Chưa rollout production.
+
 ## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
 
 - S048-C03: Hoàn tất `ShippingPromoDialog` mở từ box "ƯU ĐÃI VẬN CHUYỂN" trên trang chủ (`/`), đã gộp vào `dev`:

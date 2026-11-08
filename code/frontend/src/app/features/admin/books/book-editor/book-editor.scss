@@ -124,3 +124,7 @@ small {
   .unpublished-sidebar { display: block; position: sticky; top: 1rem; align-self: start; max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem; border: 1px solid #d8d2c9; }
   .unpublished-toggle { display: none; }
 }
+
+.queue-tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
+.queue-tabs [aria-pressed="true"] { font-weight: 700; }
+.unpublished-dialog li small, .unpublished-sidebar li small { display: block; }

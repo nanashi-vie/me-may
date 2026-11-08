@@ -74,6 +74,45 @@ public class BookTrashService {
                 select id from book_copy where deleted_at<=? order by deleted_at,id
                 limit 100 for update skip locked
                 """, Long.class, Timestamp.from(now.minus(RETENTION)));
+        purge(ids);
+    }
+
+    public record Selection(String id,Long version) {}
+
+    public List<Selection> selection(AdminUser actor) {
+        access.requireOwner(actor);
+        return jdbc.query("select id,version from book_copy where deleted_at is not null order by id",
+                (r,n) -> new Selection(r.getString(1),r.getLong(2)));
+    }
+
+    @Transactional
+    public void bulk(AdminUser actor, List<Selection> items, boolean permanent) {
+        access.requireOwner(actor);
+        if (items.isEmpty() || (!permanent && items.size()>100))
+            throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
+        var ordered = new java.util.TreeMap<Long,Long>();
+        for (var item:items) {
+            long id;
+            try { id = Long.parseLong(item == null ? null : item.id()); }
+            catch (NumberFormatException e) { throw AdminApiException.field("items", "Mã sách không hợp lệ"); }
+            if (id<1 || item.version()==null || item.version()<0 || ordered.putIfAbsent(id,item.version())!=null)
+                throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
+        }
+        if (!permanent) {
+            ordered.forEach((id,version) -> change(actor,id,version,true));
+            return;
+        }
+        for (var item:ordered.entrySet()) {
+            var rows=jdbc.queryForList("select version from book_copy where id=? and deleted_at is not null for update",
+                    Long.class,item.getKey());
+            if (rows.isEmpty()) throw new AdminApiException(409,"trash_changed");
+            if (!rows.getFirst().equals(item.getValue())) throw AdminApiException.conflict(rows.getFirst());
+        }
+        ordered.forEach((id,version) -> audit.record(actor,"BOOK",id,"PURGED",Map.of(),Map.of(),version));
+        purge(List.copyOf(ordered.keySet()));
+    }
+
+    private void purge(List<Long> ids) {
         for (long id : ids) {
             jdbc.update("""
                     update book_media set book_copy_id=null,

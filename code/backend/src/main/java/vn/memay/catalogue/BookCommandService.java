@@ -245,7 +245,13 @@ public class BookCommandService {
         var w = validation.normalize(BookEntryInput.resolve(input,before,options,variants));
         Long unitPrice=options.unitSupplied()?options.unitPrice():b.unitPricePerKgVnd;
         timings.measure("validation", () -> {
-            if(l.publicationStatus==Publication.ARCHIVED) validation.validateArchived(w); else validation.validateWrite(w);
+            if (l.publicationStatus == Publication.ARCHIVED) {
+                validation.validateArchived(w);
+            } else {
+                validation.validateWrite(w);
+                if (before.binding() != null || !Objects.equals(before.categoryCode(), w.categoryCode()))
+                    validation.requireBinding(w.categoryCode(), w.binding());
+            }
             return null;
         });
         var codes=options.featuresSupplied()?features.validate(options.featureCodes(),before.features()):before.features().stream().map(Feature::code).toList();

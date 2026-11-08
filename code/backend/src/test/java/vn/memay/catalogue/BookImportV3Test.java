@@ -61,12 +61,21 @@ class BookImportV3Test {
         }
         for(var bad:List.of("0","-1","1.5","9007199254740992"))
             assertThat(read(csv(List.of(change("trong_luong_g",bad))),"csv").issues()).extracting(ImportIssue::column).contains("trong_luong_g");
-        assertThat(read(csv(List.of(change("the_loai","Picture Book"))),"csv").issues()).extracting(ImportIssue::column).contains("kieu_bia");
+        assertThat(read(csv(List.of(change("the_loai","Picture Book"))),"csv").issues()).isEmpty();
         var picture=BookImportV2Test.change(change("the_loai","Picture Book"),"kieu_bia","Paperback");
         assertThat(read(csv(List.of(picture)),"csv").issues()).isEmpty();
         assertThat(read(csv(List.of(change("kieu_bia","Hardcover"))),"csv").issues()).extracting(ImportIssue::column).contains("kieu_bia");
         assertThat(read(csv(List.of(change("the_loai","unknown"))),"csv").issues()).extracting(ImportIssue::column).contains("the_loai");
         assertThat(read(csv(List.of(change("mo_ta_sach","a".repeat(10001)))),"csv").fingerprint()).isNull();
+    }
+    @Test void importsBindingForChapterFromCsvAndExcel() throws Exception {
+        var chapter = BookImportV2Test.change(change("the_loai", "Chapter"), "kieu_bia", "Hardcover");
+        var csv = read(csv(List.of(chapter)), "csv");
+        var excel = read(xlsx(List.of(chapter), COLUMNS, sheet -> {}), "xlsx");
+        for (var document : List.of(csv, excel)) {
+            assertThat(document.issues()).isEmpty();
+            assertThat(document.groups().getFirst().write().binding()).isEqualTo("HARDCOVER");
+        }
     }
     @Test void sparseExcelReportsActualRowAndRejectsFormulaOrExtraData()throws Exception {
         var sparse=read(xlsx(List.of(change("trong_luong_g","")),COLUMNS,s->s.shiftRows(1,1,5)),"xlsx");

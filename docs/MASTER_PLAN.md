@@ -139,7 +139,7 @@ Không nối trực tiếp livestream claim, cọc 100.000đ/đơn, quy định 
 **Public catalogue**
 - Hiển thị Home, catalogue, collection, detail và các trang thông tin cơ bản.
 - Search theo tên/mã, case-insensitive; hỗ trợ tiếng Việt không dấu nếu có thể thực hiện bằng PostgreSQL unaccent hoặc giải pháp tương đương; chỉ công khai published listing.
-- Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa nằm trong Picture book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
+- Filter public **chỉ độ tuổi và thể loại**, với kiểu bìa áp dụng khi chọn thể loại ngoài Board book; chi tiết ở mục 3.1. Giữ sort mới nhất, giá tham khảo tăng/giảm; không có lọc giá, chủ đề, khả dụng hoặc mức đọc trong MVP.
 - Mã sách/slug ổn định; HTML ban đầu cho trang sách/danh sách có SEO title/description/canonical/OG image bằng giải pháp render được **kiểm chứng trên Cloudflare** (SSR hoặc SSG với cập nhật phù hợp).
 - Detail hiển thị 2–8 ảnh thật. FRONT/BACK bắt buộc. Hai vai trò ảnh bổ sung mặc định ẩn và có thể bật riêng. Contract ảnh, xóa mềm và hạn Thùng rác ở CATALOGUE.
 - Tiêu đề ghép `Tên | NXB | Tác giả | Độ tuổi`, lưu các trường riêng và bỏ phần thiếu/dấu phân cách thừa. Có mô tả, độ tuổi, mức đọc tham khảo, link video đọc sách tùy chọn và giá tham khảo.
@@ -179,7 +179,7 @@ Giỏ hàng thực, order/OrderItem, login khách, địa chỉ giao hàng, COD/
 
 - **Tuổi:** 0–3, 4–6, 7–9, 10+; một cuốn có thể gán nhiều nhóm. Không suy tuổi từ mức đọc.
 - **Thể loại:** mỗi cuốn chọn đúng một trong Board book, Picture book, Bách khoa toàn thư & khoa học, Lịch sử, Chapter, Tuyển tập truyện, Tập đọc, Nấu ăn - thủ công - activity book, Kinh Thánh.
-- **Picture book:** bắt buộc chọn đúng một kiểu Paperback hoặc Hardcover khi nhập. “Tất cả” chỉ là lựa chọn bộ lọc lấy cả hai kiểu; không lưu làm kiểu bìa của cuốn sách.
+- **Kiểu bìa:** bắt buộc chọn Paperback hoặc Hardcover khi xuất bản sách ngoài Board book. “Tất cả” chỉ là lựa chọn bộ lọc lấy cả hai kiểu; không lưu làm kiểu bìa của cuốn sách.
 - **Mức đọc:** chọn một trong bảy mức bên dưới hoặc “Chưa xác định”. Không bắt buộc để publish; chưa xác định thì ẩn trường public. Không tự gán bằng thể loại/độ tuổi.
 
 | Mức lưu tham khảo | Nhãn hiển thị |
@@ -212,7 +212,7 @@ erDiagram
 | Entity | Trường cốt lõi MVP | Lưu ý tương lai |
 |---|---|---|
 | `BookVariant` | UUID, book_copy_id, name?, stock0..999999, sort_order | Storage legacy; UUID/tên giữ nguyên, UI sửa tồn tổng; không public nhóm |
-| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover khi Picture book), `condition_grade?` legacy, `condition_note?` nội bộ, `unit_price_per_kg_vnd?`, `weight_g`, `availability`, timestamps/version | Mục sách chung; mã ổn định, ghi chú optional chỉ quản trị |
+| `BookCopy` | `id`, `book_code` unique immutable, `title`, `isbn?`, `publisher?`, `author?`, `language?`, `binding?` (Paperback/Hardcover ngoài Board book), `condition_grade?` legacy, `condition_note?` nội bộ, `unit_price_per_kg_vnd?`, `weight_g`, `availability`, timestamps/version | Mục sách chung; mã ổn định, ghi chú optional chỉ quản trị |
 | `Listing` | `id`, `book_copy_id` unique, `slug`, `price_min_vnd`, `price_max_vnd` (khoảng tham khảo), `description`, `category_id`, `age_groups`, `reading_level?`, `reading_video_url?`, `publication_status`, `published_at`, `updated_at` | M5 final tạo cuốn + listing công khai + media cùng giao dịch; dùng version của BookCopy cho cả aggregate |
 | `BookMedia` | `id`, `book_copy_id`, `storage_public_id`, `media_url`, `type` (FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3), `sort_order`, `caption?`, `source_ref?` | Metadata nguồn/loại ảnh hữu ích cho VLM/evidence; không bắt AI chạy ở MVP |
 | `Category`, `Collection`, mapping | `id`, `name`, `slug`, `sort_order`, `active` | Một thể loại/listing; nhiều nhóm tuổi/listing; tập nhãn theo mục 3.1, không dùng khoảng age_min/max thay nhóm tuổi |
@@ -224,7 +224,7 @@ erDiagram
 - Public DTO chỉ trả các bản ghi công khai; không lộ nháp/lưu trữ qua URL, sitemap, API hay preview do web kiểm soát.
 - `publication_status` (PUBLISHED / ARCHIVED) khác `availability` (AVAILABLE / SOLD). Ghi chú nội bộ optional, không thay xác nhận bản cụ thể qua tin nhắn.
 - Khoảng giá tham khảo gồm **hai số nguyên VND**, 1..999999999999 và min≤max, có ghi chú về tình trạng sách; mọi thay đổi giá được audit.
-- Mỗi listing một thể loại; Picture book phải có đúng một kiểu bìa. Mức đọc do tiệm chọn thủ công, không yêu cầu trường căn cứ.
+- Mỗi listing một thể loại. Sách xuất bản ngoài Board book cần một kiểu bìa. Mức đọc do tiệm chọn thủ công, không yêu cầu trường căn cứ.
 - Xuất bản cần tên, mã, thể loại, khoảng giá, trọng lượng gram nguyên dương và 2–6 ảnh thật có FRONT/BACK; ghi chú nội bộ optional, không public. Save-only ARCHIVED cho thiếu dữ liệu;0–3feature tags có thứ tự. Contract ở CATALOGUE/DATA.
 - `optimistic locking` (`version`/ETag) tránh người thứ hai ghi đè form đang cũ.
 - Nếu triển khai C về sau, `OrderItem` tham chiếu ID cuốn và **snapshot mã/tên/giá**; transaction/lock chỉ bảo vệ cập nhật trong web, không thể bảo vệ dữ liệu Facebook chưa đồng bộ.
@@ -347,7 +347,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 
 - [ ] Chủ chọn một bộ **50–100 listing kiểm thử** (có thể có subset 10–20 ảnh thật cho pilot), cùng tên nhưng khác bản cuốn vẫn có mã/ảnh/giá/tình trạng khác.
 - [ ] Customer ở iPhone Safari và Android Chrome tìm theo tên/mã, lọc tuổi/thể loại và quay lại detail không mất filters; không có bộ lọc giá/chủ đề/khả dụng/mức đọc. Cuốn gán nhiều nhóm tuổi được tìm thấy theo từng nhóm.
-- [ ] Một thể loại/cuốn; Picture book bắt buộc Paperback hoặc Hardcover, không lưu “Tất cả”; lọc “Tất cả” lấy cả hai kiểu.
+- [ ] Một thể loại/cuốn; xuất bản ngoài Board book yêu cầu Paperback hoặc Hardcover, không lưu “Tất cả”; lọc “Tất cả” lấy cả hai kiểu.
 - [ ] Đủ 2–6 ảnh thật, FRONT/BACK bắt buộc mới đăng; detail hiện các vai trò đã có, không lộ ghi chú nội bộ; thiếu ảnh bắt buộc bị chặn đăng và giữ dữ liệu đang nhập.
 - [ ] Tiêu đề ghép không có dấu phân cách thừa; giá tham khảo và ghi chú đúng. Bảy mức đọc đúng thứ tự, Flyers/Key chung A2, chú thích gợi ý của tiệm; “Chưa xác định” không chặn publish và ẩn trường. Link video đọc sách tùy chọn, không bịa thông tin thiếu.
 - [ ] Add/remove wishlist, reopen cùng browser còn danh sách; khác máy/ẩn danh không bị hứa đồng bộ; sách sold hiển thị cảnh báo.

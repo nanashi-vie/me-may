@@ -60,3 +60,7 @@ small {
 }
 .cover-placeholder{width:42px;height:58px;float:left;margin-right:.75rem;display:flex;align-items:center;text-align:center;font-size:.65rem;background:var(--paper,#f5f3ef);color:var(--muted);}
 .unpublished-filter{display:flex;align-items:center;gap:.5rem;}.unpublished-filter input{width:auto;min-width:22px;min-height:22px;margin:0;}
+
+.filters details summary { cursor: pointer; }
+.filters details[open] { display: grid; gap: .5rem; }
+tr.saved-book > td { background: #fff3d8; }
