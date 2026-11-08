@@ -397,11 +397,15 @@ describe('BookEditor safe final saves', () => {
     fixture.detectChanges();
     expect(categoryField.querySelector('.dropdown-popover')).not.toBeNull();
 
-    const pictureBtn = categoryField.querySelector('.has-submenu') as HTMLButtonElement;
-    pictureBtn.click();
+    const submenuWrap = categoryField.querySelector('.dropdown-submenu-wrap') as HTMLElement;
+    submenuWrap.dispatchEvent(new MouseEvent('mouseenter'));
     fixture.detectChanges();
     const submenuItems = Array.from(categoryField.querySelectorAll('.dropdown-submenu .dropdown-item')) as HTMLButtonElement[];
-    expect(submenuItems.map((b) => b.textContent?.trim())).toEqual(['Chưa xác định', 'Paperback', 'Hardcover']);
+    expect(submenuItems.map((b) => b.querySelector('.item-text')?.textContent?.trim() ?? b.textContent?.trim())).toEqual([
+      'Chưa xác định',
+      'Paperback',
+      'Hardcover',
+    ]);
 
     submenuItems[1].click();
     fixture.detectChanges();

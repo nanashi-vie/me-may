@@ -2362,3 +2362,36 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Rà soát mã phát hiện và đã chỉnh ba điểm: lưu vị trí cuộn lúc bấm mở
   sách, trả lý do thiếu cả ở danh sách chưa lọc, giữ nguyên cuốn khi đối
   chiếu lại một yêu cầu xuất bản chưa rõ kết quả.
+
+
+## 2026-11-08 — S052-C01 — Bắt đầu thiết kế lại UI Bộ lọc `/admin/sach`, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:**
+  1. Bỏ lọc/rà theo `'Bộ sưu tập'` khỏi danh sách `Thiếu thông tin` (`MISSING_FIELDS` trong `BookQueryService.java`) ở `/admin`.
+  2. Chỉnh dropdown `Thể loại` (2 cấp) ở `/admin/sach/moi` (`book-editor`) và `/admin/sach` (`book-list`) để chỉ cần hover chuột vào dòng thể loại có `›` là tự xổ submenu `Kiểu bìa` bên phải (thay vì phải click vào dòng thể loại như hiện tại).
+  3. Thiết kế lại thanh Bộ lọc ở `/admin/sach` (`book-list`): bỏ `<details>Bộ lọc</details>` và nút `Áp dụng` thừa, đưa toàn bộ điều kiện lọc lên thanh ngang dùng `.custom-dropdown` đồng bộ với `/admin/sach/moi`, gộp `Thể loại + Kiểu bìa` thành 1 dropdown 2 cấp (`Tất cả kiểu bìa / Paperback / Hardcover`), 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin` nằm gọn ngang hàng và tự động lọc ngay khi chọn.
+- **Kiểm tra đã chạy:** Chưa chạy (bắt đầu triển khai trên `dev-ui` đã fast-forward với `dev` tại `28a1a5b`).
+- **Trạng thái:** Đang thực hiện.
+
+
+## 2026-11-08 — S052-C02 — Hoàn tất UI Bộ lọc `/admin/sach`, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Hoàn thiện và kiểm chứng 3 thay đổi tại `/admin`: bỏ rà `'Bộ sưu tập'` khỏi `Thiếu thông tin`, mở submenu `Kiểu bìa` khi hover chuột vào dòng `Thể loại` có `›`, và thiết kế lại thanh Bộ lọc ngang hàng tại `/admin/sach`.
+- **File thay đổi:**
+  - `code/backend/src/main/java/vn/memay/catalogue/BookQueryService.java`
+  - `code/backend/src/test/java/vn/memay/media/BookImportVisibilityTest.java`
+  - `code/frontend/src/app/features/admin/books/book-editor/book-editor.html`
+  - `code/frontend/src/app/features/admin/books/book-editor/book-editor.spec.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.scss`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `code/frontend/src/styles.scss`
+  - `docs/BOOK_COMPLETENESS_SPEC.md`, `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Backend: `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportVisibilityTest test` -> **4/4 PASS**.
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (247/247 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Trạng thái & Bước tiếp theo:** Đã hoàn tất trên `dev-ui` và đồng bộ `dev`.

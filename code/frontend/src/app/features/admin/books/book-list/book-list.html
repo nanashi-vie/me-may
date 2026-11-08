@@ -30,39 +30,269 @@
   </section>
 } @else {
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
-  <label class="admin-field"><span class="field-label">Tên hoặc mã sách</span><input formControlName="q" maxlength="200" type="search" /></label
-  ><details #filterPanel>
-    <summary>Bộ lọc</summary>
-    <label class="admin-field"><span class="field-label">Xuất bản</span><select formControlName="publication">
+  <label class="admin-field filter-search">
+    <span class="field-label">Tên hoặc mã sách</span>
+    <input formControlName="q" maxlength="200" type="search" />
+  </label>
+
+  <div
+    class="admin-field custom-dropdown filter-publication"
+    [class.is-open]="openMenu() === 'publication'"
+  >
+    <span class="field-label">Xuất bản</span>
+    <select class="sr-only-native-select" formControlName="publication" tabindex="-1" aria-hidden="true">
       <option value="">Tất cả</option>
       <option value="PUBLISHED">Công khai</option>
       <option value="ARCHIVED">Ẩn</option>
-    </select></label
-  ><label class="admin-field"
-    ><span class="field-label">Khả dụng</span><select formControlName="availability">
+    </select>
+    <button
+      type="button"
+      class="dropdown-trigger"
+      [attr.aria-expanded]="openMenu() === 'publication'"
+      aria-haspopup="listbox"
+      (click)="toggleMenu('publication', $event)"
+    >
+      <span class="dropdown-value">{{ publicationDisplayLabel() }}</span>
+      <span class="dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    @if (openMenu() === 'publication') {
+      <div class="dropdown-popover" role="listbox" aria-label="Xuất bản">
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.publication.value === ''"
+          [class.selected]="filters.controls.publication.value === ''"
+          (click)="selectPublication('', $event)"
+        >
+          <span class="item-text">Tất cả</span>
+          @if (filters.controls.publication.value === '') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.publication.value === 'PUBLISHED'"
+          [class.selected]="filters.controls.publication.value === 'PUBLISHED'"
+          (click)="selectPublication('PUBLISHED', $event)"
+        >
+          <span class="item-text">Công khai</span>
+          @if (filters.controls.publication.value === 'PUBLISHED') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.publication.value === 'ARCHIVED'"
+          [class.selected]="filters.controls.publication.value === 'ARCHIVED'"
+          (click)="selectPublication('ARCHIVED', $event)"
+        >
+          <span class="item-text">Ẩn</span>
+          @if (filters.controls.publication.value === 'ARCHIVED') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  <div
+    class="admin-field custom-dropdown filter-availability"
+    [class.is-open]="openMenu() === 'availability'"
+  >
+    <span class="field-label">Khả dụng</span>
+    <select class="sr-only-native-select" formControlName="availability" tabindex="-1" aria-hidden="true">
       <option value="">Tất cả</option>
       <option value="AVAILABLE">Còn hàng</option>
       <option value="SOLD">Hết hàng</option>
-    </select></label
+    </select>
+    <button
+      type="button"
+      class="dropdown-trigger"
+      [attr.aria-expanded]="openMenu() === 'availability'"
+      aria-haspopup="listbox"
+      (click)="toggleMenu('availability', $event)"
+    >
+      <span class="dropdown-value">{{ availabilityDisplayLabel() }}</span>
+      <span class="dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    @if (openMenu() === 'availability') {
+      <div class="dropdown-popover" role="listbox" aria-label="Khả dụng">
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.availability.value === ''"
+          [class.selected]="filters.controls.availability.value === ''"
+          (click)="selectAvailability('', $event)"
+        >
+          <span class="item-text">Tất cả</span>
+          @if (filters.controls.availability.value === '') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.availability.value === 'AVAILABLE'"
+          [class.selected]="filters.controls.availability.value === 'AVAILABLE'"
+          (click)="selectAvailability('AVAILABLE', $event)"
+        >
+          <span class="item-text">Còn hàng</span>
+          @if (filters.controls.availability.value === 'AVAILABLE') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.availability.value === 'SOLD'"
+          [class.selected]="filters.controls.availability.value === 'SOLD'"
+          (click)="selectAvailability('SOLD', $event)"
+        >
+          <span class="item-text">Hết hàng</span>
+          @if (filters.controls.availability.value === 'SOLD') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+      </div>
+    }
+  </div>
+
+  <div
+    class="admin-field custom-dropdown filter-category"
+    [class.is-open]="openMenu() === 'category'"
   >
-    <label class="admin-field"><span class="field-label">Thể loại</span>
-      <select formControlName="category">
-        <option value="">Tất cả</option>
-        @for (category of categories; track category[0]) { <option [value]="category[0]">{{ category[1] }}</option> }
-      </select>
+    <span class="field-label">Thể loại</span>
+    <select class="sr-only-native-select" formControlName="category" tabindex="-1" aria-hidden="true">
+      <option value="">Tất cả</option>
+      @for (category of categories; track category[0]) {
+        <option [value]="category[0]">{{ category[1] }}</option>
+      }
+    </select>
+    <select class="sr-only-native-select" formControlName="binding" tabindex="-1" aria-hidden="true">
+      <option value="">Tất cả</option>
+      <option value="PAPERBACK">Paperback</option>
+      <option value="HARDCOVER">Hardcover</option>
+    </select>
+    <button
+      type="button"
+      class="dropdown-trigger"
+      [attr.aria-expanded]="openMenu() === 'category'"
+      aria-haspopup="listbox"
+      (click)="toggleMenu('category', $event)"
+    >
+      <span class="dropdown-value">{{ categoryDisplayLabel() }}</span>
+      <span class="dropdown-chevron" aria-hidden="true"></span>
+    </button>
+    @if (openMenu() === 'category') {
+      <div class="dropdown-popover" role="listbox" aria-label="Thể loại">
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.category.value === '' && filters.controls.binding.value === ''"
+          [class.selected]="filters.controls.category.value === '' && filters.controls.binding.value === ''"
+          (mouseenter)="bindingCategory.set(null)"
+          (click)="selectCategoryFilter('', '', $event)"
+        >
+          <span class="item-text">Tất cả</span>
+          @if (filters.controls.category.value === '' && filters.controls.binding.value === '') {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        @for (category of categories; track category[0]) {
+          @if (category[0] !== 'BOARD_BOOK') {
+            <div class="dropdown-submenu-wrap" (mouseenter)="bindingCategory.set(category[0])">
+              <button
+                type="button"
+                class="dropdown-item has-submenu"
+                [class.selected]="filters.controls.category.value === category[0]"
+                [class.submenu-active]="bindingCategory() === category[0]"
+                [attr.aria-expanded]="bindingCategory() === category[0]"
+                (focus)="bindingCategory.set(category[0])"
+                (click)="selectCategoryFilter(category[0], '', $event)"
+              >
+                <span class="item-text">{{ category[1] }}</span>
+                <span class="item-right">
+                  @if (filters.controls.category.value === category[0]) {
+                    <span class="item-check" aria-hidden="true">✓</span>
+                  }
+                  <span class="item-arrow" aria-hidden="true">›</span>
+                </span>
+              </button>
+              @if (bindingCategory() === category[0]) {
+                <div class="dropdown-submenu" role="listbox" aria-label="Kiểu bìa">
+                  <button
+                    type="button"
+                    class="dropdown-item"
+                    role="option"
+                    [attr.aria-selected]="filters.controls.category.value === category[0] && filters.controls.binding.value === ''"
+                    [class.selected]="filters.controls.category.value === category[0] && filters.controls.binding.value === ''"
+                    (click)="selectCategoryFilter(category[0], '', $event)"
+                  >
+                    <span class="item-text">Tất cả kiểu bìa</span>
+                    @if (filters.controls.category.value === category[0] && filters.controls.binding.value === '') {
+                      <span class="item-check" aria-hidden="true">✓</span>
+                    }
+                  </button>
+                  @for (b of bindings; track b.code) {
+                    <button
+                      type="button"
+                      class="dropdown-item"
+                      role="option"
+                      [attr.aria-selected]="filters.controls.category.value === category[0] && filters.controls.binding.value === b.code"
+                      [class.selected]="filters.controls.category.value === category[0] && filters.controls.binding.value === b.code"
+                      (click)="selectCategoryFilter(category[0], b.code, $event)"
+                    >
+                      <span class="item-text">{{ b.label }}</span>
+                      @if (filters.controls.category.value === category[0] && filters.controls.binding.value === b.code) {
+                        <span class="item-check" aria-hidden="true">✓</span>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          } @else {
+            <button
+              type="button"
+              class="dropdown-item"
+              role="option"
+              [attr.aria-selected]="filters.controls.category.value === category[0]"
+              [class.selected]="filters.controls.category.value === category[0]"
+              (mouseenter)="bindingCategory.set(null)"
+              (click)="selectCategoryFilter(category[0], '', $event)"
+            >
+              <span class="item-text">{{ category[1] }}</span>
+              @if (filters.controls.category.value === category[0]) {
+                <span class="item-check" aria-hidden="true">✓</span>
+              }
+            </button>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <div class="filter-checks">
+    <label class="filter-chip" [class.active]="filters.controls.unpublishedOnly.value">
+      <input type="checkbox" formControlName="unpublishedOnly" (change)="search(0)" />
+      <span>Chưa xuất bản</span>
     </label>
-    <label class="admin-field"><span class="field-label">Kiểu bìa</span>
-      <select formControlName="binding">
-        <option value="">Tất cả</option>
-        <option value="PAPERBACK">Paperback</option>
-        <option value="HARDCOVER">Hardcover</option>
-      </select>
+    <label class="filter-chip" [class.active]="filters.controls.missingOnly.value">
+      <input type="checkbox" formControlName="missingOnly" (change)="search(0)" />
+      <span>Thiếu thông tin</span>
     </label>
-    <label><input type="checkbox" formControlName="unpublishedOnly" /> Chưa xuất bản</label>
-    <label><input type="checkbox" formControlName="missingOnly" /> Thiếu thông tin</label>
-    <button type="button" (click)="search(); filterPanel.open = false">Áp dụng</button>
-  </details>
-  <button type="submit">Tìm sách</button>
+  </div>
+
+  <button type="submit" class="search-submit">Tìm sách</button>
 </form>
 @if (error()) {
   <p role="alert" class="error">{{ error() }}</p>

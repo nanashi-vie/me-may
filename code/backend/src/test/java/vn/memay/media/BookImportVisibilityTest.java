@@ -65,7 +65,7 @@ class BookImportVisibilityTest extends MediaTestSupport {
         var item = page.items().getFirst();
         assertThat(item.id()).isEqualTo(older.id());
         assertThat(item.missingFields()).contains("Trình độ đọc", "Ảnh bìa")
-                .doesNotContain("ISBN", "Ghi chú nội bộ", "Kiểu bìa");
+                .doesNotContain("ISBN", "Ghi chú nội bộ", "Kiểu bìa", "Bộ sưu tập");
         var sold = queries.list(owner, new BookFilter(null, Publication.PUBLISHED, Availability.SOLD, 0, 20,
                 null, true, null, null, null));
         assertThat(sold.items()).extracting(BookSummary::id).containsExactly(live.id());

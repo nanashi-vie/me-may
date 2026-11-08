@@ -1,13 +1,13 @@
 import {AuthService} from '../../../../core/auth/auth.service';
 import { formatAdminPriceRange } from '../book-copy';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BookApi } from '../book-api';
-import { Availability, BookFilter, BookSummary, Page, Publication, TrashBook } from '../book.models';
-import { CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
+import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
+import { AVAILABILITY_LABELS, CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -22,7 +22,13 @@ export class BookList {
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
-  readonly categories = Object.entries(CATEGORY_LABELS);
+  readonly categories = Object.entries(CATEGORY_LABELS) as [CategoryCode, string][];
+  readonly bindings: { code: Binding; label: string }[] = [
+    { code: 'PAPERBACK', label: 'Paperback' },
+    { code: 'HARDCOVER', label: 'Hardcover' },
+  ];
+  readonly openMenu = signal<'publication' | 'availability' | 'category' | null>(null);
+  readonly bindingCategory = signal<CategoryCode | null>(null);
   readonly notice = signal('');
   private focusId?: string;
   private returnScroll = 0;
@@ -252,10 +258,86 @@ export class BookList {
     });
   }
   search(page = 0) {
+    this.openMenu.set(null);
+    this.bindingCategory.set(null);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { ...this.filters.getRawValue(), page },
       queryParamsHandling: 'merge',
     });
+  }
+
+  publicationDisplayLabel(): string {
+    const val = this.filters.controls.publication.value;
+    if (!val) return 'Tất cả';
+    return PUBLICATION_LABELS[val as Publication] ?? val;
+  }
+
+  availabilityDisplayLabel(): string {
+    const val = this.filters.controls.availability.value;
+    if (!val) return 'Tất cả';
+    return AVAILABILITY_LABELS[val as Availability] ?? val;
+  }
+
+  categoryDisplayLabel(): string {
+    const code = this.filters.controls.category.value as CategoryCode | '';
+    const binding = this.filters.controls.binding.value as Binding | '';
+    if (!code) {
+      if (binding) return binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
+      return 'Tất cả';
+    }
+    const catLabel = CATEGORY_LABELS[code] ?? code;
+    if (code !== 'BOARD_BOOK' && binding) {
+      const bLabel = binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
+      return `${catLabel} · ${bLabel}`;
+    }
+    return catLabel;
+  }
+
+  toggleMenu(menu: 'publication' | 'availability' | 'category', event: Event) {
+    event.stopPropagation();
+    if (this.openMenu() === menu) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    } else {
+      this.openMenu.set(menu);
+      const cat = this.filters.controls.category.value as CategoryCode | '';
+      this.bindingCategory.set(menu === 'category' && cat && cat !== 'BOARD_BOOK' ? cat : null);
+    }
+  }
+
+  selectPublication(value: '' | Publication, event: Event) {
+    event.stopPropagation();
+    this.filters.controls.publication.setValue(value);
+    this.search(0);
+  }
+
+  selectAvailability(value: '' | Availability, event: Event) {
+    event.stopPropagation();
+    this.filters.controls.availability.setValue(value);
+    this.search(0);
+  }
+
+  selectCategoryFilter(category: '' | CategoryCode, binding: '' | Binding, event: Event) {
+    event.stopPropagation();
+    this.filters.controls.category.setValue(category);
+    this.filters.controls.binding.setValue(category === 'BOARD_BOOK' ? '' : binding);
+    this.search(0);
+  }
+
+  @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
+    if (!this.openMenu()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.custom-dropdown')) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    }
+  }
+
+  @HostListener('document:keydown.escape') onEscapeKey() {
+    if (this.openMenu()) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    }
   }
 }

@@ -24,8 +24,8 @@ sang cuốn khác còn khớp hàng chờ.
 
 - Xét tên, thể loại, kiểu bìa khi áp dụng, nhà xuất bản, tác giả, ngôn ngữ,
   hai đầu khoảng giá, trọng lượng, đơn giá/kg, mô tả, nhóm tuổi, trình độ đọc,
-  link video, bộ sưu tập, đặc điểm, ảnh mặt trước và ảnh mặt sau.
-- Bỏ qua ISBN và ghi chú nội bộ theo yêu cầu. Đề xuất loại khỏi tiêu chí rà
+  link video, đặc điểm, ảnh mặt trước và ảnh mặt sau.
+- Bỏ qua ISBN, ghi chú nội bộ và bộ sưu tập theo yêu cầu. Đề xuất loại khỏi tiêu chí rà
   các trường hệ thống, tình trạng legacy, các vị trí ảnh tùy chọn và metadata
   ảnh. Tồn kho bằng 0 là giá trị hợp lệ.
 - Giá trị null, văn bản chỉ có khoảng trắng, danh sách rỗng, hoặc trạng thái

@@ -223,9 +223,10 @@ Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có
 
 - Thiết kế Notched Outlined Label: nhãn nằm cố định trên viền trên của ô (`background: #ffffff` che viền), không giật chuyển động khi focus/nhập liệu, chiều cao ô 46px, bo góc 8px.
 - Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
-- Custom Dropdown Popover (áp dụng cho Thể loại, Trình độ đọc tham khảo):
+- Custom Dropdown Popover (áp dụng cho Thể loại, Trình độ đọc tham khảo và thanh Bộ lọc tại `/admin/sach`):
   - Menu xổ xuống nền sáng `#FFFFFF`, viền `#E4E7EC`, bo góc `10px`, đổ bóng mềm, hover tím nhạt `#F4F3FF`, mục đang chọn hiển thị dấu `✓` bên phải.
-  - Mọi thể loại ngoài Board book có menu con Chưa xác định, Paperback và Hardcover. Ô Thể loại hiển thị kèm kiểu bìa đã chọn.
+  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Chỉ cần hover chuột vào dòng thể loại có `›` là tự động xổ menu con bên phải. Ô Thể loại hiển thị kèm kiểu bìa đã chọn.
+  - Thanh Bộ lọc tại `/admin/sach` đặt trực tiếp trên một hàng ngang gồm: `Tên hoặc mã sách`, `Xuất bản`, `Khả dụng`, `Thể loại` (gộp `Kiểu bìa`), 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin`, và nút `Tìm sách`; tự động lọc ngay khi chọn dropdown hoặc bật/tắt pill.
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
 

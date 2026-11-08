@@ -1,6 +1,6 @@
 import {AuthService} from '../../../../core/auth/auth.service';
 import { TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, provideRouter, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { BookList } from './book-list';
@@ -83,5 +83,45 @@ describe('BookList', () => {
   it('lets STAFF inspect books without offering create or draft controls',()=>{
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},{provide:BookApi,useValue:{list:()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.querySelector('a[href="/admin/sach/moi"]')).toBeNull();expect(f.nativeElement.querySelector('option[value="DRAFT"]')).toBeNull();
+  });
+  it('opens category binding submenu on hover and filters immediately when selecting dropdown or chip', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
+        { provide: BookApi, useValue: { list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
+      ],
+    });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(BookList);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    expect(root.querySelector('details')).toBeNull();
+    const categoryField = root.querySelector('.filter-category') as HTMLElement;
+    expect(categoryField).not.toBeNull();
+    const trigger = categoryField.querySelector('.dropdown-trigger') as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+
+    const submenuWraps = Array.from(categoryField.querySelectorAll('.dropdown-submenu-wrap')) as HTMLElement[];
+    expect(submenuWraps.length).toBeGreaterThan(0);
+    submenuWraps[0].dispatchEvent(new MouseEvent('mouseenter'));
+    fixture.detectChanges();
+
+    const submenuItems = Array.from(categoryField.querySelectorAll('.dropdown-submenu .dropdown-item')) as HTMLButtonElement[];
+    expect(submenuItems.map((b) => b.querySelector('.item-text')?.textContent?.trim())).toEqual([
+      'Tất cả kiểu bìa',
+      'Paperback',
+      'Hardcover',
+    ]);
+
+    submenuItems[1].click();
+    fixture.detectChanges();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
+      queryParams: expect.objectContaining({ category: 'PICTURE_BOOK', binding: 'PAPERBACK', page: 0 }),
+    }));
+    expect(trigger.textContent).toContain('Picture book · Paperback');
   });
 });
