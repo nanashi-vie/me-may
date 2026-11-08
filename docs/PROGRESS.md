@@ -3,8 +3,9 @@
 Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- Tải ảnh sách từ `/admin/sach`: đã chọn một ZIP chung khi tải nhiều cuốn,
-  đang chờ duyệt [thiết kế](superpowers/specs/2026-11-08-book-photo-download-design.md).
+- Tải ảnh sách từ `/admin/sach`: OWNER tải một ZIP cho các cuốn đã chọn.
+  [Contract](CATALOGUE.md#tải-ảnh-sách-từ-trang-quản-trị) đã kiểm qua API
+  với PostgreSQL test và qua trình duyệt với fixture local. Chờ rollout production.
 
 ## Thiết kế lại UI Bộ lọc `/admin/sach`, thanh Bulk Action, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập` — đã kiểm tự động & gộp vào dev 08/11/2026
 

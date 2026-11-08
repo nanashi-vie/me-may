@@ -28,6 +28,11 @@ export class AdminHttp {
   download(path:string,params?:HttpParams):Observable<Blob> {
     return this.guarded(this.http.get('/api/v1/admin'+path,{...this.options,params,responseType:'blob'}));
   }
+  downloadResponse(path: string, params: HttpParams) {
+    return this.guarded(this.http.get('/api/v1/admin' + path, {
+      ...this.options, params, responseType: 'blob', observe: 'response',
+    }));
+  }
   mutate<T>(
     method: 'POST' | 'PUT' | 'PATCH' | 'DELETE',
     path: string,

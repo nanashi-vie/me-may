@@ -342,6 +342,8 @@
   <p role="alert" class="error">{{ error() }}</p>
 }
 @if (notice()) { <p role="status">{{ notice() }}</p> }
+@if (photoDownloadNotice()) { <p role="status">{{ photoDownloadNotice() }}</p> }
+@if (photoDownloadError()) { <p role="alert">{{ photoDownloadError() }}</p> }
 @if (loading()) {
   <p role="status">Đang tải sách…</p>
 }
@@ -359,6 +361,14 @@
           />
           <span>Chọn tất cả trên trang này</span>
         </label>
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="mutationBusy() || loading() || photoDownloadBusy() || !selected().size"
+          (click)="downloadPhotos()"
+        >
+          {{ photoDownloadBusy() ? 'Đang tạo ZIP…' : 'Tải ảnh (' + selected().size + ' cuốn)' }}
+        </button>
         <button
           type="button"
           class="bulk-trash-btn"

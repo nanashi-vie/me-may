@@ -1,11 +1,60 @@
 import {AuthService} from '../../../../core/auth/auth.service';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, provideRouter, Router } from '@angular/router';
-import { of } from 'rxjs';
+import { of, Subject } from 'rxjs';
+import { HttpErrorResponse, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { vi } from 'vitest';
 import { BookList } from './book-list';
 import { BookApi } from '../book-api';
 describe('BookList', () => {
+  it('downloads only the checked books and reports which books have no photos', () => {
+    const response = new Subject<HttpResponse<Blob>>();
+    const downloadPhotos = vi.fn(() => response);
+    const items = [7, 8, 9].map(id => ({id: String(id), bookCode: 'MM-00000' + id,
+      title: 'Book ' + id, publication: 'ARCHIVED', version: 0}));
+    TestBed.configureTestingModule({providers: [
+      provideRouter([]),
+      {provide: AuthService, useValue: {user: () => ({role: 'OWNER'}), epoch: () => 0}},
+      {provide: ActivatedRoute, useValue: {queryParamMap: of(new Map())}},
+      {provide: BookApi, useValue: {downloadPhotos, list: () => of({items, page: 0, totalPages: 1})}},
+    ]});
+    const fixture = TestBed.createComponent(BookList);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+    const button = Array.from(root.querySelectorAll('button'))
+      .find(node => node.textContent.includes('Tải ảnh'))!;
+    expect(button).toBeDefined();
+    expect(button.disabled).toBe(true);
+    root.querySelector<HTMLInputElement>('[aria-label="Chọn MM-000007"]')!.click();
+    root.querySelector<HTMLInputElement>('[aria-label="Chọn MM-000009"]')!.click();
+    fixture.detectChanges();
+    button.click();
+    fixture.detectChanges();
+    expect(button.disabled).toBe(true);
+    expect(downloadPhotos).toHaveBeenCalledExactlyOnceWith(['7', '9']);
+
+    const click = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (this: HTMLAnchorElement) {
+      expect(this.download).toBe('me-may-anh-sach.zip');
+    });
+    try {
+      response.next(new HttpResponse({body: new Blob(['zip']), headers: new HttpHeaders({'X-Missing-Book-Codes': 'MM-000009'})}));
+      fixture.detectChanges();
+      expect(click).toHaveBeenCalledOnce();
+      expect(root.querySelector('[role="status"]')?.textContent).toContain('MM-000009');
+      response.complete();
+      fixture.detectChanges();
+      expect(button.disabled).toBe(false);
+      const failure = new Subject<HttpResponse<Blob>>();
+      downloadPhotos.mockReturnValueOnce(failure);
+      button.click();
+      failure.error(new HttpErrorResponse({status: 413}));
+      fixture.detectChanges();
+      expect(root.querySelector('[role="alert"]')?.textContent).toContain('32 MiB');
+      expect(button.disabled).toBe(false);
+    } finally {
+      click.mockRestore();
+    }
+  });
   it('identifies an imported book without a price',()=>{
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
       {provide:BookApi,useValue:{list:()=>of({items:[{id:'7',bookCode:'MM-000007',title:'Imported',priceMinVnd:null,priceMaxVnd:null,publication:'ARCHIVED',publishedAt:null,totalStock:1,version:0,updatedAt:'2026-11-06T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1})}}]});

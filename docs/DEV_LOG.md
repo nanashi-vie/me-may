@@ -2418,3 +2418,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã đối chiếu thanh chọn OWNER và luồng ảnh quản trị, ghi thiết kế vào chỉ mục và PROGRESS.
 - Kiểm tra: `git diff --check` tại root. Chưa chạy test ứng dụng vì checkpoint chỉ có tài liệu.
 - Bước tiếp theo: sau khi duyệt thiết kế, lập kế hoạch triển khai trên `dev`.
+
+## 2026-11-08 — S053-C02 — Kế hoạch tải ảnh sách
+
+- Đã duyệt thiết kế tại commit d6f4b9b. Đã ghi kế hoạch API, giao diện và nghiệm thu vào chỉ mục.
+- Kiểm tra tại root: git diff --check. Chưa chạy test ứng dụng ở checkpoint lập kế hoạch.
+- Bước tiếp theo: chốt cách thực thi theo Writing Plans. Kế hoạch đang ở local trên dev.
+
+## 2026-11-08 — S053-C03 — Bắt đầu triển khai tải ZIP
+
+- Người dùng duyệt chạy trực tiếp. Triển khai backend và nút tải tại trang Quản lý sách trên dev.
+- Kiểm tra Git tại root: chỉ có tài liệu S053 đang sửa. Kiểm thử tính năng chưa chạy.
+
+## 2026-11-08 — S053-C04 — Nghiệm thu tải ZIP ảnh sách
+
+- OWNER dùng lựa chọn có sẵn trên `/admin/sach` để tải JPEG 1280 px của một
+  hoặc nhiều cuốn. Cả lượt nhận một ZIP có thư mục theo mã, gồm ảnh ẩn.
+- Backend dùng hai truy vấn đọc trước khi gọi Cloudinary, giới hạn 20 cuốn,
+  32 MiB dữ liệu ảnh và một lượt tạo ZIP mỗi instance. Giữ ZIP trong bộ nhớ
+  có giới hạn để trả lỗi trước khi gửi file và tránh file tạm trên máy chủ.
+  Không thêm dependency, cấu hình hay migration.
+- Backend từ root: `bash code/backend/run-local.sh -B -ntp test` — 241 ca,
+  238 đạt, 3 bỏ qua. Test mới đã thấy RED trước khi có endpoint, rồi GREEN.
+  Review độc lập đã đối chiếu quyền, Thùng rác và lỗi provider. Đã bổ sung
+  test giới hạn số cuốn, đọc ảnh lỗi giữa chừng và lượt tạo ZIP đồng thời.
+- Frontend tại `code/frontend`: `npm test` — 249 đạt. Test nút tải đã thấy
+  RED trước triển khai. `npm run build` và `npm run build:workers` đạt.
+- Playwright Chrome qua fixture local: tải `MM-000001.zip` và
+  `me-may-anh-sach.zip`, kiểm entry bằng unzip, xác nhận cảnh báo sách
+  thiếu ảnh và lỗi khi cả lượt thiếu ảnh. API PostgreSQL test dùng gateway
+  giả. Chưa kiểm Cloudinary production.
+- Bàn giao qua `dev` theo workflow dự án. Bước tiếp theo là rollout và
+  smoke trên môi trường triển khai.

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { BookApi } from '../book-api';
 import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
 import { AVAILABILITY_LABELS, CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
@@ -49,6 +50,9 @@ export class BookList {
   readonly trashResult = signal<Page<TrashBook> | null>(null);
   readonly mutationBusy = signal(false);
   readonly selected = signal<ReadonlySet<string>>(new Set());
+  readonly photoDownloadBusy = signal(false);
+  readonly photoDownloadNotice = signal('');
+  readonly photoDownloadError = signal('');
   readonly bulkTarget = signal<{items: readonly {id:string;version:number}[]; permanent:boolean; all:boolean} | null>(null);
   readonly target = signal<BookSummary | null>(null);
   private filter: BookFilter = {};
@@ -181,6 +185,50 @@ export class BookList {
   }
   selectPage(items:readonly {id:string}[], checked:boolean) {
     this.selected.set(new Set(checked ? items.map(item=>item.id) : []));
+  }
+
+  downloadPhotos() {
+    if (this.photoDownloadBusy() || this.loading() || this.trashOpen()
+        || this.auth.user()?.role !== 'OWNER') return;
+    const books = this.result()?.items.filter(book => this.selected().has(book.id)) ?? [];
+    if (!books.length) return;
+
+    const epoch = this.auth.epoch();
+    this.photoDownloadBusy.set(true);
+    this.photoDownloadNotice.set('');
+    this.photoDownloadError.set('');
+    this.api.downloadPhotos(books.map(book => book.id)).pipe(
+      takeUntilDestroyed(this.destroy),
+      finalize(() => this.photoDownloadBusy.set(false)),
+    ).subscribe({
+      next: response => {
+        if (epoch !== this.auth.epoch()) return;
+        if (!response.body?.size) {
+          this.photoDownloadError.set('File tải về trống. Vui lòng thử lại.');
+          return;
+        }
+        const url = URL.createObjectURL(response.body);
+        const link = this.document.createElement('a');
+        link.href = url;
+        link.download = books.length === 1 ? books[0].bookCode + '.zip' : 'me-may-anh-sach.zip';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        const missing = response.headers.get('X-Missing-Book-Codes');
+        if (missing) this.photoDownloadNotice.set('Sách chưa có ảnh: ' + missing.split(',').join(', ') + '.');
+      },
+      error: ({status}) => {
+        const messages: Record<number, string> = {
+          401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+          403: 'Bạn không có quyền tải ảnh sách.',
+          404: 'Danh sách sách đã thay đổi. Hãy tải lại trang và chọn lại.',
+          413: 'Ảnh vượt giới hạn 32 MiB. Hãy chọn ít cuốn hơn.',
+          422: 'Các cuốn đã chọn chưa có ảnh.',
+          429: 'Hệ thống đang tạo file tải khác. Vui lòng thử lại sau.',
+          502: 'Chưa lấy được ảnh từ kho lưu trữ. Vui lòng thử lại.',
+        };
+        this.photoDownloadError.set(messages[status] ?? 'Chưa tải được ảnh. Vui lòng thử lại.');
+      },
+    });
   }
   askBulk(dialog:HTMLDialogElement, permanent:boolean, all=false) {
     if (this.mutationBusy()) return;
