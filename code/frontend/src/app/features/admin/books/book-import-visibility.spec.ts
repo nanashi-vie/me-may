@@ -12,14 +12,14 @@ describe('Imported books awaiting publication',()=>{
     const params=new BehaviorSubject(convertToParamMap({unpublishedOnly:'true'}));
     const list=vi.fn(()=>of({items:[{...testBook(),frontContentPath:null,totalStock:3}],page:0,size:20,totalElements:1,totalPages:1}));
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:ActivatedRoute,useValue:{queryParamMap:params}},
-      {provide:BookApi,useValue:{list}},{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}}]});
+      {provide:BookApi,useValue:{ storageBoxes: () => of([]), list}},{provide:AuthService,useValue:{user:()=>({role:'OWNER'})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();
     expect(list).toHaveBeenCalledWith(expect.objectContaining({unpublishedOnly:true}));
     expect(f.nativeElement.textContent).toContain('Chưa xuất bản');expect(f.nativeElement.textContent).toContain('Chưa có ảnh');
     expect(f.nativeElement.querySelector('tbody tr td:nth-child(4)').textContent.trim()).toBe('3');
   });
   it('distinguishes first publication from restoring a previously published book',()=>{
-    TestBed.configureTestingModule({providers:[{provide:BookApi,useValue:{}}]});
+    TestBed.configureTestingModule({providers:[{provide:BookApi,useValue:{ storageBoxes: () => of([]), }}]});
     const f=TestBed.createComponent(BookStatusActions);f.componentRef.setInput('book',testBook());f.componentRef.setInput('role','OWNER');f.detectChanges();
     expect(f.nativeElement.textContent).toContain('Xuất bản');expect(f.nativeElement.textContent).not.toContain('Hiện sách');
     f.componentRef.setInput('book',{...testBook(),publishedAt:'2026-10-30T00:00:00Z'});f.detectChanges();expect(f.nativeElement.textContent).toContain('Hiện sách');

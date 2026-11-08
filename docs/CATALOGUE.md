@@ -345,3 +345,20 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - Giới hạn 32 MiB dữ liệu ảnh và một lượt tạo ZIP đồng thời mỗi instance.
   Sách thiếu ảnh được ghi trong `X-Missing-Book-Codes` để UI báo mã sách.
   Nếu cả lượt thiếu ảnh, vượt giới hạn hoặc đọc ảnh lỗi, UI hiện thông báo.
+
+## Nơi lưu trữ sách
+
+- Form nhập/sửa có trường tùy chọn **Nơi lưu trữ**. Mỗi mã có một thùng.
+  OWNER nhập số dương qua **Thêm thùng**. Hệ thống dùng nhãn `Thùng N`, chọn
+  ngay thùng vừa tạo, giữ thùng nếu hủy form và không cho trùng số.
+- OWNER và STAFF xem cột và lọc ở `/admin/sach`. Bộ lọc dùng URL, phối hợp các
+  bộ lọc khác và áp dụng trước phân trang. Vị trí trống là **Chưa phân thùng**.
+- `GET/POST /api/v1/admin/books/storage-boxes` đọc danh mục theo thứ tự số
+  và tạo số mới. POST nhận `{storageBoxNumber}`, chỉ OWNER, trùng trả 409.
+- Admin list/detail trả `storageBoxNumber`. List nhận tham số cùng tên, bỏ qua
+  để lấy tất cả, 0 để lấy sách chưa phân thùng, số dương để lọc đúng thùng.
+- Create nhận trường trong `write`, PUT nhận ở cấp ngoài. PUT thiếu trường
+  giữ vị trí hiện có, null xóa vị trí. Vị trí khác null tham gia fingerprint
+  tạo sách, giữ khả năng retry payload cũ. Lưu theo version/audit của sách.
+- Migration V20 thêm danh mục và FK tùy chọn trên `book_copy`. Sách cũ và sách
+  mới import chưa phân thùng. Vị trí và danh mục chỉ xuất hiện trong quản trị.

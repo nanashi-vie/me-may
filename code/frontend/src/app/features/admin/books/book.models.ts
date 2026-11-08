@@ -18,6 +18,7 @@ export interface BookVariantWrite { id: string | null; name: string | null; stoc
 export interface BookVariant extends BookVariantWrite { id: string; }
 export interface BookFeature { code: string; label: string; }
 export interface BookWrite {
+  storageBoxNumber?: number | null;
   featureCodes?: string[];
   variants?: BookVariantWrite[];
   stock?: number;
@@ -66,6 +67,7 @@ export interface BookDetail extends BookWrite {
   media: MediaView[];
 }
 export interface BookSummary {
+  storageBoxNumber?: number | null;
   missingFields?: string[];
   publishedAt: string | null;
   totalStock: number;
@@ -81,6 +83,7 @@ export interface BookSummary {
   frontContentPath: string | null;
 }
 export interface BookFilter {
+  storageBoxNumber?: number;
   missingOnly?: boolean;
   category?: string;
   binding?: string;

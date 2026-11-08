@@ -34,7 +34,8 @@ describe('BookEditor safe final saves', () => {
         { provide: ActivatedRoute, useValue: { snapshot: { paramMap: new Map() } } },
         {
           provide: BookApi,
-          useValue: {
+          useValue: { storageBoxes: () => of([10]),
+            createStorageBox: (number: number) => of(number),
             titleDuplicate: () => of({duplicate:false}),
             create,
             update,
@@ -85,6 +86,19 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
+  it('selects a newly created box and includes it in the book save', async () => {
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const e = editor();
+    ready(e);
+    e.createStorageBox('1');
+    expect(e.storageBoxes()).toEqual([1, 10]);
+    expect(e.form.controls.storageBoxNumber.value).toBe(1);
+    await e.save();
+    expect(create).toHaveBeenCalledWith(expect.objectContaining({
+      write: expect.objectContaining({storageBoxNumber: 1}),
+    }));
+  });
+
   it('opens the first unfiltered pending book only after a successful publish', async () => {
     const navigate=vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
     const e=editor();

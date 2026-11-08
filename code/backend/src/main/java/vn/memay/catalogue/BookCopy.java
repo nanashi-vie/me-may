@@ -32,6 +32,8 @@ public class BookCopy {
     public Long weightG;
     @Column(name="unit_price_per_kg_vnd")
     public Long unitPricePerKgVnd;
+    @Column(name = "storage_box_number")
+    public Integer storageBoxNumber;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     public BookDtos.Availability availability;

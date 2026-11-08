@@ -13,6 +13,54 @@ class BookCreateFinalizationTest extends MediaTestSupport {
   for(int i=0;i<count;i++){var r=api.upload("/api/v1/admin/upload-sessions/"+id+"/media",0,ImageValidatorTest.image("jpeg"),true);assertThat(r.statusCode()).isEqualTo(201);assignments.add(Map.of("mediaId",tree(r).path("id").asString(),"role",roles.get(i)));}
   return new LinkedHashMap<>(Map.of("write",BookFixtures.write("Physical copy","BOARD_BOOK",null,20000L,null,null,List.of(),List.of()),"uploadSessionId",id,"media",assignments,"confirmedActualCopy",true));
  }
+ @Test void storageBoxesAreReusableAndPrivate() throws Exception {
+  var api = new AdminHttpClient(port);
+  api.login("owner@catalogue.test");
+  String books = "/api/v1/admin/books";
+  String boxes = books + "/storage-boxes";
+  assertThat(api.send("POST", boxes, json(Map.of("storageBoxNumber", 0)), true).statusCode()).isEqualTo(400);
+  for (int number : List.of(10, 1)) {
+   assertThat(api.send("POST", boxes, json(Map.of("storageBoxNumber", number)), true).statusCode()).isEqualTo(200);
+  }
+  assertThat(api.send("POST", boxes, json(Map.of("storageBoxNumber", 1)), true).statusCode()).isEqualTo(409);
+  assertThat(api.send("GET", boxes, null, false).body()).isEqualTo("[1,10]");
+  var body = request(api, 2);
+  var write = new LinkedHashMap<String, Object>(JSON.convertValue(body.get("write"), Map.class));
+  write.put("storageBoxNumber", 1);
+  body.put("write", write);
+  var created = api.send("POST", books, json(body), true);
+  assertThat(created.statusCode()).isEqualTo(201);
+  var book = tree(created);
+  assertThat(book.path("storageBoxNumber").asInt()).isEqualTo(1);
+  assertThat(tree(api.send("POST", books, json(body), true)).path("id")).isEqualTo(book.path("id"));
+  write.put("storageBoxNumber", 10);
+  assertThat(api.send("POST", books, json(body), true).statusCode()).isEqualTo(409);
+  ready();
+  api.login("staff@catalogue.test");
+  assertThat(api.send("POST", boxes, json(Map.of("storageBoxNumber", 2)), true).statusCode()).isEqualTo(403);
+  assertThat(api.send("GET", boxes, null, false).body()).isEqualTo("[1,10]");
+  var filtered = tree(api.send("GET", books + "?storageBoxNumber=1&size=1", null, false));
+  assertThat(filtered.path("totalElements").asInt()).isEqualTo(1);
+  assertThat(filtered.path("items").get(0).path("id")).isEqualTo(book.path("id"));
+  assertThat(api.send("GET", "/api/v1/books/" + book.path("slug").asString(), null, false)
+      .body()).doesNotContain("storageBoxNumber");
+  api.login("owner@catalogue.test");
+  String detail = books + "/" + book.path("id").asString();
+  write.remove("storageBoxNumber");
+  write.remove("variants");
+  write.put("version", book.path("version").asLong());
+  var retainedResponse = api.send("PUT", detail, json(write), true);
+  assertThat(retainedResponse.statusCode()).as(retainedResponse.body()).isEqualTo(200);
+  var retained = tree(retainedResponse);
+  assertThat(retained.path("storageBoxNumber").asInt()).isEqualTo(1);
+  write.put("storageBoxNumber", null);
+  write.put("version", retained.path("version").asLong());
+  assertThat(tree(api.send("PUT", detail, json(write), true)).path("storageBoxNumber").isNull()).isTrue();
+  assertThat(api.send("PUT", detail, json(write), true).statusCode()).isEqualTo(409);
+  assertThat(tree(api.send("GET", books + "?storageBoxNumber=0&size=1", null, false))
+      .path("totalElements").asInt()).isEqualTo(2);
+ }
+
  @Test void newUnitPriceReturnsCommittedVersionAndReplays() throws Exception {
   var api=new AdminHttpClient(port);api.login("owner@catalogue.test");var body=request(api,2);
   var fields=new LinkedHashMap<String,Object>(JSON.convertValue(body.get("write"),Map.class));

@@ -2611,3 +2611,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm test -- --watch=false`: 44/44 test files PASS (251/251 tests PASS).
   - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
 - Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
+
+## 2026-11-08 — S056-C01 — Brainstorm nơi lưu trữ theo thùng
+
+- User yêu cầu gấp trường Nơi lưu trữ và chốt làm cả cột/bộ lọc admin trong phiên.
+  Một mã có nhiều bản do chủ gom chung thùng; chọn danh sách có sẵn + Thêm thùng,
+  tên chuẩn Thùng N. Không yêu cầu phân bổ tồn hoặc quản lý kho nâng cao.
+- Skill Superpowers brainstorming; tạo BOOK_STORAGE_SPEC.md ngắn, đăng ký README,
+  cập nhật PROGRESS. Thiết kế bổ sung đề xuất optional/admin-only, tạo thùng độc lập,
+  số unique, filter backend, bảo toàn version/audit/retry; chờ duyệt bản thiết kế.
+- Đối chiếu DATA/CATALOGUE/MASTER_PLAN và buildBookForm qua graph; Git dev sạch
+  trước thay đổi. Không sửa code, gọi DB live, migrate hoặc deploy.
+- Kiểm tra: diff whitespace, giới hạn dòng và link mới trước bàn giao.
+  Chưa chạy test/build vì chỉ thiết kế; không dùng kết quả lịch sử làm bằng chứng.
+- Bước tiếp: duyệt thiết kế ngắn rồi writing-plans và thực thi phạm vi đã chọn.
+  Các thay đổi tài liệu còn local trên dev; chưa commit/push.
+
+## 2026-11-08 — S056-C02 — Triển khai nơi lưu trữ
+
+- User duyệt thiết kế và yêu cầu lập plan rồi triển khai. Đã lập BOOK_STORAGE_PLAN.
+- Đang làm trên dev với các thay đổi tài liệu S056-C01 còn local.
+
+- Đã triển khai V20, API danh mục thùng, thêm/chọn ở form, cột/lọc admin.
+  Lưu vị trí cùng version/audit, giữ retry cũ và giữ vị trí nếu PUT thiếu field.
+  Chọn dùng số thùng làm khóa ổn định vì chưa có đổi số/xóa thùng.
+- Kiểm chứng từ code/backend: mvn test với env PostgreSQL me_may_test local,
+  242 ca, 0 fail/error, 3 skip. Lần đầu thiếu env; lần có env phát hiện snapshot
+  migration cũ cần kiểm cột nullable mới và fixture PUT cần bỏ variants rỗng.
+- Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
+  npm run build và npm run build:workers đạt khi chạy ngoài sandbox sau lần
+  build trong sandbox bị dừng. git diff --check đạt từ root.
+- Chưa smoke trực tiếp trên trình duyệt, chưa rollout V20 production.
+  Bước tiếp: smoke form/danh sách trên candidate rồi rollout theo workflow.

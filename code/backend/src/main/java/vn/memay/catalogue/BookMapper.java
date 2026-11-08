@@ -51,7 +51,7 @@ public class BookMapper {
                                 l.readingLevel, l.readingVideoUrl, cols, l.publicationStatus, b.availability,
                                 l.publishedAt,
                                 b.createdAt, b.updatedAt, images, stock,
-                                stock.stream().mapToLong(VariantView::stock).sum(), b.unitPricePerKgVnd, features.read(l.id));
+                                stock.stream().mapToLong(VariantView::stock).sum(), b.unitPricePerKgVnd, features.read(l.id), b.storageBoxNumber);
         }
 
         public BookDetail published(BookDetail d,java.time.Instant publishedAt) {
@@ -59,7 +59,7 @@ public class BookMapper {
                         d.author(),d.language(),d.binding(),d.conditionGrade(),d.conditionNote(),d.priceMinVnd(),
                         d.priceMaxVnd(),d.weightG(),d.description(),d.categoryCode(),d.ageGroups(),d.readingLevel(),
                         d.readingVideoUrl(),d.collectionIds(),Publication.PUBLISHED,d.availability(),publishedAt,
-                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock(),d.unitPricePerKgVnd(),d.features());
+                        d.createdAt(),d.updatedAt(),d.media(),d.variants(),d.totalStock(),d.unitPricePerKgVnd(),d.features(),d.storageBoxNumber());
         }
 
         public BookWrite write(BookDetail d) {

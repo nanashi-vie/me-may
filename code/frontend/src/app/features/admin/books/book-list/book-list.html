@@ -338,6 +338,17 @@
     }
   </div>
 
+  <label class="admin-field">
+    <span>Nơi lưu trữ</span>
+    <select formControlName="storageBoxNumber" (change)="search(0)">
+      <option value="">Tất cả</option>
+      <option value="0">Chưa phân thùng</option>
+      @for (number of storageBoxes(); track number) {
+        <option [value]="number">Thùng {{ number }}</option>
+      }
+    </select>
+    @if (storageBoxesError()) { <span role="alert">Chưa tải được danh sách thùng.</span> }
+  </label>
   <div class="filter-checks">
     <label class="filter-chip" [class.active]="filters.controls.missingOnly.value">
       <input type="checkbox" formControlName="missingOnly" (change)="search(0)" />
@@ -397,6 +408,7 @@
           <th>Giá tham khảo</th>
           <th>Xuất bản</th>
           <th>Tồn kho</th>
+          <th>Nơi lưu trữ</th>
           <th>Cập nhật</th>
           @if (auth.user()?.role === "OWNER") { <th scope="col">Thao tác</th> }
         </tr>
@@ -439,6 +451,7 @@
             </td>
             <td>{{ book.publication === 'ARCHIVED' && !book.publishedAt ? 'Chưa xuất bản' : labels[book.publication] }}</td>
             <td>{{ book.totalStock }}</td>
+            <td>{{ book.storageBoxNumber == null ? 'Chưa phân thùng' : 'Thùng ' + book.storageBoxNumber }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
             @if (auth.user()?.role === 'OWNER') {
               <td><button type="button" class="secondary" [disabled]="mutationBusy()"
@@ -448,7 +461,7 @@
           </tr>
         } @empty {
           <tr>
-            <td [attr.colspan]="auth.user()?.role === 'OWNER' ? 6 : 5">Chưa có sách phù hợp.</td>
+            <td [attr.colspan]="auth.user()?.role === 'OWNER' ? 7 : 6">Chưa có sách phù hợp.</td>
           </tr>
         }
       </tbody>

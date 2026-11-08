@@ -55,6 +55,12 @@ export class BookApi {
   update(id: string, version: number, body: BookWrite, media?: MediaAssignment[], publishAfterSave=false, confirmedActualCopy=false, mediaMetadata?:MediaMetadata[]) {
     return this.http.mutate<BookDetail>('PUT', '/books/' + id, { ...body, version, ...(media ? {media} : {}), ...(publishAfterSave?{publishAfterSave,confirmedActualCopy}:{}), ...(mediaMetadata?.length?{mediaMetadata}:{}) });
   }
+  storageBoxes() {
+    return this.http.get<number[]>('/books/storage-boxes');
+  }
+  createStorageBox(storageBoxNumber: number) {
+    return this.http.mutate<number>('POST', '/books/storage-boxes', {storageBoxNumber});
+  }
   taxonomy() {
     return this.cache.get('taxonomy',()=>this.http.get<Taxonomy>('/taxonomy'),60000);
   }
