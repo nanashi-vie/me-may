@@ -259,8 +259,7 @@ Mất phản hồi vẫn thửlại cùng lầnđăng, không tựtạo cuốn t
 
 ## Import CSV/Excel —31/10
 
-OWNER mở Import sách từ danh sách; xem bảng field ngắn và mã lựa chọn thu gọn,
-xem8cột (mỗi dòng=một sách, mặc định Tiếng Anh/tồn1), nhận nhãn dropdown,
+OWNER mở Import sách từ danh sách; giao diện tinh gọn đi thẳng vào bước Kiểm tra file (đã bỏ khối hướng dẫn field),
 chọn file, kiểm toàn file rồi xác nhận
 nhập sách Ẩn. Bỏ bước chuẩn bị/nút tải mẫu theo yêu cầu01/11. Lỗi chỉ rõ dòng/cột để sửa ngoài Excel; chọn file mới xóa preview cũ.
 File chỉ ở memory tab; mất phản hồi có retry đúng file/fingerprint, hết phiên giữ

@@ -102,9 +102,7 @@ describe('BookImport file and session boundaries',()=>{
     const summary=root.querySelector('[aria-labelledby="preview-title"] summary')?.textContent;
     expect(summary).toContain('Dòng 7');expect(summary).toContain('Chưa nhập giá');expect(c.canConfirm()).toBe(true);
     expect(root.textContent).toContain('Mô tả giữ lại');
-    expect(Array.from(root.querySelectorAll('[aria-labelledby="fields-title"] tbody code')).map(e=>e.textContent)).toEqual([
-      'ten_sach','nha_xuat_ban','tac_gia','the_loai','kieu_bia','trong_luong_g','mo_ta_sach','don_gia_kg',
-    ]);
+    expect(root.querySelector('[aria-labelledby="fields-title"]')).toBeNull();
   });
   it('previews imported unit price and calculated prices for V4',()=>{
     const f=setup(),c=f.componentInstance;c.select(new File(['csv'],'unit.csv'));c.checkFile();

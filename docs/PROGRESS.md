@@ -3,6 +3,7 @@
 Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.
 - Tải ảnh sách từ `/admin/sach`: OWNER tải một ZIP cho các cuốn đã chọn.
   [Contract](CATALOGUE.md#tải-ảnh-sách-từ-trang-quản-trị) đã kiểm qua API
   với PostgreSQL test và qua trình duyệt với fixture local. Chờ rollout production.

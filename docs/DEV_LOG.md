@@ -2469,3 +2469,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
   - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+
+## 2026-11-08 — S052-C05 — Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Bỏ hoàn toàn `<section aria-labelledby="fields-title">` ("Hướng dẫn các field") tại trang Import sách (`/admin/sach/import`) theo yêu cầu user, giúp trang gọn gàng và đi thẳng vào bước Kiểm tra file.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/admin/books/book-import/book-import.html`
+  - `code/frontend/src/app/features/admin/books/book-import/book-import.spec.ts`
+  - `docs/BOOK_IMPORT.md`, `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
