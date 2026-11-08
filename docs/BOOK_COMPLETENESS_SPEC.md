@@ -5,10 +5,8 @@ Picture book và mở rộng hàng chờ xuất bản hiện hành.
 
 ## Cách tổ chức
 
-Gom các điều kiện vào nút **Bộ lọc** tại `/admin/sach`, theo mẫu tương tác
-trang khách. Giữ các điều kiện trạng thái xuất bản, khả dụng, thể loại và kiểu
-bìa. **Chưa xuất bản** nghĩa là chưa từng đăng, tách khỏi trạng thái **Ẩn**.
-**Thiếu thông tin** là một lựa chọn duy nhất, lấy mọi cuốn còn ít nhất một
+Đặt thanh lọc ngang tại `/admin/sach` dùng `.custom-dropdown` đồng bộ với `/admin/sach/moi`. Dropdown **Xuất bản** gồm 4 lựa chọn tách biệt: **Tất cả**, **Công khai** (`PUBLISHED`), **Ẩn** (`ARCHIVED` đã từng xuất bản) và **Chưa xuất bản** (`ARCHIVED` chưa từng đăng); bỏ tickbox **Chưa xuất bản** rời trên thanh lọc. Dropdown **Thể loại** tích hợp submenu **Kiểu bìa** khi hover chuột.
+**Thiếu thông tin** là một lựa chọn checkbox duy nhất trên thanh lọc, lấy mọi cuốn còn ít nhất một
 trường cần bổ sung. Có thể kết hợp với các điều kiện sẵn có. Phương án lọc
 riêng theo từng trường đã được bỏ để mở danh sách cần rà bằng một thao tác.
 
@@ -24,8 +22,8 @@ sang cuốn khác còn khớp hàng chờ.
 
 - Xét tên, thể loại, kiểu bìa khi áp dụng, nhà xuất bản, tác giả, ngôn ngữ,
   hai đầu khoảng giá, trọng lượng, đơn giá/kg, mô tả, nhóm tuổi, trình độ đọc,
-  link video, bộ sưu tập, đặc điểm, ảnh mặt trước và ảnh mặt sau.
-- Bỏ qua ISBN và ghi chú nội bộ theo yêu cầu. Đề xuất loại khỏi tiêu chí rà
+  link video, đặc điểm, ảnh mặt trước và ảnh mặt sau.
+- Bỏ qua ISBN, ghi chú nội bộ và bộ sưu tập theo yêu cầu. Đề xuất loại khỏi tiêu chí rà
   các trường hệ thống, tình trạng legacy, các vị trí ảnh tùy chọn và metadata
   ảnh. Tồn kho bằng 0 là giá trị hợp lệ.
 - Giá trị null, văn bản chỉ có khoảng trắng, danh sách rỗng, hoặc trạng thái

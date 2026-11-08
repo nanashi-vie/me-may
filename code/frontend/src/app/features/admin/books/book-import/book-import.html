@@ -13,37 +13,6 @@
   </section>
 }
 @if (editable()) {
-  <section aria-labelledby="fields-title">
-    <h2 id="fields-title">Hướng dẫn các field</h2>
-    <p>Mẫu gồm 8 cột bên dưới; có thể bỏ cột don_gia_kg để dùng file 7 cột. Các trường không bắt buộc có thể để trống. Mỗi dòng tạo một sách riêng.</p>
-    <p>Mặc định ngôn ngữ <strong>Tiếng Anh</strong> và <strong>tồn 1</strong>. Khi thêm ảnh, bạn có thể sửa ngôn ngữ và chỉnh tồn gộp trước khi xuất bản.</p>
-    <div class="table-scroll"><table>
-      <thead><tr><th scope="col">Field</th><th scope="col">Cách nhập</th></tr></thead>
-      <tbody>
-        <tr><td><code>ten_sach</code></td><td>Bắt buộc. Tên sách.</td></tr>
-        <tr><td><code>nha_xuat_ban</code></td><td>Không bắt buộc. Nhà xuất bản.</td></tr>
-        <tr><td><code>tac_gia</code></td><td>Không bắt buộc. Tác giả.</td></tr>
-        <tr><td><code>the_loai</code>, <code>kieu_bia</code></td><td>Thể loại bắt buộc, ví dụ Board Book hoặc Picture Book. Nhập Paperback (Bìa mềm) hoặc Hardcover (Bìa cứng). Board Book để trống; các thể loại khác có thể bổ sung kiểu bìa trước khi xuất bản.</td></tr>
-        <tr><td><code>trong_luong_g</code></td><td>Bắt buộc. Trọng lượng gram nguyên dương, không dùng dấu phân nhóm nghìn.</td></tr>
-        <tr><td><code>mo_ta_sach</code></td><td>Không bắt buộc. Mô tả sách.</td></tr>
-        <tr><td><code>don_gia_kg</code></td><td>Không bắt buộc. Số nguyên VND/kg, ví dụ 80000; không dùng dấu phân nhóm nghìn. Tự tính Giá từ/Giá đến theo trọng lượng, cộng 15% và làm tròn lên 1.000đ như form.</td></tr>
-      </tbody>
-    </table></div>
-    <p>Nếu chưa nhập đơn giá trong file, bạn có thể bổ sung khi thêm ảnh từng sách. Đơn giá và hai mức giá vẫn sửa được trong form. Sách cần đủ giá và ảnh trước khi xuất bản.</p>
-    <p>Nhận CSV UTF-8 (dấu phẩy) hoặc Excel .xlsx (sheet <code>Sach</code>); không dùng công thức. Tối đa 2 MiB và 100 dòng sách. File 16 hoặc 20 cột cũ vẫn được hỗ trợ và giữ nguyên giá.</p>
-    <details><summary>Tên và mã lựa chọn</summary>
-      <p>Có thể nhập tên dễ đọc hoặc mã chuẩn. Các lựa chọn không phân biệt hoa/thường và bỏ khoảng trắng đầu/cuối.</p>
-      @if (options(); as data) {
-        <dl><dt>Thể loại</dt><dd>@for (item of data.taxonomy.categories; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
-        <dt>Kiểu bìa</dt><dd>@for (item of data.taxonomy.bindings; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
-        <dt>Độ tuổi</dt><dd>@for (item of data.taxonomy.ageGroups; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
-        <dt>Mức đọc</dt><dd>@for (item of data.taxonomy.readingLevels; track item.code) {<div>{{ item.code }} — {{ item.label }}</div>}</dd>
-        <dt>Bộ sưu tập đang dùng</dt><dd>@for (item of data.collections; track item.slug) {<div>{{ item.slug }} — {{ item.name }}</div>} @empty {Không có bộ sưu tập. Để trống cột này.}</dd></dl>
-      }
-      <button type="button" class="secondary" (click)="loadOptions()">Làm mới mã lựa chọn</button>
-    </details>
-    <p>Chỉ dùng để tạo sách mới. File đã nhập sẽ trả biên nhận cũ khi thử lại; đổi nội dung là lô mới, không cập nhật sách cũ. Tên trùng sẽ được báo ở từng dòng cần sửa.</p>
-  </section>
   <section aria-labelledby="file-title"><h2 id="file-title">1. Kiểm tra file</h2>
     <label>File CSV/Excel<input type="file" #fileInput accept=".csv,.xlsx" [disabled]="busy()" (change)="fileChanged($event)" /></label>
     @if (selectedFile(); as file) {<p>Đã chọn: {{ file.name }} · {{ file.size }} bytes</p>}

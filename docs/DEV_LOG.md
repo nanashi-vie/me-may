@@ -2362,3 +2362,124 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Rà soát mã phát hiện và đã chỉnh ba điểm: lưu vị trí cuộn lúc bấm mở
   sách, trả lý do thiếu cả ở danh sách chưa lọc, giữ nguyên cuốn khi đối
   chiếu lại một yêu cầu xuất bản chưa rõ kết quả.
+
+
+## 2026-11-08 — S052-C01 — Bắt đầu thiết kế lại UI Bộ lọc `/admin/sach`, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:**
+  1. Bỏ lọc/rà theo `'Bộ sưu tập'` khỏi danh sách `Thiếu thông tin` (`MISSING_FIELDS` trong `BookQueryService.java`) ở `/admin`.
+  2. Chỉnh dropdown `Thể loại` (2 cấp) ở `/admin/sach/moi` (`book-editor`) và `/admin/sach` (`book-list`) để chỉ cần hover chuột vào dòng thể loại có `›` là tự xổ submenu `Kiểu bìa` bên phải (thay vì phải click vào dòng thể loại như hiện tại).
+  3. Thiết kế lại thanh Bộ lọc ở `/admin/sach` (`book-list`): bỏ `<details>Bộ lọc</details>` và nút `Áp dụng` thừa, đưa toàn bộ điều kiện lọc lên thanh ngang dùng `.custom-dropdown` đồng bộ với `/admin/sach/moi`, gộp `Thể loại + Kiểu bìa` thành 1 dropdown 2 cấp (`Tất cả kiểu bìa / Paperback / Hardcover`), 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin` nằm gọn ngang hàng và tự động lọc ngay khi chọn.
+- **Kiểm tra đã chạy:** Chưa chạy (bắt đầu triển khai trên `dev-ui` đã fast-forward với `dev` tại `28a1a5b`).
+- **Trạng thái:** Đang thực hiện.
+
+
+## 2026-11-08 — S052-C02 — Hoàn tất UI Bộ lọc `/admin/sach`, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Hoàn thiện và kiểm chứng 3 thay đổi tại `/admin`: bỏ rà `'Bộ sưu tập'` khỏi `Thiếu thông tin`, mở submenu `Kiểu bìa` khi hover chuột vào dòng `Thể loại` có `›`, và thiết kế lại thanh Bộ lọc ngang hàng tại `/admin/sach`.
+- **File thay đổi:**
+  - `code/backend/src/main/java/vn/memay/catalogue/BookQueryService.java`
+  - `code/backend/src/test/java/vn/memay/media/BookImportVisibilityTest.java`
+  - `code/frontend/src/app/features/admin/books/book-editor/book-editor.html`
+  - `code/frontend/src/app/features/admin/books/book-editor/book-editor.spec.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.scss`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `code/frontend/src/styles.scss`
+  - `docs/BOOK_COMPLETENESS_SPEC.md`, `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Backend: `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportVisibilityTest test` -> **4/4 PASS**.
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (247/247 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Trạng thái & Bước tiếp theo:** Đã hoàn tất trên `dev-ui` và đồng bộ `dev`.
+
+
+## 2026-11-08 — S052-C03 — Căn chỉnh thanh Bulk Delete (`Chọn tất cả trên trang này` + `Chuyển X cuốn vào Thùng rác`) và gộp vào `dev`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Sửa lỗi checkbox `Chọn tất cả trên trang này` bị căn giữa trang do quy tắc `input { width: 100% }` trong `styles.scss`; thiết kế lại thanh `.bulk-toolbar` phía trên bảng `/admin/sach` và màn Thùng rác, đồng thời căn chỉnh `.book-cell` trong bảng.
+- **File thay đổi:**
+  - `code/frontend/src/styles.scss` (loại trừ `input[type='checkbox']` và `input[type='radio']` khỏi quy tắc `width: 100%`, cố định `18x18px`)
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.scss`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (248/248 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+## 2026-11-08 — S053-C01 — Thiết kế tải ảnh sách
+
+- Phạm vi: tải ảnh một hoặc nhiều cuốn tại `/admin/sach`. Người dùng chọn một ZIP chung cho nhiều cuốn.
+- Đã đối chiếu thanh chọn OWNER và luồng ảnh quản trị, ghi thiết kế vào chỉ mục và PROGRESS.
+- Kiểm tra: `git diff --check` tại root. Chưa chạy test ứng dụng vì checkpoint chỉ có tài liệu.
+- Bước tiếp theo: sau khi duyệt thiết kế, lập kế hoạch triển khai trên `dev`.
+
+## 2026-11-08 — S053-C02 — Kế hoạch tải ảnh sách
+
+- Đã duyệt thiết kế tại commit d6f4b9b. Đã ghi kế hoạch API, giao diện và nghiệm thu vào chỉ mục.
+- Kiểm tra tại root: git diff --check. Chưa chạy test ứng dụng ở checkpoint lập kế hoạch.
+- Bước tiếp theo: chốt cách thực thi theo Writing Plans. Kế hoạch đang ở local trên dev.
+
+## 2026-11-08 — S053-C03 — Bắt đầu triển khai tải ZIP
+
+- Người dùng duyệt chạy trực tiếp. Triển khai backend và nút tải tại trang Quản lý sách trên dev.
+- Kiểm tra Git tại root: chỉ có tài liệu S053 đang sửa. Kiểm thử tính năng chưa chạy.
+
+## 2026-11-08 — S053-C04 — Nghiệm thu tải ZIP ảnh sách
+
+- OWNER dùng lựa chọn có sẵn trên `/admin/sach` để tải JPEG 1280 px của một
+  hoặc nhiều cuốn. Cả lượt nhận một ZIP có thư mục theo mã, gồm ảnh ẩn.
+- Backend dùng hai truy vấn đọc trước khi gọi Cloudinary, giới hạn 20 cuốn,
+  32 MiB dữ liệu ảnh và một lượt tạo ZIP mỗi instance. Giữ ZIP trong bộ nhớ
+  có giới hạn để trả lỗi trước khi gửi file và tránh file tạm trên máy chủ.
+  Không thêm dependency, cấu hình hay migration.
+- Backend từ root: `bash code/backend/run-local.sh -B -ntp test` — 241 ca,
+  238 đạt, 3 bỏ qua. Test mới đã thấy RED trước khi có endpoint, rồi GREEN.
+  Review độc lập đã đối chiếu quyền, Thùng rác và lỗi provider. Đã bổ sung
+  test giới hạn số cuốn, đọc ảnh lỗi giữa chừng và lượt tạo ZIP đồng thời.
+- Frontend tại `code/frontend`: `npm test` — 249 đạt. Test nút tải đã thấy
+  RED trước triển khai. `npm run build` và `npm run build:workers` đạt.
+- Playwright Chrome qua fixture local: tải `MM-000001.zip` và
+  `me-may-anh-sach.zip`, kiểm entry bằng unzip, xác nhận cảnh báo sách
+  thiếu ảnh và lỗi khi cả lượt thiếu ảnh. API PostgreSQL test dùng gateway
+  giả. Chưa kiểm Cloudinary production.
+- Bàn giao qua `dev` theo workflow dự án. Bước tiếp theo là rollout và
+  smoke trên môi trường triển khai.
+
+## 2026-11-08 — S052-C04 — Gộp `Chưa xuất bản` vào dropdown `Xuất bản`, tách biệt trạng thái `Ẩn` và bỏ tickbox `Chưa xuất bản` trùng lặp
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Giải quyết sự trùng lặp giữa dropdown `Xuất bản` và tickbox `Chưa xuất bản` trên thanh lọc `/admin/sach` theo quyết định user chốt qua `/grill-me`:
+  1. Gộp `Chưa xuất bản` thành lựa chọn thứ 4 trong dropdown **Xuất bản** (`Tất cả`, `Công khai`, `Ẩn`, `Chưa xuất bản`) và bỏ tickbox `Chưa xuất bản` rời bên ngoài (chỉ giữ lại tickbox `Thiếu thông tin`).
+  2. Tách biệt hoàn toàn kết quả lọc khi chọn `Ẩn` (`l.publication_status = 'ARCHIVED' AND l.published_at IS NOT NULL`) với `Chưa xuất bản` (`l.publication_status = 'ARCHIVED' AND l.published_at IS NULL`) để khớp 1-1 với cột `Xuất bản` trên bảng.
+- **File thay đổi:**
+  - `code/backend/src/main/java/vn/memay/catalogue/BookQueryService.java`
+  - `code/backend/src/test/java/vn/memay/media/BookImportVisibilityTest.java`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `docs/BOOK_COMPLETENESS_SPEC.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Backend: `set -a && source .env && set +a && ./mvnw test -Dtest=BookImportVisibilityTest` -> **4/4 PASS**.
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+
+## 2026-11-08 — S052-C05 — Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Bỏ hoàn toàn `<section aria-labelledby="fields-title">` ("Hướng dẫn các field") tại trang Import sách (`/admin/sach/import`) theo yêu cầu user, giúp trang gọn gàng và đi thẳng vào bước Kiểm tra file.
+- **File thay đổi:**
+  - `code/frontend/src/app/features/admin/books/book-import/book-import.html`
+  - `code/frontend/src/app/features/admin/books/book-import/book-import.spec.ts`
+  - `docs/BOOK_IMPORT.md`, `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.

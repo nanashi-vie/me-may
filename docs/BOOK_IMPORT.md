@@ -28,12 +28,12 @@ tồn gộp và tựpublish. Cột don_gia_kg optional: có thì tính/lưu hai 
 trống thì bổ sung trong editor khi thêm ảnh; thiếu giá không được publish.
 Giữ NXB/tác giả/mô tả sách optional. Không tự gộp sách theo tên.
 V3/7cột (không đơn giá), V2/16cột vàV1/20cột vẫn nhận, không rewrite giá/digest/receipt.
-UI hướng dẫn ngắn8field/nhãn, không có bước/nút tải mẫu; không tạo hướng dẫn/file
+UI tinh gọn đã bỏ khối hướng dẫn field; không có bước/nút tải mẫu; không tạo hướng dẫn/file
 giao riêng theo yêu cầu user. Endpoint template hiện có dùng8cột/dropdown.
 
 ## 3. Kiểm file và xác nhận
 
-OWNER mở “Import sách” từ danh sách admin; xem hướng dẫn field và mã lựa chọn.
+OWNER mở “Import sách” từ danh sách admin; chọn file trực tiếp.
 Chọn một file → bấm “Kiểm tra file”. Chưa tạo sách, mã, ảnh hoặc bản ghi lô.
 Backend là nguồn kiểm tra chính thức, response no-store.
 
@@ -184,7 +184,7 @@ khởi động lại sẽ reset, không phải distributed rate limiter.
 
 ## Vận hành
 
-Danh sách sách → Import sách → đọc hướng dẫn field/mã lựa chọn → điền đủ cột → chọn file
+Danh sách sách → Import sách → chọn file CSV/XLSX
 → Kiểm tra file → sửa lỗi ngoài Excel nếu có → kiểm lại → xác nhận nhập sách Ẩn.
 Mở từng mã từ receipt hoặc lọc Chưa xuất bản, thêm ảnh thật, lưu và tự xuất bản.
 Không reload khi còn file/lô chưa xác nhận; nếu mất kết nối chọn lại cùng file

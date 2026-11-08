@@ -28,7 +28,6 @@ public class BookQueryService {
               case when not exists(select 1 from listing_age_group a where a.listing_id=l.id) then 'Nhóm tuổi' end,
               case when nullif(btrim(l.reading_level),'') is null then 'Trình độ đọc' end,
               case when nullif(btrim(l.reading_video_url),'') is null then 'Link video' end,
-              case when not exists(select 1 from listing_collection lc where lc.listing_id=l.id) then 'Bộ sưu tập' end,
               case when not exists(select 1 from listing_feature lf where lf.listing_id=l.id) then 'Đặc điểm' end,
               case when not exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') then 'Ảnh bìa' end,
               case when not exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='BACK' and m.state='ACTIVE') then 'Ảnh lưng' end
@@ -89,6 +88,9 @@ public class BookQueryService {
         if (filter.publication() != null) {
             where.append(" and l.publication_status=?");
             args.add(filter.publication().name());
+            if (filter.publication() == Publication.ARCHIVED && !Boolean.TRUE.equals(filter.unpublishedOnly())) {
+                where.append(" and l.published_at is not null");
+            }
         }
         if (filter.availability() != null) {
             where.append(" and b.availability=?");

@@ -85,13 +85,14 @@
             </button>
             @for (c of taxonomy().categories; track c.code) {
               @if (c.code !== 'BOARD_BOOK') {
-                <div class="dropdown-submenu-wrap">
+                <div class="dropdown-submenu-wrap" (mouseenter)="bindingCategory.set(c.code)">
                   <button
                     type="button"
                     class="dropdown-item has-submenu"
                     [class.selected]="form.controls.categoryCode.value === c.code"
                     [class.submenu-active]="bindingCategory() === c.code"
                     [attr.aria-expanded]="bindingCategory() === c.code"
+                    (focus)="bindingCategory.set(c.code)"
                     (click)="toggleBindingSubmenu(c.code, $event)"
                   >
                     <span class="item-text">{{ c.label }}</span>
@@ -104,9 +105,19 @@
                   </button>
                   @if (bindingCategory() === c.code) {
                     <div class="dropdown-submenu" role="listbox" aria-label="Kiểu bìa">
-                      <button type="button" class="dropdown-item" role="option"
+                      <button
+                        type="button"
+                        class="dropdown-item"
+                        role="option"
                         [attr.aria-selected]="form.controls.categoryCode.value === c.code && !form.controls.binding.value"
-                        (click)="selectBinding(c.code, null, $event)">Chưa xác định</button>
+                        [class.selected]="form.controls.categoryCode.value === c.code && !form.controls.binding.value"
+                        (click)="selectBinding(c.code, null, $event)"
+                      >
+                        <span class="item-text">Chưa xác định</span>
+                        @if (form.controls.categoryCode.value === c.code && !form.controls.binding.value) {
+                          <span class="item-check" aria-hidden="true">✓</span>
+                        }
+                      </button>
                       @for (b of bindingOptions(); track b.code) {
                         <button
                           type="button"

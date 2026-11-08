@@ -333,3 +333,15 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
   Thùng rác với đúng version. Sách vào Thùng rác sau khi mở hộp thoại
   không thuộc lần dọn đó. DB xóa sách khi xác nhận thành công và tác vụ
   ảnh thử lại Cloudinary nếu nhà cung cấp chưa xác nhận đã xóa.
+
+## Tải ảnh sách từ trang quản trị
+
+- OWNER chọn tối đa 20 cuốn trên trang hiện tại ở `/admin/sach`, rồi bấm
+  **Tải ảnh**. Một cuốn nhận `<mã sách>.zip`, nhiều cuốn nhận
+  `me-may-anh-sach.zip`. Ảnh trong ZIP có đường dẫn `<mã sách>/<vai trò>.jpg`.
+- `GET /api/v1/admin/books/photo-download?ids=1&ids=2` lấy JPEG 1280 px
+  của tất cả ảnh ACTIVE, gồm ảnh bổ sung đang ẩn. Sách Ẩn được tải, sách
+  trong Thùng rác bị từ chối. ZIP chỉ trả sau khi tạo xong, có `no-store`.
+- Giới hạn 32 MiB dữ liệu ảnh và một lượt tạo ZIP đồng thời mỗi instance.
+  Sách thiếu ảnh được ghi trong `X-Missing-Book-Codes` để UI báo mã sách.
+  Nếu cả lượt thiếu ảnh, vượt giới hạn hoặc đọc ảnh lỗi, UI hiện thông báo.

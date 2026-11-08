@@ -20,6 +20,9 @@ import {
 export class BookApi {
   private readonly http = inject(AdminHttp);
   private readonly cache=inject(AdminSessionCache);
+  downloadPhotos(ids: readonly string[]) {
+    return this.http.downloadResponse('/books/photo-download', new HttpParams({fromObject: {ids}}));
+  }
   list(filter: BookFilter) {
     let params = new HttpParams();
     for (const [key, value] of Object.entries(filter))

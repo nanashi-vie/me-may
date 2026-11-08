@@ -18,6 +18,25 @@ import static vn.memay.media.MediaDtos.*;
 public class MediaTransactions {
     public record Intent(UUID id, String publicId) {
     }
+    public record DownloadPhoto(MediaRole role, String key) {}
+    public record DownloadBook(String code, List<DownloadPhoto> photos) {}
+
+    @Transactional(readOnly = true)
+    public List<DownloadBook> downloadPhotos(List<Long> ids) {
+        Map<Long, String> codes = new HashMap<>();
+        books.findAllById(ids).forEach(book -> codes.put(book.id, book.bookCode));
+        if (codes.size() != ids.size()) {
+            throw new AdminApiException(404, "not_found");
+        }
+        Map<Long, List<DownloadPhoto>> photos = new HashMap<>();
+        for (var image : images.findByBookCopyIdInAndState(ids, MediaState.ACTIVE)) {
+            photos.computeIfAbsent(image.bookCopyId, id -> new ArrayList<>())
+                    .add(new DownloadPhoto(image.role, image.storagePublicId));
+        }
+        return ids.stream().map(id -> new DownloadBook(codes.get(id),
+                photos.getOrDefault(id, List.of()).stream()
+                        .sorted(Comparator.comparing(DownloadPhoto::role)).toList())).toList();
+    }
 
     private final vn.memay.auth.AdminUserRepository users;
     private final BookCopyRepository books;

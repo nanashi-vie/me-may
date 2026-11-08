@@ -1,13 +1,14 @@
 import {AuthService} from '../../../../core/auth/auth.service';
 import { formatAdminPriceRange } from '../book-copy';
-import { Component, DestroyRef, inject, signal } from '@angular/core';
+import { Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
 import { BookApi } from '../book-api';
-import { Availability, BookFilter, BookSummary, Page, Publication, TrashBook } from '../book.models';
-import { CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
+import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
+import { AVAILABILITY_LABELS, CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -22,7 +23,13 @@ export class BookList {
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
-  readonly categories = Object.entries(CATEGORY_LABELS);
+  readonly categories = Object.entries(CATEGORY_LABELS) as [CategoryCode, string][];
+  readonly bindings: { code: Binding; label: string }[] = [
+    { code: 'PAPERBACK', label: 'Paperback' },
+    { code: 'HARDCOVER', label: 'Hardcover' },
+  ];
+  readonly openMenu = signal<'publication' | 'availability' | 'category' | null>(null);
+  readonly bindingCategory = signal<CategoryCode | null>(null);
   readonly notice = signal('');
   private focusId?: string;
   private returnScroll = 0;
@@ -43,6 +50,9 @@ export class BookList {
   readonly trashResult = signal<Page<TrashBook> | null>(null);
   readonly mutationBusy = signal(false);
   readonly selected = signal<ReadonlySet<string>>(new Set());
+  readonly photoDownloadBusy = signal(false);
+  readonly photoDownloadNotice = signal('');
+  readonly photoDownloadError = signal('');
   readonly bulkTarget = signal<{items: readonly {id:string;version:number}[]; permanent:boolean; all:boolean} | null>(null);
   readonly target = signal<BookSummary | null>(null);
   private filter: BookFilter = {};
@@ -53,26 +63,27 @@ export class BookList {
     this.focusId = typeof state?.['savedBookId'] === 'string' ? state['savedBookId'] : undefined;
     this.returnScroll = typeof state?.['returnScroll'] === 'number' ? state['returnScroll'] : 0;
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
-      const publication = p.get('publication'),
+      const unpublishedOnly = p.get('unpublishedOnly') === 'true',
+        publication = unpublishedOnly ? '' : (p.get('publication') ?? ''),
         availability = p.get('availability');
       this.filters.setValue({
         q: p.get('q') ?? '',
-        publication: publication ?? '',
+        publication,
         availability: availability ?? '',
         category: p.get('category') ?? '',
         binding: p.get('binding') ?? '',
         missingOnly: p.get('missingOnly') === 'true',
-        unpublishedOnly: p.get('unpublishedOnly')==='true',
+        unpublishedOnly,
       });
       this.filter = {
         ...(this.focusId ? {focusId: this.focusId} : {}),
         ...(this.filters.controls.category.value ? {category: this.filters.controls.category.value} : {}),
         ...(this.filters.controls.binding.value ? {binding: this.filters.controls.binding.value} : {}),
         ...(this.filters.controls.missingOnly.value ? {missingOnly: true} : {}),
-        ...(p.get('unpublishedOnly')==='true'?{unpublishedOnly:true}:{}),
+        ...(unpublishedOnly ? {unpublishedOnly: true} : {}),
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
-        publication: ['PUBLISHED', 'ARCHIVED'].includes(publication ?? '')
+        publication: !unpublishedOnly && ['PUBLISHED', 'ARCHIVED'].includes(publication)
           ? (publication as Publication)
           : undefined,
         availability: ['AVAILABLE', 'SOLD'].includes(availability ?? '')
@@ -176,6 +187,50 @@ export class BookList {
   selectPage(items:readonly {id:string}[], checked:boolean) {
     this.selected.set(new Set(checked ? items.map(item=>item.id) : []));
   }
+
+  downloadPhotos() {
+    if (this.photoDownloadBusy() || this.loading() || this.trashOpen()
+        || this.auth.user()?.role !== 'OWNER') return;
+    const books = this.result()?.items.filter(book => this.selected().has(book.id)) ?? [];
+    if (!books.length) return;
+
+    const epoch = this.auth.epoch();
+    this.photoDownloadBusy.set(true);
+    this.photoDownloadNotice.set('');
+    this.photoDownloadError.set('');
+    this.api.downloadPhotos(books.map(book => book.id)).pipe(
+      takeUntilDestroyed(this.destroy),
+      finalize(() => this.photoDownloadBusy.set(false)),
+    ).subscribe({
+      next: response => {
+        if (epoch !== this.auth.epoch()) return;
+        if (!response.body?.size) {
+          this.photoDownloadError.set('File tải về trống. Vui lòng thử lại.');
+          return;
+        }
+        const url = URL.createObjectURL(response.body);
+        const link = this.document.createElement('a');
+        link.href = url;
+        link.download = books.length === 1 ? books[0].bookCode + '.zip' : 'me-may-anh-sach.zip';
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
+        const missing = response.headers.get('X-Missing-Book-Codes');
+        if (missing) this.photoDownloadNotice.set('Sách chưa có ảnh: ' + missing.split(',').join(', ') + '.');
+      },
+      error: ({status}) => {
+        const messages: Record<number, string> = {
+          401: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+          403: 'Bạn không có quyền tải ảnh sách.',
+          404: 'Danh sách sách đã thay đổi. Hãy tải lại trang và chọn lại.',
+          413: 'Ảnh vượt giới hạn 32 MiB. Hãy chọn ít cuốn hơn.',
+          422: 'Các cuốn đã chọn chưa có ảnh.',
+          429: 'Hệ thống đang tạo file tải khác. Vui lòng thử lại sau.',
+          502: 'Chưa lấy được ảnh từ kho lưu trữ. Vui lòng thử lại.',
+        };
+        this.photoDownloadError.set(messages[status] ?? 'Chưa tải được ảnh. Vui lòng thử lại.');
+      },
+    });
+  }
   askBulk(dialog:HTMLDialogElement, permanent:boolean, all=false) {
     if (this.mutationBusy()) return;
     const open=(items: readonly {id:string;version:number}[])=>{
@@ -252,10 +307,93 @@ export class BookList {
     });
   }
   search(page = 0) {
+    this.openMenu.set(null);
+    this.bindingCategory.set(null);
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { ...this.filters.getRawValue(), page },
       queryParamsHandling: 'merge',
     });
+  }
+
+  publicationDisplayLabel(): string {
+    if (this.filters.controls.unpublishedOnly.value) return 'Chưa xuất bản';
+    const val = this.filters.controls.publication.value;
+    if (!val) return 'Tất cả';
+    return PUBLICATION_LABELS[val as Publication] ?? val;
+  }
+
+  availabilityDisplayLabel(): string {
+    const val = this.filters.controls.availability.value;
+    if (!val) return 'Tất cả';
+    return AVAILABILITY_LABELS[val as Availability] ?? val;
+  }
+
+  categoryDisplayLabel(): string {
+    const code = this.filters.controls.category.value as CategoryCode | '';
+    const binding = this.filters.controls.binding.value as Binding | '';
+    if (!code) {
+      if (binding) return binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
+      return 'Tất cả';
+    }
+    const catLabel = CATEGORY_LABELS[code] ?? code;
+    if (code !== 'BOARD_BOOK' && binding) {
+      const bLabel = binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
+      return `${catLabel} · ${bLabel}`;
+    }
+    return catLabel;
+  }
+
+  toggleMenu(menu: 'publication' | 'availability' | 'category', event: Event) {
+    event.stopPropagation();
+    if (this.openMenu() === menu) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    } else {
+      this.openMenu.set(menu);
+      const cat = this.filters.controls.category.value as CategoryCode | '';
+      this.bindingCategory.set(menu === 'category' && cat && cat !== 'BOARD_BOOK' ? cat : null);
+    }
+  }
+
+  selectPublication(value: '' | Publication | 'UNPUBLISHED', event: Event) {
+    event.stopPropagation();
+    if (value === 'UNPUBLISHED') {
+      this.filters.controls.publication.setValue('');
+      this.filters.controls.unpublishedOnly.setValue(true);
+    } else {
+      this.filters.controls.publication.setValue(value);
+      this.filters.controls.unpublishedOnly.setValue(false);
+    }
+    this.search(0);
+  }
+
+  selectAvailability(value: '' | Availability, event: Event) {
+    event.stopPropagation();
+    this.filters.controls.availability.setValue(value);
+    this.search(0);
+  }
+
+  selectCategoryFilter(category: '' | CategoryCode, binding: '' | Binding, event: Event) {
+    event.stopPropagation();
+    this.filters.controls.category.setValue(category);
+    this.filters.controls.binding.setValue(category === 'BOARD_BOOK' ? '' : binding);
+    this.search(0);
+  }
+
+  @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
+    if (!this.openMenu()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target?.closest('.custom-dropdown')) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    }
+  }
+
+  @HostListener('document:keydown.escape') onEscapeKey() {
+    if (this.openMenu()) {
+      this.openMenu.set(null);
+      this.bindingCategory.set(null);
+    }
   }
 }

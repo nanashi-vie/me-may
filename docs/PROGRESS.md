@@ -1,7 +1,17 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+- Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.
+- Tải ảnh sách từ `/admin/sach`: OWNER tải một ZIP cho các cuốn đã chọn.
+  [Contract](CATALOGUE.md#tải-ảnh-sách-từ-trang-quản-trị) đã kiểm qua API
+  với PostgreSQL test và qua trình duyệt với fixture local. Chờ rollout production.
+
+## Thiết kế lại UI Bộ lọc `/admin/sach`, thanh Bulk Action, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập` — đã kiểm tự động & gộp vào dev 08/11/2026
+
+- S052-C04: Bỏ `'Bộ sưu tập'` khỏi tiêu chí rà `Thiếu thông tin` (`MISSING_FIELDS` ở `BookQueryService.java`); chỉnh dropdown `Thể loại` (2 cấp) ở `/admin/sach/moi` & `/admin/sach` sang hover (`mouseenter`) để tự xổ submenu `Kiểu bìa`; thiết kế lại thanh Bộ lọc `/admin/sach` ngang hàng dùng `.custom-dropdown` đồng bộ, gộp `Chưa xuất bản` vào thẳng dropdown `Xuất bản` (`Tất cả`, `Công khai`, `Ẩn` — chỉ sách từng đăng rồi ẩn, `Chưa xuất bản` — sách chưa từng đăng) và bỏ tickbox `Chưa xuất bản` trùng lặp (chỉ giữ lại checkbox `Thiếu thông tin`), gộp `Thể loại + Kiểu bìa`, tự động lọc ngay khi chọn; gom thanh thao tác hàng loạt (`.bulk-toolbar`: tổng số cuốn, checkbox `Chọn tất cả trên trang này` sát bên trái chữ và nút `Chuyển X cuốn vào Thùng rác`) lên 1 hàng ngang phía trên bảng và căn chỉnh `.book-cell` / `.trash-item` thẳng hàng.
+- Kiểm chứng: Backend `BookImportVisibilityTest` (4/4 PASS); Frontend Vitest 44/44 files (249/249 tests PASS); `npm run build` và `npm run build:workers` 0 warning, 0 error.
 
 ## Rà sách thiếu thông tin và kiểu bìa — đã kiểm tự động 07/11/2026
 
@@ -17,13 +27,6 @@ Cập nhật 07/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 ## Thao tác Thùng rác hàng loạt — đã kiểm local 07/11/2026
 
 - S049-C01: Chọn từng sách hoặc cả trang để xóa mềm. Dọn sách đã chọn hoặc toàn bộ Thùng rác sau xác nhận. Backend 7 ca liên quan và frontend 245 ca đạt. Chưa rollout production.
-
-## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
-
-- S048-C03: Hoàn tất `ShippingPromoDialog` mở từ box "ƯU ĐÃI VẬN CHUYỂN" trên trang chủ (`/`), đã gộp vào `dev`:
-  - Đồng bộ SVG xe giao hàng do user cung cấp sang bảng màu thương hiệu Mẹ Mây (`#9B1C28`, `#FBE4E6`, `#E06C78`, `#F59E0B`, `#D97706`, `#E05260`) trong vòng tròn 105px (85px mobile) kèm tiêu đề `"Ưu đãi vận chuyển tại Mẹ Mây"`.
-  - Bố cục 5 khung (lưới 2x2 cho 4 mức đơn hàng ở trên + khung thứ 5 trải ngang `grid-column: 1 / -1` căn giữa ở dưới; mobile `<= 640px` xếp 1 cột), bên trái mỗi khung là chấm tròn nhỏ `.step-dot` viền đỏ `#9B1C28`: `Đơn dưới 150k` (`Ship 25k`), `Đơn 150k - 300k` (`Ship 20k`), `Đơn 300k - 500k` (`Ship 16k`), `Đơn trên 500k` (`Hỗ trợ 50% ship không quá 50k`), `Quy định khối lượng` (`Áp dụng cho đơn dưới 3kg. Mỗi kg chênh ra thêm + 6k/kg`).
-  - Kiểm chứng: Vitest 44/44 test files (244/244 tests PASS), `npm run build` và `npm run build:workers` 0 warning, 0 error; Chrome headless CDP visual QA đạt trên Desktop (`1280x850`) và Mobile (`390x844`).
 
 ## Popup "Ưu đãi vận chuyển" trên trang chủ — đã kiểm local & gộp vào dev 07/11/2026
 
