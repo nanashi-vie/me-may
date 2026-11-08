@@ -44,6 +44,9 @@ describe('public shell', () => {
       'https://www.threads.com/@sachngoaivanmemay',
       'https://www.tiktok.com/@andamdaily',
     ]);
+    expect(root.querySelector('symbol#icon-facebook')).not.toBeNull();
+    expect(root.querySelector('symbol#icon-threads')).not.toBeNull();
+    expect(root.querySelector('symbol#icon-tiktok')).not.toBeNull();
   });
 
   it('clears the 404 noindex directive when returning to a valid public page', async () => {

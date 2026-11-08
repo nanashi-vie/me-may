@@ -2662,3 +2662,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
   - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
 - Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
+
+
+## 2026-11-08 — S055-C03 — Tối ưu 3 SVG logo mạng xã hội (`Facebook`, `Threads`, `TikTok`) bằng `<symbol>` + `<use>`
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  - Cập nhật 3 SVG logo `Facebook`, `Threads`, `TikTok` theo đúng mã SVG user gửi, lược bỏ thẻ thừa `SVGRepo_bgCarrier` / `SVGRepo_tracerCarrier`, đổi `fill="currentColor"` và gom vào `<svg style="display:none"><symbol id="icon-facebook|icon-threads|icon-tiktok">` tại đầu `public-layout.html` để tái sử dụng qua `<use href="#...">` ở cả dải `.utility` và `.site-footer` (0 HTTP request phụ, tự đổi màu mượt mà khi hover).
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
