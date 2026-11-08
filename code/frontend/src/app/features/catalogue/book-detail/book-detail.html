@@ -112,7 +112,6 @@
         <p class="description">{{ b.description }}</p>
       }
       <dl>
-        @if (b.weightG !== null) { <dt>Trọng lượng sách</dt><dd>{{b.weightG}} g</dd> }
         @if (b.publisher) {
           <dt>Nhà xuất bản</dt>
           <dd>{{ b.publisher }}</dd>
@@ -120,6 +119,10 @@
         @if (b.author) {
           <dt>Tác giả</dt>
           <dd>{{ b.author }}</dd>
+        }
+        @if (b.binding) {
+          <dt>Kiểu bìa</dt>
+          <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
         }
         @if (b.ageGroups.length) {
           <dt>Độ tuổi</dt>
@@ -129,12 +132,8 @@
             }
           </dd>
         }
-        @if (b.binding) {
-          <dt>Kiểu bìa</dt>
-          <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
-        }
         @if (b.readingLevel) {
-          <dt>Trình độ đọc tham khảo</dt>
+          <dt>Trình độ đọc</dt>
           <dd>
             {{ levels[b.readingLevel] }}<small>{{ readingNote }}</small>
           </dd>

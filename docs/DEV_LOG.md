@@ -2593,3 +2593,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   skill execution tương ứng. Đề xuất native vì các task chia sẻ schema/lifecycle;
   không làm song song các mutation vào phần chung.
 - Bàn giao commit/push dev cùng spec/log/index theo workflow; không main/deploy.
+
+
+## 2026-11-08 — S055-C01 — Chỉnh UI chi tiết sách (`book-detail`): ẩn trọng lượng, sắp xếp lại Độ tuổi & Trình độ đọc, cập nhật ghi chú tham khảo
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  1. Không hiển thị dòng `Trọng lượng sách` (`b.weightG`) trên trang chi tiết sách phía người dùng (`book-detail.html`), vẫn giữ nguyên ô nhập trọng lượng ở Admin để tính giá theo kg.
+  2. Dời mục `Độ tuổi` xuống dưới `Kiểu bìa`, nằm ngay phía trên mục `Trình độ đọc` (đổi nhãn `<dt>` từ `"Trình độ đọc tham khảo"` thành `"Trình độ đọc"`).
+  3. Đổi nội dung hằng số `READING_NOTE` trong `book-copy.ts` từ `"Trình độ đọc là gợi ý của tiệm, không phải chứng nhận Cambridge cho sách."` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`.
+- Trạng thái: đã hoàn tất và kiểm chứng trên nhánh `dev`.
+- File thay đổi:
+  - `code/frontend/src/app/features/admin/books/book-copy.ts`: cập nhật `READING_NOTE`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.html`: bỏ dòng `Trọng lượng sách`, dời `Độ tuổi` xuống ngay phía trên `Trình độ đọc`, đổi nhãn `<dt>Trình độ đọc tham khảo</dt>` thành `<dt>Trình độ đọc</dt>`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.spec.ts`: thêm unit test xác minh ẩn `weightG`, thứ tự `<dt>` (`Nhà xuất bản`, `Tác giả`, `Kiểu bìa`, `Độ tuổi`, `Trình độ đọc`, `Đọc tham khảo`) và nội dung `READING_NOTE` mới.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: đồng bộ tài liệu và nhật ký bàn giao.
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (251/251 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
