@@ -3,10 +3,10 @@
 Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-## Thiết kế lại UI Bộ lọc `/admin/sach`, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập` — đã kiểm tự động 08/11/2026
+## Thiết kế lại UI Bộ lọc `/admin/sach`, thanh Bulk Action, hover submenu `Thể loại` và bỏ rà `Bộ sưu tập` — đã kiểm tự động & gộp vào dev 08/11/2026
 
-- S052-C02: Bỏ `'Bộ sưu tập'` khỏi tiêu chí rà `Thiếu thông tin` (`MISSING_FIELDS` ở `BookQueryService.java`); chỉnh dropdown `Thể loại` (2 cấp) ở `/admin/sach/moi` & `/admin/sach` sang hover (`mouseenter`) để tự xổ submenu `Kiểu bìa`; thiết kế lại thanh Bộ lọc `/admin/sach` ngang hàng dùng `.custom-dropdown` đồng bộ, gộp `Thể loại + Kiểu bìa`, 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin` ngang hàng và tự động lọc ngay khi chọn.
-- Kiểm chứng: Backend `BookImportVisibilityTest` (4/4 PASS); Frontend Vitest 44/44 files (247/247 tests PASS); `npm run build` và `npm run build:workers` 0 warning, 0 error.
+- S052-C03: Bỏ `'Bộ sưu tập'` khỏi tiêu chí rà `Thiếu thông tin` (`MISSING_FIELDS` ở `BookQueryService.java`); chỉnh dropdown `Thể loại` (2 cấp) ở `/admin/sach/moi` & `/admin/sach` sang hover (`mouseenter`) để tự xổ submenu `Kiểu bìa`; thiết kế lại thanh Bộ lọc `/admin/sach` ngang hàng dùng `.custom-dropdown` đồng bộ, gộp `Thể loại + Kiểu bìa`, 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin` ngang hàng và tự động lọc ngay khi chọn; gom thanh thao tác hàng loạt (`.bulk-toolbar`: tổng số cuốn, checkbox `Chọn tất cả trên trang này` sát bên trái chữ và nút `Chuyển X cuốn vào Thùng rác`) lên 1 hàng ngang phía trên bảng và căn chỉnh `.book-cell` / `.trash-item` thẳng hàng.
+- Kiểm chứng: Backend `BookImportVisibilityTest` (4/4 PASS); Frontend Vitest 44/44 files (248/248 tests PASS); `npm run build` và `npm run build:workers` 0 warning, 0 error.
 
 ## Rà sách thiếu thông tin và kiểu bìa — đã kiểm tự động 07/11/2026
 

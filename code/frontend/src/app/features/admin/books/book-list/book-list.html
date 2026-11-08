@@ -11,21 +11,65 @@
     <p>Sách được dọn sau 7 ngày kể từ khi chuyển vào Thùng rác.</p>
     @if (error()) { <p role="alert">{{ error() }}</p> }
     @if (trashResult(); as trash) {
-      <label><input type="checkbox" [checked]="trash.items.length > 0 && selected().size === trash.items.length"
-        [disabled]="mutationBusy() || !trash.items.length" (change)="selectPage(trash.items,$any($event.target).checked)" /> Chọn tất cả trên trang này</label>
-      <button type="button" [disabled]="mutationBusy() || !selected().size" (click)="askBulk(bulkDialog,true)">Dọn ({{ selected().size }})</button>
-      <button type="button" [disabled]="mutationBusy() || !trash.totalElements" (click)="askBulk(bulkDialog,true,true)">Dọn tất cả</button>
-      <ul>
+      <div class="bulk-toolbar">
+        <div class="bulk-actions">
+          <label class="bulk-select-all">
+            <input
+              type="checkbox"
+              [checked]="trash.items.length > 0 && selected().size === trash.items.length"
+              [disabled]="mutationBusy() || !trash.items.length"
+              (change)="selectPage(trash.items, $any($event.target).checked)"
+            />
+            <span>Chọn tất cả trên trang này</span>
+          </label>
+          <button
+            type="button"
+            class="bulk-trash-btn"
+            [disabled]="mutationBusy() || !selected().size"
+            (click)="askBulk(bulkDialog, true)"
+          >
+            Dọn ({{ selected().size }})
+          </button>
+          <button
+            type="button"
+            class="secondary bulk-trash-btn"
+            [disabled]="mutationBusy() || !trash.totalElements"
+            (click)="askBulk(bulkDialog, true, true)"
+          >
+            Dọn tất cả
+          </button>
+        </div>
+      </div>
+      <ul class="trash-list">
         @for (book of trash.items; track book.id) {
-          <li><input type="checkbox" [attr.aria-label]="'Chọn ' + book.bookCode" [checked]="selected().has(book.id)"
-            [disabled]="mutationBusy()" (change)="toggle(book.id,$any($event.target).checked)" /> {{ book.title || 'Chưa có tên' }} · {{ book.bookCode }} · Hạn khôi phục
-            {{ book.expiresAt | date:'dd/MM/yyyy HH:mm':'+0700' }}
-            <button type="button" [disabled]="mutationBusy() || expired(book)" (click)="changeTrash(book,false)">Khôi phục</button>
+          <li class="trash-item">
+            <input
+              type="checkbox"
+              class="row-check"
+              [attr.aria-label]="'Chọn ' + book.bookCode"
+              [checked]="selected().has(book.id)"
+              [disabled]="mutationBusy()"
+              (change)="toggle(book.id, $any($event.target).checked)"
+            />
+            <span class="trash-item-info">
+              {{ book.title || 'Chưa có tên' }} · {{ book.bookCode }} · Hạn khôi phục
+              {{ book.expiresAt | date:'dd/MM/yyyy HH:mm':'+0700' }}
+            </span>
+            <button
+              type="button"
+              class="secondary trash-restore-btn"
+              [disabled]="mutationBusy() || expired(book)"
+              (click)="changeTrash(book, false)"
+            >
+              Khôi phục
+            </button>
           </li>
         } @empty { <li>Thùng rác trống.</li> }
       </ul>
-      <button type="button" [disabled]="trash.page === 0 || mutationBusy()" (click)="showTrash(trash.page - 1)">Trang trước</button>
-      <button type="button" [disabled]="trash.page + 1 >= trash.totalPages || mutationBusy()" (click)="showTrash(trash.page + 1)">Trang sau</button>
+      <div class="pagination">
+        <button type="button" class="secondary" [disabled]="trash.page === 0 || mutationBusy()" (click)="showTrash(trash.page - 1)">Trang trước</button>
+        <button type="button" class="secondary" [disabled]="trash.page + 1 >= trash.totalPages || mutationBusy()" (click)="showTrash(trash.page + 1)">Trang sau</button>
+      </div>
     }
   </section>
 } @else {
@@ -302,13 +346,30 @@
   <p role="status">Đang tải sách…</p>
 }
 @if (result(); as data) {
-  <p>{{ data.totalElements }} cuốn</p>
-  @if (auth.user()?.role === 'OWNER') {
-    <label><input type="checkbox" [checked]="data.items.length > 0 && selected().size === data.items.length"
-      [disabled]="mutationBusy() || loading() || !data.items.length" (change)="selectPage(data.items,$any($event.target).checked)" /> Chọn tất cả trên trang này</label>
-    <button type="button" [disabled]="mutationBusy() || loading() || !selected().size"
-      (click)="askBulk(bulkDialog,false)">Chuyển {{ selected().size }} cuốn vào Thùng rác</button>
-  }
+  <div class="bulk-toolbar">
+    <p class="book-total">{{ data.totalElements }} cuốn</p>
+    @if (auth.user()?.role === 'OWNER') {
+      <div class="bulk-actions">
+        <label class="bulk-select-all">
+          <input
+            type="checkbox"
+            [checked]="data.items.length > 0 && selected().size === data.items.length"
+            [disabled]="mutationBusy() || loading() || !data.items.length"
+            (change)="selectPage(data.items, $any($event.target).checked)"
+          />
+          <span>Chọn tất cả trên trang này</span>
+        </label>
+        <button
+          type="button"
+          class="bulk-trash-btn"
+          [disabled]="mutationBusy() || loading() || !selected().size"
+          (click)="askBulk(bulkDialog, false)"
+        >
+          Chuyển {{ selected().size }} cuốn vào Thùng rác
+        </button>
+      </div>
+    }
+  </div>
   <div class="table-scroll">
     <table>
       <thead>
@@ -325,24 +386,34 @@
         @for (book of data.items; track book.id) {
           <tr [id]="'admin-book-' + book.id">
             <td>
-              @if (auth.user()?.role === 'OWNER') {
-                <input type="checkbox" [attr.aria-label]="'Chọn ' + book.bookCode" [checked]="selected().has(book.id)"
-                  [disabled]="mutationBusy() || loading()" (change)="toggle(book.id,$any($event.target).checked)" />
-              }
-              @if (book.frontContentPath) {
-                <img
-                  class="cover-thumb"
-                  [src]="book.frontContentPath + '?v=' + book.version"
-                  [alt]="book.title || book.bookCode"
-                />
-              } @else {
-                <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
-              }
-              <a [href]="editUrl(book.id)" (click)="openBook($event, book.id)">{{
-                book.title || 'Chưa có tên'
-              }}</a
-              ><small>{{ book.bookCode }}</small>
-              @if (book.missingFields?.length) { <small>Thiếu {{ book.missingFields?.join(' · ') }}</small> }
+              <div class="book-cell">
+                @if (auth.user()?.role === 'OWNER') {
+                  <input
+                    type="checkbox"
+                    class="row-check"
+                    [attr.aria-label]="'Chọn ' + book.bookCode"
+                    [checked]="selected().has(book.id)"
+                    [disabled]="mutationBusy() || loading()"
+                    (change)="toggle(book.id, $any($event.target).checked)"
+                  />
+                }
+                @if (book.frontContentPath) {
+                  <img
+                    class="cover-thumb"
+                    [src]="book.frontContentPath + '?v=' + book.version"
+                    [alt]="book.title || book.bookCode"
+                  />
+                } @else {
+                  <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
+                }
+                <div class="book-cell-info">
+                  <a [href]="editUrl(book.id)" (click)="openBook($event, book.id)">{{
+                    book.title || 'Chưa có tên'
+                  }}</a>
+                  <small>{{ book.bookCode }}</small>
+                  @if (book.missingFields?.length) { <small>Thiếu {{ book.missingFields?.join(' · ') }}</small> }
+                </div>
+              </div>
             </td>
             <td>
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}

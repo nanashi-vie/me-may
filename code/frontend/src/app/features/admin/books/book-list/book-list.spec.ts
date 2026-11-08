@@ -124,4 +124,30 @@ describe('BookList', () => {
     }));
     expect(trigger.textContent).toContain('Picture book · Paperback');
   });
+  it('renders bulk toolbar with inline select-all checkbox and dedicated row checkbox column', () => {
+    const item = { id: '7', bookCode: 'MM-000007', title: 'Imported', publication: 'ARCHIVED', version: 2, totalStock: 1 };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
+        { provide: BookApi, useValue: { list: () => of({ items: [item], page: 0, size: 20, totalElements: 1, totalPages: 1 }) } },
+      ],
+    });
+    const fixture = TestBed.createComponent(BookList);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    const toolbar = root.querySelector('.bulk-toolbar') as HTMLElement;
+    expect(toolbar).not.toBeNull();
+    const selectAllInput = toolbar.querySelector('.bulk-select-all input[type="checkbox"]') as HTMLInputElement;
+    expect(selectAllInput).not.toBeNull();
+    const rowCheck = root.querySelector('.book-cell input.row-check') as HTMLInputElement;
+    expect(rowCheck).not.toBeNull();
+
+    selectAllInput.click();
+    fixture.detectChanges();
+    expect(rowCheck.checked).toBe(true);
+    expect(toolbar.querySelector('.bulk-trash-btn')?.textContent?.trim()).toBe('Chuyển 1 cuốn vào Thùng rác');
+  });
 });

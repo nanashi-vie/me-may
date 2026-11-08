@@ -2395,3 +2395,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (247/247 tests PASS)**.
   - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
 - **Trạng thái & Bước tiếp theo:** Đã hoàn tất trên `dev-ui` và đồng bộ `dev`.
+
+
+## 2026-11-08 — S052-C03 — Căn chỉnh thanh Bulk Delete (`Chọn tất cả trên trang này` + `Chuyển X cuốn vào Thùng rác`) và gộp vào `dev`
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Sửa lỗi checkbox `Chọn tất cả trên trang này` bị căn giữa trang do quy tắc `input { width: 100% }` trong `styles.scss`; thiết kế lại thanh `.bulk-toolbar` phía trên bảng `/admin/sach` và màn Thùng rác, đồng thời căn chỉnh `.book-cell` trong bảng.
+- **File thay đổi:**
+  - `code/frontend/src/styles.scss` (loại trừ `input[type='checkbox']` và `input[type='radio']` khỏi quy tắc `width: 100%`, cố định `18x18px`)
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.scss`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (248/248 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
