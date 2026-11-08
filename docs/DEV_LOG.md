@@ -2496,3 +2496,69 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - **Kiểm tra đã chạy:**
   - Backend: `./mvnw test -Dtest=UploadLimiterTest` -> **3/3 PASS**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+## 2026-11-08 — S054-C01 — Đánh giá draft Self-hosted Image System
+
+- Phạm vi: đọc spec đính kèm, đối chiếu repository và xem xét tách hai spec;
+  ghi nhận yêu cầu bỏ ẩn/hiện từng ảnh, chỉ giữ tối đa 8 ảnh khi nhập sách.
+- Đã dùng Superpowers using-superpowers/brainstorming và knowledge graph;
+  đọc contract media, deployment, sourceRef, MediaGateway, public delivery,
+  upload normalization và cờ show_on_product trong code hiện tại.
+- Kết luận đề xuất: tách Storage & Processing và Source Mapping & Disaster
+  Recovery; mapping tối thiểu là dependency của cutover, không hoãn toàn bộ.
+  Không coi sourceRef tự do là Drive mapping đã xác minh. Frontend chuẩn hóa
+  JPEG trước upload nên checksum nguồn và checksum đầu vào xử lý phải tách rõ.
+- Draft còn thiếu contract async/version/idempotency, migration provider,
+  quyền ảnh khi sách ẩn, source revision/retention và phục hồi đồng bộ DB/media.
+  R2 backup, cấu hình Dell và dung lượng trong draft chưa xác minh live.
+- Quy tắc user mới thay hướng 6 công khai/2 bổ sung ẩn; việc đổi ảnh cũ,
+  API/UI/schema và cache chưa triển khai. Không đổi trạng thái ẩn sách.
+- Thay đổi phiên này: PROGRESS và DEV_LOG. Không tạo spec triển khai trước
+  khi chốt cách tách; không sửa attachment, code hoặc dữ liệu production.
+- Kiểm tra: Git sạch trên dev trước thay đổi; đối chiếu source qua graph.
+  Không chạy test/build vì chỉ đánh giá/tài liệu. Kiểm diff/giới hạn dòng
+  trước bàn giao; không xem kết quả test lịch sử là bằng chứng phiên này.
+- Bước tiếp: chốt hai phần spec, quy tắc dữ liệu ảnh bổ sung cũ và delivery
+  khi sách bị ẩn; sau duyệt thiết kế mới lập kế hoạch triển khai.
+  Tài liệu còn local trên dev, chưa commit/push/deploy.
+
+## 2026-11-08 — S054-C02 — Chốt bỏ ảnh nội bộ và xử lý mất nguồn thủ công
+
+- User chốt toàn bộ ảnh đang ẩn chuyển thành ảnh hiển thị cùng sách;
+  bỏ hoàn toàn cơ chế ẩn/hiện từng ảnh và khái niệm ảnh nội bộ.
+  Tối đa 8 ảnh/sách, tất cả cùng tham gia gallery khi sách được xuất bản.
+- Quyết định này thay phần chuyển dữ liệu còn mở tại S054-C01. Giữ trạng
+  thái ẩn/xuất bản của sách và bảo vệ ảnh upload tạm; không có ngoại lệ
+  giữ ảnh nội bộ cũ. Chưa thực hiện migration hoặc thay đổi code.
+- User nhận xử lý thủ công trường hợp ảnh gốc trên Drive bị xóa.
+  Không yêu cầu tự động cứu nguồn đã xóa; rebuild từ nguồn còn tồn tại
+  vẫn thuộc đề xuất DR. Job gặp nguồn mất phải báo lỗi rõ, không báo thành công.
+- File thay đổi: PROGRESS.md và DEV_LOG.md. Kiểm tra diff whitespace và
+  số dòng PROGRESS; không chạy test/build cho thay đổi tài liệu này.
+- Bước tiếp: hoàn thiện lựa chọn tách spec và thiết kế chi tiết trước
+  triển khai. Thay đổi tài liệu còn local trên dev, chưa commit/push/deploy.
+
+## 2026-11-08 — S054-C03 — Thiết kế hai phần theo Superpowers
+
+- Mục tiêu/phạm vi: user yêu cầu tiến hành theo Superpowers; bắt đầu hoàn thiện
+  thiết kế chi tiết từ draft và quyết định S054-C01/C02 trước implementation.
+  User bổ sung tự dựng Ubuntu; agent không nhận phần cài server/deploy live.
+- Đã tạo IMAGE_STORAGE_SPEC.md và IMAGE_RECOVERY_SPEC.md, đăng ký ở README;
+  cập nhật PROGRESS. Không sửa source code, credential hay dữ liệu production.
+- Đề xuất chi tiết: đổi INTERNAL_1/2 sang INSIDE_4/5 và bỏ visibility; giữ gateway
+  kiểm trạng thái sách/cache tối đa 30s; LOCAL async qua queue do Spring sở hữu;
+  Drive mapping VERIFIED trước publish LOCAL, Cloudinary song song để migration.
+- Recovery nguồn bị xóa do user xử lý; không xây cứu nguồn hoặc Drive sync.
+  Bàn giao code/cấu hình mẫu/checklist, owner dựng Ubuntu và cấu hình nguồn/R2.
+- Builder check độc lập đọc cả hai spec: không còn câu hỏi/mâu thuẫn quan trọng
+  trước lập plan. Đây là review thiết kế, không phải code review/test runtime.
+- Đã đối chiếu code qua graph, migrations V15/V17, cache contract và dependency
+  manifests; đọc tài liệu chính thức Sharp/Drive/Workers, link nằm trong spec.
+- Kiểm tra từ repo root: git diff --check đạt; hai spec 210/199 dòng;
+  local links của hai spec và README tồn tại; PROGRESS dưới 400 dòng.
+  Không chạy test/build vì chưa đổi code. Không xác minh server/Drive/R2 live.
+- Trong phiên dev có checkpoint S052-C06 từ công việc khác cập nhật upload limiter;
+  giữ nguyên thay đổi đó, không lấy limiter cũ làm baseline triển khai mới.
+- Bước tiếp: user duyệt hai spec chi tiết; writing-plans rồi triển khai/verification
+  theo flow. Chưa coi lời đồng ý hướng tổng thể là duyệt các lựa chọn mới trong spec.
+  Bàn giao tài liệu trên dev; không merge main hoặc deploy.

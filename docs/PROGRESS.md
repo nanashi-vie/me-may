@@ -3,6 +3,13 @@
 Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- S054 (08/11): đã viết và builder-check hai spec
+  [Storage & Processing](IMAGE_STORAGE_SPEC.md) và [Source Mapping & DR](IMAGE_RECOVERY_SPEC.md).
+  Chờ duyệt thiết kế chi tiết theo Superpowers, sau đó lập implementation plan.
+  User chốt bỏ ảnh nội bộ/ẩn từng ảnh, tối đa 8 ảnh; ảnh cũ hiển thị cùng sách.
+  User dựng Ubuntu và xử lý thủ công nguồn Drive bị xóa. Agent làm code/local QA,
+  cấu hình mẫu và checklist tích hợp. Chưa sửa code/migrate/deploy.
+
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).
 - Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.
 - Tải ảnh sách từ `/admin/sach`: OWNER tải một ZIP cho các cuốn đã chọn.
