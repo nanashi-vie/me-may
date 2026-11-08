@@ -48,6 +48,7 @@ class BookImportVisibilityTest extends MediaTestSupport {
         assertThat(result.items()).hasSize(1);assertThat(result.items().getFirst().id()).isEqualTo(fresh.id());
         assertThat(result.items().getFirst().publishedAt()).isNull();assertThat(result.items().getFirst().totalStock()).isEqualTo(3);
         assertThat(queries.list(owner,new BookFilter(null,Publication.PUBLISHED,null,0,20,true)).items()).isEmpty();
+        assertThat(queries.list(owner,new BookFilter(null,Publication.ARCHIVED,null,0,20,false)).items()).extracting(BookSummary::id).containsExactly(old.id());
         assertThat(queries.list(owner,new BookFilter(null,null,Availability.SOLD,0,20,true)).items()).isEmpty();
         assertThat(queries.list(owner,new BookFilter(null,null,null,0,20,false)).items()).hasSize(3);
     }

@@ -105,12 +105,12 @@
           type="button"
           class="dropdown-item"
           role="option"
-          [attr.aria-selected]="filters.controls.publication.value === ''"
-          [class.selected]="filters.controls.publication.value === ''"
+          [attr.aria-selected]="filters.controls.publication.value === '' && !filters.controls.unpublishedOnly.value"
+          [class.selected]="filters.controls.publication.value === '' && !filters.controls.unpublishedOnly.value"
           (click)="selectPublication('', $event)"
         >
           <span class="item-text">Tất cả</span>
-          @if (filters.controls.publication.value === '') {
+          @if (filters.controls.publication.value === '' && !filters.controls.unpublishedOnly.value) {
             <span class="item-check" aria-hidden="true">✓</span>
           }
         </button>
@@ -118,12 +118,12 @@
           type="button"
           class="dropdown-item"
           role="option"
-          [attr.aria-selected]="filters.controls.publication.value === 'PUBLISHED'"
-          [class.selected]="filters.controls.publication.value === 'PUBLISHED'"
+          [attr.aria-selected]="filters.controls.publication.value === 'PUBLISHED' && !filters.controls.unpublishedOnly.value"
+          [class.selected]="filters.controls.publication.value === 'PUBLISHED' && !filters.controls.unpublishedOnly.value"
           (click)="selectPublication('PUBLISHED', $event)"
         >
           <span class="item-text">Công khai</span>
-          @if (filters.controls.publication.value === 'PUBLISHED') {
+          @if (filters.controls.publication.value === 'PUBLISHED' && !filters.controls.unpublishedOnly.value) {
             <span class="item-check" aria-hidden="true">✓</span>
           }
         </button>
@@ -131,12 +131,25 @@
           type="button"
           class="dropdown-item"
           role="option"
-          [attr.aria-selected]="filters.controls.publication.value === 'ARCHIVED'"
-          [class.selected]="filters.controls.publication.value === 'ARCHIVED'"
+          [attr.aria-selected]="filters.controls.publication.value === 'ARCHIVED' && !filters.controls.unpublishedOnly.value"
+          [class.selected]="filters.controls.publication.value === 'ARCHIVED' && !filters.controls.unpublishedOnly.value"
           (click)="selectPublication('ARCHIVED', $event)"
         >
           <span class="item-text">Ẩn</span>
-          @if (filters.controls.publication.value === 'ARCHIVED') {
+          @if (filters.controls.publication.value === 'ARCHIVED' && !filters.controls.unpublishedOnly.value) {
+            <span class="item-check" aria-hidden="true">✓</span>
+          }
+        </button>
+        <button
+          type="button"
+          class="dropdown-item"
+          role="option"
+          [attr.aria-selected]="filters.controls.unpublishedOnly.value"
+          [class.selected]="filters.controls.unpublishedOnly.value"
+          (click)="selectPublication('UNPUBLISHED', $event)"
+        >
+          <span class="item-text">Chưa xuất bản</span>
+          @if (filters.controls.unpublishedOnly.value) {
             <span class="item-check" aria-hidden="true">✓</span>
           }
         </button>
@@ -326,10 +339,6 @@
   </div>
 
   <div class="filter-checks">
-    <label class="filter-chip" [class.active]="filters.controls.unpublishedOnly.value">
-      <input type="checkbox" formControlName="unpublishedOnly" (change)="search(0)" />
-      <span>Chưa xuất bản</span>
-    </label>
     <label class="filter-chip" [class.active]="filters.controls.missingOnly.value">
       <input type="checkbox" formControlName="missingOnly" (change)="search(0)" />
       <span>Thiếu thông tin</span>

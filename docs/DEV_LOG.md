@@ -2450,3 +2450,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   giả. Chưa kiểm Cloudinary production.
 - Bàn giao qua `dev` theo workflow dự án. Bước tiếp theo là rollout và
   smoke trên môi trường triển khai.
+
+## 2026-11-08 — S052-C04 — Gộp `Chưa xuất bản` vào dropdown `Xuất bản`, tách biệt trạng thái `Ẩn` và bỏ tickbox `Chưa xuất bản` trùng lặp
+
+- **Ngày (Asia/Ho_Chi_Minh):** 2026-11-08
+- **Mục tiêu:** Giải quyết sự trùng lặp giữa dropdown `Xuất bản` và tickbox `Chưa xuất bản` trên thanh lọc `/admin/sach` theo quyết định user chốt qua `/grill-me`:
+  1. Gộp `Chưa xuất bản` thành lựa chọn thứ 4 trong dropdown **Xuất bản** (`Tất cả`, `Công khai`, `Ẩn`, `Chưa xuất bản`) và bỏ tickbox `Chưa xuất bản` rời bên ngoài (chỉ giữ lại tickbox `Thiếu thông tin`).
+  2. Tách biệt hoàn toàn kết quả lọc khi chọn `Ẩn` (`l.publication_status = 'ARCHIVED' AND l.published_at IS NOT NULL`) với `Chưa xuất bản` (`l.publication_status = 'ARCHIVED' AND l.published_at IS NULL`) để khớp 1-1 với cột `Xuất bản` trên bảng.
+- **File thay đổi:**
+  - `code/backend/src/main/java/vn/memay/catalogue/BookQueryService.java`
+  - `code/backend/src/test/java/vn/memay/media/BookImportVisibilityTest.java`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.ts`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.html`
+  - `code/frontend/src/app/features/admin/books/book-list/book-list.spec.ts`
+  - `docs/BOOK_COMPLETENESS_SPEC.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy:**
+  - Backend: `set -a && source .env && set +a && ./mvnw test -Dtest=BookImportVisibilityTest` -> **4/4 PASS**.
+  - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (250/250 tests PASS)**.
+  - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
+- **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.

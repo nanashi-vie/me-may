@@ -88,6 +88,9 @@ public class BookQueryService {
         if (filter.publication() != null) {
             where.append(" and l.publication_status=?");
             args.add(filter.publication().name());
+            if (filter.publication() == Publication.ARCHIVED && !Boolean.TRUE.equals(filter.unpublishedOnly())) {
+                where.append(" and l.published_at is not null");
+            }
         }
         if (filter.availability() != null) {
             where.append(" and b.availability=?");

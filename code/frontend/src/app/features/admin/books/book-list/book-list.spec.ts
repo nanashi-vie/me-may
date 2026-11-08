@@ -199,4 +199,41 @@ describe('BookList', () => {
     expect(rowCheck.checked).toBe(true);
     expect(toolbar.querySelector('.bulk-trash-btn')?.textContent?.trim()).toBe('Chuyển 1 cuốn vào Thùng rác');
   });
+  it('includes Chưa xuất bản in Xuất bản dropdown and removes duplicate checkbox', () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
+        { provide: BookApi, useValue: { list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
+      ],
+    });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const fixture = TestBed.createComponent(BookList);
+    fixture.detectChanges();
+    const root = fixture.nativeElement as HTMLElement;
+
+    const filterChips = Array.from(root.querySelectorAll('.filter-checks .filter-chip'));
+    expect(filterChips.map((c) => c.textContent?.trim())).toEqual(['Thiếu thông tin']);
+
+    const pubField = root.querySelector('.filter-publication') as HTMLElement;
+    const trigger = pubField.querySelector('.dropdown-trigger') as HTMLButtonElement;
+    trigger.click();
+    fixture.detectChanges();
+
+    const items = Array.from(pubField.querySelectorAll('.dropdown-item')) as HTMLButtonElement[];
+    expect(items.map((b) => b.querySelector('.item-text')?.textContent?.trim())).toEqual([
+      'Tất cả',
+      'Công khai',
+      'Ẩn',
+      'Chưa xuất bản',
+    ]);
+
+    items[3].click();
+    fixture.detectChanges();
+    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
+      queryParams: expect.objectContaining({ publication: '', unpublishedOnly: true, page: 0 }),
+    }));
+    expect(trigger.textContent).toContain('Chưa xuất bản');
+  });
 });

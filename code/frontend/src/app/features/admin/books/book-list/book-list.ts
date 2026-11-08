@@ -63,26 +63,27 @@ export class BookList {
     this.focusId = typeof state?.['savedBookId'] === 'string' ? state['savedBookId'] : undefined;
     this.returnScroll = typeof state?.['returnScroll'] === 'number' ? state['returnScroll'] : 0;
     this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((p) => {
-      const publication = p.get('publication'),
+      const unpublishedOnly = p.get('unpublishedOnly') === 'true',
+        publication = unpublishedOnly ? '' : (p.get('publication') ?? ''),
         availability = p.get('availability');
       this.filters.setValue({
         q: p.get('q') ?? '',
-        publication: publication ?? '',
+        publication,
         availability: availability ?? '',
         category: p.get('category') ?? '',
         binding: p.get('binding') ?? '',
         missingOnly: p.get('missingOnly') === 'true',
-        unpublishedOnly: p.get('unpublishedOnly')==='true',
+        unpublishedOnly,
       });
       this.filter = {
         ...(this.focusId ? {focusId: this.focusId} : {}),
         ...(this.filters.controls.category.value ? {category: this.filters.controls.category.value} : {}),
         ...(this.filters.controls.binding.value ? {binding: this.filters.controls.binding.value} : {}),
         ...(this.filters.controls.missingOnly.value ? {missingOnly: true} : {}),
-        ...(p.get('unpublishedOnly')==='true'?{unpublishedOnly:true}:{}),
+        ...(unpublishedOnly ? {unpublishedOnly: true} : {}),
         q: p.get('q') ?? '',
         page: Math.max(0, Number(p.get('page')) || 0),
-        publication: ['PUBLISHED', 'ARCHIVED'].includes(publication ?? '')
+        publication: !unpublishedOnly && ['PUBLISHED', 'ARCHIVED'].includes(publication)
           ? (publication as Publication)
           : undefined,
         availability: ['AVAILABLE', 'SOLD'].includes(availability ?? '')
@@ -316,6 +317,7 @@ export class BookList {
   }
 
   publicationDisplayLabel(): string {
+    if (this.filters.controls.unpublishedOnly.value) return 'Chưa xuất bản';
     const val = this.filters.controls.publication.value;
     if (!val) return 'Tất cả';
     return PUBLICATION_LABELS[val as Publication] ?? val;
@@ -354,9 +356,15 @@ export class BookList {
     }
   }
 
-  selectPublication(value: '' | Publication, event: Event) {
+  selectPublication(value: '' | Publication | 'UNPUBLISHED', event: Event) {
     event.stopPropagation();
-    this.filters.controls.publication.setValue(value);
+    if (value === 'UNPUBLISHED') {
+      this.filters.controls.publication.setValue('');
+      this.filters.controls.unpublishedOnly.setValue(true);
+    } else {
+      this.filters.controls.publication.setValue(value);
+      this.filters.controls.unpublishedOnly.setValue(false);
+    }
     this.search(0);
   }
 
