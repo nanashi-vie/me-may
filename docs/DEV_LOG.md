@@ -2411,3 +2411,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - Frontend Vitest: `npm test -- --watch=false` -> **44/44 test files PASS (248/248 tests PASS)**.
   - Frontend builds: `npm run build` & `npm run build:workers` -> **PASS (0 warnings, 0 errors)**.
 - **Git & Bàn giao:** Commit trên `dev-ui`, fast-forward merge vào `dev` và push lên `origin/dev` và `origin/dev-ui`.
+
+## 2026-11-08 — S053-C01 — Thiết kế tải ảnh sách
+
+- Phạm vi: tải ảnh một hoặc nhiều cuốn tại `/admin/sach`. Người dùng chọn một ZIP chung cho nhiều cuốn.
+- Đã đối chiếu thanh chọn OWNER và luồng ảnh quản trị, ghi thiết kế vào chỉ mục và PROGRESS.
+- Kiểm tra: `git diff --check` tại root. Chưa chạy test ứng dụng vì checkpoint chỉ có tài liệu.
+- Bước tiếp theo: sau khi duyệt thiết kế, lập kế hoạch triển khai trên `dev`.
