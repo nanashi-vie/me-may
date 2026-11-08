@@ -2643,3 +2643,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   build trong sandbox bị dừng. git diff --check đạt từ root.
 - Chưa smoke trực tiếp trên trình duyệt, chưa rollout V20 production.
   Bước tiếp: smoke form/danh sách trên candidate rồi rollout theo workflow.
+
+
+## 2026-11-08 — S055-C02 — Nâng cấp dải đỏ đầu trang (`utility bar`) và Footer nền tối có mạng xã hội & Facebook `embed_page`
+
+- Mục tiêu & phạm vi (chốt qua `/grill-me`):
+  1. Dải đỏ đầu trang (`.utility`): bên trái hiển thị 3 icon SVG màu trắng (`Facebook`: `https://www.facebook.com/sachngoaivanmemay/`, `Threads`: `https://www.threads.com/@sachngoaivanmemay`, `TikTok`: `https://www.tiktok.com/@andamdaily`); ở giữa giữ dòng chữ `"Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn"` kèm hiệu ứng trượt ngang (`marquee`); bên phải hiển thị icon phong bì + email `"support@memaybooks.com"` (`mailto:support@memaybooks.com`).
+  2. Footer (`.site-footer`): đổi sang nền tối (`#292724`) tràn toàn chiều ngang như mẫu IPM:
+     - Cột trái: Thương hiệu Mẹ Mây, slogan, điều hướng nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email hỗ trợ và lưu ý xác nhận giá/tình trạng.
+     - Cột phải: Tiêu đề `"KẾT NỐI VỚI CHÚNG TÔI"` + khung Facebook Page Plugin (`embed_page` `340x130px` cho `https://www.facebook.com/sachngoaivanmemay/`) + tiêu đề phụ `"CÁC KÊNH KHÁC"` với 3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`.
+- Trạng thái: đã hoàn tất và kiểm chứng trên nhánh `dev`.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: nâng cấp `.utility` (3 icon trắng `Facebook`, `Threads`, `TikTok` bên trái; `.utility-ticker` chữ chạy ngang ở giữa; icon phong bì + `support@memaybooks.com` bên phải) và `.site-footer` (2 cột nền tối kèm `KẾT NỐI VỚI CHÚNG TÔI`, iframe Facebook `embed_page` `340x130px` cho `sachngoaivanmemay`, và `CÁC KÊNH KHÁC` với 3 nút vuông trắng `.social-box`).
+  - `code/frontend/src/styles.scss` & `code/frontend/src/app/layouts/public-layout/public-layout.scss`: bổ sung style `.utility*`, `@keyframes utility-marquee` (hỗ trợ `prefers-reduced-motion` và tạm dừng khi hover) và `.site-footer*` nền tối `#292724`, giữ `public-layout.scss` gọn dưới ngưỡng budget 6 kB.
+  - `code/frontend/src/app/app.spec.ts`: bổ sung kiểm thử tự động cho dải `.utility` (3 link MXH, email CSKH, chữ chạy ngang) và `.site-footer` (khung `embed_page` Facebook, 3 nút `.social-box`).
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: đồng bộ tài liệu và nhật ký bàn giao.
+- Kiểm tra đã chạy (từ `code/frontend`):
+  - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
+  - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
+- Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.

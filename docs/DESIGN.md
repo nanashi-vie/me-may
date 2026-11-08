@@ -60,7 +60,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 
 ## Desktop — thứ tự từ trên xuống
 
-1. **Utility bar:** thông điệp ngắn “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” trên desktop (>720px); ẩn trên mobile (≤720px). Không tự nhận freeship/giảm giá.
+1. **Utility bar:** dải đỏ trên cùng (`.utility`) trên desktop (>720px; ẩn ở ≤720px) chia 3 vùng trong khung `.wrap`: bên trái là 3 icon trắng mạng xã hội (`Facebook`: `sachngoaivanmemay`, `Threads`: `@sachngoaivanmemay`, `TikTok`: `@andamdaily`); ở giữa là thông điệp “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” chạy ngang (`marquee`, tự dừng khi hover hoặc bật `prefers-reduced-motion`); bên phải là icon phong bì kèm email CSKH `support@memaybooks.com` (`mailto:`). Không tự nhận freeship/giảm giá.
 2. **Header:** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), Danh sách quan tâm (badge số cuốn) và Nhắn tiệm. Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · Quan tâm bên phải; hàng 2 là search full-width; ẩn Nhắn tiệm trên header (đưa vào sidebar). Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ; gỡ mục `Cách mua` vì đã tích hợp popup trực tiếp từ box tiện ích Home). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
@@ -75,7 +75,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 9. **Sách theo chủ đề:** một hàng của bộ sưu tập được chủ chọn, ví dụ động vật; không tự gắn nhãn bằng AI.
 10. **Banner nhóm 2 + sách cho bé bắt đầu tự đọc:** chỉ hiển thị nếu có cuốn phù hợp; không gán CEFR/Lexile khi thiếu bằng chứng.
 11. **Cách hỏi mua:** 3 bước ngắn: chọn sách → sao chép mã/link → nhắn tiệm xác nhận.
-12. **Footer:** giới thiệu ngắn, hướng dẫn mua, liên hệ và chính sách do tiệm cung cấp. Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
+12. **Footer (cập nhật 08/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (khung nhúng Facebook Page Plugin `embed_page` `340x130px` của fanpage `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
 
 Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ liệu. Không kéo dài Home bằng các nhóm lặp sách chỉ để đủ chiều cao như screenshot.
 

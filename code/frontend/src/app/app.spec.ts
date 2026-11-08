@@ -15,6 +15,35 @@ describe('public shell', () => {
     expect(harness.routeNativeElement?.querySelector('.admin-entry-btn')).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('.sidebar-admin-link')).not.toBeNull();
     expect(harness.routeNativeElement?.textContent).not.toContain('Thanh toán');
+
+    const root = harness.routeNativeElement!;
+    const utilitySocials = Array.from(root.querySelectorAll<HTMLAnchorElement>('.utility-socials a')).map((a) => a.href);
+    expect(utilitySocials).toEqual([
+      'https://www.facebook.com/sachngoaivanmemay/',
+      'https://www.threads.com/@sachngoaivanmemay',
+      'https://www.tiktok.com/@andamdaily',
+    ]);
+    expect(root.querySelector<HTMLAnchorElement>('.utility-email')?.getAttribute('href')).toBe(
+      'mailto:support@memaybooks.com',
+    );
+    expect(root.querySelector('.utility-ticker-track')?.textContent).toContain(
+      'Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn',
+    );
+
+    const footer = root.querySelector('.site-footer')!;
+    expect(footer.textContent).toContain('KẾT NỐI VỚI CHÚNG TÔI');
+    expect(footer.textContent).toContain('CÁC KÊNH KHÁC');
+    expect(footer.querySelector<HTMLIFrameElement>('.fb-embed-wrap iframe')?.getAttribute('src')).toContain(
+      'facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fsachngoaivanmemay%2F',
+    );
+    const footerSocials = Array.from(footer.querySelectorAll<HTMLAnchorElement>('.footer-socials a.social-box')).map(
+      (a) => a.href,
+    );
+    expect(footerSocials).toEqual([
+      'https://www.facebook.com/sachngoaivanmemay/',
+      'https://www.threads.com/@sachngoaivanmemay',
+      'https://www.tiktok.com/@andamdaily',
+    ]);
   });
 
   it('clears the 404 noindex directive when returning to a valid public page', async () => {
