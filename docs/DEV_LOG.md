@@ -2672,3 +2672,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `npm test -- --watch=false`: 44/44 test files PASS (252/252 tests PASS).
   - `npm run build` & `npm run build:workers`: PASS (0 warning, 0 error).
 - Bước tiếp theo: commit và push lên `origin/dev`, đồng bộ nhánh `dev-ui`.
+
+## 2026-11-09 — S056-C03 — Gọn trường Nơi lưu trữ
+
+- User yêu cầu thu nhỏ ô chọn và chuyển lên cạnh Tồn kho trong form sách.
+- Phạm vi HTML/SCSS BookEditor và tài liệu bàn giao. Bắt đầu trên dev sạch.
+- Ô chọn tối đa 13rem, nút Thêm thùng theo chiều rộng chữ; nhóm tồn/thùng
+  tự xuống hàng khi thiếu chỗ. Đặt nhãn nổi và ô chọn trong cùng khung riêng.
+- Từ code/frontend, npm test -- --watch=false đạt 252/252, 44 file.
+  git diff --check đạt từ root. Chưa kiểm tra trực tiếp trên trình duyệt.
+- Bàn giao dev; còn smoke trình duyệt cùng tính năng V20.

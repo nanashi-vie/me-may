@@ -102,7 +102,20 @@ small {
 .confirmation input[type=checkbox]{width:auto;min-width:22px;min-height:22px;margin-right:.6rem;}
 
 .stock-editor { margin-block: 1.5rem; }
-.field-stock { max-width: 180px; }
+.stock-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: .5rem 1rem;
+  margin-bottom: .5rem;
+}
+.field-stock { flex: 0 1 11.25rem; }
+.storage-box-editor {
+  flex: 0 1 13rem;
+  min-width: 0;
+
+  button { width: auto; }
+}
 .stock-editor small { display: block; margin-bottom: 1rem; }
 
 .save-actions {display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-top:1rem;}
