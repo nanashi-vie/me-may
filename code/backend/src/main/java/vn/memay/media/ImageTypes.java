@@ -12,7 +12,11 @@ public final class ImageTypes {
     public enum SourceStatus { UNVERIFIED, VERIFIED, SOURCE_MISSING, SOURCE_CHANGED, ACCESS_ERROR }
 
     public record Variant(String name, String key, String mime, int width, int height, long bytes, String sha256) {}
-    public record Manifest(UUID mediaId, UUID generationId, String recipeVersion, List<Variant> variants) {
+    public record Manifest(UUID mediaId, UUID generationId, String recipeVersion, List<Variant> variants,
+                           String workerDigest, String configurationDigest) {
+        public Manifest(UUID mediaId, UUID generationId, String recipeVersion, List<Variant> variants) {
+            this(mediaId, generationId, recipeVersion, variants, null, null);
+        }
         public Manifest {
             variants = List.copyOf(variants);
         }

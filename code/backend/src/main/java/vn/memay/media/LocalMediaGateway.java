@@ -26,10 +26,12 @@ final class LocalMediaGateway {
         return store.hasVariant(media, generation, size, format, bytes);
     }
 
-    InputStream open(UUID media, UUID generation, int size, String format, long bytes) {
+    InputStream open(UUID media, UUID generation, int size, String format, ImageTypes.Variant variant) {
+        if (!"OK".equals(store.integrity(media, generation, variant)))
+            throw new AdminApiException(404, "not_found");
         String path = "/derived/" + media + "/" + generation + "/" + size + "." + format;
         try {
-            return transport.openInternal(origin.resolve(path), format.equals("jpg") ? "image/jpeg" : "image/webp", bytes);
+            return transport.openInternal(origin.resolve(path), variant.mime(), variant.bytes());
         } catch (CloudinaryTransport.MissingVariantException e) {
             throw new AdminApiException(404, "not_found");
         } catch (IOException e) {

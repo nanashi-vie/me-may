@@ -2935,3 +2935,34 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   265 ca, 262 đạt và 3 skip. `npm test` tại code/image-worker đạt 9 ca,
   `node --test scripts/image-system/media-operations.test.mjs` từ root đạt
   3 ca. git diff --check đạt. Bàn giao dev, tiếp theo R5.
+
+## 2026-11-09 — S065-C01 — Bắt đầu R5
+
+- Tái sử dụng worktree dev 9f8c96d. Kiểm kê byte thật, phục hồi đúng manifest
+  và giữ nguyên pointer/publication. Restore profile cách ly trước khi bật worker.
+- Bước sau R5 là S8, cần owner chuẩn bị Ubuntu để nghiệm thu.
+
+## 2026-11-09 — S065-C02 — Inventory, rebuild và restore cách ly
+
+- V27 giữ operation, dedupe theo generation và kết quả từng ảnh. Inventory
+  kiểm MIME, byte và SHA-256 thật; phân trang DB và layout trên mount riêng.
+  File không có metadata chỉ được báo. GET ảnh LOCAL kiểm SHA trước khi stream.
+- REBUILD dùng binding VERIFIED, recheck nguồn/lease/actor/pointer. Worker gửi
+  digest OCI và digest recipe; đầu ra phải khớp toàn bộ manifest trước khi
+  phục hồi từng file nguyên tử, giữ nguyên file còn tốt và publication.
+- Restore profile mặc định cách ly, giữ inventory/dry-run, chặn outbound
+  provider, claim queue, admin writes và scheduler cleanup.
+- Ruling: inventory/recovery ở module media để tái sử dụng storage và queue.
+  Review bổ sung cursor apply, báo layout lạ, thiếu recipe, GET checksum và
+  cleanup tất cả job trên generation rollback.
+- RED API R5 thiếu route và CLI thiếu lệnh. Full test lần đầu bị fixture
+  trùng dedupe key từ lượt trước, đã dùng UUID và cleanup fixture trong finally.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test đạt
+  269 ca, 266 đạt, 3 skip. `npm test` tại code/image-worker 10 đạt,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root 4 đạt.
+- Drill `pg_dump -Fc` → `pg_restore --exit-on-error` sang container riêng,
+  xác nhận schema V27 và 185 variant có trong dump. Chạy 4 test isolation/rebuild
+  trên DB restore với fixture test, gồm mất một phần và mất toàn bộ output;
+  dừng container tạm sau kiểm thử. Drive dùng giả lập, chưa kiểm Ubuntu thật.
+- Bàn giao dev. Đã báo owner đến mốc dựng Ubuntu. Tiếp theo S8 benchmark
+  và smoke trước R6 live gate.

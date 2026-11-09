@@ -68,6 +68,8 @@ class ImageMigrationPreviewQueue {
                         WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     AND NOT EXISTS (SELECT 1 FROM image_migration_apply_item
                         WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
+                    AND NOT EXISTS(SELECT 1 FROM image_recovery_item
+                        WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     ORDER BY p.created_at,r.line LIMIT 1 FOR UPDATE OF r SKIP LOCKED
                 )
                 UPDATE image_migration_row r SET state='DOWNLOADING',lease_token=?,

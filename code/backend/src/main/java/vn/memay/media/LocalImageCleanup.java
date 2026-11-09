@@ -43,9 +43,10 @@ class LocalImageCleanup {
         }
         var retired = jdbc.queryForList("""
                 SELECT i.id FROM image_migration_apply_item i JOIN image_migration_apply_book b USING(operation_id,book_id)
-                JOIN image_generation g ON g.id=i.id LEFT JOIN image_job j ON j.id=i.job_id
+                JOIN image_generation g ON g.id=i.id
                 WHERE b.state IN ('FAILED','ROLLED_BACK') AND b.updated_at<=?
-                    AND (j.id IS NULL OR j.status IN ('READY','FAILED','CANCELLED')) LIMIT 100
+                    AND NOT EXISTS(SELECT 1 FROM image_job j WHERE j.generation_id=g.id
+                        AND j.status='PROCESSING' AND j.lease_until>clock_timestamp()) LIMIT 100
                 """, UUID.class, cutoff);
         for (UUID generation : retired) {
             try {
@@ -78,7 +79,9 @@ class LocalImageCleanup {
                               AND ((r.input_id=? AND r.state IN ('QUEUED','PROCESSING','READY')) OR r.preview_id=?)))
                         OR EXISTS(SELECT 1 FROM image_migration_apply_item
                             WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
-                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging, staging));
+                        OR EXISTS(SELECT 1 FROM image_recovery_item
+                            WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
+                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging, staging, staging));
                 if (!referenced) {
                     store.discardStaging(staging);
                     if (++deleted == 100) break;
@@ -91,12 +94,11 @@ class LocalImageCleanup {
 
     private void retireMigration(UUID generation) {
         var jobs = jdbc.queryForList("""
-                SELECT id FROM image_job WHERE generation_id=? AND kind='MIGRATE'
-                    AND status IN ('READY','FAILED','CANCELLED') FOR UPDATE SKIP LOCKED
-                """, UUID.class, generation);
-        if (jobs.isEmpty() && Boolean.TRUE.equals(jdbc.queryForObject("""
-                SELECT EXISTS(SELECT 1 FROM image_job WHERE generation_id=?)
-                """, Boolean.class, generation))) return;
+                SELECT id,(status='PROCESSING' AND lease_until>clock_timestamp()) AS active
+                FROM image_job WHERE generation_id=? FOR UPDATE SKIP LOCKED
+                """, generation);
+        if (jobs.size() != jdbc.queryForObject("SELECT count(*) FROM image_job WHERE generation_id=?", Integer.class, generation)
+                || jobs.stream().anyMatch(job -> Boolean.TRUE.equals(job.get("active")))) return;
         var media = jdbc.queryForList("""
                 SELECT media_id FROM image_generation WHERE id=? AND NOT EXISTS(
                     SELECT 1 FROM book_media WHERE serving_generation=?) FOR UPDATE SKIP LOCKED
@@ -107,7 +109,7 @@ class LocalImageCleanup {
         } catch (IOException e) {
             throw new IllegalStateException("local_cleanup_failed", e);
         }
-        if (!jobs.isEmpty()) jdbc.update("DELETE FROM image_job WHERE id=?", jobs.getFirst());
+        jdbc.update("DELETE FROM image_job WHERE generation_id=?", generation);
         jdbc.update("DELETE FROM image_generation WHERE id=?", generation);
     }
 

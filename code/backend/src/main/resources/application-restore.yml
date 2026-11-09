@@ -1,0 +1,4 @@
+memay:
+  media:
+    recovery:
+      mode: ${MEMAY_MEDIA_RECOVERY_MODE:isolated}

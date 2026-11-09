@@ -71,8 +71,23 @@ public class SecurityConfiguration {
 
         @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper mapper,
-                        AdminUserRepository repository, org.springframework.jdbc.core.JdbcTemplate jdbc)
-                        throws Exception {
+                        AdminUserRepository repository, org.springframework.jdbc.core.JdbcTemplate jdbc,
+                        vn.memay.media.MediaRecoveryMode mode) throws Exception {
+                if (mode.isolated()) http.addFilterAfter(new org.springframework.web.filter.OncePerRequestFilter() {
+                        @Override
+                        protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request,
+                                HttpServletResponse response, jakarta.servlet.FilterChain chain)
+                                throws IOException, jakarta.servlet.ServletException {
+                                String path = request.getServletPath();
+                                String method = request.getMethod();
+                                boolean dryRun = method.equals("POST") && path.equals("/api/v1/admin/image-recovery/rebuild");
+                                if (path.startsWith("/api/v1/admin/") && !method.equals("GET") && !method.equals("HEAD") && !dryRun) {
+                                        json(response, mapper, 409, Map.of("error", "restore_isolated"));
+                                        return;
+                                }
+                                chain.doFilter(request, response);
+                        }
+                }, org.springframework.security.web.access.intercept.AuthorizationFilter.class);
                 return http
                                 .authorizeHttpRequests(auth -> auth
                                                 .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()

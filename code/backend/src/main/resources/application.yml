@@ -47,6 +47,8 @@ memay:
   performance:
     enabled: ${MEMAY_PERFORMANCE_ENABLED:false}
   media:
+    recovery:
+      mode: ${MEMAY_MEDIA_RECOVERY_MODE:active}
     namespace: ${CLOUDINARY_NAMESPACE:memay/dev}
     local:
       enabled: ${MEMAY_IMAGE_LOCAL_ENABLED:false}

@@ -74,3 +74,26 @@ test('apply and rollback require explicit media or book versions and reuse the s
       && c.headers.get('Content-Type') === 'application/json'));
   assert.equal(calls[2].headers.has('X-CSRF-TOKEN'), false);
 });
+
+test('recovery defaults to dry-run and requires an explicit apply key', async t => {
+  const dir = await mkdtemp(join(tmpdir(), 'memay-recovery-cli-'));
+  t.after(() => rm(dir, { recursive: true, force: true }));
+  const session = join(dir, 'session.json');
+  await writeFile(session, '{"cookie":"MEMAYSESSION=fixture","csrf":"token"}', { mode: 0o600 });
+  const id = '1e0d7e41-910d-4b53-b30b-ac245e8c8e69';
+  const requests = [];
+  const fetch = async (url, init) => {
+    requests.push({ url: new URL(url), ...init });
+    return new Response('result');
+  };
+  const config = { origin: 'https://example.test', session, fetch };
+  await assert.rejects(requestFor(config, 'rebuild', ['--media', id, '--apply']), /request-key/);
+  await requestFor(config, 'inventory', ['--scope', 'all', '--scan-disk']);
+  await requestFor(config, 'rebuild', ['--media', id]);
+  await requestFor(config, 'rebuild', ['--media', id, '--apply', '--request-key', id]);
+  await requestFor(config, 'show-rebuild', id);
+  assert.equal(requests[0].url.searchParams.get('scanDisk'), 'true');
+  assert.deepEqual(JSON.parse(requests[1].body), { mediaIds: [id], apply: false });
+  assert.deepEqual(JSON.parse(requests[2].body), { mediaIds: [id], apply: true, requestKey: id });
+  assert.equal(requests[3].url.pathname, '/api/v1/admin/image-recovery/rebuild/' + id);
+});

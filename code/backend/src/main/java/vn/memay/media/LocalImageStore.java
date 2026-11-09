@@ -80,9 +80,107 @@ public final class LocalImageStore {
         }
     }
 
+    private final java.util.Map<String, Boolean> knownCorrupt = java.util.Collections.synchronizedMap(
+            new java.util.LinkedHashMap<>() {
+                @Override protected boolean removeEldestEntry(java.util.Map.Entry<String, Boolean> entry) {
+                    return size() > 4096;
+                }
+            });
+
+    String integrity(UUID media, UUID generation, ImageTypes.Variant variant) {
+        String format = variant.mime().equals("image/jpeg") ? "jpg" : "webp";
+        String name = variant.name() + "." + format;
+        String key = "derived/" + media + "/" + generation + "/" + name;
+        if (!variant.name().matches("[0-9]{1,4}") || !key.equals(variant.key())) return "CORRUPT";
+        try {
+            Path file = directory("derived/" + media + "/" + generation, false).resolve(name);
+            verifyFile(file, variant, format);
+            knownCorrupt.remove(key);
+            return "OK";
+        } catch (java.nio.file.NoSuchFileException missing) {
+            return "MISSING";
+        } catch (IOException error) {
+            if (Files.notExists(root.resolve(key), NOFOLLOW_LINKS)) return "MISSING";
+            knownCorrupt.put(key, true);
+            return "CORRUPT";
+        }
+    }
+
+    void restoreAttempt(Manifest expected, UUID token) throws IOException {
+        Path source = directory("staging/" + token + "/output", false);
+        validate(expected, source);
+        Path target = directory(destination(expected), true);
+        for (var variant : expected.variants()) {
+            String format = variant.mime().equals("image/jpeg") ? "jpg" : "webp";
+            String name = variant.name() + "." + format;
+            if (!"OK".equals(integrity(expected.mediaId(), expected.generationId(), variant))) {
+                Files.move(source.resolve(name), target.resolve(name), ATOMIC_MOVE, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                knownCorrupt.remove(variant.key());
+            }
+        }
+    }
+
+    record DiskGeneration(UUID media, UUID generation) {
+        String cursor() { return media + ":" + generation; }
+    }
+
+    record DiskPage(java.util.List<DiskGeneration> generations, boolean unexpectedLayout) {}
+
+    DiskPage diskPage(String after, int limit) throws IOException {
+        boolean unexpected = false;
+        var page = new java.util.TreeSet<DiskGeneration>(java.util.Comparator.comparing(DiskGeneration::cursor));
+        if (Files.notExists(root.resolve("derived"), NOFOLLOW_LINKS)) return new DiskPage(java.util.List.of(), false);
+        try (var mediaDirs = Files.newDirectoryStream(directory("derived", false))) {
+            for (Path mediaPath : mediaDirs) {
+                UUID media = directoryId(mediaPath);
+                if (media == null) {
+                    unexpected = true;
+                    continue;
+                }
+                try (var generations = Files.newDirectoryStream(mediaPath)) {
+                    for (Path generationPath : generations) {
+                        UUID generation = directoryId(generationPath);
+                        if (generation == null) {
+                            unexpected = true;
+                            continue;
+                        }
+                        var item = new DiskGeneration(media, generation);
+                        if (after == null || item.cursor().compareTo(after) > 0) {
+                            page.add(item);
+                            if (page.size() > limit) page.pollLast();
+                        }
+                    }
+                } catch (java.nio.file.NoSuchFileException ignored) {
+                    // A live cleanup can remove a generation while inventory is walking.
+                }
+            }
+        }
+        return new DiskPage(java.util.List.copyOf(page), unexpected);
+    }
+
+    boolean hasUnexpectedFiles(DiskGeneration disk, Set<String> expected) throws IOException {
+        var folder = directory("derived/" + disk.media() + "/" + disk.generation(), false);
+        try (var files = Files.newDirectoryStream(folder)) {
+            for (Path file : files) {
+                if (!expected.contains(file.getFileName().toString())) return true;
+            }
+        }
+        return false;
+    }
+
+    private static UUID directoryId(Path path) {
+        if (!Files.isDirectory(path, NOFOLLOW_LINKS)) return null;
+        try {
+            String name = path.getFileName().toString();
+            UUID id = UUID.fromString(name);
+            return id.toString().equals(name) ? id : null;
+        } catch (IllegalArgumentException e) { return null; }
+    }
+
     boolean hasVariant(UUID media, UUID generation, int size, String format, long bytes) {
         if (media == null || generation == null || !Set.of(320, 480, 640, 1280, 1400).contains(size)
                 || !Set.of("jpg", "webp").contains(format)) return false;
+        if (knownCorrupt.containsKey("derived/" + media + "/" + generation + "/" + size + "." + format)) return false;
         try {
             Path file = directory("derived/" + media + "/" + generation, false).resolve(size + "." + format);
             var attributes = Files.readAttributes(file, java.nio.file.attribute.BasicFileAttributes.class, NOFOLLOW_LINKS);
@@ -178,30 +276,38 @@ public final class LocalImageStore {
                     || variant.width() < 1 || variant.height() < 1 || variant.bytes() < 1
                     || variant.bytes() > MAX_INPUT_BYTES)
                 throw new IOException("Invalid variant metadata");
-            Path path = source.resolve(fileName);
-            if (!Files.isRegularFile(path, NOFOLLOW_LINKS) || Files.size(path) != variant.bytes())
-                throw new IOException("Variant file does not match manifest");
-            var digest = sha256();
-            try (var input = Files.newInputStream(path, READ, NOFOLLOW_LINKS)) {
-                byte[] header = input.readNBytes(12);
-                boolean matches = extension.equals("jpg")
-                        ? header.length >= 3 && header[0] == (byte) 0xff && header[1] == (byte) 0xd8
-                            && header[2] == (byte) 0xff
-                        : header.length == 12 && header[0] == 'R' && header[1] == 'I' && header[2] == 'F'
-                            && header[3] == 'F' && header[8] == 'W' && header[9] == 'E'
-                            && header[10] == 'B' && header[11] == 'P';
-                if (!matches) throw new IOException("Variant content type does not match manifest");
-                digest.update(header);
-                byte[] buffer = new byte[8192];
-                for (int count; (count = input.read(buffer)) != -1;) digest.update(buffer, 0, count);
-            }
-            if (!HexFormat.of().formatHex(digest.digest()).equals(variant.sha256()))
-                throw new IOException("Variant checksum does not match manifest");
+            verifyFile(source.resolve(fileName), variant, extension);
         }
         try (var files = Files.list(source)) {
             if (files.anyMatch(path -> !expected.contains(path.getFileName().toString())))
                 throw new IOException("Unexpected staged output");
         }
+    }
+
+    private static void verifyFile(Path path, ImageTypes.Variant variant, String extension) throws IOException {
+        if (!Files.isRegularFile(path, NOFOLLOW_LINKS) || Files.size(path) != variant.bytes())
+            throw new IOException("Variant file does not match manifest");
+        var digest = sha256();
+        try (var input = Files.newInputStream(path, READ, NOFOLLOW_LINKS)) {
+            byte[] header = input.readNBytes(12);
+            boolean matches = extension.equals("jpg")
+                    ? header.length >= 3 && header[0] == (byte) 0xff && header[1] == (byte) 0xd8
+                        && header[2] == (byte) 0xff
+                    : header.length == 12 && header[0] == 'R' && header[1] == 'I' && header[2] == 'F'
+                        && header[3] == 'F' && header[8] == 'W' && header[9] == 'E'
+                        && header[10] == 'B' && header[11] == 'P';
+            if (!matches) throw new IOException("Variant content type does not match manifest");
+            digest.update(header);
+            byte[] buffer = new byte[8192];
+            long size = header.length;
+            for (int count; (count = input.read(buffer)) != -1;) {
+                size += count;
+                if (size > variant.bytes()) throw new IOException("Variant grew during verification");
+                digest.update(buffer, 0, count);
+            }
+        }
+        if (!HexFormat.of().formatHex(digest.digest()).equals(variant.sha256()))
+            throw new IOException("Variant checksum does not match manifest");
     }
 
     public synchronized void publish(Manifest manifest) throws IOException {

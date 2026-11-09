@@ -69,12 +69,14 @@ public class MediaReadService {
         var gateway = local.getIfAvailable();
         if (gateway == null) throw new AdminApiException(404, "not_found");
         String mime = format.equals("jpg") ? "image/jpeg" : "image/webp";
-        var bytes = jdbc.queryForList("""
-                SELECT v.bytes FROM image_variant v JOIN image_generation g ON g.id=v.generation_id
+        var variants = jdbc.query("""
+                SELECT v.storage_key,v.sha256,v.bytes,v.width,v.height FROM image_variant v JOIN image_generation g ON g.id=v.generation_id
                 WHERE g.id=? AND g.media_id=? AND g.published_at IS NOT NULL AND v.name=? AND v.mime=?
-                """, Long.class, generation, media, Integer.toString(size), mime);
-        if (bytes.isEmpty() || !gateway.available(media, generation, size, format, bytes.getFirst()))
-            throw new AdminApiException(404, "not_found");
-        return new Content(gateway.open(media, generation, size, format, bytes.getFirst()), bytes.getFirst());
+                """, (r, i) -> new ImageTypes.Variant(Integer.toString(size), r.getString("storage_key"), mime,
+                        r.getInt("width"), r.getInt("height"), r.getLong("bytes"), r.getString("sha256")),
+                generation, media, Integer.toString(size), mime);
+        if (variants.isEmpty()) throw new AdminApiException(404, "not_found");
+        var variant = variants.getFirst();
+        return new Content(gateway.open(media, generation, size, format, variant), variant.bytes());
     }
 }

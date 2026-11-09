@@ -97,6 +97,8 @@ class ImageMigrationHandler {
                         WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     AND NOT EXISTS(SELECT 1 FROM image_migration_row
                         WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
+                    AND NOT EXISTS(SELECT 1 FROM image_recovery_item
+                        WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     ORDER BY o.created_at,i.book_id,i.id LIMIT 1 FOR UPDATE OF i SKIP LOCKED
                 )
                 UPDATE image_migration_apply_item i SET state='DOWNLOADING',lease_token=?,

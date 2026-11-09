@@ -16,6 +16,8 @@ public class ImageJobService {
     private final ImageJobRepository jobs;
     private final LocalImageStore store;
     private final ImageMigrationPreviewQueue previews;
+    @org.springframework.beans.factory.annotation.Autowired private MediaRecoveryMode mode;
+    @org.springframework.beans.factory.annotation.Autowired private ImageRecoveryService recovery;
 
     public ImageJobService(ImageJobRepository jobs, LocalImageStore store, ImageMigrationPreviewQueue previews) {
         this.jobs = jobs;
@@ -26,6 +28,7 @@ public class ImageJobService {
     @Transactional
     public UUID enqueue(UUID mediaId, UUID generationId, JobKind kind, String inputKey,
                         String recipeVersion, String dedupeKey, int priority) {
+        requireActive();
         if (!inputKey.matches("staging/[a-f0-9-]{36}/input"))
             throw new AdminApiException(400, "invalid_image_input_key");
         String originalHash = null;
@@ -44,8 +47,10 @@ public class ImageJobService {
     }
 
     public Optional<JobLease> claim() {
+        if (mode != null && mode.isolated()) return Optional.empty();
         var lease = jobs.claim();
-        if (lease.isPresent() && lease.get().kind() != JobKind.PROCESS && lease.get().kind() != JobKind.MIGRATE) {
+        if (lease.isPresent() && lease.get().kind() != JobKind.PROCESS && lease.get().kind() != JobKind.MIGRATE
+                && lease.get().kind() != JobKind.REBUILD) {
             var job = lease.get();
             jobs.fail(job.jobId(), job.token(), "unsupported_job_kind", false);
             return Optional.empty();
@@ -54,16 +59,24 @@ public class ImageJobService {
     }
 
     public Instant heartbeat(UUID jobId, UUID token) {
+        requireActive();
         return previews.owns(jobId) ? previews.heartbeat(jobId, token) : jobs.heartbeat(jobId, token);
     }
 
     @Transactional
     public void complete(UUID jobId, UUID token, Manifest manifest) {
+        requireActive();
         if (previews.owns(jobId)) {
             previews.complete(jobId, token, manifest);
             return;
         }
         var lease = jobs.lockLease(jobId, token);
+        if (lease.kind() == JobKind.REBUILD) {
+            if (!lease.mediaId().equals(manifest.mediaId()) || !lease.generationId().equals(manifest.generationId()))
+                throw new AdminApiException(422, "RECIPE_MISMATCH");
+            recovery.complete(lease, manifest);
+            return;
+        }
         boolean migrate = lease.kind() == JobKind.MIGRATE;
         if (!lease.mediaId().equals(manifest.mediaId()) || !lease.generationId().equals(manifest.generationId())
                 || !lease.recipeVersion().equals(manifest.recipeVersion())
@@ -84,9 +97,13 @@ public class ImageJobService {
     }
 
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {
+        requireActive();
         if (code == null || !code.matches("[a-z0-9_]{1,64}"))
             throw new AdminApiException(400, "invalid_image_error_code");
         if (previews.owns(jobId)) previews.fail(jobId, token, code, retryable);
         else jobs.fail(jobId, token, code, retryable);
+    }
+    private void requireActive() {
+        if (mode != null) mode.requireActive();
     }
 }

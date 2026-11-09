@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { execFile } from 'node:child_process';
 import { lstat, mkdir, realpath } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
@@ -29,7 +30,7 @@ function encode(args, signal) {
 
 async function paths(root, job) {
   const input = /^staging\/([^/]+)\/input$/.exec(job.inputKey ?? '');
-  if (!['PROCESS', 'PREVIEW', 'MIGRATE'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
+  if (!['PROCESS', 'PREVIEW', 'MIGRATE', 'REBUILD'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
       .every(value => typeof value === 'string' && uuid.test(value))) throw new Error('invalid_job');
   if (!Object.hasOwn(recipes, job.recipeVersion)) throw new Error('unknown_recipe');
   const staging = join(root, 'staging');
@@ -45,7 +46,7 @@ async function paths(root, job) {
     generationId: job.generationId, recipeVersion: job.recipeVersion, preview: job.kind === 'PREVIEW' };
 }
 
-export async function runJob(client, root, job, { signal, heartbeatMs = 30_000, processor = encode } = {}) {
+export async function runJob(client, root, job, { signal, heartbeatMs = 30_000, processor = encode, workerDigest = process.env.MEMAY_IMAGE_WORKER_DIGEST } = {}) {
   const lease = new AbortController();
   const work = signal ? AbortSignal.any([signal, lease.signal]) : lease.signal;
   let beating = false;
@@ -64,12 +65,23 @@ export async function runJob(client, root, job, { signal, heartbeatMs = 30_000, 
     const manifest = await processor(await paths(root, job), work);
     work.throwIfAborted();
     clearInterval(timer);
+    if (job.kind === 'REBUILD') {
+      manifest.workerDigest = workerDigest ?? '';
+      manifest.configurationDigest = createHash('sha256')
+        .update(JSON.stringify(recipes[job.recipeVersion])).digest('hex');
+    }
     await client.complete(job, manifest, work);
     return 'ready';
   } catch (error) {
-    if (work.aborted || error.status === 409) return 'lease_lost';
+    if (work.aborted || (error.status === 409 && error.code !== 'image_recovery_media_changed'
+      && error.code !== 'source_unverified')) return 'lease_lost';
+    if (job.kind === 'REBUILD' && error.code) {
+      await client.fail(job, error.code, false, work);
+      return 'failed';
+    }
     const terminal = ['invalid_job', 'invalid_image', 'unknown_recipe'].includes(error.message);
-    const code = terminal ? error.message : error.status === 422 ? 'invalid_output' : 'encode_failed';
+    const code = job.kind === 'REBUILD' && error.message === 'unknown_recipe' ? 'recipe_mismatch'
+      : terminal ? error.message : error.status === 422 ? 'invalid_output' : 'encode_failed';
     await client.fail(job, code, !terminal && error.status !== 422, work);
     return 'failed';
   } finally {

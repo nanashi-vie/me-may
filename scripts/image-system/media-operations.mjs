@@ -68,9 +68,53 @@ function mutation(command, args) {
   return { receipt, body: { requestKey, expectedBookVersions } };
 }
 
+const recoveryEndpoint = '/api/v1/admin/image-recovery';
+
+function recoveryRequest(command, args) {
+  if (!Array.isArray(args)) throw new Error('Invalid recovery arguments');
+  const scan = command === 'inventory';
+  const booleanFlag = scan ? '--scan-disk' : '--apply';
+  const allowed = ['--scope', '--after', '--media', scan ? '--after-disk' : '--request-key'];
+  const values = new Map();
+  const mediaIds = [];
+  let enabled = false;
+  for (let i = 0; i < args.length; i++) {
+    const flag = args[i];
+    if (flag === booleanFlag && !enabled) {
+      enabled = true;
+      continue;
+    }
+    const value = args[++i];
+    if (!allowed.includes(flag) || !value || values.has(flag)) throw new Error('Invalid option for ' + command);
+    if (flag === '--media') mediaIds.push(value);
+    else values.set(flag, value);
+  }
+  const scope = values.get('--scope'), after = values.get('--after'), key = values.get('--request-key');
+  if ((scope && !['published', 'all'].includes(scope)) || (after && !uuid.test(after))
+      || (mediaIds.length && (scope || after)) || mediaIds.length > 100 || !mediaIds.every(id => uuid.test(id)))
+    throw new Error('Use --scope published|all with optional --after, or up to 100 --media UUIDs');
+  if (!scan) {
+    if ((enabled && !uuid.test(key ?? '')) || (!enabled && key))
+      throw new Error('Use --apply with an explicit --request-key UUID');
+    return { path: '/rebuild', body: JSON.stringify({
+      mediaIds: mediaIds.length ? mediaIds : undefined, scope, after, apply: enabled, requestKey: key,
+    }) };
+  }
+  const afterDisk = values.get('--after-disk');
+  if (afterDisk && (!enabled || !afterDisk.split(':').every(id => uuid.test(id)) || !afterDisk.includes(':')))
+    throw new Error('Use --after-disk with --scan-disk');
+  const query = new URLSearchParams();
+  for (const id of mediaIds) query.append('mediaIds', id);
+  if (scope) query.set('scope', scope);
+  if (after) query.set('after', after);
+  if (enabled) query.set('scanDisk', 'true');
+  if (afterDisk) query.set('afterDisk', afterDisk);
+  return { path: '/inventory' + (query.size ? '?' + query : '') };
+}
+
 export async function requestFor(config, command, argument) {
   const origin = siteOrigin(config.origin);
-  let path, body;
+  let path, body, base = endpoint;
   if (command === 'export' && (!argument || uuid.test(argument))) {
     path = '/template' + (argument ? '?after=' + argument : '');
   } else if (command === 'preview' && argument) {
@@ -81,19 +125,25 @@ export async function requestFor(config, command, argument) {
     path = '/preview';
   } else if (['show', 'show-apply'].includes(command) && uuid.test(argument ?? '')) {
     path = '/' + argument + (command === 'show-apply' ? '/apply' : '');
+  } else if (command === 'inventory' || command === 'rebuild') {
+    base = recoveryEndpoint;
+    ({ path, body } = recoveryRequest(command, argument));
+  } else if (command === 'show-rebuild' && uuid.test(argument ?? '')) {
+    base = recoveryEndpoint;
+    path = '/rebuild/' + argument;
   } else if (command === 'apply' || command === 'rollback') {
     const operation = mutation(command, argument);
     path = '/' + operation.receipt + '/' + command;
     body = JSON.stringify(operation.body);
   } else {
-    throw new Error('Invalid command. Use export, preview, show, show-apply, apply, or rollback');
+    throw new Error('Invalid command. Use export, preview, show, show-apply, apply, rollback, inventory, rebuild, or show-rebuild');
   }
   const session = await ownerSession(config.session);
   const headers = new Headers({ Cookie: session.cookie });
   if (body) headers.set('X-CSRF-TOKEN', session.csrf);
   if (typeof body === 'string') headers.set('Content-Type', 'application/json');
   const fetcher = config.fetch ?? fetch;
-  const response = await fetcher(origin + endpoint + path, {
+  const response = await fetcher(origin + base + path, {
     method: body ? 'POST' : 'GET', body, headers, redirect: 'error', signal: AbortSignal.timeout(30_000),
   });
   if (!response.ok) {
@@ -107,11 +157,11 @@ export async function requestFor(config, command, argument) {
 
 async function main() {
   const [command, ...args] = process.argv.slice(2);
-  const mutating = command === 'apply' || command === 'rollback';
-  if (!mutating && args.length > 1) throw new Error('Too many command arguments');
+  const flags = ['apply', 'rollback', 'inventory', 'rebuild'].includes(command);
+  if (!flags && args.length > 1) throw new Error('Too many command arguments');
   const config = { origin: process.env.MEMAY_SITE_ORIGIN, session: process.env.MEMAY_OWNER_SESSION_FILE };
   if (!config.origin || !config.session) throw new Error('Set MEMAY_SITE_ORIGIN and MEMAY_OWNER_SESSION_FILE');
-  const response = await requestFor(config, command, mutating ? args : args[0]);
+  const response = await requestFor(config, command, flags ? args : args[0]);
   if (command === 'export') {
     const next = response.headers.get('X-Next-Media-Id');
     if (next && uuid.test(next)) process.stderr.write('Next page: export ' + next + '\n');

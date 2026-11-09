@@ -19,8 +19,9 @@ Cập nhật 09/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   Backend 255 đạt, 3 skip. Frontend 261 đạt, build và proxy Workers đạt.
   S063 đã kiểm R3 dry-run Cloudinary theo lô, tối đa 100 ảnh và receipt 24 giờ.
   S064 đã kiểm R4 apply Cloudinary → LOCAL theo sách và rollback có version.
-  Backend 262 đạt, 3 skip. Worker 9 và CLI 3 test đạt. Tiếp theo R5 inventory/rebuild.
-  Ubuntu cần ở S8 để kiểm Nginx, worker và Drive thật.
+  S065 đã kiểm R5 inventory/rebuild đúng manifest và restore mode cách ly.
+  Backend 266 đạt, 3 skip. Worker 10, CLI 4, drill restore PostgreSQL 4 test đạt.
+  Tiếp theo S8. Owner có thể tiếp tục dựng Ubuntu để kiểm Nginx, worker và Drive thật.
   [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).

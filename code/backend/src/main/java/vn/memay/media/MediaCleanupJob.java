@@ -21,8 +21,11 @@ public class MediaCleanupJob {
         this.sessions = sessions;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired private MediaRecoveryMode recoveryMode;
+
     @Scheduled(fixedDelayString = "${memay.media.cleanup-delay-ms:600000}", initialDelayString = "${memay.media.cleanup-delay-ms:600000}")
     public void runOnce() {
+        if (recoveryMode != null && recoveryMode.isolated()) return;
         sessions.expire();
         if (local != null) local.ifAvailable(LocalImageCleanup::runOnce);
         var temporary = jdbc.queryForList("select id from temporary_media where state='DELETE_PENDING' and provider='CLOUDINARY' and delete_after<=? order by delete_after,id limit 100", UUID.class, java.sql.Timestamp.from(clock.instant()));

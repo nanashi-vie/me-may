@@ -1,7 +1,8 @@
 export class WorkerResponseError extends Error {
-  constructor(status) {
+  constructor(status, code) {
     super('worker_request_failed');
     this.status = status;
+    this.code = code;
   }
 }
 
@@ -19,8 +20,10 @@ export function createClient(origin, token, request = fetch) {
       signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
     });
     if (!response.ok) {
-      await response.body?.cancel();
-      throw new WorkerResponseError(response.status);
+      const body = await response.json().catch(() => null);
+      const code = ['RECIPE_MISMATCH', 'SOURCE_CHANGED', 'SOURCE_UNVERIFIED', 'image_recovery_media_changed']
+        .includes(body?.error) ? body.error.toLowerCase() : undefined;
+      throw new WorkerResponseError(response.status, code);
     }
     return response.status === 204 ? null : response.json();
   }

@@ -5,8 +5,13 @@ import org.springframework.core.env.Environment;
 import tools.jackson.databind.ObjectMapper;
 
 @Configuration
-@org.springframework.scheduling.annotation.EnableScheduling
 public class MediaConfiguration {
+    @Configuration
+    @org.springframework.scheduling.annotation.EnableScheduling
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+            name = "memay.media.recovery.mode", havingValue = "active", matchIfMissing = true)
+    static class ActiveScheduling {}
+
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
             prefix = "memay.media.local", name = "enabled", havingValue = "true")
@@ -17,15 +22,20 @@ public class MediaConfiguration {
     @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
             prefix = "memay.media.local", name = "enabled", havingValue = "true")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+            name = "memay.media.recovery.mode", havingValue = "active", matchIfMissing = true)
     LocalMediaGateway localMediaGateway(Environment env, LocalImageStore store, DeadlineCloudinaryTransport transport) {
         return new LocalMediaGateway(env.getRequiredProperty("memay.media.local.nginx-origin"), store, transport);
     }
 
-    @Bean(destroyMethod = "close")
+    @Bean
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
             prefix = "memay.media.local", name = "enabled", havingValue = "true")
-    vn.memay.media.source.GoogleDriveSourceClient driveSourceClient(
-            Environment env, ObjectMapper json, LocalImageStore store) {
+    vn.memay.media.source.DriveSourceClient driveSourceClient(
+            Environment env, ObjectMapper json, LocalImageStore store, MediaRecoveryMode mode) {
+        if (mode.isolated()) return (file, id) -> {
+            throw new vn.memay.media.source.SourceAccessException("RESTORE_ISOLATED", false, 409);
+        };
         return vn.memay.media.source.GoogleDriveSourceClient.create(
                 env.getProperty("MEMAY_DRIVE_CREDENTIALS_FILE", ""), json, store);
     }
@@ -36,7 +46,8 @@ public class MediaConfiguration {
     }
 
     @Bean
-    MediaGateway mediaGateway(Environment env, DeadlineCloudinaryTransport transport) {
+    MediaGateway mediaGateway(Environment env, DeadlineCloudinaryTransport transport, MediaRecoveryMode mode) {
+        if (mode.isolated()) return new UnconfiguredMediaGateway();
         String name = env.getProperty("CLOUDINARY_CLOUD_NAME", ""), key = env.getProperty("CLOUDINARY_API_KEY", ""),
                 secret = env.getProperty("CLOUDINARY_API_SECRET", "");
         if (name.isBlank() || key.isBlank() || secret.isBlank())

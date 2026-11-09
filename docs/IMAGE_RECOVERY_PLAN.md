@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** R1–R4 và S7 đã kiểm local, tiếp theo R5. Drive thật chưa kiểm chứng.
+**Status:** R1–R5 và S7 đã kiểm local, tiếp theo S8. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 
@@ -201,34 +201,52 @@ hoặc version đổi, lập dry-run mới cho ảnh cần xử lý lại.
 
 ### R5 — Inventory và rebuild cùng recipe
 
-**Files:** tạo `B/ImageRecoveryService.java`, `B/ImageRecoveryController.java`,
-`B/ImageRecoveryHandler.java`, `B/ImageInventoryService.java`;
-sửa `M/ImageJobDispatcher.java`, `M/MediaCleanupJob.java`, `O/media-operations.mjs`;
-test `BT/ImageRecoveryIntegrationTest.java`, `BT/ImageRestoreIsolationTest.java` mới.
+**Files:** tạo `M/ImageRecoveryService.java`, `M/ImageRecoveryController.java`,
+`M/ImageRecoveryHandler.java`, `M/ImageInventoryService.java`, V27 và restore profile;
+sửa `M/ImageJobService.java`, `M/LocalImageCleanup.java`, `O/media-operations.mjs`;
+test `T/ImageRecoveryIntegrationTest.java`, `T/ImageRestoreIsolationTest.java` mới.
 **Interfaces:** `inventory(List<UUID> mediaIds,String scope): InventoryReport`;
 `rebuild(List<UUID> mediaIds,String scope,boolean apply,UUID requestKey,AdminUser actor): RecoveryReport`;
 scope `published|all`, explicit IDs giới hạn100/lô, paging cho all.
 OWNER GET `/api/v1/admin/image-recovery/inventory`; POST `/rebuild`, apply default false.
 
-- [ ] RED `missingDerivedRebuildsExactManifest`: xóa fixture output, rebuild hash/key
+- [x] RED `missingDerivedRebuildsExactManifest`: xóa fixture output, rebuild hash/key
   đúng; lặp request không job trùng; SOURCE_MISSING giữ derived còn tốt và báo mã rõ.
-- [ ] RED `recipeMismatchNeverOverwrites`: recipe/config/worker digest không có hoặc
+- [x] RED `recipeMismatchNeverOverwrites`: recipe/config/worker digest không có hoặc
   output hash khác →RECIPE_MISMATCH; không pointer mới/overwrite key; nguồn đổi →SOURCE_CHANGED.
-- [ ] RED `recoveryCannotResurrectDeletedMedia`: restart/lease hết/replace/delete giữa
+- [x] RED `recoveryCannotResurrectDeletedMedia`: restart/lease hết/replace/delete giữa
   download và complete không attach lại; Ẩn vẫn Ẩn, FRONT published được ưu tiên.
-- [ ] RED `restoreStartsInQuarantine`: DB dump cũ+file mới ngoài metadata được report,
+- [x] RED `restoreStartsInQuarantine`: DB dump cũ+file mới ngoài metadata được report,
   không auto attach/delete; restore mode không outbound provider/queue/cleanup.
-- [ ] Chạy `BE(ImageRecoveryIntegrationTest,ImageRestoreIsolationTest)` ghi RED.
-- [ ] Implement disk inventory actual existence/MIME/size/hash, paging bounded RAM;
+- [x] Chạy `BE(ImageRecoveryIntegrationTest,ImageRestoreIsolationTest)` ghi RED.
+- [x] Implement disk inventory actual existence/MIME/size/hash, paging bounded RAM;
   stale/missing đánh availability, S7 gallery fallback; không lấy cache HIT làm bằng chứng file.
-- [ ] REBUILD dùng verified binding/hash/recipe pinned; download R1 →encode S4,
+- [x] REBUILD dùng verified binding/hash/recipe pinned; download R1 →encode S4,
   chỉ công bố hash đúng. priority20 FRONT published/21 detail/22 archived/23 trash còn hạn;
   PROCESS/VERIFY có ưu tiên cao hơn; dedupe media+generation+recipe+kind.
-- [ ] Thêm `MEMAY_MEDIA_RECOVERY_MODE=isolated` khóa outbound/cleanup/claim mặc định
+- [x] Thêm `MEMAY_MEDIA_RECOVERY_MODE=isolated` khóa outbound/cleanup/claim mặc định
   cho restore profile; require operator bật explicit sau kiểm namespace/mount/credentials.
   Report JSON success/fail/skip IDs, safe codes; purge sau batch, không đổi publication.
-- [ ] GREEN BE/CLI; drill local backup→restore DB test khác→mất derived→partial/full rebuild;
+- [x] GREEN BE/CLI; drill local backup→restore DB test khác→mất derived→partial/full rebuild;
   commit `feat(media): rebuild verified images with safe restore isolation` cùng log.
+
+CLI dùng phiên OWNER như R3. Rebuild mặc định chỉ kiểm kê. Mỗi trang
+tối đa 100 ảnh, dùng `--after <next>` cho trang sau. Kiểm đĩa dùng cursor
+riêng `--after-disk <nextDisk>` cùng `--scan-disk`.
+
+```sh
+node scripts/image-system/media-operations.mjs inventory --scope all --scan-disk
+node scripts/image-system/media-operations.mjs rebuild --media <media-id>
+node scripts/image-system/media-operations.mjs rebuild --media <media-id> --apply --request-key <uuid>
+node scripts/image-system/media-operations.mjs show-rebuild <operation-id>
+```
+
+Profile `restore` mặc định cách ly. Để unset `MEMAY_MEDIA_RECOVERY_MODE` hoặc
+đặt `isolated` khi kiểm DB khôi phục và mount riêng. Sau khi xác minh namespace,
+mount, credential và phiên bản worker, operator mới chuyển sang `active`.
+Recipe cần `image_recipe.worker_digest` khớp digest OCI của worker và
+`configuration.sha256` khớp SHA-256 của JSON recipe do worker dùng.
+Đặt `MEMAY_IMAGE_WORKER_DIGEST` theo đúng image đã pin ở worker.
 
 ### R6 — Bằng chứng vận hành và gate cutover do owner phối hợp
 

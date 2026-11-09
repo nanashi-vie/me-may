@@ -90,3 +90,19 @@ test('MIGRATE uses the full recipe output and the normal completion protocol', a
   assert.equal(manifests[0].variants.length, 9);
   assert.equal(manifests[0].generationId, job.generationId);
 });
+
+test('REBUILD attests its pinned recipe and reports an unavailable recipe as a mismatch', async t => {
+  const { root, job } = await fixture(t);
+  const workerDigest = 'sha256:' + 'a'.repeat(64);
+  const manifests = [], failures = [];
+  const client = {
+    complete: async (_job, manifest) => manifests.push(manifest),
+    fail: async (_job, code, retryable) => failures.push([code, retryable]),
+  };
+  assert.equal(await runJob(client, root, { ...job, kind: 'REBUILD' }, { workerDigest }), 'ready');
+  assert.equal(manifests[0].workerDigest, workerDigest);
+  assert.match(manifests[0].configurationDigest, /^[a-f0-9]{64}$/);
+  assert.equal(await runJob(client, root,
+    { ...job, token: randomUUID(), kind: 'REBUILD', recipeVersion: 'unavailable' }, { workerDigest }), 'failed');
+  assert.deepEqual(failures, [['recipe_mismatch', false]]);
+});
