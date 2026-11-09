@@ -55,7 +55,8 @@
 
     <a
       class="info-box-item"
-      [href]="groupUrl() || '#'"
+      [href]="groupUrl"
+      (click)="openCommunity($event)"
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Cộng đồng Mẹ Mây trên Zalo"
@@ -204,4 +205,5 @@
 }
 
 <app-shipping-promo-dialog #shippingPromoDialog />
+<app-community-dialog #communityDialog />
 <app-how-to-buy-dialog #howToBuyDialog />

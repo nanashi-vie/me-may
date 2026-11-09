@@ -1,0 +1,62 @@
+dialog {
+  width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 0;
+  border: 0;
+  border-radius: 1rem;
+  color: var(--ink);
+  background: white;
+  overflow: auto;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.dialog-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.close {
+  position: absolute;
+  inset: 0.5rem 0.5rem auto auto;
+  min-width: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.5rem;
+}
+
+h2, p {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+.qr {
+  width: min(12.375rem, 100%);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.qr-placeholder {
+  display: grid;
+  place-items: center;
+}
+
+.button, .secondary {
+  justify-self: stretch;
+  justify-content: center;
+}
+
+.copy-message:empty {
+  margin-top: -0.75rem;
+}

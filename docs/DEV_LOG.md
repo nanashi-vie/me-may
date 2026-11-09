@@ -2826,3 +2826,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Giữ mặc định Cloudinary. Còn S7 delivery public và ZIP trước khi bật LOCAL
   cho vận hành, cần đăng ký recipe v1 và kiểm Ubuntu với worker thật.
 - Bàn giao lên dev theo quy ước. Bước kế tiếp S7 theo IMAGE_STORAGE_PLAN.
+
+## 2026-11-09 — S062-C01 — Popup Cộng đồng Mẹ Mây
+
+- Bắt đầu trên dev sau fast-forward tới dceef69. Phạm vi ô Cộng đồng trên Home.
+- Kế hoạch: kiểm luồng desktop/mobile ở Home, theo mẫu dialog native sẵn có,
+  tạo QR từ URL trong spec và kiểm các đường đóng, focus, sao chép, SSR.
+- Chưa chạy kiểm tra. Đang triển khai.
+
+### S062-C02 — Kiểm chứng và bàn giao
+
+- Home dùng URL trong spec cho link trực tiếp, nút Zalo Web, clipboard và QR.
+  Dialog native theo mẫu Home, dùng logo hiện có. QR sinh tại chỗ bằng
+  qrcode-generator 2.0.4, tải thư viện khi mở. Nhận diện iPadOS giả Mac bằng
+  touch points và dùng khả năng con trỏ cho thiết bị không rõ hệ điều hành.
+- Từ code/frontend: npm test đạt 257/257 ca, 45 file. npm run build,
+  npm run build:workers và npm run check:workers:proxy đạt.
+- Chrome localhost: mở dialog, clipboard thật, Enter, Esc, X, backdrop,
+  focus ban đầu và trả focus, cuộn ở viewport 420×320 đạt. iPhone/Android
+  mô phỏng giữ click mặc định. Kiểm href/target của Zalo Web qua DOM.
+  Harness chờ sự kiện tab mới với Zalo giả lập bị timeout.
+- Giải mã QR render bằng jsQR ra https://zalo.me/g/mwzwwq694. QR ảnh user
+  chứa URL zaloapp.com/qr/g cùng mã nhóm. Yêu cầu giả lập Safari iPhone tới
+  URL trong spec nhận 302 sang scheme của Zalo; còn kiểm mở đúng nhóm trên
+  điện thoại thật. Bàn giao theo workflow dev, bước tiếp theo là smoke này.
