@@ -2692,3 +2692,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
   git diff --check đạt từ root. Chưa đo bố cục trên trình duyệt.
 - Bàn giao dev, kiểm tra lại nhãn và giá trị trên candidate khi smoke V20.
+
+
+### 2026-11-09 — S063-C01 — Chấm công MVP v1
+
+- Phạm vi theo spec user: hồ sơ/PIN, lịch tuần, chấm công qua phiên OWNER, bảng công/audit/Excel. Giờ 08:30–20:30 để tham chiếu, lưu giờ thực tế.
+- Worktree dev-ui được fast-forward từ 8ace07a lên 2943fdb theo origin/main. Kiểm refs origin qua git ls-remote từ workspace Mẹ Mây.
+- Đăng ký ATTENDANCE_SPEC và ATTENDANCE_PLAN vào README. Thay đổi tài liệu còn local. Chưa viết code hoặc chạy kiểm thử.
+- Bước tiếp theo: review kế hoạch theo Writing Plans, rồi viết kiểm thử API đầu tiên trên dev-ui.
+
+- S063-C02: User duyệt kế hoạch. Bổ sung quy tắc ca còn mở từ 20:30 giờ Việt Nam được đánh dấu Cần kiểm tra. Bắt đầu triển khai theo nhóm kiểm thử.
+
+### 2026-11-09 — S063-C03 — Kiểm chứng và bàn giao chấm công
+
+- Trên dev-ui từ 2943fdb, thêm module attendance, migration V21 và bốn màn hình admin. Dùng OWNER và CSRF hiện hành, không cấp tài khoản riêng. Lịch chỉ là kế hoạch. Ghi ca thực tế và lưu dấu vết điều chỉnh. Từ 20:30 giờ Việt Nam, ca mở hiện Cần kiểm tra trên màn hình chấm công, bảng công và Excel.
+- Ca qua nửa đêm quy về ngày bắt đầu. Bảng công và Excel cộng phần nguyên số phút của từng ca hoàn tất. Ca chưa đóng được loại khỏi tổng. Cờ Cần kiểm tra tự hết khi ca được đóng. Kiểm mốc 20:30 bằng clock kiểm thử, không đổi giờ hệ thống.
+- Từ code/backend: `mvn -o test` với PostgreSQL 18.6 riêng, UTF-8/ICU. 247 đạt, 3 bỏ qua, 0 lỗi. Gồm 8 test HTTP chấm công với chống mở ca đồng thời, replay, đổi PIN, hủy ghi lịch không hợp lệ, audit và đọc workbook bằng POI. Hai test catalogue từng lỗi trên locale C, kể cả với origin/main, rồi đều đạt trên ICU do case-fold đúng chữ có dấu.
+- Từ code/frontend: `npm test` đạt 254/254. `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` đạt. Chrome localhost qua tạo hồ sơ, lưu lịch, sao chép bản nháp theo thứ, cảnh báo lịch chưa lưu, xác nhận/hủy, ghi giờ sau 20:30, tự thoát hồ sơ giữ OWNER, chỉnh công và tải Excel. Kiểm hai sheet và nhãn Cần kiểm tra trong file tải về.
+- Review độc lập phát hiện trạng thái màn hình chấm công có thể chậm khi qua mốc 20:30 trong phiên đã nhập PIN. Đã sửa với test đỏ–xanh và bổ sung kiểm thử đồng thời và giao diện. Gộp contract vào ATTENDANCE_SPEC, cập nhật chỉ mục và gỡ kế hoạch hết vai trò.
+- Bàn giao trên dev-ui. Bước tiếp theo nếu đưa lên môi trường đích là nghiệm thu migration V21 và smoke với phiên OWNER tại tiệm. Chưa rollout V21 hoặc deploy.

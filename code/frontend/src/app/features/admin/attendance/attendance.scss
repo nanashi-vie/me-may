@@ -1,0 +1,30 @@
+:host { display: block; }
+.attendance-page { max-width: 76rem; margin-inline: auto; }
+h1 { margin: 0 0 .35rem; }
+h2 { margin: 0 0 1rem; font-size: 1.2rem; }
+p { margin: .5rem 0 1rem; }
+.panel { padding: 1.25rem; margin-block: 1.25rem; border: 1px solid #e5ded7; border-radius: .75rem; background: #fff; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-block: .75rem; }
+.field { display: grid; gap: .35rem; max-width: 100%; }
+.field span { font-weight: 600; }
+input:not([type='checkbox']), select, textarea { width: 100%; min-width: 0; padding: .55rem .65rem; border: 1px solid #b8ada6; border-radius: .4rem; background: #fff; color: #28201b; font: inherit; }
+input[type='checkbox'] { width: 1.2rem; height: 1.2rem; accent-color: #9b1c28; vertical-align: middle; }
+button { padding: .55rem .9rem; border: 1px solid #b8ada6; border-radius: .4rem; background: #fff; color: #302620; font: inherit; cursor: pointer; }
+button.primary { background: #9b1c28; color: #fff; border-color: #9b1c28; }
+button:disabled { opacity: .55; cursor: default; }
+.table-wrap { overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { padding: .65rem; border-bottom: 1px solid #e5ded7; text-align: left; vertical-align: top; }
+th { background: #f8f4f1; }
+th[scope='row'] { background: none; }
+.schedule th:not(:first-child), .schedule td { text-align: center; }
+.today { background: #fdf0ee; }
+.error, .warning { color: #861e24; }
+.success { color: #215a3e; }
+.muted { color: #625951; }
+.nowrap { white-space: nowrap; }
+.clock { max-width: 48rem; }
+.day-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .35rem; }
+.day-list li { padding: .5rem; border: 1px solid #e5ded7; border-radius: .4rem; }
+dialog { max-width: min(33rem, calc(100vw - 2rem)); padding: 1.25rem; border: 1px solid #e5ded7; border-radius: .75rem; }
+dialog::backdrop { background: rgb(30 20 20 / 45%); }

@@ -90,6 +90,15 @@
         </div>
       </div>
 
+      @if (auth.user()?.role === 'OWNER') {
+        <div class="sidebar-divider" role="separator"></div>
+        <a class="nav-item" routerLink="/admin/nhan-vien" routerLinkActive="active">Nhân viên</a>
+        <a class="nav-item" routerLink="/admin/cham-cong" routerLinkActive="active"
+           [routerLinkActiveOptions]="{ exact: true }">Chấm công</a>
+        <a class="nav-sub-item" routerLink="/admin/cham-cong/lich" routerLinkActive="active">Lịch làm việc</a>
+        <a class="nav-sub-item" routerLink="/admin/cham-cong/bao-cao" routerLinkActive="active">Bảng công</a>
+      }
+
       <div class="sidebar-divider" role="separator"></div>
 
       <a routerLink="/" class="nav-item nav-external" target="_blank" rel="noopener">

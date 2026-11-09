@@ -37,6 +37,9 @@ describe('AdminLayout', () => {
     expect(text).toContain('Sách');
     expect(text).toContain('Bộ sưu tập');
     expect(text).toContain('Flash sale');
+    for (const path of ['nhan-vien', 'cham-cong', 'cham-cong/lich', 'cham-cong/bao-cao']) {
+      expect(fixture.nativeElement.querySelector(`a[href="/admin/${path}"]`)).not.toBeNull();
+    }
     expect(text).toContain('Xem website');
     expect(text).toContain('owner@memay.vn');
     expect(text).toContain('OWNER');
@@ -85,6 +88,7 @@ describe('AdminLayout', () => {
     expect(text).not.toContain('Bộ sưu tập');
     expect(text).not.toContain('Flash sale');
     expect(text).toContain('staff@memay.vn');
+    expect(fixture.nativeElement.querySelector('a[href="/admin/cham-cong"]')).toBeNull();
     expect(text).toContain('STAFF');
   });
 

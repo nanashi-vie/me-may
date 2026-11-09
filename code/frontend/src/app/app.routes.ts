@@ -6,6 +6,9 @@ import { requireAdmin } from './core/auth/auth.guard';
 const pendingBookChanges: CanDeactivateFn<{ canLeave(): boolean }> = (component) =>
   component.canLeave();
 
+const requireOwner = () =>
+  inject(AuthService).user()?.role === 'OWNER' || inject(Router).createUrlTree(['/admin/sach']);
+
 export const routes: Routes = [
   {
     path: 'admin/dang-nhap',
@@ -17,6 +20,31 @@ export const routes: Routes = [
     canActivate: [requireAdmin],
     loadComponent: () => import('./layouts/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
+      {
+        path: 'nhan-vien',
+        title: 'Nhân viên | Mẹ Mây',
+        canActivate: [requireOwner],
+        loadComponent: () => import('./features/admin/attendance/employees').then((m) => m.Employees),
+      },
+      {
+        path: 'cham-cong/lich',
+        title: 'Lịch làm việc | Mẹ Mây',
+        canActivate: [requireOwner],
+        canDeactivate: [pendingBookChanges],
+        loadComponent: () => import('./features/admin/attendance/schedule').then((m) => m.Schedule),
+      },
+      {
+        path: 'cham-cong/bao-cao',
+        title: 'Bảng công | Mẹ Mây',
+        canActivate: [requireOwner],
+        loadComponent: () => import('./features/admin/attendance/report').then((m) => m.AttendanceReport),
+      },
+      {
+        path: 'cham-cong',
+        title: 'Chấm công | Mẹ Mây',
+        canActivate: [requireOwner],
+        loadComponent: () => import('./features/admin/attendance/punch').then((m) => m.Punch),
+      },
       {
         path: 'flash-sale',
         canDeactivate: [pendingBookChanges],
