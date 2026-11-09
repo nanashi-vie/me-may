@@ -37,13 +37,13 @@ public class AdminMediaController {
             throw AdminApiException.field("version", "Version không hợp lệ");
         if (file.getSize() > ImageValidator.MAX_BYTES)
             throw new AdminApiException(413, "image_too_large");
-        return ResponseEntity.status(201).body(media.upload(id, role, version, actor, file.getBytes(), alt, sourceRef));
+        return ResponseEntity.status(201).body(media.upload(id, role.canonical(), version, actor, file.getBytes(), alt, sourceRef));
     }
 
     @PatchMapping
     public BookDetail metadata(Authentication a, @PathVariable long id, @PathVariable MediaRole role,
             @Valid @RequestBody Metadata body) {
-        return media.updateMetadata(id, role, body.version(), actors.current(a), body.alt(), body.sourceRef());
+        return media.updateMetadata(id, role.canonical(), body.version(), actors.current(a), body.alt(), body.sourceRef());
     }
 
     @DeleteMapping
@@ -51,13 +51,13 @@ public class AdminMediaController {
             @RequestParam long version) {
         if (version < 0)
             throw AdminApiException.field("version", "Version không hợp lệ");
-        return media.remove(id, role, version, actors.current(a));
+        return media.remove(id, role.canonical(), version, actors.current(a));
     }
 
     @GetMapping("/content")
     public ResponseEntity<StreamingResponseBody> content(Authentication a, @PathVariable long id,
             @PathVariable MediaRole role, @RequestParam(defaultValue="1280") int size) {
-        var input = media.content(id, role, actors.current(a),size);
+        var input = media.content(id, role.canonical(), actors.current(a),size);
         var trace=timings.capture();
         StreamingResponseBody body = output -> {
             try (input) {

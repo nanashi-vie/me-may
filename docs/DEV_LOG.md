@@ -2692,3 +2692,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
   git diff --check đạt từ root. Chưa đo bố cục trên trình duyệt.
 - Bàn giao dev, kiểm tra lại nhãn và giá trị trên candidate khi smoke V20.
+
+## S057-C01 — Bắt đầu S1 hợp nhất ảnh sách
+
+- Native tuần tự, worktree codex/image-system từ dev 266f2d3.
+- Ruling: dùng V21/V22/V23 vì V20 đã dành cho thùng sách.
+- Phạm vi S1: gallery tám ảnh, giữ dữ liệu và retry cũ. Đang chuẩn bị RED.
+
+- S1: hợp nhất UI/DTO và gallery, giữ hai alias request để tương thích URL và
+  fingerprint cũ. Migration V21 đổi role, giữ ID/storage ref, tăng version.
+- RED: test gallery trên PostgreSQL local trả 6 thay vì 8. Lượt kiểm shared DB
+  gặp dữ liệu test trùng/FK; chuyển sang container loopback riêng memay-s057-pg.
+- GREEN: từ code/backend, ./mvnw -B -ntp test trên DB test riêng đã migrate
+  đạt 243 ca, 240 đạt/3 skip. Lần chạy trước trên DB trống có 7 lỗi setup auth
+  do bảng chưa tồn tại; chạy lại sau Flyway đạt. Frontend npm test đạt 248/248;
+  npm run build:workers và npm run check:workers:proxy đạt.
+- Đã kiểm git diff --check, liên kết tài liệu và trần dòng. Chưa smoke browser,
+  replay receipt chụp từ bản deploy cũ hoặc rollout production.
+- Checkpoint codex/image-system. Bước tiếp theo S2; S3–R6 còn mở.

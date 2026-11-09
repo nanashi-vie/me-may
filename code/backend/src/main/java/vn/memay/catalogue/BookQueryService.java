@@ -153,7 +153,7 @@ public class BookQueryService {
                 b.categoryCode(), b.binding(), null, null, b.priceMinVnd(), b.priceMaxVnd(),
                 b.weightG(), b.description(),
                 b.readingLevel(), b.readingVideoUrl(), b.availability(),
-                b.media().stream().filter(MediaView::visibleOnProduct).map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
+                b.media().stream().map(m -> new PreviewMedia(m.id(), m.role(), m.alt(), m.contentPath())).toList(),
                 List.of(), 0, b.features());
     }
 

@@ -1,7 +1,7 @@
 <section aria-labelledby="photo-heading">
   <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Tối đa 8 ảnh: 6 ảnh công khai và 2 ảnh bổ sung mặc định ẩn. Khi xuất bản cần bìa và lưng;
+    Tối đa 8 ảnh. Tất cả ảnh hiển thị khi sách được xuất bản. Khi xuất bản cần bìa và lưng;
     có thể lưu sách ẩn khi bộ ảnh chưa hoàn thiện.
   </p>
   @if (!readonly()) {
@@ -40,15 +40,12 @@
     </button>
   }
   <p role="status" aria-live="polite">{{ photos.announcement() }}</p>
-  @for (group of groups; track group.internal) {
-  <h3 class="photo-group-heading">{{group.label}}</h3>
   <div class="photo-grid">
-    @for (row of groupRows(group.internal); track row.id; let i = $index) {
+    @for (row of photos.sorted(); track row.id; let i = $index) {
       <article
         class="photo-slot"
       >
         <h3>{{ labels[row.role] }}</h3>
-        @if(group.internal) {<p class="private-photo"><span aria-hidden="true">🔒</span> {{ row.showOnProduct ? "Hiện trên trang sách" : "Chỉ nội bộ" }}</p>}
         @if (row.preview) {
           <div class="preview-wrap">
           @defer (on viewport) {
@@ -111,10 +108,6 @@
                 }
               </select></label
             >
-            @if(group.internal) {
-              <label><input type="checkbox" [checked]="row.showOnProduct ?? false" [disabled]="row.state !== 'READY'"
-                (change)="photos.setProductVisibility(row.id, $any($event.target).checked)" /> Hiện trên trang sách</label>
-            }
             <div class="actions">
               <button
                 type="button"
@@ -164,7 +157,6 @@
       </article>
     }
   </div>
-  }
   <dialog #viewer aria-labelledby="photo-viewer-title" (cancel)="closePhoto()" (close)="selectedPhoto.set(null)">
     <div class="viewer-heading">
       <h3 id="photo-viewer-title">Xem ảnh chi tiết</h3>

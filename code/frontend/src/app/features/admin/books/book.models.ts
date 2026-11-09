@@ -1,6 +1,6 @@
 export type Publication = 'PUBLISHED' | 'ARCHIVED';
 export type Availability = 'AVAILABLE' | 'SOLD';
-export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3' | 'INTERNAL_1' | 'INTERNAL_2';
+export type MediaRole = 'FRONT' | 'BACK' | 'SPINE' | 'INSIDE_1' | 'INSIDE_2' | 'INSIDE_3' | 'INSIDE_4' | 'INSIDE_5';
 export type Binding = 'PAPERBACK' | 'HARDCOVER';
 export type CategoryCode =
   | 'BOARD_BOOK'
@@ -43,7 +43,6 @@ export interface BookWrite {
   collectionIds: string[];
 }
 export interface MediaView {
-  showOnProduct?: boolean;
   id: string;
   role: MediaRole;
   alt: string | null;
@@ -156,7 +155,7 @@ export interface AdminApiError {
 export interface TrashBook { id:string; bookCode:string; title:string|null; version:number; deletedAt:string; expiresAt:string; }
 
 export interface MediaMetadata {mediaId:string;alt:string|null;sourceRef:string|null;}
-export interface MediaAssignment { mediaId: string; role: MediaRole; showOnProduct?: boolean; }
+export interface MediaAssignment { mediaId: string; role: MediaRole; }
 export interface BookCreate { publication?: Publication; write: BookWrite; uploadSessionId: string; media: MediaAssignment[]; confirmedActualCopy: boolean; }
 export interface TemporaryMedia { id: string; state: 'READY' | 'UPLOADING'; alt: string | null; sourceRef: string | null; width: number | null; height: number | null; contentPath: string; }
 export interface UploadSession { bookId?:string|null; id: string; state: string; expiresAt: string; media: TemporaryMedia[]; }

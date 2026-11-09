@@ -114,7 +114,7 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 
 **Prerequisite:** S7, R2.
 **Files:** tạo `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`B/ImageMigrationDtos.java`, `D/V22__image_operation_receipts.sql`,
+`B/ImageMigrationDtos.java`, `D/V23__image_operation_receipts.sql`,
 `O/media-operations.mjs`, `O/media-operations.test.mjs`;
 test `BT/ImageMigrationPreviewTest.java` mới.
 **Interfaces:** OWNER endpoints `/api/v1/admin/image-migrations`:

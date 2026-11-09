@@ -187,11 +187,11 @@ public class BookCommandService {
         for (var assignment : assignments) {
             var m = selected.get(assignment.mediaId());
             jdbc.update(
-                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at,show_on_product) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?,?)",
-                    assignment.mediaId(), id, assignment.role().name(), m.get("storage_public_id"), m.get("asset_id"),
+                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
+                    assignment.mediaId(), id, assignment.role().canonical().name(), m.get("storage_public_id"), m.get("asset_id"),
                     m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
                     m.get("alt") == null ? assignment.role().label() + " " + b.bookCode : m.get("alt"),
-                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"), supplementalVisibility(assignment,false));
+                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
             jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
         }
         var prepared = mapper.detail(b, l);
@@ -219,9 +219,9 @@ public class BookCommandService {
                 || input.stream().anyMatch(m -> m == null || m.mediaId() == null || m.role() == null))
             throw AdminApiException.field("media", "Tối đa 8 ảnh hợp lệ");
         if (input.stream().map(MediaAssignment::mediaId).distinct().count() != input.size()
-                || input.stream().map(MediaAssignment::role).distinct().count() != input.size())
+                || input.stream().map(a -> a.role().canonical()).distinct().count() != input.size())
             throw AdminApiException.field("media", "Ảnh/vai trò không được trùng");
-        return input.stream().sorted(Comparator.comparingInt(m -> m.role().ordinal())).toList();
+        return input.stream().sorted(Comparator.comparingInt(m -> m.role().canonical().ordinal())).toList();
     }
 
     @Transactional
@@ -269,8 +269,7 @@ public class BookCommandService {
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && (reordered.size() != before.media().size() ||
                 reordered.stream().anyMatch(a -> before.media().stream().noneMatch(m ->
-                        a.mediaId().toString().equals(m.id()) && a.role()==m.role()
-                                && supplementalVisibility(a,m.showOnProduct())==m.showOnProduct())));
+                        a.mediaId().toString().equals(m.id()) && a.role().canonical()==m.role())));
         if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd)
                 && Objects.equals(storageBox,b.storageBoxNumber))
             return before;
@@ -324,10 +323,6 @@ public class BookCommandService {
         return changed;
     }
 
-    private static boolean supplementalVisibility(MediaAssignment assignment, boolean previous) {
-        return !assignment.role().isPublic() && Objects.requireNonNullElse(assignment.showOnProduct(),previous);
-    }
-
     private void reorder(long id, List<MediaAssignment> assignments) {
         var active = images.findByBookCopyIdAndState(id, MediaDtos.MediaState.ACTIVE);
         if (active.size() != assignments.size()
@@ -341,8 +336,7 @@ public class BookCommandService {
         em.flush();
         for (var m : active) {
             var assignment = assignments.stream().filter(a -> a.mediaId().equals(m.id)).findFirst().orElseThrow();
-            m.showOnProduct = supplementalVisibility(assignment,!m.role.isPublic() && m.showOnProduct);
-            m.role = assignment.role();
+            m.role = assignment.role().canonical();
             m.state = MediaDtos.MediaState.ACTIVE;
         }
         em.flush();

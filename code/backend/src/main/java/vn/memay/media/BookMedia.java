@@ -28,7 +28,6 @@ public class BookMedia {
     public String alt;
     @Column(length = 500)
     public String sourceRef;
-    public boolean showOnProduct;
     @Column(nullable = false)
     public Instant createdAt;
     @Column(nullable = false)

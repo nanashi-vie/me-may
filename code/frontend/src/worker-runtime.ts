@@ -82,7 +82,7 @@ export async function handleWorkerRequest(
   const anonymous = !request.headers.has('cookie') && !request.headers.has('authorization');
   const home = request.method === 'GET' && url.pathname === '/' && !url.search;
   const media = request.method === 'GET'
-    && /^\/api\/v1\/books\/[a-z0-9-]+\/media\/(FRONT|BACK|SPINE|INSIDE_[123])$/.test(url.pathname)
+    && /^\/api\/v1\/books\/[a-z0-9-]+\/media\/(FRONT|BACK|SPINE|INSIDE_[1-5])$/.test(url.pathname)
     && /^[a-f0-9-]{36}$/.test(url.searchParams.get('v') ?? '')
     && ['320', '640'].includes(url.searchParams.get('size') ?? '')
     && ['webp', 'jpg'].includes(url.searchParams.get('format') ?? '')

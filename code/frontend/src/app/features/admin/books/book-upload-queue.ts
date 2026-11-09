@@ -4,7 +4,7 @@ import { HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/
 import { firstValueFrom, filter, tap, Subject } from 'rxjs';
 import { BookApi } from './book-api';
 import { BookDetail, MediaRole, MediaAssignment, TemporaryMedia } from './book.models';
-import { MEDIA_ROLES, MEDIA_LABELS, isPublicMedia } from './book-copy';
+import { MEDIA_ROLES, MEDIA_LABELS } from './book-copy';
 import { prepareImage, prepareValidatedImage, SourceImageInfo, sourceImageInfo } from './image-upload';
 export const PREPARE_BOOK_IMAGE = new InjectionToken<(file:File,info?:SourceImageInfo)=>Promise<Blob>>('Prepare book image', {
   providedIn: 'root',
@@ -23,7 +23,6 @@ export interface UploadItem {
   sourceRef: string;
   storedAlt: string;
   storedSource: string;
-  showOnProduct?: boolean;
   uploadRole?: MediaRole;
   prepared?: Blob;
   previous?: UploadItem;
@@ -73,7 +72,7 @@ export class BookUploadQueue {
       : this.pending() ||
         this.metadataDirty() ||
         JSON.stringify(this.assignments()) !==
-          JSON.stringify(this.persisted()!.media.map((m) => mediaAssignment(m.id,m.role,m.showOnProduct))),
+          JSON.stringify(this.persisted()!.media.map((m) => mediaAssignment(m.id,m.role))),
   );
   constructor() {
     inject(DestroyRef).onDestroy(() => this.dispose());
@@ -105,7 +104,6 @@ export class BookUploadQueue {
         error: '',
         alt: m.alt ?? '',
         sourceRef: m.sourceRef ?? '',
-        showOnProduct: m.showOnProduct,
         storedAlt: m.alt ?? '',
         storedSource: m.sourceRef ?? '',
       })) ?? [],
@@ -114,12 +112,7 @@ export class BookUploadQueue {
   assignments(): MediaAssignment[] {
     return this.sorted()
       .filter((r) => r.mediaId !== null)
-      .map((r) => {
-        const stored = this.persisted()?.media.find(m => m.id === r.mediaId);
-        return !isPublicMedia(r.role) && !r.showOnProduct && stored?.showOnProduct
-          ? {mediaId:r.mediaId!,role:r.role,showOnProduct:false}
-          : mediaAssignment(r.mediaId!,r.role,r.showOnProduct);
-      });
+      .map((r) => mediaAssignment(r.mediaId!, r.role));
   }
   add(files: File[]) {
     if (this.locked() || this.destroyed || !files.length) return;
@@ -150,24 +143,14 @@ export class BookUploadQueue {
   assignRole(id: string, role: MediaRole) {
     if (this.locked() || !MEDIA_ROLES.includes(role)) return;
     const item = this.rows().find((r) => r.id === id);
-    if (!item) return;
-    const swapping=this.rows().find(r=>r.role===role && r.id!==id);
-    if(this.persisted() && [item,swapping].some(r=>r && (r.state==='uploading' || r.uncertain || !!r.previous) && isPublicMedia(r.role)!==isPublicMedia(role===r.role?item.role:role))) {
-      this.error.set('Ảnh đang tải hoặc chưa rõ kết quả. Kiểm tra xong trước khi đổi nhóm ảnh.');return;
-    }
+    if (!item || item.role === role) return;
     this.rows.update((rows) =>
       rows.map((r) =>
-        r.id === id ? { ...r, role, showOnProduct: isPublicMedia(r.role) === isPublicMedia(role) ? r.showOnProduct : false }
-          : r.role === role ? { ...r, role: item.role, showOnProduct: isPublicMedia(r.role) === isPublicMedia(item.role) ? r.showOnProduct : false } : r,
+        r.id === id ? { ...r, role }
+          : r.role === role ? { ...r, role: item.role } : r,
       ),
     );
     this.announcement.set('Đã gán vai trò ' + MEDIA_LABELS[role] + '.');
-  }
-  setProductVisibility(id: string, showOnProduct: boolean) {
-    const row = this.rows().find(r => r.id === id);
-    if (row?.state === 'READY' && !isPublicMedia(row.role) && !this.locked()) {
-      this.patch(id, {showOnProduct});
-    }
   }
   setMetadata(id: string, key: 'alt' | 'sourceRef', value: string) {
     const r = this.rows().find((r) => r.id === id);
@@ -178,10 +161,6 @@ export class BookUploadQueue {
     if (this.locked()) return;
     const old = this.rows().find((r) => r.id === id);
     if (!old || old.state !== 'READY') return;
-    const stored=this.persisted()?.media.find(m=>m.id===old.mediaId);
-    if(stored && isPublicMedia(stored.role)!==isPublicMedia(old.role)) {
-      this.error.set('Lưu vai trò ảnh trước khi thay ảnh sang nhóm công khai/nội bộ.');return;
-    }
     this.rows.update((rows) =>
       rows.map((r) =>
         r.id === id
@@ -192,7 +171,6 @@ export class BookUploadQueue {
               preview: this.preview(file),
               prepared: undefined,
               previous: old,
-              showOnProduct: false,
               state: 'queued',
               progress: 0,
               error: '',
@@ -337,8 +315,8 @@ export class BookUploadQueue {
             const existing = book.media.find((m) => m.id === row!.mediaId);
             const role =
               existing?.role ??
-              MEDIA_ROLES.find((role) => isPublicMedia(role)===isPublicMedia(row!.role) && !book.media.some((m) => m.role === role));
-            if (!role) throw Error('Nhóm ảnh đã đầy. Lưu vai trò ảnh trước khi tải thêm.');
+              MEDIA_ROLES.find((role) => !book.media.some((m) => m.role === role));
+            if (!role) throw Error('Đã đủ 8 vị trí ảnh.');
             this.patch(id, { uploadRole: role });
             const saved = await firstValueFrom(
               this.api.upload(book.id, role, book.version, body).pipe(
@@ -545,6 +523,6 @@ export class BookUploadQueue {
   }
 }
 
-export function mediaAssignment(mediaId: string, role: MediaRole, visible?: boolean): MediaAssignment {
-  return isPublicMedia(role) || !visible ? {mediaId,role} : {mediaId,role,showOnProduct:true};
+export function mediaAssignment(mediaId: string, role: MediaRole): MediaAssignment {
+  return { mediaId, role };
 }

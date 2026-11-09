@@ -23,6 +23,14 @@ class BookMediaFeatureMigrationTest {
    db.update("insert into listing_feature values(?,'SOUND',1)",listing);
    for(String sql:List.of("insert into listing_feature values(?,'SOUND',2)","insert into listing_feature values(?,'FLAP',1)","insert into listing_feature values(?,'FLAP',4)","insert into listing_feature values(?,'FAKE',2)"))
     assertThatThrownBy(()->db.update(sql,listing)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
+   config.target("20").load().migrate();
+   var before = db.queryForList("select id,storage_public_id from book_media order by id");
+   long version = db.queryForObject("select version from book_copy where id=1",Long.class);
+   config.target("21").load().migrate();
+   assertThat(db.queryForList("select id,storage_public_id from book_media order by id")).isEqualTo(before);
+   assertThat(db.queryForList("select role from book_media order by role",String.class))
+       .containsExactly("FRONT","INSIDE_4","INSIDE_5");
+   assertThat(db.queryForObject("select version from book_copy where id=1",Long.class)).isEqualTo(version+1);
   } finally {PgTestData.jdbc().execute("drop schema if exists "+schema+" cascade");}
  }
 }

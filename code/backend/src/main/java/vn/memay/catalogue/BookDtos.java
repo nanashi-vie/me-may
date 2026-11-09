@@ -67,12 +67,7 @@ public final class BookDtos {
 
         public record MediaMetadata(java.util.UUID mediaId,String alt,String sourceRef) {}
 
-        public record MediaView(String id, MediaRole role, String alt, String sourceRef, String contentPath, boolean showOnProduct) {
-                public MediaView(String id,MediaRole role,String alt,String sourceRef,String contentPath) {
-                        this(id,role,alt,sourceRef,contentPath,false);
-                }
-                public boolean visibleOnProduct() { return role.isPublic() || showOnProduct; }
-        }
+        public record MediaView(String id, MediaRole role, String alt, String sourceRef, String contentPath) {}
 
         public record BookDetail(String id, String bookCode, String slug, long version, String title, String isbn,
                         String publisher, String author, String language, String binding, String conditionGrade,

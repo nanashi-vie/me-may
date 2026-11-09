@@ -42,9 +42,9 @@ describe('book photo queue', () => {
     });
     return { q: TestBed.inject(BookUploadQueue), api, uploads };
   }
-  it('uploads eight with last two internal, preserves roles on removal and replaces at capacity',async()=>{
+  it('uploads eight preserves roles on removal and replaces at capacity',async()=>{
     const {q,api,uploads}=setup();q.add(Array.from({length:8},photo));
-    expect(q.rows().map(r=>r.role)).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3','INTERNAL_1','INTERNAL_2']);
+    expect(q.rows().map(r=>r.role)).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3','INSIDE_4','INSIDE_5']);
     for(let i=0;i<8;i++) {
       await vi.waitFor(()=>expect(uploads.length).toBe(i+1));
       uploads[i].next(new HttpResponse({body:{id:'photo-'+i,state:'READY',contentPath:'/private/'+i}}));uploads[i].complete();
@@ -55,34 +55,8 @@ describe('book photo queue', () => {
     uploads[8].next(new HttpResponse({body:{id:'replacement',state:'READY',contentPath:'/private/new'}}));uploads[8].complete();
     await vi.waitFor(()=>expect(q.pending()).toBe(false));
     await q.remove(q.rows()[2].id);
-    expect(q.rows().find(r=>r.mediaId==='replacement')?.role).toBe('INTERNAL_1');
-    expect(q.rows().find(r=>r.mediaId==='photo-7')?.role).toBe('INTERNAL_2');
-  });
-  it('uploads new internal photos into an internal server slot even when public slots are empty',async()=>{
-    const upload=vi.fn((id:string,role:string,version:number,body:FormData)=>of(new HttpResponse({body:{...testBook(),version:1,media:[{id:'private',role,alt:null,sourceRef:null,contentPath:'/private'}]}})));
-    TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:{upload,cancelSession:()=>of(null)}},{provide:PREPARE_BOOK_IMAGE,useValue:async(f:File)=>f}]});
-    const q=TestBed.inject(BookUploadQueue);q.configure(testBook());q.add([photo()]);q.assignRole(q.rows()[0].id,'INTERNAL_2');
-    await vi.waitFor(()=>expect(q.pending()).toBe(false));
-    expect(upload.mock.calls[0][1]).toMatch(/^INTERNAL_/);expect(q.rows()[0].role).toBe('INTERNAL_2');
-  });
-  it('requires saving visibility before replacing a public photo shown in the internal group',async()=>{
-    const {q}=setup();const book={...testBook(),publication:'PUBLISHED' as const,media:[{id:'public',role:'FRONT' as const,alt:null,sourceRef:null,contentPath:'/public'}]};
-    q.configure(book);const row=q.rows()[0];q.assignRole(row.id,'INTERNAL_1');q.replace(row.id,photo());
-    expect(q.rows()[0].state).toBe('READY');expect(q.rows()[0].file).toBeNull();expect(q.error()).toContain('Lưu vai trò');
-  });
-  it('does not move an inflight public upload into an internal group or swap a pending internal upload',async()=>{
-    const response=new Subject<any>();const upload=vi.fn(()=>response);
-    TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:{upload,cancelSession:()=>of(null)}},{provide:PREPARE_BOOK_IMAGE,useValue:async(f:File)=>f}]});
-    const q=TestBed.inject(BookUploadQueue);q.configure(testBook());q.add([photo()]);
-    await vi.waitFor(()=>expect(upload).toHaveBeenCalledTimes(1));const id=q.rows()[0].id;
-    q.assignRole(id,'INTERNAL_1');expect(q.rows()[0].role).toBe('FRONT');expect(q.error()).toContain('đang tải');
-  });
-  it('keeps replacement visibility fixed while its file is being prepared',()=>{
-    const pending=new Promise<Blob>(()=>{});
-    const {q}=setup(async()=>pending);
-    q.configure({...testBook(),media:[{id:'front',role:'FRONT',alt:null,sourceRef:null,contentPath:'/a'}]});
-    q.replace(q.rows()[0].id,photo());q.assignRole(q.rows()[0].id,'INTERNAL_1');
-    expect(q.rows()[0].role).toBe('FRONT');
+    expect(q.rows().find(r=>r.mediaId==='replacement')?.role).toBe('INSIDE_4');
+    expect(q.rows().find(r=>r.mediaId==='photo-7')?.role).toBe('INSIDE_5');
   });
   it('prepares only one next photo while the current upload is pending',async()=>{
     const prepare=vi.fn(async(f:File)=>f);const {q,uploads}=setup(prepare);q.add([photo(),photo(),photo()]);

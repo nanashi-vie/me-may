@@ -7,7 +7,7 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** Kế hoạch để review; chưa chạy các bước implementation bên dưới.
+**Status:** User chọn Native. S1 đã kiểm trên DB test, tiếp theo S2.
 
 ## Global Constraints
 
@@ -52,7 +52,7 @@ Mỗi bước RED phải thất bại ở assertion hành vi mới, không lấy
 Mỗi bước GREEN phải 0 failures/errors; không coi skip là bằng chứng live.
 Mỗi commit dùng danh sách Files của task + PROGRESS/DEV_LOG, không `git add .`.
 Trước execution fetch dev/kiểm worktree theo skill; có migration mới thì đổi số
-V20+ một lần trước viết, cập nhật cả hai plan, không đè migration task khác.
+V21+ một lần trước viết, cập nhật cả hai plan, không đè migration task khác.
 
 ## Contract nối hai plan
 
@@ -81,7 +81,7 @@ Priority nhỏ hơn chạy trước; PROCESS/VERIFY=0, MIGRATE=10, REBUILD=20..2
 `C/BookMapper.java`, `C/BookValidation.java`, `C/PublicCatalogueService.java`, `C/PublicCatalogueController.java`;
 `F/book.models.ts`, `F/book-copy.ts`, `F/book-upload-queue.ts`,
 `F/book-media-panel/book-media-panel.{ts,html,scss}`, `F/book-editor/book-editor.ts`,
-`code/frontend/src/worker-runtime.ts`; tạo `D/V20__unified_book_photos.sql`.
+`code/frontend/src/worker-runtime.ts`; tạo `D/V21__unified_book_photos.sql`.
 **Tests:** `T/UnifiedBookPhotosTest.java` mới; sửa `T/BookMediaFeatureContractTest.java`,
 `code/backend/src/test/java/vn/memay/catalogue/BookMediaFeatureMigrationTest.java`,
 `T/PublicMediaApiTest.java`, `T/BookPhotoDownloadTest.java`,
@@ -104,7 +104,7 @@ Priority nhỏ hơn chạy trước; PROCESS/VERIFY=0, MIGRATE=10, REBUILD=20..2
 
 ### S2 — Metadata provider/generation và filesystem an toàn
 
-**Files:** tạo `D/V21__image_generations_and_jobs.sql`, `M/ImageTypes.java`,
+**Files:** tạo `D/V22__image_generations_and_jobs.sql`, `M/ImageTypes.java`,
 `M/ImageGenerationRepository.java`, `M/SourceBindingRepository.java`,
 `M/LocalImageStore.java`; sửa `M/MediaConfiguration.java`,
 `code/backend/src/main/resources/application.yml`, `.env.example`, root `.gitignore`.

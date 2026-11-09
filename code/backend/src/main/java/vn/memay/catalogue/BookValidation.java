@@ -177,10 +177,10 @@ public class BookValidation {
         var errors=requiredMetadata(b.title(),b.categoryCode(),b.weightG(),b.priceMinVnd(),b.priceMaxVnd(),b.conditionNote());
         if(!errors.isEmpty()) throw new AdminApiException(400,"validation_error",errors,null);
         requireBinding(b.categoryCode(), b.binding());
-        var roles = b.media().stream().map(BookDtos.MediaView::role).filter(vn.memay.media.MediaDtos.MediaRole::isPublic).toList();
-        if (roles.size() < 2 || roles.size() > 6 || new HashSet<>(roles).size() != roles.size()
+        var roles = b.media().stream().map(BookDtos.MediaView::role).toList();
+        if (roles.size() < 2 || roles.size() > 8 || new HashSet<>(roles).size() != roles.size()
                 || !roles.containsAll(
                         List.of(vn.memay.media.MediaDtos.MediaRole.FRONT, vn.memay.media.MediaDtos.MediaRole.BACK)))
-            throw AdminApiException.field("media", "Cần từ 2 đến 6 ảnh, bắt buộc bìa và lưng");
+            throw AdminApiException.field("media", "Cần từ 2 đến 8 ảnh, bắt buộc bìa và lưng");
     }
 }
