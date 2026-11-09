@@ -172,8 +172,36 @@
       ><label class="admin-field field-price-max" [class.has-error]="form.hasError('priceMaxVnd') && form.touched"><span class="field-label">Giá đến (đ)</span><input type="text" inputmode="numeric" appVndInput formControlName="priceMaxVnd" (input)="priceEdited('max')" (blur)="finishPrice('max')" min="1" max="999999999999" step="1" />@if (form.hasError('priceMaxVnd') && form.touched) { <small class="helper-text">Giá từ phải nhỏ hơn hoặc bằng giá đến.</small> }</label>
     </div>
     <div class="stock-editor">
-      <label class="admin-field field-stock"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" [max]="stockLimit()" step="1" />
-      @if (form.controls.stock.invalid && form.controls.stock.touched) {<small class="helper-text">Nhập tồn kho nguyên từ 0 đến {{stockLimit()}}.</small>}</label>
+      <div class="stock-fields">
+        <label class="admin-field field-stock"><span class="field-label">Tồn kho</span><input type="number" formControlName="stock" min="0" [max]="stockLimit()" step="1" />
+        @if (form.controls.stock.invalid && form.controls.stock.touched) {<small class="helper-text">Nhập tồn kho nguyên từ 0 đến {{stockLimit()}}.</small>}</label>
+        <div class="storage-box-editor">
+          <div class="admin-field">
+            <span id="book-storage-box-label" class="field-label">Nơi lưu trữ</span>
+            <select id="book-storage-box" aria-labelledby="book-storage-box-label" formControlName="storageBoxNumber">
+              <option [ngValue]="null">Chưa phân thùng</option>
+              @for (number of storageBoxes(); track number) {
+                <option [ngValue]="number">Thùng {{ number }}</option>
+              }
+            </select>
+          </div>
+          @if (editable()) {
+            @if (addingBox()) {
+              <label for="new-storage-box">Số thùng</label>
+              <input #boxNumber id="new-storage-box" type="number" min="1" max="2147483647" step="1"
+                (keydown.enter)="$event.preventDefault(); createStorageBox(boxNumber.value)" />
+              @if (boxNumber.valueAsNumber > 0 && boxNumber.validity.valid) {
+                <small>Thùng {{ boxNumber.valueAsNumber }}</small>
+              }
+              <button type="button" [disabled]="boxBusy() || busy()" (click)="createStorageBox(boxNumber.value)">Tạo thùng</button>
+              <button type="button" [disabled]="boxBusy()" (click)="addingBox.set(false); boxError.set('')">Hủy</button>
+            } @else {
+              <button type="button" class="secondary" [disabled]="busy()" (click)="addingBox.set(true)">Thêm thùng</button>
+            }
+          }
+          @if (boxError()) { <span role="alert">{{ boxError() }}</span> }
+        </div>
+      </div>
       <small>Tồn 0 là hết hàng. Chủ tiệm tự cập nhật tồn sau khi bán hoặc nhập thêm sách.</small>
     </div>
     <fieldset class="choices">
@@ -203,30 +231,6 @@
       }
       <p class="muted">Nếu cơ chế tương tác bị hỏng, ghi rõ tình trạng trong mô tả sách.</p>
     </fieldset>
-    <div class="admin-field">
-      <label for="book-storage-box" class="field-label">Nơi lưu trữ</label>
-      <select id="book-storage-box" formControlName="storageBoxNumber">
-        <option [ngValue]="null">Chưa phân thùng</option>
-        @for (number of storageBoxes(); track number) {
-          <option [ngValue]="number">Thùng {{ number }}</option>
-        }
-      </select>
-      @if (editable()) {
-        @if (addingBox()) {
-          <label for="new-storage-box">Số thùng</label>
-          <input #boxNumber id="new-storage-box" type="number" min="1" max="2147483647" step="1"
-            (keydown.enter)="$event.preventDefault(); createStorageBox(boxNumber.value)" />
-          @if (boxNumber.valueAsNumber > 0 && boxNumber.validity.valid) {
-            <small>Thùng {{ boxNumber.valueAsNumber }}</small>
-          }
-          <button type="button" [disabled]="boxBusy() || busy()" (click)="createStorageBox(boxNumber.value)">Tạo thùng</button>
-          <button type="button" [disabled]="boxBusy()" (click)="addingBox.set(false); boxError.set('')">Hủy</button>
-        } @else {
-          <button type="button" class="secondary" [disabled]="busy()" (click)="addingBox.set(true)">Thêm thùng</button>
-        }
-      }
-      @if (boxError()) { <span role="alert">{{ boxError() }}</span> }
-    </div>
     <label class="admin-field"
       ><span class="field-label">Ghi chú nội bộ <small>(không bắt buộc)</small></span><textarea formControlName="internalNote" maxlength="4000" rows="3"></textarea></label
     ><label class="admin-field"
