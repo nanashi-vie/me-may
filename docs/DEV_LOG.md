@@ -2710,3 +2710,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã kiểm git diff --check, liên kết tài liệu và trần dòng. Chưa smoke browser,
   replay receipt chụp từ bản deploy cũ hoặc rollout production.
 - Checkpoint codex/image-system. Bước tiếp theo S2; S3–R6 còn mở.
+
+## 2026-11-09 — S058-C01 — Bắt đầu S2
+
+- Tiếp tục Native từ S1 3be348d, worktree được cấp quyền ghi.
+- Phạm vi metadata V22, staging và xuất file bất biến. Owner dựng Ubuntu.
+
+- V22 thêm identity ảnh dùng chung qua bước chuyển temp→book, recipe,
+  generation, variant, binding và job. DB giữ storage_public_id Cloudinary,
+  pointer LOCAL chỉ được chuyển sang generation đã xuất của cùng ảnh.
+- LocalImageStore stream staging tối đa 10 MiB, tính SHA-256, từ chối symlink
+  và đường dẫn ngoài quy ước, kiểm MIME magic/size/hash rồi rename nguyên tử.
+  Nginx và worker chưa kết nối. Dùng root đã resolve thực trên Ubuntu;
+  test macOS dùng toRealPath vì thư mục temp mặc định đi qua symlink hệ thống.
+- RED test LocalImageStore thiếu contract mới. GREEN 4/4 ca từ code/backend
+  với -Dtest=LocalImageStoreTest,ImageGenerationRepositoryTest trên PostgreSQL
+  riêng. Test DB chứng minh rollback giữ pointer và báo generation đã xuất
+  chưa phục vụ. Chưa mô phỏng disk full thật hoặc kiểm kê file mồ côi ngoài DB.
+- Tiếp theo S3 lease/worker boundary, rồi Sharp. Chưa rollout hay kiểm Ubuntu.
+- Hồi quy backend trên PostgreSQL test riêng: 247 ca, 244 đạt, 3 skip.

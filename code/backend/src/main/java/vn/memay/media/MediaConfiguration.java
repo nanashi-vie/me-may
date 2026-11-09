@@ -7,6 +7,13 @@ import tools.jackson.databind.ObjectMapper;
 @Configuration
 @org.springframework.scheduling.annotation.EnableScheduling
 public class MediaConfiguration {
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+            prefix = "memay.media.local", name = "enabled", havingValue = "true")
+    LocalImageStore localImageStore(Environment env) {
+        return new LocalImageStore(java.nio.file.Path.of(env.getRequiredProperty("memay.media.local.root")));
+    }
+
     @Bean(destroyMethod = "close")
     DeadlineCloudinaryTransport cloudinaryTransport(ObjectMapper json) {
         return new DeadlineCloudinaryTransport(json);
