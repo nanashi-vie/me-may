@@ -7,8 +7,8 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** User chọn Native. S1–S6 và R1/R2 đã triển khai, tiếp theo S7.
-Bằng chứng và giới hạn kiểm thử S5/S6 ghi trong DEV_LOG S061.
+**Status:** User chọn Native. S1–S7 và R1/R2 đã triển khai, tiếp theo R3.
+Bằng chứng và giới hạn S5–S7 ghi trong DEV_LOG S061/S062.
 
 ## Global Constraints
 
@@ -235,23 +235,23 @@ sửa `M/{MediaGateway,MediaConfiguration,MediaService,BookPhotoDownloadService}
 `C/{PublicCatalogueController,PublicCatalogueService}.java`, `code/frontend/src/worker-runtime.ts`,
 `code/frontend/src/app/features/catalogue/book-card/book-card.{ts,html,spec.ts}`,
 `code/frontend/src/app/features/catalogue/book-detail/book-detail.{ts,html,spec.ts}`;
-tạo `T/MixedMediaDeliveryTest.java`.
-**Interfaces:** `MediaReadService.open(UUID mediaId,int size,String format): InputStream`;
-provider từ DB, LOCAL variant allowlist, Cloudinary adapter giữ nguyên;
-`available(UUID mediaId,int size,String format): boolean` đọc manifest/health state.
+mở rộng fixture HTTP/DB trong `T/LocalUploadIntegrationTest.java`.
+**Interfaces:** `MediaReadService` nhận media ID, generation đã được phân quyền
+và size/format. Cloudinary dùng adapter cũ; LOCAL đối chiếu manifest và file
+trên mount dùng chung trước khi đọc Nginx nội bộ.
 
-- [ ] RED `mixedProvidersRespectPublication`: ẩn/temp/trash/version sai/alias cũ
+- [x] RED `mixedProvidersRespectPublication`: ẩn/temp/trash/version sai/alias cũ
   trả404; public DTO không source/key; ZIP có ảnh từ cả providers, không lộ File ID.
-- [ ] RED `missingFrontUsesPlaceholder`: gallery bỏ variant biết thiếu; thẻ placeholder
+- [x] RED `missingFrontUsesPlaceholder`: gallery bỏ variant biết thiếu; thẻ placeholder
   kích thước cố định, GET mất file giữa chừng có fallback; không rebuild inline GET.
-- [ ] Chạy `BE(MixedMediaDeliveryTest,PublicMediaApiTest,BookPhotoDownloadTest)` và FE ghi RED.
-- [ ] Implement Nginx internal fetch bounded timeout/allowlist path; routing theo provider
+- [x] RED backend cho variant 480 và frontend cho placeholder, ghi S062-C02.
+- [x] Implement Nginx internal fetch bounded timeout/allowlist path; routing theo provider
   ở mọi read/delete consumer, dùng manifest generation/version mới tránh cache cloud cũ.
-- [ ] Worker allowlist tám role và 480/1400 LOCAL; bảo toàn size cũ, no-store admin,
+- [x] Worker allowlist tám role và 480/1400 LOCAL; bảo toàn size cũ, no-store admin,
   30s edge/purge, không cache lỗi; placeholder không được thay bằng ảnh sách khác.
   Public media DTO chỉ thêm variant URL/dimensions sẵn có; UI chọn theo từng ảnh,
   không dùng global provider flag để gọi 1400 vào ảnh Cloudinary chỉ có 320/640.
-- [ ] GREEN BE/FE + `npm run check:workers:proxy` tại frontend;
+- [x] GREEN BE/FE + `npm run check:workers:proxy` tại frontend;
   commit `feat(media): serve mixed providers through the authorized gateway` cùng log.
 
 ### S8 — Local nghiệm thu và bàn giao cấu hình cho owner

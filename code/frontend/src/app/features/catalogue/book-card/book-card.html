@@ -1,14 +1,14 @@
 <article class="book-card">
   <div class="cover-wrap">
   <a [routerLink]="['/sach', book().slug]" class="cover-link" tabindex="-1" aria-hidden="true">
-    @if (front()) {
+    @if (cover(); as picture) {
       <picture>
-        <source type="image/webp"
-          [attr.srcset]="mediaUrl(front()!, 320, 'webp') + ' 320w, ' + mediaUrl(front()!, 640, 'webp') + ' 640w'"
-          sizes="(max-width: 480px) 45vw, 240px" />
+        @if (picture.webp) { <source type="image/webp"
+          [attr.srcset]="picture.webp"
+          sizes="(max-width: 480px) 45vw, 240px" /> }
         <img
-          [src]="mediaUrl(front()!, 320, 'jpg')"
-          [attr.srcset]="mediaUrl(front()!, 320, 'jpg') + ' 320w, ' + mediaUrl(front()!, 640, 'jpg') + ' 640w'"
+          [src]="picture.src" (error)="failedCover.set(picture.src)"
+          [attr.srcset]="picture.jpeg"
           sizes="(max-width: 480px) 45vw, 240px"
           [alt]="front()!.alt || book().title"
           loading="lazy"
@@ -16,6 +16,8 @@
           height="300"
         />
       </picture>
+    } @else {
+      <span class="cover-placeholder">Chưa có ảnh bìa</span>
     }
   </a>
   @if(book().features?.[0];as feature) {<span class="feature-tag" [title]="feature.label">{{feature.label}}</span>}

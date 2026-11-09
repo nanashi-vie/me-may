@@ -11,6 +11,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.UUID;
+import java.util.Set;
 
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.StandardCopyOption.ATOMIC_MOVE;
@@ -79,11 +80,16 @@ public final class LocalImageStore {
         }
     }
 
-    InputStream openPreview(UUID media, UUID generation, int width) throws IOException {
-        if (width != 320 && width != 1280) throw new IOException("Invalid preview size");
-        Path file = directory("derived/" + media + "/" + generation, false).resolve(width + ".jpg");
-        if (!Files.isRegularFile(file, NOFOLLOW_LINKS)) throw new IOException("Image preview missing");
-        return Files.newInputStream(file, READ, NOFOLLOW_LINKS);
+    boolean hasVariant(UUID media, UUID generation, int size, String format, long bytes) {
+        if (media == null || generation == null || !Set.of(320, 480, 640, 1280, 1400).contains(size)
+                || !Set.of("jpg", "webp").contains(format)) return false;
+        try {
+            Path file = directory("derived/" + media + "/" + generation, false).resolve(size + "." + format);
+            var attributes = Files.readAttributes(file, java.nio.file.attribute.BasicFileAttributes.class, NOFOLLOW_LINKS);
+            return attributes.isRegularFile() && attributes.size() == bytes;
+        } catch (IOException e) {
+            return false;
+        }
     }
 
     void discardGeneration(UUID media, UUID generation) throws IOException {

@@ -124,8 +124,11 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         w.put("featureCodes",List.of("SLIDE","SOUND","FLAP"));body.put("write",w);
         var r=a.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);var b=tree(r);
         assertThat(b.path("media").size()).isEqualTo(8);String slug=b.path("slug").asString(),id=b.path("id").asString();
-        for (String role : List.of("INSIDE_4", "INSIDE_5", "INTERNAL_1", "INTERNAL_2")) {
+        for (String role : List.of("INSIDE_4", "INSIDE_5")) {
             assertThat(a.send("GET", "/api/v1/books/" + slug + "/media/" + role, null, false).statusCode()).isEqualTo(200);
+        }
+        for (String alias : List.of("INTERNAL_1", "INTERNAL_2")) {
+            assertThat(a.send("GET", "/api/v1/books/" + slug + "/media/" + alias, null, false).statusCode()).isEqualTo(404);
         }
         for(String path:List.of("/api/v1/books","/api/v1/books/"+slug,"/api/v1/home","/api/v1/books/lookup?code="+b.path("bookCode").asString(),"/api/v1/admin/books/"+id+"/preview")) {
             var pub=a.send("GET",path,null,false);assertThat(pub.statusCode()).as(path).isEqualTo(200);

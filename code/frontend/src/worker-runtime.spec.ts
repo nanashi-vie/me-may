@@ -237,7 +237,7 @@ describe('public edge cache', () => {
 });
 
 describe('versioned media and asset caching', () => {
-  it('serves cached images with ETag revalidation and rejects unknown query shapes', async () => {
+  it.each([640, 480, 1400])('revalidates versioned size %s and never caches errors', async (size) => {
     const entries = new Map<string, Response>();
     const storage = {
       match: async (r: Request) => entries.get(r.url)?.clone(),
@@ -249,7 +249,7 @@ describe('versioned media and asset caching', () => {
     vi.stubGlobal('fetch', backend);
     const config = { ...env, MEMAY_PUBLIC_CACHE: 'true' };
     const url = env.MEMAY_SITE_ORIGIN
-      + '/api/v1/books/mm-000001/media/FRONT?size=640&format=webp&v=12345678-1234-1234-1234-123456789012';
+      + `/api/v1/books/mm-000001/media/FRONT?size=${size}&format=webp&v=12345678-1234-1234-1234-123456789012`;
     const first = await handleWorkerRequest(new Request(url), config, async () => null, storage);
     const next = await handleWorkerRequest(new Request(url, {
       headers: { 'if-none-match': first.headers.get('etag')! },
@@ -260,6 +260,12 @@ describe('versioned media and asset caching', () => {
     expect(next.headers.get('cache-control')).toContain('must-revalidate');
     await handleWorkerRequest(new Request(url + '&unexpected=1'), config, async () => null, storage);
     expect(backend).toHaveBeenCalledTimes(2);
+    const missing = url.replace('/FRONT?', '/BACK?');
+    backend.mockImplementation(async () => new Response(null, { status: 404, headers: { 'X-Memay-Public-Cache': '30' } }));
+    const gone = await handleWorkerRequest(new Request(missing), config, async () => null, storage);
+    expect(gone.status).toBe(404);
+    expect(gone.headers.get('cache-control')).toBe('no-store');
+    expect(entries.has(missing)).toBe(false);
   });
   it('uses immutable only for successful root hashed bundles and self-hosted woff2 fonts', async () => {
     const hashed = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/main-ABC12345.js'), env, async () => null);

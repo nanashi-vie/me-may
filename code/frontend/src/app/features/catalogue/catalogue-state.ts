@@ -71,3 +71,28 @@ export function publicMediaUrl(media: PublicBook['media'][number], size: 320 | 6
   if (media.cacheKey) params.set('v', media.cacheKey);
   return media.contentPath + '?' + params.toString();
 }
+
+
+export function publicPicture(media: PublicBook['media'][number], detail = false) {
+  const localVariants = media.imageVariants;
+  if (!localVariants) {
+    const sizes = [320, 640] as const;
+    return {
+      src: publicMediaUrl(media, detail ? 640 : 320, 'jpg'),
+      jpeg: sizes.map(size => publicMediaUrl(media, size, 'jpg') + ' ' + size + 'w').join(', '),
+      webp: sizes.map(size => publicMediaUrl(media, size, 'webp') + ' ' + size + 'w').join(', '),
+    };
+  }
+  const preferred = detail ? [480, 1400] : [480];
+  const pick = (format: 'jpg' | 'webp') => {
+    const variants = localVariants.filter(v => v.format === format).sort((a, b) => a.size - b.size);
+    const matches = variants.filter(v => preferred.includes(v.size));
+    if (matches.length) return [...new Map(matches.map(v => [v.width, v])).values()];
+    const fallback = detail ? variants.at(-1) : variants[0];
+    return fallback ? [fallback] : [];
+  };
+  const jpeg = pick('jpg'), webp = pick('webp');
+  const srcset = (variants: typeof jpeg) => variants.map(v => v.url + ' ' + v.width + 'w').join(', ') || null;
+  const fallback = jpeg.length ? jpeg : webp;
+  return { src: (detail ? fallback.at(-1) : fallback[0])?.url, jpeg: srcset(fallback), webp: srcset(webp) };
+}

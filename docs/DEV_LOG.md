@@ -2862,3 +2862,26 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Chrome localhost kiểm ảnh popup, focus, Escape và viewport 420×320;
   jsQR đọc đúng URL từ ảnh QR render. Kiểm iPhone thật do user xác nhận
   trước khi đổi nền. Bàn giao dev, còn cập nhật bản chạy online.
+
+## 2026-11-09 — S062-C01 — Bắt đầu S7
+
+- Dùng lại worktree Codex, fast-forward đến dev 8f7c41d.
+- Phạm vi: phân quyền đọc ảnh LOCAL/Cloudinary cho catalogue, preview và ZIP,
+  variant theo generation, placeholder khi mất file, và cache Worker.
+
+## 2026-11-09 — S062-C02 — Kiểm S7 và bàn giao
+
+- Catalogue, preview và ZIP phân luồng theo provider. LOCAL kiểm manifest/file
+  rồi mở ảnh qua origin Nginx nội bộ, giữ timeout và giới hạn kích thước đọc.
+- URL LOCAL mang generation, DTO chỉ mô tả variant còn có. Cloudinary giữ
+  320/640 và preview 1280. Worker giữ TTL tối đa 30 giây và purge hiện có.
+- Ruling: S7 kết thúc tương thích alias INTERNAL trên public theo plan,
+  cập nhật test S1 đang đòi 200. Request/receipt admin cũ vẫn parse alias.
+- RED backend từ chối size 480 và frontend thiếu placeholder. Review độc lập
+  phát hiện URL mặc định cho wishlist và race giữa hai truy vấn preview.
+  DTO LOCAL dùng URL mặc định đã version hóa, preview lấy một snapshot DB.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  258 ca, 255 đạt và 3 skip. `npm test` từ code/frontend 261 đạt.
+  `npm run build:workers`, `npm run check:workers:proxy` và git diff --check đạt.
+- Origin nội bộ được mô phỏng bằng HTTP trên loopback. Chưa smoke Ubuntu,
+  Nginx thật hoặc Drive thật. Bàn giao dev, tiếp theo R3.

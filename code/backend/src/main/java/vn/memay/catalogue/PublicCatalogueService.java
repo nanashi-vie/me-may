@@ -7,6 +7,7 @@ import java.util.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import vn.memay.common.AdminApiException;
+import vn.memay.media.MediaReadService;
 import vn.memay.catalogue.PublicCatalogueDtos.*;
 import vn.memay.catalogue.PublicCatalogueDtos.Collection;
 
@@ -16,8 +17,11 @@ public class PublicCatalogueService {
     @org.springframework.beans.factory.annotation.Autowired private tools.jackson.databind.ObjectMapper json;
     private final JdbcTemplate jdbc;
 
-    public PublicCatalogueService(JdbcTemplate jdbc) {
+    private final MediaReadService mediaReader;
+
+    public PublicCatalogueService(JdbcTemplate jdbc, MediaReadService mediaReader) {
         this.jdbc = jdbc;
+        this.mediaReader = mediaReader;
     }
 
     private static final String SALE = "(fs.enabled and current_timestamp>=fs.starts_at and current_timestamp<fs.ends_at and b.availability='AVAILABLE' and fi.sale_price_vnd<l.price_min_vnd)";
@@ -56,7 +60,7 @@ public class PublicCatalogueService {
             binding = null;
         if (binding != null && !List.of("ALL", "PAPERBACK", "HARDCOVER").contains(binding))
             throw AdminApiException.field("binding", "Kiểu bìa không hợp lệ");
-        StringBuilder where = new StringBuilder(" where l.publication_status='PUBLISHED'");
+        StringBuilder where = new StringBuilder(" where l.publication_status='PUBLISHED' and b.deleted_at is null");
         List<Object> args = new ArrayList<>();
         if (q != null) {
             where.append(
@@ -102,7 +106,7 @@ public class PublicCatalogueService {
     }
 
     public Book detail(String slug) {
-        List<Book> found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED'",
+        List<Book> found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED' and b.deleted_at is null",
                 this::book,
                 slug);
         if (found.isEmpty())
@@ -112,7 +116,7 @@ public class PublicCatalogueService {
 
     public RelatedBooks related(String slug) {
         List<RelatedTarget> current = jdbc.query(
-                "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED'",
+                "select b.id, b.publisher, l.category_id from book_copy b join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and b.deleted_at is null",
                 (r, n) -> new RelatedTarget(r.getLong("id"), r.getString("publisher"),
                         r.getObject("category_id", Long.class)),
                 slug);
@@ -127,7 +131,7 @@ public class PublicCatalogueService {
         if (publisher != null && !publisher.isBlank()) {
             samePublisher = jdbc.query(
                     SELECT + FROM
-                            + " where l.publication_status='PUBLISHED' and b.id != ? and lower(trim(b.publisher)) = lower(trim(?)) order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                            + " where l.publication_status='PUBLISHED' and b.deleted_at is null and b.id != ? and lower(trim(b.publisher)) = lower(trim(?)) order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
                     this::book,
                     currentId, publisher.trim());
         }
@@ -136,7 +140,7 @@ public class PublicCatalogueService {
         if (categoryId != null) {
             sameCategory = jdbc.query(
                     SELECT + FROM
-                            + " where l.publication_status='PUBLISHED' and b.id != ? and l.category_id = ? order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
+                            + " where l.publication_status='PUBLISHED' and b.deleted_at is null and b.id != ? and l.category_id = ? order by (b.availability='AVAILABLE') desc, l.published_at desc nulls last, b.book_code desc limit 10",
                     this::book,
                     currentId, categoryId);
         }
@@ -158,7 +162,7 @@ public class PublicCatalogueService {
         }
         var ordered = new LinkedHashSet<>(codes);
         List<Book> books = jdbc.query(
-                SELECT + FROM + " where l.publication_status='PUBLISHED' and b.book_code in ("
+                SELECT + FROM + " where l.publication_status='PUBLISHED' and b.deleted_at is null and b.book_code in ("
                         + String.join(",", Collections.nCopies(ordered.size(), "?")) + ")",
                 this::book, (Object[]) ordered.toArray());
         var byCode = new HashMap<String, Book>();
@@ -167,17 +171,33 @@ public class PublicCatalogueService {
         return ordered.stream().filter(byCode::containsKey).map(byCode::get).toList();
     }
 
+    private record MediaRow(UUID id, String role, String alt, UUID generation) {
+        Media describe(String slug, Map<UUID, List<MediaReadService.Variant>> available) {
+            String path = "/api/v1/books/" + slug + "/media/" + role;
+            if (generation == null) return new Media(role, alt, path, id.toString(), null);
+            var variants = available.getOrDefault(generation, List.of()).stream()
+                    .map(v -> new ImageVariant(path + "?size=" + v.size() + "&format=" + v.format() + "&v=" + generation,
+                            v.size(), v.format(), v.width(), v.height())).toList();
+            if (variants.isEmpty()) return null;
+            var thumbnail = variants.stream().filter(v -> v.size() == 480 && v.format().equals("jpg"))
+                    .findFirst().orElse(variants.getFirst());
+            return new Media(role, alt, thumbnail.url(), generation.toString(), variants);
+        }
+    }
+
     private Book book(ResultSet r, int n) throws SQLException {
         long id = r.getLong("id"), listing = r.getLong("listing_id");
         String slug = r.getString("slug");
         List<String> ages = jdbc.queryForList(
                 "select age_group from listing_age_group where listing_id=? order by age_group",
                 String.class, listing);
-        List<Media> media = jdbc.query(
-                "select id,role,alt from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 when 'INSIDE_3' then 5 when 'INSIDE_4' then 6 else 7 end",
-                (m, i) -> new Media(m.getString("role"), m.getString("alt"),
-                        "/api/v1/books/" + slug + "/media/" + m.getString("role"), m.getString("id")),
-                id);
+        var rows = jdbc.query(
+                "select id,role,alt,serving_generation from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 when 'INSIDE_3' then 5 when 'INSIDE_4' then 6 else 7 end",
+                (m, i) -> new MediaRow(m.getObject("id", UUID.class), m.getString("role"),
+                        m.getString("alt"), m.getObject("serving_generation", UUID.class)), id);
+        var available = rows.stream().anyMatch(row -> row.generation() != null)
+                ? mediaReader.publicVariants(id) : Map.<UUID, List<MediaReadService.Variant>>of();
+        var media = rows.stream().map(row -> row.describe(slug, available)).filter(Objects::nonNull).toList();
         return new Book(Long.toString(id), r.getString("book_code"), slug, r.getString("title"),
                 r.getString("publisher"), r.getString("author"), ages, r.getString("category_code"),
                 r.getString("binding"), null, null,
@@ -211,7 +231,7 @@ public class PublicCatalogueService {
 
     private void shelf(List<Shelf> rows, String shelfKey, String title, String href, String category, String collection) {
         StringBuilder pinnedWhere = new StringBuilder(
-                " join home_featured_item hfi on hfi.listing_id=l.id where hfi.shelf_key=? and l.publication_status='PUBLISHED' and b.availability='AVAILABLE'");
+                " join home_featured_item hfi on hfi.listing_id=l.id where hfi.shelf_key=? and l.publication_status='PUBLISHED' and b.deleted_at is null and b.availability='AVAILABLE'");
         List<Object> args = new ArrayList<>();
         args.add(shelfKey);
         if (category != null) {

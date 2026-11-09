@@ -18,7 +18,7 @@ import static vn.memay.media.MediaDtos.*;
 public class MediaTransactions {
     public record Intent(UUID id, String publicId) {
     }
-    public record DownloadPhoto(MediaRole role, String key) {}
+    public record DownloadPhoto(MediaRole role, UUID id, UUID generation, String key) {}
     public record DownloadBook(String code, List<DownloadPhoto> photos) {}
 
     @Transactional(readOnly = true)
@@ -31,7 +31,7 @@ public class MediaTransactions {
         Map<Long, List<DownloadPhoto>> photos = new HashMap<>();
         for (var image : images.findByBookCopyIdInAndState(ids, MediaState.ACTIVE)) {
             photos.computeIfAbsent(image.bookCopyId, id -> new ArrayList<>())
-                    .add(new DownloadPhoto(image.role, image.storagePublicId));
+                    .add(new DownloadPhoto(image.role, image.id, image.servingGeneration, image.storagePublicId));
         }
         return ids.stream().map(id -> new DownloadBook(codes.get(id),
                 photos.getOrDefault(id, List.of()).stream()
@@ -249,21 +249,16 @@ public class MediaTransactions {
                 .findFirst().orElseThrow(() -> new AdminApiException(404, "not_found"));
     }
 
-    public record LocalPreview(UUID media, UUID generation) {}
+    record Preview(UUID media, UUID generation, String key) {}
 
     @Transactional(readOnly = true)
-    public LocalPreview localPreview(long bookId, MediaRole role) {
+    public Preview activePreview(long bookId, MediaRole role) {
         return jdbc.query("""
-                SELECT m.id,m.serving_generation FROM book_media m JOIN book_copy b ON b.id=m.book_copy_id
-                WHERE b.id=? AND b.deleted_at IS NULL AND m.role=? AND m.state='ACTIVE' AND m.provider='LOCAL'
-                """, (r,n) -> new LocalPreview(r.getObject("id",UUID.class),r.getObject("serving_generation",UUID.class)),
-                bookId,role.name()).stream().findFirst().orElse(null);
-    }
-
-    @Transactional(readOnly = true)
-    public String activeKey(long id, MediaRole role) {
-        if (!books.existsById(id))
-            throw new AdminApiException(404, "not_found");
-        return active(id, role).storagePublicId;
+                SELECT m.id,m.serving_generation,m.storage_public_id
+                FROM book_media m JOIN book_copy b ON b.id=m.book_copy_id
+                WHERE b.id=? AND b.deleted_at IS NULL AND m.role=? AND m.state='ACTIVE'
+                """, (r, i) -> new Preview(r.getObject("id", UUID.class), r.getObject("serving_generation", UUID.class),
+                        r.getString("storage_public_id")), bookId, role.name()).stream().findFirst()
+                .orElseThrow(() -> new AdminApiException(404, "not_found"));
     }
 }

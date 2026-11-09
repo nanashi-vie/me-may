@@ -15,7 +15,9 @@ Cập nhật 09/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S055-C01 (08/11): Hoàn tất chỉnh UI chi tiết sách (`book-detail`) theo kết quả `/grill-me`: ẩn hiển thị `Trọng lượng sách` phía người dùng, dời mục `Độ tuổi` xuống nằm ngay phía trên `Trình độ đọc` (đổi nhãn từ `Trình độ đọc tham khảo`), và cập nhật ghi chú `READING_NOTE` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`. Vitest 44/44 files (251/251 tests PASS), build SSR & Workers 0 warning, 0 error.
 - S061 (09/11): S5 nối upload LOCAL với queue và gắn ảnh trong transaction.
   S6 có dán tối đa 8 link file Drive hoặc File ID và xem ghép ảnh trước khi xác minh.
-  Tiếp theo S7 delivery public và ZIP. Drive thật, smoke trình duyệt và Ubuntu còn mở.
+  S062 đã kiểm local S7 delivery public, preview và ZIP cho hai provider.
+  Backend 255 đạt, 3 skip. Frontend 261 đạt, build và proxy Workers đạt.
+  Tiếp theo R3 migration Cloudinary theo lô. Drive thật và Ubuntu còn mở.
   [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).

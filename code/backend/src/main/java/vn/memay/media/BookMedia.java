@@ -11,6 +11,8 @@ public class BookMedia {
     public Long bookCopyId;
     @Column(insertable = false, updatable = false)
     public String provider;
+    @Column(insertable = false, updatable = false)
+    public java.util.UUID servingGeneration;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     public MediaDtos.MediaRole role;

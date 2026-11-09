@@ -8,7 +8,7 @@ import static vn.memay.media.UploadSessionDtos.*;
 public class UploadSessionService {
     @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
- @org.springframework.beans.factory.annotation.Autowired private org.springframework.beans.factory.ObjectProvider<LocalImageStore> localStores;
+ @org.springframework.beans.factory.annotation.Autowired private MediaReadService reads;
  private final UploadSessionTransactions transactions;private final MediaGateway gateway;private final ImageValidator validator;private final UploadLimiter limiter;private final tools.jackson.databind.ObjectMapper json;
  public UploadSessionService(UploadSessionTransactions transactions,MediaGateway gateway,ImageValidator validator,UploadLimiter limiter,tools.jackson.databind.ObjectMapper json){this.transactions=transactions;this.gateway=gateway;this.validator=validator;this.limiter=limiter;this.json=json;}
  public UploadSession create(AdminUser actor){return transactions.create(actor);}
@@ -32,12 +32,7 @@ public class UploadSessionService {
  public InputStream content(UUID session,UUID media,AdminUser actor,int width){
   if(width!=320&&width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
   UUID generation=transactions.localPreview(session,media,actor);
-  if(generation!=null) {
-   var store=localStores.getIfAvailable();
-   if(store==null)throw new vn.memay.common.AdminApiException(503,"local_images_unavailable");
-   try {return store.openPreview(media,generation,width);}
-   catch(java.io.IOException e){throw new vn.memay.common.AdminApiException(404,"not_found");}
-  }
+  if(generation!=null) return reads.openAdmin(media,generation,null,width);
   return gateway.openAdminPreview(timings.measure("authorization",()->transactions.contentKey(session,media,actor)),width);
  }
  public TemporaryMedia metadata(UUID session,UUID media,AdminUser actor,String alt,String sourceRef){return transactions.metadata(session,media,actor,alt,sourceRef);}

@@ -83,8 +83,8 @@ export async function handleWorkerRequest(
   const home = request.method === 'GET' && url.pathname === '/' && !url.search;
   const media = request.method === 'GET'
     && /^\/api\/v1\/books\/[a-z0-9-]+\/media\/(FRONT|BACK|SPINE|INSIDE_[1-5])$/.test(url.pathname)
-    && /^[a-f0-9-]{36}$/.test(url.searchParams.get('v') ?? '')
-    && ['320', '640'].includes(url.searchParams.get('size') ?? '')
+    && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(url.searchParams.get('v') ?? '')
+    && ['320', '480', '640', '1400'].includes(url.searchParams.get('size') ?? '')
     && ['webp', 'jpg'].includes(url.searchParams.get('format') ?? '')
     && [...url.searchParams.keys()].sort().join(',') === 'format,size,v';
   const cacheable = env.MEMAY_PUBLIC_CACHE === 'true' && anonymous && (home || media) && cache;
@@ -96,7 +96,7 @@ export async function handleWorkerRequest(
     result.headers.set('X-Memay-Cache', status);
     result.headers.delete('X-Memay-Cache-Expires');
     result.headers.delete('X-Memay-Public-Cache');
-    if (media) {
+    if (media && result.ok) {
       result.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
       if (result.status === 200 && request.headers.get('if-none-match') === result.headers.get('etag'))
         return new Response(null, { status: 304, headers: result.headers });

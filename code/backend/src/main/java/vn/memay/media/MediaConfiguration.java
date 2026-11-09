@@ -14,6 +14,13 @@ public class MediaConfiguration {
         return new LocalImageStore(java.nio.file.Path.of(env.getRequiredProperty("memay.media.local.root")));
     }
 
+    @Bean
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+            prefix = "memay.media.local", name = "enabled", havingValue = "true")
+    LocalMediaGateway localMediaGateway(Environment env, LocalImageStore store, DeadlineCloudinaryTransport transport) {
+        return new LocalMediaGateway(env.getRequiredProperty("memay.media.local.nginx-origin"), store, transport);
+    }
+
     @Bean(destroyMethod = "close")
     @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
             prefix = "memay.media.local", name = "enabled", havingValue = "true")

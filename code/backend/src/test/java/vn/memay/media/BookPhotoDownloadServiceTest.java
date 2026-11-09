@@ -23,8 +23,8 @@ import static org.mockito.Mockito.when;
 class BookPhotoDownloadServiceTest {
     private final AdminUser owner = new AdminUser("owner@example.test", "unused", AdminUser.Role.OWNER);
     private final MediaTransactions transactions = mock(MediaTransactions.class);
-    private final MediaGateway gateway = mock(MediaGateway.class);
-    private final BookPhotoDownloadService service = new BookPhotoDownloadService(new BookAccess(), transactions, gateway);
+    private final MediaReadService reads = mock(MediaReadService.class);
+    private final BookPhotoDownloadService service = new BookPhotoDownloadService(new BookAccess(), transactions, reads);
 
     @Test
     void limitsTheSelectionToTwentyBooks() {
@@ -37,7 +37,7 @@ class BookPhotoDownloadServiceTest {
     void rejectsConcurrentGenerationAndReleasesSlotAfterReadFailure() throws Exception {
         var ids = List.of(1L);
         when(transactions.downloadPhotos(ids)).thenReturn(List.of(new MediaTransactions.DownloadBook(
-                "MM-000001", List.of(new MediaTransactions.DownloadPhoto(MediaDtos.MediaRole.FRONT, "cover")))));
+                "MM-000001", List.of(new MediaTransactions.DownloadPhoto(MediaDtos.MediaRole.FRONT, null, null, "cover")))));
         var entered = new CountDownLatch(1);
         var release = new CountDownLatch(1);
         var closed = new AtomicBoolean();
@@ -65,7 +65,7 @@ class BookPhotoDownloadServiceTest {
                 closed.set(true);
             }
         };
-        when(gateway.openAdminPreview("cover", 1280))
+        when(reads.openAdmin(null, null, "cover", 1280))
                 .thenReturn(broken, new ByteArrayInputStream(new byte[]{1}));
         try (var executor = Executors.newSingleThreadExecutor()) {
             var running = executor.submit(() -> assertThatThrownBy(() -> service.create(owner, ids))
