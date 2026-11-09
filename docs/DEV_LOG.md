@@ -2763,3 +2763,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   npm install báo 0 lỗ hổng tại thời điểm cài. Chưa đo tải trên Ubuntu/Dell.
 - S3 và S4 đã kiểm riêng. Chưa có smoke worker kết nối backend thật, upload LOCAL,
   recipe registry production hay Nginx. R1 là bước tiếp theo, Ubuntu ở S8/R6.
+
+## 2026-11-09 — S059-C03 — Bắt đầu R1
+
+- Tiếp tục từ S4 7290c83. Phạm vi client Drive chỉ đọc, staging có checksum,
+  phát hiện nguồn đổi giữa hai lượt metadata và phân loại lỗi an toàn.
+- Không cần credential Drive thật cho fixture HTTP local.
+
+- Google Auth 1.57.0 khóa trong pom. Chỉ GET metadata và blob bằng service
+  account scope drive.readonly. Cố định Google API host, tắt redirect, timeout
+  kết nối 10 giây, request/body 60 giây và deadline toàn thao tác 180 giây.
+- So ID, version, MIME và size trước/sau, stream và hash file trong staging.
+  Nguồn đổi được dọn khỏi staging. Mã lỗi an toàn, không trả body upstream.
+- RED compile thiếu client. GREEN từ code/backend với fixture HTTP local
+  đạt 3/3 ca R1, thêm 1 ca worker security đạt. ./mvnw -B -ntp test trên DB
+  PostgreSQL test riêng đạt 252 ca, 249 đạt, 3 skip. git diff --check đạt.
+- Chưa gọi Google Drive thật hoặc thử đổi credential live. R2 sẽ nối binding
+  và publish gate. S5–R6 vẫn mở, Ubuntu chưa có cấu hình bàn giao hoàn chỉnh.

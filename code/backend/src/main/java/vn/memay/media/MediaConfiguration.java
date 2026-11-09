@@ -15,6 +15,15 @@ public class MediaConfiguration {
     }
 
     @Bean(destroyMethod = "close")
+    @org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(
+            prefix = "memay.media.local", name = "enabled", havingValue = "true")
+    vn.memay.media.source.GoogleDriveSourceClient driveSourceClient(
+            Environment env, ObjectMapper json, LocalImageStore store) {
+        return vn.memay.media.source.GoogleDriveSourceClient.create(
+                env.getProperty("MEMAY_DRIVE_CREDENTIALS_FILE", ""), json, store);
+    }
+
+    @Bean(destroyMethod = "close")
     DeadlineCloudinaryTransport cloudinaryTransport(ObjectMapper json) {
         return new DeadlineCloudinaryTransport(json);
     }

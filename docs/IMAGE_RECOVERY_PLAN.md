@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** Kế hoạch để review; chưa triển khai hoặc kiểm chứng live.
+**Status:** R1 đã kiểm bằng Drive giả lập, tiếp theo R2. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 

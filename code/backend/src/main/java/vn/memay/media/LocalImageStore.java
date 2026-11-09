@@ -60,6 +60,12 @@ public final class LocalImageStore {
         }
     }
 
+    public void discardInput(UUID operationId) throws IOException {
+        Path operation = directory("staging/" + operationId, false);
+        Files.deleteIfExists(operation.resolve("input"));
+        Files.delete(operation);
+    }
+
     public void validate(Manifest manifest) throws IOException {
         validate(manifest, directory("staging/" + manifest.generationId() + "/output", false));
     }
