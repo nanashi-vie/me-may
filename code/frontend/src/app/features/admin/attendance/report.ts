@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AttendanceApi, Employee, Report, ReportQuery, Summary } from './attendance-api';
+import { AttendanceApi, Employee, Report, ReportQuery } from './attendance-api';
 import { closingTime, displayDay, errorMessage, localInput, today } from './attendance-display';
 
 @Component({
@@ -15,7 +15,6 @@ export class AttendanceReport implements OnInit, OnDestroy {
   readonly busy = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
-  readonly noteRow = signal<Summary | null>(null);
   noteText = '';
   readonly day = displayDay;
   query: ReportQuery = { period: 'WEEK', date: today(), employeeId: null, filter: 'ALL' };
@@ -31,7 +30,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
   }
 
   async load() {
-    if (this.busy() || this.noteRow()) return;
+    if (this.busy() || this.noteDirty()) return;
     this.busy.set(true);
     this.error.set('');
     this.notice.set('');
@@ -47,7 +46,9 @@ export class AttendanceReport implements OnInit, OnDestroy {
 
   private setReport(report: Report) {
     if (this.destroyed) return;
+    const dirty = this.noteDirty();
     this.report.set(report);
+    if (!dirty) this.noteText = report.periodNote;
     clearTimeout(this.refresh);
     const day = localInput(report.serverTime).slice(0, 10);
     const closing = closingTime(report.serverTime);
@@ -70,34 +71,31 @@ export class AttendanceReport implements OnInit, OnDestroy {
     } catch (error) { if (query === this.applied) this.error.set(errorMessage(error)); }
   }
 
-  async openNote(row: Summary) {
-    if (!this.applied || this.busy() || this.noteRow()) return;
-    this.busy.set(true);
-    this.error.set('');
-    this.notice.set('');
-    try {
-      const note = await this.api.note(row.employeeId, this.applied);
-      this.noteText = note.text;
-      this.noteRow.set(row);
-    } catch (error) { this.error.set(errorMessage(error)); }
-    finally { this.busy.set(false); }
+  noteDirty() {
+    return this.noteText !== (this.report()?.periodNote ?? '');
+  }
+
+  resetNote() {
+    this.noteText = this.report()?.periodNote ?? '';
   }
 
   async saveNote() {
-    const row = this.noteRow();
-    if (!row || !this.applied || this.busy()) return;
+    if (!this.applied || !this.noteDirty() || this.busy()) return;
     this.busy.set(true);
     this.error.set('');
+    this.notice.set('');
+    const text = this.noteText.trim();
     try {
-      await this.api.saveNote(row.employeeId, this.applied, this.noteText);
-      this.noteRow.set(null);
-      this.notice.set('Đã lưu ghi chú.');
+      await this.api.saveNote(this.applied, text);
+      this.noteText = text;
+      this.report.update((report) => report && { ...report, periodNote: text });
+      this.notice.set('Đã lưu ghi chú chung.');
     } catch (error) { this.error.set(errorMessage(error)); }
     finally { this.busy.set(false); }
   }
 
   async download() {
-    if (!this.applied || this.busy() || this.noteRow()) return;
+    if (!this.applied || this.busy() || this.noteDirty()) return;
     this.busy.set(true);
     this.error.set('');
     try {

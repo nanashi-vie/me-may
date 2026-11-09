@@ -61,7 +61,6 @@ export function errorMessage(error: unknown) {
     case 'past_week': return 'Lịch tuần đã qua chỉ được xem.';
     case 'employee_list_changed': return 'Danh sách nhân viên đã thay đổi. Vui lòng tải lại lịch.';
     case 'version_conflict': return 'Dữ liệu đã thay đổi. Tải lại trước khi lưu.';
-    case 'shift_overlap': return 'Thời gian điều chỉnh trùng với một ca khác.';
     case 'validation_error': {
       const fields = (error as HttpErrorResponse).error.fieldErrors as Record<string, string[]> | undefined;
       return Object.values(fields ?? {}).flat()[0] ?? 'Vui lòng kiểm tra dữ liệu đã nhập.';

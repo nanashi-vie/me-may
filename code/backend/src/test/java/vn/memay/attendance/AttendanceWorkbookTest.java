@@ -15,13 +15,13 @@ class AttendanceWorkbookTest {
     void formatsDatesTimesAndNumericElapsedHoursInDetailSheet() throws Exception {
         var start = OffsetDateTime.parse("2026-11-09T08:30:00+07:00");
         var day = start.toLocalDate();
-        var completed = new AttendanceReportService.Shift(1, 1, "An", day, start, start.plusMinutes(95),
-                95L, AttendanceSession.Status.COMPLETED, false, null, 0);
-        var longShift = new AttendanceReportService.Shift(2, 2, "Bình", day, start, start.plusHours(25),
-                1500L, AttendanceSession.Status.COMPLETED, false, null, 0);
-        var open = new AttendanceReportService.Shift(3, 3, "Châu", day, start, null,
-                null, AttendanceSession.Status.WORKING, false, null, 0);
-        var report = new AttendanceReportService.Report(start, day, day, List.of(), List.of(completed, longShift, open));
+        var completed = new AttendanceReportService.Shift(1, "An", day, start, start.plusMinutes(95),
+                95L, AttendanceSession.Status.COMPLETED, false, null);
+        var longShift = new AttendanceReportService.Shift(2, "Bình", day, start, start.plusHours(25),
+                1500L, AttendanceSession.Status.COMPLETED, false, null);
+        var open = new AttendanceReportService.Shift(3, "Châu", day, start, null,
+                null, AttendanceSession.Status.WORKING, false, null);
+        var report = new AttendanceReportService.Report(start, day, day, List.of(), List.of(completed, longShift, open), "");
         try (var workbook = new XSSFWorkbook(new ByteArrayInputStream(AttendanceWorkbook.write(report)))) {
             var detail = workbook.getSheet("Chi tiết");
             var display = new DataFormatter(Locale.ROOT);

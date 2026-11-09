@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/admin/attendance")
 class AttendanceReportController {
     record WebSummary(long employeeId, String code, String name, int registeredDays, int workedDays, long reviewCount) {}
-    record WebReport(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<WebSummary> summary) {}
+    record WebReport(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<WebSummary> summary, String periodNote) {}
 
     private final AttendanceReportService reports;
 
@@ -29,7 +29,7 @@ class AttendanceReportController {
                 .map(row -> new WebSummary(row.employeeId(), row.code(), row.name(), row.registeredDays(),
                         row.workedDays(), row.reviewCount()))
                 .toList();
-        return new WebReport(report.serverTime(), report.from(), report.to(), rows);
+        return new WebReport(report.serverTime(), report.from(), report.to(), rows, report.periodNote());
     }
 
     @GetMapping("/report.xlsx")
@@ -43,15 +43,9 @@ class AttendanceReportController {
                 .body(AttendanceWorkbook.write(report));
     }
 
-    @GetMapping("/report/notes/{employeeId}")
-    AttendanceReportService.Note note(@PathVariable long employeeId,
-            @RequestParam AttendanceReportService.Period period, @RequestParam LocalDate date) {
-        return reports.note(employeeId, period, date);
-    }
-
-    @PutMapping("/report/notes/{employeeId}")
+    @PutMapping("/report/note")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    void saveNote(@PathVariable long employeeId, @Valid @RequestBody AttendanceReportService.SaveNote input) {
-        reports.saveNote(employeeId, input);
+    void saveNote(@Valid @RequestBody AttendanceReportService.SaveNote input) {
+        reports.saveNote(input);
     }
 }

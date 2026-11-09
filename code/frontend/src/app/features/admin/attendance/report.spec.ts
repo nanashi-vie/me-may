@@ -8,12 +8,12 @@ it('renders a single summary table and offers Excel for details', async () => {
     serverTime: '2026-11-09T21:00:00+07:00',
     from: '2026-11-09',
     to: '2026-11-15',
+    periodNote: '09/11 quên bấm kết thúc',
     summary: [{ employeeId: 1, code: 'EMP-001', name: 'Nguyễn An', registeredDays: 5, workedDays: 2, reviewCount: 1 }],
   };
-  const note = vi.fn(async () => ({ text: '09/11 quên bấm kết thúc' }));
   const saveNote = vi.fn(async () => undefined);
   TestBed.configureTestingModule({
-    providers: [{ provide: AttendanceApi, useValue: { employees: async () => [], report: async () => report, note, saveNote } }],
+    providers: [{ provide: AttendanceApi, useValue: { employees: async () => [], report: async () => report, saveNote } }],
   });
   const fixture = TestBed.createComponent(AttendanceReport);
   const component = fixture.componentInstance;
@@ -30,15 +30,11 @@ it('renders a single summary table and offers Excel for details', async () => {
   expect(root.textContent).toContain('Xuất bảng đang xem (.xlsx)');
 
   component.query.period = 'MONTH';
-  const noteButton = root.querySelector<HTMLButtonElement>('[aria-label="Ghi chú cho Nguyễn An"]');
-  expect(noteButton).not.toBeNull();
-  await component.openNote(report.summary[0]);
-  fixture.detectChanges();
   await fixture.whenStable();
-  const editor = root.querySelector<HTMLTextAreaElement>('textarea');
-  expect(editor?.value).toBe('09/11 quên bấm kết thúc');
-  expect(note).toHaveBeenCalledWith(1, expect.objectContaining({ period: 'WEEK' }));
+  const editors = root.querySelectorAll<HTMLTextAreaElement>('textarea');
+  expect(editors).toHaveLength(1);
+  expect(editors[0].value).toBe('09/11 quên bấm kết thúc');
   component.noteText = '09/11 đối chiếu sổ tiệm';
   await component.saveNote();
-  expect(saveNote).toHaveBeenCalledWith(1, expect.objectContaining({ period: 'WEEK' }), '09/11 đối chiếu sổ tiệm');
+  expect(saveNote).toHaveBeenCalledWith(expect.objectContaining({ period: 'WEEK' }), '09/11 đối chiếu sổ tiệm');
 });

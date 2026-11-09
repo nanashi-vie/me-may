@@ -6,8 +6,8 @@ Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S063 (09/11, dev-ui): Chấm công MVP v1 gồm hồ sơ/PIN, lịch tuần, chấm công, audit và Excel.
   Ca còn mở từ 20:30 giờ Việt Nam hiện Cần kiểm tra. Đã kiểm với PostgreSQL test và Chrome local.
   Hồ sơ 40:60, ẩn khung thêm mới mặc định. Menu từng hàng mở thông tin, lịch và chấm công.
-  Web chỉ hiện tổng hợp và ghi chú theo nhân viên/kỳ. Tổng giờ, chi tiết ca và ghi chú có trong Excel.
-  Chưa rollout migration V21–V22. [Chấm công](ATTENDANCE_SPEC.md).
+  Web chỉ hiện tổng hợp và một ô ghi chú chung cho kỳ tuần/tháng. Tổng giờ, chi tiết ca và ghi chú có trong Excel.
+  Chưa rollout production migration V21–V23. [Chấm công](ATTENDANCE_SPEC.md).
 - S056-C04 (09/11): nhãn Nơi lưu trữ dùng cùng mẫu field với Tồn kho để
   tránh margin của label chung. Vitest 252 ca đạt; còn smoke trình duyệt.
 - S055-C03 (08/11): Hoàn tất nâng cấp dải đỏ đầu trang (`utility bar`) và `Footer` nền tối theo kết quả `/grill-me`: dải đỏ bên trái có 3 icon trắng (`Facebook`, `Threads`, `TikTok`), ở giữa có chữ chạy ngang (`marquee`), bên phải là `✉ support@memaybooks.com`; Footer đổi sang nền tối `#292724` tràn chiều ngang kèm khung `KẾT NỐI VỚI CHÚNG TÔI` (nhúng Facebook `embed_page` `340x130px` của `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng `Facebook`, `Threads`, `TikTok`); tối ưu 3 logo SVG mới do user cung cấp bằng `<symbol>` + `<use href="#...">` (0 HTTP request phụ, hỗ trợ `currentColor`). Vitest 44/44 files (252/252 tests PASS), build SSR & Workers 0 warning, 0 error.

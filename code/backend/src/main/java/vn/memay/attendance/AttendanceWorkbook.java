@@ -7,6 +7,7 @@ import java.time.OffsetDateTime;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 final class AttendanceWorkbook {
@@ -15,13 +16,26 @@ final class AttendanceWorkbook {
     static byte[] write(AttendanceReportService.Report report) throws IOException {
         try (var book = new XSSFWorkbook(); var bytes = new ByteArrayOutputStream()) {
             var summary = book.createSheet("Tổng hợp");
-            row(summary, "Mã nhân viên", "Tên", "Số ngày đăng ký", "Số ngày làm thực tế",
-                    "Tổng giờ hợp lệ", "Số ca cần kiểm tra", "Ghi chú");
+            var summaryHeader = row(summary, "Mã nhân viên", "Tên", "Số ngày đăng ký", "Số ngày làm thực tế",
+                    "Tổng giờ hợp lệ", "Số ca cần kiểm tra");
+            if (report.summary().stream().anyMatch(line -> line.note() != null)) {
+                summaryHeader.createCell(6).setCellValue("Ghi chú nhân viên (cũ)");
+            }
             var noteStyle = book.createCellStyle();
             noteStyle.setWrapText(true);
             for (var line : report.summary()) {
-                row(summary, line.code(), line.name(), line.registeredDays(), line.workedDays(),
-                        line.minutes() / 60.0, line.reviewCount(), line.note()).getCell(6).setCellStyle(noteStyle);
+                var entry = row(summary, line.code(), line.name(), line.registeredDays(), line.workedDays(),
+                        line.minutes() / 60.0, line.reviewCount());
+                if (line.note() != null) {
+                    var note = entry.createCell(6);
+                    note.setCellValue(line.note());
+                    note.setCellStyle(noteStyle);
+                }
+            }
+            if (!report.periodNote().isEmpty()) {
+                var note = row(summary, "Ghi chú chung", report.periodNote());
+                note.getCell(1).setCellStyle(noteStyle);
+                summary.addMergedRegion(new CellRangeAddress(note.getRowNum(), note.getRowNum(), 1, 5));
             }
             var detail = book.createSheet("Chi tiết");
             row(detail, "Ngày", "Nhân viên", "Giờ bắt đầu", "Giờ kết thúc", "Tổng số phút",

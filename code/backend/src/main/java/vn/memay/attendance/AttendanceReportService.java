@@ -14,13 +14,12 @@ import vn.memay.common.AdminApiException;
 class AttendanceReportService {
     enum Period { WEEK, MONTH }
     enum Filter { ALL, OPEN, REVIEW, OUTSIDE }
-    record Shift(long id, long employeeId, String name, LocalDate day, OffsetDateTime startedAt,
+    record Shift(long employeeId, String name, LocalDate day, OffsetDateTime startedAt,
                  OffsetDateTime endedAt, Long minutes, AttendanceSession.Status status, boolean outOfSchedule,
-                 String lastReason, long version) {}
+                 String lastReason) {}
     record Summary(long employeeId, String code, String name, int registeredDays, int workedDays, long minutes,
                    long reviewCount, String note) {}
-    record Report(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<Summary> summary, List<Shift> shifts) {}
-    record Note(String text) {}
+    record Report(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<Summary> summary, List<Shift> shifts, String periodNote) {}
     record SaveNote(@NotNull Period period, @NotNull LocalDate date, @NotNull @Size(max = 500) String text) {}
 
     private final JdbcTemplate jdbc;
@@ -50,14 +49,14 @@ class AttendanceReportService {
             var start = session.startedAt().atZoneSameInstant(AttendanceTime.ZONE).toOffsetDateTime();
             var end = session.endedAt() == null ? null : session.endedAt()
                     .atZoneSameInstant(AttendanceTime.ZONE).toOffsetDateTime();
-            return new Shift(session.id(), session.employeeId(), rs.getString("full_name"), start.toLocalDate(),
+            return new Shift(session.employeeId(), rs.getString("full_name"), start.toLocalDate(),
                     start, end, end == null ? null : Duration.between(start, end).toMinutes(), session.status(now),
-                    session.outOfSchedule(), rs.getString("reason"), session.version());
+                    session.outOfSchedule(), rs.getString("reason"));
         }, from.atStartOfDay(AttendanceTime.ZONE).toOffsetDateTime(), until.atStartOfDay(AttendanceTime.ZONE).toOffsetDateTime(),
                 employeeId, employeeId).stream().filter(shift -> matches(filter, shift)).toList();
         var byEmployee = shifts.stream().collect(Collectors.groupingBy(Shift::employeeId));
         Map<Long, Integer> planned = registeredDays(from, until);
-        Map<Long, String> notes = jdbc.query("""
+        Map<Long, String> legacyNotes = jdbc.query("""
                 select employee_id, note_text from attendance_period_note where period=? and period_start=?
                 """, rs -> {
             Map<Long, String> result = new HashMap<>();
@@ -69,7 +68,7 @@ class AttendanceReportService {
             if (employeeId != null && employee.id() != employeeId) continue;
             var sessions = byEmployee.getOrDefault(employee.id(), List.of());
             int registered = planned.getOrDefault(employee.id(), 0);
-            String note = notes.get(employee.id());
+            String note = legacyNotes.get(employee.id());
             if (sessions.isEmpty() && (filter != Filter.ALL ||
                     (!employee.active() && registered == 0 && employeeId == null && note == null))) {
                 continue;
@@ -79,7 +78,10 @@ class AttendanceReportService {
             long review = sessions.stream().filter(shift -> shift.status() == AttendanceSession.Status.NEEDS_REVIEW).count();
             summary.add(new Summary(employee.id(), employee.code(), employee.fullName(), registered, worked, minutes, review, note));
         }
-        return new Report(now, from, until.minusDays(1), summary, shifts);
+        String periodNote = jdbc.query("""
+                select note_text from attendance_report_note where period=? and period_start=?
+                """, (rs, row) -> rs.getString(1), period.name(), from).stream().findFirst().orElse("");
+        return new Report(now, from, until.minusDays(1), summary, shifts, periodNote);
     }
 
     private Map<Long, Integer> registeredDays(LocalDate from, LocalDate until) {
@@ -111,30 +113,19 @@ class AttendanceReportService {
         };
     }
 
-    Note note(long employeeId, Period period, LocalDate date) {
-        employees.get(employeeId, false);
-        var start = periodStart(period, date);
-        String text = jdbc.query("""
-                select note_text from attendance_period_note where period=? and period_start=? and employee_id=?
-                """, (rs, row) -> rs.getString(1), period.name(), start, employeeId)
-                .stream().findFirst().orElse("");
-        return new Note(text);
-    }
-
-    void saveNote(long employeeId, SaveNote input) {
-        employees.get(employeeId, false);
+    void saveNote(SaveNote input) {
         var start = periodStart(input.period(), input.date());
         String text = input.text().strip();
         if (text.isEmpty()) {
-            jdbc.update("delete from attendance_period_note where period=? and period_start=? and employee_id=?",
-                    input.period().name(), start, employeeId);
+            jdbc.update("delete from attendance_report_note where period=? and period_start=?",
+                    input.period().name(), start);
             return;
         }
         jdbc.update("""
-                insert into attendance_period_note(period, period_start, employee_id, note_text)
-                values (?, ?, ?, ?)
-                on conflict (period, period_start, employee_id) do update set note_text=excluded.note_text
-                """, input.period().name(), start, employeeId, text);
+                insert into attendance_report_note(period, period_start, note_text)
+                values (?, ?, ?)
+                on conflict (period, period_start) do update set note_text=excluded.note_text
+                """, input.period().name(), start, text);
     }
 
     private static LocalDate periodStart(Period period, LocalDate date) {

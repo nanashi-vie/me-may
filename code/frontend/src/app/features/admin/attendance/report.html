@@ -23,23 +23,23 @@
         <option value="REVIEW">Cần kiểm tra</option><option value="OUTSIDE">Ngoài lịch</option>
       </select>
     </label>
-    <button class="primary" [disabled]="busy() || !!noteRow() || !query.date">Xem bảng công</button>
-    <button type="button" (click)="download()" [disabled]="busy() || !!noteRow() || !report()">Xuất bảng đang xem (.xlsx)</button>
+    <button class="primary" [disabled]="busy() || noteDirty() || !query.date">Xem bảng công</button>
+    <button type="button" (click)="download()" [disabled]="busy() || noteDirty() || !report()">Xuất bảng đang xem (.xlsx)</button>
   </form>
 
-  @if (noteRow(); as row) {
+  @if (report(); as data) {
     <form class="panel" (ngSubmit)="saveNote()">
-      <h2>Ghi chú · {{ row.name }}</h2>
-      @if (report(); as data) {
-        <p class="muted">{{ day(data.from) }} – {{ day(data.to) }}</p>
-      }
+      <h2>Ghi chú chung</h2>
+      <p class="muted">{{ day(data.from) }} – {{ day(data.to) }} · Ghi chú áp dụng cho cả kỳ.</p>
       <label class="field">
         <span>Nội dung ghi chú</span>
         <textarea name="note" rows="4" maxlength="500" [(ngModel)]="noteText" [disabled]="busy()"></textarea>
       </label>
       <div class="controls">
-        <button class="primary" [disabled]="busy()">Lưu ghi chú</button>
-        <button type="button" (click)="noteRow.set(null)" [disabled]="busy()">Hủy</button>
+        <button class="primary" [disabled]="busy() || !noteDirty()">Lưu ghi chú</button>
+        @if (noteDirty()) {
+          <button type="button" (click)="resetNote()" [disabled]="busy()">Bỏ thay đổi</button>
+        }
       </div>
     </form>
   }
@@ -48,14 +48,12 @@
     <div class="panel table-wrap">
       <h2>Tổng hợp · {{ day(data.from) }} – {{ day(data.to) }}</h2>
       <table>
-        <thead><tr><th>Mã</th><th>Nhân viên</th><th>Ngày đăng ký</th><th>Ngày làm thực tế</th><th>Ca cần kiểm tra</th><th>Ghi chú</th></tr></thead>
+        <thead><tr><th>Mã</th><th>Nhân viên</th><th>Ngày đăng ký</th><th>Ngày làm thực tế</th><th>Ca cần kiểm tra</th></tr></thead>
         <tbody>
           @for (row of data.summary; track row.employeeId) {
             <tr><th scope="row">{{ row.code }}</th><td>{{ row.name }}</td><td>{{ row.registeredDays }}</td>
-              <td>{{ row.workedDays }}</td><td>{{ row.reviewCount }}</td>
-              <td><button type="button" (click)="openNote(row)" [disabled]="busy() || !!noteRow()"
-                [attr.aria-label]="'Ghi chú cho ' + row.name">Ghi chú</button></td></tr>
-          } @empty { <tr><td colspan="6">Không có dữ liệu cho bộ lọc này.</td></tr> }
+              <td>{{ row.workedDays }}</td><td>{{ row.reviewCount }}</td></tr>
+          } @empty { <tr><td colspan="5">Không có dữ liệu cho bộ lọc này.</td></tr> }
         </tbody>
       </table>
     </div>

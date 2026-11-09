@@ -40,7 +40,7 @@ Owner có thể:
 - Tạo hoặc đặt lại PIN.
 - Đăng ký lịch làm việc.
 - Sao chép lịch tuần trước.
-- Xem bảng tổng hợp và ghi chú theo nhân viên cho kỳ tuần hoặc tháng.
+- Xem bảng tổng hợp và ghi chú chung cho kỳ tuần hoặc tháng.
 - Xuất báo cáo Excel.
 
 ### 2.3. Nhân viên chấm công
@@ -276,7 +276,11 @@ Giữ lịch sử điều chỉnh giờ công đã có.
 
 ### `attendance_period_note`
 
-Lưu một ghi chú cho mỗi nhân viên và kỳ tuần/tháng. Khoá gồm loại kỳ, ngày bắt đầu kỳ và mã nội bộ nhân viên. Nội dung tối đa 500 ký tự. Để trống khi lưu sẽ xóa ghi chú của kỳ đó.
+Giữ ghi chú theo từng nhân viên từ phiên bản V22 để xuất lại khi có dữ liệu lịch sử.
+
+### `attendance_report_note`
+
+Lưu một ghi chú chung cho mỗi kỳ tuần/tháng, độc lập với bộ lọc nhân viên và loại ca. Nội dung tối đa 500 ký tự. Để trống khi lưu sẽ xóa ghi chú chung của kỳ đó.
 
 Không cần bảng `kiosk_device`, tài khoản nhân viên hoặc hệ thống phân quyền Kiosk riêng trong MVP.
 
@@ -290,14 +294,14 @@ Owner có thể:
 - Lọc theo nhân viên.
 - Xem số ngày đăng ký, số ngày có công và số ca cần kiểm tra.
 - Lọc theo ca chưa kết thúc hoặc ngoài lịch đăng ký.
-- Ghi chú cho nhân viên theo đúng kỳ đang xem. Nội dung có thể ghi ngày cụ thể để chủ tiệm đối chiếu khi chỉnh Excel.
+- Nhập ghi chú chung cho kỳ đang xem. Nội dung có thể ghi ngày cụ thể để chủ tiệm đối chiếu khi chỉnh Excel.
 - Xuất `.xlsx`.
 
 Web chỉ trả bảng tổng hợp. Tổng giờ và chi tiết ca nằm trong file Excel.
 
 **Sheet 1 — Tổng hợp**
 
-Mã nhân viên, tên, số ngày đăng ký, số ngày làm thực tế, tổng giờ hợp lệ, số ca cần kiểm tra và ghi chú theo kỳ.
+Mã nhân viên, tên, số ngày đăng ký, số ngày làm thực tế, tổng giờ hợp lệ, số ca cần kiểm tra. Ghi chú chung nằm cuối sheet. Chỉ hiện cột ghi chú theo nhân viên khi kỳ có dữ liệu cũ.
 
 **Sheet 2 — Chi tiết**
 
@@ -321,7 +325,7 @@ Một ngày có nhiều ca vẫn chỉ được tính là một ngày làm thự
 - [ ] Hỗ trợ nhiều ca/ngày.
 - [ ] Cảnh báo khi chấm công ngoài lịch.
 - [ ] Sau khi chấm công, tự thoát hồ sơ nhưng giữ nguyên phiên OWNER.
-- [ ] Owner ghi chú theo nhân viên và kỳ. API tổng hợp không trả tổng giờ hoặc chi tiết ca.
+- [ ] Owner nhập một ghi chú chung theo kỳ. API tổng hợp không trả tổng giờ hoặc chi tiết ca.
 - [ ] Xuất Excel tổng hợp và chi tiết chính xác.
 
 ## 10. Không triển khai trong MVP
@@ -356,9 +360,9 @@ Một ngày có nhiều ca vẫn chỉ được tính là một ngày làm thự
 
 ## 12. Contract triển khai trên dev-ui
 
-- Flyway V21 tạo dữ liệu chấm công tách khỏi catalogue. V22 thêm ghi chú theo kỳ. API dưới `/api/v1/admin/attendance` yêu cầu OWNER. Thao tác ghi dùng CSRF hiện hành.
+- Flyway V21 tạo dữ liệu chấm công tách khỏi catalogue. V22 lưu ghi chú theo nhân viên của bản cũ. V23 thêm ghi chú chung. API dưới `/api/v1/admin/attendance` yêu cầu OWNER. Thao tác ghi dùng CSRF hiện hành.
 - PIN 6 chữ số hash BCrypt. Sau 5 lần sai, khóa thử PIN của hồ sơ đó trong 5 phút. Quyền xác nhận ca gắn với phiên OWNER và hồ sơ, có hiệu lực 30 giây. Đặt lại PIN hoặc ngừng hoạt động làm quyền cũ hết hiệu lực.
 - Chỉ một ca mở mỗi nhân viên. Lịch và hồ sơ dùng phiên bản để từ chối dữ liệu cũ. Ghi chú theo kỳ không thay đổi mốc chấm công.
 - Bảng công và Excel dùng chung phép tính. Số phút của mỗi ca hoàn tất lấy phần nguyên của thời lượng thực tế. Ca mở có số phút trống. Cờ Cần kiểm tra áp dụng khi ca vẫn mở từ 20:30 ngày bắt đầu và hết khi ca được đóng.
 - Sheet Chi tiết dùng ngày dd/mm/yyyy, giờ HH:mm:ss và thời lượng HH:mm dưới dạng số Excel. Thời lượng trên 24 giờ giữ nguyên tổng giờ.
-- Khi nghiệm thu local, dùng PostgreSQL kiểm thử riêng. Chạy `mvn -Dtest=AttendanceIntegrationTest test` từ `code/backend` với cấu hình DB test và `npm test` từ `code/frontend`. Rollout V21–V22 cần kiểm tra riêng trên môi trường đích.
+- Khi nghiệm thu local, dùng PostgreSQL kiểm thử riêng. Chạy `mvn -Dtest=AttendanceIntegrationTest test` từ `code/backend` với cấu hình DB test và `npm test` từ `code/frontend`. Rollout V21–V23 cần kiểm tra riêng trên môi trường đích.

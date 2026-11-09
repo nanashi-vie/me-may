@@ -52,6 +52,7 @@ export interface Report {
   from: string;
   to: string;
   summary: Summary[];
+  periodNote: string;
 }
 export interface ReportQuery {
   period: 'WEEK' | 'MONTH';
@@ -103,15 +104,8 @@ export class AttendanceApi {
     return firstValueFrom(this.http.download('/attendance/report.xlsx', this.params(query)));
   }
 
-  note(employeeId: number, query: ReportQuery) {
-    return this.get<{ text: string }>(`/report/notes/${employeeId}`,
-      new HttpParams().set('period', query.period).set('date', query.date));
-  }
-
-  saveNote(employeeId: number, query: ReportQuery, text: string) {
-    return this.mutate<void>('PUT', `/report/notes/${employeeId}`, {
-      period: query.period, date: query.date, text,
-    });
+  saveNote(query: ReportQuery, text: string) {
+    return this.mutate<void>('PUT', '/report/note', { period: query.period, date: query.date, text });
   }
 
   private get<T>(path: string, params?: HttpParams) {

@@ -2740,3 +2740,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - User chốt Ghi chú theo nhân viên và kỳ tuần/tháng, ngày cụ thể do người ghi nhập trong nội dung. Thêm V22. Ghi chú nằm trong sheet Tổng hợp. Sửa giờ thực hiện trên file Excel đã tải, dữ liệu gốc và audit cũ được giữ.
 - API bảng công chỉ trả số ngày và số ca cần kiểm tra. Bỏ giao diện chi tiết và endpoint đọc audit/chỉnh giờ cũ. Xuất Excel giữ tổng giờ, chi tiết ca và ghi chú cũ.
 - Từ code/backend: mvn -o test với PostgreSQL test ICU đạt 249, bỏ qua 3. Đã chạy V22 và kiểm HTTP không lộ dữ liệu giờ, ghi chú tuần/tháng độc lập và mở lại file Excel. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Chưa smoke trình duyệt hoặc deploy production.
+
+### 2026-11-09 — S063-C08 — Ghi chú chung cho kỳ bảng công
+
+- Bắt đầu từ 725836c trên dev-ui. Chrome nhận 404 vì Java local cổng 8080 chạy class build từ 21:39, chưa có route ghi chú. Đổi thành một ô chung theo kỳ và rà code chấm công cũ. Giữ dữ liệu lịch sử.
+- Một ô Ghi chú chung cho mỗi kỳ tuần/tháng, độc lập bộ lọc. Bỏ menu, state theo hàng và route đọc/ghi ghi chú theo nhân viên. Xóa field DTO và thông báo lỗi chỉnh giờ đã hết caller. Migration V23 bổ sung bảng ghi chú chung. V22 và audit cũ giữ để Excel vẫn đọc được lịch sử.
+- Từ code/backend: mvn -o test đạt 249, bỏ qua 3. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Kiểm lại workbook cuối bằng bộ AttendanceIntegrationTest và AttendanceWorkbookTest.
+- Bộ AttendanceIntegrationTest và AttendanceWorkbookTest cuối đạt 10/10. Local đã dừng Java cũ, chạy mvn -o clean spring-boot:run trên me_may_dev, Flyway từ V21 lên V23. Health 8080 UP, proxy 4200 trả 401 với request chưa đăng nhập. Bàn giao dev-ui, chưa deploy production.

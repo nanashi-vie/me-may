@@ -51,7 +51,7 @@ class AttendanceIntegrationTest {
     void setup() {
         assertThat(jdbc.queryForObject("SELECT current_database()", String.class)).isEqualTo("me_may_test");
         NOW.set(OPENING);
-        for (String table : new String[]{"attendance_period_note", "attendance_audit_log", "attendance_session", "employee_weekly_schedule",
+        for (String table : new String[]{"attendance_report_note", "attendance_period_note", "attendance_audit_log", "attendance_session", "employee_weekly_schedule",
                 "attendance_week", "employee_pin_credential", "employee_profile"}) {
             if (Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass(?) is not null", Boolean.class, table))) {
                 jdbc.execute("delete from " + table);
@@ -295,9 +295,11 @@ class AttendanceIntegrationTest {
             assertThat(JsonPath.<java.util.List<?>>read(next, "$.summary")).isEmpty();
         }
     }
-    @Test void savesEmployeeNotesSeparatelyForWeekAndMonthAndExportsThem() throws Exception {
+    @Test void savesSharedNotesSeparatelyForWeekAndMonthAndExportsThem() throws Exception {
         int id = employee();
-        String notePath = "/report/notes/" + id;
+        String notePath = "/report/note";
+        jdbc.update("insert into attendance_period_note(period, period_start, employee_id, note_text) values ('WEEK', ?, ?, ?)",
+                java.time.LocalDate.of(2026, 11, 9), id, "Ghi chú riêng cũ");
         assertThat(api("PUT", notePath, """
                 {"period":"WEEK","date":"2026-11-11","text":"09/11 quên bấm kết thúc"}
                 """).statusCode()).isEqualTo(204);
@@ -307,11 +309,12 @@ class AttendanceIntegrationTest {
 
         String week = "?period=WEEK&date=2026-11-09";
         String month = "?period=MONTH&date=2026-11-01";
-        assertThat(api("GET", notePath + week, null).body()).contains("09/11 quên bấm kết thúc");
-        assertThat(api("GET", notePath + month, null).body()).contains("Đối chiếu sổ tháng");
-        assertThat(api("GET", "/report" + week, null).body()).doesNotContain("quên bấm", "\"minutes\"", "\"shifts\"");
+        assertThat(api("GET", "/report" + week, null).body()).contains("09/11 quên bấm kết thúc");
+        assertThat(api("GET", "/report" + month, null).body()).contains("Đối chiếu sổ tháng");
+        assertThat(api("GET", "/report" + week, null).body()).doesNotContain("Ghi chú riêng cũ", "\"minutes\"", "\"shifts\"");
         try (var workbook = downloadReport(week)) {
-            assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(6).getStringCellValue())
+            assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(6).getStringCellValue()).isEqualTo("Ghi chú riêng cũ");
+            assertThat(workbook.getSheet("Tổng hợp").getRow(2).getCell(1).getStringCellValue())
                     .isEqualTo("09/11 quên bấm kết thúc");
             assertThat(workbook.getSheet("Chi tiết").getPhysicalNumberOfRows()).isEqualTo(1);
         }
@@ -319,7 +322,8 @@ class AttendanceIntegrationTest {
         assertThat(api("PUT", notePath, """
                 {"period":"WEEK","date":"2026-11-09","text":""}
                 """).statusCode()).isEqualTo(204);
-        assertThat(JsonPath.<String>read(api("GET", notePath + week, null).body(), "$.text")).isEmpty();
+        assertThat(JsonPath.<String>read(api("GET", "/report" + week, null).body(), "$.periodNote")).isEmpty();
+        assertThat(api("GET", "/report/notes/" + id + week, null).statusCode()).isEqualTo(404);
     }
 
     private org.apache.poi.xssf.usermodel.XSSFWorkbook downloadReport(String query) throws Exception {
