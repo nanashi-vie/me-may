@@ -40,7 +40,7 @@ Owner có thể:
 - Tạo hoặc đặt lại PIN.
 - Đăng ký lịch làm việc.
 - Sao chép lịch tuần trước.
-- Xem và chỉnh sửa chấm công có lưu lịch sử.
+- Xem bảng tổng hợp và ghi chú theo nhân viên cho kỳ tuần hoặc tháng.
 - Xuất báo cáo Excel.
 
 ### 2.3. Nhân viên chấm công
@@ -236,9 +236,8 @@ Lịch đăng ký không phải cơ chế giới hạn quyền chấm công.
 - Không cho phép kết thúc ca chưa bắt đầu.
 - Ca chưa kết thúc phải hiển thị trạng thái riêng.
 - Không tự tính giờ làm vô hạn khi nhân viên quên kết thúc ca.
-- Owner có thể điều chỉnh giờ công, bắt buộc nhập lý do.
-- Lưu lịch sử điều chỉnh gồm giá trị cũ, giá trị mới, thời điểm và người thực hiện.
-- Các bản ghi điều chỉnh không được làm mất sự kiện chấm công gốc.
+- Owner ghi chú trên web và chỉnh giờ trên bản Excel đã tải khi cần. Ghi chú độc lập với dữ liệu chấm công.
+- Giữ các sự kiện chấm công gốc và lịch sử điều chỉnh đã có.
 - Giới hạn số lần nhập PIN sai để tránh dò mã.
 
 ## 7. Cấu trúc dữ liệu đề xuất
@@ -273,7 +272,11 @@ Lưu một ca làm thực tế:
 
 ### `attendance_audit_log`
 
-Lưu lịch sử điều chỉnh hoặc hủy công, bao gồm người thao tác và lý do.
+Giữ lịch sử điều chỉnh giờ công đã có.
+
+### `attendance_period_note`
+
+Lưu một ghi chú cho mỗi nhân viên và kỳ tuần/tháng. Khoá gồm loại kỳ, ngày bắt đầu kỳ và mã nội bộ nhân viên. Nội dung tối đa 500 ký tự. Để trống khi lưu sẽ xóa ghi chú của kỳ đó.
 
 Không cần bảng `kiosk_device`, tài khoản nhân viên hoặc hệ thống phân quyền Kiosk riêng trong MVP.
 
@@ -285,18 +288,16 @@ Owner có thể:
 
 - Xem theo tuần hoặc tháng.
 - Lọc theo nhân viên.
-- Xem tổng số giờ làm.
-- Xem số ngày có công.
-- Xem ca chưa kết thúc.
-- Xem ca ngoài lịch đăng ký.
-- Điều chỉnh giờ công.
+- Xem số ngày đăng ký, số ngày có công và số ca cần kiểm tra.
+- Lọc theo ca chưa kết thúc hoặc ngoài lịch đăng ký.
+- Ghi chú cho nhân viên theo đúng kỳ đang xem. Nội dung có thể ghi ngày cụ thể để chủ tiệm đối chiếu khi chỉnh Excel.
 - Xuất `.xlsx`.
 
-File Excel gồm:
+Web chỉ trả bảng tổng hợp. Tổng giờ và chi tiết ca nằm trong file Excel.
 
 **Sheet 1 — Tổng hợp**
 
-Mã nhân viên, tên, số ngày đăng ký, số ngày làm thực tế, tổng giờ hợp lệ, số ca cần kiểm tra.
+Mã nhân viên, tên, số ngày đăng ký, số ngày làm thực tế, tổng giờ hợp lệ, số ca cần kiểm tra và ghi chú theo kỳ.
 
 **Sheet 2 — Chi tiết**
 
@@ -320,7 +321,7 @@ Một ngày có nhiều ca vẫn chỉ được tính là một ngày làm thự
 - [ ] Hỗ trợ nhiều ca/ngày.
 - [ ] Cảnh báo khi chấm công ngoài lịch.
 - [ ] Sau khi chấm công, tự thoát hồ sơ nhưng giữ nguyên phiên OWNER.
-- [ ] Owner xem và chỉnh sửa công có audit log.
+- [ ] Owner ghi chú theo nhân viên và kỳ. API tổng hợp không trả tổng giờ hoặc chi tiết ca.
 - [ ] Xuất Excel tổng hợp và chi tiết chính xác.
 
 ## 10. Không triển khai trong MVP
@@ -355,9 +356,9 @@ Một ngày có nhiều ca vẫn chỉ được tính là một ngày làm thự
 
 ## 12. Contract triển khai trên dev-ui
 
-- Flyway V21 tạo dữ liệu chấm công tách khỏi catalogue. API dưới `/api/v1/admin/attendance` yêu cầu OWNER. Thao tác ghi dùng CSRF hiện hành.
+- Flyway V21 tạo dữ liệu chấm công tách khỏi catalogue. V22 thêm ghi chú theo kỳ. API dưới `/api/v1/admin/attendance` yêu cầu OWNER. Thao tác ghi dùng CSRF hiện hành.
 - PIN 6 chữ số hash BCrypt. Sau 5 lần sai, khóa thử PIN của hồ sơ đó trong 5 phút. Quyền xác nhận ca gắn với phiên OWNER và hồ sơ, có hiệu lực 30 giây. Đặt lại PIN hoặc ngừng hoạt động làm quyền cũ hết hiệu lực.
-- Chỉ một ca mở mỗi nhân viên. Lịch, hồ sơ và chỉnh công dùng phiên bản để từ chối dữ liệu cũ. Điều chỉnh lưu giờ hiệu lực và audit trong cùng giao dịch, giữ mốc chấm công gốc.
+- Chỉ một ca mở mỗi nhân viên. Lịch và hồ sơ dùng phiên bản để từ chối dữ liệu cũ. Ghi chú theo kỳ không thay đổi mốc chấm công.
 - Bảng công và Excel dùng chung phép tính. Số phút của mỗi ca hoàn tất lấy phần nguyên của thời lượng thực tế. Ca mở có số phút trống. Cờ Cần kiểm tra áp dụng khi ca vẫn mở từ 20:30 ngày bắt đầu và hết khi ca được đóng.
-- Sheet Chi tiết dùng ngày dd/mm/yyyy, giờ HH:mm:ss và thời lượng HH:mm dưới dạng số Excel. Thời lượng trên 24 giờ giữ nguyên tổng giờ. Hai cột giờ trên bảng công web chỉ hiện HH:mm:ss.
-- Khi nghiệm thu local, dùng PostgreSQL kiểm thử riêng. Chạy `mvn -Dtest=AttendanceIntegrationTest test` từ `code/backend` với cấu hình DB test và `npm test` từ `code/frontend`. Rollout V21 cần kiểm tra riêng trên môi trường đích.
+- Sheet Chi tiết dùng ngày dd/mm/yyyy, giờ HH:mm:ss và thời lượng HH:mm dưới dạng số Excel. Thời lượng trên 24 giờ giữ nguyên tổng giờ.
+- Khi nghiệm thu local, dùng PostgreSQL kiểm thử riêng. Chạy `mvn -Dtest=AttendanceIntegrationTest test` từ `code/backend` với cấu hình DB test và `npm test` từ `code/frontend`. Rollout V21–V22 cần kiểm tra riêng trên môi trường đích.

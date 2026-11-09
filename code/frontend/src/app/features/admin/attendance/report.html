@@ -1,6 +1,6 @@
 <section class="attendance-page">
   <h1>Bảng công</h1>
-  <p class="muted">Giờ Việt Nam · Ca còn mở từ 20:30 được đánh dấu Cần kiểm tra. Tổng giờ chỉ cộng các ca đã kết thúc.</p>
+  <p class="muted">Giờ Việt Nam · Ca còn mở từ 20:30 được đánh dấu Cần kiểm tra. Xuất Excel để xem tổng giờ và chi tiết từng ca.</p>
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
   @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
 
@@ -23,65 +23,39 @@
         <option value="REVIEW">Cần kiểm tra</option><option value="OUTSIDE">Ngoài lịch</option>
       </select>
     </label>
-    <button class="primary" [disabled]="busy() || !query.date">Xem bảng công</button>
-    <button type="button" (click)="download()" [disabled]="busy() || !report()">Xuất bảng đang xem (.xlsx)</button>
+    <button class="primary" [disabled]="busy() || !!noteRow() || !query.date">Xem bảng công</button>
+    <button type="button" (click)="download()" [disabled]="busy() || !!noteRow() || !report()">Xuất bảng đang xem (.xlsx)</button>
   </form>
 
-  @if (edit(); as shift) {
-    <div class="panel">
-      <h2>Điều chỉnh giờ công · {{ shift.name }}</h2>
-      <form (ngSubmit)="save()">
-        <div class="controls">
-          <label class="field"><span>Giờ bắt đầu</span>
-            <input type="datetime-local" step="1" name="start" required [(ngModel)]="form.startedAt">
-          </label>
-          <label class="field"><span>Giờ kết thúc</span>
-            <input type="datetime-local" step="1" name="end" required [(ngModel)]="form.endedAt">
-          </label>
-          <label class="field"><span>Lý do điều chỉnh</span>
-            <textarea name="reason" required maxlength="500" [(ngModel)]="form.reason"></textarea>
-          </label>
-          <button class="primary" [disabled]="busy()">Lưu giờ công</button>
-          <button type="button" (click)="edit.set(null)" [disabled]="busy()">Hủy</button>
-        </div>
-      </form>
-      <h2>Lịch sử điều chỉnh</h2>
-      @for (entry of audit(); track $index) {
-        <p>{{ time(entry.recordedAt) }} · {{ entry.actor }} · {{ entry.reason }}<br>
-          Cũ {{ time(entry.oldStartedAt) }} → {{ time(entry.oldEndedAt) }}<br>
-          Mới {{ time(entry.newStartedAt) }} → {{ time(entry.newEndedAt) }}</p>
-      } @empty { <p class="muted">Chưa có điều chỉnh nào.</p> }
-    </div>
+  @if (noteRow(); as row) {
+    <form class="panel" (ngSubmit)="saveNote()">
+      <h2>Ghi chú · {{ row.name }}</h2>
+      @if (report(); as data) {
+        <p class="muted">{{ day(data.from) }} – {{ day(data.to) }}</p>
+      }
+      <label class="field">
+        <span>Nội dung ghi chú</span>
+        <textarea name="note" rows="4" maxlength="500" [(ngModel)]="noteText" [disabled]="busy()"></textarea>
+      </label>
+      <div class="controls">
+        <button class="primary" [disabled]="busy()">Lưu ghi chú</button>
+        <button type="button" (click)="noteRow.set(null)" [disabled]="busy()">Hủy</button>
+      </div>
+    </form>
   }
 
   @if (report(); as data) {
     <div class="panel table-wrap">
       <h2>Tổng hợp · {{ day(data.from) }} – {{ day(data.to) }}</h2>
       <table>
-        <thead><tr><th>Mã</th><th>Nhân viên</th><th>Ngày đăng ký</th><th>Ngày làm thực tế</th><th>Tổng giờ</th><th>Ca cần kiểm tra</th></tr></thead>
+        <thead><tr><th>Mã</th><th>Nhân viên</th><th>Ngày đăng ký</th><th>Ngày làm thực tế</th><th>Ca cần kiểm tra</th><th>Ghi chú</th></tr></thead>
         <tbody>
           @for (row of data.summary; track row.employeeId) {
             <tr><th scope="row">{{ row.code }}</th><td>{{ row.name }}</td><td>{{ row.registeredDays }}</td>
-              <td>{{ row.workedDays }}</td><td>{{ hours.format(row.minutes / 60) }}</td><td>{{ row.reviewCount }}</td></tr>
+              <td>{{ row.workedDays }}</td><td>{{ row.reviewCount }}</td>
+              <td><button type="button" (click)="openNote(row)" [disabled]="busy() || !!noteRow()"
+                [attr.aria-label]="'Ghi chú cho ' + row.name">Ghi chú</button></td></tr>
           } @empty { <tr><td colspan="6">Không có dữ liệu cho bộ lọc này.</td></tr> }
-        </tbody>
-      </table>
-    </div>
-    <div class="panel table-wrap">
-      <h2>Chi tiết ca</h2>
-      <table>
-        <thead><tr><th>Ngày</th><th>Nhân viên</th><th>Bắt đầu</th><th>Kết thúc</th><th>Phút</th>
-          <th>Trạng thái</th><th>Ngoài lịch</th><th>Ghi chú</th><th>Thao tác</th></tr></thead>
-        <tbody>
-          @for (shift of data.shifts; track shift.id) {
-            <tr>
-              <td>{{ day(shift.day) }}</td><th scope="row">{{ shift.name }}</th>
-              <td class="nowrap">{{ clock(shift.startedAt) }}</td><td class="nowrap">{{ clock(shift.endedAt) }}</td><td>{{ shift.minutes ?? '—' }}</td>
-              <td [class.warning]="shift.status === 'NEEDS_REVIEW'">{{ statusLabel[shift.status] }}</td>
-              <td>{{ shift.outOfSchedule ? 'Có' : 'Không' }}</td><td>{{ shift.lastReason || '—' }}</td>
-              <td><button (click)="select(shift)" [disabled]="busy()">Sửa giờ công</button></td>
-            </tr>
-          } @empty { <tr><td colspan="9">Không có ca cho bộ lọc này.</td></tr> }
         </tbody>
       </table>
     </div>

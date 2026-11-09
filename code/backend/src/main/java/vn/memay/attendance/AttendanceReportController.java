@@ -2,8 +2,8 @@ package vn.memay.attendance;
 
 import jakarta.validation.Valid;
 import java.io.IOException;
-import java.security.Principal;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.List;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/admin/attendance")
 class AttendanceReportController {
+    record WebSummary(long employeeId, String code, String name, int registeredDays, int workedDays, long reviewCount) {}
+    record WebReport(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<WebSummary> summary) {}
+
     private final AttendanceReportService reports;
 
     AttendanceReportController(AttendanceReportService reports) {
@@ -18,10 +21,15 @@ class AttendanceReportController {
     }
 
     @GetMapping("/report")
-    AttendanceReportService.Report report(@RequestParam(defaultValue = "WEEK") AttendanceReportService.Period period,
+    WebReport report(@RequestParam(defaultValue = "WEEK") AttendanceReportService.Period period,
             @RequestParam(required = false) LocalDate date, @RequestParam(required = false) Long employeeId,
             @RequestParam(defaultValue = "ALL") AttendanceReportService.Filter filter) {
-        return reports.report(period, date, employeeId, filter);
+        var report = reports.report(period, date, employeeId, filter);
+        var rows = report.summary().stream()
+                .map(row -> new WebSummary(row.employeeId(), row.code(), row.name(), row.registeredDays(),
+                        row.workedDays(), row.reviewCount()))
+                .toList();
+        return new WebReport(report.serverTime(), report.from(), report.to(), rows);
     }
 
     @GetMapping("/report.xlsx")
@@ -35,14 +43,15 @@ class AttendanceReportController {
                 .body(AttendanceWorkbook.write(report));
     }
 
-    @PatchMapping("/sessions/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    void correct(@PathVariable long id, @Valid @RequestBody AttendanceReportService.Edit input, Principal principal) {
-        reports.correct(id, input, principal.getName());
+    @GetMapping("/report/notes/{employeeId}")
+    AttendanceReportService.Note note(@PathVariable long employeeId,
+            @RequestParam AttendanceReportService.Period period, @RequestParam LocalDate date) {
+        return reports.note(employeeId, period, date);
     }
 
-    @GetMapping("/sessions/{id}/audit")
-    List<AttendanceReportService.Audit> audit(@PathVariable long id) {
-        return reports.audit(id);
+    @PutMapping("/report/notes/{employeeId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void saveNote(@PathVariable long employeeId, @Valid @RequestBody AttendanceReportService.SaveNote input) {
+        reports.saveNote(employeeId, input);
     }
 }

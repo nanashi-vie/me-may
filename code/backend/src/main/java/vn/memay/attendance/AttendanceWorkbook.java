@@ -16,10 +16,12 @@ final class AttendanceWorkbook {
         try (var book = new XSSFWorkbook(); var bytes = new ByteArrayOutputStream()) {
             var summary = book.createSheet("Tổng hợp");
             row(summary, "Mã nhân viên", "Tên", "Số ngày đăng ký", "Số ngày làm thực tế",
-                    "Tổng giờ hợp lệ", "Số ca cần kiểm tra");
+                    "Tổng giờ hợp lệ", "Số ca cần kiểm tra", "Ghi chú");
+            var noteStyle = book.createCellStyle();
+            noteStyle.setWrapText(true);
             for (var line : report.summary()) {
                 row(summary, line.code(), line.name(), line.registeredDays(), line.workedDays(),
-                        line.minutes() / 60.0, line.reviewCount());
+                        line.minutes() / 60.0, line.reviewCount(), line.note()).getCell(6).setCellStyle(noteStyle);
             }
             var detail = book.createSheet("Chi tiết");
             row(detail, "Ngày", "Nhân viên", "Giờ bắt đầu", "Giờ kết thúc", "Tổng số phút",
@@ -36,7 +38,7 @@ final class AttendanceWorkbook {
                 entry.getCell(3).setCellStyle(timeStyle);
                 entry.getCell(4).setCellStyle(durationStyle);
             }
-            format(summary, 20, 28, 20, 22, 20, 23);
+            format(summary, 20, 28, 20, 22, 20, 23, 48);
             format(detail, 14, 28, 25, 25, 16, 22, 14, 40);
             book.write(bytes);
             return bytes.toByteArray();

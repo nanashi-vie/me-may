@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AttendanceApi, Audit, Employee, Report, ReportQuery, Shift } from './attendance-api';
-import { closingTime, displayClock, displayDay, displayTime, errorMessage, localInput, statusLabel, today } from './attendance-display';
+import { AttendanceApi, Employee, Report, ReportQuery, Summary } from './attendance-api';
+import { closingTime, displayDay, errorMessage, localInput, today } from './attendance-display';
 
 @Component({
   imports: [FormsModule],
@@ -12,21 +12,16 @@ export class AttendanceReport implements OnInit, OnDestroy {
   private readonly api = inject(AttendanceApi);
   readonly employees = signal<Employee[]>([]);
   readonly report = signal<Report | null>(null);
-  readonly edit = signal<Shift | null>(null);
-  readonly audit = signal<Audit[]>([]);
   readonly busy = signal(false);
   readonly error = signal('');
   readonly notice = signal('');
+  readonly noteRow = signal<Summary | null>(null);
+  noteText = '';
   readonly day = displayDay;
-  readonly time = displayTime;
-  readonly clock = displayClock;
-  readonly statusLabel = statusLabel;
-  readonly hours = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
   query: ReportQuery = { period: 'WEEK', date: today(), employeeId: null, filter: 'ALL' };
   private applied: ReportQuery | null = null;
   private refresh: ReturnType<typeof setTimeout> | undefined;
   private destroyed = false;
-  form = { startedAt: '', endedAt: '', reason: '' };
 
   ngOnInit() { void this.load(); }
 
@@ -36,11 +31,10 @@ export class AttendanceReport implements OnInit, OnDestroy {
   }
 
   async load() {
-    if (this.busy()) return;
+    if (this.busy() || this.noteRow()) return;
     this.busy.set(true);
     this.error.set('');
     this.notice.set('');
-    this.edit.set(null);
     const query = { ...this.query };
     try {
       const [report, employees] = await Promise.all([this.api.report(query), this.api.employees()]);
@@ -76,43 +70,34 @@ export class AttendanceReport implements OnInit, OnDestroy {
     } catch (error) { if (query === this.applied) this.error.set(errorMessage(error)); }
   }
 
-  async select(shift: Shift) {
-    if (this.busy()) return;
+  async openNote(row: Summary) {
+    if (!this.applied || this.busy() || this.noteRow()) return;
     this.busy.set(true);
     this.error.set('');
     this.notice.set('');
-    this.form = { startedAt: localInput(shift.startedAt), endedAt: shift.endedAt ? localInput(shift.endedAt) : '', reason: '' };
-    this.edit.set(shift);
-    this.audit.set([]);
-    try { this.audit.set(await this.api.audit(shift.id)); }
-    catch (error) { this.error.set(errorMessage(error)); }
+    try {
+      const note = await this.api.note(row.employeeId, this.applied);
+      this.noteText = note.text;
+      this.noteRow.set(row);
+    } catch (error) { this.error.set(errorMessage(error)); }
     finally { this.busy.set(false); }
   }
 
-  async save() {
-    const shift = this.edit();
-    if (!shift || this.busy()) return;
-    const { startedAt, endedAt, reason } = this.form;
-    if (!startedAt || !endedAt || !reason.trim()) {
-      this.error.set('Nhập đầy đủ giờ bắt đầu, giờ kết thúc và lý do.');
-      return;
-    }
+  async saveNote() {
+    const row = this.noteRow();
+    if (!row || !this.applied || this.busy()) return;
     this.busy.set(true);
     this.error.set('');
     try {
-      await this.api.correct(shift, startedAt + '+07:00', endedAt + '+07:00', reason.trim());
-      this.edit.set(null);
-      if (this.applied) {
-        try { this.setReport(await this.api.report(this.applied)); }
-        catch { this.error.set('Đã lưu giờ công. Bấm Xem bảng công để tải lại dữ liệu.'); }
-      }
-      this.notice.set('Đã lưu giờ công và lịch sử điều chỉnh.');
+      await this.api.saveNote(row.employeeId, this.applied, this.noteText);
+      this.noteRow.set(null);
+      this.notice.set('Đã lưu ghi chú.');
     } catch (error) { this.error.set(errorMessage(error)); }
     finally { this.busy.set(false); }
   }
 
   async download() {
-    if (!this.applied || this.busy()) return;
+    if (!this.applied || this.busy() || this.noteRow()) return;
     this.busy.set(true);
     this.error.set('');
     try {

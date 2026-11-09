@@ -18,12 +18,10 @@ class AttendanceReportService {
                  OffsetDateTime endedAt, Long minutes, AttendanceSession.Status status, boolean outOfSchedule,
                  String lastReason, long version) {}
     record Summary(long employeeId, String code, String name, int registeredDays, int workedDays, long minutes,
-                   long reviewCount) {}
+                   long reviewCount, String note) {}
     record Report(OffsetDateTime serverTime, LocalDate from, LocalDate to, List<Summary> summary, List<Shift> shifts) {}
-    record Edit(@NotNull Long version, @NotNull OffsetDateTime startedAt,
-                @NotNull OffsetDateTime endedAt, @NotBlank @Size(max = 500) String reason) {}
-    record Audit(String actor, OffsetDateTime recordedAt, OffsetDateTime oldStartedAt, OffsetDateTime oldEndedAt,
-                 OffsetDateTime newStartedAt, OffsetDateTime newEndedAt, String reason) {}
+    record Note(String text) {}
+    record SaveNote(@NotNull Period period, @NotNull LocalDate date, @NotNull @Size(max = 500) String text) {}
 
     private final JdbcTemplate jdbc;
     private final EmployeeService employees;
@@ -39,10 +37,7 @@ class AttendanceReportService {
     public Report report(Period period, LocalDate date, Long employeeId, Filter filter) {
         var now = time.now();
         if (date == null) date = AttendanceTime.day(now);
-        if (date.getYear() < 1900 || date.getYear() > 9998) {
-            throw AdminApiException.field("date", "Chọn kỳ báo cáo hợp lệ.");
-        }
-        LocalDate from = period == Period.WEEK ? AttendanceTime.monday(date) : date.withDayOfMonth(1);
+        LocalDate from = periodStart(period, date);
         LocalDate until = period == Period.WEEK ? from.plusWeeks(1) : from.plusMonths(1);
         List<Shift> shifts = jdbc.query("""
                 select s.*, p.full_name,
@@ -62,18 +57,27 @@ class AttendanceReportService {
                 employeeId, employeeId).stream().filter(shift -> matches(filter, shift)).toList();
         var byEmployee = shifts.stream().collect(Collectors.groupingBy(Shift::employeeId));
         Map<Long, Integer> planned = registeredDays(from, until);
+        Map<Long, String> notes = jdbc.query("""
+                select employee_id, note_text from attendance_period_note where period=? and period_start=?
+                """, rs -> {
+            Map<Long, String> result = new HashMap<>();
+            while (rs.next()) result.put(rs.getLong("employee_id"), rs.getString("note_text"));
+            return result;
+        }, period.name(), from);
         List<Summary> summary = new ArrayList<>();
         for (var employee : employees.list()) {
             if (employeeId != null && employee.id() != employeeId) continue;
             var sessions = byEmployee.getOrDefault(employee.id(), List.of());
             int registered = planned.getOrDefault(employee.id(), 0);
-            if (sessions.isEmpty() && (filter != Filter.ALL || (!employee.active() && registered == 0 && employeeId == null))) {
+            String note = notes.get(employee.id());
+            if (sessions.isEmpty() && (filter != Filter.ALL ||
+                    (!employee.active() && registered == 0 && employeeId == null && note == null))) {
                 continue;
             }
             int worked = (int) sessions.stream().filter(shift -> shift.minutes() != null).map(Shift::day).distinct().count();
             long minutes = sessions.stream().map(Shift::minutes).filter(Objects::nonNull).mapToLong(Long::longValue).sum();
             long review = sessions.stream().filter(shift -> shift.status() == AttendanceSession.Status.NEEDS_REVIEW).count();
-            summary.add(new Summary(employee.id(), employee.code(), employee.fullName(), registered, worked, minutes, review));
+            summary.add(new Summary(employee.id(), employee.code(), employee.fullName(), registered, worked, minutes, review, note));
         }
         return new Report(now, from, until.minusDays(1), summary, shifts);
     }
@@ -107,48 +111,36 @@ class AttendanceReportService {
         };
     }
 
-    @Transactional
-    public void correct(long id, Edit input, String actor) {
-        var initial = get(id);
-        employees.get(initial.employeeId(), true);
-        var current = get(id);
-        if (current.version() != input.version()) throw AdminApiException.conflict(current.version());
-        var now = time.now();
-        if (input.startedAt().isBefore(Instant.EPOCH.atOffset(ZoneOffset.UTC)) ||
-                !input.endedAt().isAfter(input.startedAt()) || input.endedAt().isAfter(now)) {
-            throw AdminApiException.field("endedAt", "Giờ kết thúc phải sau giờ bắt đầu và không ở tương lai.");
+    Note note(long employeeId, Period period, LocalDate date) {
+        employees.get(employeeId, false);
+        var start = periodStart(period, date);
+        String text = jdbc.query("""
+                select note_text from attendance_period_note where period=? and period_start=? and employee_id=?
+                """, (rs, row) -> rs.getString(1), period.name(), start, employeeId)
+                .stream().findFirst().orElse("");
+        return new Note(text);
+    }
+
+    void saveNote(long employeeId, SaveNote input) {
+        employees.get(employeeId, false);
+        var start = periodStart(input.period(), input.date());
+        String text = input.text().strip();
+        if (text.isEmpty()) {
+            jdbc.update("delete from attendance_period_note where period=? and period_start=? and employee_id=?",
+                    input.period().name(), start, employeeId);
+            return;
         }
-        boolean overlap = Boolean.TRUE.equals(jdbc.queryForObject("""
-                select exists(select 1 from attendance_session
-                where employee_id=? and id<>? and started_at<? and (ended_at is null or ended_at>?))
-                """, Boolean.class, current.employeeId(), id, input.endedAt(), input.startedAt()));
-        if (overlap) throw new AdminApiException(409, "shift_overlap");
         jdbc.update("""
-                insert into attendance_audit_log(session_id, actor_email, old_started_at, old_ended_at,
-                    new_started_at, new_ended_at, reason, recorded_at)
-                values (?, ?, ?, ?, ?, ?, ?, ?)
-                """, id, actor, current.startedAt(), current.endedAt(), input.startedAt(), input.endedAt(),
-                input.reason().strip(), now);
-        jdbc.update("""
-                update attendance_session set started_at=?, ended_at=?, version=version+1, updated_at=? where id=?
-                """, input.startedAt(), input.endedAt(), now, id);
+                insert into attendance_period_note(period, period_start, employee_id, note_text)
+                values (?, ?, ?, ?)
+                on conflict (period, period_start, employee_id) do update set note_text=excluded.note_text
+                """, input.period().name(), start, employeeId, text);
     }
 
-    List<Audit> audit(long id) {
-        get(id);
-        return jdbc.query("""
-                select * from attendance_audit_log where session_id=? order by id desc
-                """, (rs, row) -> new Audit(rs.getString("actor_email"), dateTime(rs, "recorded_at"),
-                dateTime(rs, "old_started_at"), dateTime(rs, "old_ended_at"), dateTime(rs, "new_started_at"),
-                dateTime(rs, "new_ended_at"), rs.getString("reason")), id);
-    }
-
-    private static OffsetDateTime dateTime(java.sql.ResultSet rs, String column) throws java.sql.SQLException {
-        return rs.getObject(column, OffsetDateTime.class);
-    }
-
-    private AttendanceSession get(long id) {
-        return jdbc.query("select * from attendance_session where id=?", AttendanceSession::read, id)
-                .stream().findFirst().orElseThrow(() -> new AdminApiException(404, "not_found"));
+    private static LocalDate periodStart(Period period, LocalDate date) {
+        if (date.getYear() < 1900 || date.getYear() > 9998) {
+            throw AdminApiException.field("date", "Chọn kỳ báo cáo hợp lệ.");
+        }
+        return period == Period.WEEK ? AttendanceTime.monday(date) : date.withDayOfMonth(1);
     }
 }

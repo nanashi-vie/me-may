@@ -40,10 +40,6 @@ export function closingTime(value: string) {
   return Date.parse(day + 'T20:30:00+07:00');
 }
 
-export function displayClock(value: string | null) {
-  return value ? localInput(value).split('T')[1] : '—';
-}
-
 export function displayTime(value: string | null) {
   if (!value) return '—';
   const [day, time] = localInput(value).split('T');

@@ -2733,3 +2733,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Sheet Chi tiết dùng ô ngày/giờ dạng số và thời lượng theo [hh]:mm. 95 phút hiển thị 01:35, 25 giờ hiển thị 25:00 và ca đang mở để trống giờ ra/thời lượng. Trên web hai cột giờ giữ HH:mm:ss.
 - Từ code/backend: mvn -o -Dtest=AttendanceIntegrationTest,AttendanceWorkbookTest test đạt 9/9 với PostgreSQL test riêng. Mở lại workbook bằng POI và kiểm giá trị số cùng chuỗi hiển thị.
 - Từ code/frontend: npm test đạt 256/256, npm run build đạt. Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C07 — Bảng công web chỉ hiện tổng hợp
+
+- Bắt đầu trên dev-ui từ be3c88c. Chỉ trả tổng hợp không có số phút cho bảng công web. Chi tiết ca và tổng giờ giữ trong Excel.
+- User chốt Ghi chú theo nhân viên và kỳ tuần/tháng, ngày cụ thể do người ghi nhập trong nội dung. Thêm V22. Ghi chú nằm trong sheet Tổng hợp. Sửa giờ thực hiện trên file Excel đã tải, dữ liệu gốc và audit cũ được giữ.
+- API bảng công chỉ trả số ngày và số ca cần kiểm tra. Bỏ giao diện chi tiết và endpoint đọc audit/chỉnh giờ cũ. Xuất Excel giữ tổng giờ, chi tiết ca và ghi chú cũ.
+- Từ code/backend: mvn -o test với PostgreSQL test ICU đạt 249, bỏ qua 3. Đã chạy V22 và kiểm HTTP không lộ dữ liệu giờ, ghi chú tuần/tháng độc lập và mở lại file Excel. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Chưa smoke trình duyệt hoặc deploy production.

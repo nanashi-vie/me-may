@@ -51,7 +51,7 @@ class AttendanceIntegrationTest {
     void setup() {
         assertThat(jdbc.queryForObject("SELECT current_database()", String.class)).isEqualTo("me_may_test");
         NOW.set(OPENING);
-        for (String table : new String[]{"attendance_audit_log", "attendance_session", "employee_weekly_schedule",
+        for (String table : new String[]{"attendance_period_note", "attendance_audit_log", "attendance_session", "employee_weekly_schedule",
                 "attendance_week", "employee_pin_credential", "employee_profile"}) {
             if (Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass(?) is not null", Boolean.class, table))) {
                 jdbc.execute("delete from " + table);
@@ -203,30 +203,27 @@ class AttendanceIntegrationTest {
         assertThat(JsonPath.<String>read(response.body(), "$.summary[0].name")).isEqualTo("Nguyễn An");
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].registeredDays")).isEqualTo(1);
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].workedDays")).isEqualTo(1);
-        assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].minutes")).isEqualTo(60);
+        assertThat(response.body()).doesNotContain("\"minutes\"", "\"shifts\"", "\"startedAt\"", "\"endedAt\"");
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].reviewCount")).isEqualTo(1);
 
-        int session = JsonPath.read(response.body(), "$.shifts[0].id");
-        int version = JsonPath.read(response.body(), "$.shifts[0].version");
-        String edit = """
-                {"version":%d,"startedAt":"2026-11-09T08:30:00+07:00","endedAt":"2026-11-09T09:00:00+07:00","reason":"%s"}
-                """;
-        assertThat(api("PATCH", "/sessions/" + session, edit.formatted(version, " ")).statusCode()).isEqualTo(400);
-        assertThat(api("PATCH", "/sessions/" + session, edit.formatted(version, "Sửa theo sổ tiệm")).statusCode()).isEqualTo(204);
-        assertThat(api("PATCH", "/sessions/" + session, edit.formatted(version, "Ghi từ tab cũ")).statusCode()).isEqualTo(409);
-        var history = api("GET", "/sessions/" + session + "/audit", null).body();
-        assertThat(history).contains("Sửa theo sổ tiệm", "owner@test.local").doesNotContain("Ghi từ tab cũ");
+        long session = jdbc.queryForObject("select id from attendance_session where employee_id=? and ended_at is not null",
+                Long.class, id);
+        assertThat(api("PATCH", "/sessions/" + session, "{}").statusCode()).isEqualTo(404);
+        assertThat(api("GET", "/sessions/" + session + "/audit", null).statusCode()).isEqualTo(404);
+        jdbc.update("""
+                insert into attendance_audit_log(session_id, actor_email, old_started_at, old_ended_at,
+                    new_started_at, new_ended_at, reason)
+                select id, 'owner@test.local', started_at, ended_at, started_at, ended_at, 'Ghi chú cũ'
+                from attendance_session where id=?
+                """, session);
         assertThat(jdbc.queryForObject("select original_ended_at from attendance_session where id=?",
                 java.sql.Timestamp.class, session).toInstant()).isEqualTo(OPENING.plusSeconds(3600));
 
-        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port
-                + "/api/v1/admin/attendance/report.xlsx" + period)).GET().build();
-        var xlsx = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
-        assertThat(xlsx.statusCode()).isEqualTo(200);
-        try (var workbook = new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsx.body()))) {
+        try (var workbook = downloadReport(period)) {
             assertThat(workbook.getNumberOfSheets()).isEqualTo(2);
             assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(3).getNumericCellValue()).isEqualTo(1);
-            assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(4).getNumericCellValue()).isEqualTo(0.5);
+            assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(4).getNumericCellValue()).isEqualTo(1);
+            assertThat(workbook.getSheet("Chi tiết").getRow(1).getCell(7).getStringCellValue()).isEqualTo("Ghi chú cũ");
             assertThat(workbook.getSheet("Chi tiết").getRow(2).getCell(5).getStringCellValue()).isEqualTo("Cần kiểm tra");
         }
     }
@@ -288,10 +285,49 @@ class AttendanceIntegrationTest {
         for (String period : java.util.List.of("MONTH", "WEEK")) {
             String report = "/report?period=" + period + "&filter=OUTSIDE&employeeId=" + id;
             var prior = api("GET", report + "&date=2026-05-31", null).body();
-            assertThat(JsonPath.<Integer>read(prior, "$.summary[0].minutes")).isEqualTo(240);
-            assertThat(JsonPath.<String>read(prior, "$.shifts[0].day")).isEqualTo("2026-05-31");
+            assertThat(JsonPath.<Integer>read(prior, "$.summary[0].workedDays")).isEqualTo(1);
+            try (var workbook = downloadReport("?period=" + period + "&filter=OUTSIDE&employeeId=" + id + "&date=2026-05-31")) {
+                assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(4).getNumericCellValue()).isEqualTo(4);
+                assertThat(workbook.getSheet("Chi tiết").getRow(1).getCell(0).getLocalDateTimeCellValue().toLocalDate())
+                        .isEqualTo(java.time.LocalDate.of(2026, 5, 31));
+            }
             var next = api("GET", report + "&date=2026-06-01", null).body();
-            assertThat(JsonPath.<java.util.List<?>>read(next, "$.shifts")).isEmpty();
+            assertThat(JsonPath.<java.util.List<?>>read(next, "$.summary")).isEmpty();
         }
     }
+    @Test void savesEmployeeNotesSeparatelyForWeekAndMonthAndExportsThem() throws Exception {
+        int id = employee();
+        String notePath = "/report/notes/" + id;
+        assertThat(api("PUT", notePath, """
+                {"period":"WEEK","date":"2026-11-11","text":"09/11 quên bấm kết thúc"}
+                """).statusCode()).isEqualTo(204);
+        assertThat(api("PUT", notePath, """
+                {"period":"MONTH","date":"2026-11-15","text":"Đối chiếu sổ tháng"}
+                """).statusCode()).isEqualTo(204);
+
+        String week = "?period=WEEK&date=2026-11-09";
+        String month = "?period=MONTH&date=2026-11-01";
+        assertThat(api("GET", notePath + week, null).body()).contains("09/11 quên bấm kết thúc");
+        assertThat(api("GET", notePath + month, null).body()).contains("Đối chiếu sổ tháng");
+        assertThat(api("GET", "/report" + week, null).body()).doesNotContain("quên bấm", "\"minutes\"", "\"shifts\"");
+        try (var workbook = downloadReport(week)) {
+            assertThat(workbook.getSheet("Tổng hợp").getRow(1).getCell(6).getStringCellValue())
+                    .isEqualTo("09/11 quên bấm kết thúc");
+            assertThat(workbook.getSheet("Chi tiết").getPhysicalNumberOfRows()).isEqualTo(1);
+        }
+        assertThat(jdbc.queryForObject("select count(*) from attendance_session where employee_id=?", Long.class, id)).isZero();
+        assertThat(api("PUT", notePath, """
+                {"period":"WEEK","date":"2026-11-09","text":""}
+                """).statusCode()).isEqualTo(204);
+        assertThat(JsonPath.<String>read(api("GET", notePath + week, null).body(), "$.text")).isEmpty();
+    }
+
+    private org.apache.poi.xssf.usermodel.XSSFWorkbook downloadReport(String query) throws Exception {
+        var request = HttpRequest.newBuilder(URI.create("http://127.0.0.1:" + port
+                + "/api/v1/admin/attendance/report.xlsx" + query)).GET().build();
+        var xlsx = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+        assertThat(xlsx.statusCode()).isEqualTo(200);
+        return new org.apache.poi.xssf.usermodel.XSSFWorkbook(new java.io.ByteArrayInputStream(xlsx.body()));
+    }
+
 }

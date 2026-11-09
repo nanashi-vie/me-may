@@ -39,26 +39,12 @@ export interface Verified {
   startedAt: string | null;
   expiresAt: string;
 }
-export interface Shift {
-  id: number;
-  employeeId: number;
-  name: string;
-  day: string;
-  startedAt: string;
-  endedAt: string | null;
-  minutes: number | null;
-  status: Status;
-  outOfSchedule: boolean;
-  lastReason: string | null;
-  version: number;
-}
 export interface Summary {
   employeeId: number;
   code: string;
   name: string;
   registeredDays: number;
   workedDays: number;
-  minutes: number;
   reviewCount: number;
 }
 export interface Report {
@@ -66,7 +52,6 @@ export interface Report {
   from: string;
   to: string;
   summary: Summary[];
-  shifts: Shift[];
 }
 export interface ReportQuery {
   period: 'WEEK' | 'MONTH';
@@ -74,16 +59,6 @@ export interface ReportQuery {
   employeeId: number | null;
   filter: 'ALL' | 'OPEN' | 'REVIEW' | 'OUTSIDE';
 }
-export interface Audit {
-  actor: string;
-  recordedAt: string;
-  oldStartedAt: string;
-  oldEndedAt: string | null;
-  newStartedAt: string;
-  newEndedAt: string | null;
-  reason: string;
-}
-
 @Injectable({ providedIn: 'root' })
 export class AttendanceApi {
   private readonly http = inject(AdminHttp);
@@ -128,12 +103,15 @@ export class AttendanceApi {
     return firstValueFrom(this.http.download('/attendance/report.xlsx', this.params(query)));
   }
 
-  audit(id: number) {
-    return this.get<Audit[]>(`/sessions/${id}/audit`);
+  note(employeeId: number, query: ReportQuery) {
+    return this.get<{ text: string }>(`/report/notes/${employeeId}`,
+      new HttpParams().set('period', query.period).set('date', query.date));
   }
 
-  correct(shift: Shift, startedAt: string, endedAt: string, reason: string) {
-    return this.mutate<void>('PATCH', `/sessions/${shift.id}`, { version: shift.version, startedAt, endedAt, reason });
+  saveNote(employeeId: number, query: ReportQuery, text: string) {
+    return this.mutate<void>('PUT', `/report/notes/${employeeId}`, {
+      period: query.period, date: query.date, text,
+    });
   }
 
   private get<T>(path: string, params?: HttpParams) {
