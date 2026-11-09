@@ -46,15 +46,24 @@ public class ImageJobRepository {
 
     @Transactional
     public Optional<JobLease> claim() {
+        return claim(false);
+    }
+
+    @Transactional
+    public Optional<JobLease> claimVerification() {
+        return claim(true);
+    }
+
+    private Optional<JobLease> claim(boolean verification) {
         jdbc.update("""
                 UPDATE image_job SET status='FAILED', lease_token=NULL, lease_until=NULL, error_code='lease_expired'
-                WHERE id IN (SELECT id FROM image_job WHERE status='PROCESSING'
+                WHERE id IN (SELECT id FROM image_job WHERE status='PROCESSING' AND (kind='VERIFY')=?
                     AND attempts >= 3 AND lease_until <= clock_timestamp() FOR UPDATE SKIP LOCKED)
-                """);
+                """, verification);
         return jdbc.query("""
                 WITH candidate AS (
                     SELECT id FROM image_job
-                    WHERE attempts < 3 AND (
+                    WHERE (kind='VERIFY')=? AND attempts < 3 AND (
                         (status IN ('PENDING','RETRYING') AND available_at <= clock_timestamp())
                         OR (status='PROCESSING' AND lease_until <= clock_timestamp()))
                     ORDER BY priority, available_at, created_at, id
@@ -65,7 +74,7 @@ public class ImageJobRepository {
                 FROM candidate c, image_generation g
                 WHERE j.id=c.id AND g.id=j.generation_id
                 RETURNING j.*, g.recipe_version
-                """, ImageJobRepository::lease, UUID.randomUUID()).stream().findFirst();
+                """, ImageJobRepository::lease, verification, UUID.randomUUID()).stream().findFirst();
     }
 
     public Instant heartbeat(UUID id, UUID token) {
@@ -86,7 +95,7 @@ public class ImageJobRepository {
                 """, retryable, code, id, token));
     }
 
-    JobLease lockLease(UUID id, UUID token) {
+    public JobLease lockLease(UUID id, UUID token) {
         return jdbc.query("""
                 SELECT j.*, g.recipe_version FROM image_job j JOIN image_generation g ON g.id=j.generation_id
                 WHERE j.id=? AND j.lease_token=? AND j.status='PROCESSING' AND j.lease_until>clock_timestamp()
@@ -102,12 +111,31 @@ public class ImageJobRepository {
                 """, UUID.class, media).isEmpty();
     }
 
-    void ready(UUID id, UUID token, Manifest manifest) {
+    void registerOriginalHash(UUID generation, String hash) {
+        requireUpdated(jdbc.update("""
+                UPDATE image_generation SET input_sha256=?
+                WHERE id=? AND (input_sha256 IS NULL OR input_sha256=?)
+                """, hash, generation, hash));
+    }
+
+    void requireOriginalHash(UUID generation, String hash) {
+        if (jdbc.queryForList("SELECT id FROM image_generation WHERE id=? AND input_sha256=? AND published_at IS NULL",
+                UUID.class, generation, hash).isEmpty()) throw new AdminApiException(409, "image_input_changed");
+    }
+
+    public void markReady(UUID id, UUID token) {
         requireUpdated(jdbc.update("""
                 UPDATE image_job SET status='READY', lease_token=NULL, lease_until=NULL
                 WHERE id=? AND lease_token=? AND status='PROCESSING' AND lease_until>clock_timestamp()
                 """, id, token));
-        jdbc.update("UPDATE image_generation SET published_at=clock_timestamp() WHERE id=?", manifest.generationId());
+    }
+
+    void ready(UUID id, UUID token, Manifest manifest, String originalHash) {
+        markReady(id, token);
+        requireUpdated(jdbc.update("""
+                UPDATE image_generation SET published_at=clock_timestamp()
+                WHERE input_sha256=? AND id=? AND published_at IS NULL
+                """, originalHash, manifest.generationId()));
         for (var v : manifest.variants()) {
             jdbc.update("""
                     INSERT INTO image_variant(generation_id,name,storage_key,mime,width,height,bytes,sha256)

@@ -21,11 +21,22 @@ public class ImageJobService {
         this.store = store;
     }
 
+    @Transactional
     public UUID enqueue(UUID mediaId, UUID generationId, JobKind kind, String inputKey,
                         String recipeVersion, String dedupeKey, int priority) {
         if (!inputKey.matches("staging/[a-f0-9-]{36}/input"))
             throw new AdminApiException(400, "invalid_image_input_key");
-        return jobs.enqueue(mediaId, generationId, kind, inputKey, recipeVersion, dedupeKey, priority);
+        String originalHash = null;
+        if (kind == JobKind.PROCESS) {
+            try {
+                originalHash = store.originalHash(inputKey);
+            } catch (IOException e) {
+                throw new AdminApiException(422, "image_input_unavailable");
+            }
+        }
+        UUID id = jobs.enqueue(mediaId, generationId, kind, inputKey, recipeVersion, dedupeKey, priority);
+        if (originalHash != null) jobs.registerOriginalHash(generationId, originalHash);
+        return id;
     }
 
     public Optional<JobLease> claim() {
@@ -49,12 +60,15 @@ public class ImageJobService {
                 || !lease.generationId().equals(manifest.generationId())
                 || !lease.recipeVersion().equals(manifest.recipeVersion()) || !jobs.lockUpload(lease.mediaId()))
             throw new AdminApiException(409, "image_generation_conflict");
+        String originalHash;
         try {
+            originalHash = store.originalHash(lease.inputKey());
+            jobs.requireOriginalHash(lease.generationId(), originalHash);
             store.publishAttempt(manifest, token);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_output_not_publishable");
         }
-        jobs.ready(jobId, token, manifest);
+        jobs.ready(jobId, token, manifest, originalHash);
     }
 
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {

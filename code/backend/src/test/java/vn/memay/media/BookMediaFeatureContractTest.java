@@ -47,6 +47,62 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         body=createBody(a,1);((Map<String,Object>)body.get("write")).remove("title");
         assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(201);
     }
+    @Test void localSourceGateCoversPublicationAndPublishedEdits() throws Exception {
+        var a = api();
+        var body = createBody(a, 2);
+        body.put("write", BookFixtures.write("Local source gate", "BOARD_BOOK", null,
+                20000L, null, null, List.of(), List.of()));
+        var created = a.send("POST", "/api/v1/admin/books", json(body), true);
+        assertThat(created.statusCode()).isEqualTo(201);
+        var book = tree(created);
+        String path = "/api/v1/admin/books/" + book.path("id").asString();
+        UUID media = UUID.fromString(book.path("media").get(0).path("id").asString());
+        UUID generation = UUID.randomUUID();
+        String recipe = "fixture-" + generation;
+        String hash = "a".repeat(64);
+        jdbc.update("INSERT INTO image_asset VALUES(?)", media);
+        jdbc.update("INSERT INTO image_recipe VALUES(?,'fixture','{}')", recipe);
+        jdbc.update("""
+                INSERT INTO image_generation(id,media_id,recipe_version,published_at,input_sha256)
+                VALUES(?,?,?,now(),?)
+                """, generation, media, recipe, hash);
+        jdbc.update("UPDATE book_media SET provider='LOCAL',serving_generation=? WHERE id=?", generation, media);
+        try {
+            var edit = updateBody(book);
+            edit.put("title", "Still hidden");
+            var saved = a.send("PUT", path, json(edit), true);
+            assertThat(saved.statusCode()).isEqualTo(200);
+            long version = tree(saved).path("version").asLong();
+            String publish = json(Map.of("version", version, "status", "PUBLISHED", "confirmedActualCopy", true));
+            var rejected = a.send("PATCH", path + "/publication", publish, true);
+            assertThat(rejected.statusCode()).isEqualTo(409);
+            assertThat(rejected.body()).contains("image_source_unverified");
+
+            jdbc.update("""
+                    INSERT INTO image_source_binding(media_id,file_id,sha256,source_bytes,mime,status,verified_at)
+                    VALUES(?,'private-drive-id',?,3,'image/jpeg','VERIFIED',now())
+                    """, media, hash);
+            var published = a.send("PATCH", path + "/publication", publish, true);
+            assertThat(published.statusCode()).isEqualTo(200);
+            var publishedBook = tree(published);
+            String slug = publishedBook.path("slug").asString();
+            assertThat(a.send("GET", "/api/v1/books/" + slug, null, false).body())
+                    .doesNotContain("private-drive-id", hash);
+
+            jdbc.update("UPDATE image_source_binding SET status='SOURCE_CHANGED' WHERE media_id=?", media);
+            var changed = updateBody(publishedBook);
+            changed.put("title", "Rejected edit");
+            assertThat(a.send("PUT", path, json(changed), true).statusCode()).isEqualTo(409);
+            assertThat(a.upload(path + "/media/BACK", publishedBook.path("version").asLong(),
+                    ImageValidatorTest.image("jpeg"), true).statusCode()).isEqualTo(409);
+        } finally {
+            jdbc.update("UPDATE book_media SET provider='CLOUDINARY',serving_generation=NULL WHERE id=?", media);
+            jdbc.update("DELETE FROM image_source_binding WHERE media_id=?", media);
+            jdbc.update("DELETE FROM image_generation WHERE id=?", generation);
+            jdbc.update("DELETE FROM image_asset WHERE media_id=?", media);
+            jdbc.update("DELETE FROM image_recipe WHERE version=?", recipe);
+        }
+    }
     @Test void publishedGalleryIncludesPreviouslyHiddenSlots() throws Exception {
         var a = api();
         var body = createBody(a, 8);

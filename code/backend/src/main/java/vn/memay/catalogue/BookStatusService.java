@@ -19,11 +19,12 @@ public class BookStatusService {
     private final BookAccess access;
     private final BookValidation validation;
     private final AuditService audit;
+    private final vn.memay.media.SourceBindingRepository sources;
     private final Clock clock;
     private final EntityManager em;
 
     public BookStatusService(BookCopyRepository books, ListingRepository listings, BookMapper mapper, BookAccess access,
-            BookValidation validation, AuditService audit, Clock clock, EntityManager em) {
+            BookValidation validation, AuditService audit, Clock clock, EntityManager em, vn.memay.media.SourceBindingRepository sources) {
         this.books = books;
         this.listings = listings;
         this.mapper = mapper;
@@ -32,6 +33,7 @@ public class BookStatusService {
         this.audit = audit;
         this.clock = clock;
         this.em = em;
+        this.sources = sources;
     }
 
     @Transactional
@@ -53,6 +55,7 @@ public class BookStatusService {
             if (!confirmedActualCopy)
                 throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
             validation.validatePublished(before);
+            sources.requireVerifiedForBook(id);
             validation.validateWrite(mapper.write(before));
             if (l.publishedAt == null)
                 l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);

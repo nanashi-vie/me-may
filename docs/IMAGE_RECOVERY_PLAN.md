@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** R1 đã kiểm bằng Drive giả lập, tiếp theo R2. Drive thật chưa kiểm chứng.
+**Status:** R1/R2 đã kiểm với Drive giả lập, tiếp theo S5. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 
@@ -51,7 +51,7 @@ retryable và HTTP category, không raw provider response/token/URL.
 
 R2 định nghĩa `SourceBindingService.verify(UUID mediaId,String fileId,long expectedBindingVersion,
 Long expectedBookVersion,UUID requestKey,AdminUser actor): UUID` trả operation ID;
-`requireVerified(UUID mediaId): void`. Actor/type lấy từ auth hiện tại, không từ client ID.
+`SourceBindingRepository.requireVerifiedForBook(long bookId): void`. Actor/type lấy từ auth hiện tại, không từ client ID.
 Pending source candidate không thay binding VERIFIED đang dùng trước khi kiểm thành công.
 
 R3/R4 dùng `MigrationPreview(UUID receiptId,String digest,List<PreviewRow> rows,Instant expiresAt)`;
@@ -103,10 +103,10 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 - [ ] RED `staleBindingCannotWin`: concurrent verify và media replacement chỉ candidate
   đúng version được commit; actor mất quyền/session expiry không ghi; audit fail rollback.
 - [ ] Chạy `BE(SourceBindingIntegrationTest,SourcePublicationGateTest)` ghi RED.
-- [ ] Implement VERIFY job qua dispatcher: Drive download + S4 decode/metadata check;
+- [ ] Implement VERIFY job qua dispatcher: Drive download và so hash với input gốc đã qua decode S4;
   atomic compare candidate/binding/book version, ghi audit, trả updated versions.
   Luồng temp kiểm ownership/session; luồng persisted tăng book version khi binding đổi.
-- [ ] Implement requireVerified cho LOCAL và mọi publish mutation path;
+- [ ] Implement requireVerifiedForBook cho LOCAL và mọi publish mutation path;
   READ status không tăng version, public không có source fields; S5 gọi cùng service.
 - [ ] GREEN BE; commit `feat(media): require verified originals for local publication` cùng log.
 
@@ -114,7 +114,7 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 
 **Prerequisite:** S7, R2.
 **Files:** tạo `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`B/ImageMigrationDtos.java`, `D/V23__image_operation_receipts.sql`,
+`B/ImageMigrationDtos.java`, `D/V24__image_operation_receipts.sql`,
 `O/media-operations.mjs`, `O/media-operations.test.mjs`;
 test `BT/ImageMigrationPreviewTest.java` mới.
 **Interfaces:** OWNER endpoints `/api/v1/admin/image-migrations`:

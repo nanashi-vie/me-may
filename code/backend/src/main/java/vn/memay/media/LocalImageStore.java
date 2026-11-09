@@ -60,6 +60,25 @@ public final class LocalImageStore {
         }
     }
 
+    String originalHash(String key) throws IOException {
+        if (key == null || !key.matches("staging/[a-f0-9-]{36}/input"))
+            throw new IOException("Invalid image input key");
+        Path input = directory(key.substring(0, key.lastIndexOf('/')), false).resolve("input");
+        if (!Files.isRegularFile(input, NOFOLLOW_LINKS)) throw new IOException("Image input missing");
+        try (var bytes = Files.newInputStream(input, READ, NOFOLLOW_LINKS)) {
+            var digest = sha256();
+            byte[] buffer = new byte[8192];
+            long size = 0;
+            for (int count; (count = bytes.read(buffer)) != -1;) {
+                size += count;
+                if (size > MAX_INPUT_BYTES) throw new IOException("Invalid image input size");
+                digest.update(buffer, 0, count);
+            }
+            if (size == 0) throw new IOException("Invalid image input size");
+            return HexFormat.of().formatHex(digest.digest());
+        }
+    }
+
     public void discardInput(UUID operationId) throws IOException {
         Path operation = directory("staging/" + operationId, false);
         Files.deleteIfExists(operation.resolve("input"));

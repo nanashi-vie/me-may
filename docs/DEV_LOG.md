@@ -2780,3 +2780,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   PostgreSQL test riêng đạt 252 ca, 249 đạt, 3 skip. git diff --check đạt.
 - Chưa gọi Google Drive thật hoặc thử đổi credential live. R2 sẽ nối binding
   và publish gate. S5–R6 vẫn mở, Ubuntu chưa có cấu hình bàn giao hoàn chỉnh.
+
+## 2026-11-09 — S060-C01 — Bắt đầu R2
+
+- Native từ dev 0d737be. Phạm vi binding Drive, kiểm quyền và gate xuất bản.
+- Ruling: VERIFY so hash với input gốc của generation đã được Sharp giải mã
+  thành công. Hash khớp chứng minh cùng bytes nên không encode lại.
+- V23 dành cho candidate VERIFY và hash input. Migration receipt R3 dời V24.
+
+- PUT owner/CSRF tạo candidate idempotent, VERIFY chỉ claim phía Spring.
+  Preflight và completion đều kiểm lease, quyền OWNER, phiên upload,
+  generation và version. Hash gốc ghi trước khi enqueue PROCESS, recheck
+  khi công bố. File Drive sai hash không thay binding đang dùng.
+- V23 thêm input_sha256 và candidate. SOURCE_VERIFIED, binding và version
+  sách commit nguyên tử. Audit giữ ID media và version, không ghi Drive File ID.
+- Gate kiểm ảnh LOCAL ACTIVE khi tạo/xuất bản, ghi sách đang công khai và
+  thay ảnh. S5 phải gọi cùng gate trong transaction gắn ảnh LOCAL.
+- RED compile thiếu gate. Một lượt compile fixture lỗi suy luận kiểu
+  assertThat, đã tách biến UUID. Test mục tiêu 13/13, toàn bộ backend
+  ./mvnw -B -ntp test từ code/backend trên PostgreSQL test riêng đạt
+  255 ca, 252 đạt, 3 skip. Chưa kiểm Drive thật hoặc deploy.
+- Smoke bổ sung SourceBindingApiTest đạt 1/1: OWNER + CSRF nhận 202,
+  job VERIFY chạy với Drive giả lập, GET chỉ trả status và versions,
+  STAFF bị 403. Test này chạy riêng sau bộ hồi quy.
+- Bàn giao dev theo workflow. Tiếp theo S5 upload và gắn ảnh LOCAL.

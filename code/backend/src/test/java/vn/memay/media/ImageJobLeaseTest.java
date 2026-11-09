@@ -66,7 +66,9 @@ class ImageJobLeaseTest {
                     INSERT INTO temporary_media(id,session_id,state,storage_public_id,created_at,updated_at,delete_after)
                     VALUES(?,?,'UPLOADING','fixture',now(),now(),now()+interval '1 hour')
                     """, upload, session);
-            UUID work = service.enqueue(upload, version, JobKind.PROCESS, input, "v1", "completion", 0);
+            var staged = new LocalImageStore(root.toRealPath()).stage(UUID.randomUUID(),
+                    new java.io.ByteArrayInputStream(ImageValidatorTest.image("jpeg")));
+            UUID work = service.enqueue(upload, version, JobKind.PROCESS, staged.key(), "v1", "completion", 0);
             var expired = service.claim().orElseThrow();
             db.update("UPDATE image_job SET lease_until=now()-interval '1 second' WHERE id=?", work);
             var active = service.claim().orElseThrow();

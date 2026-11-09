@@ -7,7 +7,7 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** User chọn Native. S1–S4 đã kiểm local, tiếp theo R1/R2.
+**Status:** User chọn Native. S1–S4 và R1/R2 đã kiểm local, tiếp theo S5.
 
 ## Global Constraints
 
@@ -68,7 +68,8 @@ long sourceBytes,String mime,SourceStatus status,long bindingVersion,Instant ver
 Các record trên là internal; API public/admin dùng DTO đã lọc, không serialize nguyên record.
 
 S2 tạo `SourceBindingRepository.find(UUID mediaId): Optional<SourceBinding>`;
-R1/R2 sở hữu verify và mutation nguồn, S5 dùng `requireVerified(UUID mediaId): void`.
+R1/R2 sở hữu verify và mutation nguồn, S5 gọi `requireVerifiedForBook(long bookId)` sau khi flush ảnh ACTIVE,
+trong cùng transaction với publish hoặc thay ảnh đang công khai.
 S3 tạo `ImageJobService.enqueue(UUID mediaId,UUID generationId,JobKind kind,
 String inputKey,String recipeVersion,String dedupeKey,int priority): UUID`;
 R tasks dùng cùng queue, không tạo queue/encoder riêng.
