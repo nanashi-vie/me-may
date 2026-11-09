@@ -1,0 +1,61 @@
+<section class="attendance-page clock">
+  <a routerLink="/admin/nhan-vien">‹ Hồ sơ nhân viên</a>
+  <h1>Chấm công</h1>
+  <p class="muted">Giờ tiệm 08:30–20:30 · Giờ Việt Nam</p>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (verified(); as profile) {
+    <div class="panel">
+      <h2>{{ profile.fullName }}</h2>
+      <p [class.warning]="profile.status === 'NEEDS_REVIEW'">
+        {{ statusLabel[profile.status] }}
+        @if (profile.startedAt) { · Bắt đầu {{ time(profile.startedAt) }} }
+      </p>
+      @if (needsOutsideConfirmation()) {
+        <p class="warning">Hôm nay bạn chưa đăng ký lịch làm việc.</p>
+      }
+      <ul class="day-list" aria-label="Lịch làm việc tuần này">
+        @for (label of weekdays; track label; let i = $index) {
+          @let cellDate = date(profile.monday, i);
+          <li [class.today]="cellDate === profile.today">
+            <strong>{{ label }}</strong><br>{{ day(cellDate) }}
+            @if (cellDate === profile.today) { · Hôm nay }
+            <br>{{ profile.days[i] ? 'Đã đăng ký' : 'Chưa đăng ký' }}
+          </li>
+        }
+      </ul>
+      <div class="controls">
+        <label><input type="checkbox" [disabled]="working() || busy()" (change)="open('START', $event)"> Bắt đầu ca</label>
+        <label><input type="checkbox" [disabled]="!working() || busy()" (change)="open('END', $event)"> Kết thúc ca</label>
+        <button (click)="exit()" [disabled]="busy()">Thoát hồ sơ</button>
+      </div>
+    </div>
+  } @else if (employee(); as profile) {
+    <form class="panel" (ngSubmit)="unlock()">
+      <h2>{{ profile.fullName }}</h2>
+      <p class="muted">{{ profile.code }} · Nhập PIN để chấm công.</p>
+      <div class="controls">
+        <label class="field"><span>PIN (6 chữ số)</span>
+          <input name="pin" type="password" inputmode="numeric" autocomplete="off" required
+            pattern="[0-9]{6}" maxlength="6" [(ngModel)]="pin">
+        </label>
+        <button class="primary" [disabled]="busy()">Tiếp tục</button>
+      </div>
+    </form>
+  } @else if (busy()) {
+    <p role="status">Đang tải hồ sơ…</p>
+  } @else {
+    <p>Hồ sơ không có hoặc đã ngừng hoạt động.</p>
+  }
+  <dialog #confirmation aria-labelledby="punch-title" (cancel)="cancel()">
+    <h2 id="punch-title">Xác nhận chấm công</h2>
+    <p>{{ pending() === 'START' ? 'Bạn có chắc chắn muốn bắt đầu ca làm?' : 'Bạn có chắc chắn muốn kết thúc ca làm?' }}</p>
+    <p class="muted">{{ time(confirmationTime()) }} · Giờ tham chiếu</p>
+    @if (needsOutsideConfirmation()) {
+      <p class="warning">Hôm nay bạn chưa đăng ký lịch làm việc.</p>
+    }
+    <div class="controls">
+      <button type="button" (click)="cancel()" autofocus>Hủy</button>
+      <button type="button" class="primary" (click)="confirm()">Xác nhận</button>
+    </div>
+  </dialog>
+</section>

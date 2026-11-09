@@ -49,7 +49,8 @@ public class SecurityConfiguration {
                                                                 "/api/v1/taxonomy", "/api/v1/home", "/api/v1/contact",
                                                                 "/api/v1/flash-sale", "/api/v1/cache-policy")
                                                 .permitAll()
-                                                .requestMatchers("/api/v1/admin/owner-access").hasRole("OWNER")
+                                                .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**")
+                                                .hasRole("OWNER")
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")
                                                 .hasAnyRole("OWNER", "STAFF")
                                                 .requestMatchers("/api/v1/admin/**").hasRole("OWNER")

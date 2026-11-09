@@ -1,0 +1,61 @@
+<section class="attendance-page">
+  <h1>Bảng công</h1>
+  <p class="muted">Giờ Việt Nam · Ca còn mở từ 20:30 được đánh dấu Cần kiểm tra. Xuất Excel để xem tổng giờ và chi tiết từng ca.</p>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+
+  <form class="panel controls" (ngSubmit)="load()">
+    <label class="field"><span>Kỳ báo cáo</span>
+      <select name="period" [(ngModel)]="query.period"><option value="WEEK">Tuần</option><option value="MONTH">Tháng</option></select>
+    </label>
+    <label class="field"><span>Ngày trong kỳ</span><input type="date" name="date" required [(ngModel)]="query.date"></label>
+    <label class="field"><span>Nhân viên</span>
+      <select name="employee" [(ngModel)]="query.employeeId">
+        <option [ngValue]="null">Tất cả</option>
+        @for (employee of employees(); track employee.id) {
+          <option [ngValue]="employee.id">{{ employee.fullName }} · {{ employee.code }}</option>
+        }
+      </select>
+    </label>
+    <label class="field"><span>Loại ca</span>
+      <select name="filter" [(ngModel)]="query.filter">
+        <option value="ALL">Tất cả</option><option value="OPEN">Chưa kết thúc</option>
+        <option value="REVIEW">Cần kiểm tra</option><option value="OUTSIDE">Ngoài lịch</option>
+      </select>
+    </label>
+    <button class="primary" [disabled]="busy() || noteDirty() || !query.date">Xem bảng công</button>
+    <button type="button" (click)="download()" [disabled]="busy() || noteDirty() || !report()">Xuất bảng đang xem (.xlsx)</button>
+  </form>
+
+  @if (report(); as data) {
+    <form class="panel" (ngSubmit)="saveNote()">
+      <h2>Ghi chú chung</h2>
+      <p class="muted">{{ day(data.from) }} – {{ day(data.to) }} · Ghi chú áp dụng cho cả kỳ.</p>
+      <label class="field">
+        <span>Nội dung ghi chú</span>
+        <textarea name="note" rows="4" maxlength="500" [(ngModel)]="noteText" [disabled]="busy()"></textarea>
+      </label>
+      <div class="controls">
+        <button class="primary" [disabled]="busy() || !noteDirty()">Lưu ghi chú</button>
+        @if (noteDirty()) {
+          <button type="button" (click)="resetNote()" [disabled]="busy()">Bỏ thay đổi</button>
+        }
+      </div>
+    </form>
+  }
+
+  @if (report(); as data) {
+    <div class="panel table-wrap">
+      <h2>Tổng hợp · {{ day(data.from) }} – {{ day(data.to) }}</h2>
+      <table>
+        <thead><tr><th>Mã</th><th>Nhân viên</th><th>Ngày đăng ký</th><th>Ngày làm thực tế</th><th>Ca cần kiểm tra</th></tr></thead>
+        <tbody>
+          @for (row of data.summary; track row.employeeId) {
+            <tr><th scope="row">{{ row.code }}</th><td>{{ row.name }}</td><td>{{ row.registeredDays }}</td>
+              <td>{{ row.workedDays }}</td><td>{{ row.reviewCount }}</td></tr>
+          } @empty { <tr><td colspan="5">Không có dữ liệu cho bộ lọc này.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>

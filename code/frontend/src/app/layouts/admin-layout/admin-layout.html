@@ -90,6 +90,28 @@
         </div>
       </div>
 
+      @if (auth.user()?.role === 'OWNER') {
+        <div class="sidebar-divider" role="separator"></div>
+        <div class="nav-group">
+          <button type="button" class="nav-item nav-group-btn"
+            (click)="employeeMenuOpen.set(!employeeMenuOpen())"
+            [attr.aria-expanded]="employeeMenuOpen()" aria-controls="employee-submenu">
+            <span class="nav-text">Nhân viên</span>
+            <span class="nav-chevron" [class.open]="employeeMenuOpen()" aria-hidden="true">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </span>
+          </button>
+          <div id="employee-submenu" class="nav-sub-group" [class.collapsed]="!employeeMenuOpen()"
+            role="region" aria-label="Các mục Nhân viên">
+            <a class="nav-sub-item" routerLink="/admin/nhan-vien" routerLinkActive="active">Hồ sơ nhân viên</a>
+            <a class="nav-sub-item" routerLink="/admin/cham-cong/lich" routerLinkActive="active">Lịch làm việc</a>
+            <a class="nav-sub-item" routerLink="/admin/cham-cong/bao-cao" routerLinkActive="active">Bảng công</a>
+          </div>
+        </div>
+      }
+
       <div class="sidebar-divider" role="separator"></div>
 
       <a routerLink="/" class="nav-item nav-external" target="_blank" rel="noopener">

@@ -2692,3 +2692,58 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
   git diff --check đạt từ root. Chưa đo bố cục trên trình duyệt.
 - Bàn giao dev, kiểm tra lại nhãn và giá trị trên candidate khi smoke V20.
+
+
+### 2026-11-09 — S063-C01 — Chấm công MVP v1
+
+- Phạm vi theo spec user: hồ sơ/PIN, lịch tuần, chấm công qua phiên OWNER, bảng công/audit/Excel. Giờ 08:30–20:30 để tham chiếu, lưu giờ thực tế.
+- Worktree dev-ui được fast-forward từ 8ace07a lên 2943fdb theo origin/main. Kiểm refs origin qua git ls-remote từ workspace Mẹ Mây.
+- Đăng ký ATTENDANCE_SPEC và ATTENDANCE_PLAN vào README. Thay đổi tài liệu còn local. Chưa viết code hoặc chạy kiểm thử.
+- Bước tiếp theo: review kế hoạch theo Writing Plans, rồi viết kiểm thử API đầu tiên trên dev-ui.
+
+- S063-C02: User duyệt kế hoạch. Bổ sung quy tắc ca còn mở từ 20:30 giờ Việt Nam được đánh dấu Cần kiểm tra. Bắt đầu triển khai theo nhóm kiểm thử.
+
+### 2026-11-09 — S063-C03 — Kiểm chứng và bàn giao chấm công
+
+- Trên dev-ui từ 2943fdb, thêm module attendance, migration V21 và bốn màn hình admin. Dùng OWNER và CSRF hiện hành, không cấp tài khoản riêng. Lịch chỉ là kế hoạch. Ghi ca thực tế và lưu dấu vết điều chỉnh. Từ 20:30 giờ Việt Nam, ca mở hiện Cần kiểm tra trên màn hình chấm công, bảng công và Excel.
+- Ca qua nửa đêm quy về ngày bắt đầu. Bảng công và Excel cộng phần nguyên số phút của từng ca hoàn tất. Ca chưa đóng được loại khỏi tổng. Cờ Cần kiểm tra tự hết khi ca được đóng. Kiểm mốc 20:30 bằng clock kiểm thử, không đổi giờ hệ thống.
+- Từ code/backend: `mvn -o test` với PostgreSQL 18.6 riêng, UTF-8/ICU. 247 đạt, 3 bỏ qua, 0 lỗi. Gồm 8 test HTTP chấm công với chống mở ca đồng thời, replay, đổi PIN, hủy ghi lịch không hợp lệ, audit và đọc workbook bằng POI. Hai test catalogue từng lỗi trên locale C, kể cả với origin/main, rồi đều đạt trên ICU do case-fold đúng chữ có dấu.
+- Từ code/frontend: `npm test` đạt 254/254. `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` đạt. Chrome localhost qua tạo hồ sơ, lưu lịch, sao chép bản nháp theo thứ, cảnh báo lịch chưa lưu, xác nhận/hủy, ghi giờ sau 20:30, tự thoát hồ sơ giữ OWNER, chỉnh công và tải Excel. Kiểm hai sheet và nhãn Cần kiểm tra trong file tải về.
+- Review độc lập phát hiện trạng thái màn hình chấm công có thể chậm khi qua mốc 20:30 trong phiên đã nhập PIN. Đã sửa với test đỏ–xanh và bổ sung kiểm thử đồng thời và giao diện. Gộp contract vào ATTENDANCE_SPEC, cập nhật chỉ mục và gỡ kế hoạch hết vai trò.
+- Bàn giao trên dev-ui. Bước tiếp theo nếu đưa lên môi trường đích là nghiệm thu migration V21 và smoke với phiên OWNER tại tiệm. Chưa rollout V21 hoặc deploy.
+
+### 2026-11-09 — S063-C04 — Điều hướng theo hồ sơ nhân viên
+
+- Yêu cầu trên dev-ui từ db88702. Gom các mục tổng hợp dưới Nhân viên, chia Hồ sơ nhân viên 40:60 và bỏ trường Tên hiển thị trên giao diện. Chọn một hồ sơ trước khi mở lịch hoặc chấm công của người đó.
+- Dùng lại trang lịch tuần với phạm vi theo hồ sơ, bảo toàn lịch các nhân viên khác khi lưu. Trang chấm công cá nhân dùng cùng phiên OWNER và PIN. Bắt đầu kiểm thử trước khi sửa code.
+- Sidebar OWNER dùng nhóm Nhân viên với Hồ sơ nhân viên, Lịch làm việc và Bảng công. Hồ sơ 40:60 trên desktop, xếp dọc khi hẹp. URL chấm công cũ dẫn về danh sách, chấm công theo ID vẫn xác thực PIN và quay về danh sách sau khi hoàn tất hoặc hết hạn.
+- Lịch cá nhân dùng chung phiên bản lịch tuần và chỉ thay hàng của hồ sơ đã chọn. Bảng công và Excel dùng họ tên. API tiếp tục nhận trường cũ để tương thích, dữ liệu đã lưu giữ nguyên. Không thêm migration.
+- Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost kiểm tỷ lệ 4:6, bố cục hẹp, nhóm điều hướng, lịch cá nhân đủ bảy ô, chấm công đúng hồ sơ, thông báo khi trở về và chuyển hướng URL cũ.
+- Từ code/backend: mvn -o test với PostgreSQL test UTF-8/ICU đạt 247, bỏ qua 3. Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C05 — Menu theo nhân viên và ẩn khung thêm mới
+
+- Theo yêu cầu trên dev-ui từ b0cbb88. Ẩn khung thêm mới mặc định. Dùng menu cạnh từng nhân viên để mở thông tin hồ sơ, lịch hoặc chấm công. Giữ bố cục 4:6 khi mở khung bên phải.
+- Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost với API giả kiểm mở/đóng khung thêm mới, di chuột sang menu cạnh hàng, liên kết đúng ID, Tab/Escape và bấm ở màn hình hẹp. Chỉ đổi frontend, không chạy lại Maven.
+- Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C06 — Định dạng giờ bảng công
+
+- Bắt đầu từ b319f03 trên dev-ui. Đổi định dạng ngày, giờ và thời lượng trong Excel. Hai cột giờ trên web chỉ hiện giờ.
+- Sheet Chi tiết dùng ô ngày/giờ dạng số và thời lượng theo [hh]:mm. 95 phút hiển thị 01:35, 25 giờ hiển thị 25:00 và ca đang mở để trống giờ ra/thời lượng. Trên web hai cột giờ giữ HH:mm:ss.
+- Từ code/backend: mvn -o -Dtest=AttendanceIntegrationTest,AttendanceWorkbookTest test đạt 9/9 với PostgreSQL test riêng. Mở lại workbook bằng POI và kiểm giá trị số cùng chuỗi hiển thị.
+- Từ code/frontend: npm test đạt 256/256, npm run build đạt. Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C07 — Bảng công web chỉ hiện tổng hợp
+
+- Bắt đầu trên dev-ui từ be3c88c. Chỉ trả tổng hợp không có số phút cho bảng công web. Chi tiết ca và tổng giờ giữ trong Excel.
+- User chốt Ghi chú theo nhân viên và kỳ tuần/tháng, ngày cụ thể do người ghi nhập trong nội dung. Thêm V22. Ghi chú nằm trong sheet Tổng hợp. Sửa giờ thực hiện trên file Excel đã tải, dữ liệu gốc và audit cũ được giữ.
+- API bảng công chỉ trả số ngày và số ca cần kiểm tra. Bỏ giao diện chi tiết và endpoint đọc audit/chỉnh giờ cũ. Xuất Excel giữ tổng giờ, chi tiết ca và ghi chú cũ.
+- Từ code/backend: mvn -o test với PostgreSQL test ICU đạt 249, bỏ qua 3. Đã chạy V22 và kiểm HTTP không lộ dữ liệu giờ, ghi chú tuần/tháng độc lập và mở lại file Excel. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Chưa smoke trình duyệt hoặc deploy production.
+
+### 2026-11-09 — S063-C08 — Ghi chú chung cho kỳ bảng công
+
+- Bắt đầu từ 725836c trên dev-ui. Chrome nhận 404 vì Java local cổng 8080 chạy class build từ 21:39, chưa có route ghi chú. Đổi thành một ô chung theo kỳ và rà code chấm công cũ. Giữ dữ liệu lịch sử.
+- Một ô Ghi chú chung cho mỗi kỳ tuần/tháng, độc lập bộ lọc. Bỏ menu, state theo hàng và route đọc/ghi ghi chú theo nhân viên. Xóa field DTO và thông báo lỗi chỉnh giờ đã hết caller. Migration V23 bổ sung bảng ghi chú chung. V22 và audit cũ giữ để Excel vẫn đọc được lịch sử.
+- Từ code/backend: mvn -o test đạt 249, bỏ qua 3. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Kiểm lại workbook cuối bằng bộ AttendanceIntegrationTest và AttendanceWorkbookTest.
+- Bộ AttendanceIntegrationTest và AttendanceWorkbookTest cuối đạt 10/10. Local đã dừng Java cũ, chạy mvn -o clean spring-boot:run trên me_may_dev, Flyway từ V21 lên V23. Health 8080 UP, proxy 4200 trả 401 với request chưa đăng nhập. Bàn giao dev-ui, chưa deploy production.
