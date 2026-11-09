@@ -61,9 +61,12 @@ public final class LocalImageStore {
     }
 
     public void validate(Manifest manifest) throws IOException {
+        validate(manifest, directory("staging/" + manifest.generationId() + "/output", false));
+    }
+
+    private void validate(Manifest manifest, Path source) throws IOException {
         String destination = destination(manifest);
         if (manifest.variants().isEmpty()) throw new IOException("Empty image manifest");
-        Path source = directory("staging/" + manifest.generationId() + "/output", false);
         var expected = new HashSet<String>();
         for (var variant : manifest.variants()) {
             String extension = switch (variant.mime()) {
@@ -105,11 +108,23 @@ public final class LocalImageStore {
     }
 
     public synchronized void publish(Manifest manifest) throws IOException {
-        validate(manifest);
-        Path source = directory("staging/" + manifest.generationId() + "/output", false);
+        publish(manifest, manifest.generationId(), false);
+    }
+
+    synchronized void publishAttempt(Manifest manifest, UUID leaseToken) throws IOException {
+        publish(manifest, leaseToken, true);
+    }
+
+    private void publish(Manifest manifest, UUID stagingId, boolean recoverExisting) throws IOException {
         Path parent = directory("derived/" + manifest.mediaId(), true);
         Path target = parent.resolve(manifest.generationId().toString());
-        if (Files.exists(target, NOFOLLOW_LINKS)) throw new IOException("Generation already exists");
+        if (Files.exists(target, NOFOLLOW_LINKS)) {
+            if (!recoverExisting) throw new IOException("Generation already exists");
+            validate(manifest, directory(destination(manifest), false));
+            return;
+        }
+        Path source = directory("staging/" + stagingId + "/output", false);
+        validate(manifest, source);
         Files.move(source, target, ATOMIC_MOVE);
     }
 

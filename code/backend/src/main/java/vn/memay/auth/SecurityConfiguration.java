@@ -34,6 +34,42 @@ public class SecurityConfiguration {
         }
 
         @Bean
+        @org.springframework.core.annotation.Order(1)
+        SecurityFilterChain imageWorkerSecurity(HttpSecurity http, ObjectMapper mapper,
+                        org.springframework.core.env.Environment env) throws Exception {
+                String token = env.getProperty("memay.media.local.worker-token", "");
+                return http.securityMatcher("/actuator/imagejobs")
+                                .csrf(csrf -> csrf.disable())
+                                .sessionManagement(s -> s.sessionCreationPolicy(
+                                        org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
+                                .authorizeHttpRequests(a -> a.anyRequest().permitAll())
+                                .addFilterBefore(new org.springframework.web.filter.OncePerRequestFilter() {
+                                        @Override
+                                        protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest req,
+                                                HttpServletResponse res, jakarta.servlet.FilterChain chain)
+                                                throws IOException, jakarta.servlet.ServletException {
+                                                int managementPort = env.getProperty("local.management.port", Integer.class, -1);
+                                                int appPort = env.getProperty("local.server.port", Integer.class, -1);
+                                                if (!env.getProperty("memay.media.local.enabled", Boolean.class, false)
+                                                        || managementPort == appPort || req.getLocalPort() != managementPort) {
+                                                        json(res, mapper, 404, Map.of("error", "not_found"));
+                                                        return;
+                                                }
+                                                String authorization = req.getHeader("Authorization");
+                                                if (token.isBlank() || authorization == null || !java.security.MessageDigest.isEqual(
+                                                        ("Bearer " + token).getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                                                        authorization.getBytes(java.nio.charset.StandardCharsets.UTF_8))) {
+                                                        json(res, mapper, 401, Map.of("error", "unauthorized"));
+                                                        return;
+                                                }
+                                                res.setHeader("Cache-Control", "no-store");
+                                                chain.doFilter(req, res);
+                                        }
+                                }, org.springframework.security.web.access.intercept.AuthorizationFilter.class)
+                                .build();
+        }
+
+        @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http, ObjectMapper mapper,
                         AdminUserRepository repository, org.springframework.jdbc.core.JdbcTemplate jdbc)
                         throws Exception {

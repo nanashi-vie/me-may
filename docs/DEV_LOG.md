@@ -2729,3 +2729,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chưa phục vụ. Chưa mô phỏng disk full thật hoặc kiểm kê file mồ côi ngoài DB.
 - Tiếp theo S3 lease/worker boundary, rồi Sharp. Chưa rollout hay kiểm Ubuntu.
 - Hồi quy backend trên PostgreSQL test riêng: 247 ca, 244 đạt, 3 skip.
+
+## 2026-11-09 — S059-C01 — Bắt đầu S3
+
+- Native tiếp tục từ dev 82636b5. Phạm vi queue PostgreSQL và API nội bộ.
+- Ruling: output mỗi attempt dùng thư mục theo lease token để worker hết lease
+  không ghi đè staging của worker mới. Completion chỉ xuất generation READY.
+
+- Queue claim dùng PostgreSQL SKIP LOCKED, lease 5 phút, retry 10/60 giây,
+  dừng sau ba lần. Kết quả kiểm lease, phiên upload và manifest trước khi xuất.
+  Completion ghi generation READY, bước gắn ảnh thuộc S5.
+- POST /actuator/imagejobs chỉ trên cổng management khác cổng app, Bearer
+  độc lập; COMPLETE nhận manifest dưới dạng chuỗi JSON. App giữ health route.
+  PROCESS hoạt động; các kind Drive báo unsupported đến khi có handler.
+- RED compile thiếu ImageJobRepository. GREEN nhóm lease/security/storage
+  đạt 5/5. Toàn bộ ./mvnw -B -ntp test từ code/backend trên PostgreSQL test
+  riêng đạt 249 ca, 246 đạt, 3 skip. Worker encode và Ubuntu chưa kiểm.
+- Tiếp theo S4. Chưa rollout.
