@@ -1,5 +1,8 @@
 <section class="attendance-page">
-  <h1>Lịch làm việc</h1>
+  @if (employeeId !== null) {
+    <a routerLink="/admin/nhan-vien">‹ Hồ sơ nhân viên</a>
+    <h1>Lịch làm việc · {{ employees().get(employeeId)?.fullName || 'Hồ sơ nhân viên' }}</h1>
+  } @else { <h1>Lịch làm việc</h1> }
   <p class="muted">Đánh dấu ngày dự kiến làm việc của từng nhân viên theo tuần.</p>
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
   @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
@@ -24,23 +27,23 @@
             }
           </tr></thead>
           <tbody>
-            @for (row of currentWeek.rows; track row.employeeId) {
+            @for (row of visibleRows(); track row.employeeId) {
               @let employee = employees().get(row.employeeId);
               <tr>
-                <th scope="row">{{ employee?.displayName || row.employeeId }}</th>
+                <th scope="row">{{ employee?.fullName || row.employeeId }}</th>
                 @for (checked of row.days; track $index; let i = $index) {
                   <td [class.today]="date(currentWeek.monday, i) === currentWeek.today">
-                    <input type="checkbox" [checked]="checked" [disabled]="!currentWeek.editable || busy()"
-                      [attr.aria-label]="(employee?.displayName || row.employeeId) + ' · ' + weekdays[i]"
+                    <input type="checkbox" [checked]="checked" [disabled]="!canEdit() || busy()"
+                      [attr.aria-label]="(employee?.fullName || row.employeeId) + ' · ' + weekdays[i]"
                       (change)="toggle(row.employeeId, i, $any($event.target).checked)">
                   </td>
                 }
               </tr>
-            } @empty { <tr><td colspan="8">Chưa có nhân viên để đăng ký lịch.</td></tr> }
+            } @empty { <tr><td colspan="8">{{ employeeId === null ? 'Chưa có nhân viên để đăng ký lịch.' : 'Hồ sơ này chưa có lịch cho tuần đang xem.' }}</td></tr> }
           </tbody>
         </table>
       </div>
-      @if (currentWeek.editable) {
+      @if (canEdit()) {
         <div class="controls">
           <button (click)="copy()" [disabled]="busy()">Sao chép tuần trước</button>
           <button class="primary" (click)="save()" [disabled]="busy() || !dirty()">Lưu lịch</button>

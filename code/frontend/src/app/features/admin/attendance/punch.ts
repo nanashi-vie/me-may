@@ -1,20 +1,22 @@
 import { Component, computed, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AttendanceApi, Employee, PunchAction, Verified } from './attendance-api';
 import { addDays, closingTime, displayDay, displayTime, errorCode, errorMessage, statusLabel, weekdays } from './attendance-display';
 
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './punch.html',
   styleUrl: './attendance.scss',
 })
 export class Punch implements OnInit, OnDestroy {
   private readonly api = inject(AttendanceApi);
+  private readonly router = inject(Router);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>('confirmation');
-  readonly profiles = signal<Employee[]>([]);
+  private readonly employeeId = Number(inject(ActivatedRoute).snapshot.paramMap.get('employeeId'));
+  readonly employee = signal<Employee | null>(null);
   readonly verified = signal<Verified | null>(null);
   readonly error = signal('');
-  readonly notice = signal('');
   readonly busy = signal(false);
   readonly pending = signal<PunchAction | null>(null);
   readonly confirmationTime = signal('');
@@ -28,7 +30,6 @@ export class Punch implements OnInit, OnDestroy {
   readonly date = addDays;
   readonly day = displayDay;
   readonly time = displayTime;
-  employeeId: number | null = null;
   pin = '';
   private expires: ReturnType<typeof setTimeout> | undefined;
   private cutoff: ReturnType<typeof setTimeout> | undefined;
@@ -46,16 +47,18 @@ export class Punch implements OnInit, OnDestroy {
   async load() {
     this.busy.set(true);
     this.error.set('');
-    try { this.profiles.set((await this.api.employees()).filter((profile) => profile.active)); }
+    try {
+      const employee = (await this.api.employees()).find((profile) => profile.id === this.employeeId && profile.active);
+      this.employee.set(employee ?? null);
+    }
     catch (error) { this.error.set(errorMessage(error)); }
     finally { this.busy.set(false); }
   }
 
   async unlock() {
-    if (this.busy() || this.employeeId === null || !/^[0-9]{6}$/.test(this.pin)) return;
+    if (this.busy() || !this.employee() || !/^[0-9]{6}$/.test(this.pin)) return;
     this.busy.set(true);
     this.error.set('');
-    this.notice.set('');
     try {
       const view = await this.api.verify(this.employeeId, this.pin);
       if (this.destroyed) return;
@@ -72,8 +75,7 @@ export class Punch implements OnInit, OnDestroy {
         }
       }
       this.expires = setTimeout(() => {
-        this.clear();
-        this.notice.set('Đã thoát hồ sơ chấm công sau 30 giây.');
+        this.exit('Đã thoát hồ sơ chấm công sau 30 giây.');
       }, Date.parse(view.expiresAt) - Date.parse(view.serverTime));
     } catch (error) { this.error.set(errorMessage(error)); }
     finally {
@@ -94,7 +96,8 @@ export class Punch implements OnInit, OnDestroy {
 
   cancel() {
     this.pending.set(null);
-    this.dialog().nativeElement.close();
+    const dialog = this.dialog().nativeElement;
+    if (dialog.open) dialog.close();
   }
 
   clear() {
@@ -102,10 +105,14 @@ export class Punch implements OnInit, OnDestroy {
     clearTimeout(this.cutoff);
     this.cancel();
     this.verified.set(null);
-    this.employeeId = null;
     this.pin = '';
     this.error.set('');
     this.needsOutsideConfirmation.set(false);
+  }
+
+  exit(notice?: string) {
+    this.clear();
+    void this.router.navigate(['/admin/nhan-vien'], { state: { attendanceNotice: notice } });
   }
 
   async confirm() {
@@ -119,8 +126,7 @@ export class Punch implements OnInit, OnDestroy {
     try {
       const result = await this.api.punch(view.token, action, acknowledged);
       if (this.destroyed) return;
-      this.clear();
-      this.notice.set(`Đã ghi nhận ${action === 'START' ? 'bắt đầu' : 'kết thúc'} ca lúc ${displayTime(result.recordedAt)}.`);
+      this.exit(`Đã ghi nhận ${action === 'START' ? 'bắt đầu' : 'kết thúc'} ca lúc ${displayTime(result.recordedAt)}.`);
     } catch (error) {
       if (this.destroyed) return;
       const code = errorCode(error);

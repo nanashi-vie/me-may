@@ -37,9 +37,14 @@ describe('AdminLayout', () => {
     expect(text).toContain('Sách');
     expect(text).toContain('Bộ sưu tập');
     expect(text).toContain('Flash sale');
-    for (const path of ['nhan-vien', 'cham-cong', 'cham-cong/lich', 'cham-cong/bao-cao']) {
+    for (const path of ['nhan-vien', 'cham-cong/lich', 'cham-cong/bao-cao']) {
       expect(fixture.nativeElement.querySelector(`a[href="/admin/${path}"]`)).not.toBeNull();
     }
+    const group = fixture.nativeElement.querySelector('#employee-submenu');
+    expect(group?.textContent).toContain('Hồ sơ nhân viên');
+    expect(group?.textContent).toContain('Lịch làm việc');
+    expect(group?.textContent).toContain('Bảng công');
+    expect(fixture.nativeElement.querySelector('a[href="/admin/cham-cong"]')).toBeNull();
     expect(text).toContain('Xem website');
     expect(text).toContain('owner@memay.vn');
     expect(text).toContain('OWNER');

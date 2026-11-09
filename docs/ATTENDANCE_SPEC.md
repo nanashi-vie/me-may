@@ -20,7 +20,7 @@ Xây dựng tính năng chấm công đơn giản trong khu vực `/admin` của
 Máy tính của chủ tiệm được sử dụng làm thiết bị chấm công tại cửa hàng.
 
 - Owner đăng nhập `/admin` như bình thường.
-- Nhân viên sử dụng máy tính đã đăng nhập để truy cập tab **Chấm công**.
+- Nhân viên dùng máy tính đã đăng nhập, chọn tên trong **Hồ sơ nhân viên** rồi mở **Chấm công** của hồ sơ đó.
 - Không yêu cầu nhân viên đăng nhập tài khoản website.
 - Không yêu cầu đăng nhập lại OWNER trước mỗi lần chấm công.
 - Không xây dựng phiên Kiosk hoặc cơ chế xác thực thiết bị riêng.
@@ -47,8 +47,8 @@ Owner có thể:
 
 Quy trình sử dụng thông thường:
 
-1. Truy cập tab **Chấm công** trong `/admin`.
-2. Chọn hồ sơ cá nhân.
+1. Mở **Nhân viên → Hồ sơ nhân viên** trong `/admin`.
+2. Chọn hồ sơ cá nhân và bấm **Chấm công**.
 3. Nhập PIN.
 4. Xem lịch làm việc đã đăng ký.
 5. Tick **Bắt đầu ca** hoặc **Kết thúc ca**.
@@ -67,13 +67,14 @@ Sau khi chấm công, giao diện tự quay về màn hình chọn nhân viên.
 |---|---|---|
 | Mã nhân viên | Có | Tự sinh, ví dụ EMP-001 |
 | Họ tên | Có | |
-| Tên hiển thị | Có | Dùng trong bảng công |
 | PIN | Có | 6 chữ số |
 | Số điện thoại | Không | |
 | Ngày bắt đầu | Không | |
 | Trạng thái | Có | ACTIVE / INACTIVE |
 
-- Mỗi nhân viên có một hồ sơ độc lập.
+- Mỗi nhân viên có một hồ sơ độc lập. Danh sách ở cột trái 40%, thông tin và thao tác của hồ sơ đã chọn ở cột phải 60% trên desktop.
+- Mục cha **Nhân viên** chứa **Hồ sơ nhân viên**, **Lịch làm việc** và **Bảng công**. Hồ sơ cá nhân có liên kết lịch và chấm công riêng.
+- Họ tên dùng trên giao diện, bảng công và Excel. Tên hiển thị đã lưu được giữ để tương thích dữ liệu.
 - PIN được hash tại backend, không lưu bản rõ.
 - Owner có thể cấp lại PIN.
 - Nhân viên nghỉ việc không bị xóa lịch sử chấm công.
@@ -83,7 +84,7 @@ Sau khi chấm công, giao diện tự quay về màn hình chọn nhân viên.
 
 ### 4.1. Giao diện
 
-Đường dẫn đề xuất: `/admin/cham-cong/lich`
+Lịch tổng hợp dùng `/admin/cham-cong/lich`. Lịch cá nhân dùng `/admin/nhan-vien/:employeeId/lich` và chỉ sửa lịch của hồ sơ đó.
 
 Hiển thị dạng bảng:
 
@@ -150,14 +151,14 @@ Sao chép sang tuần 16/11–22/11:
 
 ## 5. Giao diện chấm công nhân viên
 
-Đường dẫn đề xuất: `/admin/cham-cong`
+Đường dẫn chấm công cá nhân là `/admin/nhan-vien/:employeeId/cham-cong`. URL chấm công cũ đưa về danh sách hồ sơ.
 
 Giao diện được tối ưu cho thao tác nhanh trên máy tính của chủ tiệm.
 
 Luồng:
 
-1. Mở tab **Chấm công**.
-2. Chọn hồ sơ nhân viên.
+1. Mở danh sách **Hồ sơ nhân viên**.
+2. Chọn hồ sơ và bấm **Chấm công**.
 3. Nhập PIN 6 chữ số.
 4. Backend kiểm tra PIN.
 5. Xác thực thành công.

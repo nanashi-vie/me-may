@@ -100,7 +100,7 @@ class AttendanceIntegrationTest {
     @Test void ownerCreatesEmployeeWithoutExposingPinAndCannotEditPastWeek() throws Exception {
         assertThat(login("owner@test.local").statusCode()).isEqualTo(200);
         var result = api("POST", "/employees", """
-                {"fullName":"Nguyễn An","displayName":"An","pin":"012345"}
+                {"fullName":"Nguyễn An","pin":"012345"}
                 """);
         assertThat(result.statusCode()).isEqualTo(201);
         assertThat(result.body()).contains("EMP-").doesNotContain("012345", "pinHash");
@@ -200,6 +200,7 @@ class AttendanceIntegrationTest {
         String period = "?period=WEEK&date=2026-11-09";
         var response = api("GET", "/report" + period, null);
         assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(JsonPath.<String>read(response.body(), "$.summary[0].name")).isEqualTo("Nguyễn An");
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].registeredDays")).isEqualTo(1);
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].workedDays")).isEqualTo(1);
         assertThat(JsonPath.<Integer>read(response.body(), "$.summary[0].minutes")).isEqualTo(60);
@@ -269,7 +270,7 @@ class AttendanceIntegrationTest {
         assertThat(punch(previous, "START", true).statusCode()).isEqualTo(403);
         String current = JsonPath.read(verify(id, "654321").body(), "$.token");
         assertThat(api("PUT", "/employees/" + id, """
-                {"fullName":"Nguyễn An","displayName":"An","active":false,"version":0}
+                {"fullName":"Nguyễn An","active":false,"version":0}
                 """).statusCode()).isEqualTo(200);
         assertThat(punch(current, "START", true).statusCode()).isEqualTo(409);
         assertThat(jdbc.queryForObject("select count(*) from attendance_session where employee_id=?", Integer.class, id))

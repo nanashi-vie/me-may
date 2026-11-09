@@ -1,12 +1,13 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AttendanceApi, Employee } from './attendance-api';
-import { displayDay, errorMessage } from './attendance-display';
+import { errorMessage } from './attendance-display';
 
-const empty = { fullName: '', displayName: '', phone: '', startedOn: '', pin: '', active: true };
+const empty = { fullName: '', phone: '', startedOn: '', pin: '', active: true };
 
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './employees.html',
   styleUrl: './attendance.scss',
 })
@@ -14,9 +15,9 @@ export class Employees implements OnInit {
   private readonly api = inject(AttendanceApi);
   readonly employees = signal<Employee[]>([]);
   readonly error = signal('');
-  readonly notice = signal('');
+  private readonly navigationNotice = inject(Router).currentNavigation()?.extras.state?.['attendanceNotice'];
+  readonly notice = signal(typeof this.navigationNotice === 'string' ? this.navigationNotice : '');
   readonly busy = signal(false);
-  readonly day = displayDay;
   editing: Employee | null = null;
   resetting: Employee | null = null;
   form = { ...empty };
@@ -37,7 +38,7 @@ export class Employees implements OnInit {
     this.resetting = null;
     this.newPin = '';
     this.form = employee ? {
-      fullName: employee.fullName, displayName: employee.displayName, phone: employee.phone ?? '',
+      fullName: employee.fullName, phone: employee.phone ?? '',
       startedOn: employee.startedOn ?? '', active: employee.active, pin: '',
     } : { ...empty };
     this.error.set('');
@@ -45,7 +46,7 @@ export class Employees implements OnInit {
   }
 
   reset(employee: Employee) {
-    this.select(null);
+    this.select(employee);
     this.resetting = employee;
   }
 
@@ -55,11 +56,11 @@ export class Employees implements OnInit {
     this.error.set('');
     this.notice.set('');
     try {
-      const { fullName, displayName, phone, startedOn, active, pin } = this.form;
-      const fields = { fullName, displayName, phone: phone || null, startedOn: startedOn || null };
+      const { fullName, phone, startedOn, active, pin } = this.form;
+      const fields = { fullName, phone: phone || null, startedOn: startedOn || null };
       if (this.resetting) {
         await this.api.reset(this.resetting.id, this.newPin);
-        this.select(null);
+        this.select(this.resetting);
         this.notice.set('Đã đặt lại PIN.');
       } else {
         const saved = this.editing
@@ -67,8 +68,8 @@ export class Employees implements OnInit {
           : await this.api.create({ ...fields, pin });
         this.employees.update((list) => list.some((item) => item.id === saved.id)
           ? list.map((item) => item.id === saved.id ? saved : item) : [...list, saved]);
-        this.select(null);
-        this.notice.set(`Đã lưu hồ sơ ${saved.displayName}.`);
+        this.select(saved);
+        this.notice.set(`Đã lưu hồ sơ ${saved.fullName}.`);
       }
     } catch (error) { this.error.set(errorMessage(error)); }
     finally { this.busy.set(false); }

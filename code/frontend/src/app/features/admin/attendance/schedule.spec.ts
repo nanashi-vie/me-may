@@ -1,4 +1,5 @@
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from "@angular/router";
 import { expect, it, vi } from 'vitest';
 import { AttendanceApi, Week } from './attendance-api';
 import { Schedule } from './schedule';
@@ -48,4 +49,38 @@ it('replaces the target draft by employee ID only after confirmation, then warns
     prompt.mockRestore();
     fixture.destroy();
   }
+});
+
+it('copies and saves one profile without replacing another employee’s schedule', async () => {
+  const monday = '2026-11-16';
+  const blank = [false, false, false, false, false, false, false];
+  const previous = [true, false, false, false, false, false, false];
+  const other = [false, true, false, false, false, false, false];
+  const target: Week = {
+    monday, today: monday, editable: true, version: 3,
+    rows: [{ employeeId: 1, days: blank }, { employeeId: 2, days: other }],
+  };
+  const source: Week = {
+    ...target, monday: '2026-11-09',
+    rows: [{ employeeId: 1, days: previous }, { employeeId: 2, days: blank }],
+  };
+  const saveWeek = vi.fn(async (value: Week) => value);
+  TestBed.configureTestingModule({
+    providers: [{
+      provide: ActivatedRoute,
+      useValue: { snapshot: { paramMap: convertToParamMap({ employeeId: '1' }) } },
+    }, {
+      provide: AttendanceApi,
+      useValue: { employees: async () => [], week: async (date: string) => date === monday ? target : source, saveWeek },
+    }],
+  });
+  const fixture = TestBed.createComponent(Schedule);
+  const component = fixture.componentInstance;
+  await component.load(monday);
+  expect(component.visibleRows().map((row) => row.employeeId)).toEqual([1]);
+  await component.copy();
+  await component.save();
+  expect(saveWeek).toHaveBeenCalledWith({
+    ...target, rows: [{ employeeId: 1, days: previous }, { employeeId: 2, days: other }],
+  });
 });

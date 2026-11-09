@@ -1,65 +1,82 @@
 <section class="attendance-page">
-  <h1>Nhân viên</h1>
-  <p class="muted">Quản lý hồ sơ và PIN dùng để chấm công tại tiệm.</p>
+  <h1>Hồ sơ nhân viên</h1>
+  <p class="muted">Chọn một hồ sơ để xem lịch làm việc hoặc chấm công.</p>
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
   @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
 
-  <form class="panel" (ngSubmit)="save()">
-    @if (resetting; as employee) {
-      <h2>Đặt lại PIN · {{ employee.displayName }}</h2>
+  <div class="employee-columns">
+    <div class="panel">
+      <h2>Danh sách nhân viên</h2>
       <div class="controls">
-        <label class="field"><span>PIN mới (6 chữ số)</span>
-          <input type="password" inputmode="numeric" autocomplete="new-password" name="newPin"
-            required pattern="[0-9]{6}" maxlength="6" [(ngModel)]="newPin">
-        </label>
-        <button class="primary" [disabled]="busy()">Đặt lại PIN</button>
-        <button type="button" (click)="select(null)" [disabled]="busy()">Hủy</button>
+        <button type="button" (click)="select(null)" [disabled]="busy()">Thêm nhân viên</button>
+        <button type="button" (click)="load()" [disabled]="busy()">Tải lại</button>
       </div>
-    } @else {
-      <h2>{{ editing ? 'Chỉnh sửa · ' + editing.code : 'Thêm nhân viên' }}</h2>
-      <div class="controls">
-        <label class="field"><span>Họ tên</span><input name="fullName" required maxlength="160" [(ngModel)]="form.fullName"></label>
-        <label class="field"><span>Tên hiển thị</span><input name="displayName" required maxlength="100" [(ngModel)]="form.displayName"></label>
-        <label class="field"><span>Số điện thoại</span><input name="phone" type="tel" maxlength="32" [(ngModel)]="form.phone"></label>
-        <label class="field"><span>Ngày bắt đầu</span><input name="startedOn" type="date" [(ngModel)]="form.startedOn"></label>
-        @if (editing) {
-          <label class="field"><span>Trạng thái</span>
-            <select name="active" [(ngModel)]="form.active">
-              <option [ngValue]="true">Đang hoạt động</option>
-              <option [ngValue]="false">Ngừng hoạt động</option>
-            </select>
-          </label>
-        } @else {
-          <label class="field"><span>PIN (6 chữ số)</span>
-            <input name="pin" type="password" inputmode="numeric" autocomplete="new-password"
-              required pattern="[0-9]{6}" maxlength="6" [(ngModel)]="form.pin">
-          </label>
-        }
-      </div>
-      <div class="controls">
-        <button class="primary" [disabled]="busy()">Lưu hồ sơ</button>
-        @if (editing) { <button type="button" (click)="select(null)" [disabled]="busy()">Hủy</button> }
-      </div>
-    }
-  </form>
-
-  <div class="panel table-wrap">
-    <div class="controls"><h2>Danh sách nhân viên</h2><button (click)="load()" [disabled]="busy()">Tải lại</button></div>
-    <table>
-      <thead><tr><th>Mã</th><th>Họ tên</th><th>Tên hiển thị</th><th>Điện thoại</th><th>Ngày bắt đầu</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-      <tbody>
+      <ul class="employee-list">
         @for (employee of employees(); track employee.id) {
-          <tr>
-            <th scope="row">{{ employee.code }}</th><td>{{ employee.fullName }}</td><td>{{ employee.displayName }}</td>
-            <td>{{ employee.phone || '—' }}</td><td>{{ employee.startedOn ? day(employee.startedOn) : '—' }}</td>
-            <td>{{ employee.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</td>
-            <td><div class="controls">
-              <button (click)="select(employee)" [disabled]="busy()">Chỉnh sửa</button>
-              <button (click)="reset(employee)" [disabled]="busy()">Đặt lại PIN</button>
-            </div></td>
-          </tr>
-        } @empty { <tr><td colspan="7">{{ busy() ? 'Đang tải…' : 'Chưa có hồ sơ.' }}</td></tr> }
-      </tbody>
-    </table>
+          <li>
+            <button type="button" [attr.aria-pressed]="editing?.id === employee.id"
+              (click)="select(employee)" [disabled]="busy()">
+              <strong>{{ employee.fullName }}</strong>
+              <span class="muted">{{ employee.code }} · {{ employee.active ? 'Đang hoạt động' : 'Ngừng hoạt động' }}</span>
+            </button>
+          </li>
+        } @empty {
+          <li>{{ busy() ? 'Đang tải…' : 'Chưa có hồ sơ.' }}</li>
+        }
+      </ul>
+    </div>
+
+    <div class="panel">
+      @if (editing; as employee) {
+        <h2>{{ employee.fullName }}</h2>
+        <p class="muted">{{ employee.code }}</p>
+        <div class="controls profile-actions">
+          <a [routerLink]="['/admin/nhan-vien', employee.id, 'lich']">Lịch làm việc</a>
+          @if (employee.active) {
+            <a class="primary" [routerLink]="['/admin/nhan-vien', employee.id, 'cham-cong']">Chấm công</a>
+          }
+        </div>
+      }
+
+      <form (ngSubmit)="save()">
+        @if (resetting) {
+          <h2>Đặt lại PIN</h2>
+          <div class="controls">
+            <label class="field"><span>PIN mới (6 chữ số)</span>
+              <input type="password" inputmode="numeric" autocomplete="new-password" name="newPin"
+                required pattern="[0-9]{6}" maxlength="6" [(ngModel)]="newPin">
+            </label>
+            <button class="primary" [disabled]="busy()">Đặt lại PIN</button>
+            <button type="button" (click)="select(editing)" [disabled]="busy()">Hủy</button>
+          </div>
+        } @else {
+          <h2>{{ editing ? 'Thông tin hồ sơ' : 'Thêm nhân viên' }}</h2>
+          <div class="profile-fields">
+            <label class="field"><span>Họ tên</span><input name="fullName" required maxlength="160" [(ngModel)]="form.fullName"></label>
+            <label class="field"><span>Số điện thoại</span><input name="phone" type="tel" maxlength="32" [(ngModel)]="form.phone"></label>
+            <label class="field"><span>Ngày bắt đầu</span><input name="startedOn" type="date" [(ngModel)]="form.startedOn"></label>
+            @if (editing) {
+              <label class="field"><span>Trạng thái</span>
+                <select name="active" [(ngModel)]="form.active">
+                  <option [ngValue]="true">Đang hoạt động</option>
+                  <option [ngValue]="false">Ngừng hoạt động</option>
+                </select>
+              </label>
+            } @else {
+              <label class="field"><span>PIN (6 chữ số)</span>
+                <input name="pin" type="password" inputmode="numeric" autocomplete="new-password"
+                  required pattern="[0-9]{6}" maxlength="6" [(ngModel)]="form.pin">
+              </label>
+            }
+          </div>
+          <div class="controls">
+            <button class="primary" [disabled]="busy()">Lưu hồ sơ</button>
+            @if (editing; as employee) {
+              <button type="button" (click)="reset(employee)" [disabled]="busy()">Đặt lại PIN</button>
+            }
+          </div>
+        }
+      </form>
+    </div>
   </div>
 </section>

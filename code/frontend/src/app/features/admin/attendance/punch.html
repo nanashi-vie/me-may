@@ -1,8 +1,8 @@
 <section class="attendance-page clock">
+  <a routerLink="/admin/nhan-vien">‹ Hồ sơ nhân viên</a>
   <h1>Chấm công</h1>
   <p class="muted">Giờ tiệm 08:30–20:30 · Giờ Việt Nam</p>
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
-  @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
   @if (verified(); as profile) {
     <div class="panel">
       <h2>{{ profile.fullName }}</h2>
@@ -26,32 +26,25 @@
       <div class="controls">
         <label><input type="checkbox" [disabled]="working() || busy()" (change)="open('START', $event)"> Bắt đầu ca</label>
         <label><input type="checkbox" [disabled]="!working() || busy()" (change)="open('END', $event)"> Kết thúc ca</label>
-        <button (click)="clear()" [disabled]="busy()">Thoát hồ sơ</button>
+        <button (click)="exit()" [disabled]="busy()">Thoát hồ sơ</button>
       </div>
     </div>
-  } @else {
+  } @else if (employee(); as profile) {
     <form class="panel" (ngSubmit)="unlock()">
-      <h2>Chọn hồ sơ của bạn</h2>
+      <h2>{{ profile.fullName }}</h2>
+      <p class="muted">{{ profile.code }} · Nhập PIN để chấm công.</p>
       <div class="controls">
-        <label class="field"><span>Nhân viên</span>
-          <select name="employee" [(ngModel)]="employeeId" required>
-            <option [ngValue]="null">Chọn nhân viên</option>
-            @for (profile of profiles(); track profile.id) {
-              <option [ngValue]="profile.id">{{ profile.fullName }} · {{ profile.code }}</option>
-            }
-          </select>
-        </label>
         <label class="field"><span>PIN (6 chữ số)</span>
           <input name="pin" type="password" inputmode="numeric" autocomplete="off" required
             pattern="[0-9]{6}" maxlength="6" [(ngModel)]="pin">
         </label>
-        <button class="primary" [disabled]="busy() || employeeId === null">Tiếp tục</button>
+        <button class="primary" [disabled]="busy()">Tiếp tục</button>
       </div>
-      @if (profiles().length === 0 && !busy()) {
-        <p>Chưa có nhân viên đang hoạt động.</p>
-        <button type="button" (click)="load()">Tải lại danh sách</button>
-      }
     </form>
+  } @else if (busy()) {
+    <p role="status">Đang tải hồ sơ…</p>
+  } @else {
+    <p>Hồ sơ không có hoặc đã ngừng hoạt động.</p>
   }
   <dialog #confirmation aria-labelledby="punch-title" (cancel)="cancel()">
     <h2 id="punch-title">Xác nhận chấm công</h2>

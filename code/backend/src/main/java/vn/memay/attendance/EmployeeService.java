@@ -15,9 +15,9 @@ import vn.memay.common.AdminApiException;
 class EmployeeService {
     record Employee(long id, String code, String fullName, String displayName, String phone,
                     LocalDate startedOn, boolean active, long version) {}
-    record Create(@NotBlank @Size(max = 160) String fullName, @NotBlank @Size(max = 100) String displayName,
+    record Create(@NotBlank @Size(max = 160) String fullName, @Size(max = 100) String displayName,
                   @Size(max = 32) String phone, LocalDate startedOn, @NotNull @Pattern(regexp = "[0-9]{6}") String pin) {}
-    record Edit(@NotBlank @Size(max = 160) String fullName, @NotBlank @Size(max = 100) String displayName,
+    record Edit(@NotBlank @Size(max = 160) String fullName, @Size(max = 100) String displayName,
                 @Size(max = 32) String phone, LocalDate startedOn, @NotNull Boolean active, @NotNull Long version) {}
     record Pin(@NotNull @Pattern(regexp = "[0-9]{6}") String pin) {}
 
@@ -43,8 +43,9 @@ class EmployeeService {
     public Employee create(Create input) {
         long id = jdbc.queryForObject("""
                 insert into employee_profile(full_name, display_name, phone, started_on)
-                values (?, ?, ?, ?) returning id
-                """, Long.class, input.fullName().strip(), input.displayName().strip(), phone(input.phone()), input.startedOn());
+                values (?, coalesce(?, left(?, 100)), ?, ?) returning id
+                """, Long.class, input.fullName().strip(), optionalText(input.displayName()), input.fullName().strip(),
+                optionalText(input.phone()), input.startedOn());
         jdbc.update("insert into employee_pin_credential(employee_id, pin_hash) values (?, ?)",
                 id, passwords.encode(input.pin()));
         return get(id, false);
@@ -55,9 +56,9 @@ class EmployeeService {
         var current = get(id, true);
         if (current.version() != input.version()) throw AdminApiException.conflict(current.version());
         jdbc.update("""
-                update employee_profile set full_name=?, display_name=?, phone=?, started_on=?, active=?, version=version+1
+                update employee_profile set full_name=?, display_name=coalesce(?, display_name), phone=?, started_on=?, active=?, version=version+1
                 where id=?
-                """, input.fullName().strip(), input.displayName().strip(), phone(input.phone()), input.startedOn(),
+                """, input.fullName().strip(), optionalText(input.displayName()), optionalText(input.phone()), input.startedOn(),
                 input.active(), id);
         return get(id, false);
     }
@@ -75,8 +76,8 @@ class EmployeeService {
         return String.format(java.util.Locale.ROOT, "EMP-%03d", id);
     }
 
-    private static String phone(String phone) {
-        return phone == null || phone.isBlank() ? null : phone.strip();
+    private static String optionalText(String value) {
+        return value == null || value.isBlank() ? null : value.strip();
     }
 
     private static Employee map(ResultSet rs, int row) throws SQLException {

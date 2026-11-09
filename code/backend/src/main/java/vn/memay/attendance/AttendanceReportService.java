@@ -45,7 +45,7 @@ class AttendanceReportService {
         LocalDate from = period == Period.WEEK ? AttendanceTime.monday(date) : date.withDayOfMonth(1);
         LocalDate until = period == Period.WEEK ? from.plusWeeks(1) : from.plusMonths(1);
         List<Shift> shifts = jdbc.query("""
-                select s.*, p.display_name,
+                select s.*, p.full_name,
                     (select reason from attendance_audit_log a where a.session_id=s.id order by a.id desc limit 1) reason
                 from attendance_session s join employee_profile p on p.id=s.employee_id
                 where s.started_at>=? and s.started_at<? and (cast(? as bigint) is null or s.employee_id=?)
@@ -55,7 +55,7 @@ class AttendanceReportService {
             var start = session.startedAt().atZoneSameInstant(AttendanceTime.ZONE).toOffsetDateTime();
             var end = session.endedAt() == null ? null : session.endedAt()
                     .atZoneSameInstant(AttendanceTime.ZONE).toOffsetDateTime();
-            return new Shift(session.id(), session.employeeId(), rs.getString("display_name"), start.toLocalDate(),
+            return new Shift(session.id(), session.employeeId(), rs.getString("full_name"), start.toLocalDate(),
                     start, end, end == null ? null : Duration.between(start, end).toMinutes(), session.status(now),
                     session.outOfSchedule(), rs.getString("reason"), session.version());
         }, from.atStartOfDay(AttendanceTime.ZONE).toOffsetDateTime(), until.atStartOfDay(AttendanceTime.ZONE).toOffsetDateTime(),
@@ -73,7 +73,7 @@ class AttendanceReportService {
             int worked = (int) sessions.stream().filter(shift -> shift.minutes() != null).map(Shift::day).distinct().count();
             long minutes = sessions.stream().map(Shift::minutes).filter(Objects::nonNull).mapToLong(Long::longValue).sum();
             long review = sessions.stream().filter(shift -> shift.status() == AttendanceSession.Status.NEEDS_REVIEW).count();
-            summary.add(new Summary(employee.id(), employee.code(), employee.displayName(), registered, worked, minutes, review));
+            summary.add(new Summary(employee.id(), employee.code(), employee.fullName(), registered, worked, minutes, review));
         }
         return new Report(now, from, until.minusDays(1), summary, shifts);
     }

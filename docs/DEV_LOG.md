@@ -2711,3 +2711,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend: `npm test` đạt 254/254. `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` đạt. Chrome localhost qua tạo hồ sơ, lưu lịch, sao chép bản nháp theo thứ, cảnh báo lịch chưa lưu, xác nhận/hủy, ghi giờ sau 20:30, tự thoát hồ sơ giữ OWNER, chỉnh công và tải Excel. Kiểm hai sheet và nhãn Cần kiểm tra trong file tải về.
 - Review độc lập phát hiện trạng thái màn hình chấm công có thể chậm khi qua mốc 20:30 trong phiên đã nhập PIN. Đã sửa với test đỏ–xanh và bổ sung kiểm thử đồng thời và giao diện. Gộp contract vào ATTENDANCE_SPEC, cập nhật chỉ mục và gỡ kế hoạch hết vai trò.
 - Bàn giao trên dev-ui. Bước tiếp theo nếu đưa lên môi trường đích là nghiệm thu migration V21 và smoke với phiên OWNER tại tiệm. Chưa rollout V21 hoặc deploy.
+
+### 2026-11-09 — S063-C04 — Điều hướng theo hồ sơ nhân viên
+
+- Yêu cầu trên dev-ui từ db88702. Gom các mục tổng hợp dưới Nhân viên, chia Hồ sơ nhân viên 40:60 và bỏ trường Tên hiển thị trên giao diện. Chọn một hồ sơ trước khi mở lịch hoặc chấm công của người đó.
+- Dùng lại trang lịch tuần với phạm vi theo hồ sơ, bảo toàn lịch các nhân viên khác khi lưu. Trang chấm công cá nhân dùng cùng phiên OWNER và PIN. Bắt đầu kiểm thử trước khi sửa code.
+- Sidebar OWNER dùng nhóm Nhân viên với Hồ sơ nhân viên, Lịch làm việc và Bảng công. Hồ sơ 40:60 trên desktop, xếp dọc khi hẹp. URL chấm công cũ dẫn về danh sách, chấm công theo ID vẫn xác thực PIN và quay về danh sách sau khi hoàn tất hoặc hết hạn.
+- Lịch cá nhân dùng chung phiên bản lịch tuần và chỉ thay hàng của hồ sơ đã chọn. Bảng công và Excel dùng họ tên. API tiếp tục nhận trường cũ để tương thích, dữ liệu đã lưu giữ nguyên. Không thêm migration.
+- Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost kiểm tỷ lệ 4:6, bố cục hẹp, nhóm điều hướng, lịch cá nhân đủ bảy ô, chấm công đúng hồ sơ, thông báo khi trở về và chuyển hướng URL cũ.
+- Từ code/backend: mvn -o test với PostgreSQL test UTF-8/ICU đạt 247, bỏ qua 3. Bàn giao dev-ui, chưa deploy production.

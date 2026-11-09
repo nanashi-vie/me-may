@@ -22,7 +22,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'nhan-vien',
-        title: 'Nhân viên | Mẹ Mây',
+        title: 'Hồ sơ nhân viên | Mẹ Mây',
         canActivate: [requireOwner],
         loadComponent: () => import('./features/admin/attendance/employees').then((m) => m.Employees),
       },
@@ -40,11 +40,19 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/attendance/report').then((m) => m.AttendanceReport),
       },
       {
-        path: 'cham-cong',
+        path: 'nhan-vien/:employeeId/lich',
+        title: 'Lịch làm việc cá nhân | Mẹ Mây',
+        canActivate: [requireOwner],
+        canDeactivate: [pendingBookChanges],
+        loadComponent: () => import('./features/admin/attendance/schedule').then((m) => m.Schedule),
+      },
+      {
+        path: 'nhan-vien/:employeeId/cham-cong',
         title: 'Chấm công | Mẹ Mây',
         canActivate: [requireOwner],
         loadComponent: () => import('./features/admin/attendance/punch').then((m) => m.Punch),
       },
+      { path: 'cham-cong', pathMatch: 'full', redirectTo: 'nhan-vien' },
       {
         path: 'flash-sale',
         canDeactivate: [pendingBookChanges],

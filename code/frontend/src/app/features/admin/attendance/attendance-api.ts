@@ -5,7 +5,6 @@ import { AdminHttp } from '../../../core/auth/admin-http';
 
 export interface EmployeeFields {
   fullName: string;
-  displayName: string;
   phone: string | null;
   startedOn: string | null;
 }

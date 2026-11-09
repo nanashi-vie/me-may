@@ -18,6 +18,7 @@ export class AdminLayout {
   readonly busy = signal(false);
   readonly error = signal('');
   readonly bookMenuOpen = signal(true);
+  readonly employeeMenuOpen = signal(true);
   readonly userInitials = computed(() => {
     const email = this.auth.user()?.email || '';
     return email.charAt(0).toUpperCase() || 'A';

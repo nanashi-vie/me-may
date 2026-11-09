@@ -13,7 +13,7 @@
       <select name="employee" [(ngModel)]="query.employeeId">
         <option [ngValue]="null">Tất cả</option>
         @for (employee of employees(); track employee.id) {
-          <option [ngValue]="employee.id">{{ employee.displayName }} · {{ employee.code }}</option>
+          <option [ngValue]="employee.id">{{ employee.fullName }} · {{ employee.code }}</option>
         }
       </select>
     </label>
