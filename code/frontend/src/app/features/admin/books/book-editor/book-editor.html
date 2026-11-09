@@ -177,8 +177,8 @@
         @if (form.controls.stock.invalid && form.controls.stock.touched) {<small class="helper-text">Nhập tồn kho nguyên từ 0 đến {{stockLimit()}}.</small>}</label>
         <div class="storage-box-editor">
           <div class="admin-field">
-            <label for="book-storage-box" class="field-label">Nơi lưu trữ</label>
-            <select id="book-storage-box" formControlName="storageBoxNumber">
+            <span id="book-storage-box-label" class="field-label">Nơi lưu trữ</span>
+            <select id="book-storage-box" aria-labelledby="book-storage-box-label" formControlName="storageBoxNumber">
               <option [ngValue]="null">Chưa phân thùng</option>
               @for (number of storageBoxes(); track number) {
                 <option [ngValue]="number">Thùng {{ number }}</option>

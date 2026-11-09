@@ -2682,3 +2682,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend, npm test -- --watch=false đạt 252/252, 44 file.
   git diff --check đạt từ root. Chưa kiểm tra trực tiếp trên trình duyệt.
 - Bàn giao dev; còn smoke trình duyệt cùng tính năng V20.
+
+## 2026-11-09 — S056-C04 — Căn nhãn Nơi lưu trữ trên viền
+
+- Ảnh user cho thấy nhãn còn che giá trị. Đối chiếu Tồn kho và CSS chung:
+  thẻ label bên trong field nhận margin-top 1rem, làm lệch nhãn nổi.
+- Bắt đầu trên dev sạch. Sửa cấu trúc nhãn để dùng cùng mẫu field trong BookEditor.
+- Dùng span.field-label và aria-labelledby để giữ tên truy cập của select.
+- Từ code/frontend: npm test -- --watch=false đạt 252/252, 44 file.
+  git diff --check đạt từ root. Chưa đo bố cục trên trình duyệt.
+- Bàn giao dev, kiểm tra lại nhãn và giá trị trên candidate khi smoke V20.
