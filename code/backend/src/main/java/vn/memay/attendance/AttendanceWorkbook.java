@@ -2,14 +2,14 @@ package vn.memay.attendance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 final class AttendanceWorkbook {
-    private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-
     private AttendanceWorkbook() {}
 
     static byte[] write(AttendanceReportService.Report report) throws IOException {
@@ -24,9 +24,17 @@ final class AttendanceWorkbook {
             var detail = book.createSheet("Chi tiết");
             row(detail, "Ngày", "Nhân viên", "Giờ bắt đầu", "Giờ kết thúc", "Tổng số phút",
                     "Trạng thái", "Ngoài lịch", "Ghi chú chỉnh sửa");
+            var dateStyle = numberStyle(detail, "dd/mm/yyyy");
+            var timeStyle = numberStyle(detail, "hh:mm:ss");
+            var durationStyle = numberStyle(detail, "[hh]:mm");
             for (var shift : report.shifts()) {
-                row(detail, shift.day().toString(), shift.name(), format(shift.startedAt()), format(shift.endedAt()),
-                        shift.minutes(), label(shift.status()), shift.outOfSchedule() ? "Có" : "Không", shift.lastReason());
+                var entry = row(detail, shift.day(), shift.name(), excelTime(shift.startedAt()), excelTime(shift.endedAt()),
+                        shift.minutes() == null ? null : shift.minutes() / 1440.0,
+                        label(shift.status()), shift.outOfSchedule() ? "Có" : "Không", shift.lastReason());
+                entry.getCell(0).setCellStyle(dateStyle);
+                entry.getCell(2).setCellStyle(timeStyle);
+                entry.getCell(3).setCellStyle(timeStyle);
+                entry.getCell(4).setCellStyle(durationStyle);
             }
             format(summary, 20, 28, 20, 22, 20, 23);
             format(detail, 14, 28, 25, 25, 16, 22, 14, 40);
@@ -44,17 +52,26 @@ final class AttendanceWorkbook {
         };
     }
 
-    private static String format(OffsetDateTime time) {
-        return time == null ? "" : TIME.format(time);
+    private static Double excelTime(OffsetDateTime time) {
+        return time == null ? null : time.toLocalTime().toSecondOfDay() / 86400.0;
     }
 
-    private static void row(Sheet sheet, Object... values) {
+    private static CellStyle numberStyle(Sheet sheet, String pattern) {
+        var book = sheet.getWorkbook();
+        var style = book.createCellStyle();
+        style.setDataFormat(book.createDataFormat().getFormat(pattern));
+        return style;
+    }
+
+    private static Row row(Sheet sheet, Object... values) {
         var row = sheet.createRow(sheet.getPhysicalNumberOfRows());
         for (int column = 0; column < values.length; column++) {
             var cell = row.createCell(column);
             if (values[column] instanceof Number number) cell.setCellValue(number.doubleValue());
             else if (values[column] instanceof String text) cell.setCellValue(text);
+            else if (values[column] instanceof LocalDate date) cell.setCellValue(date);
         }
+        return row;
     }
 
     private static void format(Sheet sheet, int... widths) {

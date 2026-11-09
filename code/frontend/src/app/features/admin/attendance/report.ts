@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AttendanceApi, Audit, Employee, Report, ReportQuery, Shift } from './attendance-api';
-import { closingTime, displayDay, displayTime, errorMessage, localInput, statusLabel, today } from './attendance-display';
+import { closingTime, displayClock, displayDay, displayTime, errorMessage, localInput, statusLabel, today } from './attendance-display';
 
 @Component({
   imports: [FormsModule],
@@ -19,6 +19,7 @@ export class AttendanceReport implements OnInit, OnDestroy {
   readonly notice = signal('');
   readonly day = displayDay;
   readonly time = displayTime;
+  readonly clock = displayClock;
   readonly statusLabel = statusLabel;
   readonly hours = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
   query: ReportQuery = { period: 'WEEK', date: today(), employeeId: null, filter: 'ALL' };

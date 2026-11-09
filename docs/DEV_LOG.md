@@ -2726,3 +2726,10 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Theo yêu cầu trên dev-ui từ b0cbb88. Ẩn khung thêm mới mặc định. Dùng menu cạnh từng nhân viên để mở thông tin hồ sơ, lịch hoặc chấm công. Giữ bố cục 4:6 khi mở khung bên phải.
 - Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost với API giả kiểm mở/đóng khung thêm mới, di chuột sang menu cạnh hàng, liên kết đúng ID, Tab/Escape và bấm ở màn hình hẹp. Chỉ đổi frontend, không chạy lại Maven.
 - Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C06 — Định dạng giờ bảng công
+
+- Bắt đầu từ b319f03 trên dev-ui. Đổi định dạng ngày, giờ và thời lượng trong Excel. Hai cột giờ trên web chỉ hiện giờ.
+- Sheet Chi tiết dùng ô ngày/giờ dạng số và thời lượng theo [hh]:mm. 95 phút hiển thị 01:35, 25 giờ hiển thị 25:00 và ca đang mở để trống giờ ra/thời lượng. Trên web hai cột giờ giữ HH:mm:ss.
+- Từ code/backend: mvn -o -Dtest=AttendanceIntegrationTest,AttendanceWorkbookTest test đạt 9/9 với PostgreSQL test riêng. Mở lại workbook bằng POI và kiểm giá trị số cùng chuỗi hiển thị.
+- Từ code/frontend: npm test đạt 256/256, npm run build đạt. Bàn giao dev-ui, chưa deploy production.

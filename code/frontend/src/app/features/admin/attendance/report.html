@@ -76,7 +76,7 @@
           @for (shift of data.shifts; track shift.id) {
             <tr>
               <td>{{ day(shift.day) }}</td><th scope="row">{{ shift.name }}</th>
-              <td class="nowrap">{{ time(shift.startedAt) }}</td><td class="nowrap">{{ time(shift.endedAt) }}</td><td>{{ shift.minutes ?? '—' }}</td>
+              <td class="nowrap">{{ clock(shift.startedAt) }}</td><td class="nowrap">{{ clock(shift.endedAt) }}</td><td>{{ shift.minutes ?? '—' }}</td>
               <td [class.warning]="shift.status === 'NEEDS_REVIEW'">{{ statusLabel[shift.status] }}</td>
               <td>{{ shift.outOfSchedule ? 'Có' : 'Không' }}</td><td>{{ shift.lastReason || '—' }}</td>
               <td><button (click)="select(shift)" [disabled]="busy()">Sửa giờ công</button></td>

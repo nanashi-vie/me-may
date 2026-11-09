@@ -359,4 +359,5 @@ Một ngày có nhiều ca vẫn chỉ được tính là một ngày làm thự
 - PIN 6 chữ số hash BCrypt. Sau 5 lần sai, khóa thử PIN của hồ sơ đó trong 5 phút. Quyền xác nhận ca gắn với phiên OWNER và hồ sơ, có hiệu lực 30 giây. Đặt lại PIN hoặc ngừng hoạt động làm quyền cũ hết hiệu lực.
 - Chỉ một ca mở mỗi nhân viên. Lịch, hồ sơ và chỉnh công dùng phiên bản để từ chối dữ liệu cũ. Điều chỉnh lưu giờ hiệu lực và audit trong cùng giao dịch, giữ mốc chấm công gốc.
 - Bảng công và Excel dùng chung phép tính. Số phút của mỗi ca hoàn tất lấy phần nguyên của thời lượng thực tế. Ca mở có số phút trống. Cờ Cần kiểm tra áp dụng khi ca vẫn mở từ 20:30 ngày bắt đầu và hết khi ca được đóng.
+- Sheet Chi tiết dùng ngày dd/mm/yyyy, giờ HH:mm:ss và thời lượng HH:mm dưới dạng số Excel. Thời lượng trên 24 giờ giữ nguyên tổng giờ. Hai cột giờ trên bảng công web chỉ hiện HH:mm:ss.
 - Khi nghiệm thu local, dùng PostgreSQL kiểm thử riêng. Chạy `mvn -Dtest=AttendanceIntegrationTest test` từ `code/backend` với cấu hình DB test và `npm test` từ `code/frontend`. Rollout V21 cần kiểm tra riêng trên môi trường đích.
