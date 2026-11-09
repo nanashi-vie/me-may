@@ -131,6 +131,17 @@ public final class LocalImageStore {
         Files.delete(operation);
     }
 
+    void validateMigrationVariants(Manifest manifest) throws IOException {
+        var required = Set.of("320:image/jpeg", "320:image/webp", "480:image/jpeg", "480:image/webp",
+                "640:image/jpeg", "640:image/webp", "1280:image/jpeg", "1400:image/jpeg", "1400:image/webp");
+        var actual = manifest.variants().stream().map(v -> v.name() + ":" + v.mime())
+                .collect(java.util.stream.Collectors.toSet());
+        if (!required.equals(actual) || manifest.variants().size() != required.size()
+                || manifest.variants().stream().anyMatch(v ->
+                    Math.max(v.width(), v.height()) > Integer.parseInt(v.name())))
+            throw new IOException("Incomplete migration variants");
+    }
+
     void validateMigrationPreview(Manifest manifest, UUID attempt) throws IOException {
         if (manifest.variants().size() != 1) throw new IOException("Invalid preview output");
         var variant = manifest.variants().getFirst();

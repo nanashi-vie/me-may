@@ -16,7 +16,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
         "spring.profiles.active=test", "management.server.port=0",
         "management.endpoints.web.exposure.include=health,imagejobs",
-        "memay.media.local.enabled=true", "memay.media.local.worker-token=fixture-worker-token"
+        "memay.media.local.enabled=true", "memay.media.local.worker-token=fixture-worker-token",
+        "memay.media.migration.initial-delay-ms=3600000", "memay.media.migration.apply-delay-ms=3600000"
 })
 class ImageWorkerSecurityTest {
     @DynamicPropertySource static void db(DynamicPropertyRegistry registry) {

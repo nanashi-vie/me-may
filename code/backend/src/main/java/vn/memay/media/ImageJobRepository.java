@@ -103,6 +103,18 @@ public class ImageJobRepository {
                 """, ImageJobRepository::lease, id, token).stream().findFirst().orElseThrow(ImageJobRepository::stale);
     }
 
+    boolean isMigrationJob(UUID job, UUID generation) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM image_migration_apply_item WHERE id=? AND job_id=? AND state='QUEUED')
+                """, Boolean.class, generation, job));
+    }
+
+    boolean matchesMigrationInput(UUID generation, String hash) {
+        return Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM image_migration_apply_item WHERE id=? AND source_sha256=? AND state='DOWNLOADING')
+                """, Boolean.class, generation, hash));
+    }
+
     boolean lockUpload(UUID media) {
         return !jdbc.queryForList("""
                 SELECT m.id FROM temporary_media m JOIN upload_session s ON s.id=m.session_id

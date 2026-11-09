@@ -29,7 +29,7 @@ function encode(args, signal) {
 
 async function paths(root, job) {
   const input = /^staging\/([^/]+)\/input$/.exec(job.inputKey ?? '');
-  if (!['PROCESS', 'PREVIEW'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
+  if (!['PROCESS', 'PREVIEW', 'MIGRATE'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
       .every(value => typeof value === 'string' && uuid.test(value))) throw new Error('invalid_job');
   if (!Object.hasOwn(recipes, job.recipeVersion)) throw new Error('unknown_recipe');
   const staging = join(root, 'staging');

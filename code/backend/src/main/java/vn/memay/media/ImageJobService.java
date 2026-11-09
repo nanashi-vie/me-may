@@ -29,13 +29,15 @@ public class ImageJobService {
         if (!inputKey.matches("staging/[a-f0-9-]{36}/input"))
             throw new AdminApiException(400, "invalid_image_input_key");
         String originalHash = null;
-        if (kind == JobKind.PROCESS) {
+        if (kind == JobKind.PROCESS || kind == JobKind.MIGRATE) {
             try {
                 originalHash = store.originalHash(inputKey);
             } catch (IOException e) {
                 throw new AdminApiException(422, "image_input_unavailable");
             }
         }
+        if (kind == JobKind.MIGRATE && !jobs.matchesMigrationInput(generationId, originalHash))
+            throw new AdminApiException(409, "source_changed");
         UUID id = jobs.enqueue(mediaId, generationId, kind, inputKey, recipeVersion, dedupeKey, priority);
         if (originalHash != null) jobs.registerOriginalHash(generationId, originalHash);
         return id;
@@ -43,7 +45,7 @@ public class ImageJobService {
 
     public Optional<JobLease> claim() {
         var lease = jobs.claim();
-        if (lease.isPresent() && lease.get().kind() != JobKind.PROCESS) {
+        if (lease.isPresent() && lease.get().kind() != JobKind.PROCESS && lease.get().kind() != JobKind.MIGRATE) {
             var job = lease.get();
             jobs.fail(job.jobId(), job.token(), "unsupported_job_kind", false);
             return Optional.empty();
@@ -62,20 +64,23 @@ public class ImageJobService {
             return;
         }
         var lease = jobs.lockLease(jobId, token);
-        if (lease.kind() != JobKind.PROCESS || !lease.mediaId().equals(manifest.mediaId())
-                || !lease.generationId().equals(manifest.generationId())
-                || !lease.recipeVersion().equals(manifest.recipeVersion()) || !jobs.lockUpload(lease.mediaId()))
+        boolean migrate = lease.kind() == JobKind.MIGRATE;
+        if (!lease.mediaId().equals(manifest.mediaId()) || !lease.generationId().equals(manifest.generationId())
+                || !lease.recipeVersion().equals(manifest.recipeVersion())
+                || (migrate ? !jobs.isMigrationJob(jobId, lease.generationId())
+                        : lease.kind() != JobKind.PROCESS || !jobs.lockUpload(lease.mediaId())))
             throw new AdminApiException(409, "image_generation_conflict");
         String originalHash;
         try {
             originalHash = store.originalHash(lease.inputKey());
             jobs.requireOriginalHash(lease.generationId(), originalHash);
+            if (migrate) store.validateMigrationVariants(manifest);
             store.publishAttempt(manifest, token);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_output_not_publishable");
         }
         jobs.ready(jobId, token, manifest, originalHash);
-        jobs.finishLocalUpload(manifest);
+        if (!migrate) jobs.finishLocalUpload(manifest);
     }
 
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {

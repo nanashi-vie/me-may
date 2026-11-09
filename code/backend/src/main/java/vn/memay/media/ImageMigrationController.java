@@ -18,10 +18,12 @@ import vn.memay.media.ImageMigrationDtos.*;
 public class ImageMigrationController {
     private final ImageMigrationService migration;
     private final AdminActorResolver actors;
+    private final ImageMigrationApplyService apply;
 
-    public ImageMigrationController(ImageMigrationService migration, AdminActorResolver actors) {
+    public ImageMigrationController(ImageMigrationService migration, AdminActorResolver actors, ImageMigrationApplyService apply) {
         this.migration = migration;
         this.actors = actors;
+        this.apply = apply;
     }
 
     @GetMapping("/template")
@@ -43,6 +45,21 @@ public class ImageMigrationController {
     @GetMapping("/{receiptId}")
     MigrationPreview status(Authentication auth, @PathVariable UUID receiptId) {
         return migration.status(actors.current(auth), receiptId);
+    }
+
+    @PostMapping("/{receiptId}/apply")
+    ResponseEntity<ApplyAccepted> apply(Authentication auth, @PathVariable UUID receiptId, @RequestBody Apply request) {
+        return ResponseEntity.accepted().body(apply.apply(actors.current(auth), receiptId, request));
+    }
+
+    @GetMapping("/{receiptId}/apply")
+    ApplyStatus applyStatus(Authentication auth, @PathVariable UUID receiptId) {
+        return apply.status(actors.current(auth), receiptId);
+    }
+
+    @PostMapping("/{receiptId}/rollback")
+    ApplyStatus rollback(Authentication auth, @PathVariable UUID receiptId, @RequestBody Rollback request) {
+        return apply.rollback(actors.current(auth), receiptId, request);
     }
 
     @GetMapping({"/{receiptId}/photos/{mediaId}", "/{receiptId}/photos/{mediaId}/{view:current}"})

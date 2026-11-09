@@ -2910,3 +2910,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   2 ca. git diff --check đạt.
 - Tích hợp API dùng Drive và Cloudinary giả lập. Chưa chạy trên Ubuntu hay
   dữ liệu thật. Bàn giao dev, tiếp theo R4 apply xác nhận và rollback.
+
+## 2026-11-09 — S064-C01 — Bắt đầu R4
+
+- Tái sử dụng worktree ở dev 7b7ea72. Phạm vi apply theo danh sách OWNER
+  xác nhận, đối chiếu lại Drive và version, đổi provider nguyên tử từng sách,
+  rollback theo receipt. Kiểm thử chỉ dùng PostgreSQL và nguồn giả lập.
+
+## 2026-11-09 — S064-C02 — Apply theo sách và rollback R4
+
+- V26 lưu operation, snapshot nguồn và Cloudinary theo ảnh, version theo sách
+  và receipt rollback. Apply nhận digest và danh sách media do OWNER xác nhận.
+- Handler tải lại Drive ngoài transaction, so SHA/version/MIME/bytes rồi
+  enqueue MIGRATE bằng recipe hiện tại. Toàn bộ ảnh của một sách phải READY
+  trước khi đổi provider, tăng version một lần, audit và đánh dấu purge.
+- Ruling: book version sai lúc tiếp nhận trả 409. Nguồn đổi phát hiện sau
+  202 báo lỗi theo sách trong operation, để sách khác tiếp tục.
+- Rollback kiểm version và generation hiện hành, khôi phục Cloudinary và
+  binding trước đó. Cleanup chỉ dọn generation LOCAL không còn phục vụ.
+- RED API apply thiếu route, CLI thiếu lệnh. Review phát hiện QUEUED có job
+  bị xóa có thể kẹt, đã thêm kết quả terminal và test hồi quy.
+- Ubuntu do owner dựng ở S8, sau R5. R4 dùng PostgreSQL test và Drive giả lập.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  265 ca, 262 đạt và 3 skip. `npm test` tại code/image-worker đạt 9 ca,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root đạt
+  3 ca. git diff --check đạt. Bàn giao dev, tiếp theo R5.

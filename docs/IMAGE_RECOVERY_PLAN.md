@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** R1–R3 và S7 đã kiểm local, tiếp theo R4. Drive thật chưa kiểm chứng.
+**Status:** R1–R4 và S7 đã kiểm local, tiếp theo R5. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 
@@ -157,29 +157,47 @@ owner xác nhận để apply.
 
 ### R4 — Migration từng lô và rollback provider
 
-**Files:** sửa `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`M/ImageJobDispatcher.java`, `M/MediaCleanupJob.java`, `O/media-operations.mjs`;
-tạo `B/ImageMigrationHandler.java`; test `BT/ImageMigrationApplyTest.java` mới.
+**Files:** sửa `M/ImageMigrationController.java`, `M/ImageJobService.java`,
+`M/LocalImageCleanup.java`, `O/media-operations.mjs`; tạo `M/ImageMigrationApplyService.java`,
+`M/ImageMigrationHandler.java`, `D/V26__image_migration_apply.sql` và
+`T/ImageMigrationApplyTest.java`.
 **Interfaces:** `POST /api/v1/admin/image-migrations/{receiptId}/apply`
 body `{digest,requestKey,confirmedMediaIds}`→202 operation;
 `POST .../{receiptId}/rollback` body `{requestKey,expectedBookVersions}`→operation.
 CLI `apply --receipt ... --confirm-media ...`, `rollback`; không auto confirm.
 
-- [ ] RED `changedSourceOrBookRejectsApply`: source hash/version hoặc book version
-  thay đổi sau dry-run →409; không đổi pointer, source verified cũ giữ nguyên.
-- [ ] RED `batchSameBookCommitsOnce`: nhiều ảnh cùng book kiểm expected version một lần,
+- [x] RED `changedSourceOrBookRejectsApply`: source hash/version hoặc book version
+  thay đổi sau dry-run: version sai lúc nhận apply trả 409; nguồn sai lúc tải lại
+  trả lỗi theo sách trong kết quả operation, giữ pointer/binding cũ.
+- [x] RED `batchSameBookCommitsOnce`: nhiều ảnh cùng book kiểm expected version một lần,
   READY tất cả ảnh đã chọn của book rồi swap cùng transaction, bump book version một lần.
-- [ ] RED `rollbackDoesNotLoseNewUploads`: receipt migrated giữ ref cloud cũ;
+- [x] RED `rollbackDoesNotLoseNewUploads`: receipt migrated giữ ref cloud cũ;
   chỉ rollback pointer vẫn thuộc generation receipt; ảnh mới/thay sau đó gây conflict,
   LOCAL-only mới vẫn đọc được trên binary tương thích, không xóa ghi phát sinh.
-- [ ] Chạy `BE(ImageMigrationApplyTest)` ghi RED.
-- [ ] Implement apply re-download/recheck SHA/version, enqueue MIGRATE dùng recipe S4;
+- [x] Chạy `BE(ImageMigrationApplyTest)` ghi RED.
+- [x] Implement apply re-download/recheck SHA/version, enqueue MIGRATE dùng recipe S4;
   không giữ book lock trong download. Completion gom theo book rồi recheck/swap/audit/purge;
   book khác thành công được giữ, book lỗi báo riêng, retry receipt không apply lại book đã xong.
-- [ ] Persist snapshot refs/book versions/source hash trong receipt; rollback recheck
+- [x] Persist snapshot refs/book versions/source hash trong receipt; rollback recheck
   current pointer/version và đổi lại cloud có audit/purge, không drop schema.
-- [ ] Cleanup giữ cloud refs còn rollback; không có bulk delete cloud endpoint trong task.
-- [ ] GREEN BE/CLI Node tests; commit `feat(media): migrate image providers with guarded rollback` cùng log.
+- [x] Cleanup giữ cloud refs còn rollback; không có bulk delete cloud endpoint trong task.
+- [x] GREEN BE/CLI Node tests; commit `feat(media): migrate image providers with guarded rollback` cùng log.
+
+Cùng cấu hình CLI của R3. Tạo UUID riêng cho mỗi thao tác và dùng lại UUID đó
+khi gửi lại cùng yêu cầu.
+
+```sh
+node scripts/image-system/media-operations.mjs apply --receipt <receipt-id> \
+  --digest <preview-digest> --request-key <uuid> --confirm-media <media-id>
+node scripts/image-system/media-operations.mjs show-apply <receipt-id>
+node scripts/image-system/media-operations.mjs rollback --receipt <receipt-id> \
+  --request-key <uuid-khác> --expect-book <book-id>:<applied-version>
+```
+
+Lặp `--confirm-media` cho từng ảnh đã đối chiếu và `--expect-book` cho từng
+sách cần rollback. Apply trả 202 và xử lý qua queue. `show-apply` trả kết quả
+theo sách, gồm version dùng cho rollback và mã lỗi nếu có. Sau lỗi do nguồn
+hoặc version đổi, lập dry-run mới cho ảnh cần xử lý lại.
 
 ### R5 — Inventory và rebuild cùng recipe
 

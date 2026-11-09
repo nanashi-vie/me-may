@@ -78,3 +78,15 @@ test('decodes a WebP preview with the same recipe and emits only the 480 JPEG', 
   };
   assert.equal(await runJob(client, root, { ...job, kind: 'PREVIEW' }), 'ready');
 });
+
+test('MIGRATE uses the full recipe output and the normal completion protocol', async t => {
+  const { root, job } = await fixture(t);
+  const manifests = [];
+  const client = {
+    complete: async (_job, manifest) => manifests.push(manifest),
+    fail: async () => assert.fail('valid migration must not fail'),
+  };
+  assert.equal(await runJob(client, root, { ...job, kind: 'MIGRATE' }), 'ready');
+  assert.equal(manifests[0].variants.length, 9);
+  assert.equal(manifests[0].generationId, job.generationId);
+});

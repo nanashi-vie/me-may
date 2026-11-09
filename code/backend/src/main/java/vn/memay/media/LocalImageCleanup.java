@@ -41,6 +41,19 @@ class LocalImageCleanup {
                 LOG.warn("Local image cleanup deferred: {}", media);
             }
         }
+        var retired = jdbc.queryForList("""
+                SELECT i.id FROM image_migration_apply_item i JOIN image_migration_apply_book b USING(operation_id,book_id)
+                JOIN image_generation g ON g.id=i.id LEFT JOIN image_job j ON j.id=i.job_id
+                WHERE b.state IN ('FAILED','ROLLED_BACK') AND b.updated_at<=?
+                    AND (j.id IS NULL OR j.status IN ('READY','FAILED','CANCELLED')) LIMIT 100
+                """, UUID.class, cutoff);
+        for (UUID generation : retired) {
+            try {
+                transactions.executeWithoutResult(tx -> retireMigration(generation));
+            } catch (RuntimeException e) {
+                LOG.warn("Local migration generation cleanup deferred: {}", generation);
+            }
+        }
         // Preserve the owner-scoped receipt tombstone so expired URLs still return 410.
         jdbc.update("""
                 DELETE FROM image_migration_row WHERE id IN (
@@ -63,7 +76,9 @@ class LocalImageCleanup {
                           WHERE (r.lease_token=? AND r.lease_until>clock_timestamp())
                             OR (p.expires_at>clock_timestamp()
                               AND ((r.input_id=? AND r.state IN ('QUEUED','PROCESSING','READY')) OR r.preview_id=?)))
-                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging));
+                        OR EXISTS(SELECT 1 FROM image_migration_apply_item
+                            WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
+                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging, staging));
                 if (!referenced) {
                     store.discardStaging(staging);
                     if (++deleted == 100) break;
@@ -72,6 +87,28 @@ class LocalImageCleanup {
         } catch (IOException e) {
             LOG.warn("Image staging cleanup deferred");
         }
+    }
+
+    private void retireMigration(UUID generation) {
+        var jobs = jdbc.queryForList("""
+                SELECT id FROM image_job WHERE generation_id=? AND kind='MIGRATE'
+                    AND status IN ('READY','FAILED','CANCELLED') FOR UPDATE SKIP LOCKED
+                """, UUID.class, generation);
+        if (jobs.isEmpty() && Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM image_job WHERE generation_id=?)
+                """, Boolean.class, generation))) return;
+        var media = jdbc.queryForList("""
+                SELECT media_id FROM image_generation WHERE id=? AND NOT EXISTS(
+                    SELECT 1 FROM book_media WHERE serving_generation=?) FOR UPDATE SKIP LOCKED
+                """, UUID.class, generation, generation);
+        if (media.isEmpty()) return;
+        try {
+            store.discardGeneration(media.getFirst(), generation);
+        } catch (IOException e) {
+            throw new IllegalStateException("local_cleanup_failed", e);
+        }
+        if (!jobs.isEmpty()) jdbc.update("DELETE FROM image_job WHERE id=?", jobs.getFirst());
+        jdbc.update("DELETE FROM image_generation WHERE id=?", generation);
     }
 
     private void cleanup(UUID media) {

@@ -35,6 +35,39 @@ async function ownerSession(path) {
   }
 }
 
+function mutation(command, args) {
+  if (!Array.isArray(args)) throw new Error('Invalid command arguments');
+  const apply = command === 'apply';
+  const repeated = apply ? '--confirm-media' : '--expect-book';
+  const allowed = apply ? ['--receipt', '--request-key', '--digest', repeated] : ['--receipt', '--request-key', repeated];
+  const values = new Map();
+  const entries = [];
+  for (let i = 0; i < args.length; i += 2) {
+    const flag = args[i], value = args[i + 1];
+    if (!allowed.includes(flag) || !value || values.has(flag)) throw new Error('Invalid option for ' + command);
+    if (flag === repeated) entries.push(value);
+    else values.set(flag, value);
+  }
+  const receipt = values.get('--receipt'), requestKey = values.get('--request-key');
+  if (!uuid.test(receipt ?? '') || !uuid.test(requestKey ?? '')) throw new Error('Provide --receipt and --request-key UUIDs');
+  if (!entries.length || entries.length > 100 || new Set(entries.map(v => v.toLowerCase())).size !== entries.length)
+    throw new Error('Provide 1 to 100 distinct ' + repeated + ' entries');
+  if (apply) {
+    const digest = values.get('--digest');
+    if (!/^[a-f0-9]{64}$/.test(digest ?? '') || !entries.every(id => uuid.test(id)))
+      throw new Error('Provide the preview --digest and valid --confirm-media UUIDs');
+    return { receipt, body: { requestKey, digest, confirmedMediaIds: entries } };
+  }
+  const expectedBookVersions = Object.create(null);
+  for (const entry of entries) {
+    const parts = /^([1-9][0-9]{0,18}):([0-9]{1,16})$/.exec(entry);
+    if (!parts || !Number.isSafeInteger(Number(parts[2])) || Object.hasOwn(expectedBookVersions, parts[1]))
+      throw new Error('Use --expect-book <bookId>:<version> with distinct book IDs');
+    expectedBookVersions[parts[1]] = Number(parts[2]);
+  }
+  return { receipt, body: { requestKey, expectedBookVersions } };
+}
+
 export async function requestFor(config, command, argument) {
   const origin = siteOrigin(config.origin);
   let path, body;
@@ -46,14 +79,19 @@ export async function requestFor(config, command, argument) {
     body = new FormData();
     body.set('file', new Blob([bytes], { type: 'text/csv' }), 'mapping.csv');
     path = '/preview';
-  } else if (command === 'show' && uuid.test(argument ?? '')) {
-    path = '/' + argument;
+  } else if (['show', 'show-apply'].includes(command) && uuid.test(argument ?? '')) {
+    path = '/' + argument + (command === 'show-apply' ? '/apply' : '');
+  } else if (command === 'apply' || command === 'rollback') {
+    const operation = mutation(command, argument);
+    path = '/' + operation.receipt + '/' + command;
+    body = JSON.stringify(operation.body);
   } else {
-    throw new Error('Invalid command. Use export [after], preview <csv>, or show <receipt>');
+    throw new Error('Invalid command. Use export, preview, show, show-apply, apply, or rollback');
   }
   const session = await ownerSession(config.session);
   const headers = new Headers({ Cookie: session.cookie });
   if (body) headers.set('X-CSRF-TOKEN', session.csrf);
+  if (typeof body === 'string') headers.set('Content-Type', 'application/json');
   const fetcher = config.fetch ?? fetch;
   const response = await fetcher(origin + endpoint + path, {
     method: body ? 'POST' : 'GET', body, headers, redirect: 'error', signal: AbortSignal.timeout(30_000),
@@ -68,11 +106,12 @@ export async function requestFor(config, command, argument) {
 }
 
 async function main() {
-  const [command, argument, ...extra] = process.argv.slice(2);
-  if (extra.length) throw new Error('Too many command arguments');
+  const [command, ...args] = process.argv.slice(2);
+  const mutating = command === 'apply' || command === 'rollback';
+  if (!mutating && args.length > 1) throw new Error('Too many command arguments');
   const config = { origin: process.env.MEMAY_SITE_ORIGIN, session: process.env.MEMAY_OWNER_SESSION_FILE };
   if (!config.origin || !config.session) throw new Error('Set MEMAY_SITE_ORIGIN and MEMAY_OWNER_SESSION_FILE');
-  const response = await requestFor(config, command, argument);
+  const response = await requestFor(config, command, mutating ? args : args[0]);
   if (command === 'export') {
     const next = response.headers.get('X-Next-Media-Id');
     if (next && uuid.test(next)) process.stderr.write('Next page: export ' + next + '\n');
