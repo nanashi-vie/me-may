@@ -7,7 +7,7 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** User chọn Native. S1–S3 đã kiểm local, tiếp theo S4.
+**Status:** User chọn Native. S1–S4 đã kiểm local, tiếp theo R1/R2.
 
 ## Global Constraints
 

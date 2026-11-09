@@ -2746,3 +2746,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   đạt 5/5. Toàn bộ ./mvnw -B -ntp test từ code/backend trên PostgreSQL test
   riêng đạt 249 ca, 246 đạt, 3 skip. Worker encode và Ubuntu chưa kiểm.
 - Tiếp theo S4. Chưa rollout.
+
+## 2026-11-09 — S059-C02 — Bắt đầu S4
+
+- Sharp worker dùng manifest S3, một job mỗi lúc, staging tách theo lease.
+- Phạm vi encoder, worker client, Node image khóa digest và smoke container.
+
+- Sharp 0.35.5 khóa bằng package-lock; Node 22 bookworm-slim khóa digest.
+  Recipe v1 có 9 variant, giới hạn 10 MiB/25 MP, xoay theo EXIF, bỏ metadata,
+  nền trắng, không upscale. Một subprocess/job với deadline 180 giây và
+  heartbeat 30 giây. Tắt process khi mất lease, không gửi COMPLETE.
+- RED npm test thiếu processor. Một lượt worker test lỗi do fixture ghi input
+  vào thư mục cha (mkdir recursive trả đường dẫn đầu tiên được tạo). Sửa fixture.
+- Từ code/image-worker: npm test đạt 7/7. Docker build thành công và node --test
+  trong container --network none --cpus=1 --memory=768m đạt 7/7, gồm linux/amd64.
+  npm install báo 0 lỗ hổng tại thời điểm cài. Chưa đo tải trên Ubuntu/Dell.
+- S3 và S4 đã kiểm riêng. Chưa có smoke worker kết nối backend thật, upload LOCAL,
+  recipe registry production hay Nginx. R1 là bước tiếp theo, Ubuntu ở S8/R6.

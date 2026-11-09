@@ -11,10 +11,10 @@ Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   frontend 252 đạt, build SSR/Workers đạt. Còn smoke trình duyệt và rollout V20.
   [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [kế hoạch](BOOK_STORAGE_PLAN.md).
 - S055-C01 (08/11): Hoàn tất chỉnh UI chi tiết sách (`book-detail`) theo kết quả `/grill-me`: ẩn hiển thị `Trọng lượng sách` phía người dùng, dời mục `Độ tuổi` xuống nằm ngay phía trên `Trình độ đọc` (đổi nhãn từ `Trình độ đọc tham khảo`), và cập nhật ghi chú `READING_NOTE` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`. Vitest 44/44 files (251/251 tests PASS), build SSR & Workers 0 warning, 0 error.
-- S059: S3 queue có lease và API worker nội bộ đã kiểm PostgreSQL và HTTP
-  local. Backend 246 đạt, 3 skip. Tiếp theo S4 Sharp worker rồi R1/R2.
-  LOCAL tắt mặc định. Xem [Storage plan](IMAGE_STORAGE_PLAN.md) và
-  [Recovery plan](IMAGE_RECOVERY_PLAN.md).
+- S059: S3 queue/API worker và S4 Sharp đã kiểm local. Backend 246 đạt,
+  3 skip. Worker 7/7 local và Docker Linux/amd64 với 1 CPU/768 MiB.
+  Tiếp theo R1/R2 xác minh Drive trước khi nối upload LOCAL. Xem
+  [Storage plan](IMAGE_STORAGE_PLAN.md) và [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).
 - Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.
