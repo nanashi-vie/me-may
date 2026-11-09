@@ -15,10 +15,12 @@ import vn.memay.media.ImageTypes.*;
 public class ImageJobService {
     private final ImageJobRepository jobs;
     private final LocalImageStore store;
+    private final ImageMigrationPreviewQueue previews;
 
-    public ImageJobService(ImageJobRepository jobs, LocalImageStore store) {
+    public ImageJobService(ImageJobRepository jobs, LocalImageStore store, ImageMigrationPreviewQueue previews) {
         this.jobs = jobs;
         this.store = store;
+        this.previews = previews;
     }
 
     @Transactional
@@ -46,15 +48,19 @@ public class ImageJobService {
             jobs.fail(job.jobId(), job.token(), "unsupported_job_kind", false);
             return Optional.empty();
         }
-        return lease;
+        return lease.or(previews::claimEncode);
     }
 
     public Instant heartbeat(UUID jobId, UUID token) {
-        return jobs.heartbeat(jobId, token);
+        return previews.owns(jobId) ? previews.heartbeat(jobId, token) : jobs.heartbeat(jobId, token);
     }
 
     @Transactional
     public void complete(UUID jobId, UUID token, Manifest manifest) {
+        if (previews.owns(jobId)) {
+            previews.complete(jobId, token, manifest);
+            return;
+        }
         var lease = jobs.lockLease(jobId, token);
         if (lease.kind() != JobKind.PROCESS || !lease.mediaId().equals(manifest.mediaId())
                 || !lease.generationId().equals(manifest.generationId())
@@ -75,6 +81,7 @@ public class ImageJobService {
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {
         if (code == null || !code.matches("[a-z0-9_]{1,64}"))
             throw new AdminApiException(400, "invalid_image_error_code");
-        jobs.fail(jobId, token, code, retryable);
+        if (previews.owns(jobId)) previews.fail(jobId, token, code, retryable);
+        else jobs.fail(jobId, token, code, retryable);
     }
 }

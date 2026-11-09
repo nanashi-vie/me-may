@@ -61,3 +61,20 @@ test('rejects traversal without starting the encoder', async t => {
     { processor: async () => assert.fail('invalid path reached processor') }), 'failed');
   assert.deepEqual(failures, [{ code: 'invalid_job', retryable: false }]);
 });
+
+test('decodes a WebP preview with the same recipe and emits only the 480 JPEG', async t => {
+  const { root, job } = await fixture(t);
+  await writeFile(join(root, job.inputKey), await sharp({
+    create: { width: 5, height: 8, channels: 3, background: 'red' },
+  }).webp().toBuffer());
+  const client = {
+    complete: async (_job, manifest) => {
+      assert.deepEqual(manifest.variants.map(v => [v.name, v.mime, v.width, v.height]),
+        [['480', 'image/jpeg', 5, 8]]);
+      const output = await sharp(join(root, 'staging', job.token, 'output', '480.jpg')).metadata();
+      assert.equal(output.format, 'jpeg');
+    },
+    fail: async () => assert.fail('valid preview must not fail'),
+  };
+  assert.equal(await runJob(client, root, { ...job, kind: 'PREVIEW' }), 'ready');
+});

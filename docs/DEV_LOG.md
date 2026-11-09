@@ -2885,3 +2885,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   `npm run build:workers`, `npm run check:workers:proxy` và git diff --check đạt.
 - Origin nội bộ được mô phỏng bằng HTTP trên loopback. Chưa smoke Ubuntu,
   Nginx thật hoặc Drive thật. Bàn giao dev, tiếp theo R3.
+
+## 2026-11-09 — S063-C01 — Bắt đầu R3
+
+- Tái sử dụng worktree Codex ở dev ef6d7cf. R3 chỉ tạo manifest dry-run,
+  receipt 24 giờ và ảnh đối chiếu để owner xác nhận ở bước R4.
+- Dùng lại Sharp và worker lease cho bước decode, giữ receipt riêng để
+  dry-run không ghi vào book_media, image_asset, generation hoặc binding.
+
+## 2026-11-09 — S063-C02 — Manifest và receipt dry-run R3
+
+- V25 lưu từng dòng manifest và receipt 24 giờ. Template phân trang 100 ảnh;
+  kiểm media, mã sách, role, Drive File ID, version và trùng dòng.
+- Drive tải tuần tự. Worker Sharp xử lý PREVIEW cùng lease/recipe và chỉ xuất
+  JPEG 480. Receipt giữ hash, version nguồn và URL đối chiếu riêng cho OWNER.
+- Ruling: đặt R3 cùng module media để tái sử dụng worker endpoint, storage và
+  cleanup. Preview dùng bảng receipt riêng, tách khỏi asset/generation đang phục vụ.
+- RED: API thiếu route, CLI thiếu module. Review bổ sung lỗi dòng CSV an toàn
+  trên CLI và giới hạn cleanup theo số thư mục xóa, tránh staging được giữ làm
+  chặn lượt dọn. Test kiểm lease cũ, nguồn và file preview hết TTL.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  261 ca, 258 đạt và 3 skip. `npm test` tại code/image-worker đạt 8 ca,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root đạt
+  2 ca. git diff --check đạt.
+- Tích hợp API dùng Drive và Cloudinary giả lập. Chưa chạy trên Ubuntu hay
+  dữ liệu thật. Bàn giao dev, tiếp theo R4 apply xác nhận và rollback.

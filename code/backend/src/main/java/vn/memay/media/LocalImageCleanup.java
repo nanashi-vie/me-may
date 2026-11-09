@@ -41,7 +41,15 @@ class LocalImageCleanup {
                 LOG.warn("Local image cleanup deferred: {}", media);
             }
         }
+        // Preserve the owner-scoped receipt tombstone so expired URLs still return 410.
+        jdbc.update("""
+                DELETE FROM image_migration_row WHERE id IN (
+                    SELECT r.id FROM image_migration_row r JOIN image_migration_receipt p ON p.id=r.receipt_id
+                    WHERE p.expires_at<=clock_timestamp() AND (r.lease_until IS NULL OR r.lease_until<=clock_timestamp())
+                    LIMIT 100 FOR UPDATE OF r SKIP LOCKED)
+                """);
         try {
+            int deleted = 0;
             for (var staging : store.stagingBefore(cutoff.toInstant())) {
                 boolean referenced = Boolean.TRUE.equals(jdbc.queryForObject("""
                         SELECT EXISTS(SELECT 1 FROM image_job j
@@ -51,8 +59,15 @@ class LocalImageCleanup {
                           OR (j.input_key=? AND (j.status IN ('PENDING','PROCESSING','RETRYING')
                               OR (j.status='FAILED' AND m.state='UPLOADING' AND s.state='OPEN'
                                   AND s.expires_at>clock_timestamp()))))
-                        """, Boolean.class, staging, "staging/" + staging + "/input"));
-                if (!referenced) store.discardStaging(staging);
+                        OR EXISTS(SELECT 1 FROM image_migration_row r JOIN image_migration_receipt p ON p.id=r.receipt_id
+                          WHERE (r.lease_token=? AND r.lease_until>clock_timestamp())
+                            OR (p.expires_at>clock_timestamp()
+                              AND ((r.input_id=? AND r.state IN ('QUEUED','PROCESSING','READY')) OR r.preview_id=?)))
+                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging));
+                if (!referenced) {
+                    store.discardStaging(staging);
+                    if (++deleted == 100) break;
+                }
             }
         } catch (IOException e) {
             LOG.warn("Image staging cleanup deferred");

@@ -29,7 +29,7 @@ function encode(args, signal) {
 
 async function paths(root, job) {
   const input = /^staging\/([^/]+)\/input$/.exec(job.inputKey ?? '');
-  if (job.kind !== 'PROCESS' || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
+  if (!['PROCESS', 'PREVIEW'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
       .every(value => typeof value === 'string' && uuid.test(value))) throw new Error('invalid_job');
   if (!Object.hasOwn(recipes, job.recipeVersion)) throw new Error('unknown_recipe');
   const staging = join(root, 'staging');
@@ -42,7 +42,7 @@ async function paths(root, job) {
   const outputDir = join(attempt, 'output');
   await mkdir(outputDir);
   return { inputPath: join(inputDir, 'input'), outputDir, mediaId: job.mediaId,
-    generationId: job.generationId, recipeVersion: job.recipeVersion };
+    generationId: job.generationId, recipeVersion: job.recipeVersion, preview: job.kind === 'PREVIEW' };
 }
 
 export async function runJob(client, root, job, { signal, heartbeatMs = 30_000, processor = encode } = {}) {

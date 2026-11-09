@@ -8,7 +8,7 @@ public final class ImageTypes {
     private ImageTypes() {}
 
     public enum Provider { CLOUDINARY, LOCAL }
-    public enum JobKind { PROCESS, VERIFY, MIGRATE, REBUILD }
+    public enum JobKind { PROCESS, VERIFY, MIGRATE, REBUILD, PREVIEW }
     public enum SourceStatus { UNVERIFIED, VERIFIED, SOURCE_MISSING, SOURCE_CHANGED, ACCESS_ERROR }
 
     public record Variant(String name, String key, String mime, int width, int height, long bytes, String sha256) {}

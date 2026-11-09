@@ -51,7 +51,8 @@ class ImageJobLeaseTest {
             assertThat(db.queryForObject("SELECT status FROM image_job WHERE id=?", String.class, id)).isEqualTo("FAILED");
             assertThat(jobs.claim()).isEmpty();
 
-            var service = new ImageJobService(jobs, new LocalImageStore(root.toRealPath()));
+            var service = new ImageJobService(jobs, new LocalImageStore(root.toRealPath()),
+                    org.mockito.Mockito.mock(ImageMigrationPreviewQueue.class));
             var tx = new TransactionTemplate(new DataSourceTransactionManager(db.getDataSource()));
             UUID session = UUID.randomUUID(), upload = UUID.randomUUID(), version = UUID.randomUUID();
             long owner = db.queryForObject("""

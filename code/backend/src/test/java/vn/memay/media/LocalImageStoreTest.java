@@ -24,6 +24,16 @@ class LocalImageStoreTest {
                 new ByteArrayInputStream(new byte[10 * 1024 * 1024 + 1]))).isInstanceOf(IOException.class);
     }
 
+    @Test void enumeratesOldStagingBeyondTheDeletionBudgetSoPinnedReceiptsCannotHideOrphans() throws Exception {
+        var store = new LocalImageStore(root.toRealPath());
+        var cutoff = java.time.Instant.now().minusSeconds(60);
+        var old = java.nio.file.attribute.FileTime.from(cutoff.minusSeconds(60));
+        var staging = Files.createDirectory(root.resolve("staging"));
+        for (int i = 0; i < 101; i++)
+            Files.setLastModifiedTime(Files.createDirectory(staging.resolve(UUID.randomUUID().toString())), old);
+        assertThat(store.stagingBefore(cutoff)).hasSize(101);
+    }
+
     @Test void publishesOnlyTheVerifiedManifest() throws Exception {
         var store = new LocalImageStore(root.toRealPath());
         var media = UUID.randomUUID();

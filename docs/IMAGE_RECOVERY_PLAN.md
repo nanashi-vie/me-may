@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** R1/R2 đã kiểm với Drive giả lập. S7 đã kiểm local, tiếp theo R3. Drive thật chưa kiểm chứng.
+**Status:** R1–R3 và S7 đã kiểm local, tiếp theo R4. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 
@@ -113,28 +113,47 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 ### R3 — Manifest dry-run và preview để owner ghép ảnh
 
 **Prerequisite:** S7, R2.
-**Files:** tạo `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`B/ImageMigrationDtos.java`, `D/V25__image_operation_receipts.sql`,
+**Files:** tạo `M/ImageMigrationService.java`, `M/ImageMigrationController.java`,
+`M/ImageMigrationDtos.java`, `M/ImageMigrationPreviewQueue.java`, `D/V25__image_operation_receipts.sql`,
 `O/media-operations.mjs`, `O/media-operations.test.mjs`;
-test `BT/ImageMigrationPreviewTest.java` mới.
+test `T/ImageMigrationPreviewTest.java` mới.
 **Interfaces:** OWNER endpoints `/api/v1/admin/image-migrations`:
 `GET /template` export CSV; `POST /preview` multipart CSV→202 operation ID;
 `GET /{receiptId}` MigrationPreview; `GET /{receiptId}/photos/{mediaId}` source preview.
 CLI `export`, `preview`, `show`; mặc định chỉ đọc, không tự apply.
 
-- [ ] RED `manifestIsGuarded`: duplicate/foreign/missing/role/version sai,101 ảnh
+- [x] RED `manifestIsGuarded`: duplicate/foreign/missing/role/version sai,101 ảnh
   báo lỗi từng dòng; `assertEquals(beforeBookRows, afterBookRows)` sau dry-run.
-- [ ] RED `previewIsOwnerOnly`: STAFF/anonymous không tải template/source preview;
+- [x] RED `previewIsOwnerOnly`: STAFF/anonymous không tải template/source preview;
   receipt hết24h trả410; không public signed/provider URL hoặc input path.
-- [ ] Chạy `BE(ImageMigrationPreviewTest)` và từ root
+- [x] Chạy `BE(ImageMigrationPreviewTest)` và từ root
   `node --test scripts/image-system/media-operations.test.mjs` ghi RED.
-- [ ] Implement CSV đúng header spec bằng Commons CSV hiện có; sequential download,
+- [x] Implement CSV đúng header spec bằng Commons CSV hiện có; sequential download,
   source candidate preview qua same-origin no-store. Dry-run không sửa book/media/binding;
   chỉ ghi operation/receipt/staging có TTL để apply và owner xem cặp ảnh.
-- [ ] CLI dùng owner session cookie/CSRF từ file0600 do operator cung cấp;
+- [x] CLI dùng owner session cookie/CSRF từ file0600 do operator cung cấp;
   không nhận mật khẩu/token qua argv/log; cung cấp đường dẫn admin preview và kết quả dòng.
   Preview trả ảnh cũ + nguồn qua endpoint được bảo vệ, owner xác nhận explicit danh sách ID.
-- [ ] GREEN BE/Node; commit `feat(media): preview Drive mappings before migration` cùng log.
+- [x] GREEN BE/Node; commit `feat(media): preview Drive mappings before migration` cùng log.
+
+
+Chạy CLI từ root. Đặt `MEMAY_SITE_ORIGIN` và `MEMAY_OWNER_SESSION_FILE`
+trỏ tới file riêng mode `0600`, thuộc user hiện tại. File chứa JSON với
+`cookie` (chỉ cookie `MEMAYSESSION`) và `csrf` (token của cùng phiên OWNER).
+Giữ file phiên ngoài Git.
+
+```sh
+node scripts/image-system/media-operations.mjs export > mapping.csv
+node scripts/image-system/media-operations.mjs preview mapping.csv
+node scripts/image-system/media-operations.mjs show <receipt-id>
+```
+
+Mỗi trang export tối đa 100 ảnh. Nếu CLI in cursor, dùng `export <cursor>`
+cho trang kế. Điền cột `drive_file_id`, giữ các cột kiểm tra như mẫu.
+Khi receipt `READY`, mở `currentPhotoPath` và `previewPath` bằng trình
+duyệt đang đăng nhập OWNER để đối chiếu. Dòng `INVALID` có mã lỗi riêng.
+Receipt hết hạn sau 24 giờ. R4 sẽ dùng digest và danh sách media ID do
+owner xác nhận để apply.
 
 ### R4 — Migration từng lô và rollback provider
 

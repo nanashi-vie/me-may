@@ -17,7 +17,9 @@ Cập nhật 09/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   S6 có dán tối đa 8 link file Drive hoặc File ID và xem ghép ảnh trước khi xác minh.
   S062 đã kiểm local S7 delivery public, preview và ZIP cho hai provider.
   Backend 255 đạt, 3 skip. Frontend 261 đạt, build và proxy Workers đạt.
-  Tiếp theo R3 migration Cloudinary theo lô. Drive thật và Ubuntu còn mở.
+  S063 đã kiểm R3 dry-run Cloudinary theo lô, tối đa 100 ảnh và receipt 24 giờ.
+  Backend 258 đạt, 3 skip. Worker 8 và CLI 2 test đạt. Tiếp theo R4 apply/rollback.
+  Drive thật và Ubuntu còn mở.
   [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).

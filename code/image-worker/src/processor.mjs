@@ -36,7 +36,7 @@ function inputFormat(input) {
   throw failure('invalid_image');
 }
 
-export async function processImage({ inputPath, outputDir, mediaId, generationId, recipeVersion }) {
+export async function processImage({ inputPath, outputDir, mediaId, generationId, recipeVersion, preview = false }) {
   if (!Object.hasOwn(recipes, recipeVersion)) throw failure('unknown_recipe');
   const recipe = recipes[recipeVersion];
   const input = await readInput(inputPath, recipe.maxInputBytes);
@@ -52,7 +52,8 @@ export async function processImage({ inputPath, outputDir, mediaId, generationId
       || metadata.width * metadata.height > recipe.maxPixels) throw failure('invalid_image');
 
   const variants = [];
-  for (const { size, extension, mime, quality } of recipe.formats) {
+  const formats = preview ? recipe.formats.filter(v => v.size === 480 && v.extension === 'jpg') : recipe.formats;
+  for (const { size, extension, mime, quality } of formats) {
     const resized = source.clone().autoOrient()
       .resize({ width: size, height: size, fit: 'inside', withoutEnlargement: true })
       .flatten({ background: '#ffffff' }).toColourspace('srgb');

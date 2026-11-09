@@ -113,7 +113,6 @@ public final class LocalImageStore {
                 } catch (IllegalArgumentException ignored) {
                     // Only application-owned UUID directories are eligible.
                 }
-                if (result.size() == 100) break;
             }
             return result;
         }
@@ -130,6 +129,21 @@ public final class LocalImageStore {
         Path operation = directory("staging/" + operationId, false);
         Files.deleteIfExists(operation.resolve("input"));
         Files.delete(operation);
+    }
+
+    void validateMigrationPreview(Manifest manifest, UUID attempt) throws IOException {
+        if (manifest.variants().size() != 1) throw new IOException("Invalid preview output");
+        var variant = manifest.variants().getFirst();
+        if (!"480".equals(variant.name()) || !"image/jpeg".equals(variant.mime())
+                || variant.width() > 480 || variant.height() > 480)
+            throw new IOException("Invalid preview variant");
+        validate(manifest, directory("staging/" + attempt + "/output", false));
+    }
+
+    InputStream openMigrationPreview(UUID attempt) throws IOException {
+        Path file = directory("staging/" + attempt + "/output", false).resolve("480.jpg");
+        if (!Files.isRegularFile(file, NOFOLLOW_LINKS)) throw new IOException("Preview missing");
+        return Files.newInputStream(file, READ, NOFOLLOW_LINKS);
     }
 
     public void validate(Manifest manifest) throws IOException {
