@@ -168,13 +168,17 @@ public class BookCommandService {
         uploads.lock(input.uploadSessionId(), actor, true);
         if (target==Publication.PUBLISHED && !input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
-        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
+        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state in ('READY','UPLOADING') for update",
                 input.uploadSessionId());
         var selected = new LinkedHashMap<UUID, Map<String, Object>>();
         for (var assignment : assignments) {
             var photo = ready.stream().filter(m -> assignment.mediaId().equals(m.get("id"))).findFirst()
                     .orElseThrow(
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
+            if (!"READY".equals(photo.get("state"))) {
+                if ("LOCAL".equals(photo.get("provider"))) throw new AdminApiException(409, "media_not_ready");
+                throw AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này");
+            }
             selected.put(assignment.mediaId(), photo);
         }
         if(target==Publication.ARCHIVED && w.title()==null && assignments.isEmpty())
@@ -186,16 +190,8 @@ public class BookCommandService {
         var b = aggregate.book();
         var l = aggregate.listing();
         long id = b.id;
-        for (var assignment : assignments) {
-            var m = selected.get(assignment.mediaId());
-            jdbc.update(
-                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?)",
-                    assignment.mediaId(), id, assignment.role().canonical().name(), m.get("storage_public_id"), m.get("asset_id"),
-                    m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
-                    m.get("alt") == null ? assignment.role().label() + " " + b.bookCode : m.get("alt"),
-                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"));
-            jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
-        }
+        for (var assignment : assignments)
+            uploads.consumeReady(assignment.mediaId(), id, assignment.role(), assignment.role().label() + " " + b.bookCode);
         var prepared = mapper.detail(b, l);
         if(target==Publication.PUBLISHED) {
             validation.validatePublished(prepared);
@@ -212,7 +208,7 @@ public class BookCommandService {
         jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?", id,
                 fingerprint, input.uploadSessionId());
         jdbc.update(
-                "update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",
+                "update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",
                 java.sql.Timestamp.from(clock.instant()), input.uploadSessionId());
         return result;
     }

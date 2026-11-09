@@ -7,7 +7,8 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** User chọn Native. S1–S4 và R1/R2 đã kiểm local, tiếp theo S5.
+**Status:** User chọn Native. S1–S6 và R1/R2 đã triển khai, tiếp theo S7.
+Bằng chứng và giới hạn kiểm thử S5/S6 ghi trong DEV_LOG S061.
 
 ## Global Constraints
 
@@ -220,7 +221,10 @@ source binding dùng R2 API, không serialize internal SourceBinding ra public.
   pending không final, bỏ ảnh lỗi cần user thao tác, replacement không mất ảnh cũ.
 - [ ] Chạy FE ghi RED; implement polling 1/2/5s tối đa5s, unsubscribe khi destroy,
   retry thủ công sau lỗi; session expiry dừng poll; không tự publish nền khi đóng trang.
-- [ ] Thêm File ID/status/verify ở metadata mỗi ảnh; lỗi source phân biệt lỗi encode,
+- [ ] Nguồn ảnh nhận link file Drive hoặc File ID. Hỗ trợ dán nhiều mục theo
+  dòng, tối đa tám, xem và chỉnh ghép ảnh trước khi xác minh. Từ chối link
+  thư mục và báo lỗi theo từng mục. Backend nhận File ID đã tách từ link.
+- [ ] Hiện trạng thái xác minh ở metadata mỗi ảnh. Phân biệt lỗi nguồn và encode,
   binding input chỉ admin. Giữ focus/status announcement và preview không nén file gốc.
 - [ ] GREEN FE; commit `feat(admin): support async image processing and source verification` cùng log.
 

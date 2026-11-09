@@ -1,5 +1,6 @@
-import { Component, ElementRef, inject, input, signal, viewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { BookUploadQueue, UploadItem } from '../book-upload-queue';
+import { driveFileIds } from '../drive-source';
 import { MEDIA_ROLES, MEDIA_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-media-panel',
@@ -20,6 +21,64 @@ export class BookMediaPanel {
   readonly viewerLoaded=signal(false);
   readonly failedPreviews = signal<Record<string,boolean>>({});
   readonly previewRetries = signal<Record<string,number>>({});
+  readonly sourceInputs = signal<Partial<Record<string, string>>>({});
+  readonly batchInput = signal('');
+  readonly batchError = signal('');
+  readonly batchBusy = signal(false);
+  readonly batch = signal<{ fileId: string; rowId: string; result?: string }[]>([]);
+  readonly sourceTargets = computed(() => this.photos.sorted()
+    .filter(row => row.provider === 'LOCAL' && row.state === 'READY' && row.mediaId));
+  readonly acceptedImages = computed(() => this.photos.capability()?.formats.join(',') || 'image/jpeg,image/png,image/webp');
+
+  setSource(id: string, value: string) {
+    this.sourceInputs.update(inputs => ({ ...inputs, [id]: value }));
+  }
+
+  setBatch(value: string) {
+    this.batchInput.set(value);
+    this.batch.set([]);
+    this.batchError.set('');
+  }
+
+  matchBatch() {
+    this.batchError.set('');
+    this.batch.set([]);
+    try {
+      const ids = driveFileIds(this.batchInput());
+      const targets = this.sourceTargets();
+      if (ids.length > targets.length) throw new Error('Số nguồn nhiều hơn số ảnh LOCAL đã tải xong.');
+      this.batch.set(ids.map((fileId, index) => ({ fileId, rowId: targets[index].id })));
+    } catch (error) {
+      this.batchError.set((error as Error).message);
+    }
+  }
+
+  matchRow(index: number, rowId: string) {
+    this.batch.update(items => items.map((item, i) => i === index ? { ...item, rowId, result: undefined } : item));
+  }
+
+  async verifyBatch() {
+    if (this.batchBusy() || this.disabled() || this.readonly()) return;
+    const batch = this.batch();
+    const ids = batch.map(item => item.rowId);
+    if (!ids.length) return;
+    if (new Set(ids).size !== ids.length || ids.some(id => !this.sourceTargets().some(row => row.id === id))) {
+      this.batchError.set('Chọn một ảnh khác nhau cho mỗi nguồn.');
+      return;
+    }
+    this.batchError.set('');
+    this.batchBusy.set(true);
+    try {
+      for (const [i, item] of batch.entries()) {
+        this.setSource(item.rowId, item.fileId);
+        const ok = await this.photos.verifySource(item.rowId, item.fileId);
+        this.batch.update(rows => rows.map((row, index) => index === i
+          ? { ...row, result: ok ? 'Đã xác minh' : 'Chưa xác minh được' } : row));
+      }
+    } finally {
+      this.batchBusy.set(false);
+    }
+  }
   private opener:HTMLElement|null=null;
   preview(row:UploadItem) {
     return row.state==='error' && row.previous ? row.previous.preview:row.preview;

@@ -79,6 +79,47 @@ public final class LocalImageStore {
         }
     }
 
+    InputStream openPreview(UUID media, UUID generation, int width) throws IOException {
+        if (width != 320 && width != 1280) throw new IOException("Invalid preview size");
+        Path file = directory("derived/" + media + "/" + generation, false).resolve(width + ".jpg");
+        if (!Files.isRegularFile(file, NOFOLLOW_LINKS)) throw new IOException("Image preview missing");
+        return Files.newInputStream(file, READ, NOFOLLOW_LINKS);
+    }
+
+    void discardGeneration(UUID media, UUID generation) throws IOException {
+        discardTree("derived/" + media + "/" + generation);
+    }
+
+    void discardStaging(UUID id) throws IOException {
+        discardTree("staging/" + id);
+    }
+
+    java.util.List<UUID> stagingBefore(java.time.Instant cutoff) throws IOException {
+        if (Files.notExists(root.resolve("staging"), NOFOLLOW_LINKS)) return java.util.List.of();
+        try (var dirs = Files.list(directory("staging", false))) {
+            var result = new java.util.ArrayList<UUID>();
+            for (Path path : dirs.toList()) {
+                if (!Files.isDirectory(path, NOFOLLOW_LINKS)
+                        || !Files.getLastModifiedTime(path, NOFOLLOW_LINKS).toInstant().isBefore(cutoff)) continue;
+                try {
+                    UUID id = UUID.fromString(path.getFileName().toString());
+                    if (id.toString().equals(path.getFileName().toString())) result.add(id);
+                } catch (IllegalArgumentException ignored) {
+                    // Only application-owned UUID directories are eligible.
+                }
+                if (result.size() == 100) break;
+            }
+            return result;
+        }
+    }
+
+    private void discardTree(String relative) throws IOException {
+        if (Files.notExists(root.resolve(relative), NOFOLLOW_LINKS)) return;
+        try (var paths = Files.walk(directory(relative, false))) {
+            for (Path path : paths.sorted(java.util.Comparator.reverseOrder()).toList()) Files.deleteIfExists(path);
+        }
+    }
+
     public void discardInput(UUID operationId) throws IOException {
         Path operation = directory("staging/" + operationId, false);
         Files.deleteIfExists(operation.resolve("input"));

@@ -1,4 +1,4 @@
-import {BookCreate, MediaAssignment, MediaMetadata, UploadSession, TemporaryMedia} from './book.models';
+import {BookCreate, MediaAssignment, MediaMetadata, UploadSession, TemporaryMedia, ImageCapability, ImageOperation, DriveSourceStatus} from './book.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
@@ -100,6 +100,21 @@ export class BookApi {
   }
   removeMedia(id: string, role: MediaRole, version: number) {
     return this.http.mutate<BookDetail>('DELETE', `/books/${id}/media/${role}?version=${version}`);
+  }
+  capabilities() { return this.http.get<ImageCapability>('/media-capabilities'); }
+  uploadLocal(session: string, body: FormData) {
+    return this.http.upload<ImageOperation>(`/upload-sessions/${session}/media`, body);
+  }
+  imageOperation(id: string) { return this.http.get<ImageOperation>(`/image-operations/${id}`); }
+  retryImageOperation(id: string) {
+    return this.http.mutate<ImageOperation>('POST', `/image-operations/${id}/retry`, {});
+  }
+  commitReplacement(book: string, media: string, body: {version: number; role: MediaRole; requestKey: string}) {
+    return this.http.mutate<BookDetail>('POST', `/books/${book}/media/replacements/${media}/commit`, body);
+  }
+  sourceStatus(media: string) { return this.http.get<DriveSourceStatus>(`/media/${media}/source`); }
+  verifySource(media: string, body: {fileId: string; bindingVersion: number; bookVersion: number | null; requestKey: string}) {
+    return this.http.mutate<{operationId: string}>('PUT', `/media/${media}/source`, body);
   }
   session(id:string) { return this.http.get<UploadSession>('/upload-sessions/'+id); }
   createSession() { return this.http.mutate<UploadSession>('POST','/upload-sessions',{}); }

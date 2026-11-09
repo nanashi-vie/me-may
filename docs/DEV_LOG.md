@@ -2804,3 +2804,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   job VERIFY chạy với Drive giả lập, GET chỉ trả status và versions,
   STAFF bị 403. Test này chạy riêng sau bộ hồi quy.
 - Bàn giao dev theo workflow. Tiếp theo S5 upload và gắn ảnh LOCAL.
+
+## 2026-11-09 — S061-C01 — Bắt đầu S5 và ghi yêu cầu S6
+
+- Tiếp tục Native từ dev c705a2c. S5 nối upload LOCAL, poll, finalize và replacement.
+- User duyệt S6 nhận nhiều link file Drive hoặc File ID cùng lúc cho một sách.
+  Hiện danh sách ghép với ảnh để owner kiểm tra trước khi xác minh từng ảnh.
+  Link thư mục báo lỗi, backend tiếp tục nhận File ID chuẩn.
+
+## 2026-11-09 — S061-C02 — Upload LOCAL và ghép nguồn Drive
+
+- S5 thêm V24, session upload file gốc, trạng thái job, retry và preview admin.
+  Gắn ảnh và kiểm nguồn cùng transaction. Receipt giữ kết quả khi gửi lại yêu cầu.
+  Cleanup LOCAL tách khỏi Cloudinary và kiểm lease trước khi xóa file.
+- S6 nối form hiện có, tiếp tục poll qua phiên tab, hỗ trợ tối đa tám link file
+  hoặc File ID, xác nhận ghép và xem kết quả từng ảnh. Không mở rộng sang duyệt thư mục.
+- Kiểm tra: từ `code/backend`, `./mvnw -B -ntp test` với PostgreSQL test local
+  đạt 254 ca, skip 3. Từ `code/frontend`, `npm test` đạt 253 ca,
+  `npm run build:workers` và `npm run check:workers:proxy` đạt.
+  Test nguồn dùng Drive giả lập. Chưa chạy smoke trình duyệt với Drive thật.
+- Giữ mặc định Cloudinary. Còn S7 delivery public và ZIP trước khi bật LOCAL
+  cho vận hành, cần đăng ký recipe v1 và kiểm Ubuntu với worker thật.
+- Bàn giao lên dev theo quy ước. Bước kế tiếp S7 theo IMAGE_STORAGE_PLAN.

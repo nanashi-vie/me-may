@@ -22,17 +22,25 @@ public class AdminMediaController {
 
     private final AdminActorResolver actors;
     private final MediaService media;
+    private final LocalUploadService local;
 
-    public AdminMediaController(AdminActorResolver actors, MediaService media) {
+    public AdminMediaController(AdminActorResolver actors, MediaService media, LocalUploadService local) {
         this.actors = actors;
         this.media = media;
+        this.local = local;
     }
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<BookDetail> upload(Authentication a, @PathVariable long id, @PathVariable MediaRole role,
             @RequestParam long version, @RequestParam MultipartFile file, @RequestParam(required = false) String alt,
-            @RequestParam(required = false) String sourceRef) throws IOException {
+            @RequestParam(required = false) String sourceRef,
+            @RequestParam(required = false) String providerRevision) throws IOException {
         var actor = actors.current(a);
+        if (providerRevision != null) {
+            var capability = local.capabilities(actor);
+            if (!"CLOUDINARY".equals(capability.provider()) || !providerRevision.equals(capability.revision()))
+                throw new AdminApiException(409, "image_capability_changed");
+        }
         if (version < 0)
             throw AdminApiException.field("version", "Version không hợp lệ");
         if (file.getSize() > ImageValidator.MAX_BYTES)

@@ -19,9 +19,13 @@ const photo = () =>
     { type: 'image/png' },
   );
 describe('book photo queue', () => {
+  const capabilities = () => of({
+    provider: 'CLOUDINARY' as const, revision: 'CLOUDINARY:1',
+    formats: ['image/jpeg', 'image/png'], maxBytes: 10 * 1024 * 1024,
+  });
   function setup(prepare:(f:File)=>Promise<Blob> = async f=>f) {
     const uploads: Subject<any>[] = [];
-    const api = {
+    const api = { capabilities,
       createSession: vi.fn(() => of({ id: 'session', media: [], state: 'OPEN', expiresAt: '' })),
       uploadTemporary: vi.fn(
         (session: string, body: FormData, replace: string | null, key: string) => {
@@ -42,6 +46,29 @@ describe('book photo queue', () => {
     });
     return { q: TestBed.inject(BookUploadQueue), api, uploads };
   }
+  it('sends the original LOCAL file and polls before accepting it', async () => {
+    const file = photo();
+    const prepare = vi.fn(async (f: File) => f);
+    const operation = { mediaId: 'local-id', jobId: 'job-id', status: 'PENDING' };
+    const api = {
+      capabilities: () => of({ provider: 'LOCAL', revision: 'LOCAL:v1', formats: [file.type], maxBytes: file.size }),
+      createSession: () => of({ id: 'local-session', state: 'OPEN', media: [] }),
+      uploadLocal: vi.fn((_session: string, _body: FormData) => of(new HttpResponse({ body: operation }))),
+      imageOperation: vi.fn(() => of({ ...operation, status: 'READY' })),
+      session: () => of({ media: [{ id: 'local-id', state: 'READY', contentPath: '/local-preview' }] }),
+      cancelSession: () => of(null),
+    };
+    TestBed.configureTestingModule({ providers: [
+      BookUploadQueue, { provide: BookApi, useValue: api }, { provide: PREPARE_BOOK_IMAGE, useValue: prepare },
+    ] });
+    const queue = TestBed.inject(BookUploadQueue);
+    queue.add([file]);
+    await vi.waitFor(() => expect(queue.rows()[0].state).toBe('READY'));
+    expect(api.uploadLocal.mock.calls[0][1].get('file')).toBe(file);
+    expect(api.imageOperation).toHaveBeenCalledWith('job-id');
+    expect(prepare).not.toHaveBeenCalled();
+    queue.markConsumed();
+  });
   it('uploads eight preserves roles on removal and replaces at capacity',async()=>{
     const {q,api,uploads}=setup();q.add(Array.from({length:8},photo));
     expect(q.rows().map(r=>r.role)).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3','INSIDE_4','INSIDE_5']);
@@ -166,7 +193,7 @@ describe('book photo queue', () => {
   });
   it('keeps an existing photo replacement attached to its ID when reordered while uploading', async () => {
     const response = new Subject<any>();
-    const api = { upload: vi.fn(() => response), cancelSession: () => of(null) };
+    const api = { capabilities, upload: vi.fn(() => response), cancelSession: () => of(null) };
     TestBed.configureTestingModule({
       providers: [
         BookUploadQueue,
@@ -226,7 +253,7 @@ describe('book photo queue', () => {
       totalStock: stockChanged ? 9 : book.totalStock,
       media: [{ ...book.media[0], id: 'new', contentPath: '/new' }, book.media[1]],
     };
-    const api = {
+    const api = { capabilities,
       upload: vi.fn(() => response),
       get: vi.fn(() => of(current)),
       cancelSession: () => of(null),

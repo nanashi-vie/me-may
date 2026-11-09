@@ -11,6 +11,7 @@ import vn.memay.media.MediaDtos.MediaRole;
 public class MediaService {
     @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.beans.factory.ObjectProvider<LocalImageStore> localStores;
     private final MediaTransactions transactions;
     private final MediaGateway gateway;
     private final ImageValidator validator;
@@ -60,6 +61,13 @@ public class MediaService {
     }
     public InputStream content(long id,MediaRole role,AdminUser actor,int width) {
         if(width!=320 && width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
+        var local = transactions.localPreview(id, role);
+        if (local != null) {
+            var store = localStores.getIfAvailable();
+            if (store == null) throw new vn.memay.common.AdminApiException(503, "local_images_unavailable");
+            try { return store.openPreview(local.media(), local.generation(), width); }
+            catch (java.io.IOException e) { throw new vn.memay.common.AdminApiException(404, "not_found"); }
+        }
         return gateway.openAdminPreview(timings.measure("authorization", () -> transactions.activeKey(id, role)),width);
     }
 }

@@ -47,12 +47,14 @@ public class MediaTransactions {
     private final AuditService audit;
     private final Clock clock;
     private final SourceBindingRepository sources;
+    private final UploadSessionTransactions sessions;
     private final EntityManager em;
     private final JdbcTemplate jdbc;
 
     public MediaTransactions(vn.memay.auth.AdminUserRepository users, BookCopyRepository books,
             ListingRepository listings, BookMediaRepository images, BookAccess access, BookMapper mapper,
-            AuditService audit, Clock clock, EntityManager em, JdbcTemplate jdbc, SourceBindingRepository sources) {
+            AuditService audit, Clock clock, EntityManager em, JdbcTemplate jdbc, SourceBindingRepository sources,
+            UploadSessionTransactions sessions) {
         this.users = users;
         this.books = books;
         this.listings = listings;
@@ -62,6 +64,7 @@ public class MediaTransactions {
         this.audit = audit;
         this.clock = clock;
         this.sources = sources;
+        this.sessions = sessions;
         this.em = em;
         this.jdbc = jdbc;
     }
@@ -146,6 +149,57 @@ public class MediaTransactions {
     }
 
     @Transactional
+    public BookDetail commitReplacement(long bookId, UUID mediaId, long version, MediaRole role,
+                                        UUID requestKey, AdminUser actor) {
+        if (version < 0 || role == null || requestKey == null)
+            throw new AdminApiException(400, "invalid_image_replacement");
+        jdbc.queryForList("SELECT id FROM admin_user WHERE id=? FOR UPDATE", Long.class, actor.getId());
+        sessions.requireOwner(actor);
+        role = role.canonical();
+        var replay = jdbc.queryForList("SELECT * FROM local_image_commit WHERE actor_id=? AND request_key=?",
+                actor.getId(), requestKey);
+        if (!replay.isEmpty()) {
+            var saved = replay.getFirst();
+            if (!mediaId.equals(saved.get("media_id")) || !Long.valueOf(bookId).equals(saved.get("book_id"))
+                    || !Long.valueOf(version).equals(saved.get("book_version")) || !role.name().equals(saved.get("role")))
+                throw new AdminApiException(409, "image_request_changed");
+            return mapper.detail(books.findById(bookId).orElseThrow(() -> new AdminApiException(404, "not_found")),
+                    listings.findByBookCopyId(bookId).orElseThrow());
+        }
+        var rows = jdbc.queryForList("SELECT session_id FROM temporary_media WHERE id=? AND provider='LOCAL'",
+                UUID.class, mediaId);
+        if (rows.isEmpty()) throw new AdminApiException(404, "not_found");
+        UUID session = rows.getFirst();
+        sessions.lock(session, actor, true);
+        if (!Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM temporary_media WHERE id=? AND session_id=?
+                    AND state='READY' AND provider='LOCAL' AND generation_id IS NOT NULL)
+                """, Boolean.class, mediaId, session))) throw new AdminApiException(409, "media_not_ready");
+
+        var b = book(bookId, version, actor);
+        var l = listings.findByBookCopyId(bookId).orElseThrow();
+        var before = mapper.detail(b, l);
+        b.touch(clock.instant());
+        em.flush();
+        for (var old : images.findByBookCopyIdAndState(bookId, MediaState.ACTIVE)) {
+            if (old.role == role) {
+                old.state = MediaState.DELETE_PENDING;
+                old.updatedAt = clock.instant();
+            }
+        }
+        em.flush();
+        sessions.consumeReady(mediaId, bookId, role, role.label() + " " + b.bookCode);
+        if (l.publicationStatus == Publication.PUBLISHED) sources.requireVerifiedForBook(bookId);
+        var after = mapper.detail(b, l);
+        audit.record(actor, "BOOK", bookId, "MEDIA_REPLACED", audit.snapshot(before), audit.snapshot(after), b.version);
+        jdbc.update("""
+                INSERT INTO local_image_commit(media_id,actor_id,book_id,book_version,role,request_key)
+                VALUES (?,?,?,?,?,?)
+                """, mediaId, actor.getId(), bookId, version, role.name(), requestKey);
+        return after;
+    }
+
+    @Transactional
     public void fail(UUID id) {
         jdbc.update("update book_media set state='DELETE_PENDING',updated_at=? where id=? and state='UPLOADING'",
                 java.sql.Timestamp.from(clock.instant()), id);
@@ -193,6 +247,17 @@ public class MediaTransactions {
     private BookMedia active(long bookId, MediaRole role) {
         return images.findByBookCopyIdAndState(bookId, MediaState.ACTIVE).stream().filter(m -> m.role == role)
                 .findFirst().orElseThrow(() -> new AdminApiException(404, "not_found"));
+    }
+
+    public record LocalPreview(UUID media, UUID generation) {}
+
+    @Transactional(readOnly = true)
+    public LocalPreview localPreview(long bookId, MediaRole role) {
+        return jdbc.query("""
+                SELECT m.id,m.serving_generation FROM book_media m JOIN book_copy b ON b.id=m.book_copy_id
+                WHERE b.id=? AND b.deleted_at IS NULL AND m.role=? AND m.state='ACTIVE' AND m.provider='LOCAL'
+                """, (r,n) -> new LocalPreview(r.getObject("id",UUID.class),r.getObject("serving_generation",UUID.class)),
+                bookId,role.name()).stream().findFirst().orElse(null);
     }
 
     @Transactional(readOnly = true)

@@ -46,7 +46,7 @@ public class UploadSessionTransactions {
  }
  private UploadSession view(UUID id) {
   var row=jdbc.queryForMap("select state,expires_at,book_id from upload_session where id=?",id);
-  var media=jdbc.query("select * from temporary_media where session_id=? and state in ('UPLOADING','READY') order by created_at,id",(r,n)->new TemporaryMedia(r.getString("id"),r.getString("state"),r.getString("alt"),r.getString("source_ref"),r.getObject("width",Integer.class),r.getObject("height",Integer.class),"/api/v1/admin/upload-sessions/"+id+"/media/"+r.getString("id")),id);
+  var media=jdbc.query("select m.*,j.id as job_id,j.status as job_status from temporary_media m left join image_job j on j.generation_id=m.generation_id and j.kind='PROCESS' where m.session_id=? and m.state in ('UPLOADING','READY') order by m.created_at,m.id",(r,n)->new TemporaryMedia(r.getString("id"),r.getString("state"),r.getString("alt"),r.getString("source_ref"),r.getObject("width",Integer.class),r.getObject("height",Integer.class),"/api/v1/admin/upload-sessions/"+id+"/media/"+r.getString("id"),r.getString("provider"),r.getObject("job_id",UUID.class),r.getString("job_status"),r.getObject("request_key",UUID.class)),id);
   return new UploadSession(id.toString(),row.get("state").toString(),((Timestamp)row.get("expires_at")).toInstant(),media,row.get("book_id")==null?null:row.get("book_id").toString());
  }
  private String text(String field,String value,int max) {
@@ -54,13 +54,19 @@ public class UploadSessionTransactions {
   if(value!=null&&value.length()>max)throw AdminApiException.field(field,"Tối đa "+max+" ký tự");return value;
  }
  @Transactional public Intent begin(UUID session,AdminUser actor,UUID replace,String alt,String sourceRef,UUID requestKey,String fingerprint) {
+  return begin(session,actor,replace,alt,sourceRef,requestKey,fingerprint,false);
+ }
+ @Transactional public Intent beginLocal(UUID session,AdminUser actor,UUID replace,String alt,String sourceRef,UUID requestKey,String fingerprint) {
+  return begin(session,actor,replace,alt,sourceRef,requestKey,fingerprint,true);
+ }
+ private Intent begin(UUID session,AdminUser actor,UUID replace,String alt,String sourceRef,UUID requestKey,String fingerprint,boolean local) {
   lock(session,actor,true);
   if(requestKey!=null) {
    var previous=jdbc.queryForList("select * from temporary_media where session_id=? and request_key=? and state in ('UPLOADING','READY')",session,requestKey);
    if(!previous.isEmpty()) {
     var p=previous.getFirst();
-    if(!fingerprint.equals(p.get("request_fingerprint")))throw new AdminApiException(409,"image_request_changed");
-    if(!p.get("state").equals("READY"))throw new AdminApiException(409,"upload_in_progress");
+    if(local!=p.get("provider").equals("LOCAL")||!fingerprint.equals(p.get("request_fingerprint")))throw new AdminApiException(409,"image_request_changed");
+    if(!local&&!p.get("state").equals("READY"))throw new AdminApiException(409,"upload_in_progress");
     UUID id=(UUID)p.get("id");
     return new Intent(id,session,p.get("storage_public_id").toString(),view(session).media().stream().filter(m->m.id().equals(id.toString())).findFirst().orElseThrow());
    }
@@ -73,7 +79,7 @@ public class UploadSessionTransactions {
   if(count>=(replace==null?8:9))throw new AdminApiException(409,"media_limit");
   UUID id=UUID.randomUUID();Instant now=clock.instant();String key=namespace+"/"+id;
   jdbc.update("insert into temporary_media(id,session_id,state,storage_public_id,replaces_id,alt,source_ref,created_at,updated_at,delete_after) values(?,?,'UPLOADING',?,?,?,?,?,?,?)",id,session,key,replace,text("alt",alt,300),text("sourceRef",sourceRef,500),Timestamp.from(now),Timestamp.from(now),Timestamp.from(now.plusSeconds(3600)));
-  jdbc.update("update temporary_media set request_key=?,request_fingerprint=? where id=?",requestKey,fingerprint,id);
+  jdbc.update("update temporary_media set request_key=?,request_fingerprint=?,provider=? where id=?",requestKey,fingerprint,local?"LOCAL":"CLOUDINARY",id);
   return new Intent(id,session,key,null);
  }
  @Transactional public TemporaryMedia ready(Intent intent,AdminUser actor,MediaGateway.UploadedMedia uploaded) {
@@ -89,8 +95,23 @@ public class UploadSessionTransactions {
  @Transactional public void failed(UUID id) {
   jdbc.update("update temporary_media set state='DELETE_PENDING',delete_after=? where id=? and state='UPLOADING'",Timestamp.from(clock.instant().plusSeconds(3600)),id);
  }
+ // The caller holds the session lock and owns the book mutation transaction.
+ public void consumeReady(UUID media,long bookId,MediaDtos.MediaRole role,String defaultAlt) {
+  if(jdbc.update("""
+      INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,
+          alt,source_ref,created_at,updated_at,provider,serving_generation)
+      SELECT id,?,?,'ACTIVE',storage_public_id,asset_id,format,bytes,width,height,coalesce(alt,?),source_ref,
+          created_at,updated_at,provider,generation_id FROM temporary_media WHERE id=? AND state='READY'
+      """,bookId,role.canonical().name(),defaultAlt,media)!=1)throw new AdminApiException(409,"media_not_ready");
+  jdbc.update("delete from temporary_media where id=?",media);
+ }
+ @Transactional public UUID localPreview(UUID session,UUID media,AdminUser actor) {
+  lock(session,actor,true);
+  return jdbc.query("select generation_id from temporary_media where id=? and session_id=? and state='READY' and provider='LOCAL'",
+      (r,n)->r.getObject("generation_id",UUID.class),media,session).stream().findFirst().orElse(null);
+ }
  @Transactional public String contentKey(UUID session,UUID media,AdminUser actor) {
-  lock(session,actor,true);var keys=jdbc.queryForList("select storage_public_id from temporary_media where id=? and session_id=? and state='READY'",String.class,media,session);
+  lock(session,actor,true);var keys=jdbc.queryForList("select storage_public_id from temporary_media where id=? and session_id=? and state='READY' and provider='CLOUDINARY'",String.class,media,session);
   if(keys.isEmpty())throw new AdminApiException(404,"not_found");return keys.getFirst();
  }
  @Transactional public TemporaryMedia metadata(UUID session,UUID media,AdminUser actor,String alt,String sourceRef) {
@@ -100,17 +121,17 @@ public class UploadSessionTransactions {
  }
  @Transactional public void remove(UUID session,UUID media,AdminUser actor) {
   lock(session,actor,true);
-  if(jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where id=? and session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),media,session)==0)throw new AdminApiException(404,"not_found");
+  if(jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where id=? and session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),media,session)==0)throw new AdminApiException(404,"not_found");
  }
  @Transactional public void cancel(UUID id,AdminUser actor) {
   lock(id,actor,true);jdbc.update("update upload_session set state='CANCELLED' where id=?",id);markPending(id);
  }
  private void markPending(UUID id) {
-  jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),id);
+  jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),id);
  }
  @Transactional public void expire() {
   var sessions=jdbc.queryForList("select id from upload_session where state='OPEN' and expires_at<=? order by expires_at limit 100 for update skip locked",UUID.class,Timestamp.from(clock.instant()));
   for(UUID id:sessions){jdbc.update("update upload_session set state='CANCELLED' where id=?",id);markPending(id);}
-  jdbc.update("update temporary_media set state='DELETE_PENDING' where state='UPLOADING' and delete_after<=?",Timestamp.from(clock.instant()));
+  jdbc.update("update temporary_media set state='DELETE_PENDING' where state='UPLOADING' and provider='CLOUDINARY' and delete_after<=?",Timestamp.from(clock.instant()));
  }
 }

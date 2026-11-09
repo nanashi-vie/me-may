@@ -69,6 +69,7 @@ public class ImageJobService {
             throw new AdminApiException(422, "image_output_not_publishable");
         }
         jobs.ready(jobId, token, manifest, originalHash);
+        jobs.finishLocalUpload(manifest);
     }
 
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {

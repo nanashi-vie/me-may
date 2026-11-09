@@ -144,6 +144,29 @@ public class ImageJobRepository {
         }
     }
 
+    void finishLocalUpload(Manifest manifest) {
+        var uploads = jdbc.queryForList("SELECT * FROM temporary_media WHERE id=? AND provider='LOCAL'",
+                manifest.mediaId());
+        if (uploads.isEmpty()) return;
+        var upload = uploads.getFirst();
+        if (!manifest.generationId().equals(upload.get("generation_id")))
+            throw new AdminApiException(409, "image_generation_conflict");
+        var preview = manifest.variants().stream()
+                .filter(v -> v.name().equals("1280") && v.mime().equals("image/jpeg")).findFirst()
+                .orElseThrow(() -> new AdminApiException(422, "image_preview_missing"));
+        if (upload.get("replaces_id") != null) {
+            requireUpdated(jdbc.update("""
+                    UPDATE temporary_media SET state='DELETE_PENDING',delete_after=clock_timestamp()
+                    WHERE id=? AND session_id=? AND state='READY'
+                    """, upload.get("replaces_id"), upload.get("session_id")));
+        }
+        requireUpdated(jdbc.update("""
+                UPDATE temporary_media SET state='READY',asset_id=?,format='jpg',bytes=?,width=?,height=?,
+                    updated_at=clock_timestamp() WHERE id=? AND state='UPLOADING'
+                """, manifest.generationId().toString(), preview.bytes(), preview.width(), preview.height(),
+                manifest.mediaId()));
+    }
+
     private static JobLease lease(ResultSet rs, int row) throws SQLException {
         return new JobLease(rs.getObject("id", UUID.class), rs.getObject("lease_token", UUID.class),
                 rs.getObject("media_id", UUID.class), rs.getObject("generation_id", UUID.class),
