@@ -2850,3 +2850,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chứa URL zaloapp.com/qr/g cùng mã nhóm. Yêu cầu giả lập Safari iPhone tới
   URL trong spec nhận 302 sang scheme của Zalo; còn kiểm mở đúng nhóm trên
   điện thoại thật. Bàn giao theo workflow dev, bước tiếp theo là smoke này.
+
+### S062-C03 — Nền popup theo mẫu Zalo
+
+- User xác nhận QR mở đúng nhóm trên iPhone thật. Yêu cầu chỉnh nền popup
+  theo ảnh mẫu. Bắt đầu trên dev sạch ở c075605.
+- Phạm vi HTML/SCSS của dialog: nền xanh, thẻ trắng và logo Mẹ Mây.
+  Giữ nguyên dữ liệu và hình QR. Kiểm test, build và giao diện sau chỉnh.
+- Đã thêm nền xanh, thẻ trắng, nhãn Cộng đồng Zalo · zalo.me và nút xanh.
+  Từ code/frontend: npm test đạt 257/257, npm run build đạt.
+  Chrome localhost kiểm ảnh popup, focus, Escape và viewport 420×320;
+  jsQR đọc đúng URL từ ảnh QR render. Kiểm iPhone thật do user xác nhận
+  trước khi đổi nền. Bàn giao dev, còn cập nhật bản chạy online.
