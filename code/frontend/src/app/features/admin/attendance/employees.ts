@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AttendanceApi, Employee } from './attendance-api';
@@ -18,6 +18,8 @@ export class Employees implements OnInit {
   private readonly navigationNotice = inject(Router).currentNavigation()?.extras.state?.['attendanceNotice'];
   readonly notice = signal(typeof this.navigationNotice === 'string' ? this.navigationNotice : '');
   readonly busy = signal(false);
+  readonly menuEmployee = signal<number | null>(null);
+  creating = false;
   editing: Employee | null = null;
   resetting: Employee | null = null;
   form = { ...empty };
@@ -33,7 +35,27 @@ export class Employees implements OnInit {
     finally { this.busy.set(false); }
   }
 
+  add() {
+    this.select(null);
+    this.creating = true;
+  }
+
+  openMenu(id: number) {
+    if (!this.busy()) this.menuEmployee.set(id);
+  }
+
+  closeMenu(id: number) {
+    if (this.menuEmployee() === id) this.menuEmployee.set(null);
+  }
+
+  @HostListener('document:click', ['$event.target'])
+  closeOutsideMenu(target: EventTarget | null) {
+    if (target instanceof Element && !target.closest('.employee-row')) this.menuEmployee.set(null);
+  }
+
   select(employee: Employee | null) {
+    this.creating = false;
+    this.menuEmployee.set(null);
     this.editing = employee;
     this.resetting = null;
     this.newPin = '';
@@ -51,7 +73,7 @@ export class Employees implements OnInit {
   }
 
   async save() {
-    if (this.busy()) return;
+    if (this.busy() || (!this.creating && !this.editing)) return;
     this.busy.set(true);
     this.error.set('');
     this.notice.set('');

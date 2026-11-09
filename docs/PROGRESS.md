@@ -5,7 +5,7 @@ Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - S063 (09/11, dev-ui): Chấm công MVP v1 gồm hồ sơ/PIN, lịch tuần, chấm công, audit và Excel.
   Ca còn mở từ 20:30 giờ Việt Nam hiện Cần kiểm tra. Đã kiểm với PostgreSQL test và Chrome local.
-  Sidebar nhóm Nhân viên. Hồ sơ 40:60, mở lịch và chấm công theo người đã chọn.
+  Hồ sơ 40:60, ẩn khung thêm mới mặc định. Menu từng hàng mở thông tin, lịch và chấm công.
   Backend 247 đạt, 3 bỏ qua. Frontend 256 đạt. Chưa rollout migration V21. [Chấm công](ATTENDANCE_SPEC.md).
 - S056-C04 (09/11): nhãn Nơi lưu trữ dùng cùng mẫu field với Tồn kho để
   tránh margin của label chung. Vitest 252 ca đạt; còn smoke trình duyệt.

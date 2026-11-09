@@ -72,8 +72,8 @@ Sau khi chấm công, giao diện tự quay về màn hình chọn nhân viên.
 | Ngày bắt đầu | Không | |
 | Trạng thái | Có | ACTIVE / INACTIVE |
 
-- Mỗi nhân viên có một hồ sơ độc lập. Danh sách ở cột trái 40%, thông tin và thao tác của hồ sơ đã chọn ở cột phải 60% trên desktop.
-- Mục cha **Nhân viên** chứa **Hồ sơ nhân viên**, **Lịch làm việc** và **Bảng công**. Hồ sơ cá nhân có liên kết lịch và chấm công riêng.
+- Mỗi nhân viên có một hồ sơ độc lập. Danh sách ở cột trái 40%. Khung bên phải 60% trên desktop chỉ mở khi bấm Thêm nhân viên hoặc chọn Thông tin hồ sơ.
+- Mục cha **Nhân viên** chứa **Hồ sơ nhân viên**, **Lịch làm việc** và **Bảng công**. Rê chuột, bấm hoặc dùng bàn phím trên hàng nhân viên để mở menu Thông tin hồ sơ, Lịch làm việc và Chấm công của người đó.
 - Họ tên dùng trên giao diện, bảng công và Excel. Tên hiển thị đã lưu được giữ để tương thích dữ liệu.
 - PIN được hash tại backend, không lưu bản rõ.
 - Owner có thể cấp lại PIN.

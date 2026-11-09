@@ -2720,3 +2720,9 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Lịch cá nhân dùng chung phiên bản lịch tuần và chỉ thay hàng của hồ sơ đã chọn. Bảng công và Excel dùng họ tên. API tiếp tục nhận trường cũ để tương thích, dữ liệu đã lưu giữ nguyên. Không thêm migration.
 - Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost kiểm tỷ lệ 4:6, bố cục hẹp, nhóm điều hướng, lịch cá nhân đủ bảy ô, chấm công đúng hồ sơ, thông báo khi trở về và chuyển hướng URL cũ.
 - Từ code/backend: mvn -o test với PostgreSQL test UTF-8/ICU đạt 247, bỏ qua 3. Bàn giao dev-ui, chưa deploy production.
+
+### 2026-11-09 — S063-C05 — Menu theo nhân viên và ẩn khung thêm mới
+
+- Theo yêu cầu trên dev-ui từ b0cbb88. Ẩn khung thêm mới mặc định. Dùng menu cạnh từng nhân viên để mở thông tin hồ sơ, lịch hoặc chấm công. Giữ bố cục 4:6 khi mở khung bên phải.
+- Từ code/frontend: npm test đạt 256/256, build SSR và Workers đạt. Chrome localhost với API giả kiểm mở/đóng khung thêm mới, di chuột sang menu cạnh hàng, liên kết đúng ID, Tab/Escape và bấm ở màn hình hẹp. Chỉ đổi frontend, không chạy lại Maven.
+- Bàn giao dev-ui, chưa deploy production.
