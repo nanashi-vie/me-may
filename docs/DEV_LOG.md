@@ -3127,3 +3127,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chọn toàn backend, áp dụng cả khi sửa ảnh sách cũ. Giới hạn đợt đầu bằng
   thao tác vận hành trên sách mới. Cập nhật runbook và recovery plan.
 - Kiểm diff tài liệu. Chưa chạy lại test hoặc smoke QA trong checkpoint này.
+
+## 2026-11-10 — R6 — Rà soát trước khi lên production
+
+- Bằng chứng owner: QA backend/worker ff81bd0. JAR có endpoint worker và
+  V24–V30. Sau đổi launcher, listener 8081 bind đúng IP mạng QA, health 200,
+  không token 401, cổng 8080 trả 404. Owner bỏ qua chạy lại upload Drive.
+- Worker production ở 0 replica, đúng overlay, UID/GID 10001:10001, ghi
+  staging/derived đạt và token khớp file. Digest khai báo khớp Docker inspect.
+  Đích `backend-images:8081` chưa được xác minh trên backend production.
+- JAR production chỉ có V23. Tên service đã kiểm là PostgreSQL, chưa dùng làm
+  đích worker. Giữ production hiện tại trong khi xác định đúng app Dokploy và
+  backup mới. Merge main có thể tự kích hoạt deploy và Flyway. Chưa deploy.
