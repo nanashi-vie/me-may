@@ -3105,3 +3105,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   đạt 4/4, `npm --prefix code/image-worker test` đạt 10/10.
 - Còn ca thật Drive hash lệch/thiếu quyền/UI, smoke ngoài LAN, benchmark 20–50
   sách, restore R2 và rollback trên QA. Chờ điểm truy cập QA, lô sách và snapshot.
+
+## 2026-11-10 — R6 — Xác nhận mạng QA và lô Drive
+
+- Owner xác nhận R6.1 chạy inline và backend QA ở
+  `http://memay-api-images-qa:8080` trong mạng Docker `memay-images-qa`.
+  Lô ảnh đã upload lên thư mục chia sẻ cho service account.
+- Kiểm lại CLI R3–R5 và benchmark: chỉ nhận origin HTTPS hoặc loopback theo
+  contract tương ứng. Runbook ghi cách dùng CLI qua loopback trong namespace QA
+  và cách chuẩn bị mapping từ export QA, tối đa 100 ảnh/receipt.
+- Lần kiểm SSH lại timeout ở banner. Chưa chạy ca live mới. Cần operator
+  chạy từ mạng Docker QA hoặc cấp điểm truy cập QA được kiểm soát, cùng
+  mapping hoặc danh sách sách/ảnh và thông tin snapshot R2.

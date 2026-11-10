@@ -130,6 +130,18 @@ events. Restart policy chỉ phản ứng khi tiến trình thoát.
 
 ### Smoke toàn luồng
 
+QA hiện dùng mạng Docker `memay-images-qa` và backend nội bộ
+`http://memay-api-images-qa:8080`. Operator có quyền Docker kiểm health từ
+container cùng mạng. Để chạy CLI hiện có, dùng HTTPS QA có kiểm soát truy cập,
+hoặc chạy CLI trong cùng network namespace với container backend QA và đặt
+`MEMAY_SITE_ORIGIN=http://127.0.0.1:8080`. Giữ giới hạn HTTPS/loopback của CLI.
+
+Lô Drive đã chia sẻ cần được ghép theo từng ảnh trước khi preview migration.
+Từ bản export QA, điền `drive_file_id` theo `media_id` của ảnh hiện hữu.
+Làm tối đa 100 ảnh mỗi receipt và xem cặp ảnh trước khi xác nhận apply.
+Với sách mới dùng upload LOCAL và xác minh theo file ID, không dùng migration
+preview để tạo sách.
+
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
    link/file ID. Thử nguồn sai và xuất bản thiếu ảnh đã VERIFIED.

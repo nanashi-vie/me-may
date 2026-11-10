@@ -6,8 +6,9 @@ Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - R6.1 (10/11): owner báo ca Drive thật qua upload nguyên byte đạt. Encode và
   xác minh đều READY, nguồn VERIFIED, binding v1. Còn ca hash lệch, thiếu quyền
   và upload UI. [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
-- R6 (10/11): local đạt 16 backend, 14 upload UI, 4 CLI và 10 worker. QA Ubuntu
-  cần điểm truy cập được cấp quyền. Benchmark và restore chờ lô sách và backup R2.
+- R6 (10/11): local đạt 16 backend, 14 upload UI, 4 CLI và 10 worker. Owner đã
+  chia sẻ lô ảnh Drive. Cần quyền chạy trong QA Docker, danh sách ghép ảnh/sách
+  và snapshot R2 để chạy benchmark, migration và restore.
 - S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
   ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
   và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).
