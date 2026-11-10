@@ -1,0 +1,62 @@
+services:
+  image-worker:
+    image: ${MEMAY_IMAGE_WORKER_IMAGE:?Set the pinned worker image reference}
+    user: "10001:10001"
+    environment:
+      MEMAY_IMAGE_ROOT: /srv/memay/images
+      MEMAY_IMAGE_WORKER_ORIGIN: ${MEMAY_IMAGE_WORKER_ORIGIN:-http://backend-images:8081}
+      MEMAY_IMAGE_WORKER_TOKEN: ${MEMAY_IMAGE_WORKER_TOKEN:?Set a worker-only token}
+      MEMAY_IMAGE_WORKER_DIGEST: ${MEMAY_IMAGE_WORKER_DIGEST:?Set the worker image digest}
+    volumes:
+      - type: bind
+        source: ${MEMAY_IMAGE_ROOT:-/srv/memay/images}
+        target: /srv/memay/images
+        bind:
+          create_host_path: false
+    networks: [images]
+    cpus: 1.0
+    mem_limit: 768m
+    restart: unless-stopped
+    init: true
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch(new URL('/actuator/health',process.env.MEMAY_IMAGE_WORKER_ORIGIN),{signal:AbortSignal.timeout(3000),redirect:'error'}).then(r=>{process.exitCode=r.ok?0:1}).catch(()=>{process.exitCode=1})"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+  image-nginx:
+    image: ${MEMAY_IMAGE_NGINX_IMAGE:?Set the pinned Nginx image reference}
+    user: "10001:10001"
+    entrypoint: ["nginx", "-g", "daemon off;"]
+    volumes:
+      - type: bind
+        source: ${MEMAY_IMAGE_ROOT:-/srv/memay/images}/derived
+        target: /srv/memay/images/derived
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./nginx.conf
+        target: /etc/nginx/nginx.conf
+        read_only: true
+        bind:
+          create_host_path: false
+    networks: [images]
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+networks:
+  images:
+    external: true
+    name: ${MEMAY_IMAGE_NETWORK:-memay-images}

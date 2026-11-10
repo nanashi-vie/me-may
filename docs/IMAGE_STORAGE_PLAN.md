@@ -7,8 +7,8 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** User chọn Native. S1–S7 và R1–R5 đã triển khai, tiếp theo S8.
-Bằng chứng và giới hạn S5–S7 ghi trong DEV_LOG S061/S062.
+**Status:** User chọn Native. S1–S8 và R1–R5 đã kiểm local. R6 chờ môi trường owner.
+Bằng chứng S8 ở [IMAGE_OPERATIONS](IMAGE_OPERATIONS.md) và DEV_LOG S066.
 
 ## Global Constraints
 
@@ -262,20 +262,20 @@ cập nhật `.env.example`, `docs/{README,DEPLOYMENT,VERIFICATION,PROGRESS,DEV_
 **Interfaces:** compose template worker/internal Nginx; không tự chạy trên server owner.
 Benchmark input fixture manifest, JSON output timings/bytes/RSS/errors, không secrets.
 
-- [ ] Viết smoke fixture 20 sách×2 ảnh và 50 sách×8 ảnh; kiểm limit1worker,
+- [x] Viết smoke fixture 20 sách×2 ảnh và 50 sách×8 ảnh; kiểm limit1worker,
   restart/job retry/kill/disk full và public/admin/ZIP. Tất cả ở namespace/DB test.
-- [ ] Chạy full BE `bash code/backend/run-local.sh -B -ntp verify`; FE,
+- [x] Chạy full BE `bash code/backend/run-local.sh -B -ntp verify`; FE,
   `npm run build`, `npm run build:workers`, `npm run check:workers:proxy`; W `npm test`.
-- [ ] Browser QA desktop/mobile: 0/2/8/9 ảnh, nguồn sai, poll/reload, hai tab,
+- [x] Browser QA desktop/mobile: 0/2/8/9 ảnh, nguồn sai, poll/reload, hai tab,
   replace/ẩn/publish, gallery/ZIP; lưu bằng chứng và hạn chế thật, không chỉ mock UI.
-- [ ] Benchmark baseline API không worker và cùng API dưới tải; ghi p50/p95,
+- [x] Benchmark baseline API không worker và cùng API dưới tải; ghi p50/p95,
   RSS/CPU/disk/output bytes. Không dùng máy local để tuyên bố Dell đạt.
-- [ ] Viết compose/nginx/env mẫu: mount persistent cùng filesystem; Nginx read-only,
+- [x] Viết compose/nginx/env mẫu: mount persistent cùng filesystem; Nginx read-only,
   không host ports cho Nginx/management8081, 1CPU/768MiB worker, restart/healthchecks;
   cấu hình credential không có giá trị thật, cảnh báo disk/queue/source/HTTP errors.
-- [ ] Bàn giao IMAGE_OPERATIONS: owner dựng Ubuntu/Drive/R2, smoke ngoài LAN,
+- [x] Bàn giao IMAGE_OPERATIONS: owner dựng Ubuntu/Drive/R2, smoke ngoài LAN,
   kiểm text quality và ngưỡng theo đo thực tế; không chặn bàn giao code local vì chưa có server.
-- [ ] Review toàn diff theo skill, sửa finding; commit `docs(media): hand off local image system operations`.
+- [x] Review toàn diff theo skill, sửa finding; commit `docs(media): hand off local image system operations`.
   Giữ specs/plans còn gate live; không xóa trước chuyển đủ contract/bằng chứng.
 
 ## Coverage và điều kiện hoàn tất

@@ -124,7 +124,10 @@ export class BookUploadQueue {
         provider: m.provider,
       })) ?? [],
     );
-    void this.restoreLocal();
+    if (book) void this.restoreLocal();
+  }
+  restoreDraft() {
+    if (!this.persisted() && !this.rows().length) void this.restoreLocal();
   }
   private async capabilities() {
     if (this.capability()) return this.capability()!;

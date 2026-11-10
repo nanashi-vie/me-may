@@ -86,6 +86,27 @@ describe('BookEditor safe final saves', () => {
     );
     e.confirmed.set(true);
   }
+  it('restores ready LOCAL photos when the new-book route is reloaded', async () => {
+    const key = 'memay.image-session.new';
+    sessionStorage.setItem(key, JSON.stringify({ session: 'saved-session', roles: { request: 'FRONT' } }));
+    try {
+      const session = vi.spyOn(TestBed.inject(BookApi), 'session').mockReturnValue(of({
+        id: 'saved-session', state: 'OPEN', expiresAt: '', media: [{
+          id: 'photo', state: 'READY', contentPath: '/test-preview', provider: 'LOCAL',
+          requestKey: 'request', jobId: 'job', jobStatus: 'READY',
+          alt: null, sourceRef: null, width: 480, height: 600,
+        }],
+      }));
+      const fixture = TestBed.createComponent(BookEditor);
+      fixture.detectChanges();
+      await vi.waitFor(() => expect(fixture.componentInstance.photos.assignments())
+        .toEqual([{ mediaId: 'photo', role: 'FRONT' }]));
+      expect(session).toHaveBeenCalledWith('saved-session');
+    } finally {
+      sessionStorage.removeItem(key);
+    }
+  });
+
   it('selects a newly created box and includes it in the book save', async () => {
     vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const e = editor();

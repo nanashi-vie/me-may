@@ -255,7 +255,10 @@ export class BookEditor {
   ngOnInit() {
     this.loadMetadata();
     const open = (id:string|null) => {
-      if (!id) return;
+      if (!id) {
+        this.photos.restoreDraft();
+        return;
+      }
       ++this.loadSequence;
       this.routeBookId.set(id);
       this.book.set(null);

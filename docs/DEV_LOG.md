@@ -2966,3 +2966,34 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   dừng container tạm sau kiểm thử. Drive dùng giả lập, chưa kiểm Ubuntu thật.
 - Bàn giao dev. Đã báo owner đến mốc dựng Ubuntu. Tiếp theo S8 benchmark
   và smoke trước R6 live gate.
+
+## 2026-11-10 — S066-C01 — Bắt đầu S8
+
+- Dùng lại worktree dev 988da15. Chuẩn bị compose và runbook bàn giao Ubuntu,
+  fixture benchmark, kiểm hồi quy local. Gate server/Drive/R2 thật ở R6.
+
+## 2026-11-10 — S066-C02 — Nghiệm thu local và bàn giao S8
+
+- Thêm Compose/Nginx nội bộ, UID/GID 10001 đồng bộ, mount persistent và
+  resource cap 1 CPU/768 MiB. Docker local xác nhận Nginx nội bộ đọc JPEG/WebP,
+  từ chối staging/symlink/size sai và chỉ đọc derived.
+- Worker amd64 build thành công. Thử ENOSPC trên tmpfs 64 KiB, retry sau
+  giải phóng dung lượng. Kill tiến trình claimant test, đặt hết hạn đúng
+  lease fixture rồi chạy lại worker thật, trạng thái READY.
+- RED browser reload form Thêm sách mất ảnh LOCAL do route mới không gọi
+  khôi phục session. Test editor tái hiện, tách restoreDraft khỏi reset
+  queue; GREEN browser hiện lại hai/tám ảnh. Kiểm 0/2/8 ảnh và lô vượt trần,
+  link thư mục sai, lưu Ẩn, thay bìa và xung đột hai tab.
+- Gallery tám ảnh desktop/mobile và ZIP OWNER tám entry. Dev SSR lúc đầu
+  gọi sai origin loopback và trả 503, cấu hình lại bản SSR build về backend
+  test, kiểm HTTP 200 public / 404 archived đạt. Publication gallery là fixture,
+  Drive thật và publish có Drive thật còn ở R6.
+- `bash code/backend/run-local.sh -B -ntp verify` với .env tạm và PostgreSQL
+  test đạt 269 ca, 266 đạt và 3 skip. Lượt đầu DB trống lỗi auth vì chạy trước
+  migration, lượt sau trên schema đã tạo đạt. Frontend `npm test` 262 đạt;
+  `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` đạt.
+  `npm test` tại code/image-worker 10 đạt.
+- Benchmark 40/400 ảnh, 771 probe API không lỗi trên Mac arm64. Encode p95
+  226,29/196,21 ms. Bảng CPU/RSS/bytes và hạn chế warm-up ở IMAGE_OPERATIONS.
+- Review đã bổ sung lệnh đăng ký recipe và lưu alias/IP backend qua redeploy.
+  Bàn giao dev. R6 cần owner xác nhận Ubuntu, nguồn Drive và backup R2.

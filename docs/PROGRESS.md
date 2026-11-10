@@ -1,6 +1,6 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 09/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
 - S062 (09/11): đã triển khai popup Cộng đồng trên desktop và giữ mở link trực tiếp trên mobile.
@@ -21,8 +21,11 @@ Cập nhật 09/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   S064 đã kiểm R4 apply Cloudinary → LOCAL theo sách và rollback có version.
   S065 đã kiểm R5 inventory/rebuild đúng manifest và restore mode cách ly.
   Backend 266 đạt, 3 skip. Worker 10, CLI 4, drill restore PostgreSQL 4 test đạt.
-  Tiếp theo S8. Owner có thể tiếp tục dựng Ubuntu để kiểm Nginx, worker và Drive thật.
-  [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md).
+  S066 đã kiểm S8 local, sửa khôi phục ảnh sau reload form mới, bàn giao Ubuntu.
+  Backend 266 đạt, 3 skip. Frontend 262, worker 10, build và proxy đạt.
+  R6 chờ Ubuntu/Drive/R2 và smoke ngoài LAN trên namespace owner.
+  [Runbook](IMAGE_OPERATIONS.md), [Storage plan](IMAGE_STORAGE_PLAN.md),
+  [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).
 - Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.
