@@ -257,16 +257,16 @@ Recipe cần `image_recipe.worker_digest` khớp digest OCI của worker và
 - [ ] Bàn giao cho owner: secret env names, folder read permission, cách tải credential
   ngoài repo; xác minh service account đọc được ảnh. Nếu bị policy chặn thì ghi blocker,
   chốt OAuth read-only riêng, không tự mở scope/quyền chia sẻ.
-- [ ] Owner chọn20–50 sách, dry-run mapping/preview/confirm; chạy upload và migration
-  trong namespace thử. Ghi quality chữ, p50/p95/download/encode/RSS/CPU/bytes/output,
+- [ ] Owner chọn 20–50 sách mới và chạy upload LOCAL, xác minh Drive trong
+  namespace thử. Ghi quality chữ, p50/p95/download/encode/RSS/CPU/bytes/output,
   API baseline vs có worker, tốc độ ngoài LAN. Owner chốt ngưỡng chấp nhận từ số đo.
 - [ ] Owner cung cấp lịch/retention/bản backup R2; restore DB vào instance cách ly,
   kiểm counts/FK/binding/recipes/receipts, nguồn thiếu/nguồn đổi báo riêng;
   kiểm ảnh bìa đầu tiên và toàn lô, ghi thời gian thực thay vì cam kết dự tính.
-- [ ] Drill rollback migrated pointer và bản code vẫn đọc LOCAL; tạo một ảnh LOCAL mới
-  trước rollback để chứng minh không mất ghi mới. Không dùng rollback binary cloud-only.
+- [ ] Kiểm đọc cùng lúc ảnh LOCAL của sách mới và ảnh Cloudinary của sách cũ.
+  Hoãn mapping/apply và drill rollback con trỏ migrated tới đợt chuyển sách cũ.
 - [ ] Ghi RPO theo backup DB/source coverage, RTO đo được và khoảng thiếu ảnh chấp nhận;
-  owner duyệt cutover trước tắt Cloudinary. Không tự delete asset cloud hoặc deploy.
+  owner duyệt mở LOCAL cho đợt nhập mới. Cloudinary tiếp tục phục vụ sách cũ.
 - [ ] Gộp contract/bằng chứng vào tài liệu chuẩn, giữ IMAGE_OPERATIONS làm runbook;
   chỉ xóa specs/plans và sửa README khi tất cả tiêu chí đã được chuyển/đóng.
   Commit/push dev; nếu live chưa sẵn sàng, giữ R6 unchecked và ghi bước owner cần làm.

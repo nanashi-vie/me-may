@@ -3117,3 +3117,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Lần kiểm SSH lại timeout ở banner. Chưa chạy ca live mới. Cần operator
   chạy từ mạng Docker QA hoặc cấp điểm truy cập QA được kiểm soát, cùng
   mapping hoặc danh sách sách/ảnh và thông tin snapshot R2.
+
+## 2026-11-10 — R6 — Chỉ mở LOCAL cho đợt nhập sách mới
+
+- Owner chọn giữ ảnh Cloudinary hiện có. R6 dùng lô Drive để nhập mới,
+  kiểm upload/xác minh, đọc cả hai provider và restore ảnh LOCAL cách ly.
+  Hoãn mapping/apply/rollback con trỏ Cloudinary tới đợt chuyển sách cũ.
+- Rà `LocalUploadService.capabilities` và `BookUploadQueue`: provider upload
+  chọn toàn backend, áp dụng cả khi sửa ảnh sách cũ. Giới hạn đợt đầu bằng
+  thao tác vận hành trên sách mới. Cập nhật runbook và recovery plan.
+- Kiểm diff tài liệu. Chưa chạy lại test hoặc smoke QA trong checkpoint này.

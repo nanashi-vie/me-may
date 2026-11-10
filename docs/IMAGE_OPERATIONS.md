@@ -136,27 +136,30 @@ container cùng mạng. Để chạy CLI hiện có, dùng HTTPS QA có kiểm s
 hoặc chạy CLI trong cùng network namespace với container backend QA và đặt
 `MEMAY_SITE_ORIGIN=http://127.0.0.1:8080`. Giữ giới hạn HTTPS/loopback của CLI.
 
-Lô Drive đã chia sẻ cần được ghép theo từng ảnh trước khi preview migration.
-Từ bản export QA, điền `drive_file_id` theo `media_id` của ảnh hiện hữu.
-Làm tối đa 100 ảnh mỗi receipt và xem cặp ảnh trước khi xác nhận apply.
-Với sách mới dùng upload LOCAL và xác minh theo file ID, không dùng migration
-preview để tạo sách.
+Đợt đầu dùng lô Drive để nhập sách mới trên LOCAL. Giữ ảnh đã lưu trên
+Cloudinary và kiểm đọc từ một sách cũ. Hoãn mapping, migration apply và
+rollback con trỏ của sách cũ đến đợt riêng.
+
+`MEMAY_IMAGE_LOCAL_ENABLED` bật khả năng upload LOCAL cho toàn backend.
+Form sửa sách cũ cũng dùng LOCAL nếu thêm hoặc thay ảnh khi cờ đang bật.
+Trong đợt đầu chỉ thao tác ảnh trên sách mới để giữ ảnh cũ ở Cloudinary.
 
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
    link/file ID. Thử nguồn sai và xuất bản thiếu ảnh đã VERIFIED.
 2. Kiểm replace, chuyển Ẩn và phiên bản cũ từ hai tab. Tải gallery, preview và
    ZIP từ desktop/mobile, gồm một lượt ngoài LAN. Kiểm ảnh chữ ở 480/1400 và
-   chốt chất lượng thực tế trước khi chuyển lô.
+   chốt chất lượng thực tế trước khi mở upload LOCAL. Kiểm lại gallery và
+   ZIP của một sách Cloudinary trong cùng môi trường.
 3. Theo dõi tuổi job pending lâu nhất, lease quá hạn, attempts, 429/5xx, Drive
    access errors, RAM/CPU của worker, inode và dung lượng trống của cả staging
    và derived. Đối chiếu request ID/operation ID, giữ credential ngoài log.
 4. Trong namespace thử, dừng worker khi job đang chạy rồi bật lại. Kiểm lease
    mới, retry và không có ảnh dở được publish. Thử thiếu dung lượng bằng mount
    riêng, sau đó giải phóng dung lượng và retry. Giữ nguyên ảnh đang phục vụ.
-5. Dùng [CLI R3–R5](IMAGE_RECOVERY_PLAN.md) để dry-run mapping, xác nhận từng ảnh,
-   apply, rollback có version, inventory và rebuild. Nếu nguồn Drive bị xóa,
-   ghi media ID và báo owner xử lý thủ công.
+5. Dùng [CLI R5](IMAGE_RECOVERY_PLAN.md) để inventory và rebuild ảnh LOCAL
+   của sách mới trên môi trường cách ly. Nếu nguồn Drive bị xóa, ghi media ID
+   và báo owner xử lý thủ công.
 6. Owner cung cấp lịch/retention và mẫu backup R2. Restore vào DB + mount riêng
    với profile `restore` mặc định cách ly. Đối chiếu manifest, file ngoài DB,
    recipe digest và lease. Chỉ bật lại kết nối sau khi xác minh namespace,
@@ -209,6 +212,6 @@ chữ và HTTP ngoài LAN chờ thử nghiệm trên Ubuntu.
 
 - Cần Ubuntu chạy được Nginx/worker, backend fixture truy cập mount/Drive và bản
   backup R2 có thể khôi phục ở đích cách ly.
-- Owner chọn lô 20–50 sách thử, duyệt ngưỡng p95 và chất lượng ảnh chữ. Ghi RTO
-  đo được, độ phủ binding và RPO DB. Giữ Cloudinary để rollback tới khi chốt
-  cutover. Bằng chứng local xem [DEV_LOG](DEV_LOG.md).
+- Owner chọn lô 20–50 sách mới thử, duyệt ngưỡng p95 và chất lượng ảnh chữ.
+  Ghi RTO đo được, độ phủ binding và RPO DB. Giữ Cloudinary phục vụ sách cũ.
+  Bằng chứng local xem [DEV_LOG](DEV_LOG.md).
