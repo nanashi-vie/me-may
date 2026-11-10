@@ -3089,3 +3089,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Agent chưa chạy lại live. Tiếp theo thử file có nội dung khác và file chưa
   chia sẻ quyền đọc, xác nhận cả hai không tạo binding VERIFIED mới. Kiểm
   riêng luồng upload từ UI vì bước chuẩn hóa có thể làm lệch SHA-256.
+
+## 2026-11-10 — R6 — Kiểm lại trước các ca nghiệm thu QA
+
+- SSH tới Ubuntu được, có `/srv/memay/qa` và `/srv/memay/images-qa`. Tài khoản
+  SSH không đọc được hai thư mục, không đọc được Docker socket và sudo cần
+  mật khẩu. Chưa gửi yêu cầu ghi vào backend QA hay production.
+- Kiểm code và test queue: capability LOCAL gửi chính File gốc, chỉ nhánh
+  Cloudinary gọi chuẩn hóa. Sửa runbook để kiểm capability trong ca UI thật.
+- Từ `code/backend`, chạy `./mvnw -B -ntp -o flyway:migrate` và test chọn lọc
+  Drive, binding, publication gate, migration preview/apply, recovery và restore
+  isolation trên PostgreSQL local tạm. 16/16 đạt. Từ `code/frontend`,
+  `npm test -- --include='src/app/features/admin/books/book-upload-queue.spec.ts'`
+  đạt 14/14. Từ root, `node --test scripts/image-system/media-operations.test.mjs`
+  đạt 4/4, `npm --prefix code/image-worker test` đạt 10/10.
+- Còn ca thật Drive hash lệch/thiếu quyền/UI, smoke ngoài LAN, benchmark 20–50
+  sách, restore R2 và rollback trên QA. Chờ điểm truy cập QA, lô sách và snapshot.

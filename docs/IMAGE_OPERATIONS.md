@@ -123,9 +123,10 @@ events. Restart policy chỉ phản ứng khi tiến trình thoát.
    byte. Dán link file vào nguồn ảnh, bấm Xác minh và kiểm trạng thái `VERIFIED`.
    Thử link của ảnh khác để kiểm hash mismatch và file chưa chia sẻ để kiểm
    lỗi quyền truy cập. Giữ ảnh Drive ở chế độ riêng tư.
-4. Kiểm riêng luồng upload từ trình duyệt. JPEG có thể bị mã hóa lại khi
-   chuẩn hóa, làm hash khác file Drive. Smoke qua API chỉ xác nhận quyền,
-   tải file và đối chiếu hash. R6 vẫn cần kiểm luồng nhập ảnh gốc qua UI.
+4. Kiểm riêng luồng upload từ trình duyệt. Khi capability trả `LOCAL`, form
+   gửi file gốc trong multipart. Nhánh Cloudinary mới chuẩn hóa ảnh. Xác nhận
+   capability của QA là `LOCAL`, tải cùng JPEG và xác minh với cùng file Drive.
+   Ca qua API đã đạt theo log owner. Ca qua UI và hai ca lỗi vẫn cần chạy trên QA.
 
 ### Smoke toàn luồng
 
