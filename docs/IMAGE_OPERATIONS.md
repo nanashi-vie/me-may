@@ -112,6 +112,23 @@ events. Restart policy chỉ phản ứng khi tiến trình thoát.
 
 ## 4. Smoke ở namespace thử
 
+### R6.1 — Kiểm Drive với một ảnh riêng tư
+
+1. Tạo Google Cloud project, bật Drive API và dùng quota chuẩn. Giữ Billing
+   tắt nếu Console cho phép. Xem [quota Drive API](https://developers.google.com/workspace/drive/api/guides/limits).
+2. Tạo service account và chia sẻ riêng một ảnh JPEG thử cho email service
+   account với quyền Viewer. Đặt key JSON ở secret mount của backend thử qua
+   `MEMAY_DRIVE_CREDENTIALS_FILE`. Giữ key ngoài chat, Git và log.
+3. Gửi chính file JPEG đó qua API upload LOCAL dạng multipart để giữ nguyên
+   byte. Dán link file vào nguồn ảnh, bấm Xác minh và kiểm trạng thái `VERIFIED`.
+   Thử link của ảnh khác để kiểm hash mismatch và file chưa chia sẻ để kiểm
+   lỗi quyền truy cập. Giữ ảnh Drive ở chế độ riêng tư.
+4. Kiểm riêng luồng upload từ trình duyệt. JPEG có thể bị mã hóa lại khi
+   chuẩn hóa, làm hash khác file Drive. Smoke qua API chỉ xác nhận quyền,
+   tải file và đối chiếu hash. R6 vẫn cần kiểm luồng nhập ảnh gốc qua UI.
+
+### Smoke toàn luồng
+
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
    link/file ID. Thử nguồn sai và xuất bản thiếu ảnh đã VERIFIED.

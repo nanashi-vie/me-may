@@ -3070,3 +3070,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   `clean` loại bản build cũ. Chưa chạy lại frontend hoặc smoke Ubuntu.
 - Cập nhật runbook S8 và các tham chiếu migration hiện hành. Bàn giao vào
   `dev`. R6 tiếp tục sau khi có Ubuntu/Drive/R2 và namespace thử.
+
+## 2026-11-10 — R6.1 — Chuẩn bị kiểm Drive thật
+
+- Cập nhật runbook S8 với một ảnh riêng tư chia sẻ Viewer, service account,
+  upload nguyên byte qua API LOCAL và ba trường hợp xác minh nguồn.
+- Từ `code/backend`: `./mvnw -B -ntp -o -Dtest=GoogleDriveSourceClientTest test`
+  đạt 3/3 khi được phép bind cổng loopback. Sandbox chặn bind ở lần đầu.
+- Chưa kiểm Drive live. Cần owner tạo project bật Drive API, cấp quyền ảnh
+  thử và đặt key trong secret mount của backend thử. Sau smoke nguyên byte,
+  kiểm lại upload UI vì bước chuẩn hóa ảnh có thể đổi SHA-256.
