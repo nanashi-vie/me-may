@@ -1,0 +1,89 @@
+dialog {
+  width: min(26rem, calc(100% - 2rem));
+  max-height: calc(100dvh - 2rem);
+  padding: 2.75rem clamp(0.75rem, 4vw, 1.5rem) 1.5rem;
+  border: 0;
+  border-radius: 1rem;
+  color: var(--ink);
+  background:
+    radial-gradient(ellipse at 90% 12%, rgb(87 165 255 / 28%) 0 26%, transparent 26.5%),
+    radial-gradient(ellipse at 5% 100%, rgb(88 161 255 / 18%) 0 22%, transparent 22.5%),
+    linear-gradient(145deg, #206cd5, #17418c);
+  overflow: auto;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.dialog-card {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1.5rem clamp(0.75rem, 4vw, 1.25rem) 1.25rem;
+  border-radius: 1rem;
+  background: white;
+  text-align: center;
+}
+
+.logo {
+  box-sizing: content-box;
+  margin-top: -3rem;
+  padding: 0.375rem;
+  border-radius: 50%;
+  background: white;
+}
+
+.channel {
+  color: #435771;
+  font-size: 0.9rem;
+}
+
+.close {
+  position: absolute;
+  inset: 0.5rem 0.5rem auto auto;
+  min-width: 2.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 1.5rem;
+}
+
+h2, p {
+  margin: 0;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+.qr {
+  width: min(12.375rem, 100%);
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.qr-placeholder {
+  display: grid;
+  place-items: center;
+}
+
+.button, .secondary {
+  justify-self: stretch;
+  border-color: #165abe;
+}
+
+.button {
+  color: white;
+  background: #165abe;
+}
+
+.secondary {
+  color: #165abe;
+}
+
+.copy-message:empty {
+  margin-top: -0.75rem;
+}

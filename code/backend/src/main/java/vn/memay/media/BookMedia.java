@@ -9,6 +9,10 @@ public class BookMedia {
     @Id
     public java.util.UUID id;
     public Long bookCopyId;
+    @Column(insertable = false, updatable = false)
+    public String provider;
+    @Column(insertable = false, updatable = false)
+    public java.util.UUID servingGeneration;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     public MediaDtos.MediaRole role;
@@ -28,7 +32,6 @@ public class BookMedia {
     public String alt;
     @Column(length = 500)
     public String sourceRef;
-    public boolean showOnProduct;
     @Column(nullable = false)
     public Instant createdAt;
     @Column(nullable = false)

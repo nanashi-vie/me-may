@@ -1,3 +1,11 @@
+export interface PublicImageVariant {
+  url: string;
+  size: number;
+  format: 'jpg' | 'webp';
+  width: number;
+  height: number;
+}
+
 import {
   AgeGroup,
   CategoryCode,
@@ -32,7 +40,7 @@ export interface PublicBook {
   readingLevel: ReadingLevel | null;
   readingVideoUrl: string | null;
   availability: Availability;
-  media: { role: string; alt: string | null; contentPath: string; cacheKey?: string }[];
+  media: { role: string; alt: string | null; contentPath: string; cacheKey?: string; imageVariants?: PublicImageVariant[] }[];
 }
 export interface RelatedBooks {
   samePublisherBooks: PublicBook[];

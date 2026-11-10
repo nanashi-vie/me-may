@@ -7,7 +7,7 @@
 lease và Sharp recipe của Storage. Operator tools gọi API OWNER, không ghi thẳng DB.
 **Tech Stack:** Spring/JDBC/PostgreSQL, Google Drive API, Angular admin, Node CLI.
 **Spec:** [IMAGE_RECOVERY_SPEC.md](IMAGE_RECOVERY_SPEC.md), đã duyệt 08/11/2026.
-**Status:** Kế hoạch để review; chưa triển khai hoặc kiểm chứng live.
+**Status:** R1–R5 và S8 đã kiểm local, tiếp theo gate R6 trên môi trường owner. Drive thật chưa kiểm chứng.
 
 ## Global Constraints
 
@@ -51,7 +51,7 @@ retryable và HTTP category, không raw provider response/token/URL.
 
 R2 định nghĩa `SourceBindingService.verify(UUID mediaId,String fileId,long expectedBindingVersion,
 Long expectedBookVersion,UUID requestKey,AdminUser actor): UUID` trả operation ID;
-`requireVerified(UUID mediaId): void`. Actor/type lấy từ auth hiện tại, không từ client ID.
+`SourceBindingRepository.requireVerifiedForBook(long bookId): void`. Actor/type lấy từ auth hiện tại, không từ client ID.
 Pending source candidate không thay binding VERIFIED đang dùng trước khi kiểm thành công.
 
 R3/R4 dùng `MigrationPreview(UUID receiptId,String digest,List<PreviewRow> rows,Instant expiresAt)`;
@@ -103,95 +103,150 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 - [ ] RED `staleBindingCannotWin`: concurrent verify và media replacement chỉ candidate
   đúng version được commit; actor mất quyền/session expiry không ghi; audit fail rollback.
 - [ ] Chạy `BE(SourceBindingIntegrationTest,SourcePublicationGateTest)` ghi RED.
-- [ ] Implement VERIFY job qua dispatcher: Drive download + S4 decode/metadata check;
+- [ ] Implement VERIFY job qua dispatcher: Drive download và so hash với input gốc đã qua decode S4;
   atomic compare candidate/binding/book version, ghi audit, trả updated versions.
   Luồng temp kiểm ownership/session; luồng persisted tăng book version khi binding đổi.
-- [ ] Implement requireVerified cho LOCAL và mọi publish mutation path;
+- [ ] Implement requireVerifiedForBook cho LOCAL và mọi publish mutation path;
   READ status không tăng version, public không có source fields; S5 gọi cùng service.
 - [ ] GREEN BE; commit `feat(media): require verified originals for local publication` cùng log.
 
 ### R3 — Manifest dry-run và preview để owner ghép ảnh
 
 **Prerequisite:** S7, R2.
-**Files:** tạo `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`B/ImageMigrationDtos.java`, `D/V22__image_operation_receipts.sql`,
+**Files:** tạo `M/ImageMigrationService.java`, `M/ImageMigrationController.java`,
+`M/ImageMigrationDtos.java`, `M/ImageMigrationPreviewQueue.java`, `D/V28__image_operation_receipts.sql`,
 `O/media-operations.mjs`, `O/media-operations.test.mjs`;
-test `BT/ImageMigrationPreviewTest.java` mới.
+test `T/ImageMigrationPreviewTest.java` mới.
 **Interfaces:** OWNER endpoints `/api/v1/admin/image-migrations`:
 `GET /template` export CSV; `POST /preview` multipart CSV→202 operation ID;
 `GET /{receiptId}` MigrationPreview; `GET /{receiptId}/photos/{mediaId}` source preview.
 CLI `export`, `preview`, `show`; mặc định chỉ đọc, không tự apply.
 
-- [ ] RED `manifestIsGuarded`: duplicate/foreign/missing/role/version sai,101 ảnh
+- [x] RED `manifestIsGuarded`: duplicate/foreign/missing/role/version sai,101 ảnh
   báo lỗi từng dòng; `assertEquals(beforeBookRows, afterBookRows)` sau dry-run.
-- [ ] RED `previewIsOwnerOnly`: STAFF/anonymous không tải template/source preview;
+- [x] RED `previewIsOwnerOnly`: STAFF/anonymous không tải template/source preview;
   receipt hết24h trả410; không public signed/provider URL hoặc input path.
-- [ ] Chạy `BE(ImageMigrationPreviewTest)` và từ root
+- [x] Chạy `BE(ImageMigrationPreviewTest)` và từ root
   `node --test scripts/image-system/media-operations.test.mjs` ghi RED.
-- [ ] Implement CSV đúng header spec bằng Commons CSV hiện có; sequential download,
+- [x] Implement CSV đúng header spec bằng Commons CSV hiện có; sequential download,
   source candidate preview qua same-origin no-store. Dry-run không sửa book/media/binding;
   chỉ ghi operation/receipt/staging có TTL để apply và owner xem cặp ảnh.
-- [ ] CLI dùng owner session cookie/CSRF từ file0600 do operator cung cấp;
+- [x] CLI dùng owner session cookie/CSRF từ file0600 do operator cung cấp;
   không nhận mật khẩu/token qua argv/log; cung cấp đường dẫn admin preview và kết quả dòng.
   Preview trả ảnh cũ + nguồn qua endpoint được bảo vệ, owner xác nhận explicit danh sách ID.
-- [ ] GREEN BE/Node; commit `feat(media): preview Drive mappings before migration` cùng log.
+- [x] GREEN BE/Node; commit `feat(media): preview Drive mappings before migration` cùng log.
+
+
+Chạy CLI từ root. Đặt `MEMAY_SITE_ORIGIN` và `MEMAY_OWNER_SESSION_FILE`
+trỏ tới file riêng mode `0600`, thuộc user hiện tại. File chứa JSON với
+`cookie` (chỉ cookie `MEMAYSESSION`) và `csrf` (token của cùng phiên OWNER).
+Giữ file phiên ngoài Git.
+
+```sh
+node scripts/image-system/media-operations.mjs export > mapping.csv
+node scripts/image-system/media-operations.mjs preview mapping.csv
+node scripts/image-system/media-operations.mjs show <receipt-id>
+```
+
+Mỗi trang export tối đa 100 ảnh. Nếu CLI in cursor, dùng `export <cursor>`
+cho trang kế. Điền cột `drive_file_id`, giữ các cột kiểm tra như mẫu.
+Khi receipt `READY`, mở `currentPhotoPath` và `previewPath` bằng trình
+duyệt đang đăng nhập OWNER để đối chiếu. Dòng `INVALID` có mã lỗi riêng.
+Receipt hết hạn sau 24 giờ. R4 sẽ dùng digest và danh sách media ID do
+owner xác nhận để apply.
 
 ### R4 — Migration từng lô và rollback provider
 
-**Files:** sửa `B/ImageMigrationService.java`, `B/ImageMigrationController.java`,
-`M/ImageJobDispatcher.java`, `M/MediaCleanupJob.java`, `O/media-operations.mjs`;
-tạo `B/ImageMigrationHandler.java`; test `BT/ImageMigrationApplyTest.java` mới.
+**Files:** sửa `M/ImageMigrationController.java`, `M/ImageJobService.java`,
+`M/LocalImageCleanup.java`, `O/media-operations.mjs`; tạo `M/ImageMigrationApplyService.java`,
+`M/ImageMigrationHandler.java`, `D/V29__image_migration_apply.sql` và
+`T/ImageMigrationApplyTest.java`.
 **Interfaces:** `POST /api/v1/admin/image-migrations/{receiptId}/apply`
 body `{digest,requestKey,confirmedMediaIds}`→202 operation;
 `POST .../{receiptId}/rollback` body `{requestKey,expectedBookVersions}`→operation.
 CLI `apply --receipt ... --confirm-media ...`, `rollback`; không auto confirm.
 
-- [ ] RED `changedSourceOrBookRejectsApply`: source hash/version hoặc book version
-  thay đổi sau dry-run →409; không đổi pointer, source verified cũ giữ nguyên.
-- [ ] RED `batchSameBookCommitsOnce`: nhiều ảnh cùng book kiểm expected version một lần,
+- [x] RED `changedSourceOrBookRejectsApply`: source hash/version hoặc book version
+  thay đổi sau dry-run: version sai lúc nhận apply trả 409; nguồn sai lúc tải lại
+  trả lỗi theo sách trong kết quả operation, giữ pointer/binding cũ.
+- [x] RED `batchSameBookCommitsOnce`: nhiều ảnh cùng book kiểm expected version một lần,
   READY tất cả ảnh đã chọn của book rồi swap cùng transaction, bump book version một lần.
-- [ ] RED `rollbackDoesNotLoseNewUploads`: receipt migrated giữ ref cloud cũ;
+- [x] RED `rollbackDoesNotLoseNewUploads`: receipt migrated giữ ref cloud cũ;
   chỉ rollback pointer vẫn thuộc generation receipt; ảnh mới/thay sau đó gây conflict,
   LOCAL-only mới vẫn đọc được trên binary tương thích, không xóa ghi phát sinh.
-- [ ] Chạy `BE(ImageMigrationApplyTest)` ghi RED.
-- [ ] Implement apply re-download/recheck SHA/version, enqueue MIGRATE dùng recipe S4;
+- [x] Chạy `BE(ImageMigrationApplyTest)` ghi RED.
+- [x] Implement apply re-download/recheck SHA/version, enqueue MIGRATE dùng recipe S4;
   không giữ book lock trong download. Completion gom theo book rồi recheck/swap/audit/purge;
   book khác thành công được giữ, book lỗi báo riêng, retry receipt không apply lại book đã xong.
-- [ ] Persist snapshot refs/book versions/source hash trong receipt; rollback recheck
+- [x] Persist snapshot refs/book versions/source hash trong receipt; rollback recheck
   current pointer/version và đổi lại cloud có audit/purge, không drop schema.
-- [ ] Cleanup giữ cloud refs còn rollback; không có bulk delete cloud endpoint trong task.
-- [ ] GREEN BE/CLI Node tests; commit `feat(media): migrate image providers with guarded rollback` cùng log.
+- [x] Cleanup giữ cloud refs còn rollback; không có bulk delete cloud endpoint trong task.
+- [x] GREEN BE/CLI Node tests; commit `feat(media): migrate image providers with guarded rollback` cùng log.
+
+Cùng cấu hình CLI của R3. Tạo UUID riêng cho mỗi thao tác và dùng lại UUID đó
+khi gửi lại cùng yêu cầu.
+
+```sh
+node scripts/image-system/media-operations.mjs apply --receipt <receipt-id> \
+  --digest <preview-digest> --request-key <uuid> --confirm-media <media-id>
+node scripts/image-system/media-operations.mjs show-apply <receipt-id>
+node scripts/image-system/media-operations.mjs rollback --receipt <receipt-id> \
+  --request-key <uuid-khác> --expect-book <book-id>:<applied-version>
+```
+
+Lặp `--confirm-media` cho từng ảnh đã đối chiếu và `--expect-book` cho từng
+sách cần rollback. Apply trả 202 và xử lý qua queue. `show-apply` trả kết quả
+theo sách, gồm version dùng cho rollback và mã lỗi nếu có. Sau lỗi do nguồn
+hoặc version đổi, lập dry-run mới cho ảnh cần xử lý lại.
 
 ### R5 — Inventory và rebuild cùng recipe
 
-**Files:** tạo `B/ImageRecoveryService.java`, `B/ImageRecoveryController.java`,
-`B/ImageRecoveryHandler.java`, `B/ImageInventoryService.java`;
-sửa `M/ImageJobDispatcher.java`, `M/MediaCleanupJob.java`, `O/media-operations.mjs`;
-test `BT/ImageRecoveryIntegrationTest.java`, `BT/ImageRestoreIsolationTest.java` mới.
+**Files:** tạo `M/ImageRecoveryService.java`, `M/ImageRecoveryController.java`,
+`M/ImageRecoveryHandler.java`, `M/ImageInventoryService.java`, V30 và restore profile;
+sửa `M/ImageJobService.java`, `M/LocalImageCleanup.java`, `O/media-operations.mjs`;
+test `T/ImageRecoveryIntegrationTest.java`, `T/ImageRestoreIsolationTest.java` mới.
 **Interfaces:** `inventory(List<UUID> mediaIds,String scope): InventoryReport`;
 `rebuild(List<UUID> mediaIds,String scope,boolean apply,UUID requestKey,AdminUser actor): RecoveryReport`;
 scope `published|all`, explicit IDs giới hạn100/lô, paging cho all.
 OWNER GET `/api/v1/admin/image-recovery/inventory`; POST `/rebuild`, apply default false.
 
-- [ ] RED `missingDerivedRebuildsExactManifest`: xóa fixture output, rebuild hash/key
+- [x] RED `missingDerivedRebuildsExactManifest`: xóa fixture output, rebuild hash/key
   đúng; lặp request không job trùng; SOURCE_MISSING giữ derived còn tốt và báo mã rõ.
-- [ ] RED `recipeMismatchNeverOverwrites`: recipe/config/worker digest không có hoặc
+- [x] RED `recipeMismatchNeverOverwrites`: recipe/config/worker digest không có hoặc
   output hash khác →RECIPE_MISMATCH; không pointer mới/overwrite key; nguồn đổi →SOURCE_CHANGED.
-- [ ] RED `recoveryCannotResurrectDeletedMedia`: restart/lease hết/replace/delete giữa
+- [x] RED `recoveryCannotResurrectDeletedMedia`: restart/lease hết/replace/delete giữa
   download và complete không attach lại; Ẩn vẫn Ẩn, FRONT published được ưu tiên.
-- [ ] RED `restoreStartsInQuarantine`: DB dump cũ+file mới ngoài metadata được report,
+- [x] RED `restoreStartsInQuarantine`: DB dump cũ+file mới ngoài metadata được report,
   không auto attach/delete; restore mode không outbound provider/queue/cleanup.
-- [ ] Chạy `BE(ImageRecoveryIntegrationTest,ImageRestoreIsolationTest)` ghi RED.
-- [ ] Implement disk inventory actual existence/MIME/size/hash, paging bounded RAM;
+- [x] Chạy `BE(ImageRecoveryIntegrationTest,ImageRestoreIsolationTest)` ghi RED.
+- [x] Implement disk inventory actual existence/MIME/size/hash, paging bounded RAM;
   stale/missing đánh availability, S7 gallery fallback; không lấy cache HIT làm bằng chứng file.
-- [ ] REBUILD dùng verified binding/hash/recipe pinned; download R1 →encode S4,
+- [x] REBUILD dùng verified binding/hash/recipe pinned; download R1 →encode S4,
   chỉ công bố hash đúng. priority20 FRONT published/21 detail/22 archived/23 trash còn hạn;
   PROCESS/VERIFY có ưu tiên cao hơn; dedupe media+generation+recipe+kind.
-- [ ] Thêm `MEMAY_MEDIA_RECOVERY_MODE=isolated` khóa outbound/cleanup/claim mặc định
+- [x] Thêm `MEMAY_MEDIA_RECOVERY_MODE=isolated` khóa outbound/cleanup/claim mặc định
   cho restore profile; require operator bật explicit sau kiểm namespace/mount/credentials.
   Report JSON success/fail/skip IDs, safe codes; purge sau batch, không đổi publication.
-- [ ] GREEN BE/CLI; drill local backup→restore DB test khác→mất derived→partial/full rebuild;
+- [x] GREEN BE/CLI; drill local backup→restore DB test khác→mất derived→partial/full rebuild;
   commit `feat(media): rebuild verified images with safe restore isolation` cùng log.
+
+CLI dùng phiên OWNER như R3. Rebuild mặc định chỉ kiểm kê. Mỗi trang
+tối đa 100 ảnh, dùng `--after <next>` cho trang sau. Kiểm đĩa dùng cursor
+riêng `--after-disk <nextDisk>` cùng `--scan-disk`.
+
+```sh
+node scripts/image-system/media-operations.mjs inventory --scope all --scan-disk
+node scripts/image-system/media-operations.mjs rebuild --media <media-id>
+node scripts/image-system/media-operations.mjs rebuild --media <media-id> --apply --request-key <uuid>
+node scripts/image-system/media-operations.mjs show-rebuild <operation-id>
+```
+
+Profile `restore` mặc định cách ly. Để unset `MEMAY_MEDIA_RECOVERY_MODE` hoặc
+đặt `isolated` khi kiểm DB khôi phục và mount riêng. Sau khi xác minh namespace,
+mount, credential và phiên bản worker, operator mới chuyển sang `active`.
+Recipe cần `image_recipe.worker_digest` khớp digest OCI của worker và
+`configuration.sha256` khớp SHA-256 của JSON recipe do worker dùng.
+Đặt `MEMAY_IMAGE_WORKER_DIGEST` theo đúng image đã pin ở worker.
 
 ### R6 — Bằng chứng vận hành và gate cutover do owner phối hợp
 
@@ -202,16 +257,16 @@ OWNER GET `/api/v1/admin/image-recovery/inventory`; POST `/rebuild`, apply defau
 - [ ] Bàn giao cho owner: secret env names, folder read permission, cách tải credential
   ngoài repo; xác minh service account đọc được ảnh. Nếu bị policy chặn thì ghi blocker,
   chốt OAuth read-only riêng, không tự mở scope/quyền chia sẻ.
-- [ ] Owner chọn20–50 sách, dry-run mapping/preview/confirm; chạy upload và migration
-  trong namespace thử. Ghi quality chữ, p50/p95/download/encode/RSS/CPU/bytes/output,
+- [ ] Owner chọn 20–50 sách mới và chạy upload LOCAL, xác minh Drive trong
+  namespace thử. Ghi quality chữ, p50/p95/download/encode/RSS/CPU/bytes/output,
   API baseline vs có worker, tốc độ ngoài LAN. Owner chốt ngưỡng chấp nhận từ số đo.
 - [ ] Owner cung cấp lịch/retention/bản backup R2; restore DB vào instance cách ly,
   kiểm counts/FK/binding/recipes/receipts, nguồn thiếu/nguồn đổi báo riêng;
   kiểm ảnh bìa đầu tiên và toàn lô, ghi thời gian thực thay vì cam kết dự tính.
-- [ ] Drill rollback migrated pointer và bản code vẫn đọc LOCAL; tạo một ảnh LOCAL mới
-  trước rollback để chứng minh không mất ghi mới. Không dùng rollback binary cloud-only.
+- [ ] Kiểm đọc cùng lúc ảnh LOCAL của sách mới và ảnh Cloudinary của sách cũ.
+  Hoãn mapping/apply và drill rollback con trỏ migrated tới đợt chuyển sách cũ.
 - [ ] Ghi RPO theo backup DB/source coverage, RTO đo được và khoảng thiếu ảnh chấp nhận;
-  owner duyệt cutover trước tắt Cloudinary. Không tự delete asset cloud hoặc deploy.
+  owner duyệt mở LOCAL cho đợt nhập mới. Cloudinary tiếp tục phục vụ sách cũ.
 - [ ] Gộp contract/bằng chứng vào tài liệu chuẩn, giữ IMAGE_OPERATIONS làm runbook;
   chỉ xóa specs/plans và sửa README khi tất cả tiêu chí đã được chuyển/đóng.
   Commit/push dev; nếu live chưa sẵn sàng, giữ R6 unchecked và ghi bước owner cần làm.

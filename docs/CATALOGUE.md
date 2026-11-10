@@ -51,7 +51,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 | listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
 | collection | bigint identity PK; name varchar(100) NOT NULL; slug varchar(120) UNIQUE NOT NULL; sort_order integer >=0; active boolean; version bigint; timestamps |
 | listing_collection | listing_id FK + collection_id FK, composite PK |
-| book_media | UUID PK; book_copy_id FK, có thể rỗng khi chờ dọn; show_on_product BOOLEAN mặc định false; role CHECK FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3/INTERNAL_1/INTERNAL_2; state CHECK UPLOADING/ACTIVE/DELETE_PENDING; storage_public_id UNIQUE NOT NULL; cloud asset ID/format/bytes/dimensions nullable trước upload; alt varchar(300), source_ref varchar(500) nullable; created_at/updated_at |
+| book_media | UUID PK; book_copy_id FK, có thể rỗng khi chờ dọn; role CHECK FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3/INSIDE_4/INSIDE_5; state CHECK UPLOADING/ACTIVE/DELETE_PENDING; storage_public_id UNIQUE NOT NULL; cloud asset ID/format/bytes/dimensions nullable trước upload; alt varchar(300), source_ref varchar(500) nullable; created_at/updated_at |
 | book_variant | UUID PK; book_copy_id FK; name tối đa100; stock0..999999; thứ tự và unique tên trong sách; chi tiết ở ARCHITECTURE/DATA |
 | audit_event | bigint identity PK; actor_id FK admin_user; target_type/target_id; action; before/after JSONB chỉ chứa field cho phép; aggregate_version; created_at |
 
@@ -76,7 +76,7 @@ Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/aud
 - Khoảng giá nếu có: hai số nguyên 1..999999999999 VND, min≤max; không nhận float, âm, zero hoặc chuỗi có dấu phân cách. UI hiển thị theo vi-VN.
 - Nội dung là plain text, Angular escape; không nhận HTML editor hoặc render nội dung bằng innerHTML.
 - Link video tùy chọn, absolute HTTPS, không userinfo/control characters; backend không fetch URL hoặc oEmbed (tránh SSRF).
-- Publish cần title, category, priceMinVnd/priceMaxVnd, weightG nguyên dương, binding nếu Picture book và 2–6 media công khai ACTIVE và tối đa2ảnh nội bộ có FRONT/BACK, không trùng role.
+- Publish cần title, category, priceMinVnd/priceMaxVnd, weightG nguyên dương, binding nếu Picture book và 2–8 media ACTIVE có FRONT/BACK, không trùng role.
 - Owner phải xác nhận đã đối chiếu bộ ảnh bắt buộc với mục sách (`confirmedActualCopy=true` trong request publish); ghi xác nhận vào audit.
 - Checkbox xác nhận không phải thuật toán chứng minh ảnh thật; pilot vẫn cần người đối chiếu vật thể. Không tự publish dữ liệu demo M0.
 - Publish không bắt tuổi, author/publisher, ISBN, description, level hoặc video. Có level không yêu cầu căn cứ nội bộ.
@@ -215,7 +215,7 @@ Quy trình upload/thay slot:
 - Test dùng me_may_test với guard tên DB như M1; chỉ xóa fixture test, không truncate bảng/dev/database dùng chung của Docker.
 - Chỉ seed taxonomy/reference; không seed sách bán thật hoặc fixture SYNTHETIC dưới trạng thái published.
 - Thêm biến mẫu CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAMESPACE (memay/dev, memay/test hoặc memay/online-test) vào .env.example bằng giá trị mẫu; credential thật chỉ trong .env ignored, không gửi qua chat/log.
-- Thiếu config media vẫn chạy auth/đọc sách; upload/đọc ảnh trả 503 có hướng dẫn. Publish vẫn phải có2–6ảnh công khai ACTIVE gồmFRONT/BACK đã upload/xác minh, không dùng ảnh giả hoặc local-only URL để vượt gate.
+- Thiếu config media vẫn chạy auth/đọc sách; upload/đọc ảnh trả 503 có hướng dẫn. Publish vẫn phải có2–8 ảnh ACTIVE gồmFRONT/BACK đã upload/xác minh, không dùng ảnh giả hoặc local-only URL để vượt gate.
 - Cloudinary SDK qua backend, version khóa ở pom.xml; frontend không có providersecret hoặc SDKcloud.
 - Unit/integration tự động dùng media gateway giả có lỗi chủ động; live Cloudinary dùng namespace riêng/test image, cleanup kiểm chứng trước khi dùng ảnh pilot.
 - Backup/restore DB local trước khi thử migration trên dữ liệu pilot; ghi cách khôi phục và bảo toàn sequence/code/media references. Không tự làm migration down hoặc reset code.
@@ -277,17 +277,13 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 
 ### Roles, upload và bảo mật
 
-- Sáu role công khai giữ nguyên. INTERNAL_1/INTERNAL_2 mặc định ẩn, mỗi ảnh có cờ `showOnProduct` độc lập.
-  Mỗi role tối đa1ACTIVE, tổng8; không phân visibility bằng vị trí mảng.
-- Upload session tối đa8 READY/UPLOADING; cho1replacement đang xử lý (9raw) khi8final.
-  Giữ requestKey/hash chống trùng, Cloudinary cleanup/rollback và hạn24giờ.
-- Detail và preview chỉ nhận ảnh có quyền hiển thị. Ảnh bổ sung đã bật nằm
-  sau sáu role công khai. Public image role bổ sung tắt trả 404 trước gọi
-  gateway. Ảnh bổ sung không dùng cache ảnh tại edge. Gallery không trả
-  storage ID, sourceRef hoặc ghi chú nội bộ.
-- Chọn8file mặc định6public rồi2internal; xóa ảnh không đổi role/visibility ảnh còn lại.
-  Khi đổi nhóm ảnh persisted chưa lưu, phải lưu role trước thay ảnh; chặn đổi nhóm
-  của ảnh đang upload/chưa rõ kết quả để tránh UI nội bộ nhưng server public.
+- Tám role theo thứ tự FRONT/BACK/SPINE/INSIDE_1..INSIDE_5, mỗi role tối đa một ACTIVE.
+- Phiên upload tối đa tám ảnh; hỗ trợ một ảnh thay thế tạm khi đủ tám vị trí.
+  Giữ requestKey, fingerprint, cleanup và hạn phiên 24 giờ.
+- Detail và preview lấy tất cả ảnh ACTIVE. Public delivery kiểm trạng thái xuất bản
+  và ảnh hiện hành. Gallery không trả storage ID, sourceRef hoặc ghi chú nội bộ.
+- V24 giữ ID và storage reference khi đổi hai role cũ sang INSIDE_4/INSIDE_5.
+  Alias request cũ giữ tương thích và không xuất hiện trong DTO mới.
 
 ### Feature catalogue và thứ tự
 

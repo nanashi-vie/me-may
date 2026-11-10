@@ -11,6 +11,7 @@ import vn.memay.media.MediaDtos.MediaRole;
 public class MediaService {
     @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
+    @org.springframework.beans.factory.annotation.Autowired private MediaReadService reads;
     private final MediaTransactions transactions;
     private final MediaGateway gateway;
     private final ImageValidator validator;
@@ -60,6 +61,7 @@ public class MediaService {
     }
     public InputStream content(long id,MediaRole role,AdminUser actor,int width) {
         if(width!=320 && width!=1280)throw vn.memay.common.AdminApiException.field("size","Chọn 320 hoặc 1280");
-        return gateway.openAdminPreview(timings.measure("authorization", () -> transactions.activeKey(id, role)),width);
+        var preview = timings.measure("authorization", () -> transactions.activePreview(id, role));
+        return reads.openAdmin(preview.media(), preview.generation(), preview.key(), width);
     }
 }

@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { of } from 'rxjs';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { HomePage } from './home-page';
 import { PublicApi } from '../catalogue/public-api';
 
 describe('HomePage banner info boxes', () => {
-  function setup(groupUrl = 'https://zalo.me/g/test-group') {
+  function setup() {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
@@ -15,7 +15,6 @@ describe('HomePage banner info boxes', () => {
           useValue: {
             home: () => of({ shelves: [] }),
             sale: () => of({ serverNow: new Date().toISOString(), endsAt: null, items: [] }),
-            contact: () => of({ hotlineUrl: 'https://zalo.me/0966075005', groupUrl }),
           },
         },
       ],
@@ -41,14 +40,69 @@ describe('HomePage banner info boxes', () => {
     expect(titles).toContain('HOTLINE:');
   });
 
-  it('binds Zalo group link from contact config to Community box', () => {
-    const { fixture } = setup('https://zalo.me/g/memaycommunity');
-    const el = fixture.nativeElement as HTMLElement;
-    const communityLink = el.querySelector('a.info-box-item[aria-label="Cộng đồng Mẹ Mây trên Zalo"]') as HTMLAnchorElement;
-    expect(communityLink).toBeTruthy();
-    expect(communityLink.href).toBe('https://zalo.me/g/memaycommunity');
-    expect(communityLink.target).toBe('_blank');
-    expect(communityLink.rel).toContain('noopener');
+  function communityLink(element: HTMLElement) {
+    return element.querySelector<HTMLAnchorElement>(
+      'a.info-box-item[aria-label="Cộng đồng Mẹ Mây trên Zalo"]',
+    )!;
+  }
+
+  it('opens the desktop dialog and restores focus to the community link', async () => {
+    const { fixture } = setup();
+    const element = fixture.nativeElement as HTMLElement;
+    const link = communityLink(element);
+    const dialog = element.querySelector<HTMLDialogElement>('app-community-dialog dialog')!;
+    dialog.showModal = () => dialog.setAttribute('open', '');
+    dialog.close = () => {
+      dialog.removeAttribute('open');
+      dialog.dispatchEvent(new Event('close'));
+    };
+    const focus = vi.spyOn(link, 'focus');
+    const userAgent = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Windows NT 10.0');
+    try {
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true });
+      link.dispatchEvent(click);
+      expect(click.defaultPrevented).toBe(true);
+      expect(dialog.open).toBe(true);
+      expect(dialog.querySelector('a')?.href).toBe('https://zalo.me/g/mwzwwq694');
+      await vi.waitFor(() => {
+        fixture.detectChanges();
+        expect(dialog.querySelector<HTMLImageElement>('.qr')?.src).toMatch(/^data:image\/gif;base64,/);
+      });
+      dialog.querySelector('button')!.click();
+      expect(dialog.open).toBe(false);
+      expect(focus).toHaveBeenCalled();
+    } finally {
+      userAgent.mockRestore();
+    }
+  });
+
+  it.each([
+    ['Android', 5],
+    ['iPhone', 5],
+    ['iPad', 5],
+    ['Macintosh', 5],
+  ])('keeps the direct Zalo link on %s with %s touch points', (device, points) => {
+    const { fixture } = setup();
+    const link = communityLink(fixture.nativeElement);
+    const userAgent = vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(device);
+    Object.defineProperty(navigator, 'maxTouchPoints', { configurable: true, value: points });
+    try {
+      // Capture whether Angular prevented navigation, then suppress jsdom navigation.
+      let prevented: boolean | undefined;
+      link.parentElement!.addEventListener('click', (event) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      }, { once: true });
+      link.click();
+      expect(prevented).toBe(false);
+      expect(link.href).toBe('https://zalo.me/g/mwzwwq694');
+      expect(link.target).toBe('_blank');
+      expect(link.rel).toContain('noopener');
+      expect(fixture.nativeElement.querySelector('app-community-dialog dialog').open).toBe(false);
+    } finally {
+      Reflect.deleteProperty(navigator, 'maxTouchPoints');
+      userAgent.mockRestore();
+    }
   });
 
   it('renders both hotline numbers with direct tel: links', () => {

@@ -14,3 +14,18 @@ describe('book card feature',()=>{
     f.componentRef.setInput('book',book);f.detectChanges();expect(f.nativeElement.querySelector('.feature-tag')).toBeNull();
   });
 });
+
+it('shows a fixed cover placeholder when FRONT is missing or fails to load', () => {
+  TestBed.configureTestingModule({ providers: [provideRouter([])] });
+  const fixture = TestBed.createComponent(BookCard);
+  const back = { role: 'BACK', alt: null, contentPath: '/back' };
+  fixture.componentRef.setInput('book', { ...book, media: [back] });
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.cover-placeholder')).not.toBeNull();
+  fixture.componentRef.setInput('book', { ...book, media: [back, { ...back, role: 'FRONT', contentPath: '/front' }] });
+  fixture.detectChanges();
+  fixture.nativeElement.querySelector('img').dispatchEvent(new Event('error'));
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.cover-placeholder')).not.toBeNull();
+  expect(fixture.nativeElement.querySelector('img')).toBeNull();
+});

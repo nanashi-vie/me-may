@@ -1,13 +1,26 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
+
+- R6.1 (10/11): owner xác nhận ca Drive thật đạt, nguồn VERIFIED v1. Sau khi
+  đổi bind QA, worker nhận 200/401/404 đúng kỳ vọng. Owner bỏ qua chạy lại upload.
+  [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
+- R6 (10/11): local đạt 16 backend, 14 upload UI, 4 CLI và 10 worker. Owner đã
+  chia sẻ lô ảnh Drive để thử nhập sách mới trên LOCAL. Sách cũ giữ Cloudinary.
+  Worker production 0 replica, đúng overlay, UID/GID, quyền ghi và token.
+  Cần xác định đích backend trong Dokploy, backup mới và đường DNS worker.
+- S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
+  ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
+  và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).
+- S062 (09/11): đã triển khai popup Cộng đồng trên desktop và giữ mở link trực tiếp trên mobile.
+  User xác nhận quét trên iPhone thật mở đúng nhóm. Đã chỉnh nền popup theo mẫu Zalo và giải mã lại QR từ giao diện mới.
 
 - S063 (09/11, dev-ui): Chấm công MVP v1 gồm hồ sơ/PIN, lịch tuần, chấm công, audit và Excel.
   Ca còn mở từ 20:30 giờ Việt Nam hiện Cần kiểm tra. Đã kiểm với PostgreSQL test và Chrome local.
   Hồ sơ 40:60, ẩn khung thêm mới mặc định. Menu từng hàng mở thông tin, lịch và chấm công.
   Web chỉ hiện tổng hợp và một ô ghi chú chung cho kỳ tuần/tháng. Tổng giờ, chi tiết ca và ghi chú có trong Excel.
-  Chưa rollout production migration V21–V23. [Chấm công](ATTENDANCE_SPEC.md).
+  V21–V23 dành riêng cho chấm công. [Chấm công](ATTENDANCE_SPEC.md).
 - S056-C04 (09/11): nhãn Nơi lưu trữ dùng cùng mẫu field với Tồn kho để
   tránh margin của label chung. Vitest 252 ca đạt; còn smoke trình duyệt.
 - S055-C03 (08/11): Hoàn tất nâng cấp dải đỏ đầu trang (`utility bar`) và `Footer` nền tối theo kết quả `/grill-me`: dải đỏ bên trái có 3 icon trắng (`Facebook`, `Threads`, `TikTok`), ở giữa có chữ chạy ngang (`marquee`), bên phải là `✉ support@memaybooks.com`; Footer đổi sang nền tối `#292724` tràn chiều ngang kèm khung `KẾT NỐI VỚI CHÚNG TÔI` (nhúng Facebook `embed_page` `340x130px` của `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng `Facebook`, `Threads`, `TikTok`); tối ưu 3 logo SVG mới do user cung cấp bằng `<symbol>` + `<use href="#...">` (0 HTTP request phụ, hỗ trợ `currentColor`). Vitest 44/44 files (252/252 tests PASS), build SSR & Workers 0 warning, 0 error.
@@ -16,13 +29,19 @@ Cập nhật 08/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   frontend 252 đạt, build SSR/Workers đạt. Còn smoke trình duyệt và rollout V20.
   [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [kế hoạch](BOOK_STORAGE_PLAN.md).
 - S055-C01 (08/11): Hoàn tất chỉnh UI chi tiết sách (`book-detail`) theo kết quả `/grill-me`: ẩn hiển thị `Trọng lượng sách` phía người dùng, dời mục `Độ tuổi` xuống nằm ngay phía trên `Trình độ đọc` (đổi nhãn từ `Trình độ đọc tham khảo`), và cập nhật ghi chú `READING_NOTE` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`. Vitest 44/44 files (251/251 tests PASS), build SSR & Workers 0 warning, 0 error.
-- S054 (08/11): đã viết và builder-check hai spec
-  [Storage & Processing](IMAGE_STORAGE_SPEC.md) và [Source Mapping & DR](IMAGE_RECOVERY_SPEC.md).
-  User đã duyệt hai spec; đã lập/self-review [Storage plan](IMAGE_STORAGE_PLAN.md)
-  và [Recovery plan](IMAGE_RECOVERY_PLAN.md), chờ review/chọn cách thực thi.
-  User chốt bỏ ảnh nội bộ/ẩn từng ảnh, tối đa 8 ảnh; ảnh cũ hiển thị cùng sách.
-  User dựng Ubuntu và xử lý thủ công nguồn Drive bị xóa. Agent làm code/local QA,
-  cấu hình mẫu và checklist tích hợp. Chưa sửa code/migrate/deploy.
+- S061 (09/11): S5 nối upload LOCAL với queue và gắn ảnh trong transaction.
+  S6 có dán tối đa 8 link file Drive hoặc File ID và xem ghép ảnh trước khi xác minh.
+  S062 đã kiểm local S7 delivery public, preview và ZIP cho hai provider.
+  Backend 255 đạt, 3 skip. Frontend 261 đạt, build và proxy Workers đạt.
+  S063 đã kiểm R3 dry-run Cloudinary theo lô, tối đa 100 ảnh và receipt 24 giờ.
+  S064 đã kiểm R4 apply Cloudinary → LOCAL theo sách và rollback có version.
+  S065 đã kiểm R5 inventory/rebuild đúng manifest và restore mode cách ly.
+  Backend 266 đạt, 3 skip. Worker 10, CLI 4, drill restore PostgreSQL 4 test đạt.
+  S066 đã kiểm S8 local, sửa khôi phục ảnh sau reload form mới, bàn giao Ubuntu.
+  Backend 266 đạt, 3 skip. Frontend 262, worker 10, build và proxy đạt.
+  R6 chờ Ubuntu/Drive/R2 và smoke ngoài LAN trên namespace owner.
+  [Runbook](IMAGE_OPERATIONS.md), [Storage plan](IMAGE_STORAGE_PLAN.md),
+  [Recovery plan](IMAGE_RECOVERY_PLAN.md).
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).
 - Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.

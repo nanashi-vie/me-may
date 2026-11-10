@@ -1,7 +1,7 @@
 # Kiểm chứng nền tảng, catalogue và online
 
 Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
-Tách bằng chứng theo chủ đề để giữ file này dưới400dòng; các gate M5 bên dưới vẫn giữ.
+Bằng chứng local S8 và giới hạn đo ở [IMAGE_OPERATIONS](IMAGE_OPERATIONS.md#6-bằng-chứng-local-s8).
 
 Bằng chứng22–29/10/2026 dưới đây theo revision/ngày từng mục; không là kiểm tra
 live01/11. Backlog duy nhất ở [PROGRESS](PROGRESS.md); cách đo/rollout ở

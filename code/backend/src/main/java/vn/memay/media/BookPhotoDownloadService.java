@@ -21,12 +21,12 @@ public class BookPhotoDownloadService {
     private final Semaphore archiveSlots = new Semaphore(1);
     private final BookAccess access;
     private final MediaTransactions transactions;
-    private final MediaGateway gateway;
+    private final MediaReadService reads;
 
-    public BookPhotoDownloadService(BookAccess access, MediaTransactions transactions, MediaGateway gateway) {
+    public BookPhotoDownloadService(BookAccess access, MediaTransactions transactions, MediaReadService reads) {
         this.access = access;
         this.transactions = transactions;
-        this.gateway = gateway;
+        this.reads = reads;
     }
 
     public record Archive(String filename, List<String> missingBookCodes, byte[] content) {}
@@ -63,7 +63,7 @@ public class BookPhotoDownloadService {
             zip.setLevel(Deflater.NO_COMPRESSION);
             for (var book : books) {
                 for (var photo : book.photos()) {
-                    try (var input = gateway.openAdminPreview(photo.key(), 1280)) {
+                    try (var input = reads.openAdmin(photo.id(), photo.generation(), photo.key(), 1280)) {
                         zip.putNextEntry(new ZipEntry(book.code() + "/" + photo.role().name() + ".jpg"));
                         for (int count; (count = input.read(buffer)) != -1; ) {
                             remaining -= count;

@@ -255,7 +255,10 @@ export class BookEditor {
   ngOnInit() {
     this.loadMetadata();
     const open = (id:string|null) => {
-      if (!id) return;
+      if (!id) {
+        this.photos.restoreDraft();
+        return;
+      }
       ++this.loadSequence;
       this.routeBookId.set(id);
       this.book.set(null);
@@ -528,10 +531,10 @@ export class BookEditor {
         this.notice.set('Chưa ghi nhận lần lưu này. Có thể kiểm tra rồi lưu lại.');return;
       }
       const form=buildBookForm();form.reset({...current,stock:current.totalStock,internalNote:current.internalNote!==undefined?current.internalNote:current.conditionNote??null,featureCodes:(current.features??[]).map(f=>f.code)},{emitEvent:false});
-      const media=this.photos.assignments(), actual=current.media.map(m=>mediaAssignment(m.id,m.role,m.showOnProduct));
+      const media=this.photos.assignments(), actual=current.media.map(m=>mediaAssignment(m.id,m.role));
       const metadata=this.photos.metadataAssignments();
       const metadataMatches=metadata.every(m=>current.media.some(photo=>photo.id===m.mediaId && photo.alt===m.alt && photo.sourceRef===m.sourceRef));
-      if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media.map(m=>mediaAssignment(m.mediaId,m.role,m.showOnProduct)))===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
+      if(JSON.stringify(toBookWrite(form))===JSON.stringify(toBookWrite(this.form)) && JSON.stringify(media.map(m=>mediaAssignment(m.mediaId,m.role)))===JSON.stringify(actual) && metadataMatches && (!pending.publish || current.publication==='PUBLISHED')) {
         this.accept(current);this.notice.set(current.publication==='PUBLISHED'?'Đã xác nhận lưu sách đang xuất bản.':'Đã xác nhận lưu thay đổi.');
         if (pending.goBack) this.returnToList(current.id);
         else if (pending.openNext && !pending.publish) this.openNextBook(true);

@@ -4,7 +4,11 @@ import java.time.Instant;
 import java.util.List;
 
 public final class PublicCatalogueDtos {
-    public record Media(String role, String alt, String contentPath, String cacheKey) {
+    public record ImageVariant(String url, int size, String format, int width, int height) {}
+
+    public record Media(String role, String alt, String contentPath, String cacheKey,
+            @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
+            List<ImageVariant> imageVariants) {
     }
 
     public record Variant(String id, String name, boolean available) {

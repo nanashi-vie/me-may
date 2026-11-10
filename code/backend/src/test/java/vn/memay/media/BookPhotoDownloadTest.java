@@ -27,7 +27,7 @@ class BookPhotoDownloadTest extends MediaTestSupport {
         byte[] jpeg = ImageValidatorTest.image("jpeg");
         var front = media.upload(Long.parseLong(first.id()), MediaDtos.MediaRole.FRONT,
                 first.version(), owner, jpeg, null, null);
-        media.upload(Long.parseLong(first.id()), MediaDtos.MediaRole.INTERNAL_1,
+        media.upload(Long.parseLong(first.id()), MediaDtos.MediaRole.INSIDE_4,
                 front.version(), owner, jpeg, null, null);
         media.upload(Long.parseLong(second.id()), MediaDtos.MediaRole.BACK,
                 second.version(), owner, jpeg, null, null);
@@ -56,7 +56,7 @@ class BookPhotoDownloadTest extends MediaTestSupport {
             }
         }
         assertThat(files).containsOnlyKeys(first.bookCode() + "/FRONT.jpg",
-                first.bookCode() + "/INTERNAL_1.jpg", second.bookCode() + "/BACK.jpg");
+                first.bookCode() + "/INSIDE_4.jpg", second.bookCode() + "/BACK.jpg");
         files.values().forEach(bytes -> assertThat(bytes).isEqualTo(jpeg));
     }
 

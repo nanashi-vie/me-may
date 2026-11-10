@@ -327,8 +327,10 @@ Giới hạn/thứtự/nhãn ở DATA; rolloutbackend trướcfrontend và gate 
 - Purge là eventual. Dữ liệu cũ có thể còn tối đa30s, kể cả fill đang chạy trong
   lúc purge. Browser ảnh revalidate thay vì giữ immutable sau khi sách bị ẩn.
   API detail/lookup/contact verification vẫn fresh, không dựa cache HTML.
-- Media DTO thêm cacheKey opaque theo asset ID, URL cũ vẫn dùng được. Version
-  sai/ảnh không ACTIVE/sách ẩn trả404 khi tới backend. Storage ID/signed URL không lộ.
+- Media DTO dùng asset ID cho Cloudinary và generation cho LOCAL. Cloudinary
+  giữ URL cũ. LOCAL trả URL mặc định kèm version và các variant sẵn có.
+  Sai version, ảnh không ACTIVE, sách ẩn hoặc bị đưa vào thùng rác trả 404
+  khi tới backend. Storage key và signed URL chỉ dùng bên trong gateway.
 - CSS/JS root có hash và200 cache1năm immutable. Asset lỗi/unhashed không đổi policy.
 - Angular metadata taxonomy/collections/contact chia sẻ request và TTL60s theo
   instance DI, xóa sau admin mutate. Home/listing/metadata SSR transfer body và giờ

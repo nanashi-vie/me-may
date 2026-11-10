@@ -31,6 +31,7 @@ public class BookCommandService {
     @org.springframework.beans.factory.annotation.Autowired private BookStorageBoxes storageBoxes;
     private final BookMapper mapper;
     private final AuditService audit;
+    private final vn.memay.media.SourceBindingRepository sources;
     private final JdbcTemplate jdbc;
     private final Clock clock;
     private final EntityManager em;
@@ -41,7 +42,7 @@ public class BookCommandService {
     public BookCommandService(BookCopyRepository books, ListingRepository listings, CategoryRepository categories,
             BookCodeGenerator codes, BookValidation validation, BookAccess access, BookMapper mapper,
             AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads,
-            BookMediaRepository images, ObjectMapper json, BookVariantStore variants) {
+            BookMediaRepository images, ObjectMapper json, BookVariantStore variants, vn.memay.media.SourceBindingRepository sources) {
         this.books = books;
         this.variants = variants;
         this.listings = listings;
@@ -52,6 +53,7 @@ public class BookCommandService {
         this.mapper = mapper;
         this.audit = audit;
         this.jdbc = jdbc;
+        this.sources = sources;
         this.clock = clock;
         this.em = em;
         this.uploads = uploads;
@@ -166,13 +168,17 @@ public class BookCommandService {
         uploads.lock(input.uploadSessionId(), actor, true);
         if (target==Publication.PUBLISHED && !input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
-        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state='READY' for update",
+        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state in ('READY','UPLOADING') for update",
                 input.uploadSessionId());
         var selected = new LinkedHashMap<UUID, Map<String, Object>>();
         for (var assignment : assignments) {
             var photo = ready.stream().filter(m -> assignment.mediaId().equals(m.get("id"))).findFirst()
                     .orElseThrow(
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
+            if (!"READY".equals(photo.get("state"))) {
+                if ("LOCAL".equals(photo.get("provider"))) throw new AdminApiException(409, "media_not_ready");
+                throw AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này");
+            }
             selected.put(assignment.mediaId(), photo);
         }
         if(target==Publication.ARCHIVED && w.title()==null && assignments.isEmpty())
@@ -184,19 +190,12 @@ public class BookCommandService {
         var b = aggregate.book();
         var l = aggregate.listing();
         long id = b.id;
-        for (var assignment : assignments) {
-            var m = selected.get(assignment.mediaId());
-            jdbc.update(
-                    "insert into book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,alt,source_ref,created_at,updated_at,show_on_product) values(?,?,?,'ACTIVE',?,?,?,?,?,?,?,?,?,?,?)",
-                    assignment.mediaId(), id, assignment.role().name(), m.get("storage_public_id"), m.get("asset_id"),
-                    m.get("format"), m.get("bytes"), m.get("width"), m.get("height"),
-                    m.get("alt") == null ? assignment.role().label() + " " + b.bookCode : m.get("alt"),
-                    m.get("source_ref"), m.get("created_at"), m.get("updated_at"), supplementalVisibility(assignment,false));
-            jdbc.update("delete from temporary_media where id=?", assignment.mediaId());
-        }
+        for (var assignment : assignments)
+            uploads.consumeReady(assignment.mediaId(), id, assignment.role(), assignment.role().label() + " " + b.bookCode);
         var prepared = mapper.detail(b, l);
         if(target==Publication.PUBLISHED) {
             validation.validatePublished(prepared);
+            sources.requireVerifiedForBook(id);
             l.publicationStatus = Publication.PUBLISHED;
             l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
             em.flush();
@@ -209,7 +208,7 @@ public class BookCommandService {
         jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?", id,
                 fingerprint, input.uploadSessionId());
         jdbc.update(
-                "update temporary_media set delete_after=case when state='UPLOADING' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",
+                "update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where session_id=?",
                 java.sql.Timestamp.from(clock.instant()), input.uploadSessionId());
         return result;
     }
@@ -219,9 +218,9 @@ public class BookCommandService {
                 || input.stream().anyMatch(m -> m == null || m.mediaId() == null || m.role() == null))
             throw AdminApiException.field("media", "Tối đa 8 ảnh hợp lệ");
         if (input.stream().map(MediaAssignment::mediaId).distinct().count() != input.size()
-                || input.stream().map(MediaAssignment::role).distinct().count() != input.size())
+                || input.stream().map(a -> a.role().canonical()).distinct().count() != input.size())
             throw AdminApiException.field("media", "Ảnh/vai trò không được trùng");
-        return input.stream().sorted(Comparator.comparingInt(m -> m.role().ordinal())).toList();
+        return input.stream().sorted(Comparator.comparingInt(m -> m.role().canonical().ordinal())).toList();
     }
 
     @Transactional
@@ -269,8 +268,7 @@ public class BookCommandService {
         var reordered = media == null ? null : assignments(media);
         boolean mediaChanged = reordered != null && (reordered.size() != before.media().size() ||
                 reordered.stream().anyMatch(a -> before.media().stream().noneMatch(m ->
-                        a.mediaId().toString().equals(m.id()) && a.role()==m.role()
-                                && supplementalVisibility(a,m.showOnProduct())==m.showOnProduct())));
+                        a.mediaId().toString().equals(m.id()) && a.role().canonical()==m.role())));
         if (mapper.write(before).equals(w) && !mediaChanged && !featureChanged && !metadataChanged && !publishing && Objects.equals(unitPrice,b.unitPricePerKgVnd)
                 && Objects.equals(storageBox,b.storageBoxNumber))
             return before;
@@ -297,6 +295,7 @@ public class BookCommandService {
         if (l.publicationStatus == Publication.PUBLISHED || publishing) {
             validation.validateWrite(w);
             validation.validatePublished(after);
+            sources.requireVerifiedForBook(id);
         }
         if(publishing) {
             l.publicationStatus=Publication.PUBLISHED;
@@ -324,10 +323,6 @@ public class BookCommandService {
         return changed;
     }
 
-    private static boolean supplementalVisibility(MediaAssignment assignment, boolean previous) {
-        return !assignment.role().isPublic() && Objects.requireNonNullElse(assignment.showOnProduct(),previous);
-    }
-
     private void reorder(long id, List<MediaAssignment> assignments) {
         var active = images.findByBookCopyIdAndState(id, MediaDtos.MediaState.ACTIVE);
         if (active.size() != assignments.size()
@@ -341,8 +336,7 @@ public class BookCommandService {
         em.flush();
         for (var m : active) {
             var assignment = assignments.stream().filter(a -> a.mediaId().equals(m.id)).findFirst().orElseThrow();
-            m.showOnProduct = supplementalVisibility(assignment,!m.role.isPublic() && m.showOnProduct);
-            m.role = assignment.role();
+            m.role = assignment.role().canonical();
             m.state = MediaDtos.MediaState.ACTIVE;
         }
         em.flush();

@@ -217,6 +217,35 @@ describe('Detail refresh and public origin', () => {
     h.detectChanges();
     expect(modal.showModal).toHaveBeenCalledOnce();
   });
+  it('uses available LOCAL variants and preserves Cloudinary sizes within the same gallery', async () => {
+    const local = {
+      role: 'FRONT', alt: 'Bìa', contentPath: '/front-480',
+      imageVariants: [
+        { url: '/front-480', size: 480, format: 'jpg' as const, width: 360, height: 480 },
+        { url: '/front-1400', size: 1400, format: 'jpg' as const, width: 1050, height: 1400 },
+      ],
+    };
+    const legacy = { role: 'BACK', alt: 'Mặt sau', contentPath: '/back' };
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+      { provide: PublicApi, useValue: {
+        detail: () => of({ ...a, media: [local, legacy] }),
+        contact: () => of({ hotlineUrl: null, groupUrl: null }),
+      } },
+    ] });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const page = h.routeNativeElement!;
+    const main = () => page.querySelector('.gallery figure img');
+    expect(main()?.getAttribute('src')).toBe('/front-1400');
+    expect(page.querySelector('.thumbs img')?.getAttribute('src')).toBe('/front-480');
+    main()?.dispatchEvent(new Event('error'));
+    h.detectChanges();
+    expect(page.querySelector('.media-placeholder')).not.toBeNull();
+    page.querySelectorAll<HTMLButtonElement>('.thumbs button')[1].click();
+    h.detectChanges();
+    expect(main()?.getAttribute('src')).toBe('/back?size=640&format=jpg');
+  });
   it('renders related publisher and category shelves with see-more links', async () => {
     const bookWithPub: PublicBook = { ...a, publisher: 'Kim Đồng', categoryCode: 'PICTURE_BOOK' };
     const relatedPubBook: PublicBook = { ...a, id: '2', bookCode: 'MM-000002', slug: 'mm-000002', title: 'Pub Book', publisher: 'Kim Đồng' };

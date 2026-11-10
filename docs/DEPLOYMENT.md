@@ -19,6 +19,8 @@
 - Các mục Render/Neon dưới đây là hướng dẫn/bằng chứng môi trường test cũ;
   không dùng chúng làm xác nhận cấu hình Dell hoặc chạy migration sang target mới.
 
+[Runbook Ubuntu cho ảnh LOCAL](IMAGE_OPERATIONS.md) hướng dẫn mạng nội bộ, mount và nghiệm thu R6.
+
 ## Môi trường test cũ — Workers + Render + Neon
 
 Phạm vi đã chọn26/10/2026: AngularSSR trên Worker `me-may`, Spring Boot Docker

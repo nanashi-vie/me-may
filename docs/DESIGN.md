@@ -67,6 +67,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
    - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
    - Mobile (≤720px): `<dialog>` native mở bằng `showModal()`, trượt từ trái (~80vw, tối đa 320px), nền `--red`, chữ trắng IN HOA, nút Đóng ✕; `Tất cả sách ›` và `Bộ sưu tập ›` mở accordion tại chỗ; đóng khi Escape, chạm backdrop, bấm ✕, chọn link hoặc đổi route, khóa cuộn nền và trả focus về ☰; tắt animation khi `prefers-reduced-motion: reduce`.
 4. **Hero ngang & Các box tiện ích (cập nhật 06/11):** banner hero, bên dưới là 4 box tiện ích viền xanh IPM (`Ưu đãi vận chuyển`, `Cách hỏi mua sách`, `Cộng đồng Mẹ Mây`, `Hotline: 0966075005 · 0703260005`). Bấm `Cách hỏi mua sách` mở popup dialog 2x2 gồm 4 bước ngắn gọn, tiêu đề in đậm, bước 4 hướng dẫn gửi hotline Zalo; đã gỡ hoàn toàn `/cach-mua` và section cuối trang Home.
+   Ô Cộng đồng mở dialog trên desktop với nền xanh theo mẫu Zalo, thẻ trắng chứa logo Mẹ Mây và nhãn `Cộng đồng Zalo · zalo.me`. QR tạo từ link nhóm Zalo, có nút mở tab mới và sao chép liên kết. Android/iOS đi thẳng đến link nhóm. Dialog đóng bằng X, Escape hoặc nhấn ngoài, rồi trả focus về ô Cộng đồng.
 5. **Flash Sale (cập nhật 03/11):** ngay dưới hero, nền đỏ cam `#ff625c` tràn toàn chiều ngang (`100vw`) kèm họa tiết tia sét mờ hai bên; bên trong `.wrap` là thanh tiêu đề trắng bo góc gồm `FLASH ⚡ SALE`, đếm ngược 3 ô đen bo góc (`HH : MM : SS`) và `Xem tất cả ›` màu xanh đậm (`#1976d2`). Thẻ sách và trang chi tiết hiển thị giá sale kèm badge `-XX%` màu đỏ (tính theo `priceMaxVnd`, làm tròn `Math.round((1 - salePriceVnd / priceMaxVnd) * 100)`) và khoảng giá gốc gạch ngang; đồng bộ 3 ô đếm ngược trên Home, `/flash-sale` và thanh banner `FLASH ⚡ SALE` ở `/sach/:slug`. Chỉ hiển thị khi có đợt thật đang hiệu lực; không có thanh số đã bán. Mobile hai cột. OWNER biên tập ở `/admin/flash-sale`.
 6. **Sách mới đăng:** tối đa 5 cuốn ở một hàng desktop, sắp theo published_at; “Xem tất cả” mở catalogue có sort phù hợp.
 6. **Board books cho bé nhỏ:** hàng 5 cuốn hoặc ít hơn nếu thiếu; tên nhóm chỉ xuất hiện khi có nội dung công khai.
@@ -186,9 +187,9 @@ Không có doanh thu/đơn hàng dashboard. Owner đổi trạng thái bằng co
 Danh sách sách quản trị hiển thị cột “Tồn kho” bằng tổng tồn các biến thể, gồm cả 0;
 bộ lọc Còn hàng/Hết hàng vẫn dựa trên khả dụng dẫn xuất từ tổng tồn.
 
-Cột nội dung chính: chọn/thả nhiều file tối đa8ảnh (6công khai+2nội bộ) lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, mọi thể loại ngoài Board book có lựa chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; hai nút lưu nằm cuối form; xác nhận bộ ảnh khi xuất bản.
+Cột nội dung chính: chọn/thả nhiều file tối đa8ảnh  lên đầu form tạo/sửa, mặc định FRONT/BACK/SPINE/INSIDE_1..INSIDE_5, alt text, bìa trước làm thumbnail → tên sách, ISBN, NXB/tác giả, ngôn ngữ → chọn một thể loại, mọi thể loại ngoài Board book có lựa chọn Paperback hoặc Hardcover → khoảng giá từ–đến, trọng lượng gram, đơn giá/kg optional, tồn gộp/ghi chú riêng optional và các thông tin còn lại. Có thể nhập thông tin trong khi ảnh đang upload. Publication, khả dụng dẫn xuất từ tồn, version/cập nhật và sửa/preview/ẩn/hiện theo quyền; hai nút lưu nằm cuối form; xác nhận bộ ảnh khi xuất bản.
 
-Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có DRAFT. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa trừ Board book, 2–6 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Sách ẩn có thể lưu thiếu kiểu bìa. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
+Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có DRAFT. Đăng sách yêu cầu tên, khoảng giá nguyên dương, trọng lượng gram nguyên dương, thể loại, kiểu bìa trừ Board book, 2–8 ảnh có FRONT/BACK đã kiểm tra. Upload tạm24giờ không sinh sách/mã; hết hạn giữ form/file để tạo lại phiên. Retry final giữ cùng payload để tránh tạo trùng. Sách ẩn có thể lưu thiếu kiểu bìa. Có lựa chọn mức đọc “Chưa xác định”; mức đọc/link video không chặn publish. Có lỗi phải nêu trường/ảnh nào và giữ dữ liệu người dùng vừa nhập. Rời form chưa lưu có cảnh báo. Version conflict không ghi đè; cho tải bản mới và đối chiếu thay đổi. Upload có progress/lỗi từng ảnh; không báo lưu hoàn tất khi ảnh chưa gắn vào cuốn.
 
 ### Nhập giá theo kg và tồn gộp — duyệt06/11
 
@@ -243,7 +244,7 @@ Loading, empty, error, forbidden, not-found, unsaved changes và concurrent edit
 
 ## Trạng thái triển khai M3 local
 
-Home/catalogue/collection/detail đã nối API, gallery 2–6 ảnh thật (M5), metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
+Home/catalogue/collection/detail đã nối API, gallery 2–8 ảnh thật (M5), metadata/OG/404 và no-store trên local. Gallery desktop ảnh trước lớn + hai ảnh dưới, mobile một cột nội dung. Bộ lọc dùng details có thể đóng/mở, checkbox tuổi, select thể loại/kiểu bìa; URL giữ query/sort/page. M4 đã thêm wishlist theo mục trên.
 
 Nội dung liên hệ nằm trong dialog native: textarea chọn được, nút copy, mở Zalo khi có link, Escape đóng và trả focus. Link hotline/nhóm lấy cấu hình môi trường; chưa có thì hiển thị đang cập nhật. Chưa kiểm chứng mở Zalo thật hoặc preview crawler Cloudflare.
 
@@ -296,9 +297,8 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
 - Save-only cho thiếu metadata ở ARCHIVED; publish mới kiểm đủ và checkbox đúngảnh.
   Đang lưu khóa thao tác xung đột, loading theo hành động, lỗi giữform/ảnh.
   Kết quả chưa rõ phải kiểm session/book trước retry, không tự báo xuất bản.
-- Hai nhóm “Ảnh công khai (tối đa 6)” và “Ảnh nội bộ (tối đa 2)”; ảnh nội bộ có
-  khóa và “Chỉ nội bộ”. Giữ multi-file/drop/replace/remove/role dropdown/largeview/
-  retry/metadata;8file mới mặc định6public+2internal, xóa không đổirole ảnh khác.
+- Một nhóm tối đa tám ảnh. Chọn nhiều file, thay/gỡ ảnh, đổi vai trò, xem lớn,
+  thử lại và chỉnh metadata. Khi xuất bản, tất cả ảnh ACTIVE hiển thị cùng sách.
 - Fieldset “Đặc điểm sách” checkbox, đếm n/3; chọn tối đa3, nút “Đặt nổi bật”
   đưa tag chọn lên đầu, không cần drag. Không tự gắn theo tên hoặc thể loại.
 - Book card Home/catalogue/collection/related: tối đa1tag đầu ở góc dưới trái ảnh,
@@ -306,7 +306,7 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   none, text dài ellipsis, label đầy đủ vẫn screenreader đọc và titletooltip.
 - Detail dưới tiêu đề hiện tất cảtags theo thứ tự, wrap/mobile, khônglink/filter.
   Khôngfeatures khôngplaceholder; khungảnh giữ kích thước, không layoutshift đáng kể.
-- Preview mô phỏng khách chỉ public roles và tags; khôngnote/internalmedia/sourceRef.
+- Preview mô phỏng khách với tất cả ảnh ACTIVE và tags; ghi chú và nguồn ảnh chỉ ở admin.
 
 ## Box tiện ích & hỗ trợ bên dưới Banner Hero — 06–07/11/2026 (chuẩn mẫu IPM)
 

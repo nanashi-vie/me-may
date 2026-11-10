@@ -39,7 +39,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: ${MEMAY_MANAGEMENT_EXPOSURE:health}
   endpoint:
     health:
       show-details: never
@@ -47,4 +47,11 @@ memay:
   performance:
     enabled: ${MEMAY_PERFORMANCE_ENABLED:false}
   media:
+    recovery:
+      mode: ${MEMAY_MEDIA_RECOVERY_MODE:active}
     namespace: ${CLOUDINARY_NAMESPACE:memay/dev}
+    local:
+      enabled: ${MEMAY_IMAGE_LOCAL_ENABLED:false}
+      root: ${MEMAY_IMAGE_ROOT:/srv/memay/images}
+      nginx-origin: ${MEMAY_IMAGE_NGINX_ORIGIN:http://image-nginx:8080}
+      worker-token: ${MEMAY_IMAGE_WORKER_TOKEN:}

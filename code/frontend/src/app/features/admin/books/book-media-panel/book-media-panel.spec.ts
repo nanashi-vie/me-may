@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { TestBed, DeferBlockState } from '@angular/core/testing';
 import { of } from 'rxjs';
 import { BookMediaPanel } from './book-media-panel';
@@ -41,6 +42,23 @@ describe('photo panel accessible order and readonly mode',()=>{
   const q=TestBed.inject(BookUploadQueue);q.configure({...testBook(),media:[{id:'a',role:'FRONT',alt:'Cover',sourceRef:null,contentPath:'/a'},{id:'b',role:'BACK',alt:'Back',sourceRef:null,contentPath:'/b'}]});
   const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();return{q,f};
  }
+ it('checks a batch of Drive links only after the owner confirms the mapping', async () => {
+  const { q, f } = setup();
+  q.rows.update(rows => rows.map(row => ({ ...row, provider: 'LOCAL' })));
+  const panel = f.componentInstance;
+  const [front, back] = q.sorted();
+  const verify = vi.spyOn(q, 'verifySource').mockResolvedValue(true);
+  panel.setBatch('https://drive.google.com/file/d/driveFileId123/view\ndriveFileId456');
+  panel.matchBatch();
+  expect(verify).not.toHaveBeenCalled();
+  panel.matchRow(0, back.id);
+  await panel.verifyBatch();
+  expect(verify).not.toHaveBeenCalled();
+  panel.matchRow(1, front.id);
+  await panel.verifyBatch();
+  expect(verify.mock.calls).toEqual([[back.id, 'driveFileId123'], [front.id, 'driveFileId456']]);
+  expect(panel.batch().map(item => item.result)).toEqual(['Đã xác minh', 'Đã xác minh']);
+ });
  it('changes a role with the dropdown available to keyboard and mobile users',()=>{
   const {q,f}=setup();expect(Array.from(f.nativeElement.querySelectorAll('.photo-slot select') as NodeListOf<HTMLSelectElement>).map(s=>s.value)).toEqual(['FRONT','BACK']);
   const role=f.nativeElement.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));f.detectChanges();

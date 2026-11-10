@@ -1,25 +1,27 @@
-import { Component, inject, signal, computed, effect, RESPONSE_INIT, DestroyRef, ViewChild } from '@angular/core';
+import { Component, inject, signal, effect, RESPONSE_INIT, DestroyRef, ViewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PublicSkeleton } from '../catalogue/public-skeleton/public-skeleton';
 import { PublicApi } from '../catalogue/public-api';
-import { ContactConfig, FlashSale, HomeData } from '../catalogue/public.models';
+import { FlashSale, HomeData } from '../catalogue/public.models';
 import { PublicClock } from '../catalogue/public-clock';
 import { countdown, countdownParts } from '../catalogue/catalogue-state';
 import { BookCard } from '../catalogue/book-card/book-card';
 import { PublicError } from '../catalogue/public-error';
 import { PageMetadata } from '../../core/page-metadata';
 import { HowToBuyDialog } from './how-to-buy-dialog/how-to-buy-dialog';
+import { CommunityDialog, COMMUNITY_URL } from './community-dialog/community-dialog';
 import { ShippingPromoDialog } from './shipping-promo-dialog/shipping-promo-dialog';
 
 @Component({
   selector: 'app-home-page',
-  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog, ShippingPromoDialog],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog, ShippingPromoDialog, CommunityDialog],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
 export class HomePage {
+  @ViewChild('communityDialog') communityDialog?: CommunityDialog;
   @ViewChild('shippingPromoDialog') shippingPromoDialog?: ShippingPromoDialog;
   @ViewChild('howToBuyDialog') howToBuyDialog?: HowToBuyDialog;
   private readonly response = inject(RESPONSE_INIT, { optional: true });
@@ -34,8 +36,7 @@ export class HomePage {
   readonly saleError = signal(false);
   readonly error = signal(false);
   readonly loading = signal(true);
-  readonly contact = signal<ContactConfig | null>(null);
-  readonly groupUrl = computed(() => this.contact()?.groupUrl || '');
+  readonly groupUrl = COMMUNITY_URL;
   readonly countdown = countdown;
   readonly countdownParts = countdownParts;
   readonly shelfIndices = signal<Record<string, number>>({});
@@ -49,7 +50,6 @@ export class HomePage {
     );
     this.load();
     this.loadSale();
-    this.loadContact();
     effect(() => {
       const sale = this.sale();
       if (
@@ -120,15 +120,23 @@ export class HomePage {
         )
       : 0;
   }
-  loadContact() {
-    if (typeof this.api.contact !== 'function') return;
-    this.api
-      .contact()
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({
-        next: (c) => this.contact.set(c),
-        error: () => this.contact.set(null),
-      });
+  openCommunity(event: MouseEvent): void {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
+        event.shiftKey || event.altKey) return;
+
+    const trigger = event.currentTarget as HTMLAnchorElement;
+    const view = trigger.ownerDocument.defaultView;
+    if (!view) return;
+
+    const { userAgent, maxTouchPoints } = view.navigator;
+    // iPadOS can advertise itself as a Mac when requesting desktop sites.
+    if (/Android|iPhone|iPad|iPod/i.test(userAgent) ||
+        (/Macintosh/i.test(userAgent) && maxTouchPoints > 1)) return;
+
+    const desktopOs = /Windows NT|Macintosh|X11|Linux|CrOS/i.test(userAgent);
+    if (!desktopOs && view.matchMedia?.('(pointer: coarse) and (hover: none)').matches) return;
+
+    if (this.communityDialog?.open(trigger)) event.preventDefault();
   }
 
   openShippingPromo(trigger?: HTMLElement | null) {

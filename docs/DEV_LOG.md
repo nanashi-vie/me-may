@@ -2693,6 +2693,310 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   git diff --check đạt từ root. Chưa đo bố cục trên trình duyệt.
 - Bàn giao dev, kiểm tra lại nhãn và giá trị trên candidate khi smoke V20.
 
+## S057-C01 — Bắt đầu S1 hợp nhất ảnh sách
+
+- Native tuần tự, worktree codex/image-system từ dev 266f2d3.
+- Ruling: dùng V21/V22/V23 vì V20 đã dành cho thùng sách.
+- Phạm vi S1: gallery tám ảnh, giữ dữ liệu và retry cũ. Đang chuẩn bị RED.
+
+- S1: hợp nhất UI/DTO và gallery, giữ hai alias request để tương thích URL và
+  fingerprint cũ. Migration V21 đổi role, giữ ID/storage ref, tăng version.
+- RED: test gallery trên PostgreSQL local trả 6 thay vì 8. Lượt kiểm shared DB
+  gặp dữ liệu test trùng/FK; chuyển sang container loopback riêng memay-s057-pg.
+- GREEN: từ code/backend, ./mvnw -B -ntp test trên DB test riêng đã migrate
+  đạt 243 ca, 240 đạt/3 skip. Lần chạy trước trên DB trống có 7 lỗi setup auth
+  do bảng chưa tồn tại; chạy lại sau Flyway đạt. Frontend npm test đạt 248/248;
+  npm run build:workers và npm run check:workers:proxy đạt.
+- Đã kiểm git diff --check, liên kết tài liệu và trần dòng. Chưa smoke browser,
+  replay receipt chụp từ bản deploy cũ hoặc rollout production.
+- Checkpoint codex/image-system. Bước tiếp theo S2; S3–R6 còn mở.
+
+## 2026-11-09 — S058-C01 — Bắt đầu S2
+
+- Tiếp tục Native từ S1 3be348d, worktree được cấp quyền ghi.
+- Phạm vi metadata V22, staging và xuất file bất biến. Owner dựng Ubuntu.
+
+- V22 thêm identity ảnh dùng chung qua bước chuyển temp→book, recipe,
+  generation, variant, binding và job. DB giữ storage_public_id Cloudinary,
+  pointer LOCAL chỉ được chuyển sang generation đã xuất của cùng ảnh.
+- LocalImageStore stream staging tối đa 10 MiB, tính SHA-256, từ chối symlink
+  và đường dẫn ngoài quy ước, kiểm MIME magic/size/hash rồi rename nguyên tử.
+  Nginx và worker chưa kết nối. Dùng root đã resolve thực trên Ubuntu;
+  test macOS dùng toRealPath vì thư mục temp mặc định đi qua symlink hệ thống.
+- RED test LocalImageStore thiếu contract mới. GREEN 4/4 ca từ code/backend
+  với -Dtest=LocalImageStoreTest,ImageGenerationRepositoryTest trên PostgreSQL
+  riêng. Test DB chứng minh rollback giữ pointer và báo generation đã xuất
+  chưa phục vụ. Chưa mô phỏng disk full thật hoặc kiểm kê file mồ côi ngoài DB.
+- Tiếp theo S3 lease/worker boundary, rồi Sharp. Chưa rollout hay kiểm Ubuntu.
+- Hồi quy backend trên PostgreSQL test riêng: 247 ca, 244 đạt, 3 skip.
+
+## 2026-11-09 — S059-C01 — Bắt đầu S3
+
+- Native tiếp tục từ dev 82636b5. Phạm vi queue PostgreSQL và API nội bộ.
+- Ruling: output mỗi attempt dùng thư mục theo lease token để worker hết lease
+  không ghi đè staging của worker mới. Completion chỉ xuất generation READY.
+
+- Queue claim dùng PostgreSQL SKIP LOCKED, lease 5 phút, retry 10/60 giây,
+  dừng sau ba lần. Kết quả kiểm lease, phiên upload và manifest trước khi xuất.
+  Completion ghi generation READY, bước gắn ảnh thuộc S5.
+- POST /actuator/imagejobs chỉ trên cổng management khác cổng app, Bearer
+  độc lập; COMPLETE nhận manifest dưới dạng chuỗi JSON. App giữ health route.
+  PROCESS hoạt động; các kind Drive báo unsupported đến khi có handler.
+- RED compile thiếu ImageJobRepository. GREEN nhóm lease/security/storage
+  đạt 5/5. Toàn bộ ./mvnw -B -ntp test từ code/backend trên PostgreSQL test
+  riêng đạt 249 ca, 246 đạt, 3 skip. Worker encode và Ubuntu chưa kiểm.
+- Tiếp theo S4. Chưa rollout.
+
+## 2026-11-09 — S059-C02 — Bắt đầu S4
+
+- Sharp worker dùng manifest S3, một job mỗi lúc, staging tách theo lease.
+- Phạm vi encoder, worker client, Node image khóa digest và smoke container.
+
+- Sharp 0.35.5 khóa bằng package-lock; Node 22 bookworm-slim khóa digest.
+  Recipe v1 có 9 variant, giới hạn 10 MiB/25 MP, xoay theo EXIF, bỏ metadata,
+  nền trắng, không upscale. Một subprocess/job với deadline 180 giây và
+  heartbeat 30 giây. Tắt process khi mất lease, không gửi COMPLETE.
+- RED npm test thiếu processor. Một lượt worker test lỗi do fixture ghi input
+  vào thư mục cha (mkdir recursive trả đường dẫn đầu tiên được tạo). Sửa fixture.
+- Từ code/image-worker: npm test đạt 7/7. Docker build thành công và node --test
+  trong container --network none --cpus=1 --memory=768m đạt 7/7, gồm linux/amd64.
+  npm install báo 0 lỗ hổng tại thời điểm cài. Chưa đo tải trên Ubuntu/Dell.
+- S3 và S4 đã kiểm riêng. Chưa có smoke worker kết nối backend thật, upload LOCAL,
+  recipe registry production hay Nginx. R1 là bước tiếp theo, Ubuntu ở S8/R6.
+
+## 2026-11-09 — S059-C03 — Bắt đầu R1
+
+- Tiếp tục từ S4 7290c83. Phạm vi client Drive chỉ đọc, staging có checksum,
+  phát hiện nguồn đổi giữa hai lượt metadata và phân loại lỗi an toàn.
+- Không cần credential Drive thật cho fixture HTTP local.
+
+- Google Auth 1.57.0 khóa trong pom. Chỉ GET metadata và blob bằng service
+  account scope drive.readonly. Cố định Google API host, tắt redirect, timeout
+  kết nối 10 giây, request/body 60 giây và deadline toàn thao tác 180 giây.
+- So ID, version, MIME và size trước/sau, stream và hash file trong staging.
+  Nguồn đổi được dọn khỏi staging. Mã lỗi an toàn, không trả body upstream.
+- RED compile thiếu client. GREEN từ code/backend với fixture HTTP local
+  đạt 3/3 ca R1, thêm 1 ca worker security đạt. ./mvnw -B -ntp test trên DB
+  PostgreSQL test riêng đạt 252 ca, 249 đạt, 3 skip. git diff --check đạt.
+- Chưa gọi Google Drive thật hoặc thử đổi credential live. R2 sẽ nối binding
+  và publish gate. S5–R6 vẫn mở, Ubuntu chưa có cấu hình bàn giao hoàn chỉnh.
+
+## 2026-11-09 — S060-C01 — Bắt đầu R2
+
+- Native từ dev 0d737be. Phạm vi binding Drive, kiểm quyền và gate xuất bản.
+- Ruling: VERIFY so hash với input gốc của generation đã được Sharp giải mã
+  thành công. Hash khớp chứng minh cùng bytes nên không encode lại.
+- V23 dành cho candidate VERIFY và hash input. Migration receipt R3 dời V24.
+
+- PUT owner/CSRF tạo candidate idempotent, VERIFY chỉ claim phía Spring.
+  Preflight và completion đều kiểm lease, quyền OWNER, phiên upload,
+  generation và version. Hash gốc ghi trước khi enqueue PROCESS, recheck
+  khi công bố. File Drive sai hash không thay binding đang dùng.
+- V23 thêm input_sha256 và candidate. SOURCE_VERIFIED, binding và version
+  sách commit nguyên tử. Audit giữ ID media và version, không ghi Drive File ID.
+- Gate kiểm ảnh LOCAL ACTIVE khi tạo/xuất bản, ghi sách đang công khai và
+  thay ảnh. S5 phải gọi cùng gate trong transaction gắn ảnh LOCAL.
+- RED compile thiếu gate. Một lượt compile fixture lỗi suy luận kiểu
+  assertThat, đã tách biến UUID. Test mục tiêu 13/13, toàn bộ backend
+  ./mvnw -B -ntp test từ code/backend trên PostgreSQL test riêng đạt
+  255 ca, 252 đạt, 3 skip. Chưa kiểm Drive thật hoặc deploy.
+- Smoke bổ sung SourceBindingApiTest đạt 1/1: OWNER + CSRF nhận 202,
+  job VERIFY chạy với Drive giả lập, GET chỉ trả status và versions,
+  STAFF bị 403. Test này chạy riêng sau bộ hồi quy.
+- Bàn giao dev theo workflow. Tiếp theo S5 upload và gắn ảnh LOCAL.
+
+## 2026-11-09 — S061-C01 — Bắt đầu S5 và ghi yêu cầu S6
+
+- Tiếp tục Native từ dev c705a2c. S5 nối upload LOCAL, poll, finalize và replacement.
+- User duyệt S6 nhận nhiều link file Drive hoặc File ID cùng lúc cho một sách.
+  Hiện danh sách ghép với ảnh để owner kiểm tra trước khi xác minh từng ảnh.
+  Link thư mục báo lỗi, backend tiếp tục nhận File ID chuẩn.
+
+## 2026-11-09 — S061-C02 — Upload LOCAL và ghép nguồn Drive
+
+- S5 thêm V24, session upload file gốc, trạng thái job, retry và preview admin.
+  Gắn ảnh và kiểm nguồn cùng transaction. Receipt giữ kết quả khi gửi lại yêu cầu.
+  Cleanup LOCAL tách khỏi Cloudinary và kiểm lease trước khi xóa file.
+- S6 nối form hiện có, tiếp tục poll qua phiên tab, hỗ trợ tối đa tám link file
+  hoặc File ID, xác nhận ghép và xem kết quả từng ảnh. Không mở rộng sang duyệt thư mục.
+- Kiểm tra: từ `code/backend`, `./mvnw -B -ntp test` với PostgreSQL test local
+  đạt 254 ca, skip 3. Từ `code/frontend`, `npm test` đạt 253 ca,
+  `npm run build:workers` và `npm run check:workers:proxy` đạt.
+  Test nguồn dùng Drive giả lập. Chưa chạy smoke trình duyệt với Drive thật.
+- Giữ mặc định Cloudinary. Còn S7 delivery public và ZIP trước khi bật LOCAL
+  cho vận hành, cần đăng ký recipe v1 và kiểm Ubuntu với worker thật.
+- Bàn giao lên dev theo quy ước. Bước kế tiếp S7 theo IMAGE_STORAGE_PLAN.
+
+## 2026-11-09 — S062-C01 — Popup Cộng đồng Mẹ Mây
+
+- Bắt đầu trên dev sau fast-forward tới dceef69. Phạm vi ô Cộng đồng trên Home.
+- Kế hoạch: kiểm luồng desktop/mobile ở Home, theo mẫu dialog native sẵn có,
+  tạo QR từ URL trong spec và kiểm các đường đóng, focus, sao chép, SSR.
+- Chưa chạy kiểm tra. Đang triển khai.
+
+### S062-C02 — Kiểm chứng và bàn giao
+
+- Home dùng URL trong spec cho link trực tiếp, nút Zalo Web, clipboard và QR.
+  Dialog native theo mẫu Home, dùng logo hiện có. QR sinh tại chỗ bằng
+  qrcode-generator 2.0.4, tải thư viện khi mở. Nhận diện iPadOS giả Mac bằng
+  touch points và dùng khả năng con trỏ cho thiết bị không rõ hệ điều hành.
+- Từ code/frontend: npm test đạt 257/257 ca, 45 file. npm run build,
+  npm run build:workers và npm run check:workers:proxy đạt.
+- Chrome localhost: mở dialog, clipboard thật, Enter, Esc, X, backdrop,
+  focus ban đầu và trả focus, cuộn ở viewport 420×320 đạt. iPhone/Android
+  mô phỏng giữ click mặc định. Kiểm href/target của Zalo Web qua DOM.
+  Harness chờ sự kiện tab mới với Zalo giả lập bị timeout.
+- Giải mã QR render bằng jsQR ra https://zalo.me/g/mwzwwq694. QR ảnh user
+  chứa URL zaloapp.com/qr/g cùng mã nhóm. Yêu cầu giả lập Safari iPhone tới
+  URL trong spec nhận 302 sang scheme của Zalo; còn kiểm mở đúng nhóm trên
+  điện thoại thật. Bàn giao theo workflow dev, bước tiếp theo là smoke này.
+
+### S062-C03 — Nền popup theo mẫu Zalo
+
+- User xác nhận QR mở đúng nhóm trên iPhone thật. Yêu cầu chỉnh nền popup
+  theo ảnh mẫu. Bắt đầu trên dev sạch ở c075605.
+- Phạm vi HTML/SCSS của dialog: nền xanh, thẻ trắng và logo Mẹ Mây.
+  Giữ nguyên dữ liệu và hình QR. Kiểm test, build và giao diện sau chỉnh.
+- Đã thêm nền xanh, thẻ trắng, nhãn Cộng đồng Zalo · zalo.me và nút xanh.
+  Từ code/frontend: npm test đạt 257/257, npm run build đạt.
+  Chrome localhost kiểm ảnh popup, focus, Escape và viewport 420×320;
+  jsQR đọc đúng URL từ ảnh QR render. Kiểm iPhone thật do user xác nhận
+  trước khi đổi nền. Bàn giao dev, còn cập nhật bản chạy online.
+
+## 2026-11-09 — S062-C01 — Bắt đầu S7
+
+- Dùng lại worktree Codex, fast-forward đến dev 8f7c41d.
+- Phạm vi: phân quyền đọc ảnh LOCAL/Cloudinary cho catalogue, preview và ZIP,
+  variant theo generation, placeholder khi mất file, và cache Worker.
+
+## 2026-11-09 — S062-C02 — Kiểm S7 và bàn giao
+
+- Catalogue, preview và ZIP phân luồng theo provider. LOCAL kiểm manifest/file
+  rồi mở ảnh qua origin Nginx nội bộ, giữ timeout và giới hạn kích thước đọc.
+- URL LOCAL mang generation, DTO chỉ mô tả variant còn có. Cloudinary giữ
+  320/640 và preview 1280. Worker giữ TTL tối đa 30 giây và purge hiện có.
+- Ruling: S7 kết thúc tương thích alias INTERNAL trên public theo plan,
+  cập nhật test S1 đang đòi 200. Request/receipt admin cũ vẫn parse alias.
+- RED backend từ chối size 480 và frontend thiếu placeholder. Review độc lập
+  phát hiện URL mặc định cho wishlist và race giữa hai truy vấn preview.
+  DTO LOCAL dùng URL mặc định đã version hóa, preview lấy một snapshot DB.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  258 ca, 255 đạt và 3 skip. `npm test` từ code/frontend 261 đạt.
+  `npm run build:workers`, `npm run check:workers:proxy` và git diff --check đạt.
+- Origin nội bộ được mô phỏng bằng HTTP trên loopback. Chưa smoke Ubuntu,
+  Nginx thật hoặc Drive thật. Bàn giao dev, tiếp theo R3.
+
+## 2026-11-09 — S063-C01 — Bắt đầu R3
+
+- Tái sử dụng worktree Codex ở dev ef6d7cf. R3 chỉ tạo manifest dry-run,
+  receipt 24 giờ và ảnh đối chiếu để owner xác nhận ở bước R4.
+- Dùng lại Sharp và worker lease cho bước decode, giữ receipt riêng để
+  dry-run không ghi vào book_media, image_asset, generation hoặc binding.
+
+## 2026-11-09 — S063-C02 — Manifest và receipt dry-run R3
+
+- V25 lưu từng dòng manifest và receipt 24 giờ. Template phân trang 100 ảnh;
+  kiểm media, mã sách, role, Drive File ID, version và trùng dòng.
+- Drive tải tuần tự. Worker Sharp xử lý PREVIEW cùng lease/recipe và chỉ xuất
+  JPEG 480. Receipt giữ hash, version nguồn và URL đối chiếu riêng cho OWNER.
+- Ruling: đặt R3 cùng module media để tái sử dụng worker endpoint, storage và
+  cleanup. Preview dùng bảng receipt riêng, tách khỏi asset/generation đang phục vụ.
+- RED: API thiếu route, CLI thiếu module. Review bổ sung lỗi dòng CSV an toàn
+  trên CLI và giới hạn cleanup theo số thư mục xóa, tránh staging được giữ làm
+  chặn lượt dọn. Test kiểm lease cũ, nguồn và file preview hết TTL.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  261 ca, 258 đạt và 3 skip. `npm test` tại code/image-worker đạt 8 ca,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root đạt
+  2 ca. git diff --check đạt.
+- Tích hợp API dùng Drive và Cloudinary giả lập. Chưa chạy trên Ubuntu hay
+  dữ liệu thật. Bàn giao dev, tiếp theo R4 apply xác nhận và rollback.
+
+## 2026-11-09 — S064-C01 — Bắt đầu R4
+
+- Tái sử dụng worktree ở dev 7b7ea72. Phạm vi apply theo danh sách OWNER
+  xác nhận, đối chiếu lại Drive và version, đổi provider nguyên tử từng sách,
+  rollback theo receipt. Kiểm thử chỉ dùng PostgreSQL và nguồn giả lập.
+
+## 2026-11-09 — S064-C02 — Apply theo sách và rollback R4
+
+- V26 lưu operation, snapshot nguồn và Cloudinary theo ảnh, version theo sách
+  và receipt rollback. Apply nhận digest và danh sách media do OWNER xác nhận.
+- Handler tải lại Drive ngoài transaction, so SHA/version/MIME/bytes rồi
+  enqueue MIGRATE bằng recipe hiện tại. Toàn bộ ảnh của một sách phải READY
+  trước khi đổi provider, tăng version một lần, audit và đánh dấu purge.
+- Ruling: book version sai lúc tiếp nhận trả 409. Nguồn đổi phát hiện sau
+  202 báo lỗi theo sách trong operation, để sách khác tiếp tục.
+- Rollback kiểm version và generation hiện hành, khôi phục Cloudinary và
+  binding trước đó. Cleanup chỉ dọn generation LOCAL không còn phục vụ.
+- RED API apply thiếu route, CLI thiếu lệnh. Review phát hiện QUEUED có job
+  bị xóa có thể kẹt, đã thêm kết quả terminal và test hồi quy.
+- Ubuntu do owner dựng ở S8, sau R5. R4 dùng PostgreSQL test và Drive giả lập.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test riêng
+  265 ca, 262 đạt và 3 skip. `npm test` tại code/image-worker đạt 9 ca,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root đạt
+  3 ca. git diff --check đạt. Bàn giao dev, tiếp theo R5.
+
+## 2026-11-09 — S065-C01 — Bắt đầu R5
+
+- Tái sử dụng worktree dev 9f8c96d. Kiểm kê byte thật, phục hồi đúng manifest
+  và giữ nguyên pointer/publication. Restore profile cách ly trước khi bật worker.
+- Bước sau R5 là S8, cần owner chuẩn bị Ubuntu để nghiệm thu.
+
+## 2026-11-09 — S065-C02 — Inventory, rebuild và restore cách ly
+
+- V27 giữ operation, dedupe theo generation và kết quả từng ảnh. Inventory
+  kiểm MIME, byte và SHA-256 thật; phân trang DB và layout trên mount riêng.
+  File không có metadata chỉ được báo. GET ảnh LOCAL kiểm SHA trước khi stream.
+- REBUILD dùng binding VERIFIED, recheck nguồn/lease/actor/pointer. Worker gửi
+  digest OCI và digest recipe; đầu ra phải khớp toàn bộ manifest trước khi
+  phục hồi từng file nguyên tử, giữ nguyên file còn tốt và publication.
+- Restore profile mặc định cách ly, giữ inventory/dry-run, chặn outbound
+  provider, claim queue, admin writes và scheduler cleanup.
+- Ruling: inventory/recovery ở module media để tái sử dụng storage và queue.
+  Review bổ sung cursor apply, báo layout lạ, thiếu recipe, GET checksum và
+  cleanup tất cả job trên generation rollback.
+- RED API R5 thiếu route và CLI thiếu lệnh. Full test lần đầu bị fixture
+  trùng dedupe key từ lượt trước, đã dùng UUID và cleanup fixture trong finally.
+- GREEN `./mvnw -B -ntp test` từ code/backend trên PostgreSQL test đạt
+  269 ca, 266 đạt, 3 skip. `npm test` tại code/image-worker 10 đạt,
+  `node --test scripts/image-system/media-operations.test.mjs` từ root 4 đạt.
+- Drill `pg_dump -Fc` → `pg_restore --exit-on-error` sang container riêng,
+  xác nhận schema V27 và 185 variant có trong dump. Chạy 4 test isolation/rebuild
+  trên DB restore với fixture test, gồm mất một phần và mất toàn bộ output;
+  dừng container tạm sau kiểm thử. Drive dùng giả lập, chưa kiểm Ubuntu thật.
+- Bàn giao dev. Đã báo owner đến mốc dựng Ubuntu. Tiếp theo S8 benchmark
+  và smoke trước R6 live gate.
+
+## 2026-11-10 — S066-C01 — Bắt đầu S8
+
+- Dùng lại worktree dev 988da15. Chuẩn bị compose và runbook bàn giao Ubuntu,
+  fixture benchmark, kiểm hồi quy local. Gate server/Drive/R2 thật ở R6.
+
+## 2026-11-10 — S066-C02 — Nghiệm thu local và bàn giao S8
+
+- Thêm Compose/Nginx nội bộ, UID/GID 10001 đồng bộ, mount persistent và
+  resource cap 1 CPU/768 MiB. Docker local xác nhận Nginx nội bộ đọc JPEG/WebP,
+  từ chối staging/symlink/size sai và chỉ đọc derived.
+- Worker amd64 build thành công. Thử ENOSPC trên tmpfs 64 KiB, retry sau
+  giải phóng dung lượng. Kill tiến trình claimant test, đặt hết hạn đúng
+  lease fixture rồi chạy lại worker thật, trạng thái READY.
+- RED browser reload form Thêm sách mất ảnh LOCAL do route mới không gọi
+  khôi phục session. Test editor tái hiện, tách restoreDraft khỏi reset
+  queue; GREEN browser hiện lại hai/tám ảnh. Kiểm 0/2/8 ảnh và lô vượt trần,
+  link thư mục sai, lưu Ẩn, thay bìa và xung đột hai tab.
+- Gallery tám ảnh desktop/mobile và ZIP OWNER tám entry. Dev SSR lúc đầu
+  gọi sai origin loopback và trả 503, cấu hình lại bản SSR build về backend
+  test, kiểm HTTP 200 public / 404 archived đạt. Publication gallery là fixture,
+  Drive thật và publish có Drive thật còn ở R6.
+- `bash code/backend/run-local.sh -B -ntp verify` với .env tạm và PostgreSQL
+  test đạt 269 ca, 266 đạt và 3 skip. Lượt đầu DB trống lỗi auth vì chạy trước
+  migration, lượt sau trên schema đã tạo đạt. Frontend `npm test` 262 đạt;
+  `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` đạt.
+  `npm test` tại code/image-worker 10 đạt.
+- Benchmark 40/400 ảnh, 771 probe API không lỗi trên Mac arm64. Encode p95
+  226,29/196,21 ms. Bảng CPU/RSS/bytes và hạn chế warm-up ở IMAGE_OPERATIONS.
+- Review đã bổ sung lệnh đăng ký recipe và lưu alias/IP backend qua redeploy.
+  Bàn giao dev. R6 cần owner xác nhận Ubuntu, nguồn Drive và backup R2.
 
 ### 2026-11-09 — S063-C01 — Chấm công MVP v1
 
@@ -2747,3 +3051,91 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Một ô Ghi chú chung cho mỗi kỳ tuần/tháng, độc lập bộ lọc. Bỏ menu, state theo hàng và route đọc/ghi ghi chú theo nhân viên. Xóa field DTO và thông báo lỗi chỉnh giờ đã hết caller. Migration V23 bổ sung bảng ghi chú chung. V22 và audit cũ giữ để Excel vẫn đọc được lịch sử.
 - Từ code/backend: mvn -o test đạt 249, bỏ qua 3. Từ code/frontend: npm test đạt 257/257, build SSR và Workers đạt. Kiểm lại workbook cuối bằng bộ AttendanceIntegrationTest và AttendanceWorkbookTest.
 - Bộ AttendanceIntegrationTest và AttendanceWorkbookTest cuối đạt 10/10. Local đã dừng Java cũ, chạy mvn -o clean spring-boot:run trên me_may_dev, Flyway từ V21 lên V23. Health 8080 UP, proxy 4200 trả 401 với request chưa đăng nhập. Bàn giao dev-ui, chưa deploy production.
+
+## 2026-11-10 — S067-C01 — Hợp nhất main và đánh số lại migration ảnh
+
+- Hợp nhất main có chấm công vào dev hiện tại, giữ cả hai lịch sử công việc.
+- V21–V23 chấm công giữ nguyên bytes. Migration ảnh đổi tên sang V24–V30.
+- Flyway chỉ chạy ở DB test hoặc bản sao V23 đã xác minh; không dùng đích live.
+- Phục hồi dump production bằng `pg_restore --exit-on-error --no-owner --no-privileges`
+  vào `me_may_v23_clone` trên PostgreSQL Docker local. Từ `code/backend`,
+  `./mvnw flyway:validate` với pending được phép xác nhận chuỗi V23 trước khi chạy
+  `./mvnw flyway:migrate flyway:validate`. Flyway áp dụng 7 migration, xác thực
+  đủ 30 migration và tạo đủ 16 bảng Image Server.
+- Đối chiếu SHA-256 của các hàng đã sắp xếp xác nhận đủ 8 bảng chấm công, 424
+  sách, 424 listing, 1.781 book media, 0 media tạm và lịch sử Flyway V1–V23.
+  Đối chiếu sách/media sau khi quy đổi theo thay đổi đã định nghĩa ở V24–V27.
+- Từ `code/backend`: `./mvnw -B -ntp clean verify` trên `me_may_test` đạt
+  276/279, 3 skip. Lần chạy đầu còn migration cũ trong `target/classes`.
+  `clean` loại bản build cũ. Chưa chạy lại frontend hoặc smoke Ubuntu.
+- Cập nhật runbook S8 và các tham chiếu migration hiện hành. Bàn giao vào
+  `dev`. R6 tiếp tục sau khi có Ubuntu/Drive/R2 và namespace thử.
+
+## 2026-11-10 — R6.1 — Chuẩn bị kiểm Drive thật
+
+- Cập nhật runbook S8 với một ảnh riêng tư chia sẻ Viewer, service account,
+  upload nguyên byte qua API LOCAL và ba trường hợp xác minh nguồn.
+- Từ `code/backend`: `./mvnw -B -ntp -o -Dtest=GoogleDriveSourceClientTest test`
+  đạt 3/3 khi được phép bind cổng loopback. Sandbox chặn bind ở lần đầu.
+- Chưa kiểm Drive live. Cần owner tạo project bật Drive API, cấp quyền ảnh
+  thử và đặt key trong secret mount của backend thử. Sau smoke nguyên byte,
+  kiểm lại upload UI vì bước chuẩn hóa ảnh có thể đổi SHA-256.
+
+## 2026-11-10 — R6.1 — Owner nghiệm thu ca Drive thật
+
+- Theo output owner cung cấp, ảnh gốc 1.382.115 byte. Job encode và job xác
+  minh đều đi qua PENDING → PROCESSING → READY. Nguồn đổi từ UNVERIFIED sang
+  VERIFIED, binding version 1. Ca upload nguyên byte và xác minh nguồn đạt.
+- Agent chưa chạy lại live. Tiếp theo thử file có nội dung khác và file chưa
+  chia sẻ quyền đọc, xác nhận cả hai không tạo binding VERIFIED mới. Kiểm
+  riêng luồng upload từ UI vì bước chuẩn hóa có thể làm lệch SHA-256.
+
+## 2026-11-10 — R6 — Kiểm lại trước các ca nghiệm thu QA
+
+- SSH tới Ubuntu được, có `/srv/memay/qa` và `/srv/memay/images-qa`. Tài khoản
+  SSH không đọc được hai thư mục, không đọc được Docker socket và sudo cần
+  mật khẩu. Chưa gửi yêu cầu ghi vào backend QA hay production.
+- Kiểm code và test queue: capability LOCAL gửi chính File gốc, chỉ nhánh
+  Cloudinary gọi chuẩn hóa. Sửa runbook để kiểm capability trong ca UI thật.
+- Từ `code/backend`, chạy `./mvnw -B -ntp -o flyway:migrate` và test chọn lọc
+  Drive, binding, publication gate, migration preview/apply, recovery và restore
+  isolation trên PostgreSQL local tạm. 16/16 đạt. Từ `code/frontend`,
+  `npm test -- --include='src/app/features/admin/books/book-upload-queue.spec.ts'`
+  đạt 14/14. Từ root, `node --test scripts/image-system/media-operations.test.mjs`
+  đạt 4/4, `npm --prefix code/image-worker test` đạt 10/10.
+- Còn ca thật Drive hash lệch/thiếu quyền/UI, smoke ngoài LAN, benchmark 20–50
+  sách, restore R2 và rollback trên QA. Chờ điểm truy cập QA, lô sách và snapshot.
+
+## 2026-11-10 — R6 — Xác nhận mạng QA và lô Drive
+
+- Owner xác nhận R6.1 chạy inline và backend QA ở
+  `http://memay-api-images-qa:8080` trong mạng Docker `memay-images-qa`.
+  Lô ảnh đã upload lên thư mục chia sẻ cho service account.
+- Kiểm lại CLI R3–R5 và benchmark: chỉ nhận origin HTTPS hoặc loopback theo
+  contract tương ứng. Runbook ghi cách dùng CLI qua loopback trong namespace QA
+  và cách chuẩn bị mapping từ export QA, tối đa 100 ảnh/receipt.
+- Lần kiểm SSH lại timeout ở banner. Chưa chạy ca live mới. Cần operator
+  chạy từ mạng Docker QA hoặc cấp điểm truy cập QA được kiểm soát, cùng
+  mapping hoặc danh sách sách/ảnh và thông tin snapshot R2.
+
+## 2026-11-10 — R6 — Chỉ mở LOCAL cho đợt nhập sách mới
+
+- Owner chọn giữ ảnh Cloudinary hiện có. R6 dùng lô Drive để nhập mới,
+  kiểm upload/xác minh, đọc cả hai provider và restore ảnh LOCAL cách ly.
+  Hoãn mapping/apply/rollback con trỏ Cloudinary tới đợt chuyển sách cũ.
+- Rà `LocalUploadService.capabilities` và `BookUploadQueue`: provider upload
+  chọn toàn backend, áp dụng cả khi sửa ảnh sách cũ. Giới hạn đợt đầu bằng
+  thao tác vận hành trên sách mới. Cập nhật runbook và recovery plan.
+- Kiểm diff tài liệu. Chưa chạy lại test hoặc smoke QA trong checkpoint này.
+
+## 2026-11-10 — R6 — Rà soát trước khi lên production
+
+- Bằng chứng owner: QA backend/worker ff81bd0. JAR có endpoint worker và
+  V24–V30. Sau đổi launcher, listener 8081 bind đúng IP mạng QA, health 200,
+  không token 401, cổng 8080 trả 404. Owner bỏ qua chạy lại upload Drive.
+- Worker production ở 0 replica, đúng overlay, UID/GID 10001:10001, ghi
+  staging/derived đạt và token khớp file. Digest khai báo khớp Docker inspect.
+  Đích `backend-images:8081` chưa được xác minh trên backend production.
+- JAR production chỉ có V23. Tên service đã kiểm là PostgreSQL, chưa dùng làm
+  đích worker. Giữ production hiện tại trong khi xác định đúng app Dokploy và
+  backup mới. Merge main có thể tự kích hoạt deploy và Flyway. Chưa deploy.

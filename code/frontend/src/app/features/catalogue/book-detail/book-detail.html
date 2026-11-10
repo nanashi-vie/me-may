@@ -9,36 +9,41 @@
   <div class="detail-layout">
     <div class="media-col">
       <section class="gallery" aria-label="Bộ ảnh chung của sách">
-        @if (mainMedia(); as m) {
-          <figure>
-            <picture>
-              <source type="image/webp"
-                [attr.srcset]="mediaUrl(m, 320, 'webp') + ' 320w, ' + mediaUrl(m, 640, 'webp') + ' 640w'"
-                sizes="(max-width: 720px) 90vw, 576px" />
-              <img
-                [src]="mediaUrl(m, 640, 'jpg')"
-                [attr.srcset]="mediaUrl(m, 320, 'jpg') + ' 320w, ' + mediaUrl(m, 640, 'jpg') + ' 640w'"
-                sizes="(max-width: 720px) 90vw, 576px"
-                [alt]="m.alt || b.title"
-                loading="eager"
-                fetchpriority="high"
-                width="600"
-                height="800"
-              />
-            </picture>
+        <figure>
+          @if (mainMedia(); as m) {
+            @let main = picture(m, true);
+            @if (main.src && !failedImages().has(main.src)) {
+              <picture>
+                @if (main.webp) {
+                  <source type="image/webp" [attr.srcset]="main.webp" sizes="(max-width: 720px) 90vw, 576px" />
+                }
+                <img [src]="main.src" [attr.srcset]="main.jpeg" sizes="(max-width: 720px) 90vw, 576px"
+                  [alt]="m.alt || b.title" loading="eager" fetchpriority="high" width="600" height="800"
+                  (error)="imageFailed(main.src)" />
+              </picture>
+            } @else {
+              <span class="media-placeholder" role="status">Ảnh hiện không có sẵn</span>
+            }
             <figcaption>{{ mediaLabels[$any(m.role)] }}</figcaption>
-          </figure>
-        }
+          } @else {
+            <span class="media-placeholder" role="status">Chưa có ảnh</span>
+          }
+        </figure>
         @if (b.media.length > 1) {
           <ul class="thumbs">
             @for (m of b.media; track m.role; let i = $index) {
               <li>
                 <button type="button" class="thumb" [attr.aria-pressed]="mainMedia() === m"
                   [attr.aria-label]="'Xem ảnh ' + mediaLabels[$any(m.role)]" (click)="selectMedia(i)">
-                  <picture>
-                    <source type="image/webp" [srcset]="mediaUrl(m, 320, 'webp')" />
-                    <img [src]="mediaUrl(m, 320, 'jpg')" alt="" width="72" height="96" loading="lazy" />
-                  </picture>
+                  @let thumb = picture(m);
+                  @if (thumb.src && !failedImages().has(thumb.src)) {
+                    <picture>
+                      @if (thumb.webp) { <source type="image/webp" [srcset]="thumb.webp" sizes="72px" /> }
+                      <img [src]="thumb.src" alt="" width="72" height="96" loading="lazy" (error)="imageFailed(thumb.src)" />
+                    </picture>
+                  } @else {
+                    <span class="thumb-placeholder" aria-hidden="true">—</span>
+                  }
                 </button>
               </li>
             }

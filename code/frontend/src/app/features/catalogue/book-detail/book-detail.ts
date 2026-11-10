@@ -1,5 +1,5 @@
 import { PublicSkeleton } from '../public-skeleton/public-skeleton';
-import { publicMediaUrl } from '../catalogue-state';
+import { publicPicture } from '../catalogue-state';
 import { bookPrice, bookTitle, countdownParts, discountPercent, effectiveBook, enquiryText } from '../catalogue-state';
 import { firstValueFrom } from 'rxjs';
 import {
@@ -41,7 +41,12 @@ import {
   styleUrl: './book-detail.scss',
 })
 export class BookDetail {
-  readonly mediaUrl = publicMediaUrl;
+  readonly picture = publicPicture;
+  readonly failedImages = signal<ReadonlySet<string>>(new Set());
+
+  imageFailed(src: string | undefined) {
+    if (src) this.failedImages.update(failed => new Set(failed).add(src));
+  }
   readonly api = inject(PublicApi);
   readonly selectedMedia = signal(0);
   readonly related = signal<RelatedBooks | null>(null);
@@ -145,6 +150,12 @@ export class BookDetail {
     const ends = this.display()?.saleEndsAt;
     return ends ? Math.max(0, Date.parse(ends) - (this.clock.now() || Date.now())) : 0;
   }
+  private shareImage(book: PublicBook) {
+    const cover = book.media.find(media => media.role === 'FRONT');
+    if (!cover) return undefined;
+    return cover.imageVariants ? publicPicture(cover).src : cover.contentPath;
+  }
+
   accept(b: PublicBook | null, error = 0) {
     this.loading.set(false);
     this.verifying.set(false);
@@ -153,7 +164,10 @@ export class BookDetail {
     this.error.set(error);
     const previous=this.book();
     this.book.set(b);
-    if (!b || b.id !== previous?.id) this.selectedMedia.set(0);
+    if (!b || b.id !== previous?.id) {
+      this.selectedMedia.set(0);
+      this.failedImages.set(new Set());
+    }
     if (error) {
       this.related.set(null);
       if (this.response) this.response.status = error;
@@ -165,7 +179,7 @@ export class BookDetail {
         bookTitle(b) + ' | Mẹ Mây',
         b.description?.slice(0, 180) || b.title,
         '/sach/' + b.slug,
-        b.media[0]?.contentPath,
+        this.shareImage(b),
       );
   }
   refresh() {

@@ -10,7 +10,8 @@ import java.util.List;
 import vn.memay.catalogue.PublicCatalogueDtos.*;
 import vn.memay.taxonomy.TaxonomyService;
 import vn.memay.taxonomy.TaxonomyDtos.Taxonomy;
-import vn.memay.media.MediaGateway;
+import vn.memay.media.MediaReadService;
+import java.util.UUID;
 import vn.memay.media.MediaDtos.MediaRole;
 import vn.memay.common.AdminApiException;
 
@@ -20,12 +21,12 @@ public class PublicCatalogueController {
     private final PublicCatalogueService catalogue;
     private final TaxonomyService taxonomy;
     private final JdbcTemplate jdbc;
-    private final MediaGateway media;
+    private final MediaReadService media;
     private final Contact contact;
     private final vn.memay.cache.PublicCacheInvalidation publicCache;
 
     public PublicCatalogueController(PublicCatalogueService catalogue, TaxonomyService taxonomy, JdbcTemplate jdbc,
-            MediaGateway media, @Value("${CONTACT_ZALO_HOTLINE_URL:}") String hotline,
+            MediaReadService media, @Value("${CONTACT_ZALO_HOTLINE_URL:}") String hotline,
             @Value("${CONTACT_ZALO_GROUP_URL:}") String group, vn.memay.cache.PublicCacheInvalidation publicCache) {
         this.catalogue = catalogue;
         this.publicCache = publicCache;
@@ -115,26 +116,40 @@ public class PublicCatalogueController {
         return contact;
     }
 
+    private record Image(UUID id, UUID generation, String key) {}
+
     @GetMapping("/books/{slug}/media/{role}")
     public ResponseEntity<StreamingResponseBody> image(@PathVariable String slug, @PathVariable MediaRole role,
             @RequestParam(defaultValue = "640") int size, @RequestParam(defaultValue = "jpg") String format,
             @RequestParam(required = false) String v) {
-        if ((size != 320 && size != 640) || !List.of("jpg", "webp").contains(format))
+        if (!List.of(320, 480, 640, 1400).contains(size) || !List.of("jpg", "webp").contains(format))
             throw AdminApiException.field("variant", "Kích thước hoặc định dạng ảnh không hợp lệ");
-        List<String> keys = jdbc.queryForList(
-                "select m.storage_public_id from book_media m join book_copy b on b.id=m.book_copy_id join listing l on l.book_copy_id=b.id where l.slug=? and l.publication_status='PUBLISHED' and m.state='ACTIVE' and m.role=? and (m.role not in ('INTERNAL_1','INTERNAL_2') or m.show_on_product) and (cast(? as text) is null or m.id::text=?)",
-                String.class, slug, role.name(), v, v);
-        if (keys.isEmpty())
+        if (role != role.canonical()) throw new AdminApiException(404, "not_found");
+        var images = jdbc.query("""
+                SELECT m.id,m.serving_generation,m.storage_public_id
+                FROM book_media m JOIN book_copy b ON b.id=m.book_copy_id
+                JOIN listing l ON l.book_copy_id=b.id
+                WHERE l.slug=? AND l.publication_status='PUBLISHED' AND b.deleted_at IS NULL
+                  AND m.state='ACTIVE' AND m.role=?
+                """, (r, i) -> new Image(r.getObject("id", UUID.class),
+                        r.getObject("serving_generation", UUID.class), r.getString("storage_public_id")),
+                slug, role.name());
+        if (images.isEmpty()) throw new AdminApiException(404, "not_found");
+        var image = images.getFirst();
+        String version = (image.generation() == null ? image.id() : image.generation()).toString();
+        if ((v != null || image.generation() != null) && !version.equals(v))
             throw new AdminApiException(404, "not_found");
-        java.io.InputStream input = media.openPublicPreview(keys.getFirst(), size, format);
+        var content = media.openPublic(image.id(), image.generation(), image.key(), size, format);
         StreamingResponseBody body = output -> {
-            try (input) {
+            try (var input = content.stream()) {
                 input.transferTo(output);
             }
         };
-        return ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg")
+        var response = ResponseEntity.ok().header("Content-Type", format.equals("webp") ? "image/webp" : "image/jpeg")
                 .header("Cache-Control", "no-store")
-                .header("X-Memay-Public-Cache", publicCache.enabled() && v != null && role.isPublic() ? "30" : "0")
-                .header("X-Content-Type-Options", "nosniff").body(body);
+                .header("X-Memay-Public-Cache", publicCache.enabled() && v != null ? "30" : "0")
+                .header("X-Content-Type-Options", "nosniff");
+        if (content.bytes() >= 0) response.contentLength(content.bytes());
+        return response.body(body);
     }
 }

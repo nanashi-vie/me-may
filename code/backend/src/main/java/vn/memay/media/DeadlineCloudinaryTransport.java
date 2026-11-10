@@ -25,8 +25,27 @@ public class DeadlineCloudinaryTransport implements CloudinaryTransport,AutoClos
   try{return bounded(request,()->client.execute(request,response->{if(response.getCode()!=200)throw new IOException("Provider error");try(var input=response.getEntity().getContent()){byte[] body=input.readNBytes(1024*1024+1);if(body.length>1024*1024)throw new IOException("Provider response too large");return json.readValue(body,Map.class);}}));}catch(Exception e){throw new IOException("Media request failed");}
  }
  public InputStream open(URI uri)throws IOException{
-  host(uri,"res.cloudinary.com");var request=new HttpGet(uri);var abort=abortAtDeadline(request);
-  try{var response=client.executeOpen(null,request,null);if(response.getCode()!=200){int status=response.getCode();response.close();if(status==404)throw new CloudinaryTransport.MissingVariantException();throw new IOException("Provider error");}return new FilterInputStream(response.getEntity().getContent()){
+  host(uri,"res.cloudinary.com");return openStream(uri,null,-1);
+ }
+ InputStream openInternal(URI uri,String mime,long bytes)throws IOException{
+  return openStream(uri,mime,bytes);
+ }
+ private InputStream openStream(URI uri,String mime,long bytes)throws IOException{
+  var request=new HttpGet(uri);var abort=abortAtDeadline(request);
+  try {
+   var response=client.executeOpen(null,request,null);
+   if(response.getCode()!=200){
+    int status=response.getCode();
+    response.close();
+    if(status==404)throw new CloudinaryTransport.MissingVariantException();
+    throw new IOException("Provider error");
+   }
+   var entity=response.getEntity();
+   if(entity==null || (mime!=null && (!mime.equals(entity.getContentType()) || entity.getContentLength()!=bytes))){
+    response.close();
+    throw new IOException("Invalid image response");
+   }
+   return new FilterInputStream(entity.getContent()){
    private long received;
    private void count(int n)throws IOException{if(n>0&&(received+=n)>ImageValidator.MAX_BYTES){close();throw new IOException("Preview too large");}}
    public int read()throws IOException{int value=super.read();count(value<0?0:1);return value;}

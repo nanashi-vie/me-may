@@ -1,7 +1,7 @@
 <section aria-labelledby="photo-heading">
   <h2 id="photo-heading">Bộ ảnh chung của sách</h2>
   <p>
-    Tối đa 8 ảnh: 6 ảnh công khai và 2 ảnh bổ sung mặc định ẩn. Khi xuất bản cần bìa và lưng;
+    Tối đa 8 ảnh. Tất cả ảnh hiển thị khi sách được xuất bản. Khi xuất bản cần bìa và lưng;
     có thể lưu sách ẩn khi bộ ảnh chưa hoàn thiện.
   </p>
   @if (!readonly()) {
@@ -16,15 +16,50 @@
         >Chọn nhiều ảnh hoặc kéo file vào đây<input
           type="file"
           multiple
-          accept="image/jpeg,image/png"
+          [accept]="acceptedImages()"
           [disabled]="disabled()"
           (change)="select($event)"
       /></label>
       <small
-        >JPEG/PNG tối đa 10 MB / 25 megapixel. Ảnh lớn hơn 5 MB sẽ được cảnh báo; ảnh được xoay đúng
-        chiều và thu gọn trước khi tải.</small
+        >Ảnh tối đa 10 MiB và 25 megapixel. Với LOCAL, chọn file gốc dùng để đối chiếu nguồn Drive.</small
       >
     </div>
+  }
+  @if (!readonly() && sourceTargets().length) {
+    <details>
+      <summary>Ghép nhiều nguồn Drive</summary>
+      <label>
+        Link file Drive hoặc File ID, mỗi mục một dòng
+        <textarea rows="4" maxlength="8192" [value]="batchInput()" [disabled]="disabled() || batchBusy()"
+          (input)="setBatch($any($event.target).value)"></textarea>
+      </label>
+      <button type="button" class="secondary" [disabled]="disabled() || batchBusy()" (click)="matchBatch()">
+        Xem cách ghép ảnh
+      </button>
+      @if (batchError()) { <p class="error" role="alert">{{ batchError() }}</p> }
+      @if (batch().length) {
+        <ol>
+          @for (item of batch(); track $index; let index = $index) {
+            <li>
+              <code>{{ item.fileId }}</code>
+              <label>
+                Ảnh tương ứng
+                <select [value]="item.rowId" [disabled]="disabled() || batchBusy()"
+                  (change)="matchRow(index, $any($event.target).value)">
+                  @for (row of sourceTargets(); track row.id) {
+                    <option [value]="row.id" [selected]="row.id === item.rowId">{{ labels[row.role] }}</option>
+                  }
+                </select>
+              </label>
+              @if (item.result) { <span role="status">{{ item.result }}</span> }
+            </li>
+          }
+        </ol>
+        <button type="button" [disabled]="disabled() || batchBusy()" (click)="verifyBatch()">
+          {{ batchBusy() ? 'Đang xác minh…' : 'Xác minh các nguồn đã ghép' }}
+        </button>
+      }
+    </details>
   }
   @if (photos.error()) {
     <p class="error" role="alert">{{ photos.error() }}</p>
@@ -40,15 +75,12 @@
     </button>
   }
   <p role="status" aria-live="polite">{{ photos.announcement() }}</p>
-  @for (group of groups; track group.internal) {
-  <h3 class="photo-group-heading">{{group.label}}</h3>
   <div class="photo-grid">
-    @for (row of groupRows(group.internal); track row.id; let i = $index) {
+    @for (row of photos.sorted(); track row.id; let i = $index) {
       <article
         class="photo-slot"
       >
         <h3>{{ labels[row.role] }}</h3>
-        @if(group.internal) {<p class="private-photo"><span aria-hidden="true">🔒</span> {{ row.showOnProduct ? "Hiện trên trang sách" : "Chỉ nội bộ" }}</p>}
         @if (row.preview) {
           <div class="preview-wrap">
           @defer (on viewport) {
@@ -101,7 +133,7 @@
           <p class="error" role="alert">{{ row.error }}</p>
         }
         @if (!readonly()) {
-          <fieldset [disabled]="disabled()">
+          <fieldset [disabled]="disabled() || batchBusy() || row.sourceBusy || row.commitBusy">
             <label class="admin-field"
               ><span class="field-label">Vai trò ảnh</span><select
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
@@ -111,10 +143,6 @@
                 }
               </select></label
             >
-            @if(group.internal) {
-              <label><input type="checkbox" [checked]="row.showOnProduct ?? false" [disabled]="row.state !== 'READY'"
-                (change)="photos.setProductVisibility(row.id, $any($event.target).checked)" /> Hiện trên trang sách</label>
-            }
             <div class="actions">
               <button
                 type="button"
@@ -138,10 +166,27 @@
             <label
               >Thay ảnh<input
                 type="file"
-                accept="image/jpeg,image/png"
-                [disabled]="row.state !== 'READY'"
+                [accept]="acceptedImages()"
+                [disabled]="row.state !== 'READY' || row.pendingLocal"
                 (change)="replace(row.id, $event)"
             /></label>
+            @if (row.provider === 'LOCAL' && row.state === 'READY') {
+              <label>
+                Nguồn Drive
+                <input type="text" maxlength="1024" [value]="sourceInputs()[row.id] ?? ''"
+                  placeholder="Dán link ảnh Drive hoặc File ID"
+                  (input)="setSource(row.id, $any($event.target).value)" />
+              </label>
+              <button type="button" class="secondary" [disabled]="!sourceInputs()[row.id]?.trim()"
+                (click)="photos.verifySource(row.id, sourceInputs()[row.id] ?? '')">
+                {{ row.sourceBusy ? 'Đang xác minh…' : 'Xác minh nguồn' }}
+              </button>
+              @if (row.sourceStatus === 'VERIFIED') { <p role="status">Đã xác minh nguồn</p> }
+              @if (row.pendingLocal) {
+                <button type="button" (click)="photos.commitLocal(row.id)">Gắn ảnh vào sách</button>
+              }
+              @if (row.sourceError) { <p class="error" role="alert">{{ row.sourceError }}</p> }
+            }
             <details>
               <summary>Mô tả và nguồn ảnh</summary>
               <label
@@ -164,7 +209,6 @@
       </article>
     }
   </div>
-  }
   <dialog #viewer aria-labelledby="photo-viewer-title" (cancel)="closePhoto()" (close)="selectedPhoto.set(null)">
     <div class="viewer-heading">
       <h3 id="photo-viewer-title">Xem ảnh chi tiết</h3>

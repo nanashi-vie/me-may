@@ -13,13 +13,23 @@ import static vn.memay.media.UploadSessionDtos.*;
 public class UploadSessionController {
     @org.springframework.beans.factory.annotation.Autowired private vn.memay.common.PerformanceTimings timings = new vn.memay.common.PerformanceTimings(false);
 
- private final AdminActorResolver actors;private final UploadSessionService sessions;
- public UploadSessionController(AdminActorResolver actors,UploadSessionService sessions){this.actors=actors;this.sessions=sessions;}
+ private final AdminActorResolver actors;private final UploadSessionService sessions;private final LocalUploadService local;
+ public UploadSessionController(AdminActorResolver actors,UploadSessionService sessions,LocalUploadService local){this.actors=actors;this.sessions=sessions;this.local=local;}
  @PostMapping public ResponseEntity<UploadSession> create(Authentication a){return ResponseEntity.status(201).body(sessions.create(actors.current(a)));}
  @GetMapping("/{id}") public UploadSession get(Authentication a,@PathVariable UUID id){return sessions.get(id,actors.current(a));}
  @DeleteMapping("/{id}") public ResponseEntity<Void> cancel(Authentication a,@PathVariable UUID id){sessions.cancel(id,actors.current(a));return ResponseEntity.noContent().build();}
- @PostMapping(path="/{id}/media",consumes="multipart/form-data") public ResponseEntity<TemporaryMedia> upload(Authentication a,@PathVariable UUID id,@RequestParam MultipartFile file,@RequestParam(required=false) String alt,@RequestParam(required=false) String sourceRef,@RequestParam(required=false) UUID replaceId,@RequestParam(required=false) UUID requestKey)throws IOException {
+ @PostMapping(path="/{id}/media",consumes="multipart/form-data") public ResponseEntity<?> upload(Authentication a,@PathVariable UUID id,@RequestParam MultipartFile file,@RequestParam(required=false) String alt,@RequestParam(required=false) String sourceRef,@RequestParam(required=false) UUID replaceId,@RequestParam(required=false) UUID requestKey,@RequestParam(required=false) String providerRevision)throws IOException {
   if(file.getSize()>ImageValidator.MAX_BYTES)throw new AdminApiException(413,"image_too_large");
+  if(providerRevision!=null) {
+   var actor=actors.current(a);
+   var capability=local.capabilities(actor);
+   if(!capability.revision().equals(providerRevision))throw new AdminApiException(409,"image_capability_changed");
+   if(capability.provider().equals("LOCAL")) {
+    try(var input=file.getInputStream()) {
+     return ResponseEntity.accepted().body(local.upload(id,actor,input,alt,sourceRef,replaceId,requestKey,providerRevision));
+    }
+   }
+  }
   return ResponseEntity.status(201).body(sessions.upload(id,actors.current(a),file.getBytes(),alt,sourceRef,replaceId,requestKey));
  }
  @GetMapping("/{id}/media/{mediaId}") public ResponseEntity<StreamingResponseBody> content(Authentication a,@PathVariable UUID id,@PathVariable UUID mediaId,@RequestParam(defaultValue="1280") int size) {

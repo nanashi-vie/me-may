@@ -7,7 +7,8 @@
 qua queue có lease. Nginx nội bộ phục vụ derived qua gateway hiện hành.
 **Tech Stack:** Angular hiện có, Java 21/Spring Boot/JDBC/PostgreSQL, Node/Sharp, Nginx.
 **Spec:** [IMAGE_STORAGE_SPEC.md](IMAGE_STORAGE_SPEC.md), đã duyệt 08/11/2026.
-**Status:** Kế hoạch để review; chưa chạy các bước implementation bên dưới.
+**Status:** User chọn Native. S1–S8 và R1–R5 đã kiểm local. R6 chờ môi trường owner.
+Bằng chứng S8 ở [IMAGE_OPERATIONS](IMAGE_OPERATIONS.md) và DEV_LOG S066.
 
 ## Global Constraints
 
@@ -52,7 +53,7 @@ Mỗi bước RED phải thất bại ở assertion hành vi mới, không lấy
 Mỗi bước GREEN phải 0 failures/errors; không coi skip là bằng chứng live.
 Mỗi commit dùng danh sách Files của task + PROGRESS/DEV_LOG, không `git add .`.
 Trước execution fetch dev/kiểm worktree theo skill; có migration mới thì đổi số
-V20+ một lần trước viết, cập nhật cả hai plan, không đè migration task khác.
+V24+ một lần trước viết, cập nhật cả hai plan, không đè migration task khác.
 
 ## Contract nối hai plan
 
@@ -68,7 +69,8 @@ long sourceBytes,String mime,SourceStatus status,long bindingVersion,Instant ver
 Các record trên là internal; API public/admin dùng DTO đã lọc, không serialize nguyên record.
 
 S2 tạo `SourceBindingRepository.find(UUID mediaId): Optional<SourceBinding>`;
-R1/R2 sở hữu verify và mutation nguồn, S5 dùng `requireVerified(UUID mediaId): void`.
+R1/R2 sở hữu verify và mutation nguồn, S5 gọi `requireVerifiedForBook(long bookId)` sau khi flush ảnh ACTIVE,
+trong cùng transaction với publish hoặc thay ảnh đang công khai.
 S3 tạo `ImageJobService.enqueue(UUID mediaId,UUID generationId,JobKind kind,
 String inputKey,String recipeVersion,String dedupeKey,int priority): UUID`;
 R tasks dùng cùng queue, không tạo queue/encoder riêng.
@@ -81,7 +83,7 @@ Priority nhỏ hơn chạy trước; PROCESS/VERIFY=0, MIGRATE=10, REBUILD=20..2
 `C/BookMapper.java`, `C/BookValidation.java`, `C/PublicCatalogueService.java`, `C/PublicCatalogueController.java`;
 `F/book.models.ts`, `F/book-copy.ts`, `F/book-upload-queue.ts`,
 `F/book-media-panel/book-media-panel.{ts,html,scss}`, `F/book-editor/book-editor.ts`,
-`code/frontend/src/worker-runtime.ts`; tạo `D/V20__unified_book_photos.sql`.
+`code/frontend/src/worker-runtime.ts`; tạo `D/V24__unified_book_photos.sql`.
 **Tests:** `T/UnifiedBookPhotosTest.java` mới; sửa `T/BookMediaFeatureContractTest.java`,
 `code/backend/src/test/java/vn/memay/catalogue/BookMediaFeatureMigrationTest.java`,
 `T/PublicMediaApiTest.java`, `T/BookPhotoDownloadTest.java`,
@@ -104,7 +106,7 @@ Priority nhỏ hơn chạy trước; PROCESS/VERIFY=0, MIGRATE=10, REBUILD=20..2
 
 ### S2 — Metadata provider/generation và filesystem an toàn
 
-**Files:** tạo `D/V21__image_generations_and_jobs.sql`, `M/ImageTypes.java`,
+**Files:** tạo `D/V25__image_generations_and_jobs.sql`, `M/ImageTypes.java`,
 `M/ImageGenerationRepository.java`, `M/SourceBindingRepository.java`,
 `M/LocalImageStore.java`; sửa `M/MediaConfiguration.java`,
 `code/backend/src/main/resources/application.yml`, `.env.example`, root `.gitignore`.
@@ -219,7 +221,10 @@ source binding dùng R2 API, không serialize internal SourceBinding ra public.
   pending không final, bỏ ảnh lỗi cần user thao tác, replacement không mất ảnh cũ.
 - [ ] Chạy FE ghi RED; implement polling 1/2/5s tối đa5s, unsubscribe khi destroy,
   retry thủ công sau lỗi; session expiry dừng poll; không tự publish nền khi đóng trang.
-- [ ] Thêm File ID/status/verify ở metadata mỗi ảnh; lỗi source phân biệt lỗi encode,
+- [ ] Nguồn ảnh nhận link file Drive hoặc File ID. Hỗ trợ dán nhiều mục theo
+  dòng, tối đa tám, xem và chỉnh ghép ảnh trước khi xác minh. Từ chối link
+  thư mục và báo lỗi theo từng mục. Backend nhận File ID đã tách từ link.
+- [ ] Hiện trạng thái xác minh ở metadata mỗi ảnh. Phân biệt lỗi nguồn và encode,
   binding input chỉ admin. Giữ focus/status announcement và preview không nén file gốc.
 - [ ] GREEN FE; commit `feat(admin): support async image processing and source verification` cùng log.
 
@@ -230,23 +235,23 @@ sửa `M/{MediaGateway,MediaConfiguration,MediaService,BookPhotoDownloadService}
 `C/{PublicCatalogueController,PublicCatalogueService}.java`, `code/frontend/src/worker-runtime.ts`,
 `code/frontend/src/app/features/catalogue/book-card/book-card.{ts,html,spec.ts}`,
 `code/frontend/src/app/features/catalogue/book-detail/book-detail.{ts,html,spec.ts}`;
-tạo `T/MixedMediaDeliveryTest.java`.
-**Interfaces:** `MediaReadService.open(UUID mediaId,int size,String format): InputStream`;
-provider từ DB, LOCAL variant allowlist, Cloudinary adapter giữ nguyên;
-`available(UUID mediaId,int size,String format): boolean` đọc manifest/health state.
+mở rộng fixture HTTP/DB trong `T/LocalUploadIntegrationTest.java`.
+**Interfaces:** `MediaReadService` nhận media ID, generation đã được phân quyền
+và size/format. Cloudinary dùng adapter cũ; LOCAL đối chiếu manifest và file
+trên mount dùng chung trước khi đọc Nginx nội bộ.
 
-- [ ] RED `mixedProvidersRespectPublication`: ẩn/temp/trash/version sai/alias cũ
+- [x] RED `mixedProvidersRespectPublication`: ẩn/temp/trash/version sai/alias cũ
   trả404; public DTO không source/key; ZIP có ảnh từ cả providers, không lộ File ID.
-- [ ] RED `missingFrontUsesPlaceholder`: gallery bỏ variant biết thiếu; thẻ placeholder
+- [x] RED `missingFrontUsesPlaceholder`: gallery bỏ variant biết thiếu; thẻ placeholder
   kích thước cố định, GET mất file giữa chừng có fallback; không rebuild inline GET.
-- [ ] Chạy `BE(MixedMediaDeliveryTest,PublicMediaApiTest,BookPhotoDownloadTest)` và FE ghi RED.
-- [ ] Implement Nginx internal fetch bounded timeout/allowlist path; routing theo provider
+- [x] RED backend cho variant 480 và frontend cho placeholder, ghi S062-C02.
+- [x] Implement Nginx internal fetch bounded timeout/allowlist path; routing theo provider
   ở mọi read/delete consumer, dùng manifest generation/version mới tránh cache cloud cũ.
-- [ ] Worker allowlist tám role và 480/1400 LOCAL; bảo toàn size cũ, no-store admin,
+- [x] Worker allowlist tám role và 480/1400 LOCAL; bảo toàn size cũ, no-store admin,
   30s edge/purge, không cache lỗi; placeholder không được thay bằng ảnh sách khác.
   Public media DTO chỉ thêm variant URL/dimensions sẵn có; UI chọn theo từng ảnh,
   không dùng global provider flag để gọi 1400 vào ảnh Cloudinary chỉ có 320/640.
-- [ ] GREEN BE/FE + `npm run check:workers:proxy` tại frontend;
+- [x] GREEN BE/FE + `npm run check:workers:proxy` tại frontend;
   commit `feat(media): serve mixed providers through the authorized gateway` cùng log.
 
 ### S8 — Local nghiệm thu và bàn giao cấu hình cho owner
@@ -257,20 +262,20 @@ cập nhật `.env.example`, `docs/{README,DEPLOYMENT,VERIFICATION,PROGRESS,DEV_
 **Interfaces:** compose template worker/internal Nginx; không tự chạy trên server owner.
 Benchmark input fixture manifest, JSON output timings/bytes/RSS/errors, không secrets.
 
-- [ ] Viết smoke fixture 20 sách×2 ảnh và 50 sách×8 ảnh; kiểm limit1worker,
+- [x] Viết smoke fixture 20 sách×2 ảnh và 50 sách×8 ảnh; kiểm limit1worker,
   restart/job retry/kill/disk full và public/admin/ZIP. Tất cả ở namespace/DB test.
-- [ ] Chạy full BE `bash code/backend/run-local.sh -B -ntp verify`; FE,
+- [x] Chạy full BE `bash code/backend/run-local.sh -B -ntp verify`; FE,
   `npm run build`, `npm run build:workers`, `npm run check:workers:proxy`; W `npm test`.
-- [ ] Browser QA desktop/mobile: 0/2/8/9 ảnh, nguồn sai, poll/reload, hai tab,
+- [x] Browser QA desktop/mobile: 0/2/8/9 ảnh, nguồn sai, poll/reload, hai tab,
   replace/ẩn/publish, gallery/ZIP; lưu bằng chứng và hạn chế thật, không chỉ mock UI.
-- [ ] Benchmark baseline API không worker và cùng API dưới tải; ghi p50/p95,
+- [x] Benchmark baseline API không worker và cùng API dưới tải; ghi p50/p95,
   RSS/CPU/disk/output bytes. Không dùng máy local để tuyên bố Dell đạt.
-- [ ] Viết compose/nginx/env mẫu: mount persistent cùng filesystem; Nginx read-only,
+- [x] Viết compose/nginx/env mẫu: mount persistent cùng filesystem; Nginx read-only,
   không host ports cho Nginx/management8081, 1CPU/768MiB worker, restart/healthchecks;
   cấu hình credential không có giá trị thật, cảnh báo disk/queue/source/HTTP errors.
-- [ ] Bàn giao IMAGE_OPERATIONS: owner dựng Ubuntu/Drive/R2, smoke ngoài LAN,
+- [x] Bàn giao IMAGE_OPERATIONS: owner dựng Ubuntu/Drive/R2, smoke ngoài LAN,
   kiểm text quality và ngưỡng theo đo thực tế; không chặn bàn giao code local vì chưa có server.
-- [ ] Review toàn diff theo skill, sửa finding; commit `docs(media): hand off local image system operations`.
+- [x] Review toàn diff theo skill, sửa finding; commit `docs(media): hand off local image system operations`.
   Giữ specs/plans còn gate live; không xóa trước chuyển đủ contract/bằng chứng.
 
 ## Coverage và điều kiện hoàn tất

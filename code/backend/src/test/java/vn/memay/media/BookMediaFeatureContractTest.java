@@ -47,7 +47,76 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         body=createBody(a,1);((Map<String,Object>)body.get("write")).remove("title");
         assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(201);
     }
-    @Test void eightImagesPrivateEverywhereAndReplacementKeepsLimit() throws Exception {
+    @Test void localSourceGateCoversPublicationAndPublishedEdits() throws Exception {
+        var a = api();
+        var body = createBody(a, 2);
+        body.put("write", BookFixtures.write("Local source gate", "BOARD_BOOK", null,
+                20000L, null, null, List.of(), List.of()));
+        var created = a.send("POST", "/api/v1/admin/books", json(body), true);
+        assertThat(created.statusCode()).isEqualTo(201);
+        var book = tree(created);
+        String path = "/api/v1/admin/books/" + book.path("id").asString();
+        UUID media = UUID.fromString(book.path("media").get(0).path("id").asString());
+        UUID generation = UUID.randomUUID();
+        String recipe = "fixture-" + generation;
+        String hash = "a".repeat(64);
+        jdbc.update("INSERT INTO image_asset VALUES(?)", media);
+        jdbc.update("INSERT INTO image_recipe VALUES(?,'fixture','{}')", recipe);
+        jdbc.update("""
+                INSERT INTO image_generation(id,media_id,recipe_version,published_at,input_sha256)
+                VALUES(?,?,?,now(),?)
+                """, generation, media, recipe, hash);
+        jdbc.update("UPDATE book_media SET provider='LOCAL',serving_generation=? WHERE id=?", generation, media);
+        try {
+            var edit = updateBody(book);
+            edit.put("title", "Still hidden");
+            var saved = a.send("PUT", path, json(edit), true);
+            assertThat(saved.statusCode()).isEqualTo(200);
+            long version = tree(saved).path("version").asLong();
+            String publish = json(Map.of("version", version, "status", "PUBLISHED", "confirmedActualCopy", true));
+            var rejected = a.send("PATCH", path + "/publication", publish, true);
+            assertThat(rejected.statusCode()).isEqualTo(409);
+            assertThat(rejected.body()).contains("image_source_unverified");
+
+            jdbc.update("""
+                    INSERT INTO image_source_binding(media_id,file_id,sha256,source_bytes,mime,status,verified_at)
+                    VALUES(?,'private-drive-id',?,3,'image/jpeg','VERIFIED',now())
+                    """, media, hash);
+            var published = a.send("PATCH", path + "/publication", publish, true);
+            assertThat(published.statusCode()).isEqualTo(200);
+            var publishedBook = tree(published);
+            String slug = publishedBook.path("slug").asString();
+            assertThat(a.send("GET", "/api/v1/books/" + slug, null, false).body())
+                    .doesNotContain("private-drive-id", hash);
+
+            jdbc.update("UPDATE image_source_binding SET status='SOURCE_CHANGED' WHERE media_id=?", media);
+            var changed = updateBody(publishedBook);
+            changed.put("title", "Rejected edit");
+            assertThat(a.send("PUT", path, json(changed), true).statusCode()).isEqualTo(409);
+            assertThat(a.upload(path + "/media/BACK", publishedBook.path("version").asLong(),
+                    ImageValidatorTest.image("jpeg"), true).statusCode()).isEqualTo(409);
+        } finally {
+            jdbc.update("UPDATE book_media SET provider='CLOUDINARY',serving_generation=NULL WHERE id=?", media);
+            jdbc.update("DELETE FROM image_source_binding WHERE media_id=?", media);
+            jdbc.update("DELETE FROM image_generation WHERE id=?", generation);
+            jdbc.update("DELETE FROM image_asset WHERE media_id=?", media);
+            jdbc.update("DELETE FROM image_recipe WHERE version=?", recipe);
+        }
+    }
+    @Test void publishedGalleryIncludesPreviouslyHiddenSlots() throws Exception {
+        var a = api();
+        var body = createBody(a, 8);
+        body.put("publication", "PUBLISHED");
+        body.put("confirmedActualCopy", true);
+        body.put("write", BookFixtures.write("Eight gallery photos", "BOARD_BOOK", null,
+                20000L, null, null, List.of(), List.of()));
+        var created = a.send("POST", "/api/v1/admin/books", json(body), true);
+        assertThat(created.statusCode()).isEqualTo(201);
+        var slug = tree(created).path("slug").asString();
+        var gallery = tree(a.send("GET", "/api/v1/books/" + slug, null, false)).path("media");
+        assertThat(gallery.size()).isEqualTo(8);
+    }
+    @Test void eightImagesAppearAcrossPublishedViews() throws Exception {
         var a=api();var body=createBody(a,8);String session=body.get("uploadSessionId").toString();
         assertThat(a.upload("/api/v1/admin/upload-sessions/"+session+"/media",0,ImageValidatorTest.image("jpeg"),true).statusCode()).isEqualTo(409);
         body.put("publication","PUBLISHED");body.put("confirmedActualCopy",true);
@@ -55,33 +124,23 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         w.put("featureCodes",List.of("SLIDE","SOUND","FLAP"));body.put("write",w);
         var r=a.send("POST","/api/v1/admin/books",json(body),true);assertThat(r.statusCode()).isEqualTo(201);var b=tree(r);
         assertThat(b.path("media").size()).isEqualTo(8);String slug=b.path("slug").asString(),id=b.path("id").asString();
-        for(String role:List.of("INTERNAL_1","INTERNAL_2")) {
-            assertThat(a.send("GET","/api/v1/books/"+slug+"/media/"+role,null,false).statusCode()).isEqualTo(404);
-            assertThat(a.send("GET","/api/v1/books/"+slug+"/media/"+role+"?size=320&format=webp",null,false).statusCode()).isEqualTo(404);
-            assertThat(a.send("GET","/api/v1/admin/books/"+id+"/media/"+role+"/content",null,false).statusCode()).isEqualTo(200);
+        for (String role : List.of("INSIDE_4", "INSIDE_5")) {
+            assertThat(a.send("GET", "/api/v1/books/" + slug + "/media/" + role, null, false).statusCode()).isEqualTo(200);
+        }
+        for (String alias : List.of("INTERNAL_1", "INTERNAL_2")) {
+            assertThat(a.send("GET", "/api/v1/books/" + slug + "/media/" + alias, null, false).statusCode()).isEqualTo(404);
         }
         for(String path:List.of("/api/v1/books","/api/v1/books/"+slug,"/api/v1/home","/api/v1/books/lookup?code="+b.path("bookCode").asString(),"/api/v1/admin/books/"+id+"/preview")) {
             var pub=a.send("GET",path,null,false);assertThat(pub.statusCode()).as(path).isEqualTo(200);
             assertThat(pub.body()).doesNotContain("INTERNAL_1","INTERNAL_2","storage_public_id","sourceRef");
         }
-        var pub=tree(a.send("GET","/api/v1/books/"+slug,null,false));assertThat(pub.path("media").size()).isEqualTo(6);
+        var pub=tree(a.send("GET","/api/v1/books/"+slug,null,false));assertThat(pub.path("media").size()).isEqualTo(8);
         assertThat(pub.path("features").get(0).path("code").asString()).isEqualTo("SLIDE");
         assertThat(pub.path("features").get(1).path("label").asString()).isEqualTo("Âm thanh");
-        var update=updateBody(b);
-        var assignments=new ArrayList<Map<String,Object>>();
-        for(var photo:b.path("media").values()) assignments.add(new LinkedHashMap<>(Map.of(
-                "mediaId",photo.path("id").asString(),"role",photo.path("role").asString())));
-        assignments.get(6).put("showOnProduct",true);
-        update.put("media",assignments);
-        var exposed=a.send("PUT","/api/v1/admin/books/"+id,json(update),true);
-        assertThat(exposed.statusCode()).isEqualTo(200);
-        assertThat(tree(a.send("GET","/api/v1/books/"+slug,null,false)).path("media").size()).isEqualTo(7);
-        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_1",null,false).statusCode()).isEqualTo(200);
-        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_2",null,false).statusCode()).isEqualTo(404);
-        assignments.get(6).put("showOnProduct",false);
-        update=updateBody(tree(exposed));update.put("media",assignments);
-        assertThat(a.send("PUT","/api/v1/admin/books/"+id,json(update),true).statusCode()).isEqualTo(200);
-        assertThat(a.send("GET","/api/v1/books/"+slug+"/media/INTERNAL_1",null,false).statusCode()).isEqualTo(404);
+        assertThat(a.send("PATCH", "/api/v1/admin/books/" + id + "/publication",
+                json(Map.of("version", b.path("version").asLong(), "status", "ARCHIVED")), true)
+                .statusCode()).isEqualTo(200);
+        assertThat(a.send("GET", "/api/v1/books/" + slug + "/media/INTERNAL_1", null, false).statusCode()).isEqualTo(404);
         a.login("staff@catalogue.test");assertThat(a.send("GET","/api/v1/admin/books/"+id+"/media/INTERNAL_1/content",null,false).statusCode()).isEqualTo(200);
         assertThat(a.send("PUT","/api/v1/admin/books/"+id,json(updateBody(b)),true).statusCode()).isEqualTo(403);
     }

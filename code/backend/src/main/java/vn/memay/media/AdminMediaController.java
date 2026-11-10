@@ -22,28 +22,36 @@ public class AdminMediaController {
 
     private final AdminActorResolver actors;
     private final MediaService media;
+    private final LocalUploadService local;
 
-    public AdminMediaController(AdminActorResolver actors, MediaService media) {
+    public AdminMediaController(AdminActorResolver actors, MediaService media, LocalUploadService local) {
         this.actors = actors;
         this.media = media;
+        this.local = local;
     }
 
     @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<BookDetail> upload(Authentication a, @PathVariable long id, @PathVariable MediaRole role,
             @RequestParam long version, @RequestParam MultipartFile file, @RequestParam(required = false) String alt,
-            @RequestParam(required = false) String sourceRef) throws IOException {
+            @RequestParam(required = false) String sourceRef,
+            @RequestParam(required = false) String providerRevision) throws IOException {
         var actor = actors.current(a);
+        if (providerRevision != null) {
+            var capability = local.capabilities(actor);
+            if (!"CLOUDINARY".equals(capability.provider()) || !providerRevision.equals(capability.revision()))
+                throw new AdminApiException(409, "image_capability_changed");
+        }
         if (version < 0)
             throw AdminApiException.field("version", "Version không hợp lệ");
         if (file.getSize() > ImageValidator.MAX_BYTES)
             throw new AdminApiException(413, "image_too_large");
-        return ResponseEntity.status(201).body(media.upload(id, role, version, actor, file.getBytes(), alt, sourceRef));
+        return ResponseEntity.status(201).body(media.upload(id, role.canonical(), version, actor, file.getBytes(), alt, sourceRef));
     }
 
     @PatchMapping
     public BookDetail metadata(Authentication a, @PathVariable long id, @PathVariable MediaRole role,
             @Valid @RequestBody Metadata body) {
-        return media.updateMetadata(id, role, body.version(), actors.current(a), body.alt(), body.sourceRef());
+        return media.updateMetadata(id, role.canonical(), body.version(), actors.current(a), body.alt(), body.sourceRef());
     }
 
     @DeleteMapping
@@ -51,13 +59,13 @@ public class AdminMediaController {
             @RequestParam long version) {
         if (version < 0)
             throw AdminApiException.field("version", "Version không hợp lệ");
-        return media.remove(id, role, version, actors.current(a));
+        return media.remove(id, role.canonical(), version, actors.current(a));
     }
 
     @GetMapping("/content")
     public ResponseEntity<StreamingResponseBody> content(Authentication a, @PathVariable long id,
             @PathVariable MediaRole role, @RequestParam(defaultValue="1280") int size) {
-        var input = media.content(id, role, actors.current(a),size);
+        var input = media.content(id, role.canonical(), actors.current(a),size);
         var trace=timings.capture();
         StreamingResponseBody body = output -> {
             try (input) {

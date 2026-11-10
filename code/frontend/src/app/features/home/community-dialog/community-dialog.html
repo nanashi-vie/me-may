@@ -1,0 +1,31 @@
+<dialog
+  #dialog
+  aria-labelledby="community-dialog-title"
+  aria-describedby="community-dialog-description"
+  (close)="onClose()"
+  (click)="$event.target === dialog && dialog.close()"
+>
+  <div class="dialog-card">
+    <button type="button" class="close" aria-label="Đóng" autofocus (click)="dialog.close()">×</button>
+    <img class="logo" src="/favicon/web-app-manifest-192x192.png" alt="Mẹ Mây" width="56" height="56" />
+    <div class="heading">
+      <h2 id="community-dialog-title">Tham gia cộng đồng Mẹ Mây</h2>
+      <p class="channel">Cộng đồng Zalo · zalo.me</p>
+    </div>
+    <p id="community-dialog-description">
+      Quét mã QR bằng Zalo trên điện thoại để tham gia cộng đồng.
+    </p>
+    @if (qrSource(); as source) {
+      <img class="qr" [src]="source" width="198" height="198" alt="Mã QR cộng đồng Mẹ Mây trên Zalo" />
+    } @else {
+      <p class="qr qr-placeholder" role="status">
+        {{ qrFailed() ? 'Chưa tải được mã QR. Bạn có thể mở liên kết bên dưới.' : 'Đang tạo mã QR…' }}
+      </p>
+    }
+    <a class="button" [href]="url" target="_blank" rel="noopener noreferrer">Mở bằng Zalo Web</a>
+    <button class="secondary" type="button" [attr.aria-disabled]="copying() || null" (click)="copy()">
+      Sao chép liên kết
+    </button>
+    <p class="copy-message" role="status">{{ copyMessage() }}</p>
+  </div>
+</dialog>
