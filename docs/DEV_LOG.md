@@ -3080,3 +3080,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Chưa kiểm Drive live. Cần owner tạo project bật Drive API, cấp quyền ảnh
   thử và đặt key trong secret mount của backend thử. Sau smoke nguyên byte,
   kiểm lại upload UI vì bước chuẩn hóa ảnh có thể đổi SHA-256.
+
+## 2026-11-10 — R6.1 — Owner nghiệm thu ca Drive thật
+
+- Theo output owner cung cấp, ảnh gốc 1.382.115 byte. Job encode và job xác
+  minh đều đi qua PENDING → PROCESSING → READY. Nguồn đổi từ UNVERIFIED sang
+  VERIFIED, binding version 1. Ca upload nguyên byte và xác minh nguồn đạt.
+- Agent chưa chạy lại live. Tiếp theo thử file có nội dung khác và file chưa
+  chia sẻ quyền đọc, xác nhận cả hai không tạo binding VERIFIED mới. Kiểm
+  riêng luồng upload từ UI vì bước chuẩn hóa có thể làm lệch SHA-256.

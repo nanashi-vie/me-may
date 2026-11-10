@@ -3,8 +3,9 @@
 Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- R6.1 (10/11): Drive giả lập 3/3 đạt. Chờ service account và một ảnh Drive
-  riêng tư để kiểm live qua upload nguyên byte. [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
+- R6.1 (10/11): owner báo ca Drive thật qua upload nguyên byte đạt. Encode và
+  xác minh đều READY, nguồn VERIFIED, binding v1. Còn ca hash lệch, thiếu quyền
+  và upload UI. [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
 - S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
   ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
   và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).
