@@ -1,0 +1,55 @@
+<section class="attendance-page">
+  @if (employeeId !== null) {
+    <a routerLink="/admin/nhan-vien">‹ Hồ sơ nhân viên</a>
+    <h1>Lịch làm việc · {{ employees().get(employeeId)?.fullName || 'Hồ sơ nhân viên' }}</h1>
+  } @else { <h1>Lịch làm việc</h1> }
+  <p class="muted">Đánh dấu ngày dự kiến làm việc của từng nhân viên theo tuần.</p>
+  @if (error()) { <p class="error" role="alert">{{ error() }}</p> }
+  @if (notice()) { <p class="success" role="status">{{ notice() }}</p> }
+  @if (week(); as currentWeek) {
+    <div class="panel">
+      <h2>{{ day(currentWeek.monday) }} – {{ day(date(currentWeek.monday, 6)) }}</h2>
+      <div class="controls">
+        <button (click)="changeWeek(date(currentWeek.monday, -7))" [disabled]="busy()">Tuần trước</button>
+        <button (click)="current()" [disabled]="busy()">Tuần hiện tại</button>
+        <button (click)="changeWeek(date(currentWeek.monday, 7))" [disabled]="busy()">Tuần sau</button>
+        <button (click)="changeWeek(currentWeek.monday)" [disabled]="busy()">Tải lại</button>
+      </div>
+      @if (!currentWeek.editable) { <p class="muted">Tuần đã qua · Chỉ xem</p> }
+      @if (dirty()) { <p class="warning" role="status">Có thay đổi chưa lưu.</p> }
+      <div class="table-wrap">
+        <table class="schedule">
+          <thead><tr>
+            <th scope="col">Nhân viên</th>
+            @for (label of weekdays; track label; let i = $index) {
+              @let cellDate = date(currentWeek.monday, i);
+              <th scope="col" [class.today]="cellDate === currentWeek.today">{{ label }}<br>{{ day(cellDate) }}</th>
+            }
+          </tr></thead>
+          <tbody>
+            @for (row of visibleRows(); track row.employeeId) {
+              @let employee = employees().get(row.employeeId);
+              <tr>
+                <th scope="row">{{ employee?.fullName || row.employeeId }}</th>
+                @for (checked of row.days; track $index; let i = $index) {
+                  <td [class.today]="date(currentWeek.monday, i) === currentWeek.today">
+                    <input type="checkbox" [checked]="checked" [disabled]="!canEdit() || busy()"
+                      [attr.aria-label]="(employee?.fullName || row.employeeId) + ' · ' + weekdays[i]"
+                      (change)="toggle(row.employeeId, i, $any($event.target).checked)">
+                  </td>
+                }
+              </tr>
+            } @empty { <tr><td colspan="8">{{ employeeId === null ? 'Chưa có nhân viên để đăng ký lịch.' : 'Hồ sơ này chưa có lịch cho tuần đang xem.' }}</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (canEdit()) {
+        <div class="controls">
+          <button (click)="copy()" [disabled]="busy()">Sao chép tuần trước</button>
+          <button class="primary" (click)="save()" [disabled]="busy() || !dirty()">Lưu lịch</button>
+        </div>
+      }
+    </div>
+  } @else if (busy()) { <p role="status">Đang tải lịch…</p> }
+  @else { <button (click)="current()">Tải lại lịch</button> }
+</section>

@@ -14,6 +14,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
+| Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |
 | Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |
 | Self-host ảnh, bỏ ảnh nội bộ; đang triển khai Native | [Storage spec](IMAGE_STORAGE_SPEC.md), [Recovery spec](IMAGE_RECOVERY_SPEC.md), [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md), [Runbook Ubuntu](IMAGE_OPERATIONS.md) |
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |

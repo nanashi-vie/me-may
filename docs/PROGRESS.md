@@ -3,8 +3,17 @@
 Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
+  ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
+  và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).
 - S062 (09/11): đã triển khai popup Cộng đồng trên desktop và giữ mở link trực tiếp trên mobile.
   User xác nhận quét trên iPhone thật mở đúng nhóm. Đã chỉnh nền popup theo mẫu Zalo và giải mã lại QR từ giao diện mới.
+
+- S063 (09/11, dev-ui): Chấm công MVP v1 gồm hồ sơ/PIN, lịch tuần, chấm công, audit và Excel.
+  Ca còn mở từ 20:30 giờ Việt Nam hiện Cần kiểm tra. Đã kiểm với PostgreSQL test và Chrome local.
+  Hồ sơ 40:60, ẩn khung thêm mới mặc định. Menu từng hàng mở thông tin, lịch và chấm công.
+  Web chỉ hiện tổng hợp và một ô ghi chú chung cho kỳ tuần/tháng. Tổng giờ, chi tiết ca và ghi chú có trong Excel.
+  V21–V23 dành riêng cho chấm công. [Chấm công](ATTENDANCE_SPEC.md).
 - S056-C04 (09/11): nhãn Nơi lưu trữ dùng cùng mẫu field với Tồn kho để
   tránh margin của label chung. Vitest 252 ca đạt; còn smoke trình duyệt.
 - S055-C03 (08/11): Hoàn tất nâng cấp dải đỏ đầu trang (`utility bar`) và `Footer` nền tối theo kết quả `/grill-me`: dải đỏ bên trái có 3 icon trắng (`Facebook`, `Threads`, `TikTok`), ở giữa có chữ chạy ngang (`marquee`), bên phải là `✉ support@memaybooks.com`; Footer đổi sang nền tối `#292724` tràn chiều ngang kèm khung `KẾT NỐI VỚI CHÚNG TÔI` (nhúng Facebook `embed_page` `340x130px` của `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng `Facebook`, `Threads`, `TikTok`); tối ưu 3 logo SVG mới do user cung cấp bằng `<symbol>` + `<use href="#...">` (0 HTTP request phụ, hỗ trợ `currentColor`). Vitest 44/44 files (252/252 tests PASS), build SSR & Workers 0 warning, 0 error.

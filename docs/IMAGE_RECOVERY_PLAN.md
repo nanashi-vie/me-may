@@ -114,7 +114,7 @@ test `BT/SourceBindingIntegrationTest.java`, `BT/SourcePublicationGateTest.java`
 
 **Prerequisite:** S7, R2.
 **Files:** tạo `M/ImageMigrationService.java`, `M/ImageMigrationController.java`,
-`M/ImageMigrationDtos.java`, `M/ImageMigrationPreviewQueue.java`, `D/V25__image_operation_receipts.sql`,
+`M/ImageMigrationDtos.java`, `M/ImageMigrationPreviewQueue.java`, `D/V28__image_operation_receipts.sql`,
 `O/media-operations.mjs`, `O/media-operations.test.mjs`;
 test `T/ImageMigrationPreviewTest.java` mới.
 **Interfaces:** OWNER endpoints `/api/v1/admin/image-migrations`:
@@ -159,7 +159,7 @@ owner xác nhận để apply.
 
 **Files:** sửa `M/ImageMigrationController.java`, `M/ImageJobService.java`,
 `M/LocalImageCleanup.java`, `O/media-operations.mjs`; tạo `M/ImageMigrationApplyService.java`,
-`M/ImageMigrationHandler.java`, `D/V26__image_migration_apply.sql` và
+`M/ImageMigrationHandler.java`, `D/V29__image_migration_apply.sql` và
 `T/ImageMigrationApplyTest.java`.
 **Interfaces:** `POST /api/v1/admin/image-migrations/{receiptId}/apply`
 body `{digest,requestKey,confirmedMediaIds}`→202 operation;
@@ -202,7 +202,7 @@ hoặc version đổi, lập dry-run mới cho ảnh cần xử lý lại.
 ### R5 — Inventory và rebuild cùng recipe
 
 **Files:** tạo `M/ImageRecoveryService.java`, `M/ImageRecoveryController.java`,
-`M/ImageRecoveryHandler.java`, `M/ImageInventoryService.java`, V27 và restore profile;
+`M/ImageRecoveryHandler.java`, `M/ImageInventoryService.java`, V30 và restore profile;
 sửa `M/ImageJobService.java`, `M/LocalImageCleanup.java`, `O/media-operations.mjs`;
 test `T/ImageRecoveryIntegrationTest.java`, `T/ImageRestoreIsolationTest.java` mới.
 **Interfaces:** `inventory(List<UUID> mediaIds,String scope): InventoryReport`;

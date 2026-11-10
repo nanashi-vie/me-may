@@ -109,6 +109,8 @@ jobs:
           DOKPLOY_URL: ${{ secrets.DOKPLOY_URL }}
           DOKPLOY_API_KEY: ${{ secrets.DOKPLOY_API_KEY }}
           DOKPLOY_APPLICATION_ID: ${{ secrets.DOKPLOY_APPLICATION_ID }}
+          CF_ACCESS_CLIENT_ID: ${{ secrets.CF_ACCESS_CLIENT_ID }}
+          CF_ACCESS_CLIENT_SECRET: ${{ secrets.CF_ACCESS_CLIENT_SECRET }}
         shell: bash
         run: |
           set -euo pipefail
@@ -123,6 +125,8 @@ jobs:
             --header 'Accept: application/json' \
             --header 'Content-Type: application/json' \
             --header "x-api-key: $DOKPLOY_API_KEY" \
+            --header "CF-Access-Client-Id: $CF_ACCESS_CLIENT_ID" \
+            --header "CF-Access-Client-Secret: $CF_ACCESS_CLIENT_SECRET" \
             --data "$payload")
           case "$status" in
             2??) echo 'Dokploy accepted the deployment request; check deployment logs for completion.' ;;

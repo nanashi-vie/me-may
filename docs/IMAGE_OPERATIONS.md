@@ -26,7 +26,36 @@ có. Gắn backend hiện hữu vào `memay-images` với IP riêng cố định
 redeploy. Giữ kết nối DB, Drive và mạng Tunnel của backend hiện có.
 Compose chỉ tạo worker và Nginx, lấy mạng đã tạo từ `MEMAY_IMAGE_NETWORK`.
 
-## 2. Cấu hình backend và service ảnh
+## 2. Diễn tập migration trên bản sao V23
+
+Giữ Flyway V21–V23 của chấm công nguyên vẹn. Tạo database cách ly từ backup
+V23 và xác nhận tên đích, host và bản ghi Flyway trước khi migrate. Chạy
+`./mvnw '-Dflyway.ignoreMigrationPatterns=*:future,*:pending' flyway:validate`
+từ `code/backend` trên `dev`, với cấu hình kết nối riêng cho bản sao. Sau đó
+chạy `./mvnw flyway:migrate flyway:validate` để áp dụng và kiểm lại toàn bộ
+checksum. Giữ backend/worker ở chế độ cách ly trong drill.
+
+| Phiên bản | Migration ảnh |
+|---|---|
+| V24 | Unified book photos |
+| V25 | Image generations and jobs |
+| V26 | Image source verification |
+| V27 | Local image uploads |
+| V28 | Image operation receipts |
+| V29 | Image migration apply |
+| V30 | Image recovery operations |
+
+Đối chiếu trước/sau đủ tám bảng chấm công, sách, listing, media và lịch sử
+Flyway V1–V23. V24 đổi role `INTERNAL_1/2` thành `INSIDE_4/5`, bỏ cờ
+`show_on_product` và tăng version một lần cho mỗi sách có ảnh đổi role.
+V25 giữ storage reference Cloudinary, thêm provider/generation. V27 bổ sung
+provider/generation cho ảnh tạm. Kiểm Flyway V24–V30 đều thành công và
+kiểm tất cả bảng Image Server mới.
+
+DB local từng chạy chuỗi ảnh đánh số cũ V21–V27 cần dựng lại từ fixture hoặc
+restore bản V23 đúng chuỗi chấm công. Giữ lịch sử/checksum production nguyên vẹn.
+
+## 3. Cấu hình backend và service ảnh
 
 | Nơi | Biến hoặc mount |
 |---|---|
@@ -51,7 +80,7 @@ chiếu record đã có, giữ các phiên bản bất biến để rebuild.
 MEMAY_RECIPE_SHA=$(node --input-type=module -e 'import {createHash} from "node:crypto"; import {recipes} from "./code/image-worker/src/recipes.mjs"; console.log(createHash("sha256").update(JSON.stringify(recipes.v1)).digest("hex"))')
 ```
 
-Sau khi Flyway đã tạo `image_recipe` (V22) và trước khi bật LOCAL, chạy trên
+Sau khi Flyway đã tạo `image_recipe` (V25) và trước khi bật LOCAL, chạy trên
 PostgreSQL thử đã chọn. Cấu hình kết nối psql bằng secret manager hoặc service
 file. Kết quả phải là `t`, nếu sai thì kiểm image/recipe trước khi chạy upload.
 
@@ -81,7 +110,7 @@ thêm bằng một job test thật để kiểm token, lease và encode. Health 
 listener nội bộ. Khi container unhealthy, kiểm nguyên nhân trong log và Docker
 events. Restart policy chỉ phản ứng khi tiến trình thoát.
 
-## 3. Smoke ở namespace thử
+## 4. Smoke ở namespace thử
 
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
@@ -103,7 +132,7 @@ events. Restart policy chỉ phản ứng khi tiến trình thoát.
    recipe digest và lease. Chỉ bật lại kết nối sau khi xác minh namespace,
    mount, credential. Đo thời gian tới ảnh bìa đầu tiên và toàn bộ lô.
 
-## 4. Benchmark
+## 5. Benchmark
 
 ```sh
 npm --prefix code/image-worker ci
@@ -120,7 +149,7 @@ byte đầu vào/ra, block đĩa và lỗi. `wallMs` tính cả dọn output t�
 trong một process và lấy mẫu API đồng thời. Đo riêng queue, Docker và tốc độ
 ngoài LAN ở Dell, vì mẫu này không tính chi phí Drive, claim/lease và cache CDN.
 
-## 5. Bằng chứng local S8
+## 6. Bằng chứng local S8
 
 Mac arm64, macOS 15.7.9, Node 22, Spring + PostgreSQL test loopback. Catalog
 fixture có 50 sách giả lập. Baseline đo trước encode, chưa warm cùng mức với
@@ -146,7 +175,7 @@ fixture public và 404 sau khi Ẩn. Publication gallery được tạo bằng f
 Gate nguồn VERIFIED đã kiểm qua backend test với Drive giả lập. Chất lượng
 chữ và HTTP ngoài LAN chờ thử nghiệm trên Ubuntu.
 
-## 6. Điều kiện mở R6
+## 7. Điều kiện mở R6
 
 - Cần Ubuntu chạy được Nginx/worker, backend fixture truy cập mount/Drive và bản
   backup R2 có thể khôi phục ở đích cách ly.

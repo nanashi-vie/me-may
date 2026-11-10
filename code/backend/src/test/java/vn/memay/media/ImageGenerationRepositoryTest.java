@@ -17,11 +17,11 @@ class ImageGenerationRepositoryTest {
                         System.getenv("DB_USER"), System.getenv("DB_PASSWORD"))
                 .schemas(schema).defaultSchema(schema);
         try {
-            config.target("21").load().migrate();
+            config.target("24").load().migrate();
             UUID media = UUID.randomUUID(), old = UUID.randomUUID(), next = UUID.randomUUID();
             db.update("INSERT INTO book_copy(id,book_code,title,availability) VALUES(1,'MM-000001','Legacy','AVAILABLE')");
             db.update("INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id) VALUES(?,1,'FRONT','ACTIVE','legacy')", media);
-            config.target("22").load().migrate();
+            config.target("25").load().migrate();
             assertThat(db.queryForMap("SELECT provider,storage_public_id FROM book_media WHERE id=?", media))
                     .containsEntry("provider", "CLOUDINARY").containsEntry("storage_public_id", "legacy");
             db.update("INSERT INTO image_asset(media_id) VALUES(?)", media);

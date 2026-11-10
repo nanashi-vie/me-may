@@ -80,11 +80,11 @@ Dọn hết hạn là thao tác xóa dữ liệu và media. Kiểm tra sao lưu 
 và dùng dữ liệu giả để smoke dọn theo hạn. Khi xử lý sự cố, ngừng tác vụ
 dọn trước khi rollback ứng dụng. Phục hồi dữ liệu đã dọn cần bản sao lưu.
 
-## V21 — Hợp nhất tám vị trí ảnh
+## V24 — Hợp nhất tám vị trí ảnh
 
 Sao lưu DB và ghi counts theo role/state, ID và storage reference trước rollout.
-Tạm dừng ghi, migrate V21 rồi phát hành backend/frontend tương ứng và tải lại tab admin.
+Tạm dừng ghi, migrate V24 rồi phát hành backend/frontend tương ứng và tải lại tab admin.
 Kiểm số lượng ảnh và ID giữ nguyên, hai role chuyển thành INSIDE_4/INSIDE_5, cache
 được purge theo cấu hình. Smoke gallery đủ tám ảnh, ảnh sách Ẩn/Thùng rác trả 404,
-ZIP và retry receipt cũ. Nếu rollback về backend trước V21, cần khôi phục schema
+ZIP và retry receipt cũ. Nếu rollback về backend trước V24, cần khôi phục schema
 tương thích từ backup và đối chiếu mọi ghi phát sinh trước khi mở ghi lại.

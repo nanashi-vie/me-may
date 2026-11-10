@@ -33,6 +33,8 @@
 > **06/11:** importV4/8cột thêm don_gia_kg optional, tự tính giá hoặc bổ sung khi thêm ảnh;
 > NXB/tác giả/mô tả optional, giữẨn; fileV1–V3/receipt cũ tương thích. DATA/BOOK_IMPORT giữ chi tiết.
 
+> **Bổ sung 09/11 trên dev-ui** — [Chấm công MVP](ATTENDANCE_SPEC.md) dùng phiên OWNER hiện có.
+
 ### Phạm vi M1 local đã thực hiện
 
 Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 container có sẵn với database dev/test riêng. Đã có Flyway, session OWNER/STAFF, CSRF, owner cố định được cấp bằng one-shot command, không startup bootstrap, shell public/admin và đăng nhập. Contract API và cách chạy ở [ARCHITECTURE](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1); bằng chứng/giới hạn ở [VERIFICATION](VERIFICATION.md). Các feature tiếp theo đã triển khai; contract hiện hành ở CATALOGUE/ARCHITECTURE. DockerRender/Workers đã có, CI/CD/productionVPS chưa nghiệm thu; bảng milestone bên dưới không thay snapshot PROGRESS.

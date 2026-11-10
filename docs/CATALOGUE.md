@@ -282,7 +282,7 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
   Giữ requestKey, fingerprint, cleanup và hạn phiên 24 giờ.
 - Detail và preview lấy tất cả ảnh ACTIVE. Public delivery kiểm trạng thái xuất bản
   và ảnh hiện hành. Gallery không trả storage ID, sourceRef hoặc ghi chú nội bộ.
-- V21 giữ ID và storage reference khi đổi hai role cũ sang INSIDE_4/INSIDE_5.
+- V24 giữ ID và storage reference khi đổi hai role cũ sang INSIDE_4/INSIDE_5.
   Alias request cũ giữ tương thích và không xuất hiện trong DTO mới.
 
 ### Feature catalogue và thứ tự
