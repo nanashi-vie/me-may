@@ -3240,3 +3240,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    khác vị trí plan, không đổi contract sản phẩm.
 8. Không coi fixture là benchmark/live rollout: QA credentials chưa có ở
    session, rollout vẫn do owner. Chi phí là cần smoke/đo thật sau triển khai.
+
+## 2026-11-11 — Cloudflare — Đối chiếu trigger main bị bỏ lỡ
+
+- Owner yêu cầu rà sau triển khai Drive; dùng systematic-debugging và dashboard
+  đang đăng nhập. Chỉ đọc cấu hình/build history/GitHub App/checks/audit.
+- Code Drive 338fc12 đã push dev. Cloudflare tự build preview dev Ready 51s,
+  build 0bf69fd4-59aa-4dcf-823c-c49a48d7afa2, version23007819.
+- Main 0f5ed73 merge lúc 00:00:18 giờ Việt Nam11/11 không có build production
+  Git; hook owner gọi trước đó đã Ready. Cấu hình hiện main/*/không exclude,
+  builds bật, repo và App quyền hợp lệ. Không quy lỗi cho buildcommand trống,
+  cache hoặc Angular; điểm thiếu ở trước khi tạo build.
+- Audit builds7ngày chỉ thấy3thao tác hook, không có log delivery của App để
+  phân biệt GitHub bỏ lỡ với Cloudflare không xử lý trigger. Chưa kết luận
+  nguyên nhân nội bộ và chưa tuyên bố sửa. Không reinstall hoặc đổi quyền.
+- Owner chốt tự test lần merge tiếp theo. Ghi checklist/IDs/bằng chứng ở
+  CLOUDFLARE_BUILDS, đăng kýREADME. Không gọi hook hay mutate/deploy production.
+- Fixture PostgreSQL tạm memay-drive-batch-test đã dừng sau tests. Worktree
+  giữ nguyên vì QA/rollout Drive batch chưa nghiệm thu. Không dọn tree khác.

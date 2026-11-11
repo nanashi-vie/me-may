@@ -15,8 +15,8 @@ Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - R6 (11/11): owner xác nhận production V30, bind riêng 8081, catalogue 200 và
   recipe v1 khớp worker. Nginx đọc health backend qua tên service đạt.
   Frontend production đã có bộ 8 ảnh theo xác nhận owner; điều tra trigger
-  Cloudflare bị bỏ lỡ đang chờ sau triển khai Drive. Trước đó cần deploy từ
-  main 0f5ed73 và mở lại form. Wrangler local chưa có credential Cloudflare.
+  Cloudflare: dev tự build 338fc12, main 0f5ed73 không có build Git. Owner
+  tự test lần merge sau; [đối chiếu](CLOUDFLARE_BUILDS.md).
 - S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
   ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
   và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).

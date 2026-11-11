@@ -79,3 +79,5 @@ Markdown tối đa400dòng trừ DEV_LOG; không tạo INDEX.md hoặc thư mụ
 Asset nguồn `code/frontend/public/` tiếp tục tracked; `.env`, skill local, dump,
 cookie và QA workspace ignored. `docs/assets/`/`fixtures/` là tham khảo M0 có nhãn,
 không là ảnh bán thật hoặc file importer hiện hành.
+
+- Cloudflare bỏ lỡ merge main → [trigger Builds](CLOUDFLARE_BUILDS.md): bằng chứng, giới hạn và bước owner kiểm ở lần merge sau.
