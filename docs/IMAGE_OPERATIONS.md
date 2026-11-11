@@ -215,3 +215,30 @@ chữ và HTTP ngoài LAN chờ thử nghiệm trên Ubuntu.
 - Owner chọn lô 20–50 sách mới thử, duyệt ngưỡng p95 và chất lượng ảnh chữ.
   Ghi RTO đo được, độ phủ binding và RPO DB. Giữ Cloudinary phục vụ sách cũ.
   Bằng chứng local xem [DEV_LOG](DEV_LOG.md).
+
+## Nhập và ghép nguồn Drive theo lô (V31)
+
+- Chia sẻ một folder gốc quyền Viewer cho email service account; mỗi sách
+  có folder con. File thêm sau thường kế thừa quyền; tránh limited access
+  hoặc chặn tải xuống. Không cần public folder và không scan cả kho.
+- Dành cho sách mới: dán 1–8 link file/File ID, ngăn bằng dòng, khoảng trắng
+  hoặc dấu phẩy, chọn **Tải ảnh từ Drive**. Link được xử lý tuần tự; xem
+  thumbnail LOCAL, chọn vai trò rồi xác nhận một lần. Thứ tự link tùy ý.
+- Đã upload LOCAL: **Tự ghép nguồn** tìm bằng SHA-256 file gốc. Hash trùng
+  nhiều ảnh cần chọn cặp một-một. Chỉ xác nhận các dòng thành công; dòng lỗi
+  báo riêng. File Drive phải giữ nguyên bytes, không dùng JPEG đã nén lại.
+- Chưa xác nhận thì ảnh IMPORT chưa dùng để lưu sách. Bỏ lô giải phóng chỗ;
+  lô hết hạn theo session, tối đa 24 giờ. Reload tiếp tục operation đang mở.
+  Tab ẩn dừng polling, hiện lại lấy một trạng thái chung; không poll từng ảnh.
+- Giữ DB/backup chứa source binding File ID, hash, version và recipe. Link
+  riêng lẻ không thay thế bản backup DB. Mất derived dùng rebuild R5; nguồn
+  Drive bị xóa do owner xử lý thủ công. Ảnh Cloudinary cũ giữ provider cũ.
+- Rollout backend V31 trước frontend. V21–V30 không đổi; V31 thêm hai bảng
+  `drive_image_batch`, `drive_image_batch_item`. Worker/recipe hiện có được
+  tái sử dụng. Nếu rollback UI, giữ schema V31 và tắt thao tác batch mới.
+- Trên QA kiểm một sách nháp mới: import đủ ảnh, vai trò theo thumbnail,
+  VERIFIED, lưu sách, reload và xem public khi xuất bản. Không cần chạy lại
+  restore R2 đã được owner xác nhận; local fixture đã drill mất derived/R5.
+- Số request mô hình MATCH là create + P status + confirm, cộng CSRF nếu
+  epoch chưa có token. Session/preview/reload/retry tính riêng; chưa đo latency,
+  request provider và RSS với lô 8 ảnh thật trên QA.

@@ -76,7 +76,9 @@ class AuthIntegrationTest {
     }
 
     @Test void loginRequiresCsrf() throws Exception {
-        assertThat(request("POST", "/api/v1/auth/login", "username=owner@test.local&password=test-password-123", null).statusCode()).isEqualTo(403);
+        var response=request("POST", "/api/v1/auth/login", "username=owner@test.local&password=test-password-123", null);
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.body()).contains("csrf_invalid");
     }
 
     @Test void ownerSessionSurvivesAcrossRequestsAndCookieIsHttpOnly() throws Exception {
@@ -92,7 +94,9 @@ class AuthIntegrationTest {
     @Test void staffCanEnterAdminButCannotUseOwnerEndpoint() throws Exception {
         assertThat(login("staff@test.local").statusCode()).isEqualTo(200);
         assertThat(request("GET", "/api/v1/admin/access", null, null).statusCode()).isEqualTo(200);
-        assertThat(request("GET", "/api/v1/admin/owner-access", null, null).statusCode()).isEqualTo(403);
+        var response=request("GET", "/api/v1/admin/owner-access", null, null);
+        assertThat(response.statusCode()).isEqualTo(403);
+        assertThat(response.body()).contains("forbidden").doesNotContain("csrf_invalid");
     }
 
     @Test void wrongPasswordAndInactiveAccountDoNotCreateAuthenticatedSession() throws Exception {

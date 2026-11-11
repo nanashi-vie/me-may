@@ -3,7 +3,7 @@ import { Injectable, InjectionToken, DestroyRef, inject, signal, computed } from
 import { HttpErrorResponse, HttpEventType, HttpResponse } from '@angular/common/http';
 import { firstValueFrom, filter, tap, Subject, takeUntil, timer } from 'rxjs';
 import { BookApi } from './book-api';
-import { BookDetail, MediaRole, MediaAssignment, TemporaryMedia, ImageCapability, ImageOperation } from './book.models';
+import { BookDetail, MediaRole, MediaAssignment, TemporaryMedia, ImageCapability, ImageOperation, DriveBatchMode, DriveBatchView, UploadSession } from './book.models';
 import { driveFileId } from './drive-source';
 import { MEDIA_ROLES, MEDIA_LABELS } from './book-copy';
 import { prepareImage, prepareValidatedImage, SourceImageInfo, sourceImageInfo } from './image-upload';
@@ -150,37 +150,14 @@ export class BookUploadQueue {
       }));
     } catch { /* Session restoration is optional when browser storage is unavailable. */ }
   }
+  private restoring: {session: string; promise: Promise<UploadSession>} | null = null;
   private async restoreLocal() {
     const key = this.sessionStorageKey();
     try {
       const stored = sessionStorage.getItem(key);
       if (!stored || this.sessionId()) return;
       const saved = JSON.parse(stored) as {session: string; roles: Record<string, MediaRole>};
-      const session = await firstValueFrom(this.api.session(saved.session).pipe(takeUntil(this.stopped)));
-      if (this.destroyed || this.sessionId() || this.sessionStorageKey() !== key) return;
-      if (session.state !== 'OPEN') {
-        sessionStorage.removeItem(key);
-        return;
-      }
-      this.localSession = true;
-      this.sessionId.set(session.id);
-      for (const media of session.media) {
-        if (media.provider !== 'LOCAL' || !media.requestKey || !media.jobId) continue;
-        const role = saved.roles[media.requestKey];
-        if (!MEDIA_ROLES.includes(role)) continue;
-        const previous = this.rows().find(row => row.role === role);
-        const item: UploadItem = {
-          id: media.requestKey, role, file: null, mediaId: media.id, jobId: media.jobId,
-          provider: 'LOCAL', pendingLocal: !!this.persisted(),
-          preview: media.state === 'READY' ? media.contentPath : '',
-          state: media.state === 'READY' ? 'READY' : 'error', progress: 0,
-          error: media.state === 'READY' ? '' : 'Tiếp tục kiểm tra ảnh đã gửi.',
-          alt: media.alt ?? '', sourceRef: media.sourceRef ?? '',
-          storedAlt: media.alt ?? '', storedSource: media.sourceRef ?? '', previous,
-        };
-        this.rows.update(rows => [...rows.filter(row => row.role !== role), item]);
-        if (media.state !== 'READY' && media.jobStatus !== 'FAILED') void this.resumeLocal(item, false);
-      }
+      await this.restoreDriveSession(saved.session);
     } catch (error) {
       if (error instanceof HttpErrorResponse && [403, 404, 410].includes(error.status)) {
         try { sessionStorage.removeItem(key); } catch { /* Browser storage unavailable. */ }
@@ -340,6 +317,98 @@ export class BookUploadQueue {
       this.report(e);
     }
   }
+  async driveContext(mode: DriveBatchMode) {
+    const capability = await this.capabilities();
+    if (capability.provider !== 'LOCAL') throw new Error('Backend chưa bật nhập ảnh LOCAL.');
+    if (mode === 'IMPORT') {
+      if (this.persisted()) throw new Error('Nhập từ Drive hiện dùng cho sách mới.');
+      this.localSession = true;
+      const sessionId = await this.session();
+      this.rememberLocal();
+      return {sessionId, bookId: null, bookVersion: null, targets: []};
+    }
+    const rows = this.sorted().filter(row => row.provider === 'LOCAL' && row.state === 'READY' && row.mediaId);
+    if (!rows.length) throw new Error('Tải ảnh LOCAL trước khi ghép nguồn.');
+    const temporary = rows.filter(row => row.pendingLocal || !this.persisted());
+    if (temporary.length && temporary.length !== rows.length)
+      throw new Error('Ghép riêng ảnh của sách đã lưu và ảnh trong phiên thay thế.');
+    const book = temporary.length ? null : this.persisted();
+    return {sessionId: book ? null : await this.session(), bookId: book?.id ?? null,
+      bookVersion: book?.version ?? null, targets: rows.map(row => ({mediaId: row.mediaId!}))};
+  }
+
+  async restoreDriveSession(sessionId: string): Promise<UploadSession> {
+    if (this.restoring?.session === sessionId) return this.restoring.promise;
+    if (this.sessionId() && this.sessionId() !== sessionId) throw new Error('Phiên nhập ảnh đã thay đổi.');
+    const key = this.sessionStorageKey();
+    let roles: Record<string, MediaRole> = {};
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(key) ?? '{}');
+      if (saved.session === sessionId) roles = saved.roles ?? {};
+    } catch { /* Optional restoration metadata. */ }
+    const promise = (async () => {
+      const session = await firstValueFrom(this.api.session(sessionId).pipe(takeUntil(this.stopped)));
+      if (this.destroyed || this.sessionStorageKey() !== key) throw new Error('Phiên nhập ảnh đã thay đổi.');
+      if (session.state !== 'OPEN') { sessionStorage.removeItem(key); return session; }
+      this.localSession = true;
+      this.sessionId.set(session.id);
+      for (const media of session.media) {
+        if (media.provider !== 'LOCAL' || !media.requestKey || !media.jobId
+            || this.rows().some(row => row.mediaId === media.id)) continue;
+        const role = roles[media.requestKey];
+        if (!MEDIA_ROLES.includes(role)) continue;
+        const previous = this.rows().find(row => row.role === role);
+        const item: UploadItem = {
+          id: media.requestKey, role, file: null, mediaId: media.id, jobId: media.jobId,
+          provider: 'LOCAL', pendingLocal: !!this.persisted(),
+          preview: media.state === 'READY' ? media.contentPath : '',
+          state: media.state === 'READY' ? 'READY' : 'error', progress: 0,
+          error: media.state === 'READY' ? '' : 'Tiếp tục kiểm tra ảnh đã gửi.',
+          alt: media.alt ?? '', sourceRef: media.sourceRef ?? '',
+          storedAlt: media.alt ?? '', storedSource: media.sourceRef ?? '', previous,
+        };
+        this.rows.update(rows => [...rows.filter(row => row.role !== role), item]);
+        if (media.state !== 'READY' && media.jobStatus !== 'FAILED') void this.resumeLocal(item, false);
+      }
+      this.rememberLocal();
+      return session;
+    })();
+    this.restoring = {session:sessionId,promise};
+    try { return await promise; }
+    finally { if (this.restoring?.promise === promise) this.restoring = null; }
+  }
+
+  acceptDriveBatch(view: DriveBatchView, session: string | null, currentMedia?: Set<string>) {
+    if (view.mode === 'IMPORT') {
+      if (!session) throw new Error('Thiếu phiên nhập ảnh.');
+      if (this.sessionId() && this.sessionId() !== session) throw new Error('Phiên nhập ảnh đã thay đổi.');
+      this.localSession = true; this.sessionId.set(session);
+      for (const selection of view.selections) {
+        if (currentMedia && !currentMedia.has(selection.mediaId)) continue;
+        const item = view.items.find(row => row.id === selection.itemId);
+        if (!item?.contentPath || !selection.role) continue;
+        const existing = this.rows().find(row => row.mediaId === selection.mediaId);
+        if (existing) { this.patch(existing.id, {sourceStatus:'VERIFIED', sourceFile:item.fileId}); continue; }
+        const role = selection.role;
+        this.rows.update(rows => [...rows, {
+          id: item.id, role, file: null, preview: item.contentPath!, mediaId: selection.mediaId,
+          state: 'READY', progress: 100, error: '', alt: '', sourceRef: '', storedAlt: '', storedSource: '',
+          provider: 'LOCAL', sourceStatus: 'VERIFIED', sourceFile: item.fileId,
+        }]);
+      }
+      this.rememberLocal();
+    } else {
+      const book = this.persisted();
+      if (book && view.bookVersion != null && view.bookVersion >= book.version)
+        this.updateBook({...book, version: view.bookVersion});
+      for (const selected of view.selections) {
+        const item = view.items.find(row => row.id === selected.itemId);
+        const row = this.rows().find(row => row.mediaId === selected.mediaId);
+        if (row) this.patch(row.id, {sourceStatus: 'VERIFIED', sourceFile: item?.fileId, sourceError: ''});
+      }
+    }
+  }
+
   async ensureSession() {return this.session();}
   private async session() {
     if (this.sessionId()) return this.sessionId()!;

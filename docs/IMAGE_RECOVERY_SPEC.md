@@ -197,3 +197,13 @@ không thay lịch hoặc tuyên bố RPO đã đạt từ cấu hình mẫu.
   [ARCHITECTURE](ARCHITECTURE.md), [Storage spec](IMAGE_STORAGE_SPEC.md).
 - Các lựa chọn service account/File ID/publish gate đã được user duyệt;
   cấu hình live owner phụ trách, chưa được xác minh trong phiên lập kế hoạch.
+
+## Bổ sung nhập nguồn theo lô — 11/11/2026
+
+[Drive batch](IMAGE_SOURCE_BATCH_SPEC.md) bổ sung IMPORT/MATCH, không thay
+contract recovery R3–R5. IMPORT tải nguyên bytes một lần rồi bàn giao PROCESS,
+chỉ ghi binding VERIFIED sau metadata recheck và owner confirm. Binding
+được giữ qua temporary→book_media; recovery dùng File ID/hash/version/recipe
+đã lưu, không dựa vào thứ tự link hoặc tên file. Receipt là lịch sử xác nhận,
+không được dùng để phục hồi ảnh owner đã gỡ khỏi session. Bản backup DB vẫn
+bắt buộc để khôi phục toàn bộ mapping. Nguồn Drive bị xóa được xử lý thủ công.

@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { vi } from 'vitest';
 import { TestBed, DeferBlockState } from '@angular/core/testing';
 import { of } from 'rxjs';
@@ -6,7 +7,7 @@ import { BookUploadQueue } from '../book-upload-queue';
 import { BookApi } from '../book-api';
 import { testBook } from '../book-test-fixture';
 describe('BookMediaPanel protected thumbnails',()=>{
- beforeEach(()=>TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:{cancelSession:()=>of(null)}}]}));
+ beforeEach(()=>TestBed.configureTestingModule({providers:[provideHttpClient(),BookUploadQueue,{provide:BookApi,useValue:{cancelSession:()=>of(null)}}]}));
  it('requests small server images in grid and loads full preview only on open',async()=>{
   const photos=TestBed.inject(BookUploadQueue);photos.configure({...testBook(),media:[{id:'photo-1',role:'FRONT',alt:'Bìa',sourceRef:null,contentPath:'/api/v1/admin/books/1/media/FRONT/content'}]});
   const fixture=TestBed.createComponent(BookMediaPanel);fixture.detectChanges();
@@ -38,26 +39,20 @@ describe('BookMediaPanel protected thumbnails',()=>{
 
 describe('photo panel accessible order and readonly mode',()=>{
  function setup(){
-  TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:{cancelSession:()=>of(null)}}]});
+  TestBed.configureTestingModule({providers:[provideHttpClient(),BookUploadQueue,{provide:BookApi,useValue:{cancelSession:()=>of(null)}}]});
   const q=TestBed.inject(BookUploadQueue);q.configure({...testBook(),media:[{id:'a',role:'FRONT',alt:'Cover',sourceRef:null,contentPath:'/a'},{id:'b',role:'BACK',alt:'Back',sourceRef:null,contentPath:'/b'}]});
   const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();return{q,f};
  }
- it('checks a batch of Drive links only after the owner confirms the mapping', async () => {
+ it('sends one automatic matching request and keeps single-image verification separate', async () => {
   const { q, f } = setup();
   q.rows.update(rows => rows.map(row => ({ ...row, provider: 'LOCAL' })));
   const panel = f.componentInstance;
-  const [front, back] = q.sorted();
+  const submit = vi.spyOn(panel.drive, 'submit').mockResolvedValue(undefined);
   const verify = vi.spyOn(q, 'verifySource').mockResolvedValue(true);
-  panel.setBatch('https://drive.google.com/file/d/driveFileId123/view\ndriveFileId456');
-  panel.matchBatch();
+  panel.setBatch('file_a, file_b');
+  await panel.matchSources();
+  expect(submit).toHaveBeenCalledExactlyOnceWith('MATCH', 'file_a, file_b');
   expect(verify).not.toHaveBeenCalled();
-  panel.matchRow(0, back.id);
-  await panel.verifyBatch();
-  expect(verify).not.toHaveBeenCalled();
-  panel.matchRow(1, front.id);
-  await panel.verifyBatch();
-  expect(verify.mock.calls).toEqual([[back.id, 'driveFileId123'], [front.id, 'driveFileId456']]);
-  expect(panel.batch().map(item => item.result)).toEqual(['Đã xác minh', 'Đã xác minh']);
  });
  it('changes a role with the dropdown available to keyboard and mobile users',()=>{
   const {q,f}=setup();expect(Array.from(f.nativeElement.querySelectorAll('.photo-slot select') as NodeListOf<HTMLSelectElement>).map(s=>s.value)).toEqual(['FRONT','BACK']);

@@ -1,12 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { vi } from 'vitest';
 import { BookImportApi } from './book-import-api';
 import { AuthService } from '../../../core/auth/auth.service';
 describe('BookImportApi transport',()=>{
-  beforeEach(()=>TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),{provide:AuthService,useValue:{epoch:signal(0),invalidateSession:vi.fn()}}]}));
+  beforeEach(()=>TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),{provide:AuthService,useValue:{epoch:signal(0),csrf:()=>TestBed.inject(HttpClient).get('/api/v1/auth/csrf'),invalidateSession:vi.fn()}}]}));
   afterEach(()=>TestBed.inject(HttpTestingController).verify());
   it('sends exact selected file and fingerprint using authenticated CSRF multipart',()=>{
     const api=TestBed.inject(BookImportApi),http=TestBed.inject(HttpTestingController),file=new File(['csv'],'books.csv');

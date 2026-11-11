@@ -3139,3 +3139,122 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - JAR production chỉ có V23. Tên service đã kiểm là PostgreSQL, chưa dùng làm
   đích worker. Giữ production hiện tại trong khi xác định đúng app Dokploy và
   backup mới. Merge main có thể tự kích hoạt deploy và Flyway. Chưa deploy.
+
+## 2026-11-11 — R6 — Frontend production còn form ảnh nội bộ cũ
+
+- Owner xác nhận production Flyway 30|0, listener 8081 bind IP mạng ảnh và
+  catalogue 200. Đã đăng ký recipe v1 khớp worker. Đích worker dùng DNS
+  service backend production. Restore R2 đã đạt theo xác nhận owner.
+- Đọc 41 bundle JavaScript public từ memaybooks.com. chunk-JB2UGBAZ.js có
+  INTERNAL_1/2, chunk-ODKP44QD.js còn showOnProduct, khớp ảnh form cũ owner gửi.
+- Fetch main/dev. Main 0f5ed73 đã có bộ ảnh chung tối đa 8, ô Drive và ghép
+  nhiều nguồn khi ảnh LOCAL READY. Source frontend local khớp main.
+- Wrangler deployments list dừng vì thiếu credential Cloudflare. Chưa
+  deploy frontend từ máy này. Cần deploy Worker me-may từ main, kiểm bundle
+  mới rồi mở lại form. Chưa xác nhận phiên bản frontend trong trình duyệt owner.
+
+## 2026-11-11 — Ghép nguồn lô — Thiết kế trước triển khai
+
+- Owner duyệt hướng SHA-256 cho link lộn thứ tự, yêu cầu xem xét giảm request.
+  Production frontend mới đã hiển thị bộ 8 ảnh theo ảnh owner cung cấp.
+- Rà AdminHttp, AuthService, BookUploadQueue, SourceBindingService và handler
+  Drive. CSRF đang lấy trước mỗi mutation, xác minh đơn ảnh có hai GET source
+  và một poller riêng. Viết IMAGE_SOURCE_BATCH_SPEC với operation lô, xác nhận,
+  version/idempotency và CSRF theo auth epoch. Chưa đổi code sản phẩm.
+- Số request là mô hình từ code. Chưa benchmark, chưa khẳng định nghẽn hiệu năng.
+- Owner bổ sung và chọn nhập ảnh chỉ bằng link Drive để dựng lại khi mất
+  derived. Cập nhật thiết kế IMPORT/MATCH dùng chung operation, lưu snapshot,
+  reservation chống vượt 8 ảnh, giữ đủ binding khi lưu sách và lifecycle staging.
+  Chờ duyệt thiết kế chi tiết trước lập kế hoạch.
+
+## 2026-11-11 — Nguồn Drive — Duyệt thiết kế và lập kế hoạch
+
+- Owner duyệt IMAGE_SOURCE_BATCH_SPEC. Lập IMAGE_SOURCE_BATCH_PLAN theo
+  Superpowers writing-plans, bảy task có interface, test hồi quy và thứ tự deploy.
+- Đối chiếu client Drive, admission session/consume, handler và CSRF. Chọn
+  Native theo phương thức đã chốt, chờ owner xem kế hoạch trước implementation.
+- Google Drive docs xác nhận folder con/file thông thường kế thừa quyền Viewer
+  từ folder gốc, kể cả file thêm sau. Nhập theo File ID từng sách, tối đa 8,
+  không cần scan toàn bộ kho. Ghi ngoại lệ limited access và quyền tải file.
+- Kiểm diff và giới hạn dòng tài liệu. Chưa đổi code sản phẩm hoặc chạy tests
+  trong checkpoint kế hoạch.
+
+## 2026-11-11 — Nguồn Drive — Bắt đầu triển khai Native
+
+- Owner duyệt kế hoạch, bắt đầu trên worktree image-system hiện có, nhánh
+  codex/drive-source-batch từ 7d817e9. Phạm vi IMPORT/MATCH, source binding,
+  admission/cleanup và giảm request. Dùng DB Docker fixture riêng.
+- Ledger riêng IMAGE_SOURCE_BATCH_PLAN theo executing-plans. Chưa có task
+  implementation hoàn tất ở checkpoint khởi động này.
+
+## 2026-11-11 — Drive batch — Implementation và regression
+
+- IMPORT/MATCH backend, V31, lease/staging, confirm VERIFIED/admission và CSRF
+  theo auth epoch đã triển khai; giao diện một poller, resume, tab visibility.
+- Frontend toàn bộ 276 test đạt trước bổ sung 4 ca lifecycle; 8 ca DriveBatch
+  hiện đạt. Backend lượt đầu 292 test có 1 lỗi query budget, đã sửa bằng cách
+  ghép admission vào SQL thay vì thêm query; targeted 4 test đạt.
+- Đang chạy fixture nhập link→lưu sách→mất derived→rebuild; chưa coi là PASS.
+  Không truy cập hoặc thay đổi production; chưa có số đo QA Drive thật.
+- Branch codex/drive-source-batch; Task 5 commit f565110, Task 6 còn local.
+
+## 2026-11-11 — Drive batch — Review cuối và bàn giao code
+
+- Native, base 7d817e9; fresh reviewer gpt-6-astra phát hiện 3 Important,
+  không Critical/Minor. Sửa hydrate queue chung để không mất role khi reload,
+  chỉ nhận media còn trong session khi đọc receipt lịch sử, và xóa pending
+  payload khi create bị từ chối dứt khoát. Regression 3 ca RED→GREEN;
+  cả 26 test batch/queue đạt, frontend toàn bộ 284/284 đạt sau sửa.
+- Backend `TEST_DB_URL` trỏ PostgreSQL Docker fixture 127.0.0.1:55469,
+  `./mvnw -o clean verify`: 293 total, 0 lỗi, 3 live skip. Test mới
+  DriveBatchMigrationTest: 1 đạt, V30→V31 giữ sách/listing/Cloudinary media,
+  employee_profile và checksum V1–V30. Không chạy Flyway trên production.
+- DriveBatchRecoveryTest dùng Drive fixture và worker completion thật qua API,
+  xác minh 2 file chỉ tải bytes 2 lần, confirm/lưu sách giữ VERIFIED, xóa
+  derived rồi rebuild cùng generation/recipe thành công; thêm 1 lần tải nguồn.
+- Frontend `npm run build:workers` đạt; `check:workers:proxy` đạt. Worker 10/10,
+  CLI media operations 4/4 đạt. Không thêm dependency, V21–V30 giữ nguyên.
+- Quyết định triển khai: xem mục dưới. Chưa đo lô 8 ảnh Drive thật/latency/RSS,
+  chưa deploy V31 hoặc frontend mới. Owner vẫn merge main/deploy; backend trước
+  frontend, smoke một sách nháp mới. R2 restore đã có xác nhận owner, không lặp.
+- Owner yêu cầu tiếp theo điều tra triệt để trigger Cloudflare bỏ lỡ main;
+  sẽ đối chiếu Git integration, build filters và lịch sử sau bàn giao Drive.
+
+### Quyết định trong triển khai Drive batch
+
+1. Reservation dùng temporary_media UPLOADING và khóa session hiện có;
+   enqueue/item handoff atomic. Sai sẽ có nguy cơ vượt capacity/mồ côi staging.
+2. Handler ghép ở Task 3 sau enqueueStaged để commit luôn biên dịch được.
+   Lease 5 phút vượt timeout tải 180 giây, không thêm heartbeat cho tải;
+   sai giới hạn timeout sẽ gây retry hoặc staging thừa, callback cũ bị từ chối.
+3. Client giữ functional adapter cũ bằng inspect mặc định trả unavailable;
+   production/fixture batch cài inspect rõ ràng. Adapter thiếu sẽ không confirm.
+4. Mọi queue Drive dùng cùng advisory lock và kiểm lease lẫn nhau;
+   giảm tranh CPU/bandwidth, đánh đổi throughput tuần tự.
+5. Confirm dùng coordinator để inspect ngoài transaction; MATCH có thể bỏ
+   generation trong input, server chụp snapshot. Digest/confirm vẫn kiểm đích;
+   sai snapshot sẽ bị conflict và cần tạo lại lô.
+6. Thêm DELETE cancel để owner bỏ lô và trả slot; admission ghép vào SQL để
+   không tăng query budget lưu sách. Sai có thể chặn nhầm ảnh hoặc giữ slot.
+7. Recovery test đặt ở package media để dùng fixture JPEG/worker thật;
+   khác vị trí plan, không đổi contract sản phẩm.
+8. Không coi fixture là benchmark/live rollout: QA credentials chưa có ở
+   session, rollout vẫn do owner. Chi phí là cần smoke/đo thật sau triển khai.
+
+## 2026-11-11 — Cloudflare — Đối chiếu trigger main bị bỏ lỡ
+
+- Owner yêu cầu rà sau triển khai Drive; dùng systematic-debugging và dashboard
+  đang đăng nhập. Chỉ đọc cấu hình/build history/GitHub App/checks/audit.
+- Code Drive 338fc12 đã push dev. Cloudflare tự build preview dev Ready 51s,
+  build 0bf69fd4-59aa-4dcf-823c-c49a48d7afa2, version23007819.
+- Main 0f5ed73 merge lúc 00:00:18 giờ Việt Nam11/11 không có build production
+  Git; hook owner gọi trước đó đã Ready. Cấu hình hiện main/*/không exclude,
+  builds bật, repo và App quyền hợp lệ. Không quy lỗi cho buildcommand trống,
+  cache hoặc Angular; điểm thiếu ở trước khi tạo build.
+- Audit builds7ngày chỉ thấy3thao tác hook, không có log delivery của App để
+  phân biệt GitHub bỏ lỡ với Cloudflare không xử lý trigger. Chưa kết luận
+  nguyên nhân nội bộ và chưa tuyên bố sửa. Không reinstall hoặc đổi quyền.
+- Owner chốt tự test lần merge tiếp theo. Ghi checklist/IDs/bằng chứng ở
+  CLOUDFLARE_BUILDS, đăng kýREADME. Không gọi hook hay mutate/deploy production.
+- Fixture PostgreSQL tạm memay-drive-batch-test đã dừng sau tests. Worktree
+  giữ nguyên vì QA/rollout Drive batch chưa nghiệm thu. Không dọn tree khác.

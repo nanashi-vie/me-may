@@ -171,6 +171,7 @@ public class MediaTransactions {
         if (rows.isEmpty()) throw new AdminApiException(404, "not_found");
         UUID session = rows.getFirst();
         sessions.lock(session, actor, true);
+        sessions.requireAdmitted(mediaId);
         if (!Boolean.TRUE.equals(jdbc.queryForObject("""
                 SELECT EXISTS(SELECT 1 FROM temporary_media WHERE id=? AND session_id=?
                     AND state='READY' AND provider='LOCAL' AND generation_id IS NOT NULL)

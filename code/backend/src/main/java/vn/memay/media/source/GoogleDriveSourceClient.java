@@ -88,6 +88,28 @@ public final class GoogleDriveSourceClient implements DriveSourceClient, AutoClo
         }
     }
 
+    @Override public DriveSourceMetadata inspect(String fileId) {
+        if (fileId == null || !fileId.matches("[A-Za-z0-9_-]{1,200}"))
+            throw new SourceAccessException("INVALID_SOURCE", false, 400);
+        var task = downloads.submit(() -> {
+            var metadata = metadata("/drive/v3/files/" + fileId, fileId, tokens.get());
+            return new DriveSourceMetadata(fileId, metadata.version(), metadata.bytes(), metadata.mime());
+        });
+        try {
+            return task.get(90, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            task.cancel(true);
+            Thread.currentThread().interrupt();
+            throw access(0);
+        } catch (TimeoutException e) {
+            task.cancel(true);
+            throw new SourceAccessException("ACCESS_ERROR", true, 0);
+        } catch (ExecutionException e) {
+            if (e.getCause() instanceof SourceAccessException safe) throw safe;
+            throw new SourceAccessException("ACCESS_ERROR", true, 0);
+        }
+    }
+
     private DownloadedSource fetch(String fileId, UUID operation) throws IOException, InterruptedException {
         String token = tokens.get();
         String resource = "/drive/v3/files/" + fileId;

@@ -14,6 +14,7 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
+| Nhập ảnh bằng link Drive, tự ghép nguồn và giảm request | [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md), [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) |
 | Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |
 | Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |
 | Self-host ảnh, bỏ ảnh nội bộ; đang triển khai Native | [Storage spec](IMAGE_STORAGE_SPEC.md), [Recovery spec](IMAGE_RECOVERY_SPEC.md), [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md), [Runbook Ubuntu](IMAGE_OPERATIONS.md) |
@@ -78,3 +79,5 @@ Markdown tối đa400dòng trừ DEV_LOG; không tạo INDEX.md hoặc thư mụ
 Asset nguồn `code/frontend/public/` tiếp tục tracked; `.env`, skill local, dump,
 cookie và QA workspace ignored. `docs/assets/`/`fixtures/` là tham khảo M0 có nhãn,
 không là ảnh bán thật hoặc file importer hiện hành.
+
+- Cloudflare bỏ lỡ merge main → [trigger Builds](CLOUDFLARE_BUILDS.md): bằng chứng, giới hạn và bước owner kiểm ở lần merge sau.

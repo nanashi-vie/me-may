@@ -16,3 +16,8 @@ describe('Drive source input', () => {
     expect(() => driveFileIds(Array.from({length: 9}, (_, i) => String(i)).join('\n'))).toThrow('Tối đa 8');
   });
 });
+
+it('accepts comma-separated copied links and rejects repeated file IDs', () => {
+  expect(driveFileIds('file_a, file_b\nfile_c')).toEqual(['file_a','file_b','file_c']);
+  expect(()=>driveFileIds('file_a\nhttps://drive.google.com/file/d/file_a/view')).toThrow('trùng');
+});

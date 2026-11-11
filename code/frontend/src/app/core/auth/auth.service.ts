@@ -1,10 +1,10 @@
 import { Injectable, PLATFORM_ID, inject, signal } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
-import { catchError, of, switchMap, tap, throwError, map } from 'rxjs';
+import { catchError, of, switchMap, tap, throwError, map, Observable, defer, shareReplay, finalize } from 'rxjs';
 
 export interface CurrentAdmin { id: number; email: string; role: 'OWNER' | 'STAFF'; }
-interface CsrfResponse { headerName: string; token: string; }
+export interface CsrfResponse { headerName: string; token: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -14,10 +14,25 @@ export class AuthService {
   readonly user = this.currentUser.asReadonly();
   private readonly sessionEpoch=signal(0);
   readonly epoch=this.sessionEpoch.asReadonly();
-  invalidateSession() {this.currentUser.set(null);this.sessionEpoch.update(value=>value+1);}
+  private csrfToken: CsrfResponse | null = null;
+  private csrfPending: Observable<CsrfResponse> | null = null;
+  private csrfGeneration = 0;
+  private clearCsrf() {
+    this.csrfToken = null;
+    this.csrfPending = null;
+    this.csrfGeneration++;
+  }
+  invalidateSession() {
+    this.clearCsrf();
+    this.currentUser.set(null);
+    this.sessionEpoch.update(value => value + 1);
+  }
   private accept(user:CurrentAdmin) {
     const before=this.currentUser();
-    if(before?.id!==user.id || before?.role!==user.role)this.sessionEpoch.update(value=>value+1);
+    if(before?.id!==user.id || before?.role!==user.role) {
+      this.clearCsrf();
+      this.sessionEpoch.update(value=>value+1);
+    }
     this.currentUser.set(user);
   }
   private readonly options = { withCredentials: true, transferCache: false } as const;
@@ -51,7 +66,29 @@ export class AuthService {
     )));
   }
 
-  private csrf() {
-    return this.http.get<CsrfResponse>('/api/v1/auth/csrf', this.options);
+  csrf(): Observable<CsrfResponse> {
+    return defer(() => {
+      if (this.csrfToken) return of(this.csrfToken);
+      if (this.csrfPending) return this.csrfPending;
+      const epoch = this.epoch(), generation = this.csrfGeneration;
+      const pending = this.http.get<CsrfResponse>('/api/v1/auth/csrf', this.options).pipe(
+        map(token => {
+          if (epoch !== this.epoch() || generation !== this.csrfGeneration)
+            throw new Error('Phiên đăng nhập đã thay đổi.');
+          this.csrfToken = token;
+          return token;
+        }),
+        finalize(() => { if (this.csrfPending === pending) this.csrfPending = null; }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+      this.csrfPending = pending;
+      return pending;
+    });
+  }
+
+  refreshCsrf(stale: CsrfResponse): Observable<CsrfResponse> {
+    if (this.csrfToken && this.csrfToken.token !== stale.token) return this.csrf();
+    if (!this.csrfPending) this.clearCsrf();
+    return this.csrf();
   }
 }

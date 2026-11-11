@@ -25,39 +25,79 @@
       >
     </div>
   }
-  @if (!readonly() && sourceTargets().length) {
-    <details>
-      <summary>Ghép nhiều nguồn Drive</summary>
+  @if (!readonly()) {
+    <details class="drive-panel">
+      <summary>Nhập ảnh từ Drive hoặc tự ghép nguồn</summary>
+      <p>Dán tối đa 8 link ảnh theo thứ tự bất kỳ. Khi nhập từ Drive, xem ảnh thu nhỏ và chọn vai trò trước khi xác nhận.</p>
       <label>
-        Link file Drive hoặc File ID, mỗi mục một dòng
-        <textarea rows="4" maxlength="8192" [value]="batchInput()" [disabled]="disabled() || batchBusy()"
-          (input)="setBatch($any($event.target).value)"></textarea>
+        Link file Drive hoặc File ID
+        <textarea rows="4" maxlength="8192" [value]="batchInput()" [disabled]="disabled() || drive.active()"
+          (input)="setBatch($any($event.target).value)" placeholder="Mỗi link một dòng, hoặc phân cách bằng dấu phẩy"></textarea>
       </label>
-      <button type="button" class="secondary" [disabled]="disabled() || batchBusy()" (click)="matchBatch()">
-        Xem cách ghép ảnh
-      </button>
-      @if (batchError()) { <p class="error" role="alert">{{ batchError() }}</p> }
-      @if (batch().length) {
-        <ol>
-          @for (item of batch(); track $index; let index = $index) {
-            <li>
-              <code>{{ item.fileId }}</code>
-              <label>
-                Ảnh tương ứng
-                <select [value]="item.rowId" [disabled]="disabled() || batchBusy()"
-                  (change)="matchRow(index, $any($event.target).value)">
-                  @for (row of sourceTargets(); track row.id) {
-                    <option [value]="row.id" [selected]="row.id === item.rowId">{{ labels[row.role] }}</option>
-                  }
-                </select>
-              </label>
-              @if (item.result) { <span role="status">{{ item.result }}</span> }
-            </li>
+      <div class="actions">
+        @if (!photos.persisted()) {
+          <button type="button" [disabled]="disabled() || drive.active() || !batchInput().trim()"
+            (click)="importSources()">Tải ảnh từ Drive</button>
+        }
+        @if (sourceTargets().length) {
+          <button type="button" class="secondary" [disabled]="disabled() || drive.active() || !batchInput().trim()"
+            (click)="matchSources()">Tự ghép nguồn cho ảnh đã tải</button>
+        }
+      </div>
+      @if (drive.error()) { <p class="error" role="alert">{{ drive.error() }}</p> }
+      @if (drive.view(); as batch) {
+        <p role="status">{{ sourceState(batch.state) }}</p>
+        <div class="drive-items">
+          @for (item of batch.items; track item.id) {
+            <article class="drive-item">
+              @if (drive.thumbnail(item); as image) {
+                <img [src]="image" alt="Ảnh tương ứng với nguồn Drive" width="160" height="160" loading="lazy" />
+              }
+              <small class="drive-id">{{ item.fileId }}</small>
+              <p>{{ sourceState(item.state) }}</p>
+              @if (item.errorCode) { <p class="error">{{ sourceError(item.errorCode) }}</p> }
+              @if (batch.state === 'READY' && item.state === 'READY') {
+                @if (batch.mode === 'IMPORT') {
+                  <label>
+                    <input type="checkbox" [checked]="!!drive.choices()[item.id]?.mediaId"
+                      [disabled]="disabled() || drive.loading()"
+                      (change)="drive.selectMedia(item.id, $any($event.target).checked ? item.mediaId! : '')" />
+                    Dùng ảnh này
+                  </label>
+                  <label>Vai trò ảnh
+                    <select [value]="drive.choices()[item.id]?.role ?? ''" [disabled]="disabled() || drive.loading()"
+                      (change)="drive.selectRole(item.id, $any($event.target).value)">
+                      <option value="" disabled>Chọn vai trò</option>
+                      @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
+                    </select>
+                  </label>
+                } @else {
+                  <label>Ảnh có cùng SHA-256
+                    <select [value]="drive.choices()[item.id]?.mediaId ?? ''" [disabled]="disabled() || drive.loading()"
+                      (change)="drive.selectMedia(item.id, $any($event.target).value)">
+                      <option value="">Bỏ qua hoặc chọn ảnh</option>
+                      @for (media of item.candidates; track media) {
+                        <option [value]="media">{{ drive.targetLabel(media) }}</option>
+                      }
+                    </select>
+                  </label>
+                }
+              }
+            </article>
           }
-        </ol>
-        <button type="button" [disabled]="disabled() || batchBusy()" (click)="verifyBatch()">
-          {{ batchBusy() ? 'Đang xác minh…' : 'Xác minh các nguồn đã ghép' }}
-        </button>
+        </div>
+        @if (batch.state === 'READY') {
+          <p>Chọn một vai trò hoặc một ảnh khác nhau cho mỗi nguồn. Bạn có thể bỏ qua dòng bị lỗi.</p>
+          <button type="button" [disabled]="disabled() || !drive.canConfirm()" (click)="drive.confirm()">
+            {{ drive.loading() ? 'Đang xác nhận…' : 'Xác nhận các ảnh đã chọn' }}
+          </button>
+        }
+        @if (batch.state !== 'CONFIRMED' && batch.state !== 'EXPIRED' && batch.state !== 'CANCELLED') {
+          <div class="actions">
+            <button type="button" class="secondary" [disabled]="disabled() || drive.loading()" (click)="drive.read()">Làm mới tiến độ</button>
+            <button type="button" class="secondary" [disabled]="disabled() || drive.loading()" (click)="drive.cancel()">Hủy lô</button>
+          </div>
+        }
       }
     </details>
   }
@@ -133,7 +173,7 @@
           <p class="error" role="alert">{{ row.error }}</p>
         }
         @if (!readonly()) {
-          <fieldset [disabled]="disabled() || batchBusy() || row.sourceBusy || row.commitBusy">
+          <fieldset [disabled]="disabled() || drive.active() || row.sourceBusy || row.commitBusy">
             <label class="admin-field"
               ><span class="field-label">Vai trò ảnh</span><select
                 (change)="photos.assignRole(row.id, $any($event.target).value)"

@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
 import { describe, expect, it } from 'vitest';
@@ -55,6 +55,7 @@ describe('HomeFeaturedEditor', () => {
           useValue: {
             user: signal({ role: 'OWNER' }),
             epoch: signal(0),
+            csrf: () => TestBed.inject(HttpClient).get('/api/v1/auth/csrf'),
             invalidateSession: () => {},
           },
         },

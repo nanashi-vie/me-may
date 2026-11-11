@@ -51,6 +51,28 @@ public class LocalUploadService {
     }
 
     @Transactional
+    public Operation enqueueStaged(UUID session, UUID media, AdminUser actor,
+                                   LocalImageStore.StagedInput staged, String revision) {
+        var capability = capabilities(actor);
+        if (!"LOCAL".equals(capability.provider()) || !capability.revision().equals(revision))
+            throw new AdminApiException(409, "image_capability_changed");
+        sessions.lock(session, actor, true);
+        var row = jdbc.queryForList("""
+                SELECT id FROM temporary_media WHERE id=? AND session_id=?
+                  AND provider='LOCAL' AND state='UPLOADING' AND generation_id IS NULL FOR UPDATE
+                """,media,session);
+        if (row.isEmpty()) throw new AdminApiException(409,"media_conflict");
+        UUID generation=UUID.randomUUID();
+        UUID job=workers.getObject().enqueue(media,generation,JobKind.PROCESS,
+                staged.key(),recipe,"process:"+media,0);
+        jdbc.update("""
+                UPDATE temporary_media SET generation_id=?,
+                  delete_after=(SELECT expires_at FROM upload_session WHERE id=?) WHERE id=?
+                """,generation,session,media);
+        return operation(job,actor,false);
+    }
+
+    @Transactional
     public Operation upload(UUID session, AdminUser actor, InputStream input, String alt, String source,
                             UUID replace, UUID requestKey, String revision) {
         var capability = capabilities(actor);
@@ -79,14 +101,7 @@ public class LocalUploadService {
                 discard(store, staging);
                 return operation(existing.getFirst(), actor, false);
             }
-            UUID generation = UUID.randomUUID();
-            UUID job = workers.getObject().enqueue(intent.id(), generation, JobKind.PROCESS,
-                    staged.key(), recipe, "process:" + intent.id(), 0);
-            jdbc.update("""
-                    UPDATE temporary_media SET generation_id=?,delete_after=(SELECT expires_at FROM upload_session WHERE id=?)
-                    WHERE id=?
-                    """, generation, session, intent.id());
-            return operation(job, actor, false);
+            return enqueueStaged(session,intent.id(),actor,staged,revision);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_input_unavailable");
         } catch (java.security.NoSuchAlgorithmException e) {

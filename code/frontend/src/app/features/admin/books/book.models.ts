@@ -180,3 +180,23 @@ export interface DriveSourceStatus {
   bindingVersion: number;
   bookVersion: number | null;
 }
+
+export type DriveBatchMode = 'IMPORT' | 'MATCH';
+export interface DriveBatchCreate {
+  mode: DriveBatchMode;
+  sessionId: string | null;
+  bookId: string | null;
+  bookVersion: number | null;
+  fileIds: string[];
+  targets: {mediaId: string; generationId?: string; bindingVersion?: number}[];
+  requestKey: string;
+}
+export interface DriveBatchSelection { itemId: string; mediaId: string; role: MediaRole | null; }
+export interface DriveBatchItem {
+  id: string; fileId: string; state: string; errorCode: string | null;
+  mediaId: string | null; contentPath: string | null; candidates: string[];
+}
+export interface DriveBatchView {
+  id: string; mode: DriveBatchMode; state: string; expiresAt: string; digest: string;
+  items: DriveBatchItem[]; bookVersion: number | null; selections: DriveBatchSelection[];
+}

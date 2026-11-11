@@ -1,4 +1,4 @@
-import {BookCreate, MediaAssignment, MediaMetadata, UploadSession, TemporaryMedia, ImageCapability, ImageOperation, DriveSourceStatus} from './book.models';
+import {BookCreate, MediaAssignment, MediaMetadata, UploadSession, TemporaryMedia, ImageCapability, ImageOperation, DriveSourceStatus, DriveBatchCreate, DriveBatchView, DriveBatchSelection} from './book.models';
 import { inject, Injectable } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
@@ -101,6 +101,14 @@ export class BookApi {
   removeMedia(id: string, role: MediaRole, version: number) {
     return this.http.mutate<BookDetail>('DELETE', `/books/${id}/media/${role}?version=${version}`);
   }
+  createDriveBatch(input: DriveBatchCreate) {
+    return this.http.mutate<DriveBatchView>('POST', '/drive-image-batches', input);
+  }
+  driveBatch(id: string) { return this.http.get<DriveBatchView>('/drive-image-batches/' + id); }
+  confirmDriveBatch(id: string, input: {requestKey: string; digest: string; selections: DriveBatchSelection[]}) {
+    return this.http.mutate<DriveBatchView>('POST', '/drive-image-batches/' + id + '/confirm', input);
+  }
+  cancelDriveBatch(id: string) { return this.http.mutate<void>('DELETE', '/drive-image-batches/' + id); }
   capabilities() { return this.http.get<ImageCapability>('/media-capabilities'); }
   uploadLocal(session: string, body: FormData) {
     return this.http.upload<ImageOperation>(`/upload-sessions/${session}/media`, body);

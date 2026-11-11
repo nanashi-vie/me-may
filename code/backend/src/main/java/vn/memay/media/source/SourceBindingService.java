@@ -39,6 +39,10 @@ public class SourceBindingService {
     public UUID verify(UUID mediaId, String fileId, long expectedBindingVersion, Long expectedBookVersion,
                        UUID requestKey, AdminUser actor) {
         requireOwner(actor);
+        if (Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM drive_image_batch_item i JOIN drive_image_batch b ON b.id=i.batch_id
+                  WHERE i.media_id=? AND b.mode='IMPORT' AND NOT i.admitted)
+                """,Boolean.class,mediaId))) throw new AdminApiException(409,"drive_batch_not_confirmed");
         if (fileId == null || !fileId.matches("[A-Za-z0-9_-]{1,200}") || requestKey == null
                 || expectedBindingVersion < 0 || (expectedBookVersion != null && expectedBookVersion < 0))
             throw new AdminApiException(400, "invalid_source_request");
@@ -132,7 +136,7 @@ public class SourceBindingService {
         return target;
     }
 
-    private Target target(UUID mediaId, long actor) {
+    Target target(UUID mediaId, long actor) {
         var book = jdbc.query("""
                 SELECT g.id,g.input_sha256,g.recipe_version,b.id AS book_id,b.version AS book_version
                 FROM book_media m JOIN book_copy b ON b.id=m.book_copy_id
@@ -159,7 +163,7 @@ public class SourceBindingService {
                 rs.getObject("book_id", Long.class), rs.getObject("book_version", Long.class));
     }
 
-    private void checkVersion(UUID media, Target target, long bindingVersion, Long bookVersion) {
+    void checkVersion(UUID media, Target target, long bindingVersion, Long bookVersion) {
         if (!Objects.equals(target.bookVersion(), bookVersion)
                 || bindings.find(media).map(b -> b.bindingVersion()).orElse(0L) != bindingVersion)
             throw conflict();

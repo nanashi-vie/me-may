@@ -129,7 +129,8 @@ public class SecurityConfiguration {
                                                 .authenticationEntryPoint((req, res, ex) -> json(res, mapper, 401,
                                                                 Map.of("error", "unauthorized")))
                                                 .accessDeniedHandler((req, res, ex) -> json(res, mapper, 403,
-                                                                Map.of("error", "forbidden"))))
+                                                                Map.of("error", ex instanceof org.springframework.security.web.csrf.CsrfException
+                                                                        ? "csrf_invalid" : "forbidden"))))
                                 .formLogin(login -> login.loginProcessingUrl("/api/v1/auth/login")
                                                 .successHandler((req, res, auth) -> json(res, mapper, 200,
                                                                 CurrentAdmin.from(repository.findByEmail(auth.getName())

@@ -54,6 +54,14 @@ class GoogleDriveSourceClientTest {
         server.stop(0);
     }
 
+    @Test void inspectReadsMetadataWithoutStagingBytes() throws Exception {
+        var metadata = client.inspect("file-1");
+        assertThat(metadata).isEqualTo(new DriveSourceMetadata("file-1", "1", 3, "image/jpeg"));
+        assertThat(root.resolve("staging")).doesNotExist();
+        assertThatThrownBy(() -> client.inspect("https://another-host.test/private"))
+                .isInstanceOf(SourceAccessException.class);
+    }
+
     @Test void stagesStableBytesAndRejectsChangedVersion() throws Exception {
         var result = client.download("file-1", UUID.randomUUID());
         assertThat(result.bytes()).isEqualTo(3);
