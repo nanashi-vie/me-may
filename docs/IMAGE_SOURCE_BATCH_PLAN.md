@@ -12,7 +12,9 @@ cấp quyền dùng media và ghi VERIFIED trong transaction.
 
 **Stack** Angular 21, Spring Boot/JDBC, PostgreSQL/Flyway, Node/Sharp.
 **Spec** [IMAGE_SOURCE_BATCH_SPEC](IMAGE_SOURCE_BATCH_SPEC.md).
-**Trạng thái** ngày 11/11/2026, đã duyệt thiết kế, chưa implementation.
+**Trạng thái** 11/11/2026: Task 1–6 đã triển khai và review; Task 7 local
+đã kiểm recovery/migration, còn QA Drive thật và rollout owner.
+Checklist bên dưới là hợp đồng task; bằng chứng cuối ở DEV_LOG/runbook.
 
 ## Ràng buộc chung
 

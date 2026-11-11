@@ -1,4 +1,5 @@
 # Kiểm chứng nền tảng, catalogue và online
+Drive batch 11/11: backend/FE/recovery fixture và giới hạn QA xem [checkpoint](DEV_LOG.md#2026-11-11--drive-batch--implementation-và-regression), [runbook](IMAGE_OPERATIONS.md#nhập-và-ghép-nguồn-drive-theo-lô-v31).
 
 Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
 Bằng chứng local S8 và giới hạn đo ở [IMAGE_OPERATIONS](IMAGE_OPERATIONS.md#6-bằng-chứng-local-s8).
@@ -394,7 +395,6 @@ người dùng tự kiểm các gate hạ tầng thay agent/operator.
 - Worktree dev:186test, build SSR/Workers và proxy PASS. Playwright1280×900/
   390×844 xác nhận logo hiện cả SSR/cache/reload,400ms + fade120ms, reduced-motion
   bỏ fade, đổi route không lặp và không overflow. Chưa deploy bản logo này.
-
 Rà soát tổng thể local05/11 (test/build/audit/workflow), giới hạn và gate:
 [DEV_LOG S040-C02](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow).
 [Nhập giá/kg, tồn gộp và note riêng06/11](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026).

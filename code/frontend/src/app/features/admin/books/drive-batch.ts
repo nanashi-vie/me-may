@@ -37,6 +37,7 @@ export class DriveBatch {
   private reading = false;
   private attempts = 0;
   private session: string | null = null;
+  private restoredMedia: Set<string> | undefined;
   private pendingCreate: DriveBatchCreate | null = null;
   private confirmRequest: {requestKey: string; digest: string; selections: DriveBatchSelection[]} | null = null;
   private readonly stopped = new Subject<void>();
@@ -73,7 +74,7 @@ export class DriveBatch {
     this.stopped.next();
     this.view.set(null); this.error.set(''); this.loading.set(false); this.choices.set({});
     this.reading = false; this.attempts = 0; this.session = null;
-    this.pendingCreate = null; this.confirmRequest = null;
+    this.pendingCreate = null; this.confirmRequest = null; this.restoredMedia = undefined;
   }
   private remember() {
     if (!this.key) return;
@@ -92,10 +93,10 @@ export class DriveBatch {
       this.loading.set(true);
       this.session = saved.session;
       if (saved.session) {
-        const session = await firstValueFrom(this.api.session(saved.session).pipe(takeUntil(this.stopped)));
+        const session = await this.photos.restoreDriveSession(saved.session);
         if (generation !== this.generation) return;
         if (session.state !== 'OPEN') { this.forget(); return; }
-        this.photos.restoreDriveSession(saved.session);
+        this.restoredMedia = new Set(session.media.map(media=>media.id));
       }
       if (saved.id) {
         this.view.set({id:saved.id} as DriveBatchView);
@@ -150,7 +151,8 @@ export class DriveBatch {
       }
       this.choices.set(choices);
     }
-    if (view.state === 'CONFIRMED') this.photos.acceptDriveBatch(view,this.session);
+    if (view.state === 'CONFIRMED') this.photos.acceptDriveBatch(view,this.session,this.restoredMedia);
+    this.restoredMedia = undefined;
   }
   selectMedia(item: string, mediaId: string) {
     this.choices.update(rows => ({...rows,[item]:{mediaId,role:rows[item]?.role??null}}));
@@ -221,6 +223,8 @@ export class DriveBatch {
     this.timer=setTimeout(()=>void this.read(),delay);
   }
   private fail(error: unknown) {
+    if (error instanceof HttpErrorResponse && error.status >= 400 && error.status < 500
+        && ![408,429].includes(error.status)) { this.pendingCreate = null; this.remember(); }
     if (error instanceof HttpErrorResponse && [401,403,404,410].includes(error.status)) {
       this.forget();
       this.clearTimer();

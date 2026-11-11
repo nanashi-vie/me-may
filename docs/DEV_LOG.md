@@ -3197,3 +3197,46 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đang chạy fixture nhập link→lưu sách→mất derived→rebuild; chưa coi là PASS.
   Không truy cập hoặc thay đổi production; chưa có số đo QA Drive thật.
 - Branch codex/drive-source-batch; Task 5 commit f565110, Task 6 còn local.
+
+## 2026-11-11 — Drive batch — Review cuối và bàn giao code
+
+- Native, base 7d817e9; fresh reviewer gpt-6-astra phát hiện 3 Important,
+  không Critical/Minor. Sửa hydrate queue chung để không mất role khi reload,
+  chỉ nhận media còn trong session khi đọc receipt lịch sử, và xóa pending
+  payload khi create bị từ chối dứt khoát. Regression 3 ca RED→GREEN;
+  cả 26 test batch/queue đạt, frontend toàn bộ 284/284 đạt sau sửa.
+- Backend `TEST_DB_URL` trỏ PostgreSQL Docker fixture 127.0.0.1:55469,
+  `./mvnw -o clean verify`: 293 total, 0 lỗi, 3 live skip. Test mới
+  DriveBatchMigrationTest: 1 đạt, V30→V31 giữ sách/listing/Cloudinary media,
+  employee_profile và checksum V1–V30. Không chạy Flyway trên production.
+- DriveBatchRecoveryTest dùng Drive fixture và worker completion thật qua API,
+  xác minh 2 file chỉ tải bytes 2 lần, confirm/lưu sách giữ VERIFIED, xóa
+  derived rồi rebuild cùng generation/recipe thành công; thêm 1 lần tải nguồn.
+- Frontend `npm run build:workers` đạt; `check:workers:proxy` đạt. Worker 10/10,
+  CLI media operations 4/4 đạt. Không thêm dependency, V21–V30 giữ nguyên.
+- Quyết định triển khai: xem mục dưới. Chưa đo lô 8 ảnh Drive thật/latency/RSS,
+  chưa deploy V31 hoặc frontend mới. Owner vẫn merge main/deploy; backend trước
+  frontend, smoke một sách nháp mới. R2 restore đã có xác nhận owner, không lặp.
+- Owner yêu cầu tiếp theo điều tra triệt để trigger Cloudflare bỏ lỡ main;
+  sẽ đối chiếu Git integration, build filters và lịch sử sau bàn giao Drive.
+
+### Quyết định trong triển khai Drive batch
+
+1. Reservation dùng temporary_media UPLOADING và khóa session hiện có;
+   enqueue/item handoff atomic. Sai sẽ có nguy cơ vượt capacity/mồ côi staging.
+2. Handler ghép ở Task 3 sau enqueueStaged để commit luôn biên dịch được.
+   Lease 5 phút vượt timeout tải 180 giây, không thêm heartbeat cho tải;
+   sai giới hạn timeout sẽ gây retry hoặc staging thừa, callback cũ bị từ chối.
+3. Client giữ functional adapter cũ bằng inspect mặc định trả unavailable;
+   production/fixture batch cài inspect rõ ràng. Adapter thiếu sẽ không confirm.
+4. Mọi queue Drive dùng cùng advisory lock và kiểm lease lẫn nhau;
+   giảm tranh CPU/bandwidth, đánh đổi throughput tuần tự.
+5. Confirm dùng coordinator để inspect ngoài transaction; MATCH có thể bỏ
+   generation trong input, server chụp snapshot. Digest/confirm vẫn kiểm đích;
+   sai snapshot sẽ bị conflict và cần tạo lại lô.
+6. Thêm DELETE cancel để owner bỏ lô và trả slot; admission ghép vào SQL để
+   không tăng query budget lưu sách. Sai có thể chặn nhầm ảnh hoặc giữ slot.
+7. Recovery test đặt ở package media để dùng fixture JPEG/worker thật;
+   khác vị trí plan, không đổi contract sản phẩm.
+8. Không coi fixture là benchmark/live rollout: QA credentials chưa có ở
+   session, rollout vẫn do owner. Chi phí là cần smoke/đo thật sau triển khai.

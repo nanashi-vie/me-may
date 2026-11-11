@@ -5,13 +5,17 @@ Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - Nguồn Drive (11/11): owner chọn nhập ảnh chỉ bằng link, tự ghép SHA-256
   khi đã upload và giảm request. [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md)
-  đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) đang triển khai Native từ task 1.
+  đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) đã triển khai Task 1–6.
+  Backend clean verify 293 ca (3 skip), recovery fixture đạt; review cuối
+  phát hiện 3 lỗi restore/retry đã sửa; FE 284 đạt, build/proxy đạt. QA/rollout
+  V31 do owner thực hiện; chưa có benchmark Drive thật.
 - R6.1 (10/11): owner xác nhận ca Drive thật đạt, nguồn VERIFIED v1. Sau khi
   đổi bind QA, worker nhận 200/401/404 đúng kỳ vọng. Owner bỏ qua chạy lại upload.
   [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
 - R6 (11/11): owner xác nhận production V30, bind riêng 8081, catalogue 200 và
   recipe v1 khớp worker. Nginx đọc health backend qua tên service đạt.
-  Frontend production còn bundle ảnh nội bộ cũ. Cần deploy Worker me-may từ
+  Frontend production đã có bộ 8 ảnh theo xác nhận owner; điều tra trigger
+  Cloudflare bị bỏ lỡ đang chờ sau triển khai Drive. Trước đó cần deploy từ
   main 0f5ed73 và mở lại form. Wrangler local chưa có credential Cloudflare.
 - S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
   ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu

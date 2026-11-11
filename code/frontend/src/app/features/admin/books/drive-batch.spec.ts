@@ -22,7 +22,7 @@ describe('Drive batch lifecycle', () => {
       cancelDriveBatch:vi.fn(()=>of(null)), session:vi.fn(()=>of({state:'OPEN'})) };
     photos={ persisted:signal(null), rows:signal([]), sessionId:signal('session-1'),
       driveContext:vi.fn(async()=>({sessionId:'session-1',bookId:null,bookVersion:null,targets:[]})),
-      acceptDriveBatch:vi.fn(), restoreDriveSession:vi.fn() };
+      acceptDriveBatch:vi.fn(), restoreDriveSession:vi.fn(async()=>({state:'OPEN',media:[]})) };
     auth={user:signal({id:1}), epoch:signal(1)};
     TestBed.configureTestingModule({providers:[DriveBatch,{provide:BookApi,useValue:api},
       {provide:BookUploadQueue,useValue:photos},{provide:AuthService,useValue:auth}]});
@@ -86,7 +86,7 @@ describe('Drive batch lifecycle', () => {
     sessionStorage.setItem('memay.drive-batch.1.new',JSON.stringify({id:'batch-1',session:'session-1'}));
     const batch=TestBed.inject(DriveBatch);TestBed.tick();
     await new Promise(resolve=>setTimeout(resolve,0));
-    expect(api.session).toHaveBeenCalledWith('session-1');
+    expect(photos.restoreDriveSession).toHaveBeenCalledWith('session-1');
     expect(api.driveBatch).toHaveBeenCalledTimes(1);
     expect(api.createDriveBatch).not.toHaveBeenCalled();
     expect(batch.view()?.state).toBe('READY');
@@ -113,4 +113,44 @@ describe('Drive batch lifecycle', () => {
     expect(api.createDriveBatch.mock.calls[1][0].fileIds).toEqual(['file-1']);
   });
 
+  it('accepts corrected links after a definitive capacity rejection',async()=>{
+    const {throwError}=await import('rxjs');
+    const {HttpErrorResponse}=await import('@angular/common/http');
+    api.createDriveBatch.mockReturnValueOnce(throwError(()=>new HttpErrorResponse({status:409,error:{error:'media_limit'}})));
+    const batch=TestBed.inject(DriveBatch);TestBed.tick();
+    await batch.submit('IMPORT','file-1,file-2');
+    await batch.submit('IMPORT','file-1');
+    expect(api.createDriveBatch.mock.calls[1][0].fileIds).toEqual(['file-1']);
+  });
+
+});
+
+describe('Drive batch with the actual photo queue',()=>{
+  afterEach(()=>sessionStorage.clear());
+  for (const queueFirst of [true,false]) it('hydrates existing photos without losing roles, queueFirst='+queueFirst,async()=>{
+    await hydrate(queueFirst,true);
+  });
+  it('does not resurrect a removed photo from a historical receipt',async()=>{await hydrate(false,false);});
+  async function hydrate(queueFirst:boolean,keepImported:boolean) {
+    sessionStorage.clear();
+    sessionStorage.setItem('memay.image-session.new',JSON.stringify({session:'session-1',roles:{manual:'FRONT',imported:'BACK'}}));
+    sessionStorage.setItem('memay.drive-batch.1.new',JSON.stringify({id:'batch-1',session:'session-1'}));
+    const response=new Subject<any>();
+    const media=(id:string,key:string)=>({id,requestKey:key,jobId:'job-'+id,provider:'LOCAL',state:'READY',contentPath:'/preview/'+id});
+    const api={session:vi.fn(()=>response),driveBatch:()=>of({id:'batch-1',mode:'IMPORT',state:'CONFIRMED',digest:'d',
+      selections:[{itemId:'imported',mediaId:'import-media',role:'BACK'}],
+      items:[{id:'imported',fileId:'file',mediaId:'import-media',contentPath:'/preview/import-media',state:'READY',candidates:['import-media']}]})};
+    TestBed.configureTestingModule({providers:[BookUploadQueue,DriveBatch,{provide:BookApi,useValue:api},
+      {provide:AuthService,useValue:{user:signal({id:1}),epoch:signal(1)}}]});
+    const queue=TestBed.inject(BookUploadQueue);
+    if(queueFirst) queue.restoreDraft();
+    TestBed.inject(DriveBatch);TestBed.tick();
+    if(!queueFirst) queue.restoreDraft();
+    const current=[media('manual-media','manual'),...(keepImported?[media('import-media','imported')]:[])];
+    response.next({id:'session-1',state:'OPEN',media:current});response.complete();
+    await new Promise(resolve=>setTimeout(resolve,0));
+    expect(queue.rows().map(row=>[row.mediaId,row.role])).toEqual(keepImported?
+      [['manual-media','FRONT'],['import-media','BACK']]:[['manual-media','FRONT']]);
+    expect(JSON.parse(sessionStorage.getItem('memay.image-session.new')!).roles.manual).toBe('FRONT');
+  }
 });
