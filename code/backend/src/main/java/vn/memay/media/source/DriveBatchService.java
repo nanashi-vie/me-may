@@ -40,6 +40,8 @@ public class DriveBatchService {
 
     @Transactional
     public View create(Create input, AdminUser actor) {
+        // Acquire the exclusive owner lock before requireOwner takes a shared lock.
+        db.queryForObject("SELECT id FROM admin_user WHERE id=? FOR UPDATE", Long.class, actor.getId());
         sessions.requireOwner(actor);
         if (input == null || input.mode() == null || input.requestKey() == null || input.fileIds() == null
                 || input.fileIds().isEmpty() || input.fileIds().size() > 8
@@ -48,8 +50,6 @@ public class DriveBatchService {
                 || (input.sessionId() == null) == (input.bookId() == null)
                 || (input.bookId() == null) != (input.bookVersion() == null))
             throw invalid();
-        // Serialize creates per owner before checking idempotency or capacity.
-        db.queryForObject("SELECT id FROM admin_user WHERE id=? FOR UPDATE", Long.class, actor.getId());
         String fingerprint = hash(input);
         var previous = db.queryForList("SELECT id,fingerprint FROM drive_image_batch WHERE actor_id=? AND request_key=?",
                 actor.getId(), input.requestKey());
