@@ -56,4 +56,48 @@ describe('AdminHttp', () => {
    api.get('/taxonomy').subscribe({error:()=>{}});const old=http.expectOne('/api/v1/admin/taxonomy');
    auth.invalidateSession();const changed=auth.epoch();old.flush({}, {status:401,statusText:'Unauthorized'});expect(auth.epoch()).toBe(changed);
  });
+  it('shares one CSRF fetch for concurrent mutations and reuses it', () => {
+    api.mutate('POST','/books',{}).subscribe();
+    api.mutate('PATCH','/books/1',{}).subscribe();
+    const csrf=http.match('/api/v1/auth/csrf');
+    expect(csrf).toHaveLength(1);
+    csrf.forEach(request=>request.flush({token:'shared',headerName:'X-CSRF-TOKEN'}));
+    http.expectOne('/api/v1/admin/books').flush({});
+    http.expectOne('/api/v1/admin/books/1').flush({});
+    api.mutate('POST','/books',{}).subscribe();
+    http.expectNone('/api/v1/auth/csrf');
+    http.expectOne('/api/v1/admin/books').flush({});
+  });
+  it('refreshes once only for an identified CSRF failure', () => {
+    let failed=0;
+    api.mutate('POST','/books',{}).subscribe({error:()=>failed++});
+    http.expectOne('/api/v1/auth/csrf').flush({token:'old',headerName:'X-CSRF-TOKEN'});
+    http.expectOne('/api/v1/admin/books').flush({error:'csrf_invalid'},{status:403,statusText:'Forbidden'});
+    http.expectOne('/api/v1/auth/csrf').flush({token:'new',headerName:'X-CSRF-TOKEN'});
+    const retry=http.expectOne('/api/v1/admin/books');
+    expect(retry.request.headers.get('X-CSRF-TOKEN')).toBe('new');
+    retry.flush({error:'csrf_invalid'},{status:403,statusText:'Forbidden'});
+    expect(failed).toBe(1);
+    http.expectNone('/api/v1/auth/csrf');
+  });
+  it('does not retry role errors or network errors', () => {
+    api.mutate('POST','/books',{}).subscribe({error:()=>{}});
+    http.expectOne('/api/v1/auth/csrf').flush({token:'cached',headerName:'X-CSRF-TOKEN'});
+    http.expectOne('/api/v1/admin/books').flush({error:'forbidden'},{status:403,statusText:'Forbidden'});
+    http.expectNone('/api/v1/auth/csrf');
+    api.mutate('POST','/books',{}).subscribe({error:()=>{}});
+    http.expectOne('/api/v1/admin/books').error(new ProgressEvent('network'));
+    http.expectNone('/api/v1/auth/csrf');
+  });
+  it('discards a late token after logout and never starts the old mutation', () => {
+    api.mutate('POST','/books',{}).subscribe({error:()=>{}});
+    const old=http.expectOne('/api/v1/auth/csrf');
+    TestBed.inject(AuthService).invalidateSession();
+    old.flush({token:'stale',headerName:'X-CSRF-TOKEN'});
+    http.expectNone('/api/v1/admin/books');
+    api.mutate('POST','/books',{}).subscribe();
+    http.expectOne('/api/v1/auth/csrf').flush({token:'current',headerName:'X-CSRF-TOKEN'});
+    http.expectOne('/api/v1/admin/books').flush({});
+  });
+
 });

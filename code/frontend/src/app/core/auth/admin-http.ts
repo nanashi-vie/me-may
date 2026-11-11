@@ -4,7 +4,7 @@ import { HttpClient, HttpEvent, HttpParams, HttpXhrBackend } from '@angular/comm
 import { Observable, switchMap, catchError, defer, throwError } from 'rxjs';
 import { PublicApi } from '../../features/catalogue/public-api';
 import { tap } from 'rxjs';
-import { AuthService } from './auth.service';
+import { AuthService, CsrfResponse } from './auth.service';
 export const ADMIN_UPLOAD_HTTP = new InjectionToken<HttpClient>('Admin upload XHR', {
   providedIn: 'root',
   factory: () => new HttpClient(new HttpXhrBackend(inject(XhrFactory))),
@@ -38,30 +38,34 @@ export class AdminHttp {
     path: string,
     body?: unknown,
   ): Observable<T> {
-    return this.guarded(this.csrf().pipe(
-      switchMap((csrf) =>
+    return this.guarded(this.withCsrf((csrf) =>
         this.http.request<T>(method, '/api/v1/admin' + path, {
           ...this.options,
           body,
           headers: { [csrf.headerName]: csrf.token },
         }),
-      ),
-      tap(() => this.publicApi.invalidateMetadata()),
-    ));
+    ).pipe(tap(() => this.publicApi.invalidateMetadata())));
   }
   upload<T>(path: string, body: FormData): Observable<HttpEvent<T>> {
-    return this.guarded(this.csrf().pipe(
-      switchMap((csrf) =>
+    return this.guarded(this.withCsrf((csrf) =>
         this.uploadHttp.post<T>('/api/v1/admin' + path, body, {
           ...this.options,
           headers: { [csrf.headerName]: csrf.token },
           observe: 'events',
           reportProgress: true,
         }),
-      ),
     ));
   }
-  private csrf() {
-    return this.http.get<{ headerName: string; token: string }>('/api/v1/auth/csrf', this.options);
+  private withCsrf<T>(send: (csrf: CsrfResponse) => Observable<T>): Observable<T> {
+    return defer(() => {
+      const epoch = this.auth.epoch();
+      return this.auth.csrf().pipe(switchMap(csrf => send(csrf).pipe(
+        catchError(error => {
+          if (epoch === this.auth.epoch() && error.status === 403 && error.error?.error === 'csrf_invalid')
+            return this.auth.refreshCsrf(csrf).pipe(switchMap(send));
+          return throwError(() => error);
+        }),
+      )));
+    });
   }
 }
