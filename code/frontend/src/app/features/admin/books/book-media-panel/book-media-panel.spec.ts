@@ -54,6 +54,19 @@ describe('photo panel accessible order and readonly mode',()=>{
   expect(submit).toHaveBeenCalledExactlyOnceWith('MATCH', 'file_a, file_b');
   expect(verify).not.toHaveBeenCalled();
  });
+ it('offers Drive import when editing a saved book without photos',()=>{
+  TestBed.configureTestingModule({providers:[provideHttpClient(),BookUploadQueue,{provide:BookApi,useValue:{cancelSession:()=>of(null)}}]});
+  const q=TestBed.inject(BookUploadQueue);
+  q.configure({...testBook(),media:[]});
+  const f=TestBed.createComponent(BookMediaPanel);
+  f.detectChanges();
+  const input=f.nativeElement.querySelector('.drive-panel textarea') as HTMLTextAreaElement;
+  input.value='https://drive.google.com/file/d/file_a/view';
+  input.dispatchEvent(new Event('input'));f.detectChanges();
+  const button=Array.from(f.nativeElement.querySelectorAll('.drive-panel button') as NodeListOf<HTMLButtonElement>)
+   .find(button=>button.textContent?.includes('Tải ảnh từ Drive'));
+  expect(button).toBeDefined();expect(button?.disabled).toBe(false);
+ });
  it('changes a role with the dropdown available to keyboard and mobile users',()=>{
   const {q,f}=setup();expect(Array.from(f.nativeElement.querySelectorAll('.photo-slot select') as NodeListOf<HTMLSelectElement>).map(s=>s.value)).toEqual(['FRONT','BACK']);
   const role=f.nativeElement.querySelector('.photo-slot select') as HTMLSelectElement;role.value='BACK';role.dispatchEvent(new Event('change'));f.detectChanges();

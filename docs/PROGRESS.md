@@ -3,6 +3,9 @@
 Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Đã sửa nút nhập Drive bị ẩn khi sửa sách đã lưu (11/11).
+  Tái dùng phiên ảnh LOCAL và Gắn ảnh vào sách từng ảnh. Frontend 286/286
+  đạt, build Workers đạt; chờ owner merge main/deploy và smoke Drive thật.
 - Nguồn Drive (11/11): owner chọn nhập ảnh chỉ bằng link, tự ghép SHA-256
   khi đã upload và giảm request. [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md)
   đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) đã triển khai Task 1–6.

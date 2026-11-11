@@ -321,7 +321,6 @@ export class BookUploadQueue {
     const capability = await this.capabilities();
     if (capability.provider !== 'LOCAL') throw new Error('Backend chưa bật nhập ảnh LOCAL.');
     if (mode === 'IMPORT') {
-      if (this.persisted()) throw new Error('Nhập từ Drive hiện dùng cho sách mới.');
       this.localSession = true;
       const sessionId = await this.session();
       this.rememberLocal();
@@ -393,7 +392,7 @@ export class BookUploadQueue {
         this.rows.update(rows => [...rows, {
           id: item.id, role, file: null, preview: item.contentPath!, mediaId: selection.mediaId,
           state: 'READY', progress: 100, error: '', alt: '', sourceRef: '', storedAlt: '', storedSource: '',
-          provider: 'LOCAL', sourceStatus: 'VERIFIED', sourceFile: item.fileId,
+          provider: 'LOCAL', pendingLocal: !!this.persisted(), sourceStatus: 'VERIFIED', sourceFile: item.fileId,
         }]);
       }
       this.rememberLocal();

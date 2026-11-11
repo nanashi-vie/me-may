@@ -3258,3 +3258,34 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   CLOUDFLARE_BUILDS, đăng kýREADME. Không gọi hook hay mutate/deploy production.
 - Fixture PostgreSQL tạm memay-drive-batch-test đã dừng sau tests. Worktree
   giữ nguyên vì QA/rollout Drive batch chưa nghiệm thu. Không dọn tree khác.
+
+## 2026-11-11 — Drive button — Bắt đầu sửa lỗi
+
+- Owner báo dán link nhưng không có nút nhận ảnh. Template ẩn IMPORT khi
+  persisted có giá trị, MATCH chỉ hiện khi có ảnh LOCAL READY; sách đã lưu
+  chưa có ảnh không có thao tác nào. driveContext cũng từ chối persisted.
+- Phạm vi sửa: cho nhập vào session tạm khi sửa sách, đánh dấu pendingLocal
+  và dùng commitLocal hiện có để gắn ảnh, giữ version/backend gate.
+- dev đã fast-forward origin/dev e2e6759; chưa sửa code, chưa chạy test.
+
+### Drive button — Regression và bản sửa
+
+- Bỏ điều kiện ẩn nút trên sách đã lưu và guard driveContext tương ứng.
+  acceptDriveBatch đánh dấu pendingLocal khi sửa sách, tái dùng commitLocal;
+  không thay backend/schema và không tự động ghi sách khi xác nhận lô.
+- Test RED: hai ca mới bắt đúng nút bị ẩn và lỗi từ chối sách đã lưu.
+  Sửa setup DOM để không tạo deferred ảnh cũ trước ca sách trống.
+- GREEN: targeted 33/33; toàn frontend `npm test` 50 file, 286/286 đạt.
+  Build Workers sandbox dừng 134 không có chẩn đoán, đang chạy lại ngoài
+  sandbox; chưa smoke trình duyệt hoặc Drive thật/production.
+
+- Build Workers ngoài sandbox đạt (exit 0), không warning. Chưa chạy lại
+  backend suite vì không thay backend/schema; đã đọc commitReplacement để
+  xác minh quyền, version và admission vẫn dùng đường hiện có.
+- Kiểm diff whitespace và trần dòng các tài liệu thay đổi đạt; chỉ mục
+  hiện có vẫn trỏ đúng spec. Bước tiếp theo owner merge main/deploy frontend,
+  thử sách đã lưu chưa có ảnh: dán link → Tải ảnh từ Drive → chọn vai trò
+  → xác nhận → Gắn ảnh vào sách từng ảnh. Không deploy trong phiên này.
+- `npm run check:workers:proxy` đạt trên workerd local (API/CSRF/multipart/
+  cookie/context/backend-down). Đóng checkpoint, commit và push lên dev;
+  không merge hoặc push main.

@@ -35,10 +35,8 @@
           (input)="setBatch($any($event.target).value)" placeholder="Mỗi link một dòng, hoặc phân cách bằng dấu phẩy"></textarea>
       </label>
       <div class="actions">
-        @if (!photos.persisted()) {
-          <button type="button" [disabled]="disabled() || drive.active() || !batchInput().trim()"
-            (click)="importSources()">Tải ảnh từ Drive</button>
-        }
+        <button type="button" [disabled]="disabled() || drive.active() || !batchInput().trim()"
+          (click)="importSources()">Tải ảnh từ Drive</button>
         @if (sourceTargets().length) {
           <button type="button" class="secondary" [disabled]="disabled() || drive.active() || !batchInput().trim()"
             (click)="matchSources()">Tự ghép nguồn cho ảnh đã tải</button>
