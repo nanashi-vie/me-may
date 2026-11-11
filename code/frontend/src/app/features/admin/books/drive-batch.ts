@@ -18,18 +18,27 @@ export class DriveBatch {
   readonly loading = signal(false);
   readonly choices = signal<Record<string, {mediaId: string; role: MediaRole | null}>>({});
   readonly active = computed(() => this.loading() || !!this.view() && !['CONFIRMED', 'CANCELLED', 'EXPIRED'].includes(this.view()!.state));
-  readonly canConfirm = computed(() => {
+  readonly confirmProblem = computed(() => {
     const view = this.view();
-    if (!view || view.state !== 'READY' || this.loading()) return false;
+    if (!view || view.state !== 'READY' || this.loading()) return 'Chờ xử lý xong lô ảnh.';
     const selections = this.selected();
-    if (!selections.length || new Set(selections.map(row => row.mediaId)).size !== selections.length) return false;
+    if (!selections.length) return 'Chọn ít nhất một ảnh sẵn sàng để xác nhận.';
+    if (new Set(selections.map(row => row.mediaId)).size !== selections.length)
+      return 'Mỗi nguồn phải ghép với một ảnh khác nhau.';
     if (view.mode === 'IMPORT') {
       const roles = selections.map(row => row.role);
-      return roles.every(role => !!role && !this.photos.rows().some(row => row.role === role))
-        && new Set(roles).size === roles.length && this.photos.rows().length + roles.length <= 8;
+      if (roles.some(role => !role)) return 'Chọn vai trò cho từng ảnh được dùng.';
+      for (const role of roles) {
+        if (roles.filter(value => value === role).length > 1)
+          return `Vai trò ${MEDIA_LABELS[role!]} đang được chọn cho nhiều ảnh. Hãy đổi vai trò hoặc bỏ chọn ảnh trùng.`;
+        if (this.photos.rows().some(row => row.role === role))
+          return `Bộ ảnh đã có vai trò ${MEDIA_LABELS[role!]}. Chọn vai trò còn trống hoặc dùng Thay ảnh ở ảnh hiện có.`;
+      }
+      if (this.photos.rows().length + roles.length > 8) return 'Tối đa 8 ảnh. Bỏ chọn ảnh vượt giới hạn.';
     }
-    return true;
+    return '';
   });
+  readonly canConfirm = computed(() => !this.confirmProblem());
   private key = '';
   private authEpoch = -1;
   private generation = 0;
@@ -139,6 +148,8 @@ export class DriveBatch {
     this.schedule();
   }
   private adopt(view: DriveBatchView) {
+    if (this.confirmRequest && view.state !== 'CONFIRMED' && view.digest !== this.confirmRequest.digest)
+      this.confirmRequest = null;
     this.view.set(view);
     if (view.state === 'READY' && !Object.keys(this.choices()).length) {
       const freeRoles = MEDIA_ROLES.filter(role => !this.photos.rows().some(row => row.role === role));
@@ -168,7 +179,10 @@ export class DriveBatch {
       .map(item=>({itemId:item.id,...this.choices()[item.id]}));
   }
   thumbnail(item: DriveBatchItem) {
-    if (this.view()?.mode==='IMPORT') return item.contentPath ? item.contentPath + '?size=320' : '';
+    if (this.view()?.mode==='IMPORT') {
+      const path = this.photos.rows().find(row=>row.mediaId===item.mediaId)?.preview ?? item.contentPath;
+      return path ? path + (path.includes('?')?'&':'?') + 'size=320' : '';
+    }
     const media = this.choices()[item.id]?.mediaId;
     return this.photos.rows().find(row=>row.mediaId===media)?.preview ?? '';
   }

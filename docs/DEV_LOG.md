@@ -3289,3 +3289,51 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - `npm run check:workers:proxy` đạt trên workerd local (API/CSRF/multipart/
   cookie/context/backend-down). Đóng checkpoint, commit và push lên dev;
   không merge hoặc push main.
+
+## 2026-11-11 — Drive flow — Điều tra xác nhận bị khóa
+
+- Owner yêu cầu rà toàn luồng vì READY, chọn đủ vai trò nhưng không xác nhận.
+  Đã đọc template/DriveBatch/queue/editor và đối chiếu tab owner đang mở:
+  5 checkbox bật, role DOM BACK/FRONT/SPINE/INSIDE_1/INSIDE_2, nút disabled.
+- Chọn lại cùng các giá trị bằng UI khiến nút bật. Không bấm confirm, không
+  gắn ảnh hoặc lưu sách thật. Giả thuyết select value được set trước options
+  động, DOM hiển thị khác choices; cần regression DOM để chứng minh.
+- Phạm vi: tái hiện và sửa lựa chọn, kiểm import/confirm/commit/reload/retry,
+  giữ kiểm quyền/version/admission. Chưa có kiểm thử mới chạy. dev 644ad31.
+
+### Drive flow — Nguyên nhân và verification
+
+- Test DOM RED chứng minh 5 dropdown đều hiện FRONT dù choices là
+  FRONT/BACK/SPINE/INSIDE_1/INSIDE_2. Angular set select.value trước khi
+  @for tạo options; gắn selected trên từng option khắc phục cùng mẫu
+  dropdown role của ảnh hiện có. Áp dụng cả MATCH.
+- Thêm lý do khóa xác nhận cụ thể. Test 8 ảnh kiểm role trùng/bỏ chọn/chọn
+  lại; không bỏ validation. RED→GREEN thêm hai lỗi liên quan: confirmRequest
+  giữ digest cũ sau refresh 409, và thumbnail IMPORT giữ endpoint temporary
+  sau commit. Snapshot đổi mới tạo lại request; snapshot giữ nguyên vẫn retry
+  cùng key. Thumbnail ưu tiên preview hiện hành của queue.
+- Test panel đi từ PROCESSING→READY, kiểm role hiển thị, đổi BACK/FRONT,
+  refresh, confirm, pendingLocal VERIFIED và commit 5 ảnh theo version.
+  Toàn frontend `npm test` 50 files, 289/289 đạt ở bản cuối; không stderr.
+- Backend trên PostgreSQL Docker riêng 127.0.0.1:55470/me_may_test. Lượt đầu
+  `./mvnw -o clean verify` 294 total/0 fail/0 error/3 live skip. Thêm test
+  savedBookAcceptsFiveImportedPhotosOneAtATimeAndKeepsReceiptAfterReload:
+  API chặn commit trước confirm, confirm không sửa sách, gắn từng ảnh theo
+  version, retry không nhân đôi, đọc lại đủ 5 media/VERIFIED, session rỗng,
+  receipt vẫn replay được; đúng 5 byte-download fixture. Targeted
+  DriveBatchRecoveryTest 2/2 đạt, bao gồm lost-derived rebuild hiện có.
+- Browser Brave local :4208 với HTTP fixture :18882, không nối production:
+  role ban đầu đúng, cảnh báo trùng vai trò, đổi vai trò→refresh→confirm,
+  5 nút gắn ảnh, save khóa khi còn pending; gắn 1→reload giữ 4 ảnh pending,
+  gắn đủ→reload đủ 5 vai trò và save bật. Đã đóng tab và dừng hai server QA.
+- Chưa đo Drive thật hoặc thay dữ liệu production. Tab owner chỉ được chọn
+  lại đúng vai trò đang hiển thị để mở khóa nút, chưa confirm/commit sách thật.
+- Verification cuối: backend `./mvnw -o clean verify` 295 total, 0 failures,
+  0 errors, 3 live skip (DB fixture như trên); frontend 289/289 đạt. Build
+  Workers đạt không warning. Proxy sandbox EPERM khi bind localhost; chạy
+  lại ngoài sandbox đạt POST/query/cookie/CSRF/multipart/context/backend-down.
+- Diff whitespace, trần dòng và local link của tài liệu sửa đạt; `.env` vẫn
+  ignored, không thêm dependency. Đang commit/push dev; owner merge main và
+  deploy frontend. Không đổi backend sản phẩm/schema, không cần migration mới.
+- Đã dừng container memay-drive-flow-test; không đổi container PostgreSQL
+  sẵn có. Frontend/API fixture QA đã dừng; chưa smoke lại production.

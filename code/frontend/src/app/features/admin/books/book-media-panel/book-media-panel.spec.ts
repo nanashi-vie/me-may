@@ -1,7 +1,10 @@
 import { provideHttpClient } from '@angular/common/http';
 import { vi } from 'vitest';
-import { TestBed, DeferBlockState } from '@angular/core/testing';
+import { TestBed, DeferBlockState, DeferBlockBehavior } from '@angular/core/testing';
 import { of } from 'rxjs';
+import { signal } from '@angular/core';
+import { AuthService } from '../../../../core/auth/auth.service';
+import { DriveBatchView, MediaRole } from '../book.models';
 import { BookMediaPanel } from './book-media-panel';
 import { BookUploadQueue } from '../book-upload-queue';
 import { BookApi } from '../book-api';
@@ -34,6 +37,60 @@ describe('BookMediaPanel protected thumbnails',()=>{
   const fixture=TestBed.createComponent(BookMediaPanel);fixture.detectChanges();
   for(const block of await fixture.getDeferBlocks())await block.render(DeferBlockState.Complete);
   expect(fixture.nativeElement.querySelector('.photo-slot img').getAttribute('src')).toBe('blob:local-fixture');
+ });
+});
+
+describe('Drive import through the photo panel',()=>{
+ afterEach(()=>sessionStorage.clear());
+ it('keeps visible roles in sync from READY through refresh, confirmation and attaching five photos',async()=>{
+  sessionStorage.clear();
+  let book=testBook();
+  const ready:DriveBatchView={id:'batch',mode:'IMPORT',state:'READY',expiresAt:'2099-01-01',digest:'digest',bookVersion:null,selections:[],
+   items:Array.from({length:5},(_,i)=>({id:'item-'+i,fileId:'file-'+i,state:'READY',errorCode:null,mediaId:'media-'+i,
+    contentPath:'/preview/'+i,candidates:['media-'+i]}))};
+  let confirmed=false;
+  const api={
+   capabilities:()=>of({provider:'LOCAL',revision:'LOCAL:v1',formats:['image/jpeg'],maxBytes:10485760}),
+   createSession:()=>of({id:'session',state:'OPEN',media:[]}),
+   createDriveBatch:()=>of({...ready,state:'PROCESSING',items:ready.items.map(item=>({...item,state:'DOWNLOADING',candidates:[]}))}),
+   driveBatch:()=>of(ready),
+   confirmDriveBatch:vi.fn((_id:string,input:any)=>{confirmed=true;return of({...ready,state:'CONFIRMED',selections:input.selections});}),
+   commitReplacement:vi.fn((_book:string,id:string,input:{version:number;role:MediaRole})=>{
+    expect(confirmed).toBe(true);expect(input.version).toBe(book.version);
+    book={...book,version:book.version+1,media:[...book.media,{id,role:input.role,provider:'LOCAL',alt:null,sourceRef:null,contentPath:'/attached/'+id}]};
+    return of(book);
+   }),
+  };
+  TestBed.configureTestingModule({deferBlockBehavior:DeferBlockBehavior.Manual,providers:[provideHttpClient(),BookUploadQueue,{provide:BookApi,useValue:api},
+   {provide:AuthService,useValue:{user:signal({id:1,role:'OWNER'}),epoch:signal(1)}}]});
+  const q=TestBed.inject(BookUploadQueue);q.configure(book);
+  const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();
+  const panel=f.componentInstance,root=f.nativeElement as HTMLElement;
+  const button=(label:string)=>Array.from(root.querySelectorAll('button')).find(b=>b.textContent?.trim()===label)!;
+  const input=root.querySelector('textarea')!;
+  input.value='file-0,file-1,file-2,file-3,file-4';input.dispatchEvent(new Event('input'));
+  await panel.importSources();f.detectChanges();
+  expect(root.querySelectorAll('.drive-item select')).toHaveLength(0);
+  button('Làm mới tiến độ').click();
+  await vi.waitFor(()=>expect(panel.drive.view()?.state).toBe('READY'));f.detectChanges();
+  const selects=Array.from(root.querySelectorAll('.drive-item select')) as HTMLSelectElement[];
+  expect(selects.map(s=>s.value)).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2']);
+  for(const [i,role] of [[0,'BACK'],[1,'FRONT']] as const){selects[i].value=role;selects[i].dispatchEvent(new Event('change'));f.detectChanges();}
+  button('Làm mới tiến độ').click();await Promise.resolve();f.detectChanges();
+  expect(selects.map(s=>s.value)).toEqual(['BACK','FRONT','SPINE','INSIDE_1','INSIDE_2']);
+  expect(button('Xác nhận các ảnh đã chọn').disabled).toBe(false);
+  expect(api.commitReplacement).not.toHaveBeenCalled();
+  button('Xác nhận các ảnh đã chọn').click();
+  await vi.waitFor(()=>expect(panel.drive.view()?.state).toBe('CONFIRMED'));f.detectChanges();
+  expect(q.sorted().map(row=>[row.mediaId,row.role,row.pendingLocal,row.sourceStatus])).toEqual([
+   ['media-1','FRONT',true,'VERIFIED'],['media-0','BACK',true,'VERIFIED'],['media-2','SPINE',true,'VERIFIED'],
+   ['media-3','INSIDE_1',true,'VERIFIED'],['media-4','INSIDE_2',true,'VERIFIED'],
+  ]);
+  expect(api.commitReplacement).not.toHaveBeenCalled();
+  for(const row of q.sorted())await q.commitLocal(row.id);
+  expect(q.persisted()?.media).toHaveLength(5);expect(q.persisted()?.version).toBe(5);
+  expect(q.pending()).toBe(false);expect(q.ready()).toBe(true);
+  expect(panel.drive.thumbnail(ready.items[0])).toBe('/attached/media-0?v=2&size=320');
  });
 });
 
