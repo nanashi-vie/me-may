@@ -3,6 +3,11 @@
 Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Rà toàn luồng Drive (11/11): đã sửa dropdown lệch dữ liệu, lý do khóa
+  xác nhận, refresh digest và thumbnail sau gắn. Frontend 289/289 đạt;
+  browser local nhập→chọn→confirm→gắn 5 ảnh→reload đạt. Backend API fixture
+  gắn 5 ảnh/retry/receipt đạt; clean verify cuối 295 total/3 skip, không lỗi.
+  Build Workers/proxy đạt; chờ owner merge main/deploy frontend.
 - Đã sửa nút nhập Drive bị ẩn khi sửa sách đã lưu (11/11).
   Tái dùng phiên ảnh LOCAL và Gắn ảnh vào sách từng ảnh. Frontend 286/286
   đạt, build Workers đạt; chờ owner merge main/deploy và smoke Drive thật.

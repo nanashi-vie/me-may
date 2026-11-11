@@ -123,6 +123,36 @@ describe('Drive batch lifecycle', () => {
     expect(api.createDriveBatch.mock.calls[1][0].fileIds).toEqual(['file-1']);
   });
 
+  it('uses the refreshed digest after a rejected confirmation instead of replaying stale input',async()=>{
+    const {throwError}=await import('rxjs');
+    const {HttpErrorResponse}=await import('@angular/common/http');
+    api.createDriveBatch.mockReturnValue(of(result('READY')));
+    api.confirmDriveBatch.mockReturnValueOnce(throwError(()=>new HttpErrorResponse({status:409,error:{error:'drive_batch_conflict'}})));
+    api.driveBatch.mockReturnValue(of({...result('READY'),digest:'fresh-digest'}));
+    const batch=TestBed.inject(DriveBatch);TestBed.tick();
+    await batch.submit('IMPORT','file-1');await batch.confirm();
+    await batch.read();await batch.confirm();
+    expect(api.confirmDriveBatch.mock.calls[1][1].digest).toBe('fresh-digest');
+    expect(batch.view()?.state).toBe('CONFIRMED');
+  });
+
+  it('explains duplicate roles and allows confirming only the checked successful photos',async()=>{
+    const items=Array.from({length:8},(_,i)=>({...result('READY').items[0],id:'item-'+i,mediaId:'media-'+i,
+      candidates:['media-'+i],fileId:'file-'+i}));
+    api.createDriveBatch.mockReturnValue(of({...result('READY'),items}));
+    const batch=TestBed.inject(DriveBatch);TestBed.tick();
+    await batch.submit('IMPORT',items.map(item=>item.fileId).join(','));
+    expect(batch.canConfirm()).toBe(true);
+    batch.selectRole('item-0','BACK');
+    expect(batch.canConfirm()).toBe(false);
+    expect(batch.confirmProblem()).toContain('Lưng');
+    batch.selectMedia('item-1','');
+    expect(batch.canConfirm()).toBe(true);
+    expect(batch.selected()).toHaveLength(7);
+    batch.selectMedia('item-1','media-1');batch.selectRole('item-0','FRONT');
+    expect(batch.canConfirm()).toBe(true);
+  });
+
 });
 
 describe('Drive batch with the actual photo queue',()=>{

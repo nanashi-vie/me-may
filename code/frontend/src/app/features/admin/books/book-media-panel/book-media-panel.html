@@ -65,17 +65,19 @@
                   <label>Vai trò ảnh
                     <select [value]="drive.choices()[item.id]?.role ?? ''" [disabled]="disabled() || drive.loading()"
                       (change)="drive.selectRole(item.id, $any($event.target).value)">
-                      <option value="" disabled>Chọn vai trò</option>
-                      @for (role of roles; track role) { <option [value]="role">{{ labels[role] }}</option> }
+                      <option value="" disabled [selected]="!drive.choices()[item.id]?.role">Chọn vai trò</option>
+                      @for (role of roles; track role) {
+                        <option [value]="role" [selected]="drive.choices()[item.id]?.role === role">{{ labels[role] }}</option>
+                      }
                     </select>
                   </label>
                 } @else {
                   <label>Ảnh có cùng SHA-256
                     <select [value]="drive.choices()[item.id]?.mediaId ?? ''" [disabled]="disabled() || drive.loading()"
                       (change)="drive.selectMedia(item.id, $any($event.target).value)">
-                      <option value="">Bỏ qua hoặc chọn ảnh</option>
+                      <option value="" [selected]="!drive.choices()[item.id]?.mediaId">Bỏ qua hoặc chọn ảnh</option>
                       @for (media of item.candidates; track media) {
-                        <option [value]="media">{{ drive.targetLabel(media) }}</option>
+                        <option [value]="media" [selected]="drive.choices()[item.id]?.mediaId === media">{{ drive.targetLabel(media) }}</option>
                       }
                     </select>
                   </label>
@@ -86,6 +88,7 @@
         </div>
         @if (batch.state === 'READY') {
           <p>Chọn một vai trò hoặc một ảnh khác nhau cho mỗi nguồn. Bạn có thể bỏ qua dòng bị lỗi.</p>
+          @if (drive.confirmProblem()) { <p class="error" role="status">{{ drive.confirmProblem() }}</p> }
           <button type="button" [disabled]="disabled() || !drive.canConfirm()" (click)="drive.confirm()">
             {{ drive.loading() ? 'Đang xác nhận…' : 'Xác nhận các ảnh đã chọn' }}
           </button>

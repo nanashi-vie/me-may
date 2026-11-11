@@ -45,6 +45,12 @@ và cache CSRF theo phiên. Đây là mở rộng cả frontend/backend và dữ
    xác nhận phần thành công, phần chưa chọn cần operation mới để xử lý sau.
 
 Thumbnail dùng endpoint admin hiện có, không tải thêm preview từ Drive.
+Dropdown phải hiển thị đúng vai trò/ảnh được chọn trong dữ liệu, kể cả lần
+đầu tạo options động. Nếu chưa cho xác nhận, hiển thị lý do cụ thể (chưa
+chọn ảnh/vai trò, trùng ảnh/vai trò, vai trò đã có hoặc quá 8 ảnh). Làm mới
+giữ lựa chọn hiện tại và dùng digest mới khi thử xác nhận lại; retry do mất
+response vẫn giữ request key nếu snapshot không đổi. Sau khi gắn ảnh vào
+sách, thumbnail dùng đường dẫn ảnh của sách thay vì temporary media đã consume.
 Nguồn/ghi chú nội bộ vẫn là field văn bản riêng.
 
 ## Xử lý và lưu dữ liệu

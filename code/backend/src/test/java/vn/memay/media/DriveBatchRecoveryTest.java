@@ -98,6 +98,55 @@ class DriveBatchRecoveryTest extends MediaTestSupport {
         assertThat(Files.readAllBytes(folder.resolve("480.jpg"))).isEqualTo(ImageValidatorTest.image("jpeg"));
         assertThat(sourceDownloads.get()).isEqualTo(3);
     }
+    @Test void savedBookAcceptsFiveImportedPhotosOneAtATimeAndKeepsReceiptAfterReload() throws Exception {
+        jdbc.update("DELETE FROM image_job");
+        sourceDownloads.set(0);
+        jdbc.update("INSERT INTO image_recipe VALUES('drive-import-fixture',?,jsonb_build_object('sha256',?::text)) ON CONFLICT DO NOTHING",DIGEST,CONFIG);
+        var book=seed(owner,BookFixtures.draft("Saved book without photos"));
+        var api=new AdminHttpClient(port);api.login(owner.getEmail());
+        String session=tree(api.send("POST","/api/v1/admin/upload-sessions","{}",true)).path("id").asString();
+        var created=api.send("POST","/api/v1/admin/drive-image-batches",json(Map.of("mode","IMPORT","sessionId",session,
+                "fileIds",List.of("back","cover","spine","inside-one","inside-two"),"requestKey",UUID.randomUUID())),true);
+        assertThat(created.statusCode()).isEqualTo(202);
+        String batchPath="/api/v1/admin/drive-image-batches/"+tree(created).path("id").asString();
+        for(int i=0;i<5;i++) finish(awaitJob());
+        tools.jackson.databind.JsonNode ready=null;
+        for(int i=0;i<80;i++) {
+            ready=tree(api.send("GET",batchPath,null,false));
+            if("READY".equals(ready.path("state").asString())) break;
+            Thread.sleep(50);
+        }
+        assertThat(ready.path("state").asString()).isEqualTo("READY");
+        var roles=List.of("BACK","FRONT","SPINE","INSIDE_1","INSIDE_2");
+        var selections=new ArrayList<Map<String,String>>();
+        for(int i=0;i<5;i++) {
+            var item=ready.path("items").get(i);
+            selections.add(Map.of("itemId",item.path("id").asString(),"mediaId",item.path("mediaId").asString(),"role",roles.get(i)));
+        }
+        String bookPath="/api/v1/admin/books/"+book.id();
+        var first=selections.getFirst();
+        String firstCommit=bookPath+"/media/replacements/"+first.get("mediaId")+"/commit";
+        assertThat(api.send("POST",firstCommit,json(Map.of("version",book.version(),"role","BACK","requestKey",UUID.randomUUID())),true).statusCode()).isEqualTo(409);
+        String confirmation=json(Map.of("requestKey",UUID.randomUUID(),"digest",ready.path("digest").asString(),"selections",selections));
+        assertThat(api.send("POST",batchPath+"/confirm",confirmation,true).statusCode()).isEqualTo(200);
+        assertThat(tree(api.send("GET",bookPath,null,false)).path("media").size()).isZero();
+        long version=book.version();
+        for(int i=0;i<5;i++) {
+            var selected=selections.get(i);
+            String path=bookPath+"/media/replacements/"+selected.get("mediaId")+"/commit";
+            String body=json(Map.of("version",version,"role",selected.get("role"),"requestKey",selected.get("itemId")));
+            var committed=api.send("POST",path,body,true);
+            assertThat(committed.statusCode()).as(committed.body()).isEqualTo(200);
+            version=tree(committed).path("version").asLong();
+            assertThat(tree(api.send("POST",path,body,true)).path("version").asLong()).isEqualTo(version);
+            assertThat(tree(api.send("GET",bookPath,null,false)).path("media").size()).isEqualTo(i+1);
+        }
+        assertThat(tree(api.send("GET",batchPath,null,false)).path("state").asString()).isEqualTo("CONFIRMED");
+        assertThat(api.send("POST",batchPath+"/confirm",confirmation,true).statusCode()).isEqualTo(200);
+        assertThat(tree(api.send("GET","/api/v1/admin/upload-sessions/"+session,null,false)).path("media").size()).isZero();
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM image_source_binding WHERE status='VERIFIED' AND media_id IN (SELECT id FROM book_media WHERE book_copy_id=?)",Integer.class,Long.parseLong(book.id()))).isEqualTo(5);
+        assertThat(sourceDownloads.get()).isEqualTo(5);
+    }
     ImageTypes.JobLease awaitJob() throws Exception {
         for(int i=0;i<200;i++) {
             var job=worker.claim();
