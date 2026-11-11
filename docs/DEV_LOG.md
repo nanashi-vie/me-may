@@ -3337,3 +3337,67 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   deploy frontend. Không đổi backend sản phẩm/schema, không cần migration mới.
 - Đã dừng container memay-drive-flow-test; không đổi container PostgreSQL
   sẵn có. Frontend/API fixture QA đã dừng; chưa smoke lại production.
+
+## 2026-11-11 — Publish source error — Bắt đầu
+
+- Owner cung cấp response image_source_unverified với fieldErrors.media
+  gồm BACK/FRONT/INSIDE_1/INSIDE_2/SPINE. Đây là publication gate đúng,
+  không phải bằng chứng version conflict. BookEditor.fail gom mọi HTTP409
+  thành thông báo dữ liệu thay đổi, gây hiểu nhầm và lộ role code.
+- Sửa mapping riêng theo error code, giữ thông báo conflict thực, hiển thị
+  vai trò tiếng Việt và hướng dẫn xác minh/lưu Ẩn. Không đổi publication gate.
+  dev 84f96cd, chưa chạy regression mới; không truy cập server/log production.
+- Regression RED→GREEN: save+publish sách đã lưu với response owner cung cấp
+  hiện đúng lý do/5 vai trò tiếng Việt, giữ nội dung đang sửa và trạng thái Ẩn.
+  Ca mới sách chưa lưu cũng chứng minh 409 source từng bị coi kết quả chưa
+  rõ và khóa form; đã phân biệt từ chối chắc chắn để cho lưu Ẩn sau đó.
+- Targeted `npm test -- --include='**/book-editor.spec.ts'` 32/32 đạt.
+  Đang chạy toàn frontend/build Workers. Không đổi backend/schema hoặc
+  tắt gate nguồn VERIFIED. Không đọc/mutate log hay DB production; response
+  HTTP trong ảnh owner là bằng chứng lỗi thực tế, đối chiếu code phía client.
+- Verification cuối: frontend toàn bộ 50 files/291 tests đạt; build Workers
+  exit 0, không warning. `git diff --check` đạt, PROGRESS dưới 400 dòng,
+  chỉ mục/link hiện hành giữ nguyên. Không chạy lại backend vì không đổi
+  backend/schema; chưa browser smoke bản mới. Commit/push dev; owner merge
+  main/deploy frontend. Thông báo mới không coi source gate là version conflict.
+
+## 2026-11-11 — MATCH Drive — Bắt đầu điều tra 400
+
+- Owner báo Tự ghép nguồn cho ảnh đã tải trả400. Đã đọc trực tiếp DevTools
+  request hiện có (không gửi thêm): response invalid_request, payload mode
+  MATCH, bookId dạng chuỗi, bookVersion số, targets chỉ có mediaId, không
+  generationId/bindingVersion. Giả thuyết DTO Target primitive long thiếu
+  field làm Jackson3 từ chối trước controller; cần test HTTP exact payload.
+- Phạm vi kiểm: tạo MATCH từ dữ liệu FE thật, tải/hash/candidates/confirm,
+  update version và nguồn, giữ admission/quyền. dev 666b0a7, chưa sửa sản phẩm.
+
+### MATCH Drive — Hai lệch contract và regression
+
+- Test HTTP exact payload RED400 invalid_request. JSON unit RED chỉ rõ
+  Target.bindingVersion thiếu bị map null vào primitive long. Đổi Long
+  nullable theo contract snapshot tùy chọn; generationId tường minh vẫn
+  bắt buộc bindingVersion hợp lệ, không tắt strict JSON toàn cục.
+- Sau sửa đầu, HTTP vẫn400: application.yml tắt scalar coercion nên
+  bookId chuỗi của frontend không map vào Long. DTO HTTP dùng String như
+  quy ước ID frontend, validate positive decimal/range rồi chuyển Long trước
+  query/so sánh snapshot. Không qua JS Number, không mất chính xác ID64-bit.
+- Targeted backend11ca đạt: JSON theo cấu hình strict; API nhập/gắn 5ảnh
+  rồi bỏ binding trên fixture để mô phỏng upload máy chưa xác minh; MATCH
+  gửi targets chỉ mediaId và bookId chuỗi, 5 nguồn đều candidates; chọn
+  một-một → confirm VERIFIED đúng File ID, tăng book version một lần, replay
+  không tăng thêm, không encode lại. Không ghi production/Drive thật.
+- Thêm ca 8 nguồn hash khác nhau, link đảo thứ tự: mỗi nguồn khớp đúng media,
+  giữ vai trò, confirm cả8. Đang chạy trong full verify.
+- Test file panel 8/8 đạt; ca DOM MATCH kiểm: default candidate hiển thị đúng, hash
+  trùng cho chọn rõ ràng, duplicate media khóa nút/có lý do, thumbnail đúng,
+  confirm cập nhật version/sourceStatus, không tạo phiên/upload ảnh mới.
+- Phạm vi code sản phẩm chỉ backend DTO/service; frontend chỉ thêm test.
+  Cần deploy backend để sửa400; không cần migration hoặc upload lại ảnh.
+- Verification cuối: backend `./mvnw -o clean verify` trên fixture :55470
+  298 total, 0 failures/errors, 3 live skip; ca8 hash xáo thứ tự đạt.
+  Frontend `npm test` 50 files/292 ca đạt. Không build frontend lại vì chỉ
+  thêm test, không thay code sản phẩm frontend; backend package build đạt.
+- Diff whitespace, trần400 và local links của docs sửa đạt, `.env` ignored.
+  Chuẩn bị commit/push dev; owner merge main và deploy backend trước khi
+  thử lại MATCH. Không có migration, chưa smoke lại production hoặc Drive thật.
+- Đã dừng fixture memay-drive-flow-test; không thay container/DB khác.

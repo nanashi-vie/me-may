@@ -170,6 +170,33 @@ describe('BookEditor safe final saves', () => {
     update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409})));
     await e.save(true);expect(e.form.controls.stock.value).toBe(1999997);expect(e.form.dirty).toBe(true);
   });
+  it('explains unverified image sources without claiming a version conflict or losing edits',async()=>{
+    const e=editor();e.accept({...saved,publication:'ARCHIVED'});ready(e);
+    e.form.controls.title.setValue('Tên đang sửa');e.form.markAsDirty();e.confirmed.set(true);
+    update.mockReturnValue(throwError(()=>new HttpErrorResponse({status:409,error:{
+      error:'image_source_unverified',message:'Không thể thực hiện yêu cầu.',
+      fieldErrors:{media:['BACK','FRONT','INSIDE_1','INSIDE_2','SPINE']},
+    }})));
+    await e.save(true);
+    expect(e.error()).toContain('chưa xác minh nguồn Drive');
+    for(const label of ['Bìa','Lưng','Gáy','Nội dung 1','Nội dung 2'])expect(e.error()).toContain(label);
+    expect(e.error()).not.toContain('Dữ liệu đã thay đổi');
+    expect(e.fields()).not.toHaveProperty('media');
+    expect(e.form.controls.title.value).toBe('Tên đang sửa');expect(e.form.dirty).toBe(true);
+    expect(e.book()?.publication).toBe('ARCHIVED');
+  });
+  it('allows saving a new book hidden after publication was rejected for unverified sources',async()=>{
+    vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const e=editor();ready(e);
+    create.mockReturnValueOnce(throwError(()=>new HttpErrorResponse({status:409,error:{
+      error:'image_source_unverified',fieldErrors:{media:['FRONT','BACK']},
+    }})));
+    await e.save(true);
+    expect(e.createUncertain()).toBe(false);expect(e.photos.locked()).toBe(false);
+    expect(e.error()).toContain('chưa xác minh nguồn Drive');
+    await e.save(false);
+    expect(create.mock.calls[1][0].publication).toBe('ARCHIVED');
+  });
   it('calculates only on input edits and permits manual adjustments',()=>{
     const e=editor();e.accept({...saved,priceMinVnd:36450,priceMaxVnd:41918});
     expect(e.form.controls.priceMinVnd.value).toBe(36450);

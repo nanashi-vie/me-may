@@ -146,6 +146,42 @@ class DriveBatchRecoveryTest extends MediaTestSupport {
         assertThat(tree(api.send("GET","/api/v1/admin/upload-sessions/"+session,null,false)).path("media").size()).isZero();
         assertThat(jdbc.queryForObject("SELECT count(*) FROM image_source_binding WHERE status='VERIFIED' AND media_id IN (SELECT id FROM book_media WHERE book_copy_id=?)",Integer.class,Long.parseLong(book.id()))).isEqualTo(5);
         assertThat(sourceDownloads.get()).isEqualTo(5);
+        // Model local uploads attached without Drive verification, as in the owner's flow.
+        jdbc.update("DELETE FROM image_source_binding WHERE media_id IN (SELECT id FROM book_media WHERE book_copy_id=?)",Long.parseLong(book.id()));
+        var matching=api.send("POST","/api/v1/admin/drive-image-batches",json(Map.of(
+                "mode","MATCH","bookId",book.id(),"bookVersion",version,
+                "fileIds",List.of("inside-two","cover","back","inside-one","spine"),
+                "targets",selections.stream().map(s->Map.of("mediaId",s.get("mediaId"))).toList(),
+                "requestKey",UUID.randomUUID())),true);
+        assertThat(matching.statusCode()).as(matching.body()).isEqualTo(202);
+        String matchPath="/api/v1/admin/drive-image-batches/"+tree(matching).path("id").asString();
+        tools.jackson.databind.JsonNode matched=null;
+        for(int i=0;i<150;i++) {
+            matched=tree(api.send("GET",matchPath,null,false));
+            if("READY".equals(matched.path("state").asString())) break;
+            Thread.sleep(100);
+        }
+        assertThat(matched.path("state").asString()).isEqualTo("READY");
+        var pairs=new ArrayList<DriveBatchDtos.Selection>();
+        for(int i=0;i<5;i++) {
+            var item=matched.path("items").get(i);
+            assertThat(item.path("candidates").size()).isEqualTo(5);
+            pairs.add(new DriveBatchDtos.Selection(UUID.fromString(item.path("id").asString()),UUID.fromString(selections.get(i).get("mediaId")),null));
+        }
+        String confirmMatch=json(Map.of("requestKey",UUID.randomUUID(),"digest",matched.path("digest").asString(),"selections",pairs));
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM image_source_binding WHERE media_id IN (SELECT id FROM book_media WHERE book_copy_id=?)",Integer.class,Long.parseLong(book.id()))).isZero();
+        var matchedResult=api.send("POST",matchPath+"/confirm",confirmMatch,true);
+        assertThat(matchedResult.statusCode()).as(matchedResult.body()).isEqualTo(200);
+        assertThat(tree(matchedResult).path("bookVersion").asLong()).isEqualTo(version+1);
+        assertThat(api.send("POST",matchPath+"/confirm",confirmMatch,true).statusCode()).isEqualTo(200);
+        assertThat(tree(api.send("GET",bookPath,null,false)).path("version").asLong()).isEqualTo(version+1);
+        for(int i=0;i<5;i++) {
+            var binding=jdbc.queryForMap("SELECT file_id,status FROM image_source_binding WHERE media_id=?",pairs.get(i).mediaId());
+            assertThat(binding.get("status")).isEqualTo("VERIFIED");
+            assertThat(binding.get("file_id")).isEqualTo(matched.path("items").get(i).path("fileId").asString());
+        }
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM image_job WHERE kind='PROCESS'",Integer.class)).isEqualTo(5);
+        assertThat(sourceDownloads.get()).isEqualTo(10);
     }
     ImageTypes.JobLease awaitJob() throws Exception {
         for(int i=0;i<200;i++) {

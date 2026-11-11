@@ -50,6 +50,12 @@ public class DriveBatchService {
                 || (input.sessionId() == null) == (input.bookId() == null)
                 || (input.bookId() == null) != (input.bookVersion() == null))
             throw invalid();
+        Long bookId = null;
+        if (input.bookId() != null) {
+            if (!input.bookId().matches("[1-9][0-9]{0,18}")) throw invalid();
+            try { bookId = Long.valueOf(input.bookId()); }
+            catch (NumberFormatException e) { throw invalid(); }
+        }
         String fingerprint = hash(input);
         var previous = db.queryForList("SELECT id,fingerprint FROM drive_image_batch WHERE actor_id=? AND request_key=?",
                 actor.getId(), input.requestKey());
@@ -72,11 +78,13 @@ public class DriveBatchService {
             Set<UUID> seen = new HashSet<>();
             for (Target target : input.targets()) {
                 if (target == null || target.mediaId() == null || !seen.add(target.mediaId())) throw invalid();
+                if (target.generationId() != null && (target.bindingVersion() == null || target.bindingVersion() < 0))
+                    throw invalid();
                 var current = sources.target(target.mediaId(), actor.getId());
                 long bindingVersion = target.generationId() == null
                         ? bindings.find(target.mediaId()).map(b -> b.bindingVersion()).orElse(0L) : target.bindingVersion();
                 sources.checkVersion(target.mediaId(), current, bindingVersion, input.bookVersion());
-                if (!Objects.equals(current.bookId(), input.bookId())
+                if (!Objects.equals(current.bookId(), bookId)
                         || (target.generationId() != null && !Objects.equals(current.generation(), target.generationId()))) throw conflict();
                 if (input.sessionId() != null && !Boolean.TRUE.equals(db.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM temporary_media WHERE id=? AND session_id=?)",
@@ -89,7 +97,7 @@ public class DriveBatchService {
         db.update("""
                 INSERT INTO drive_image_batch(id,actor_id,namespace,mode,session_id,book_id,book_version,
                   targets,request_key,fingerprint,expires_at) VALUES(?,?,?,?,?,?,?,cast(? as jsonb),?,?,?)
-                """, id, actor.getId(), namespace, input.mode().name(), input.sessionId(), input.bookId(),
+                """, id, actor.getId(), namespace, input.mode().name(), input.sessionId(), bookId,
                 input.bookVersion(), json.writeValueAsString(snapshots), input.requestKey(), fingerprint,
                 Timestamp.from(expiry));
         for (int ordinal = 0; ordinal < input.fileIds().size(); ordinal++) {

@@ -42,6 +42,41 @@ describe('BookMediaPanel protected thumbnails',()=>{
 
 describe('Drive import through the photo panel',()=>{
  afterEach(()=>sessionStorage.clear());
+ it('matches shuffled existing photos, requires an explicit ambiguous pair and confirms without uploading again',async()=>{
+  sessionStorage.clear();
+  const ready:DriveBatchView={id:'match',mode:'MATCH',state:'READY',expiresAt:'2099-01-01',digest:'d',bookVersion:0,selections:[],items:[
+   {id:'back',fileId:'back-file',state:'READY',errorCode:null,mediaId:null,contentPath:null,candidates:['b']},
+   {id:'cover',fileId:'cover-file',state:'READY',errorCode:null,mediaId:null,contentPath:null,candidates:['a','b']},
+  ]};
+  const api={capabilities:()=>of({provider:'LOCAL',revision:'LOCAL:v1',formats:['image/jpeg'],maxBytes:10485760}),
+   createDriveBatch:vi.fn((_input:unknown)=>of(ready)),
+   confirmDriveBatch:vi.fn((_id:string,input:any)=>of({...ready,state:'CONFIRMED',bookVersion:1,selections:input.selections})),
+  };
+  TestBed.configureTestingModule({deferBlockBehavior:DeferBlockBehavior.Manual,providers:[provideHttpClient(),BookUploadQueue,
+   {provide:BookApi,useValue:api},{provide:AuthService,useValue:{user:signal({id:1,role:'OWNER'}),epoch:signal(1)}}]});
+  const q=TestBed.inject(BookUploadQueue);q.configure({...testBook(),media:[
+   {id:'a',role:'FRONT',provider:'LOCAL',alt:null,sourceRef:null,contentPath:'/cover'},
+   {id:'b',role:'BACK',provider:'LOCAL',alt:null,sourceRef:null,contentPath:'/back'},
+  ]});
+  const f=TestBed.createComponent(BookMediaPanel);f.detectChanges();
+  const panel=f.componentInstance,root=f.nativeElement as HTMLElement;
+  panel.setBatch('back-file,cover-file');await panel.matchSources();f.detectChanges();
+  expect(api.createDriveBatch.mock.calls[0][0]).toMatchObject({mode:'MATCH',bookId:'1',bookVersion:0,sessionId:null,
+   fileIds:['back-file','cover-file'],targets:[{mediaId:'a'},{mediaId:'b'}]});
+  const selects=Array.from(root.querySelectorAll('.drive-item select')) as HTMLSelectElement[];
+  expect(selects.map(s=>s.value)).toEqual(['b','']);expect(panel.drive.canConfirm()).toBe(true);
+  selects[1].value='b';selects[1].dispatchEvent(new Event('change'));f.detectChanges();
+  expect(panel.drive.canConfirm()).toBe(false);
+  expect(root.querySelector('.drive-panel .error')?.textContent).toContain('một ảnh khác nhau');
+  selects[1].value='a';selects[1].dispatchEvent(new Event('change'));f.detectChanges();
+  expect(Array.from(root.querySelectorAll('.drive-item img')).map(img=>img.getAttribute('src'))).toEqual(['/back?v=0','/cover?v=0']);
+  await panel.drive.confirm();f.detectChanges();
+  expect(q.persisted()?.version).toBe(1);
+  expect(q.sorted().map(row=>[row.role,row.mediaId,row.sourceStatus,row.sourceFile])).toEqual([
+   ['FRONT','a','VERIFIED','cover-file'],['BACK','b','VERIFIED','back-file'],
+  ]);
+  expect(q.sessionId()).toBeNull();expect(q.pending()).toBe(false);
+ });
  it('keeps visible roles in sync from READY through refresh, confirmation and attaching five photos',async()=>{
   sessionStorage.clear();
   let book=testBook();

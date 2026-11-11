@@ -48,7 +48,7 @@ Selection(itemId, mediaId, role);
 Confirm(requestKey, digest, selections);
 View(id, mode, state, expiresAt, digest, items, bookVersion);
 ItemView(id, fileId, state, errorCode, mediaId, contentPath, candidates).
-Kiểu session/media/item/generation/requestKey là UUID, bookId/versions là Long.
+Kiểu session/media/item/generation/requestKey là UUID, bookId HTTP là chuỗi giữ đủ 64-bit (DB Long), versions là Long.
 IMPORT nhận session và không có target. MATCH nhận target IDs rõ ràng.
 State operation là PENDING/PROCESSING/READY/CONFIRMED/CANCELLED/EXPIRED.
 Item là PENDING/DOWNLOADING/ENCODING/READY/FAILED.

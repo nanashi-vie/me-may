@@ -8,8 +8,8 @@ import vn.memay.media.MediaDtos.MediaRole;
 public final class DriveBatchDtos {
     private DriveBatchDtos() {}
     public enum Mode { IMPORT, MATCH }
-    public record Target(UUID mediaId, UUID generationId, long bindingVersion) {}
-    public record Create(Mode mode, UUID sessionId, Long bookId, Long bookVersion,
+    public record Target(UUID mediaId, UUID generationId, Long bindingVersion) {}
+    public record Create(Mode mode, UUID sessionId, String bookId, Long bookVersion,
                          List<String> fileIds, List<Target> targets, UUID requestKey) {}
     public record Selection(UUID itemId, UUID mediaId, MediaRole role) {}
     public record Confirm(UUID requestKey, String digest, List<Selection> selections) {}
