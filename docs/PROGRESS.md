@@ -3,6 +3,10 @@
 Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Đã sửa contract MATCH trả400 invalid_request (11/11): bookId HTTP là
+  chuỗi, target snapshot tùy chọn. API ghép/xác nhận 5 ảnh và DOM đạt;
+  frontend 292/292 đạt, backend 298 total/3 skip không lỗi. Cần deploy backend,
+  không cần migration hoặc tải lại ảnh.
 - Đã sửa thông báo publish image_source_unverified bị nhầm thành
   version conflict (11/11): nêu vai trò tiếng Việt, giữ nội dung sửa; sách
   mới bị từ chối publish vẫn lưu Ẩn được. Frontend 291/291 và build Workers

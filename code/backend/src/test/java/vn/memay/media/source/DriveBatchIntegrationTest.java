@@ -8,6 +8,17 @@ import vn.memay.common.AdminApiException;
 import static org.assertj.core.api.Assertions.*;
 
 class DriveBatchIntegrationTest {
+    @Test void frontendMatchPayloadCanOmitServerCapturedTargetSnapshot() {
+        var input=tools.jackson.databind.json.JsonMapper.builder()
+                .disable(tools.jackson.databind.MapperFeature.ALLOW_COERCION_OF_SCALARS).build().readValue("""
+                {"mode":"MATCH","sessionId":null,"bookId":"578","bookVersion":6,
+                 "fileIds":["source"],"targets":[{"mediaId":"ab351a89-20c6-4115-b0fc-42795d2cf5c4"}],
+                 "requestKey":"78045d72-e538-4fc3-9b51-798395b715c4"}
+                """,DriveBatchDtos.Create.class);
+        assertThat(input.bookId()).isEqualTo("578");
+        assertThat(input.targets().getFirst().generationId()).isNull();
+        assertThat(input.targets().getFirst().bindingVersion()).isNull();
+    }
     @Test void sameKeyReturnsSameOperationAndDifferentPayloadConflicts() {
         try (var f = new DriveBatchFixture()) {
             var key = UUID.randomUUID();
@@ -15,6 +26,14 @@ class DriveBatchIntegrationTest {
             assertThat(f.create(f.importing(key, "file-a", "file-b")).id()).isEqualTo(first.id());
             assertThatThrownBy(() -> f.create(f.importing(key, "file-c"))).isInstanceOf(AdminApiException.class);
             assertThat(f.db.queryForObject("SELECT count(*) FROM temporary_media", Integer.class)).isEqualTo(2);
+        }
+    }
+    @Test void explicitGenerationRequiresBindingVersion() {
+        try(var f=new DriveBatchFixture()) {
+            var target=new DriveBatchDtos.Target(UUID.randomUUID(),UUID.randomUUID(),null);
+            var request=new DriveBatchDtos.Create(DriveBatchDtos.Mode.MATCH,f.session,null,null,
+                    java.util.List.of("file"),java.util.List.of(target),UUID.randomUUID());
+            assertThatThrownBy(()->f.create(request)).isInstanceOf(AdminApiException.class);
         }
     }
     @Test void createRejectsNinthReservedImageAndDuplicateFileIds() {

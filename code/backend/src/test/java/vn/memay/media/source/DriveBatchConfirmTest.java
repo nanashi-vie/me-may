@@ -9,6 +9,43 @@ import static vn.memay.media.source.DriveBatchDtos.*;
 import static org.assertj.core.api.Assertions.*;
 
 class DriveBatchConfirmTest {
+    @Test void shuffledEightSourcesMatchHashesWithoutChangingMediaRoles() {
+        try(var f=new DriveBatchFixture()) {
+            f.db.update("INSERT INTO book_copy(id,book_code,title,availability) VALUES(1,'MM-000001','Book','AVAILABLE')");
+            var roles=List.of("FRONT","BACK","SPINE","INSIDE_1","INSIDE_2","INSIDE_3","INSIDE_4","INSIDE_5");
+            var media=new java.util.ArrayList<UUID>();
+            var targets=new java.util.ArrayList<Target>();
+            for(int i=0;i<8;i++) {
+                UUID id=UUID.randomUUID(),generation=UUID.randomUUID();media.add(id);
+                f.db.update("INSERT INTO image_asset VALUES(?)",id);
+                f.db.update("INSERT INTO image_generation(id,media_id,recipe_version,input_sha256,published_at) VALUES(?,?,'v1',?,now())",generation,id,Integer.toString(i).repeat(64));
+                f.db.update("INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id,provider,serving_generation) VALUES(?,1,?,'ACTIVE',?,'LOCAL',?)",id,roles.get(i),id.toString(),generation);
+                targets.add(new Target(id,null,null));
+            }
+            var files=java.util.stream.IntStream.range(0,8).mapToObj(i->"file-"+(7-i)).toList();
+            var batch=f.create(new Create(Mode.MATCH,null,"1",0L,files,targets,UUID.randomUUID()));
+            var repo=new DriveBatchRepository(f.db);
+            for(int i=0;i<8;i++) {
+                var lease=f.tx.execute(t->repo.claim("memay/test")).orElseThrow();
+                int index=7-i;
+                f.tx.executeWithoutResult(t->f.batches.completeDownload(lease,
+                        new DownloadedSource("fixture",Integer.toString(index).repeat(64),3,"image/jpeg","1"),f.actor,null));
+            }
+            var view=f.tx.execute(t->f.batches.status(batch.id(),f.actor));
+            var pairs=new java.util.ArrayList<Selection>();
+            for(int i=0;i<8;i++) {
+                assertThat(view.items().get(i).candidates()).containsExactly(media.get(7-i));
+                pairs.add(new Selection(view.items().get(i).id(),media.get(7-i),null));
+            }
+            var metadata=files.stream().map(file->new DriveSourceMetadata(file,"1",3,"image/jpeg")).toList();
+            var result=f.tx.execute(t->f.batches.confirmChecked(batch.id(),new Confirm(UUID.randomUUID(),view.digest(),pairs),f.actor,metadata));
+            assertThat(result.bookVersion()).isEqualTo(1);
+            for(int i=0;i<8;i++) {
+                assertThat(f.bindings.find(media.get(i)).orElseThrow().fileId()).isEqualTo("file-"+i);
+                assertThat(f.db.queryForObject("SELECT role FROM book_media WHERE id=?",String.class,media.get(i))).isEqualTo(roles.get(i));
+            }
+        }
+    }
     UUID readyImport(DriveBatchFixture f, UUID batch) {
         var item=f.db.queryForMap("SELECT * FROM drive_image_batch_item WHERE batch_id=? ORDER BY ordinal LIMIT 1",batch);
         UUID media=(UUID)item.get("media_id"), generation=UUID.randomUUID();
@@ -75,8 +112,8 @@ class DriveBatchConfirmTest {
                 f.db.update("INSERT INTO image_generation(id,media_id,recipe_version,input_sha256,published_at) VALUES(?,?,'v1',?,now())",generations[i],media[i],"a".repeat(64));
                 f.db.update("INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id,provider,serving_generation) VALUES(?,1,?,'ACTIVE',?,'LOCAL',?)",media[i],i==0?"FRONT":"BACK",media[i].toString(),generations[i]);
             }
-            var request=new Create(Mode.MATCH,null,1L,0L,List.of("file-a","file-b"),
-                    List.of(new Target(media[0],generations[0],0),new Target(media[1],generations[1],0)),UUID.randomUUID());
+            var request=new Create(Mode.MATCH,null,"1",0L,List.of("file-a","file-b"),
+                    List.of(new Target(media[0],generations[0],0L),new Target(media[1],generations[1],0L)),UUID.randomUUID());
             var batch=f.create(request);
             var repo=new DriveBatchRepository(f.db);
             for(int i=0;i<2;i++) {

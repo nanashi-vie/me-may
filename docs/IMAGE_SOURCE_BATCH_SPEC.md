@@ -117,7 +117,12 @@ Nguồn/ghi chú nội bộ vẫn là field văn bản riêng.
 
 ## API và frontend
 
-- POST tạo operation, trả 202 ngay với operation ID. OWNER và LOCAL được
+- POST tạo operation, trả 202 ngay với operation ID. HTTP `bookId` là chuỗi
+  số nguyên dương theo ID frontend, backend kiểm và chuyển sang Long trước
+  truy vấn để giữ đủ 64-bit. MATCH có thể chỉ gửi mediaId từng target;
+  generationId/bindingVersion được server chụp cùng snapshot. Nếu gửi
+  generationId tường minh thì phải có bindingVersion hợp lệ đi kèm.
+  OWNER và LOCAL được
   kiểm ở backend. Retry cùng requestKey/payload trả cùng operation.
 - GET trạng thái tổng hợp, kết quả từng item, các ảnh đề xuất và phiên bản
   cần cho xác nhận. Endpoint admin không public cache.
