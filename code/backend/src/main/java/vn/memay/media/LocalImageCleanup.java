@@ -79,9 +79,11 @@ class LocalImageCleanup {
                               AND ((r.input_id=? AND r.state IN ('QUEUED','PROCESSING','READY')) OR r.preview_id=?)))
                         OR EXISTS(SELECT 1 FROM image_migration_apply_item
                             WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
+                        OR EXISTS(SELECT 1 FROM drive_image_batch_item
+                            WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
                         OR EXISTS(SELECT 1 FROM image_recovery_item
                             WHERE lease_token=? AND state='DOWNLOADING' AND lease_until>clock_timestamp())
-                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging, staging, staging));
+                        """, Boolean.class, staging, "staging/" + staging + "/input", staging, staging, staging, staging, staging, staging));
                 if (!referenced) {
                     store.discardStaging(staging);
                     if (++deleted == 100) break;

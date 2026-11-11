@@ -76,6 +76,8 @@ class ImageRecoveryHandler {
                 WITH candidate AS (
                     SELECT i.id,o.actor_id FROM image_recovery_item i JOIN image_recovery_operation o ON o.id=i.operation_id
                     WHERE (i.state='PENDING' OR (i.state='DOWNLOADING' AND i.lease_until<=clock_timestamp()))
+                    AND NOT EXISTS(SELECT 1 FROM drive_image_batch_item
+                        WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     AND NOT EXISTS(SELECT 1 FROM image_recovery_item WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     AND NOT EXISTS(SELECT 1 FROM image_migration_apply_item WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())
                     AND NOT EXISTS(SELECT 1 FROM image_migration_row WHERE state='DOWNLOADING' AND lease_until>clock_timestamp())

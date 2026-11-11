@@ -102,6 +102,38 @@ public class DriveBatchService {
     }
 
     @Transactional
+    public void completeDownload(DriveBatchRepository.Lease lease, DownloadedSource source,
+                                 AdminUser actor, vn.memay.media.LocalUploadService uploads) {
+        sessions.requireOwner(actor);
+        if (actor.getId()!=lease.actorId()) throw conflict();
+        if (lease.sessionId()!=null) sessions.lock(lease.sessionId(),actor,true);
+        var batch=repository.owned(lease.batchId(),actor.getId(),namespace,true);
+        repository.lockLease(lease);
+        UUID generation=null;
+        List<UUID> candidates;
+        String state;
+        if ("IMPORT".equals(lease.mode())) {
+            var staged=new vn.memay.media.LocalImageStore.StagedInput(source.inputKey(),source.bytes(),source.sha256());
+            var operation=uploads.enqueueStaged(lease.sessionId(),lease.mediaId(),actor,staged,"LOCAL:"+recipe);
+            generation=db.queryForObject("SELECT generation_id FROM image_job WHERE id=?",UUID.class,operation.jobId());
+            candidates=List.of(lease.mediaId());
+            state="ENCODING";
+        } else {
+            var snapshots=json.readValue(batch.get("targets").toString(),Snapshot[].class);
+            candidates=Arrays.stream(snapshots).filter(t->t.sha256().equals(source.sha256())).map(Snapshot::mediaId).toList();
+            state=candidates.isEmpty()?"FAILED":"READY";
+        }
+        db.update("""
+                UPDATE drive_image_batch_item SET state=?,generation_id=?,input_key=?,sha256=?,
+                  source_version=?,source_bytes=?,mime=?,candidates=cast(? as jsonb),
+                  error_code=?,lease_token=NULL,lease_until=NULL WHERE id=?
+                """,state,generation,"IMPORT".equals(lease.mode())?source.inputKey():null,
+                source.sha256(),source.version(),source.bytes(),source.mime(),json.writeValueAsString(candidates),
+                candidates.isEmpty()?"source_hash_mismatch":null,lease.itemId());
+        repository.refresh(lease.batchId());
+    }
+
+    @Transactional
     public View status(UUID id, AdminUser actor) {
         sessions.requireOwner(actor);
         var row = repository.owned(id, actor.getId(), namespace, true);

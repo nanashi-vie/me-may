@@ -33,6 +33,7 @@ public class DriveBatchRepository {
                   lease_token=NULL,lease_until=NULL
                 WHERE state='DOWNLOADING' AND attempts>=3 AND lease_until<=clock_timestamp()
                 """);
+        expire();
         UUID token = UUID.randomUUID();
         return db.query("""
                 WITH candidate AS (
@@ -90,6 +91,30 @@ public class DriveBatchRepository {
                 UPDATE temporary_media SET state='DELETE_PENDING',delete_after=clock_timestamp()
                 WHERE id=? AND state IN ('UPLOADING','READY')
                 """,media);
+    }
+
+    void expire() {
+        db.update("""
+                UPDATE drive_image_batch b SET state=CASE WHEN b.expires_at<=clock_timestamp()
+                  THEN 'EXPIRED' ELSE 'CANCELLED' END
+                WHERE b.state IN ('PENDING','PROCESSING','READY') AND (
+                  b.expires_at<=clock_timestamp()
+                  OR NOT EXISTS(SELECT 1 FROM admin_user a WHERE a.id=b.actor_id AND a.active AND a.role='OWNER')
+                  OR (b.session_id IS NOT NULL AND NOT EXISTS(SELECT 1 FROM upload_session s
+                    WHERE s.id=b.session_id AND s.state='OPEN' AND s.expires_at>clock_timestamp())))
+                """);
+        db.update("""
+                UPDATE temporary_media m SET state='DELETE_PENDING',delete_after=clock_timestamp()
+                FROM drive_image_batch_item i JOIN drive_image_batch b ON b.id=i.batch_id
+                WHERE i.media_id=m.id AND NOT i.admitted AND b.mode='IMPORT'
+                  AND (b.state IN ('CANCELLED','EXPIRED') OR i.state IN ('FAILED','CANCELLED'))
+                  AND m.state IN ('UPLOADING','READY')
+                """);
+        db.update("""
+                UPDATE drive_image_batch_item i SET state='CANCELLED',lease_token=NULL,lease_until=NULL
+                FROM drive_image_batch b WHERE b.id=i.batch_id AND b.state IN ('CANCELLED','EXPIRED')
+                  AND NOT i.admitted AND i.state NOT IN ('CANCELLED','FAILED')
+                """);
     }
 
     void refresh(UUID id) {
