@@ -1,8 +1,8 @@
 # Nhập ảnh Drive và ghép nguồn theo lô
 
-Thiết kế chờ duyệt ngày 11/11/2026. Bổ sung IMAGE_RECOVERY_SPEC và
+Thiết kế được owner duyệt ngày 11/11/2026. Bổ sung IMAGE_RECOVERY_SPEC và
 IMAGE_STORAGE_SPEC ở luồng ảnh LOCAL. Owner đã chọn nhập bằng link Drive,
-tự ghép SHA-256 khi đã upload file và giảm request. Chi tiết dưới đây chờ duyệt.
+tự ghép SHA-256 khi đã upload file và giảm request.
 
 ## Mục tiêu và phạm vi
 
@@ -144,6 +144,13 @@ Nguồn/ghi chú nội bộ vẫn là field văn bản riêng.
 - Dùng HTTP/polling và worker hiện có, không cần SSE/WebSocket trong phạm vi này.
 
 ## Khôi phục ảnh sau này
+
+Vận hành Drive dùng một thư mục gốc chia sẻ Viewer cho service account.
+Có thể đặt thư mục con theo mã sách. Nhập theo từng File ID, không cần quét
+toàn thư mục khi thêm sách. Ảnh mới cần đặt trong cây đã chia sẻ và cho phép tải.
+Folder có limited access hoặc file bên ngoài cây cần kiểm quyền riêng.
+Hỗ trợ link thư mục làm đầu vào là phạm vi khác.
+Tham chiếu [quyền kế thừa của Drive](https://developers.google.com/workspace/drive/api/guides/manage-sharing).
 
 Database lưu File ID, SHA-256, source version/bytes/MIME, role, generation,
 recipe và binding VERIFIED. Khi lưu sách phải giữ đủ liên kết từ temporary

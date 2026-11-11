@@ -3166,3 +3166,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   derived. Cập nhật thiết kế IMPORT/MATCH dùng chung operation, lưu snapshot,
   reservation chống vượt 8 ảnh, giữ đủ binding khi lưu sách và lifecycle staging.
   Chờ duyệt thiết kế chi tiết trước lập kế hoạch.
+
+## 2026-11-11 — Nguồn Drive — Duyệt thiết kế và lập kế hoạch
+
+- Owner duyệt IMAGE_SOURCE_BATCH_SPEC. Lập IMAGE_SOURCE_BATCH_PLAN theo
+  Superpowers writing-plans, bảy task có interface, test hồi quy và thứ tự deploy.
+- Đối chiếu client Drive, admission session/consume, handler và CSRF. Chọn
+  Native theo phương thức đã chốt, chờ owner xem kế hoạch trước implementation.
+- Google Drive docs xác nhận folder con/file thông thường kế thừa quyền Viewer
+  từ folder gốc, kể cả file thêm sau. Nhập theo File ID từng sách, tối đa 8,
+  không cần scan toàn bộ kho. Ghi ngoại lệ limited access và quyền tải file.
+- Kiểm diff và giới hạn dòng tài liệu. Chưa đổi code sản phẩm hoặc chạy tests
+  trong checkpoint kế hoạch.
