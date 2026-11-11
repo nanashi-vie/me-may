@@ -69,8 +69,12 @@ describe('Drive import through the photo panel',()=>{
   expect(panel.drive.canConfirm()).toBe(false);
   expect(root.querySelector('.drive-panel .error')?.textContent).toContain('một ảnh khác nhau');
   selects[1].value='a';selects[1].dispatchEvent(new Event('change'));f.detectChanges();
-  expect(Array.from(root.querySelectorAll('.drive-item img')).map(img=>img.getAttribute('src'))).toEqual(['/back?v=0','/cover?v=0']);
+  expect(root.querySelectorAll('.drive-item img')).toHaveLength(0);
+  for(const block of await f.getDeferBlocks())await block.render(DeferBlockState.Complete);
+  expect(root.querySelectorAll('.photo-slot img')).toHaveLength(2);
   await panel.drive.confirm();f.detectChanges();
+  expect(root.querySelectorAll('.drive-item')).toHaveLength(0);
+  expect(root.querySelector('.drive-panel')?.textContent).toContain('2/2');
   expect(q.persisted()?.version).toBe(1);
   expect(q.sorted().map(row=>[row.role,row.mediaId,row.sourceStatus,row.sourceFile])).toEqual([
    ['FRONT','a','VERIFIED','cover-file'],['BACK','b','VERIFIED','back-file'],
@@ -117,12 +121,17 @@ describe('Drive import through the photo panel',()=>{
   expect(api.commitReplacement).not.toHaveBeenCalled();
   button('Xác nhận các ảnh đã chọn').click();
   await vi.waitFor(()=>expect(panel.drive.view()?.state).toBe('CONFIRMED'));f.detectChanges();
+  expect(root.querySelectorAll('.drive-item')).toHaveLength(0);
+  expect(root.querySelector('.drive-panel')?.textContent).toContain('5/5');
+  expect(button('Gắn tất cả ảnh vào sách')).toBeDefined();
   expect(q.sorted().map(row=>[row.mediaId,row.role,row.pendingLocal,row.sourceStatus])).toEqual([
    ['media-1','FRONT',true,'VERIFIED'],['media-0','BACK',true,'VERIFIED'],['media-2','SPINE',true,'VERIFIED'],
    ['media-3','INSIDE_1',true,'VERIFIED'],['media-4','INSIDE_2',true,'VERIFIED'],
   ]);
   expect(api.commitReplacement).not.toHaveBeenCalled();
-  for(const row of q.sorted())await q.commitLocal(row.id);
+  expect(root.querySelectorAll('button')).not.toContainEqual(expect.objectContaining({textContent:'Gắn ảnh vào sách'}));
+  button('Gắn tất cả ảnh vào sách').click();
+  await vi.waitFor(()=>expect(q.pending()).toBe(false));f.detectChanges();
   expect(q.persisted()?.media).toHaveLength(5);expect(q.persisted()?.version).toBe(5);
   expect(q.pending()).toBe(false);expect(q.ready()).toBe(true);
   expect(panel.drive.thumbnail(ready.items[0])).toBe('/attached/media-0?v=2&size=320');

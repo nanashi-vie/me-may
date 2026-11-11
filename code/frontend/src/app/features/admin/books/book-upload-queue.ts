@@ -53,6 +53,10 @@ export class BookUploadQueue {
   readonly expired = signal(false);
   readonly paused = signal(false);
   readonly processing = signal(false);
+  readonly attaching = signal(false);
+  readonly attachmentProgress = signal<{done:number;total:number}|null>(null);
+  readonly attachmentError = signal('');
+  readonly pendingAttachments = computed(() => this.sorted().filter(row => row.pendingLocal && row.state === 'READY'));
   readonly error = signal('');
   readonly announcement = signal('');
   readonly updates = new Subject<BookDetail>();
@@ -68,7 +72,7 @@ export class BookUploadQueue {
   readonly sorted = computed(() =>
     [...this.rows()].sort((a, b) => MEDIA_ROLES.indexOf(a.role) - MEDIA_ROLES.indexOf(b.role)),
   );
-  readonly pending = computed(() => this.rows().some((r) => r.state !== 'READY' || r.pendingLocal || r.sourceBusy));
+  readonly pending = computed(() => this.attaching() || this.rows().some((r) => r.state !== 'READY' || r.pendingLocal || r.sourceBusy));
   readonly ready = computed(
     () =>
       (!!this.persisted() || !!this.sessionId()) &&
@@ -102,6 +106,9 @@ export class BookUploadQueue {
     if (url.startsWith('blob:')) URL.revokeObjectURL(url);
   }
   configure(book: BookDetail | null) {
+    if (book?.id !== this.persisted()?.id) {
+      this.attachmentProgress.set(null); this.attachmentError.set('');
+    }
     this.rows().forEach((r) => {
       this.revoke(r.preview);
       if (r.previous) this.revoke(r.previous.preview);
@@ -678,25 +685,48 @@ export class BookUploadQueue {
     }
   }
 
+  async commitAllLocal() {
+    if (this.locked() || this.destroyed || !this.persisted() || this.processing()
+        || this.rows().some(row => row.sourceBusy || row.commitBusy)) return;
+    const rows = this.pendingAttachments(), bookId = this.persisted()!.id;
+    if (!rows.length) return;
+    this.attaching.set(true); this.locked.set(true); this.attachmentError.set('');
+    this.attachmentProgress.set({done:0,total:rows.length});
+    try {
+      for (const row of rows) {
+        if (this.destroyed || this.persisted()?.id !== bookId) break;
+        if (!await this.commitLocal(row.id)) {
+          this.attachmentError.set('Chưa gắn được tất cả ảnh. Ảnh đã gắn được giữ nguyên; thử lại để tiếp tục các ảnh còn lại.');
+          break;
+        }
+        this.attachmentProgress.update(progress => ({done:progress!.done+1,total:rows.length}));
+      }
+    } finally {
+      this.attaching.set(false); this.locked.set(false);
+    }
+  }
   async commitLocal(id: string) {
     const row = this.rows().find(item => item.id === id);
     const book = this.persisted();
-    if (!row?.mediaId || !row.pendingLocal || !book || row.state !== 'READY' || row.sourceBusy || row.commitBusy) return;
+    if (!row?.mediaId || !row.pendingLocal || !book || row.state !== 'READY' || row.sourceBusy || row.commitBusy) return false;
     this.patch(id, { commitBusy: true, sourceError: '' });
     try {
       const saved = await firstValueFrom(this.api.commitReplacement(book.id, row.mediaId, {
         version: book.version, role: row.role, requestKey: row.id,
       }).pipe(takeUntil(this.stopped)));
+      if (this.destroyed || this.persisted()?.id !== book.id) return false;
       const image = saved.media.find(media => media.id === row.mediaId);
       if (!image) throw new Error('Ảnh đã thay đổi. Tải lại sách để đối chiếu.');
       if (row.previous) this.revoke(row.previous.preview);
       this.updateBook(saved);
       this.patch(id, { pendingLocal: false, previous: undefined, preview: image.contentPath + '?v=' + saved.version });
       this.rememberLocal();
+      return true;
     } catch (error) {
       this.patch(id, { sourceError: error instanceof HttpErrorResponse && error.error?.error === 'image_source_unverified'
         ? 'Hãy xác minh nguồn Drive trước khi gắn ảnh vào sách công khai.'
         : 'Chưa gắn được ảnh. Kiểm tra phiên ảnh và phiên bản sách rồi thử lại.' });
+      return false;
     } finally {
       this.patch(id, { commitBusy: false });
     }

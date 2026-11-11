@@ -1,6 +1,7 @@
+import { BookDetail } from './book.models';
 import { testBook } from './book-test-fixture';
 import { TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError, Observable } from 'rxjs';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { vi } from 'vitest';
 import { BookUploadQueue, PREPARE_BOOK_IMAGE } from './book-upload-queue';
@@ -313,4 +314,52 @@ describe('book photo queue', () => {
       { mediaId: 'new', role: 'BACK' },
     ]);
   });
+});
+
+describe('attaching all pending photos',()=>{
+ afterEach(()=>sessionStorage.clear());
+ function setup(){
+  sessionStorage.clear();
+  const response=new Subject<BookDetail>();
+  const api={commitReplacement:vi.fn((_book:string,_media:string,_input:{version:number})=>response as Observable<BookDetail>)};
+  TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:api}]});
+  const q=TestBed.inject(BookUploadQueue);q.configure(testBook());
+  q.acceptDriveBatch({id:'batch',mode:'IMPORT',state:'CONFIRMED',digest:'d',expiresAt:'2099',bookVersion:null,
+   selections:[{itemId:'front',mediaId:'a',role:'FRONT'},{itemId:'back',mediaId:'b',role:'BACK'}],
+   items:[{id:'front',fileId:'fa',mediaId:'a',contentPath:'/a',state:'READY',errorCode:null,candidates:['a']},
+    {id:'back',fileId:'fb',mediaId:'b',contentPath:'/b',state:'READY',errorCode:null,candidates:['b']}],
+  },'session');
+  return{q,api,response};
+ }
+ it('attaches sequentially with the latest version and counts only successful photos',async()=>{
+  const {q,api,response}=setup();
+  const running=q.commitAllLocal();
+  expect(api.commitReplacement).toHaveBeenCalledTimes(1);
+  expect(q.attaching()).toBe(true);
+  await q.commitAllLocal();expect(api.commitReplacement).toHaveBeenCalledTimes(1);
+  api.commitReplacement.mockReturnValue(of({...testBook(),version:2,media:[
+   {id:'a',role:'FRONT',contentPath:'/saved/a',alt:null,sourceRef:null},
+   {id:'b',role:'BACK',contentPath:'/saved/b',alt:null,sourceRef:null},
+  ]}));
+  response.next({...testBook(),version:1,media:[{id:'a',role:'FRONT',contentPath:'/saved/a',alt:null,sourceRef:null}]});response.complete();
+  await running;
+  expect(api.commitReplacement.mock.calls.map(call=>call[2].version)).toEqual([0,1]);
+  expect(q.attachmentProgress()).toEqual({done:2,total:2});
+  expect(q.pending()).toBe(false);expect(q.locked()).toBe(false);
+ });
+ it('stops on failure and retries only photos still pending',async()=>{
+  const {q,api}=setup();
+  api.commitReplacement.mockReturnValueOnce(of({...testBook(),version:1,media:[{id:'a',role:'FRONT',contentPath:'/saved/a',alt:null,sourceRef:null}]}))
+   .mockReturnValueOnce(throwError(()=>new HttpErrorResponse({status:409})));
+  await q.commitAllLocal();
+  expect(q.rows().map(row=>row.pendingLocal)).toEqual([false,true]);
+  expect(q.attachmentProgress()).toEqual({done:1,total:2});
+  expect(q.attaching()).toBe(false);expect(q.locked()).toBe(false);
+  api.commitReplacement.mockReturnValue(of({...testBook(),version:2,media:[
+   {id:'a',role:'FRONT',contentPath:'/saved/a',alt:null,sourceRef:null},{id:'b',role:'BACK',contentPath:'/saved/b',alt:null,sourceRef:null},
+  ]}));
+  await q.commitAllLocal();
+  expect(api.commitReplacement.mock.calls.map(call=>call[1])).toEqual(['a','b','b']);
+  expect(q.pending()).toBe(false);
+ });
 });
