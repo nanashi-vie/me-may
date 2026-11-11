@@ -3447,3 +3447,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Từ code/frontend: npm test đạt 295/295, npm run build đạt. Xem trước tĩnh bằng
   Chrome headless với CSS đã biên dịch. Chưa kiểm trang thật với PIN/backend và
   trên mobile thật.
+
+## 2026-11-11 — S064-C02 — Trả UI danh sách nhân viên, nổi bật nhập ảnh Drive
+
+- Làm trên dev. Dòng nhân viên và mục dropdown trong attendance.scss trả về kiểu
+  phẳng (viền xám nền trắng; menu nền trong suốt, hover hồng nhạt); Thêm nhân viên,
+  Tải lại và các nút khác giữ 3D.
+- book-media-panel.scss: `.drive-panel` thành thẻ nền kem, viền trái đỏ, tiêu đề
+  đậm cỡ lớn màu đỏ; vẫn là details thu gọn, không thêm dòng phụ.
+- npm test và npm run build từ code/frontend đạt. Xem trước tĩnh danh sách nhân
+  viên bằng Chrome headless. Chưa xem form nhập sách trên trình duyệt thật.

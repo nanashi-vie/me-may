@@ -75,7 +75,8 @@ dialog::backdrop { background: rgb(30 20 20 / 45%); }
 .employee-columns { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr); gap: 1rem; align-items: start; }
 .employee-list { display: grid; gap: .5rem; list-style: none; margin: 0; padding: 0; }
 .employee-row { position: relative; }
-.employee-trigger { display: grid; gap: .25rem; text-align: left; width: 100%; padding-inline-end: 2rem; }
+.employee-trigger { display: grid; gap: .25rem; text-align: left; width: 100%; padding: .55rem 2rem .55rem .9rem; border: 1px solid #b8ada6; background: #fff; box-shadow: none; text-shadow: none; font-weight: 400; transition: none; }
+.employee-trigger:active:not(:disabled) { translate: none; box-shadow: none; }
 .employee-trigger:is(.selected, [aria-expanded='true']) { border-color: #9b1c28; background: #fdf0ee; }
 .employee-chevron { position: absolute; inset-inline-end: .75rem; top: 1rem; color: #625951; }
 .employee-menu {
@@ -98,12 +99,18 @@ dialog::backdrop { background: rgb(30 20 20 / 45%); }
   padding: .55rem .65rem;
   border: 0;
   border-radius: .3rem;
+  background: transparent;
+  box-shadow: none;
+  text-shadow: none;
+  font-weight: 400;
+  transition: none;
   color: #302620;
   text-align: left;
   text-decoration: none;
   white-space: nowrap;
 }
 .employee-menu :is(a, button):is(:hover, :focus-visible) { background: #fdf0ee; color: #861e24; }
+.employee-menu button:active:not(:disabled) { translate: none; box-shadow: none; }
 .profile-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); gap: .75rem; }
 @media (max-width: 800px) {
   .employee-columns { grid-template-columns: minmax(0, 1fr); gap: 0; }

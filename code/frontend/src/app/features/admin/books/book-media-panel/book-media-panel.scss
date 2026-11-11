@@ -13,6 +13,9 @@ button {font-size:.8rem;padding:.5rem .7rem;}
 progress {width:100%;}
 .warning {font-size:.85rem;color:#80531b;}
 summary {cursor:pointer;margin-top:.8rem;}
+.drive-panel {margin-top:1rem;padding:1rem 1.2rem;border:1px solid var(--line);border-left:.4rem solid var(--red);background:var(--cream,#fff);}
+.drive-panel > summary {margin-top:0;font-size:1.15rem;font-weight:700;color:var(--red);}
+.drive-panel[open] > summary {margin-bottom:.8rem;}
 dialog {max-width:94vw;width:1000px;max-height:94vh;border:1px solid var(--line);padding:1rem;background:var(--cream,#fff);}
 dialog::backdrop {background:rgb(0 0 0 / .65);}
 .viewer-heading {display:flex;justify-content:space-between;align-items:center;gap:1rem;}
