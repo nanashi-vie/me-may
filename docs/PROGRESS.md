@@ -3,6 +3,10 @@
 Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Đã thu gọn kết quả Drive và thêm Gắn tất cả ảnh theo duyệt owner
+  11/11: tiến độ n/tổng, không ảnh lặp sau confirm. Retry giữ phần đã gắn.
+  Frontend 294/294, Workers build và browser fixture đạt. Chờ merge main
+  và deploy frontend; không đổi backend/schema.
 - Đã sửa contract MATCH trả400 invalid_request (11/11): bookId HTTP là
   chuỗi, target snapshot tùy chọn. API ghép/xác nhận 5 ảnh và DOM đạt;
   frontend 292/292 đạt, backend 298 total/3 skip không lỗi. Cần deploy backend,

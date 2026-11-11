@@ -13,6 +13,13 @@ export class BookMediaPanel {
   readonly drive = inject(DriveBatch);
   readonly disabled = input(false);
   readonly readonly = input(false);
+  readonly writeLocked = computed(() => this.disabled() || this.photos.attaching());
+  readonly driveTotal = computed(() => this.drive.view()?.items?.length ?? 0);
+  readonly driveCompleted = computed(() => {
+    const batch = this.drive.view();
+    return batch?.state === 'CONFIRMED' ? batch.selections.length
+      : batch?.items?.filter(item => ['READY','FAILED','CANCELLED'].includes(item.state)).length ?? 0;
+  });
   readonly roles = MEDIA_ROLES;
   readonly labels = MEDIA_LABELS;
   readonly dragging = signal(false);
@@ -33,8 +40,8 @@ export class BookMediaPanel {
     this.sourceInputs.update(inputs => ({ ...inputs, [id]: value }));
   }
   setBatch(value: string) { this.batchInput.set(value); }
-  async importSources() { if (!this.disabled() && !this.readonly()) await this.drive.submit('IMPORT',this.batchInput()); }
-  async matchSources() { if (!this.disabled() && !this.readonly()) await this.drive.submit('MATCH',this.batchInput()); }
+  async importSources() { if (!this.writeLocked() && !this.readonly()) await this.drive.submit('IMPORT',this.batchInput()); }
+  async matchSources() { if (!this.writeLocked() && !this.readonly()) await this.drive.submit('MATCH',this.batchInput()); }
   sourceState(state: string) {
     const labels: Record<string,string> = {PENDING:'Đang chờ',DOWNLOADING:'Đang tải từ Drive',
       PROCESSING:'Đang xử lý',ENCODING:'Đang tạo bộ ảnh',READY:'Sẵn sàng',FAILED:'Có lỗi',
@@ -84,24 +91,24 @@ export class BookMediaPanel {
   previewFailed(id:string) {this.failedPreviews.update(values=>({...values,[id]:true}));}
   select(event: Event) {
     const input = event.target as HTMLInputElement;
-    if (!this.disabled() && !this.readonly()) this.photos.add(Array.from(input.files ?? []));
+    if (!this.writeLocked() && !this.readonly()) this.photos.add(Array.from(input.files ?? []));
     input.value = '';
   }
   replace(id: string, event: Event) {
     const input = event.target as HTMLInputElement;
-    if (input.files?.[0] && !this.disabled() && !this.readonly())
+    if (input.files?.[0] && !this.writeLocked() && !this.readonly())
       this.photos.replace(id, input.files[0]);
     input.value = '';
   }
   over(event: DragEvent) {
     event.preventDefault();
-    if (!this.disabled() && !this.readonly()) this.dragging.set(true);
+    if (!this.writeLocked() && !this.readonly()) this.dragging.set(true);
   }
   dropFiles(event: DragEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.dragging.set(false);
-    if (!this.disabled() && !this.readonly())
+    if (!this.writeLocked() && !this.readonly())
       this.photos.add(Array.from(event.dataTransfer?.files ?? []));
   }
 }

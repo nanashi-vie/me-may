@@ -87,7 +87,7 @@ Nguồn/ghi chú nội bộ vẫn là field văn bản riêng.
 - Xác nhận IMPORT đưa các temporary media đã chọn vào bộ ảnh chờ lưu sách,
   cùng vai trò đã chọn. Chưa publish hoặc sửa sách tự động.
   Khi sửa sách đã lưu, ảnh nhập có trạng thái chờ gắn (`pendingLocal`),
-  owner bấm Gắn ảnh vào sách từng ảnh qua commitReplacement hiện có;
+  owner bấm Gắn tất cả ảnh vào sách, client chạy tuần tự qua commitReplacement hiện có;
   giữ kiểm version/quyền/admission/nguồn. Reload phục hồi session theo sách.
   Trước xác nhận, item chỉ được xem qua operation. Kiểm admission ở server
   để session view/finalize/consume/replacement không dùng media chưa được chọn,
@@ -193,3 +193,24 @@ Nếu ảnh gốc bị xóa, đổi nội dung hoặc mất quyền thì báo l�
   rebuild từ source giả lập đúng recipe/hash. QA dùng Drive thật ở namespace thử.
 - Backend integration test trên DB riêng, frontend tests liên quan và build
   Workers, đo request trước/sau. Deploy theo dev/main, smoke một sách nháp mới.
+
+## Thu gọn kết quả và gắn cả lô — duyệt 11/11
+
+Owner đồng ý thay phần ảnh lặp trong kết quả Drive bằng tiến độ/tổng kết
+1/5…5/5, không phải màn hình duyệt từng ảnh. IMPORT giữ thumbnail để chọn
+vai trò trước confirm; sau confirm chỉ giữ một bộ ảnh của sách. MATCH
+dùng ảnh sẵn có ở bộ ảnh, kết quả ghép dùng số thứ tự/vai trò và lựa chọn
+khi hash trùng, không tạo thêm bản thumbnail.
+
+Một nút Gắn tất cả ảnh vào sách cho ảnh pendingLocal READY, kể cả upload
+máy. Chạy tuần tự API hiện có để giữ expectedVersion/idempotency từng ảnh.
+Hiện số gắn thành công/tổng số, khóa thao tác sửa ảnh trong lúc chạy. Lỗi
+dừng lô, giữ ảnh đã gắn và thông báo ở ảnh lỗi; thử lại chỉ xử lý phần còn
+pending. Không thêm API atomic lô hoặc thay gate nguồn/publication.
+
+Phương án đã xét: thêm API gắn atomic lô cần backend mới và không có tiến
+độ từng ảnh; dùng API hiện có tuần tự phù hợp một nút/tiến độ và retry.
+
+Kế hoạch thực thi nhỏ: regression DOM kết quả không lặp; regression queue
+gắn tuần tự/version, lỗi/thử lại; cập nhật UI/queue; toàn FE test, Workers
+build và proxy. Không đổi backend/schema, không deploy trong phiên.

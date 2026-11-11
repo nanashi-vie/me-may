@@ -17,7 +17,7 @@
           type="file"
           multiple
           [accept]="acceptedImages()"
-          [disabled]="disabled()"
+          [disabled]="writeLocked()"
           (change)="select($event)"
       /></label>
       <small
@@ -31,39 +31,44 @@
       <p>Dán tối đa 8 link ảnh theo thứ tự bất kỳ. Khi nhập từ Drive, xem ảnh thu nhỏ và chọn vai trò trước khi xác nhận.</p>
       <label>
         Link file Drive hoặc File ID
-        <textarea rows="4" maxlength="8192" [value]="batchInput()" [disabled]="disabled() || drive.active()"
+        <textarea rows="4" maxlength="8192" [value]="batchInput()" [disabled]="writeLocked() || drive.active()"
           (input)="setBatch($any($event.target).value)" placeholder="Mỗi link một dòng, hoặc phân cách bằng dấu phẩy"></textarea>
       </label>
       <div class="actions">
-        <button type="button" [disabled]="disabled() || drive.active() || !batchInput().trim()"
+        <button type="button" [disabled]="writeLocked() || drive.active() || !batchInput().trim()"
           (click)="importSources()">Tải ảnh từ Drive</button>
         @if (sourceTargets().length) {
-          <button type="button" class="secondary" [disabled]="disabled() || drive.active() || !batchInput().trim()"
+          <button type="button" class="secondary" [disabled]="writeLocked() || drive.active() || !batchInput().trim()"
             (click)="matchSources()">Tự ghép nguồn cho ảnh đã tải</button>
         }
       </div>
       @if (drive.error()) { <p class="error" role="alert">{{ drive.error() }}</p> }
       @if (drive.view(); as batch) {
-        <p role="status">{{ sourceState(batch.state) }}</p>
+        <p role="status" aria-live="polite">
+          {{ batch.state === 'CONFIRMED' ? 'Đã xác minh nguồn' : sourceState(batch.state) }}:
+          {{ driveCompleted() }}/{{ driveTotal() }} ảnh
+        </p>
+        @if (batch.state === 'READY') {
         <div class="drive-items">
           @for (item of batch.items; track item.id) {
             <article class="drive-item">
-              @if (drive.thumbnail(item); as image) {
+              @if (batch.mode === 'IMPORT' && drive.thumbnail(item); as image) {
                 <img [src]="image" alt="Ảnh tương ứng với nguồn Drive" width="160" height="160" loading="lazy" />
               }
-              <small class="drive-id">{{ item.fileId }}</small>
+              <strong>{{ $index + 1 }}/{{ batch.items.length }}</strong>
+              @if (batch.mode === 'IMPORT') { <small class="drive-id">{{ item.fileId }}</small> }
               <p>{{ sourceState(item.state) }}</p>
               @if (item.errorCode) { <p class="error">{{ sourceError(item.errorCode) }}</p> }
               @if (batch.state === 'READY' && item.state === 'READY') {
                 @if (batch.mode === 'IMPORT') {
                   <label>
                     <input type="checkbox" [checked]="!!drive.choices()[item.id]?.mediaId"
-                      [disabled]="disabled() || drive.loading()"
+                      [disabled]="writeLocked() || drive.loading()"
                       (change)="drive.selectMedia(item.id, $any($event.target).checked ? item.mediaId! : '')" />
                     Dùng ảnh này
                   </label>
                   <label>Vai trò ảnh
-                    <select [value]="drive.choices()[item.id]?.role ?? ''" [disabled]="disabled() || drive.loading()"
+                    <select [value]="drive.choices()[item.id]?.role ?? ''" [disabled]="writeLocked() || drive.loading()"
                       (change)="drive.selectRole(item.id, $any($event.target).value)">
                       <option value="" disabled [selected]="!drive.choices()[item.id]?.role">Chọn vai trò</option>
                       @for (role of roles; track role) {
@@ -73,7 +78,7 @@
                   </label>
                 } @else {
                   <label>Ảnh có cùng SHA-256
-                    <select [value]="drive.choices()[item.id]?.mediaId ?? ''" [disabled]="disabled() || drive.loading()"
+                    <select [value]="drive.choices()[item.id]?.mediaId ?? ''" [disabled]="writeLocked() || drive.loading()"
                       (change)="drive.selectMedia(item.id, $any($event.target).value)">
                       <option value="" [selected]="!drive.choices()[item.id]?.mediaId">Bỏ qua hoặc chọn ảnh</option>
                       @for (media of item.candidates; track media) {
@@ -86,17 +91,18 @@
             </article>
           }
         </div>
+        }
         @if (batch.state === 'READY') {
           <p>Chọn một vai trò hoặc một ảnh khác nhau cho mỗi nguồn. Bạn có thể bỏ qua dòng bị lỗi.</p>
           @if (drive.confirmProblem()) { <p class="error" role="status">{{ drive.confirmProblem() }}</p> }
-          <button type="button" [disabled]="disabled() || !drive.canConfirm()" (click)="drive.confirm()">
+          <button type="button" [disabled]="writeLocked() || !drive.canConfirm()" (click)="drive.confirm()">
             {{ drive.loading() ? 'Đang xác nhận…' : 'Xác nhận các ảnh đã chọn' }}
           </button>
         }
         @if (batch.state !== 'CONFIRMED' && batch.state !== 'EXPIRED' && batch.state !== 'CANCELLED') {
           <div class="actions">
-            <button type="button" class="secondary" [disabled]="disabled() || drive.loading()" (click)="drive.read()">Làm mới tiến độ</button>
-            <button type="button" class="secondary" [disabled]="disabled() || drive.loading()" (click)="drive.cancel()">Hủy lô</button>
+            <button type="button" class="secondary" [disabled]="writeLocked() || drive.loading()" (click)="drive.read()">Làm mới tiến độ</button>
+            <button type="button" class="secondary" [disabled]="writeLocked() || drive.loading()" (click)="drive.cancel()">Hủy lô</button>
           </div>
         }
       }
@@ -109,13 +115,22 @@
     <button
       type="button"
       class="secondary"
-      [disabled]="disabled() || photos.processing()"
+      [disabled]="writeLocked() || photos.processing()"
       (click)="photos.renew()"
     >
       Tạo lại phiên ảnh, giữ các file đã chọn
     </button>
   }
   <p role="status" aria-live="polite">{{ photos.announcement() }}</p>
+  @if (!readonly() && photos.pendingAttachments().length) {
+    <button type="button" [disabled]="writeLocked() || drive.active() || photos.processing()"
+      (click)="photos.commitAllLocal()">Gắn tất cả ảnh vào sách</button>
+  }
+  @if (photos.attachmentProgress(); as progress) {
+    <p role="status" aria-live="polite">{{ photos.attaching() ? 'Đang gắn ảnh' : 'Đã gắn' }}:
+      {{ progress.done }}/{{ progress.total }} ảnh</p>
+  }
+  @if (photos.attachmentError()) { <p class="error" role="alert">{{ photos.attachmentError() }}</p> }
   <div class="photo-grid">
     @for (row of photos.sorted(); track row.id; let i = $index) {
       <article
@@ -174,7 +189,7 @@
           <p class="error" role="alert">{{ row.error }}</p>
         }
         @if (!readonly()) {
-          <fieldset [disabled]="disabled() || drive.active() || row.sourceBusy || row.commitBusy">
+          <fieldset [disabled]="writeLocked() || drive.active() || row.sourceBusy || row.commitBusy">
             <label class="admin-field"
               ><span class="field-label">Vai trò ảnh</span><select
                 (change)="photos.assignRole(row.id, $any($event.target).value)"
@@ -224,7 +239,7 @@
               </button>
               @if (row.sourceStatus === 'VERIFIED') { <p role="status">Đã xác minh nguồn</p> }
               @if (row.pendingLocal) {
-                <button type="button" (click)="photos.commitLocal(row.id)">Gắn ảnh vào sách</button>
+                <p role="status">Ảnh chờ gắn vào sách.</p>
               }
               @if (row.sourceError) { <p class="error" role="alert">{{ row.sourceError }}</p> }
             }

@@ -3401,3 +3401,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Chuẩn bị commit/push dev; owner merge main và deploy backend trước khi
   thử lại MATCH. Không có migration, chưa smoke lại production hoặc Drive thật.
 - Đã dừng fixture memay-drive-flow-test; không thay container/DB khác.
+
+## 2026-11-11 — Thu gọn Drive và gắn cả lô — Bắt đầu
+
+- Owner duyệt một bộ ảnh, kết quả Drive dạng tiến độ/tổng kết n/tổng, một
+  nút gắn tất cả, giữ phần thành công khi lỗi. Đã làm rõ không là carousel.
+- Cập nhật thiết kế/kế hoạch nhỏ tại IMAGE_SOURCE_BATCH_SPEC; tái dùng API
+  commitReplacement tuần tự, không thêm endpoint/schema. dev b6cb3d1, chưa
+  thay code sản phẩm; bắt đầu bằng regression queue/DOM.
+
+### Thu gọn Drive và gắn cả lô — Verification
+
+- RED 4 ca bắt kết quả CONFIRMED lặp cards và queue chưa có gắn cả lô.
+  GREEN 25 ca liên quan: MATCH dùng ảnh ở bộ ảnh, IMPORT xem ảnh trước
+  confirm; CONFIRMED chỉ giữ bộ đếm n/tổng và một bộ ảnh sách.
+- commitAllLocal khóa sửa ảnh, gọi commitLocal tuần tự với version mới nhất.
+  Lỗi dừng lô; retry chỉ chạy pendingLocal, double click không nhân đôi.
+  Tiến độ đếm thành công, giữ gate nguồn/quyền/version và ảnh đã gắn.
+- Frontend `npm test`: 50 files/294 ca đạt; Workers build đạt không warning.
+  Browser Brave local :4208/API fixture :18882: PROCESSING 0/5, confirm
+  5/5, không ảnh lặp trong Drive, 5 photo-slot, không nút gắn từng ảnh.
+  Một lần bấm gắn tất cả đạt 5/5 và save bật. Tab và hai server QA đã dừng.
+- Không đổi backend/schema, không chạy lại backend suite. Không deploy hoặc
+  ghi production/Drive thật. Đang chờ proxy smoke trước commit/push dev.
+- Lịch sử bước gắn ảnh: git log -S và git show xác nhận thêm ngày
+  09/11/2026 11:39+07, commit dceef69 (integrate local uploads…).
+  Cloudinary trên sách đã lưu gọi upload(book,role,version), nhận BookDetail
+  đã gắn ngay; LOCAL dùng worker và temporary media, READY rồi commit.
+  Bấm từng ảnh là lựa chọn UI của implementation, không là yêu cầu bắt buộc
+  của Drive/Cloudinary. 11/11 tái dùng cho IMPORT vào sách đã lưu; bản này
+  gộp thành một nút theo duyệt owner.
+- Proxy workerd smoke đạt; diff whitespace, trần dòng và liên kết tài liệu
+  hiện hành đạt. Commit/push dev; owner merge main/deploy frontend.
