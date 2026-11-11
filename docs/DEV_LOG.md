@@ -3240,3 +3240,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
    khác vị trí plan, không đổi contract sản phẩm.
 8. Không coi fixture là benchmark/live rollout: QA credentials chưa có ở
    session, rollout vẫn do owner. Chi phí là cần smoke/đo thật sau triển khai.
+
+## 2026-11-11 — S063-C01 — Sửa "Mở bằng Zalo Web" không mở tab
+
+- Làm trên dev-ui sau khi fast-forward dev lên origin/dev và merge dev vào dev-ui.
+- Nguyên nhân: `(click)="$event.target === dialog && dialog.close()"` trả `false`
+  khi bấm vào link, Angular gọi preventDefault nên link không điều hướng.
+  Chuyển sang `onBackdropClick()` không trả giá trị.
+- Thêm assertion hồi quy ở home-page.spec.ts. `npm test` từ code/frontend đạt
+  284/284. Chrome headless trên ng serve dev-ui: bấm nút mở tab id.zalo.me.
