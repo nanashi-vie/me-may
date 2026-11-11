@@ -1,15 +1,15 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 10/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
 - R6.1 (10/11): owner xác nhận ca Drive thật đạt, nguồn VERIFIED v1. Sau khi
   đổi bind QA, worker nhận 200/401/404 đúng kỳ vọng. Owner bỏ qua chạy lại upload.
   [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
-- R6 (10/11): local đạt 16 backend, 14 upload UI, 4 CLI và 10 worker. Owner đã
-  chia sẻ lô ảnh Drive để thử nhập sách mới trên LOCAL. Sách cũ giữ Cloudinary.
-  Worker production 0 replica, đúng overlay, UID/GID, quyền ghi và token.
-  Cần xác định đích backend trong Dokploy, backup mới và đường DNS worker.
+- R6 (11/11): owner xác nhận production V30, bind riêng 8081, catalogue 200 và
+  recipe v1 khớp worker. Nginx đọc health backend qua tên service đạt.
+  Frontend production còn bundle ảnh nội bộ cũ. Cần deploy Worker me-may từ
+  main 0f5ed73 và mở lại form. Wrangler local chưa có credential Cloudflare.
 - S067 (10/11): hợp nhất main vào dev, giữ V21–V23 chấm công và đổi chuỗi
   ảnh sang V24–V30. Bản sao production V23 lên V30 đạt đối chiếu dữ liệu
   và đủ 16 bảng ảnh. Backend 276 đạt, 3 skip. [Runbook S8](IMAGE_OPERATIONS.md).

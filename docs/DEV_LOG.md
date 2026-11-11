@@ -3139,3 +3139,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - JAR production chỉ có V23. Tên service đã kiểm là PostgreSQL, chưa dùng làm
   đích worker. Giữ production hiện tại trong khi xác định đúng app Dokploy và
   backup mới. Merge main có thể tự kích hoạt deploy và Flyway. Chưa deploy.
+
+## 2026-11-11 — R6 — Frontend production còn form ảnh nội bộ cũ
+
+- Owner xác nhận production Flyway 30|0, listener 8081 bind IP mạng ảnh và
+  catalogue 200. Đã đăng ký recipe v1 khớp worker. Đích worker dùng DNS
+  service backend production. Restore R2 đã đạt theo xác nhận owner.
+- Đọc 41 bundle JavaScript public từ memaybooks.com. chunk-JB2UGBAZ.js có
+  INTERNAL_1/2, chunk-ODKP44QD.js còn showOnProduct, khớp ảnh form cũ owner gửi.
+- Fetch main/dev. Main 0f5ed73 đã có bộ ảnh chung tối đa 8, ô Drive và ghép
+  nhiều nguồn khi ảnh LOCAL READY. Source frontend local khớp main.
+- Wrangler deployments list dừng vì thiếu credential Cloudflare. Chưa
+  deploy frontend từ máy này. Cần deploy Worker me-may từ main, kiểm bundle
+  mới rồi mở lại form. Chưa xác nhận phiên bản frontend trong trình duyệt owner.
