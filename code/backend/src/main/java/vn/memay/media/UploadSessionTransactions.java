@@ -46,7 +46,7 @@ public class UploadSessionTransactions {
  }
  private UploadSession view(UUID id) {
   var row=jdbc.queryForMap("select state,expires_at,book_id from upload_session where id=?",id);
-  var media=jdbc.query("select m.*,j.id as job_id,j.status as job_status from temporary_media m left join image_job j on j.generation_id=m.generation_id and j.kind='PROCESS' where m.session_id=? and m.state in ('UPLOADING','READY') order by m.created_at,m.id",(r,n)->new TemporaryMedia(r.getString("id"),r.getString("state"),r.getString("alt"),r.getString("source_ref"),r.getObject("width",Integer.class),r.getObject("height",Integer.class),"/api/v1/admin/upload-sessions/"+id+"/media/"+r.getString("id"),r.getString("provider"),r.getObject("job_id",UUID.class),r.getString("job_status"),r.getObject("request_key",UUID.class)),id);
+  var media=jdbc.query("select m.*,j.id as job_id,j.status as job_status from temporary_media m left join image_job j on j.generation_id=m.generation_id and j.kind='PROCESS' where m.session_id=? and m.state in ('UPLOADING','READY') and not exists(select 1 from drive_image_batch_item bi join drive_image_batch bb on bb.id=bi.batch_id where bi.media_id=m.id and bb.mode='IMPORT' and not bi.admitted) order by m.created_at,m.id",(r,n)->new TemporaryMedia(r.getString("id"),r.getString("state"),r.getString("alt"),r.getString("source_ref"),r.getObject("width",Integer.class),r.getObject("height",Integer.class),"/api/v1/admin/upload-sessions/"+id+"/media/"+r.getString("id"),r.getString("provider"),r.getObject("job_id",UUID.class),r.getString("job_status"),r.getObject("request_key",UUID.class)),id);
   return new UploadSession(id.toString(),row.get("state").toString(),((Timestamp)row.get("expires_at")).toInstant(),media,row.get("book_id")==null?null:row.get("book_id").toString());
  }
  private String text(String field,String value,int max) {
@@ -97,6 +97,7 @@ public class UploadSessionTransactions {
  }
  // The caller holds the session lock and owns the book mutation transaction.
  public void consumeReady(UUID media,long bookId,MediaDtos.MediaRole role,String defaultAlt) {
+  requireAdmitted(media);
   if(jdbc.update("""
       INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,
           alt,source_ref,created_at,updated_at,provider,serving_generation)
@@ -104,6 +105,19 @@ public class UploadSessionTransactions {
           created_at,updated_at,provider,generation_id FROM temporary_media WHERE id=? AND state='READY'
       """,bookId,role.canonical().name(),defaultAlt,media)!=1)throw new AdminApiException(409,"media_not_ready");
   jdbc.update("delete from temporary_media where id=?",media);
+ }
+ public void requireAdmitted(UUID media) {
+  if(Boolean.TRUE.equals(jdbc.queryForObject("""
+      SELECT EXISTS(SELECT 1 FROM drive_image_batch_item i JOIN drive_image_batch b ON b.id=i.batch_id
+      WHERE i.media_id=? AND b.mode='IMPORT' AND NOT i.admitted)
+      """,Boolean.class,media))) throw new AdminApiException(409,"drive_batch_not_confirmed");
+ }
+ public void closeDriveBatches(UUID session) {
+  jdbc.update("UPDATE drive_image_batch SET state='CANCELLED' WHERE session_id=? AND state IN ('PENDING','PROCESSING','READY')",session);
+  jdbc.update("""
+      UPDATE drive_image_batch_item i SET state='CANCELLED',lease_token=NULL,lease_until=NULL
+      FROM drive_image_batch b WHERE b.id=i.batch_id AND b.session_id=? AND b.state='CANCELLED' AND NOT i.admitted
+      """,session);
  }
  @Transactional public UUID localPreview(UUID session,UUID media,AdminUser actor) {
   lock(session,actor,true);
@@ -124,14 +138,14 @@ public class UploadSessionTransactions {
   if(jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where id=? and session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),media,session)==0)throw new AdminApiException(404,"not_found");
  }
  @Transactional public void cancel(UUID id,AdminUser actor) {
-  lock(id,actor,true);jdbc.update("update upload_session set state='CANCELLED' where id=?",id);markPending(id);
+  lock(id,actor,true);jdbc.update("update upload_session set state='CANCELLED' where id=?",id);closeDriveBatches(id);markPending(id);
  }
  private void markPending(UUID id) {
   jdbc.update("update temporary_media set delete_after=case when state='UPLOADING' and provider='CLOUDINARY' then delete_after else ? end,state='DELETE_PENDING' where session_id=? and state in ('UPLOADING','READY')",Timestamp.from(clock.instant()),id);
  }
  @Transactional public void expire() {
   var sessions=jdbc.queryForList("select id from upload_session where state='OPEN' and expires_at<=? order by expires_at limit 100 for update skip locked",UUID.class,Timestamp.from(clock.instant()));
-  for(UUID id:sessions){jdbc.update("update upload_session set state='CANCELLED' where id=?",id);markPending(id);}
+  for(UUID id:sessions){jdbc.update("update upload_session set state='CANCELLED' where id=?",id);closeDriveBatches(id);markPending(id);}
   jdbc.update("update temporary_media set state='DELETE_PENDING' where state='UPLOADING' and provider='CLOUDINARY' and delete_after<=?",Timestamp.from(clock.instant()));
  }
 }

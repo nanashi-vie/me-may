@@ -39,6 +39,10 @@ public class SourceBindingService {
     public UUID verify(UUID mediaId, String fileId, long expectedBindingVersion, Long expectedBookVersion,
                        UUID requestKey, AdminUser actor) {
         requireOwner(actor);
+        if (Boolean.TRUE.equals(jdbc.queryForObject("""
+                SELECT EXISTS(SELECT 1 FROM drive_image_batch_item i JOIN drive_image_batch b ON b.id=i.batch_id
+                  WHERE i.media_id=? AND b.mode='IMPORT' AND NOT i.admitted)
+                """,Boolean.class,mediaId))) throw new AdminApiException(409,"drive_batch_not_confirmed");
         if (fileId == null || !fileId.matches("[A-Za-z0-9_-]{1,200}") || requestKey == null
                 || expectedBindingVersion < 0 || (expectedBookVersion != null && expectedBookVersion < 0))
             throw new AdminApiException(400, "invalid_source_request");

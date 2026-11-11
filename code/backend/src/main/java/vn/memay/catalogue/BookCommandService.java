@@ -172,6 +172,7 @@ public class BookCommandService {
                 input.uploadSessionId());
         var selected = new LinkedHashMap<UUID, Map<String, Object>>();
         for (var assignment : assignments) {
+            uploads.requireAdmitted(assignment.mediaId());
             var photo = ready.stream().filter(m -> assignment.mediaId().equals(m.get("id"))).findFirst()
                     .orElseThrow(
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));
@@ -205,6 +206,7 @@ public class BookCommandService {
         snapshot.put("confirmedActualCopy", input.confirmedActualCopy());
         audit.record(actor, "BOOK", id, "CREATE", Map.of(), snapshot, b.version);
         if(target==Publication.PUBLISHED) audit.record(actor, "BOOK", id, "PUBLISHED", Map.of(), snapshot, b.version);
+        uploads.closeDriveBatches(input.uploadSessionId());
         jdbc.update("update upload_session set state='CONSUMED',book_id=?,request_fingerprint=? where id=?", id,
                 fingerprint, input.uploadSessionId());
         jdbc.update(

@@ -73,13 +73,15 @@ public class DriveBatchService {
             for (Target target : input.targets()) {
                 if (target == null || target.mediaId() == null || !seen.add(target.mediaId())) throw invalid();
                 var current = sources.target(target.mediaId(), actor.getId());
-                sources.checkVersion(target.mediaId(), current, target.bindingVersion(), input.bookVersion());
+                long bindingVersion = target.generationId() == null
+                        ? bindings.find(target.mediaId()).map(b -> b.bindingVersion()).orElse(0L) : target.bindingVersion();
+                sources.checkVersion(target.mediaId(), current, bindingVersion, input.bookVersion());
                 if (!Objects.equals(current.bookId(), input.bookId())
-                        || !Objects.equals(current.generation(), target.generationId())) throw conflict();
+                        || (target.generationId() != null && !Objects.equals(current.generation(), target.generationId()))) throw conflict();
                 if (input.sessionId() != null && !Boolean.TRUE.equals(db.queryForObject(
                         "SELECT EXISTS(SELECT 1 FROM temporary_media WHERE id=? AND session_id=?)",
                         Boolean.class, target.mediaId(), input.sessionId()))) throw invalid();
-                snapshots.add(new Snapshot(target.mediaId(), current.generation(), target.bindingVersion(),
+                snapshots.add(new Snapshot(target.mediaId(), current.generation(), bindingVersion,
                         current.sha(), current.recipe()));
             }
         }
@@ -159,6 +161,124 @@ public class DriveBatchService {
                         item.get("sha256"), item.get("source_version"), item.get("candidates").toString())).toList()));
         return new View(id, Mode.valueOf(row.get("mode").toString()), row.get("state").toString(),
                 ((Timestamp)row.get("expires_at")).toInstant(), digest, items, (Long)row.get("book_version"), List.of());
+    }
+    @Transactional
+    public List<DriveSourceMetadata> prepareConfirmation(UUID id, Confirm input, AdminUser actor) {
+        var view=status(id,actor);
+        if ("CONFIRMED".equals(view.state())) return List.of();
+        validateConfirmation(view,input);
+        var items=repository.items(id);
+        return input.selections().stream().map(selection-> {
+            var item=items.stream().filter(i->selection.itemId().equals(i.get("id"))).findFirst().orElseThrow(DriveBatchService::invalid);
+            return new DriveSourceMetadata(item.get("file_id").toString(),(String)item.get("source_version"),
+                    ((Number)item.get("source_bytes")).longValue(),(String)item.get("mime"));
+        }).toList();
+    }
+
+    @Transactional
+    public View confirmChecked(UUID id, Confirm input, AdminUser actor, List<DriveSourceMetadata> metadata) {
+        db.queryForObject("SELECT id FROM admin_user WHERE id=? FOR UPDATE",Long.class,actor.getId());
+        sessions.requireOwner(actor);
+        // Session/book locks precede the receipt lock, including on replays.
+        var initial=repository.owned(id,actor.getId(),namespace,false);
+        if (!"CONFIRMED".equals(initial.get("state")) && initial.get("session_id")!=null)
+            sessions.lock((UUID)initial.get("session_id"),actor,true);
+        if (initial.get("book_id")!=null)
+            db.queryForObject("SELECT id FROM book_copy WHERE id=? FOR UPDATE",Long.class,initial.get("book_id"));
+        var row=repository.owned(id,actor.getId(),namespace,true);
+        String fingerprint=hash(input);
+        if ("CONFIRMED".equals(row.get("state"))) {
+            if (input==null || !Objects.equals(row.get("confirm_key"),input.requestKey())
+                    || !fingerprint.equals(row.get("confirm_fingerprint"))) throw conflict();
+            return json.readValue(row.get("receipt").toString(),View.class);
+        }
+        var view=status(id,actor);
+        validateConfirmation(view,input);
+        var items=repository.items(id);
+        var snapshots=List.of(json.readValue(row.get("targets").toString(),Snapshot[].class));
+        boolean importing=view.mode()==Mode.IMPORT;
+        Long bookVersion=view.bookVersion();
+        if (bookVersion!=null) {
+            Long current=db.queryForObject("SELECT version FROM book_copy WHERE id=? AND deleted_at IS NULL",
+                    Long.class,row.get("book_id"));
+            if (!bookVersion.equals(current)) throw conflict();
+            bookVersion++;
+        }
+        for (Selection selection:input.selections()) {
+            var item=items.stream().filter(i->selection.itemId().equals(i.get("id"))).findFirst().orElseThrow(DriveBatchService::invalid);
+            var expected=new DriveSourceMetadata(item.get("file_id").toString(),(String)item.get("source_version"),
+                    ((Number)item.get("source_bytes")).longValue(),(String)item.get("mime"));
+            if (!metadata.contains(expected)) throw new AdminApiException(409,"SOURCE_CHANGED");
+            var target=sources.target(selection.mediaId(),actor.getId());
+            long bindingVersion;
+            if (importing) {
+                if (!Objects.equals(item.get("generation_id"),target.generation())
+                        || !Objects.equals(target.recipe(),recipe)
+                        || !Boolean.TRUE.equals(db.queryForObject("""
+                            SELECT EXISTS(SELECT 1 FROM image_job WHERE media_id=? AND generation_id=?
+                              AND kind='PROCESS' AND status='READY')
+                            """,Boolean.class,selection.mediaId(),target.generation()))) throw conflict();
+                bindingVersion=0;
+            } else {
+                var snapshot=snapshots.stream().filter(t->t.mediaId().equals(selection.mediaId()))
+                        .findFirst().orElseThrow(DriveBatchService::invalid);
+                if (!snapshot.generationId().equals(target.generation()) || !snapshot.sha256().equals(target.sha())
+                        || !Objects.equals(target.bookId(),row.get("book_id"))) throw conflict();
+                bindingVersion=snapshot.bindingVersion();
+            }
+            if (!target.sha().equals(item.get("sha256"))) throw new AdminApiException(409,"source_hash_mismatch");
+            sources.checkVersion(selection.mediaId(),target,bindingVersion,view.bookVersion());
+            bindings.saveVerified(selection.mediaId(),expected.fileId(),target.sha(),expected.version(),expected.bytes(),
+                    expected.mime(),bindingVersion);
+            db.update("UPDATE drive_image_batch_item SET admitted=true WHERE id=?",selection.itemId());
+            db.update("""
+                    INSERT INTO audit_event(actor_id,target_type,target_id,action,before_data,after_data,
+                      aggregate_version,created_at) VALUES(?, ?, ?, 'SOURCE_VERIFIED', '{}',cast(? as jsonb),?,clock_timestamp())
+                    """,actor.getId(),row.get("book_id")==null?"MEDIA_SOURCE":"BOOK",
+                    row.get("book_id")==null?0L:row.get("book_id"),
+                    json.writeValueAsString(Map.of("mediaId",selection.mediaId(),"bindingVersion",bindingVersion+1)),
+                    bookVersion==null?bindingVersion+1:bookVersion);
+        }
+        if (bookVersion!=null) db.update("UPDATE book_copy SET version=?,updated_at=clock_timestamp() WHERE id=?",
+                bookVersion,row.get("book_id"));
+        if (importing) {
+            for (var item:items) if (input.selections().stream().noneMatch(s->s.itemId().equals(item.get("id")))) {
+                repository.releaseMedia((UUID)item.get("media_id"));
+                db.update("UPDATE drive_image_batch_item SET state='CANCELLED' WHERE id=?",item.get("id"));
+            }
+        }
+        var result=new View(id,view.mode(),"CONFIRMED",view.expiresAt(),view.digest(),
+                status(id,actor).items(),bookVersion,List.copyOf(input.selections()));
+        db.update("""
+                UPDATE drive_image_batch SET state='CONFIRMED',confirm_key=?,confirm_fingerprint=?,receipt=cast(? as jsonb)
+                WHERE id=?
+                """,input.requestKey(),fingerprint,json.writeValueAsString(result),id);
+        return result;
+    }
+    private void validateConfirmation(View view, Confirm input) {
+        if (input==null || input.requestKey()==null || input.selections()==null || input.selections().isEmpty()
+                || input.selections().size()>8 || !Objects.equals(view.digest(),input.digest())
+                || !"READY".equals(view.state())) throw conflict();
+        Set<UUID> selectedItems=new HashSet<>(),selectedMedia=new HashSet<>();
+        Set<vn.memay.media.MediaDtos.MediaRole> roles=new HashSet<>();
+        for (Selection selection:input.selections()) {
+            if (selection==null || selection.itemId()==null || selection.mediaId()==null
+                    || !selectedItems.add(selection.itemId()) || !selectedMedia.add(selection.mediaId())) throw invalid();
+            var item=view.items().stream().filter(i->i.id().equals(selection.itemId())).findFirst().orElseThrow(DriveBatchService::invalid);
+            if (!"READY".equals(item.state()) || !item.candidates().contains(selection.mediaId())) throw invalid();
+            if (view.mode()==Mode.IMPORT && (selection.role()==null || !roles.add(selection.role().canonical()))) throw invalid();
+        }
+    }
+
+    @Transactional
+    public void cancel(UUID id, AdminUser actor) {
+        sessions.requireOwner(actor);
+        var initial=repository.owned(id,actor.getId(),namespace,false);
+        if (initial.get("session_id")!=null) sessions.lock((UUID)initial.get("session_id"),actor,true);
+        var row=repository.owned(id,actor.getId(),namespace,true);
+        if ("CONFIRMED".equals(row.get("state"))) throw conflict();
+        db.update("UPDATE drive_image_batch SET state='CANCELLED' WHERE id=?",id);
+        repository.expire();
     }
     String hash(Object value) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
