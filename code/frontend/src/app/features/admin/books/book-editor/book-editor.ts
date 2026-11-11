@@ -28,7 +28,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
 import { BookMediaPanel } from '../book-media-panel/book-media-panel';
 import { BookStatusActions } from '../book-status-actions/book-status-actions';
 import { BookAuditPanel } from '../book-audit-panel/book-audit-panel';
-import { PRICE_NOTE, READING_NOTE } from '../book-copy';
+import { MEDIA_LABELS, PRICE_NOTE, READING_NOTE } from '../book-copy';
 @Component({
   selector: 'app-book-editor',
   providers: [BookUploadQueue],
@@ -583,7 +583,8 @@ export class BookEditor {
         },
         error: (e) => {
           this.busy.set(false);
-          const uncertain = e.status === 0 || e.status >= 500 || e.status === 409;
+          const uncertain = e.status === 0 || e.status >= 500
+            || (e.status === 409 && e.error?.error !== 'image_source_unverified');
           this.createUncertain.set(uncertain);
           this.photos.locked.set(uncertain);
           if (!uncertain) this.pendingCreate = null;
@@ -605,6 +606,11 @@ export class BookEditor {
       this.error.set(
         'Phiên ảnh đã hết hạn. Tạo lại phiên ảnh bên dưới; thông tin sách vẫn được giữ.',
       );
+    } else if (body?.error === 'image_source_unverified') {
+      const {media = [], ...fields} = body.fieldErrors ?? {};
+      this.fields.set(fields);
+      const labels = media.map(role => MEDIA_LABELS[role as keyof typeof MEDIA_LABELS] ?? role).join(', ');
+      this.error.set(`Chưa thể xuất bản: ảnh chưa xác minh nguồn Drive${labels ? ' (' + labels + ')' : ''}. Nhập link Drive và xác minh nguồn cho các ảnh này; bạn vẫn có thể lưu sách ẩn.`);
     } else if (e.status === 409)
       this.error.set(
         'Dữ liệu đã thay đổi ở nơi khác. Nội dung đang sửa vẫn được giữ; mở bản đã lưu ở tab khác để đối chiếu.',

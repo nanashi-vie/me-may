@@ -3,6 +3,10 @@
 Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Đã sửa thông báo publish image_source_unverified bị nhầm thành
+  version conflict (11/11): nêu vai trò tiếng Việt, giữ nội dung sửa; sách
+  mới bị từ chối publish vẫn lưu Ẩn được. Frontend 291/291 và build Workers
+  đạt; chờ owner merge main/deploy frontend, giữ gate xác minh nguồn.
 - Rà toàn luồng Drive (11/11): đã sửa dropdown lệch dữ liệu, lý do khóa
   xác nhận, refresh digest và thumbnail sau gắn. Frontend 289/289 đạt;
   browser local nhập→chọn→confirm→gắn 5 ảnh→reload đạt. Backend API fixture

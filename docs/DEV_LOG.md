@@ -3337,3 +3337,26 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   deploy frontend. Không đổi backend sản phẩm/schema, không cần migration mới.
 - Đã dừng container memay-drive-flow-test; không đổi container PostgreSQL
   sẵn có. Frontend/API fixture QA đã dừng; chưa smoke lại production.
+
+## 2026-11-11 — Publish source error — Bắt đầu
+
+- Owner cung cấp response image_source_unverified với fieldErrors.media
+  gồm BACK/FRONT/INSIDE_1/INSIDE_2/SPINE. Đây là publication gate đúng,
+  không phải bằng chứng version conflict. BookEditor.fail gom mọi HTTP409
+  thành thông báo dữ liệu thay đổi, gây hiểu nhầm và lộ role code.
+- Sửa mapping riêng theo error code, giữ thông báo conflict thực, hiển thị
+  vai trò tiếng Việt và hướng dẫn xác minh/lưu Ẩn. Không đổi publication gate.
+  dev 84f96cd, chưa chạy regression mới; không truy cập server/log production.
+- Regression RED→GREEN: save+publish sách đã lưu với response owner cung cấp
+  hiện đúng lý do/5 vai trò tiếng Việt, giữ nội dung đang sửa và trạng thái Ẩn.
+  Ca mới sách chưa lưu cũng chứng minh 409 source từng bị coi kết quả chưa
+  rõ và khóa form; đã phân biệt từ chối chắc chắn để cho lưu Ẩn sau đó.
+- Targeted `npm test -- --include='**/book-editor.spec.ts'` 32/32 đạt.
+  Đang chạy toàn frontend/build Workers. Không đổi backend/schema hoặc
+  tắt gate nguồn VERIFIED. Không đọc/mutate log hay DB production; response
+  HTTP trong ảnh owner là bằng chứng lỗi thực tế, đối chiếu code phía client.
+- Verification cuối: frontend toàn bộ 50 files/291 tests đạt; build Workers
+  exit 0, không warning. `git diff --check` đạt, PROGRESS dưới 400 dòng,
+  chỉ mục/link hiện hành giữ nguyên. Không chạy lại backend vì không đổi
+  backend/schema; chưa browser smoke bản mới. Commit/push dev; owner merge
+  main/deploy frontend. Thông báo mới không coi source gate là version conflict.
