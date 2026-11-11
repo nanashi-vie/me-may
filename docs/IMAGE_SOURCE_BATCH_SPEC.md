@@ -11,8 +11,8 @@ backend tải file gốc, lưu metadata nguồn và encode qua worker hiện có
 Owner xem thumbnail, chọn vai trò rồi xác nhận dùng ảnh cho sách.
 
 Nếu đã upload file trước, cùng luồng lô tự ghép nguồn theo SHA-256.
-Giữ upload file và xác minh từng ảnh đang dùng. Rollout cho sách nhập mới,
-sách cũ tiếp tục được phục vụ theo provider đã lưu. Chuyển ảnh Cloudinary
+Giữ upload file và xác minh từng ảnh đang dùng. Nhập Drive cho sách mới và thêm ảnh
+cho sách đã lưu; ảnh cũ tiếp tục được phục vụ theo provider đã lưu. Chuyển ảnh Cloudinary
 thực hiện theo phạm vi recovery hiện có.
 
 ## Phương án đã trao đổi
@@ -80,6 +80,9 @@ Nguồn/ghi chú nội bộ vẫn là field văn bản riêng.
   Đây là kiểm tại thời điểm xác nhận, không bảo đảm file Drive bất biến về sau.
 - Xác nhận IMPORT đưa các temporary media đã chọn vào bộ ảnh chờ lưu sách,
   cùng vai trò đã chọn. Chưa publish hoặc sửa sách tự động.
+  Khi sửa sách đã lưu, ảnh nhập có trạng thái chờ gắn (`pendingLocal`),
+  owner bấm Gắn ảnh vào sách từng ảnh qua commitReplacement hiện có;
+  giữ kiểm version/quyền/admission/nguồn. Reload phục hồi session theo sách.
   Trước xác nhận, item chỉ được xem qua operation. Kiểm admission ở server
   để session view/finalize/consume/replacement không dùng media chưa được chọn,
   kể cả khi biết media ID. Sau xác nhận, mọi lần finalize/consume vẫn dùng

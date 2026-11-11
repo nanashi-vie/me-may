@@ -69,6 +69,33 @@ describe('book photo queue', () => {
     expect(prepare).not.toHaveBeenCalled();
     queue.markConsumed();
   });
+  it('imports Drive photos for a saved book as pending until explicitly attached', async () => {
+    sessionStorage.clear();
+    const book = {...testBook(), media: []};
+    const api = {
+      capabilities: () => of({provider:'LOCAL',revision:'LOCAL:v1',formats:['image/jpeg'],maxBytes:10485760}),
+      createSession: () => of({id:'drive-session',state:'OPEN',media:[]}),
+      commitReplacement: () => of({...book,version:book.version+1,media:[{
+        id:'drive-media',role:'FRONT',provider:'LOCAL',alt:null,sourceRef:null,contentPath:'/attached',
+      }]}),
+    };
+    TestBed.configureTestingModule({providers:[BookUploadQueue,{provide:BookApi,useValue:api}]});
+    const queue=TestBed.inject(BookUploadQueue);queue.configure(book);
+    expect(await queue.driveContext('IMPORT')).toEqual({sessionId:'drive-session',bookId:null,bookVersion:null,targets:[]});
+    queue.acceptDriveBatch({id:'batch',mode:'IMPORT',state:'CONFIRMED',digest:'d',expiresAt:'2099-01-01',bookVersion:null,
+      selections:[{itemId:'item',mediaId:'drive-media',role:'FRONT'}],
+      items:[{id:'item',fileId:'file',state:'READY',errorCode:null,mediaId:'drive-media',contentPath:'/preview',candidates:['drive-media']}],
+    },'drive-session');
+    expect(queue.rows()[0].pendingLocal).toBe(true);
+    expect(queue.rows()[0].sourceStatus).toBe('VERIFIED');
+    expect(queue.persisted()?.media).toEqual([]);
+    expect(queue.pending()).toBe(true);
+    await queue.commitLocal('item');
+    expect(queue.rows()[0].pendingLocal).toBe(false);
+    expect(queue.persisted()?.media[0].id).toBe('drive-media');
+    expect(queue.persisted()?.version).toBe(book.version+1);
+    sessionStorage.clear();
+  });
   it('uploads eight preserves roles on removal and replaces at capacity',async()=>{
     const {q,api,uploads}=setup();q.add(Array.from({length:8},photo));
     expect(q.rows().map(r=>r.role)).toEqual(['FRONT','BACK','SPINE','INSIDE_1','INSIDE_2','INSIDE_3','INSIDE_4','INSIDE_5']);
