@@ -2,7 +2,7 @@ import { Component, computed, ElementRef, inject, OnDestroy, OnInit, signal, vie
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AttendanceApi, Employee, PunchAction, Verified } from './attendance-api';
-import { addDays, closingTime, displayDay, displayTime, errorCode, errorMessage, statusLabel, weekdays } from './attendance-display';
+import { addDays, closingTime, displayDay, displayTime, errorCode, errorMessage, monthGrid, statusLabel, weekdayShort } from './attendance-display';
 
 @Component({
   imports: [FormsModule, RouterLink],
@@ -26,7 +26,15 @@ export class Punch implements OnInit, OnDestroy {
     return status === 'WORKING' || status === 'NEEDS_REVIEW';
   });
   readonly statusLabel = statusLabel;
-  readonly weekdays = weekdays;
+  readonly weekdayShort = weekdayShort;
+  readonly month = computed(() => {
+    const view = this.verified();
+    return view ? monthGrid(view.today, view.monday, view.days) : [];
+  });
+  readonly monthTitle = computed(() => {
+    const [year, month] = (this.verified()?.today ?? '').split('-');
+    return `Tháng ${Number(month)}/${year}`;
+  });
   readonly date = addDays;
   readonly day = displayDay;
   readonly time = displayTime;
@@ -84,8 +92,7 @@ export class Punch implements OnInit, OnDestroy {
     }
   }
 
-  open(action: PunchAction, event: Event) {
-    (event.target as HTMLInputElement).checked = false;
+  open(action: PunchAction) {
     const view = this.verified();
     if (!view || this.busy() || (action === 'END') !== this.working()) return;
     this.pending.set(action);

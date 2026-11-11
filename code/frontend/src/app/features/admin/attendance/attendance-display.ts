@@ -6,6 +6,7 @@ const isoDay = new Intl.DateTimeFormat('sv-SE', { timeZone: ZONE, dateStyle: 'sh
 const dateTime = new Intl.DateTimeFormat('sv-SE', {
   timeZone: ZONE, dateStyle: 'short', timeStyle: 'medium',
 });
+export const weekdayShort = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
 export const weekdays = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật'];
 
 export const statusLabel: Record<Status, string> = {
@@ -67,4 +68,29 @@ export function errorMessage(error: unknown) {
     }
     default: return 'Không thể thực hiện yêu cầu. Vui lòng thử lại.';
   }
+}
+
+export interface MonthCell {
+  day: string;
+  label: number;
+  state: 'today' | 'registered' | 'unregistered' | 'outside';
+  registered: boolean | null;
+  description: string;
+}
+
+/** Month grid (Monday first) for the month of `today`; only the loaded week carries registration state. */
+export function monthGrid(today: string, weekMonday: string, days: boolean[]): (MonthCell | null)[] {
+  const [year, month] = today.split('-').map(Number);
+  const first = `${year}-${String(month).padStart(2, '0')}-01`;
+  const length = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const cells: (MonthCell | null)[] = Array((new Date(first + 'T00:00:00Z').getUTCDay() + 6) % 7).fill(null);
+  for (let label = 1; label <= length; label++) {
+    const day = addDays(first, label - 1);
+    const offset = Math.round((Date.parse(day) - Date.parse(weekMonday)) / 86_400_000);
+    const registered = offset >= 0 && offset < 7 ? days[offset] : null;
+    const state = day === today ? 'today' : registered === null ? 'outside' : registered ? 'registered' : 'unregistered';
+    const note = registered === null ? '' : registered ? ' · Đã đăng ký' : ' · Chưa đăng ký';
+    cells.push({ day, label, state, registered, description: `${displayDay(day)}${day === today ? ' · Hôm nay' : ''}${note}` });
+  }
+  return cells;
 }

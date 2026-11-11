@@ -9,9 +9,38 @@ p { margin: .5rem 0 1rem; }
 .field span { font-weight: 600; }
 input:not([type='checkbox']), select, textarea { width: 100%; min-width: 0; padding: .55rem .65rem; border: 1px solid #b8ada6; border-radius: .4rem; background: #fff; color: #28201b; font: inherit; }
 input[type='checkbox'] { width: 1.2rem; height: 1.2rem; accent-color: #9b1c28; vertical-align: middle; }
-button { padding: .55rem .9rem; border: 1px solid #b8ada6; border-radius: .4rem; background: #fff; color: #302620; font: inherit; cursor: pointer; }
-button.primary { background: #9b1c28; color: #fff; border-color: #9b1c28; }
+button {
+  width: auto;
+  margin-top: 0;
+  padding: .375em 1em;
+  border: 0;
+  border-radius: .5em;
+  background: #f0f0f0;
+  color: #242424;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 600;
+  text-shadow: 0 .0625em 0 #fff;
+  box-shadow: inset 0 .0625em 0 0 #f4f4f4, 0 .0625em 0 0 #efefef, 0 .125em 0 0 #ececec, 0 .25em 0 0 #e0e0e0, 0 .3125em 0 0 #dedede, 0 .375em 0 0 #dcdcdc, 0 .425em 0 0 #cacaca, 0 .425em .5em 0 #cecece;
+  transition: .15s ease;
+  cursor: pointer;
+}
+button:active:not(:disabled) {
+  translate: 0 .225em;
+  box-shadow: inset 0 .03em 0 0 #f4f4f4, 0 .03em 0 0 #efefef, 0 .0625em 0 0 #ececec, 0 .125em 0 0 #e0e0e0, 0 .125em 0 0 #dedede, 0 .2em 0 0 #dcdcdc, 0 .225em 0 0 #cacaca, 0 .225em .375em 0 #cecece;
+}
+button.primary {
+  background: #9b1c28;
+  color: #fff;
+  text-shadow: 0 -.0625em 0 rgb(0 0 0 / 30%);
+  box-shadow: inset 0 .0625em 0 0 #b2404a, 0 .0625em 0 0 #8f1a25, 0 .125em 0 0 #84171f, 0 .25em 0 0 #781520, 0 .3125em 0 0 #6e131c, 0 .375em 0 0 #651119, 0 .425em 0 0 #580f16, 0 .425em .5em 0 #b9a09f;
+}
+button.primary:active:not(:disabled) {
+  box-shadow: inset 0 .03em 0 0 #b2404a, 0 .03em 0 0 #8f1a25, 0 .0625em 0 0 #84171f, 0 .125em 0 0 #781520, 0 .125em 0 0 #6e131c, 0 .2em 0 0 #651119, 0 .225em 0 0 #580f16, 0 .225em .375em 0 #b9a09f;
+}
+button.shift { font-size: 1.35rem; }
 button:disabled { opacity: .55; cursor: default; }
+.controls { padding-bottom: .5rem; }
 .table-wrap { overflow: auto; }
 table { width: 100%; border-collapse: collapse; font-size: .92rem; }
 th, td { padding: .65rem; border-bottom: 1px solid #e5ded7; text-align: left; vertical-align: top; }
@@ -24,8 +53,22 @@ th[scope='row'] { background: none; }
 .muted { color: #625951; }
 .nowrap { white-space: nowrap; }
 .clock { max-width: 48rem; }
-.day-list { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); gap: .35rem; }
-.day-list li { padding: .5rem; border: 1px solid #e5ded7; border-radius: .4rem; }
+.month { width: fit-content; max-width: 100%; margin-block: 1rem; }
+.month h3 { margin: 0 0 .5rem; font-size: 1.05rem; }
+.month-grid { display: grid; grid-template-columns: repeat(7, 2.5rem); gap: .35rem; justify-items: center; align-items: center; margin: 0; padding: 0; list-style: none; }
+.month-head { color: #625951; font-size: .8rem; }
+.month-day { position: relative; display: grid; place-items: center; width: 2.5rem; height: 2.5rem; border-radius: 50%; font-size: .9rem; }
+.month-day.outside { background: #efece9; color: #8a8179; }
+.month-day.unregistered { background: #e2dcd7; color: #302620; }
+.month-day.registered { background: #6b625b; color: #fff; }
+.month-day.today { background: #9b1c28; color: #fff; font-weight: 700; }
+.month-day .tick { position: absolute; inset: auto .15rem .1rem auto; font-size: .6rem; line-height: 1; }
+.legend { display: flex; flex-wrap: wrap; gap: .25rem 1rem; font-size: .85rem; }
+.swatch { display: inline-block; width: .8rem; height: .8rem; margin-right: .35rem; border-radius: 50%; vertical-align: -.05rem; }
+.swatch.outside { background: #efece9; }
+.swatch.unregistered { background: #e2dcd7; }
+.swatch.registered { background: #6b625b; }
+.swatch.today { background: #9b1c28; }
 dialog { max-width: min(33rem, calc(100vw - 2rem)); padding: 1.25rem; border: 1px solid #e5ded7; border-radius: .75rem; }
 dialog::backdrop { background: rgb(30 20 20 / 45%); }
 

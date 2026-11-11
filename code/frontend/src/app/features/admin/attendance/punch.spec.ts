@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, provideRouter, Router } from '@angular/router';
 import { expect, it, vi } from 'vitest';
 import { AttendanceApi, Verified } from './attendance-api';
+import { monthGrid } from './attendance-display';
 import { Punch } from './punch';
 
 it('marks an already verified open shift for review as the store reaches 20:30', async () => {
@@ -50,4 +51,17 @@ it('marks an already verified open shift for review as the store reaches 20:30',
     vi.useRealTimers();
     navigate.mockRestore();
   }
+});
+
+it('builds a Monday-first month grid with registration state only for the loaded week', () => {
+  const cells = monthGrid('2026-11-11', '2026-11-09', [false, false, true, true, false, false, true]);
+  expect(cells.length).toBe(6 + 30);
+  expect(cells.slice(0, 6).every((cell) => cell === null)).toBe(true);
+  const byDay = (day: string) => cells.find((cell) => cell?.day === day)!;
+  expect(byDay('2026-11-01').state).toBe('outside');
+  expect(byDay('2026-11-10').state).toBe('unregistered');
+  expect(byDay('2026-11-11')).toMatchObject({ state: 'today', registered: true });
+  expect(byDay('2026-11-12').state).toBe('registered');
+  expect(byDay('2026-11-12').description).toBe('12/11/2026 · Đã đăng ký');
+  expect(byDay('2026-11-16').state).toBe('outside');
 });
