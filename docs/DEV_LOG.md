@@ -3433,3 +3433,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   gộp thành một nút theo duyệt owner.
 - Proxy workerd smoke đạt; diff whitespace, trần dòng và liên kết tài liệu
   hiện hành đạt. Commit/push dev; owner merge main/deploy frontend.
+
+## 2026-11-11 — S064-C01 — Chỉnh UI chấm công
+
+- Làm trực tiếp trên dev (đã khớp origin/dev). Phạm vi: attendance.scss, punch.html/ts,
+  attendance-display.ts, punch.spec.ts.
+- Trang chấm công: 7 thẻ tuần thành lịch tháng chấm tròn (T2–CN, chỉ tháng hiện tại,
+  không chuyển tháng; trạng thái đăng ký chỉ có cho tuần đang tải, ngày khác xám mờ;
+  có aria-label và chú giải). Hai checkbox thành button Bắt đầu ca (primary)/Kết thúc ca.
+- Nút trong khu attendance dùng kiểu 3D theo CSS user gửi, cỡ 1rem, primary đỏ,
+  nút ca 1.35rem. Nguyên nhân nút "Xem bảng công" bị trải rộng: styles.scss có
+  `form button { width: 100% }`; attendance.scss đặt `width: auto; margin-top: 0`.
+- Từ code/frontend: npm test đạt 295/295, npm run build đạt. Xem trước tĩnh bằng
+  Chrome headless với CSS đã biên dịch. Chưa kiểm trang thật với PIN/backend và
+  trên mobile thật.
+
+## 2026-11-11 — S064-C02 — Trả UI danh sách nhân viên, nổi bật nhập ảnh Drive
+
+- Làm trên dev. Dòng nhân viên và mục dropdown trong attendance.scss trả về kiểu
+  phẳng (viền xám nền trắng; menu nền trong suốt, hover hồng nhạt); Thêm nhân viên,
+  Tải lại và các nút khác giữ 3D.
+- book-media-panel.scss: `.drive-panel` thành thẻ nền kem, viền trái đỏ, tiêu đề
+  đậm cỡ lớn màu đỏ; vẫn là details thu gọn, không thêm dòng phụ.
+- npm test và npm run build từ code/frontend đạt. Xem trước tĩnh danh sách nhân
+  viên bằng Chrome headless. Chưa xem form nhập sách trên trình duyệt thật.
