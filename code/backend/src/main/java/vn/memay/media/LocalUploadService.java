@@ -101,14 +101,7 @@ public class LocalUploadService {
                 discard(store, staging);
                 return operation(existing.getFirst(), actor, false);
             }
-            UUID generation = UUID.randomUUID();
-            UUID job = workers.getObject().enqueue(intent.id(), generation, JobKind.PROCESS,
-                    staged.key(), recipe, "process:" + intent.id(), 0);
-            jdbc.update("""
-                    UPDATE temporary_media SET generation_id=?,delete_after=(SELECT expires_at FROM upload_session WHERE id=?)
-                    WHERE id=?
-                    """, generation, session, intent.id());
-            return operation(job, actor, false);
+            return enqueueStaged(session,intent.id(),actor,staged,revision);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_input_unavailable");
         } catch (java.security.NoSuchAlgorithmException e) {

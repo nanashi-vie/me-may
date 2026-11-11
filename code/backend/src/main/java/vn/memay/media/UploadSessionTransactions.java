@@ -97,12 +97,13 @@ public class UploadSessionTransactions {
  }
  // The caller holds the session lock and owns the book mutation transaction.
  public void consumeReady(UUID media,long bookId,MediaDtos.MediaRole role,String defaultAlt) {
-  requireAdmitted(media);
   if(jdbc.update("""
       INSERT INTO book_media(id,book_copy_id,role,state,storage_public_id,asset_id,format,bytes,width,height,
           alt,source_ref,created_at,updated_at,provider,serving_generation)
       SELECT id,?,?,'ACTIVE',storage_public_id,asset_id,format,bytes,width,height,coalesce(alt,?),source_ref,
           created_at,updated_at,provider,generation_id FROM temporary_media WHERE id=? AND state='READY'
+        AND NOT EXISTS(SELECT 1 FROM drive_image_batch_item i JOIN drive_image_batch d ON d.id=i.batch_id
+          WHERE i.media_id=temporary_media.id AND d.mode='IMPORT' AND NOT i.admitted)
       """,bookId,role.canonical().name(),defaultAlt,media)!=1)throw new AdminApiException(409,"media_not_ready");
   jdbc.update("delete from temporary_media where id=?",media);
  }
@@ -113,7 +114,7 @@ public class UploadSessionTransactions {
       """,Boolean.class,media))) throw new AdminApiException(409,"drive_batch_not_confirmed");
  }
  public void closeDriveBatches(UUID session) {
-  jdbc.update("UPDATE drive_image_batch SET state='CANCELLED' WHERE session_id=? AND state IN ('PENDING','PROCESSING','READY')",session);
+  if(jdbc.update("UPDATE drive_image_batch SET state='CANCELLED' WHERE session_id=? AND state IN ('PENDING','PROCESSING','READY')",session)==0)return;
   jdbc.update("""
       UPDATE drive_image_batch_item i SET state='CANCELLED',lease_token=NULL,lease_until=NULL
       FROM drive_image_batch b WHERE b.id=i.batch_id AND b.session_id=? AND b.state='CANCELLED' AND NOT i.admitted

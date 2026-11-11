@@ -151,7 +151,7 @@ public class DriveBatchService {
             List<UUID> candidates = List.of(json.readValue(item.get("candidates").toString(), UUID[].class));
             if (Mode.IMPORT.name().equals(mode) && media != null && "READY".equals(item.get("state")))
                 candidates = List.of(media);
-            String path = media == null ? null : "/api/v1/admin/upload-sessions/" + session + "/media/" + media;
+            String path = media == null || !"READY".equals(item.get("state")) ? null : "/api/v1/admin/upload-sessions/" + session + "/media/" + media;
             if ("MATCH".equals(mode)) path = null;
             return new ItemView((UUID)item.get("id"), item.get("file_id").toString(), item.get("state").toString(),
                     (String)item.get("error_code"), media, path, candidates);

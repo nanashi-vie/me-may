@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { FlashSaleEditor } from './flash-sale';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -11,7 +11,7 @@ describe('Flash Sale editor', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0), invalidateSession:()=>{} } },
+        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0),csrf:()=>TestBed.inject(HttpClient).get('/api/v1/auth/csrf'), invalidateSession:()=>{} } },
       ],
     });
     const fixture = TestBed.createComponent(FlashSaleEditor);
@@ -46,7 +46,7 @@ describe('Campaign save locks editing', () => {
       providers: [
         provideHttpClient(),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0), invalidateSession:()=>{} } },
+        { provide: AuthService, useValue: { user: signal({ role: 'OWNER' }), epoch:signal(0),csrf:()=>TestBed.inject(HttpClient).get('/api/v1/auth/csrf'), invalidateSession:()=>{} } },
       ],
     });
     const f = TestBed.createComponent(FlashSaleEditor);

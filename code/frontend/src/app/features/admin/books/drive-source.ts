@@ -21,12 +21,16 @@ export function driveFileId(input: string): string {
 }
 
 export function driveFileIds(text: string): string[] {
-  const entries = text.trim().split(/\s+/u).filter(Boolean);
+  const entries = text.trim().split(/[\s,]+/u).filter(Boolean);
   if (entries.length === 0) throw new Error('Dán ít nhất một link hoặc File ID.');
   if (entries.length > 8) throw new Error('Tối đa 8 nguồn ảnh mỗi lần.');
+  const seen = new Set<string>();
   return entries.map((entry, index) => {
     try {
-      return driveFileId(entry);
+      const id = driveFileId(entry);
+      if (seen.has(id)) throw new Error('File ID trùng với mục trước.');
+      seen.add(id);
+      return id;
     } catch (error) {
       throw new Error(`Mục ${index + 1}: ${(error as Error).message}`);
     }

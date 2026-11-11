@@ -38,7 +38,8 @@ class DriveBatchHandler {
         this.store=store; this.users=users; this.tx=new TransactionTemplate(manager);
         this.mode=mode; this.namespace=namespace;
     }
-    @Scheduled(fixedDelay=1000)
+    @Scheduled(initialDelayString="${memay.media.drive-batch.initial-delay-ms:1000}",
+            fixedDelayString="${memay.media.drive-batch.poll-delay-ms:1000}")
     void poll() {
         if (mode.isolated() || executor.isShutdown() || !running.compareAndSet(false,true)) return;
         executor.execute(()-> {

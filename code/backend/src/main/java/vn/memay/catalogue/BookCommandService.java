@@ -168,11 +168,10 @@ public class BookCommandService {
         uploads.lock(input.uploadSessionId(), actor, true);
         if (target==Publication.PUBLISHED && !input.confirmedActualCopy())
             throw AdminApiException.field("confirmedActualCopy", "Xác nhận bộ ảnh của mục sách");
-        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state in ('READY','UPLOADING') for update",
+        var ready = jdbc.queryForList("select * from temporary_media where session_id=? and state in ('READY','UPLOADING') and not exists(select 1 from drive_image_batch_item i join drive_image_batch d on d.id=i.batch_id where i.media_id=temporary_media.id and d.mode='IMPORT' and not i.admitted) for update",
                 input.uploadSessionId());
         var selected = new LinkedHashMap<UUID, Map<String, Object>>();
         for (var assignment : assignments) {
-            uploads.requireAdmitted(assignment.mediaId());
             var photo = ready.stream().filter(m -> assignment.mediaId().equals(m.get("id"))).findFirst()
                     .orElseThrow(
                             () -> AdminApiException.field("media", "Ảnh chưa sẵn sàng hoặc không thuộc phiên này"));

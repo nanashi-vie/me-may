@@ -77,6 +77,7 @@ public class DriveBatchRepository {
                 .orElseThrow(DriveBatchService::conflict);
     }
     void fail(Lease lease,String code,boolean retryable) {
+        db.queryForObject("SELECT id FROM drive_image_batch WHERE id=? FOR UPDATE",UUID.class,lease.batchId());
         var item=lockLease(lease);
         boolean retry=retryable && ((Number)item.get("attempts")).intValue()<3;
         db.update("""

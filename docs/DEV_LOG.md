@@ -3186,3 +3186,14 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   admission/cleanup và giảm request. Dùng DB Docker fixture riêng.
 - Ledger riêng IMAGE_SOURCE_BATCH_PLAN theo executing-plans. Chưa có task
   implementation hoàn tất ở checkpoint khởi động này.
+
+## 2026-11-11 — Drive batch — Implementation và regression
+
+- IMPORT/MATCH backend, V31, lease/staging, confirm VERIFIED/admission và CSRF
+  theo auth epoch đã triển khai; giao diện một poller, resume, tab visibility.
+- Frontend toàn bộ 276 test đạt trước bổ sung 4 ca lifecycle; 8 ca DriveBatch
+  hiện đạt. Backend lượt đầu 292 test có 1 lỗi query budget, đã sửa bằng cách
+  ghép admission vào SQL thay vì thêm query; targeted 4 test đạt.
+- Đang chạy fixture nhập link→lưu sách→mất derived→rebuild; chưa coi là PASS.
+  Không truy cập hoặc thay đổi production; chưa có số đo QA Drive thật.
+- Branch codex/drive-source-batch; Task 5 commit f565110, Task 6 còn local.
