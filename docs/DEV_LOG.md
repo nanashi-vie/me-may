@@ -3178,3 +3178,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   không cần scan toàn bộ kho. Ghi ngoại lệ limited access và quyền tải file.
 - Kiểm diff và giới hạn dòng tài liệu. Chưa đổi code sản phẩm hoặc chạy tests
   trong checkpoint kế hoạch.
+
+## 2026-11-11 — Nguồn Drive — Bắt đầu triển khai Native
+
+- Owner duyệt kế hoạch, bắt đầu trên worktree image-system hiện có, nhánh
+  codex/drive-source-batch từ 7d817e9. Phạm vi IMPORT/MATCH, source binding,
+  admission/cleanup và giảm request. Dùng DB Docker fixture riêng.
+- Ledger riêng IMAGE_SOURCE_BATCH_PLAN theo executing-plans. Chưa có task
+  implementation hoàn tất ở checkpoint khởi động này.

@@ -5,7 +5,7 @@ Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - Nguồn Drive (11/11): owner chọn nhập ảnh chỉ bằng link, tự ghép SHA-256
   khi đã upload và giảm request. [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md)
-  đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) chờ bắt đầu triển khai Native.
+  đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) đang triển khai Native từ task 1.
 - R6.1 (10/11): owner xác nhận ca Drive thật đạt, nguồn VERIFIED v1. Sau khi
   đổi bind QA, worker nhận 200/401/404 đúng kỳ vọng. Owner bỏ qua chạy lại upload.
   [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
