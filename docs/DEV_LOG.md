@@ -3152,3 +3152,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Wrangler deployments list dừng vì thiếu credential Cloudflare. Chưa
   deploy frontend từ máy này. Cần deploy Worker me-may từ main, kiểm bundle
   mới rồi mở lại form. Chưa xác nhận phiên bản frontend trong trình duyệt owner.
+
+## 2026-11-11 — Ghép nguồn lô — Thiết kế trước triển khai
+
+- Owner duyệt hướng SHA-256 cho link lộn thứ tự, yêu cầu xem xét giảm request.
+  Production frontend mới đã hiển thị bộ 8 ảnh theo ảnh owner cung cấp.
+- Rà AdminHttp, AuthService, BookUploadQueue, SourceBindingService và handler
+  Drive. CSRF đang lấy trước mỗi mutation, xác minh đơn ảnh có hai GET source
+  và một poller riêng. Viết IMAGE_SOURCE_BATCH_SPEC với operation lô, xác nhận,
+  version/idempotency và CSRF theo auth epoch. Chưa đổi code sản phẩm.
+- Số request là mô hình từ code. Chưa benchmark, chưa khẳng định nghẽn hiệu năng.
+- Owner bổ sung và chọn nhập ảnh chỉ bằng link Drive để dựng lại khi mất
+  derived. Cập nhật thiết kế IMPORT/MATCH dùng chung operation, lưu snapshot,
+  reservation chống vượt 8 ảnh, giữ đủ binding khi lưu sách và lifecycle staging.
+  Chờ duyệt thiết kế chi tiết trước lập kế hoạch.
