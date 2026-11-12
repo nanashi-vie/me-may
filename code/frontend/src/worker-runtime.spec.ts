@@ -183,18 +183,26 @@ describe('public edge cache', () => {
     const entries = new Map<string, Response>();
     return {
       match: vi.fn(async (request: Request) => entries.get(request.url)?.clone()),
-      put: vi.fn(async (request: Request, response: Response) => { entries.set(request.url, response.clone()); }),
+      put: vi.fn(async (request: Request, response: Response) => {
+        entries.set(request.url, response.clone());
+      }),
     };
   }
   it('caches anonymous home only, separates releases and keeps browser no-store', async () => {
     const storage = cache();
-    vi.stubGlobal('fetch', async () => Response.json({
-      enabled: true, serverNow: new Date().toISOString(),
-      expiresAt: new Date(Date.now() + 30000).toISOString(),
-    }));
-    const render = vi.fn(async () => new Response('<html>home</html>', {
-      headers: { 'content-type': 'text/html' },
-    }));
+    vi.stubGlobal('fetch', async () =>
+      Response.json({
+        enabled: true,
+        serverNow: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 30000).toISOString(),
+      }),
+    );
+    const render = vi.fn(
+      async () =>
+        new Response('<html>home</html>', {
+          headers: { 'content-type': 'text/html' },
+        }),
+    );
     const config = { ...env, MEMAY_PUBLIC_CACHE: 'true', MEMAY_VERSION: { id: 'one' } };
     const request = new Request(env.MEMAY_SITE_ORIGIN + '/');
     const first = await handleWorkerRequest(request, config, render, storage);
@@ -203,12 +211,22 @@ describe('public edge cache', () => {
     expect(hit.headers.get('x-memay-cache')).toBe('HIT');
     expect(hit.headers.get('cache-control')).toBe('no-store');
     expect(render).toHaveBeenCalledTimes(1);
-    await handleWorkerRequest(request, { ...config, MEMAY_VERSION: { id: 'two' } }, render, storage);
+    await handleWorkerRequest(
+      request,
+      { ...config, MEMAY_VERSION: { id: 'two' } },
+      render,
+      storage,
+    );
     expect(render).toHaveBeenCalledTimes(2);
     for (const path of ['/?q=private', '/admin', '/quan-tam']) {
       await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + path), config, render, storage);
     }
-    await handleWorkerRequest(new Request(request, { headers: { cookie: 'session=1' } }), config, render, storage);
+    await handleWorkerRequest(
+      new Request(request, { headers: { cookie: 'session=1' } }),
+      config,
+      render,
+      storage,
+    );
     expect(storage.put).toHaveBeenCalledTimes(2);
   });
   it('does not cache errors, cookies, disabled policy or a crossed sale boundary', async () => {
@@ -217,62 +235,122 @@ describe('public edge cache', () => {
       new Response('error', { status: 503 }),
       new Response('private', { headers: { 'set-cookie': 'session=x' } }),
     ]) {
-      vi.stubGlobal('fetch', async () => Response.json({
-        enabled: true, serverNow: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 30000).toISOString(),
-      }));
-      await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/'),
-        { ...env, MEMAY_PUBLIC_CACHE: 'true' }, async () => response, storage);
+      vi.stubGlobal('fetch', async () =>
+        Response.json({
+          enabled: true,
+          serverNow: new Date().toISOString(),
+          expiresAt: new Date(Date.now() + 30000).toISOString(),
+        }),
+      );
+      await handleWorkerRequest(
+        new Request(env.MEMAY_SITE_ORIGIN + '/'),
+        { ...env, MEMAY_PUBLIC_CACHE: 'true' },
+        async () => response,
+        storage,
+      );
     }
     vi.stubGlobal('fetch', async () => Response.json({ enabled: false }));
-    await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/'),
-      { ...env, MEMAY_PUBLIC_CACHE: 'true' }, async () => new Response('home'), storage);
-    vi.stubGlobal('fetch', async () => Response.json({
-      enabled: true, serverNow: new Date().toISOString(), expiresAt: new Date(Date.now() - 1000).toISOString(),
-    }));
-    await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/'),
-      { ...env, MEMAY_PUBLIC_CACHE: 'true' }, async () => new Response('home'), storage);
+    await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/'),
+      { ...env, MEMAY_PUBLIC_CACHE: 'true' },
+      async () => new Response('home'),
+      storage,
+    );
+    vi.stubGlobal('fetch', async () =>
+      Response.json({
+        enabled: true,
+        serverNow: new Date().toISOString(),
+        expiresAt: new Date(Date.now() - 1000).toISOString(),
+      }),
+    );
+    await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/'),
+      { ...env, MEMAY_PUBLIC_CACHE: 'true' },
+      async () => new Response('home'),
+      storage,
+    );
     expect(storage.put).not.toHaveBeenCalled();
   });
 });
 
 describe('versioned media and asset caching', () => {
-  it.each([640, 480, 1400])('revalidates versioned size %s and never caches errors', async (size) => {
-    const entries = new Map<string, Response>();
-    const storage = {
-      match: async (r: Request) => entries.get(r.url)?.clone(),
-      put: async (r: Request, response: Response) => { entries.set(r.url, response.clone()); },
-    };
-    const backend = vi.fn(async () => new Response('image', { headers: {
-      'content-type': 'image/webp', 'X-Memay-Public-Cache': '30',
-    } }));
-    vi.stubGlobal('fetch', backend);
-    const config = { ...env, MEMAY_PUBLIC_CACHE: 'true' };
-    const url = env.MEMAY_SITE_ORIGIN
-      + `/api/v1/books/mm-000001/media/FRONT?size=${size}&format=webp&v=12345678-1234-1234-1234-123456789012`;
-    const first = await handleWorkerRequest(new Request(url), config, async () => null, storage);
-    const next = await handleWorkerRequest(new Request(url, {
-      headers: { 'if-none-match': first.headers.get('etag')! },
-    }), config, async () => null, storage);
-    expect(next.status).toBe(304);
-    expect(await next.text()).toBe('');
-    expect(backend).toHaveBeenCalledTimes(1);
-    expect(next.headers.get('cache-control')).toContain('must-revalidate');
-    await handleWorkerRequest(new Request(url + '&unexpected=1'), config, async () => null, storage);
-    expect(backend).toHaveBeenCalledTimes(2);
-    const missing = url.replace('/FRONT?', '/BACK?');
-    backend.mockImplementation(async () => new Response(null, { status: 404, headers: { 'X-Memay-Public-Cache': '30' } }));
-    const gone = await handleWorkerRequest(new Request(missing), config, async () => null, storage);
-    expect(gone.status).toBe(404);
-    expect(gone.headers.get('cache-control')).toBe('no-store');
-    expect(entries.has(missing)).toBe(false);
-  });
+  it.each([640, 480, 1400])(
+    'revalidates versioned size %s and never caches errors',
+    async (size) => {
+      const entries = new Map<string, Response>();
+      const storage = {
+        match: async (r: Request) => entries.get(r.url)?.clone(),
+        put: async (r: Request, response: Response) => {
+          entries.set(r.url, response.clone());
+        },
+      };
+      const backend = vi.fn(
+        async () =>
+          new Response('image', {
+            headers: {
+              'content-type': 'image/webp',
+              'X-Memay-Public-Cache': '30',
+            },
+          }),
+      );
+      vi.stubGlobal('fetch', backend);
+      const config = { ...env, MEMAY_PUBLIC_CACHE: 'true' };
+      const url =
+        env.MEMAY_SITE_ORIGIN +
+        `/api/v1/books/mm-000001/media/FRONT?size=${size}&format=webp&v=12345678-1234-1234-1234-123456789012`;
+      const first = await handleWorkerRequest(new Request(url), config, async () => null, storage);
+      const next = await handleWorkerRequest(
+        new Request(url, {
+          headers: { 'if-none-match': first.headers.get('etag')! },
+        }),
+        config,
+        async () => null,
+        storage,
+      );
+      expect(next.status).toBe(304);
+      expect(await next.text()).toBe('');
+      expect(backend).toHaveBeenCalledTimes(1);
+      expect(next.headers.get('cache-control')).toContain('must-revalidate');
+      await handleWorkerRequest(
+        new Request(url + '&unexpected=1'),
+        config,
+        async () => null,
+        storage,
+      );
+      expect(backend).toHaveBeenCalledTimes(2);
+      const missing = url.replace('/FRONT?', '/BACK?');
+      backend.mockImplementation(
+        async () => new Response(null, { status: 404, headers: { 'X-Memay-Public-Cache': '30' } }),
+      );
+      const gone = await handleWorkerRequest(
+        new Request(missing),
+        config,
+        async () => null,
+        storage,
+      );
+      expect(gone.status).toBe(404);
+      expect(gone.headers.get('cache-control')).toBe('no-store');
+      expect(entries.has(missing)).toBe(false);
+    },
+  );
   it('uses immutable only for successful root hashed bundles and self-hosted woff2 fonts', async () => {
-    const hashed = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/main-ABC12345.js'), env, async () => null);
+    const hashed = await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/main-ABC12345.js'),
+      env,
+      async () => null,
+    );
     expect(hashed.headers.get('cache-control')).toContain('immutable');
-    const font = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/fonts/nunito-vietnamese.woff2'), env, async () => null);
+    const font = await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/fonts/nunito-vietnamese.woff2'),
+      env,
+      async () => null,
+    );
     expect(font.headers.get('cache-control')).toContain('immutable');
-    const plain = await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/logo.png'), env, async () => null);
+    const plain = await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/logo.png'),
+      env,
+      async () => null,
+    );
     expect(plain.headers.get('cache-control') ?? '').not.toContain('immutable');
   });
 });
@@ -284,13 +362,47 @@ describe('cache timing during origin latency', () => {
     vi.stubGlobal('fetch', async () => {
       now.mockReturnValue(6000);
       return Response.json({
-        enabled: true, serverNow: new Date(1000).toISOString(), expiresAt: new Date(5000).toISOString(),
+        enabled: true,
+        serverNow: new Date(1000).toISOString(),
+        expiresAt: new Date(5000).toISOString(),
       });
     });
-    await handleWorkerRequest(new Request(env.MEMAY_SITE_ORIGIN + '/'),
-      { ...env, MEMAY_PUBLIC_CACHE: 'true' }, async () => new Response('home'),
-      { match: async () => undefined, put });
+    await handleWorkerRequest(
+      new Request(env.MEMAY_SITE_ORIGIN + '/'),
+      { ...env, MEMAY_PUBLIC_CACHE: 'true' },
+      async () => new Response('home'),
+      { match: async () => undefined, put },
+    );
     expect(put).not.toHaveBeenCalled();
     now.mockRestore();
+  });
+});
+
+describe('public banner proxy', () => {
+  it('preserves immutable cache/conditional requests only for public successful banner content', async () => {
+    const path =
+      '/api/v1/hero-banners/00000000-0000-0000-0000-000000000001/content?size=3200&format=webp';
+    for (const status of [200, 304, 404]) {
+      vi.stubGlobal('fetch', async (_url: URL, init: RequestInit) => {
+        expect(new Headers(init.headers).get('if-none-match')).toBe('"banner"');
+        return new Response(status === 304 ? null : 'image', {
+          status,
+          headers: {
+            'Cache-Control': 'public, max-age=86400, immutable',
+            ETag: '"banner"',
+            'Content-Type': 'image/webp',
+          },
+        });
+      });
+      const result = await handleWorkerRequest(
+        new Request(env.MEMAY_SITE_ORIGIN + path, { headers: { 'If-None-Match': '"banner"' } }),
+        env,
+        async () => null,
+      );
+      expect(result.status).toBe(status);
+      expect(result.headers.get('Cache-Control')).toBe(
+        status === 404 ? 'no-store' : 'public, max-age=86400, immutable',
+      );
+    }
   });
 });

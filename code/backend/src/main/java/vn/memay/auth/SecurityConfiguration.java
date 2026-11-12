@@ -107,7 +107,11 @@ public class SecurityConfiguration {
                                                 .requestMatchers("/api/v1/admin/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .headers(headers -> headers.addHeaderWriter((req, res) -> {
-                                        if (req.getRequestURI().startsWith("/api/"))
+                                        boolean publicBanner = req.getMethod().equals("GET")
+                                                        && req.getRequestURI().startsWith("/api/v1/hero-banners/")
+                                                        && (res.getStatus() == 200 || res.getStatus() == 304)
+                                                        && res.getHeader("Cache-Control") != null;
+                                        if (req.getRequestURI().startsWith("/api/") && !publicBanner)
                                                 res.setHeader("Cache-Control", "no-store");
                                         if (req.getMethod().equals("GET") && req.getRequestURI().startsWith("/api/v1/")
                                                         && !req.getRequestURI().startsWith("/api/v1/admin/")

@@ -1,14 +1,6 @@
 <section class="hero">
   <h1 class="sr-only">Tiệm sách ngoại văn Mẹ Mây — Mở sách nhỏ, khám phá thế giới lớn</h1>
-  <img
-    src="/images/hero-banner-1584.webp"
-    srcset="/images/hero-banner-800.webp 800w, /images/hero-banner-1584.webp 1584w"
-    sizes="100vw"
-    width="1584"
-    height="396"
-    fetchpriority="high"
-    alt="Tiệm sách ngoại văn Mẹ Mây. Pre-loved books, endless stories. Sách đã qua sử dụng tuyển chọn cho 0–16 tuổi. Ảnh và tình trạng thật, giá rẻ, đa dạng thể loại."
-  />
+  <app-hero-carousel [banners]="data()?.banners ?? []" />
 </section>
 
 <section class="banner-info-boxes" aria-label="Tiện ích & Hỗ trợ">

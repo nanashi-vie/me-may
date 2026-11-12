@@ -13,7 +13,7 @@ khai tuần tự12/11. Không hỏi lại cách thực thi đã được chỉ �
 
 ## Global Constraints
 
-- 0–10banner,5000ms, đích `/sach`, khung4:1 contain; fallback asset hiện tại.
+- 0–10banner,5000ms, đích `/sach`, khung3:1 contain; fallback asset hiện tại.
 - OWNER toàn quyền; STAFF403 ở API quản trị banner; anonymous401.
 - JPEG/PNG/WebP tĩnh,10MiB,25MP; recipe v1 nguyên trạng, không thêm dependency.
 - Lưu banner riêng với shelves; version409 giữ draft; source book/Drive không đổi.
@@ -151,7 +151,7 @@ Config dùng GET/PUT riêng; savebody {version,banners:[{id,alt}]}.
 ## Task 3b: Nâng chất lượng banner theo owner duyệt bổ sung
 
 - Recipe riêng `hero-v1`:800/1600/3200, WebP88/JPEG90; giữ recipev1 sách.
-- Test Sharp thật xác minh3200×800 không bị thu xuống1400; input nhỏ không upscale.
+- Test Sharp thật xác minh3240×1080 không bị thu xuống1400; input nhỏ không upscale.
 - API/preview/srcset/store validate đổi sang sizes mới, đăng ký recipe riêng
   theo runbook với worker digest/config hash tương ứng; thiếu recipe trả503.
 - Quyết định này thay hướng reusev1/640/1400 ở các Task1/2 và preflight cũ.
@@ -168,7 +168,7 @@ activeIndex/paused/brokenIds là trạng thái browser, không persist storage.
   tăng index; resume bắt đầu5s mới; reduced-motion mặc định pause, destroy dọn.
 - [ ] Test broken first/one/all: chọn ảnh còn tốt hoặc fallback, không vòng lặp
   lỗi/timer; input array đổi sau hydrate reset hợp lệ. Chạy tests đỏ.
-- [ ] Cài component standalone HTML/CSS khung4:1 contain/fullbleed theo hero cũ;
+- [ ] Cài component standalone HTML/CSS khung3:1 contain/fullbleed theo hero cũ;
   controls>=44px/keyboard/aria, reduced motion; timer chỉbrowser sauhydrate,
   dừng khihover/focus/hidden và userpause. Không đọc document/window khi SSR.
 - [ ] Thay img cũ bằng component trong Home, giữ h1sr-only và các box/kệ khác.

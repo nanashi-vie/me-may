@@ -8,7 +8,7 @@
   </header>
   <p class="hint">Banner tự chuyển sau 5 giây. Bấm vào ảnh để xem tất cả sách tại /sach.</p>
   <p class="hint">
-    Khuyến nghị ảnh 3200 × 800 (tỉ lệ 4:1). JPEG, PNG hoặc WebP tĩnh, tối đa 10 MiB và 25 MP. Ảnh
+    Khuyến nghị ảnh 3240 × 1080 (tỉ lệ 3:1). JPEG, PNG hoặc WebP tĩnh, tối đa 10 MiB và 25 MP. Ảnh
     hiển thị trọn khung.
   </p>
   @if (error()) {
@@ -26,7 +26,7 @@
         <li>
           <div class="preview">
             @if (row.preview) {
-              <img [src]="row.preview" alt="" width="800" height="200" />
+              <img [src]="row.preview" alt="" width="800" height="267" />
             } @else {
               <span>Chờ ảnh mới</span>
             }

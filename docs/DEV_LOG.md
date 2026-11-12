@@ -3797,3 +3797,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Ảnh input nhỏ không phóng lớn (processor dùng withoutEnlargement).
 - Chưa đăng ký recipe/migrate ở production. Cần pin worker chứa hero-v1 và
   đăng ký worker digest/config hash trước bật upload; source được giữ backup.
+
+### HERO-C09 — Khung 3:1 theo quyết định mới
+
+- Owner chốt 3:1 sau đối chiếu ảnh mẫu Kim Đồng1920×775 (~2,48:1).
+  Thay khung4:1 đã duyệt trước; file thiết kế gốc3240×1080 hoặc3840×1280.
+  Giữ3200px/WebP88, contain, không đưa artwork mẫu lên sản phẩm.
+- FE331/331,58files; BE317total/3skip,0fail/error ở lần full suite đầu.
+  Build SSR đạt (sandbox exit134, chạy lại ngoài sandbox thành công).
+- Test bổ sung phát hiện SecurityConfiguration ghi đè public cache thành no-store;
+  sửa hẹp cho GET banner200/304. Test cache RED→GREEN4/4.
+- Đang chuẩn bị browser QA riêng; full suite cuối/review còn phải chạy sau sửa.
+
+### HERO-C10 — Carousel và browser QA
+
+- Carousel5s, manual/pause/hover/focus/tab-hidden/reduced-motion, một ảnh không
+  timer, ảnh hỏng bỏ qua/fallback; SSR có ảnh đầu/srcset/high priority.
+- Browser QA dùng DB me_may_hero_browser, backend18080/management18081,
+  frontend4208/SSR4408, worker Sharp thật và2ảnh fixture3240×1080.
+  Upload2ảnh/draftkhôngpublic/save/refresh, autoplay/pause/link đạt.
+- Mobile390 phát hiện100vw tính cả scrollbar làm hero lệch/tràn ngang;
+  đổi Home sang containerfullwidth, section khác giữ1200px/20px. Không JS đo.
+- Workers proxy giữ cache immutable chỉ route public banner hợp lệ200/304,
+  chuyển If-None-Match; private/error vẫn no-store. Test RED→GREEN17/17.
+- Fullsuite cuối và review độc lập đang thực hiện; chưa tích hợp/pushdev.

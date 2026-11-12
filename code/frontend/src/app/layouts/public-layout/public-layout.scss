@@ -50,3 +50,4 @@
   .wl-label { display: none; }
   .header-search { grid-column: 1/-1; grid-row: 2; max-width: none; }
 }
+.wrap:has(app-home-page) { width: 100%; }

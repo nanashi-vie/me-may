@@ -8,13 +8,13 @@ Ngày12/11/2026 · **Owner đã duyệt, yêu cầu triển khai tuần tự** �
 - Tối đa10banner, tự chuyển sau5giây và quay vòng theo thứ tự đã lưu.
 - Mọi banner dẫn cố định tới **`/sach`**, cùng tab; không có field nhập link.
 - Giữ màu đỏ chủ đạo và vị trí hero tràn ngang hiện tại.
-- Owner duyệt bổ sung: ảnh gốc khuyến nghị3200×800 hoặc3840×960; đầu ra riêng
+- Owner duyệt bổ sung: ảnh gốc khuyến nghị3240×1080 hoặc3840×1280; đầu ra riêng
   banner800/1600/3200px, WebP quality88 (JPEG90), không upscale nguồn nhỏ.
 - Ảnh tham khảo thể hiện carousel có nút trái/phải; không sao chép artwork.
 
 ## Cách triển khai đề xuất
 
-Hiện Home dùng hai asset WebP cố định1584/800px, tỉ lệ4:1; admin Home chỉ
+Hiện Home dùng hai asset WebP cố định1584/800px, tỉ lệ3:1; admin Home chỉ
 quản lý ghim sách. Upload sách đang gắn với phiên sách và kiểm nguồn Drive,
 nên không dùng một cuốn sách giả để chứa banner.
 
@@ -34,7 +34,7 @@ Không tạo nền tảng CMS, lịch chiến dịch hoặc pipeline Drive mới
   Validate bytes/MIME/dimensions ở backend, không chỉ dựa đuôi file.
 - Từng hàng có thumbnail, thứ tự, mô tả ảnh tùy chọn, **Thay ảnh**, **Xóa**,
   **Lên/Xuống**. Không nhận URL ảnh bên ngoài hoặc link đích tùy chỉnh.
-- Khuyến nghị ảnh3200×800 hoặc cùng tỉ lệ4:1; preview cho thấy đúng khung Home.
+- Khuyến nghị ảnh3240×1080 hoặc cùng tỉ lệ3:1; preview cho thấy đúng khung Home.
   Ảnh khác tỉ lệ hiện trọn trong khung, không tự cắt mất chữ; nền kem nếu dư.
 - Chọn ảnh mới chỉ làm draft. Chờ ảnh xử lý xong mới **Lưu banner**;
   lỗi upload/lưu giữ cấu hình đang công khai và các dữ liệu draft còn hợp lệ.
@@ -55,7 +55,7 @@ Không tạo nền tảng CMS, lịch chiến dịch hoặc pipeline Drive mới
 - Tạm dừng khi hover/focus trong carousel hoặc tab ẩn; thao tác chọn slide
   bắt đầu lại đủ5giây khi chạy tiếp, không nhảy bù các nhịp đã bỏ lỡ.
 - Với prefers-reduced-motion, mặc định tắt autoplay; vẫn có chọn slide thủ công.
-- Khung4:1 cố định, tràn ngang như hiện tại, mobile co theo chiều rộng;
+- Khung3:1 cố định, tràn ngang như hiện tại, mobile co theo chiều rộng;
   không nhảy chiều cao khi đổi ảnh. Giữ h1 ẩn hiện có.
 - SSR xuất ảnh đầu ngay trong HTML, ảnh đầu ưu tiên tải; ảnh sau không tranh
   ưu tiên LCP. Timer chỉ chạy phía browser sau hydrate, được dọn khi rời Home.

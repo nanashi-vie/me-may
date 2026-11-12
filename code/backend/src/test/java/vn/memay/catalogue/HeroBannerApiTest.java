@@ -45,4 +45,15 @@ class HeroBannerApiTest extends CatalogueTestSupport {
   api.login("staff@catalogue.test");for(String method:List.of("GET","PUT"))assertThat(api.send(method,"/api/v1/admin/hero-banners",method.equals("PUT")?empty:null,true).statusCode()).isEqualTo(403);
   assertThat(new AdminHttpClient(port).send("GET","/api/v1/admin/hero-banners",null,false).statusCode()).isEqualTo(401);
  }
+ @Test void simultaneousEditorsOnlyOneVersionWins()throws Exception{
+  var id=upload(owner.getId(),"READY");var other=new AdminHttpClient(port);other.login(owner.getEmail());
+  String body=json(Map.of("version",0,"banners",List.of(Map.of("id",id,"alt","Race"))));
+  var gate=new java.util.concurrent.CountDownLatch(1);
+  try(var pool=java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor()){
+   var one=pool.submit(()->{gate.await();return api.send("PUT","/api/v1/admin/hero-banners",body,true).statusCode();});
+   var two=pool.submit(()->{gate.await();return other.send("PUT","/api/v1/admin/hero-banners",body,true).statusCode();});gate.countDown();
+   assertThat(List.of(one.get(),two.get())).containsExactlyInAnyOrder(200,409);
+  }
+ }
+
 }
