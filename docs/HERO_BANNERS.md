@@ -117,3 +117,18 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 - FE332/332(58files), BE319total/3skip/0failure/error, worker13/13; build SSR,
   Workers và proxy đạt. Commit tích hợp xem checkpoint cuối DEV_LOG/PROGRESS.
   Không dùng fixture/QA làm bằng chứng cho production hoặc dữ liệu khách thật.
+
+## Localhost4200 sau bàn giao
+
+- Owner chọn bật self-host local; dev-ui đã merge dev, giữ2chỉnhUI riêng,
+  test333/333. Backend8080, management8081 loopback, Nginx18084 loopback.
+- Helper private tại root checkout: `python3 .local/hero-banners/run.py backend`
+  và `python3 .local/hero-banners/run.py worker` (hai tiến trình riêng). Token
+  trong runtime.json mode0600, ảnh tại `.local/hero-banners/images`, không Git.
+- Backup private `.local/hero-banners/before-v33.dump`; đã migrate localV33 và
+  đăng ký hai recipe v1/hero-v1 marker local-source, không dùng marker trên live.
+- Không sửa `.env`; chạy lại bằng helper để giữ cờ self-host. Đăng nhập
+  lại sau restartbackend. Nginx chỉ mountbookderived; banner vẫn đọc quaAPI.
+- Bật LOCAL cũng chuyển upload ảnh sách mới sangself-host theo owner đã duyệt;
+  các quy tắc ảnh sách/Drive hiện có vẫn giữ. Không tạo dữ liệu QA
+  vào DB dev khi bàn giao; nghiệm thu upload thực đã chạy trên DBQA riêng.

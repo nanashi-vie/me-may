@@ -9,8 +9,9 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
   Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
   FE332đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
-  browser1280/390 và backup/restoreQA đạt. Đang tích hợp dev/sync4200.
-  Local hiện chưa bật self-host; chờ chọn cấu hình runtime để upload tại4200.
+  browser1280/390 và backup/restoreQA đạt. Đã tích hợp dev/sync4200.
+  Owner đã chọn bật self-host local;8080/8081 +worker/Nginx18084 đang chạy.
+  DB local backup trướcV33; dev-ui333tests đạt, giữ UIriêng; cần đăng nhập lại.
   Chưa migrate/deployproduction; giữ gate digest/mount/backup/artwork/device.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
