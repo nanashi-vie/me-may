@@ -1,0 +1,13 @@
+<a class="back-link" routerLink="/admin/customers" [queryParams]="backQuery">‹ Quay về danh sách khách hàng</a>
+@if (loading()) {<p class="empty" role="status">Đang tải hồ sơ…</p>}
+@if (toast()) {<p class="notice" role="status">{{ toast() }}</p>}
+@if (error()) {<p class="error" role="alert">{{ error() }} <button type="button" class="secondary" (click)="refresh()">Tải lại</button></p>}
+@if (customer(); as c) {
+ <article class="customer-panel detail-panel">
+  <header class="page-heading"><div class="profile-heading"><span class="profile-avatar" aria-hidden="true">{{ c.fullName.charAt(0).toUpperCase() }}</span><div><h1>{{ c.fullName }}</h1><p>Mã nội bộ: {{ c.customerCode }} <span class="status-badge" [class.active]="c.status === 'ACTIVE'">{{ c.status === 'ACTIVE' ? 'Đang hoạt động' : 'Đã lưu trữ' }}</span></p></div></div>@if (owner()) {<div class="heading-actions"><button type="button" class="secondary" [disabled]="busy()" (click)="edit()">Sửa</button><button type="button" class="secondary" [disabled]="busy()" (click)="changeCustomerStatus()">{{ c.status === 'ACTIVE' ? 'Lưu trữ' : 'Khôi phục' }}</button></div>}</header>
+  <dl class="profile-fields"><div><dt>Số điện thoại</dt><dd class="prominent">{{ c.phone || '—' }}</dd></div><div><dt>Địa chỉ mặc định</dt><dd>{{ c.defaultAddress || '—' }}</dd></div><div class="social-details">@for (field of socialFields; track field.key) {<div><dt>{{ field.label }}</dt><dd>{{ c[field.key] || '—' }}</dd></div>}</div><div><dt>Ghi chú nội bộ</dt><dd class="note">{{ c.note || '—' }}</dd></div></dl>
+  <div class="timestamps"><span>Ngày tạo: {{ c.createdAt | date:'dd/MM/yyyy HH:mm':'+0700' }}</span><span>Cập nhật: {{ c.updatedAt | date:'dd/MM/yyyy HH:mm':'+0700' }}</span></div>
+  <section class="order-history"><h2>Lịch sử đơn hàng</h2><div class="empty"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z M4 7.5l8 4.5 8-4.5 M12 12v9"/></svg><p>Khách hàng chưa có đơn hàng.</p></div></section>
+ </article>
+}
+<app-customer-form (saved)="onSaved($event)" />

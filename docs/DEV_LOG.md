@@ -3642,3 +3642,6 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - T4:5formtest đạt; phát hiện response trùng cũ xuất hiện khi đóng/mở lại
   form, đã có regression đỏ→xanh và hủy stream khi reset. Giữ draft lỗi mạng/
   version, chống submit2lần, dirty confirm và xóa PII khi auth epoch thay đổi.
+- T5:21customer+sidebar test đạt, có21bao gồm API/validation/form/list/detail;
+  query/back/paging, response cũ, STAFF, no-order placeholder/text XSS đạt.
+  UI tham khảo bố cục, dùng đỏ var(--red),3tên mạng riêng, không nút Tạo đơn.

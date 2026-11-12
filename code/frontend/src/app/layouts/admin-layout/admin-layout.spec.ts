@@ -33,6 +33,7 @@ describe('AdminLayout', () => {
     expect(text).toContain('Mẹ Mây');
     expect(text).toContain('Trang quản trị');
     expect(text).toContain('Tổng quan');
+    expect(fixture.nativeElement.querySelector('a[href="/admin/customers"]')).not.toBeNull();
     expect(text).toContain('Quản lý sách');
     expect(text).toContain('Sách');
     expect(text).toContain('Bộ sưu tập');

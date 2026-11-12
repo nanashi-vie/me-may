@@ -1,4 +1,5 @@
 <dialog #dialog aria-labelledby="customer-form-title" (cancel)="onCancel($event)" (click)="onBackdrop($event)">
+ @if (owner()) {
  <form [formGroup]="form" (ngSubmit)="save()">
   <header><h2 id="customer-form-title">{{ customer() ? 'Chỉnh sửa khách hàng' : 'Thêm khách mới' }}</h2><button type="button" class="close secondary" aria-label="Đóng form" [disabled]="busy()" (click)="requestClose()">×</button></header>
   <fieldset [disabled]="busy()">
@@ -26,4 +27,5 @@
   @if (conflict()) {<button class="secondary" type="button" [disabled]="busy()" (click)="reload()">Tải lại hồ sơ mới</button>}
   <footer><button type="button" class="secondary" [disabled]="busy()" (click)="requestClose()">Hủy</button><button type="submit" [disabled]="busy() || !owner()">{{ busy() ? 'Đang lưu…' : customer() ? 'Lưu thay đổi' : 'Lưu khách hàng' }}</button></footer>
  </form>
+ }
 </dialog>

@@ -20,6 +20,8 @@ export const routes: Routes = [
     canActivate: [requireAdmin],
     loadComponent: () => import('./layouts/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
+      { path: 'customers', title: 'Khách hàng | Mẹ Mây', canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/customers/customer-list/customer-list').then(m => m.CustomerList) },
+      { path: 'customers/:id', title: 'Hồ sơ khách hàng | Mẹ Mây', canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/customers/customer-detail/customer-detail').then(m => m.CustomerDetailPage) },
       {
         path: 'nhan-vien',
         title: 'Hồ sơ nhân viên | Mẹ Mây',
