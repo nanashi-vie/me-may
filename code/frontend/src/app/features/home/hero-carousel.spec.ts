@@ -131,4 +131,51 @@ describe('HeroCarousel', () => {
     vi.advanceTimersByTime(5000);
     expect(c.active()).toBe(1);
   });
+  it('keeps an aria-hidden outgoing slide while the new slide enters from the left', () => {
+    const { fixture, c, el } = setup();
+    vi.advanceTimersByTime(5000);
+    fixture.detectChanges();
+    expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('a.webp');
+    expect(el.querySelector('.outgoing')?.getAttribute('aria-hidden')).toBe('true');
+    expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('b.webp');
+    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(false);
+    el.querySelector('.incoming')!.dispatchEvent(new Event('animationend', { bubbles: true }));
+    fixture.detectChanges();
+    expect(el.querySelector('.outgoing')).toBeNull();
+    expect(c.active()).toBe(1);
+  });
+  it('replaces the outgoing layer on rapid navigation and reverses manual previous', () => {
+    const { fixture, c, el } = setup();
+    c.next(1);
+    fixture.detectChanges();
+    c.next(-1);
+    fixture.detectChanges();
+    expect(el.querySelectorAll('.outgoing')).toHaveLength(1);
+    expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('b.webp');
+    expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('a.webp');
+    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(true);
+  });
+  it('switches instantly for reduced motion and clears moving layers after errors/input changes', () => {
+    const { fixture, c, el } = setup(2, true);
+    c.next(1);
+    fixture.detectChanges();
+    expect(el.querySelector('.outgoing')).toBeNull();
+    expect(el.querySelector('img')?.getAttribute('src')).toBe('b.webp');
+    fixture.componentRef.setInput('banners', [banners[0]]);
+    fixture.detectChanges();
+    expect(el.querySelector('.outgoing')).toBeNull();
+    expect(el.querySelector('img')?.getAttribute('src')).toBe('a.webp');
+  });
+  it('restarts both slide layers when Next is clicked twice in the same direction', () => {
+    const { fixture, c, el } = setup();
+    c.next(1);
+    fixture.detectChanges();
+    const first = el.querySelector('.outgoing');
+    vi.advanceTimersByTime(200);
+    c.next(1);
+    fixture.detectChanges();
+    expect(el.querySelector('.outgoing')).not.toBe(first);
+    expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('b.webp');
+    expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('a.webp');
+  });
 });

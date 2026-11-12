@@ -3901,3 +3901,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   worker38350 và Nginx cho owner test. Giữ backupprivate; không đụng my-postgres.
 - Tích hợp/pushdev theo quy ước; không pushdev-ui/main. Worktree này là primary
   native của chat nên giữ, không cưỡng ép archive/xóa; branch đã gộp giữ tại đây.
+
+### HERO-C13 — Phủ kín banner và chuyển động theo phản hồi owner
+
+- Owner test ảnh1920×775 và3000×1125, yêu cầu tràn ngang và trượt trái→phải.
+  Điều tra: object-fit:contain trong khung3:1 tạo khoảng dư ngang khi ảnh thấp
+  hơn tỉ lệ3:1; owner đã chọn cover/cắt trên dưới thay quyết định contain cũ.
+- Phạm vi: public+preview cover căn giữa3:1; animation ngang550ms, autoplay5s
+  giữ nguyên. Reduced-motion không trượt; ảnh lỗi/đổiinput không giữ layer cũ.
+- Screenshot còn cho thấy nút lên/xuống admin trắng trên nền trắng; stylebutton
+  đặt backgroundwhite nhưng thiếucolor nên kế thừa globalwhite. Sửa màu ink.
+- Đang triển khai TDD/browser, chưa có kết quả mới. Giữ backend/worker/DB user.
+
+### HERO-C14 — Nghiệm thu cover/chuyển động
+
+- Cập nhật public+preview cover3:1/căn giữa; hint upload nói rõ crop. Fieldalt
+  giữ nguyên chức năng SEO/accessibility. Nút reorder có màuink trên nềnwhite.
+- Carousel2layer550ms: incomingtrái→giữa/outgoinggiữa→phải, nútTrướcđảochiều;
+  reduced-motioninstant; ngOnChanges/error/tabhidden dọn lớp cũ, destroy dọn timer.
+- Review readonly phát hiện rapidNext cùngchiều tái sử dụngoutgoingDOM nên
+  animationlệchnhịp/hởnền. Regrade Important do ảnh hưởng hiển thị, đã thêmtest
+  RED→GREEN và keyoutgoing theoID để cả2layer tạo mới cùngnhịp. Không minor deferred.
+- `npm test --prefix code/frontend -- --include='**/hero-carousel.spec.ts'` RED
+  2case thiếuanimation, sauđó11đạt; rapidcase RED1/12→GREEN. Full `npm test --prefix
+  code/frontend`336/33658files. `npm run build --prefix code/frontend` và
+  `npm run build:workers --prefix code/frontend` đạt sau sửa cuối.
+- Browser4209 chỉ đọc backendlocal8080: hai ảnhpublic đãupload, viewport1280/390
+  đềucover/frame3:1; đo actualautoplaykeyframes enter-ltr từ-100%→0,5giâygiữ;
+  rapidNext180ms haianimation cùngcurrentTime0. Không thay banner/config trongDB.
+- Admin style kiểm bằng readonlyidentity/configfixtures (không phải login/ghiDB):
+  arrowcolor rgb41/39/36 trên nềnwhite; previewcover. Không tạo account/dữliệuQA.
+- Chỉ frontend/docs đổi, không migrate/restartbackend/worker hoặc chạy lạiBE
+  khôngliênquan. Đang tích hợpdev/dev-ui, giữ UI riêng; sẽ kiểm4200 và dọn4209.

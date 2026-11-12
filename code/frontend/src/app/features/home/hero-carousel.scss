@@ -8,7 +8,15 @@
   background: #faf6ed;
   overflow: hidden;
 }
-.image-link {
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3/1;
+  overflow: hidden;
+}
+.image-link,
+.outgoing {
   display: flex;
   width: 100%;
   height: 100%;
@@ -17,11 +25,67 @@
   color: #a51c30;
   text-decoration: none;
 }
-.image-link img {
+.image-link img,
+.outgoing img {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center;
+}
+.outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: exit-ltr 550ms ease-in-out both;
+}
+.incoming {
+  position: relative;
+  animation: enter-ltr 550ms ease-in-out both;
+}
+.rtl .outgoing {
+  animation-name: exit-rtl;
+}
+.rtl .incoming {
+  animation-name: enter-rtl;
+}
+@keyframes enter-ltr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes exit-ltr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes enter-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes exit-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .outgoing,
+  .incoming {
+    animation: none;
+  }
 }
 .fallback-text {
   font-size: clamp(1rem, 3vw, 3rem);
