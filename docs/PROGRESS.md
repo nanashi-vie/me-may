@@ -6,6 +6,8 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
   và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),
   [runbook](IMAGE_OPERATIONS.md), [bằng chứng/tiêu chí](IMAGE_VERIFICATION.md).
+- Đã dọn hai worktree/branch ảnh đã vào dev ngày12/11. Giữ dev-ui theo
+  owner: còn1commit chưa vào dev, ahead origin/dev-ui34commit, không đổi.
 - LOCAL/Drive IMPORT/MATCH, nguồn VERIFIED, UI không lặp ảnh và Gắn tất cả
   đã triển khai/kiểm; backend298total/3skip, FE294 ở các checkpoint ảnh.
   Sáu spec/plan cũ được hợp nhất12/11, không là task implementation đang mở.

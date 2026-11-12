@@ -3500,6 +3500,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   hành/acceptance còn giá trị, không tạo archive/index song song. Bàn giao
   tài liệu qua commit/push dev; user merge main theo workflow, không deploy.
 
+## 2026-11-12 — Rà soát và dọn worktree ảnh
+
+- Owner yêu cầu dọn worktree, bổ sung giữ dev-ui. Kiểm git worktree list,
+  status, ancestry và branch log trước xóa; không đổi dev-ui/main.
+- image-system trong .codex/worktrees đang ở codex/drive-source-batch e2e6759,
+  sạch; .local/image-system ở codex/image-system 3be348d, chỉ untracked symlink
+  node_modules trỏ dependency root. .env cũng là symlink tới root, không là
+  secret riêng. Cả hai branch có 0 commit ngoài dev.
+- Artifact API không có worktree managed attached nên dùng Git cleanup.
+  File ignored gồm dependency/build/cache và ledger/log QA đã hoàn tất,
+  không có source chưa commit; không có process cwd trong hai worktree ảnh.
+- dev-ui giữ nguyên: e6f40ac, clean, ahead origin/dev-ui34 commit; còn1commit
+  chưa vào dev. Không push, reset, merge hoặc xóa branch/worktree này.
+- Đã git worktree remove hai checkout ảnh; force chỉ cho symlink dependency
+  untracked đã kiểm. Xóa hai branch đã merge bằng git branch -d, không force.
+- Xác minh worktree list chỉ còn root/dev và dev-ui; dev-ui vẫn e6f40ac,
+  sạch, ahead34 như trước. .env và node_modules root vẫn tồn tại. Không chạy
+  lại test/build vì không đổi code; git diff --check đạt. Ghi/push log lên dev.
+
 ## 2026-11-11 — S064-C01 — Chỉnh UI chấm công
 
 - Làm trực tiếp trên dev (đã khớp origin/dev). Phạm vi: attendance.scss, punch.html/ts,
