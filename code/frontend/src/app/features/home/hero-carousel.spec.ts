@@ -131,14 +131,14 @@ describe('HeroCarousel', () => {
     vi.advanceTimersByTime(5000);
     expect(c.active()).toBe(1);
   });
-  it('keeps an aria-hidden outgoing slide while the new slide enters from the left', () => {
+  it('keeps an aria-hidden outgoing slide while the new slide enters from the right', () => {
     const { fixture, c, el } = setup();
     vi.advanceTimersByTime(5000);
     fixture.detectChanges();
     expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('a.webp');
     expect(el.querySelector('.outgoing')?.getAttribute('aria-hidden')).toBe('true');
     expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('b.webp');
-    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(false);
+    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(true);
     el.querySelector('.incoming')!.dispatchEvent(new Event('animationend', { bubbles: true }));
     fixture.detectChanges();
     expect(el.querySelector('.outgoing')).toBeNull();
@@ -153,7 +153,7 @@ describe('HeroCarousel', () => {
     expect(el.querySelectorAll('.outgoing')).toHaveLength(1);
     expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('b.webp');
     expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('a.webp');
-    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(true);
+    expect(el.querySelector('.viewport')?.classList.contains('rtl')).toBe(false);
   });
   it('switches instantly for reduced motion and clears moving layers after errors/input changes', () => {
     const { fixture, c, el } = setup(2, true);
@@ -177,5 +177,18 @@ describe('HeroCarousel', () => {
     expect(el.querySelector('.outgoing')).not.toBe(first);
     expect(el.querySelector('.outgoing img')?.getAttribute('src')).toBe('b.webp');
     expect(el.querySelector('.incoming img')?.getAttribute('src')).toBe('a.webp');
+  });
+  it('shows only compact arrows and offers Space to pause without a navigation bar', () => {
+    const { fixture, c, el } = setup();
+    expect(el.querySelector('.controls')).toBeNull();
+    expect(el.querySelectorAll('button')).toHaveLength(2);
+    expect(el.querySelectorAll('.arrow svg')).toHaveLength(2);
+    const link = el.querySelector('a')!;
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+    fixture.detectChanges();
+    expect(c.paused()).toBe(true);
+    link.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', code: 'Space', bubbles: true }));
+    fixture.detectChanges();
+    expect(c.paused()).toBe(false);
   });
 });

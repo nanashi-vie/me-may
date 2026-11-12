@@ -28,6 +28,9 @@
       <a
         routerLink="/sach"
         class="image-link"
+        aria-keyshortcuts="Space"
+        title="Nhấn Space để tạm dừng/chạy tự động"
+        (keydown.space)="$event.preventDefault(); togglePause()"
         [class.incoming]="outgoing() !== null"
         (animationend)="finishTransition($event)"
       >
@@ -51,32 +54,14 @@
   </div>
   @if (slides().length > 1) {
     <button class="arrow previous" type="button" aria-label="Banner trước" (click)="next(-1)">
-      ‹
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
     </button>
     <button class="arrow next" type="button" aria-label="Banner tiếp theo" (click)="next(1)">
-      ›
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
     </button>
-    <div class="controls">
-      @for (slide of slides(); track slide.id; let i = $index) {
-        <button
-          class="dot"
-          type="button"
-          [class.selected]="active() === i"
-          [attr.aria-label]="'Xem banner ' + (i + 1)"
-          [attr.aria-pressed]="active() === i"
-          (click)="choose(i)"
-        >
-          <span></span>
-        </button>
-      }
-      <button
-        class="pause"
-        type="button"
-        (click)="togglePause()"
-        [attr.aria-label]="paused() ? 'Chạy tự động' : 'Tạm dừng tự động'"
-      >
-        {{ paused() ? '▶' : 'Ⅱ' }}
-      </button>
-    </div>
   }
 </div>
