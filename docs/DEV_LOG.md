@@ -3637,3 +3637,5 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - T2:4APItest đỏ404→xanh;4test PostgreSQL thật race create/update/status,
   rollback audit và no-op đạt. Quyền/CSRF/duplicates/paging/currentVersion đạt;
   audit chỉ metadata. Chưa chạy frontend mới hoặc browser QA.
+- T3:5test client/validation đạt sau đỏ thiếu module; giữ username @/dấu/chấm,
+  reject URL, API gửi CSRF/version và không retry500. Đang form T4.
