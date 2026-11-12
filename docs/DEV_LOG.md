@@ -3697,3 +3697,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Giữ worktree primary của chat theo guard host; đồng bộ detached HEAD tới dev
   cuối sau khi kiểm checkout sạch. Không sao chép .env/dependency hoặc đổi dev-ui.
   Dọn workspace tạm riêng CUSTOMER_PLAN sau khi chuyển đủ bằng chứng/rulings.
+
+## 2026-11-12 — HERO-C01 — Thiết kế banner quản trị
+
+- Owner yêu cầu feat nhỏ ở admin/sach-noi-bat: thay banner, tối đa10,
+  tự chuyển5giây; chốt mọi banner link cố định/sach. Ảnh tham khảo có arrows,
+  giữ màu chủ đạo web. Không yêu cầu link riêng/chiến dịch/crop editor.
+- Bắt đầu primary worktree sạch, detached51f4924; fetch không có dev mới.
+  Tạo codex/hero-banners từ origin/dev, không tạo worktree khác.
+- Đọc README/PROGRESS/checkpoint cuối, brainstorming, các mục Home/media liên
+  quan; graph HomePage/HomeFeaturedEditor/HomeFeaturedService/LocalUploadService.
+  Hero hiện là asset4:1 cố định; upload sách gắn với phiên/nguồn riêng.
+- Soạn HERO_BANNER_SPEC và đăng ký chỉ mục/snapshot. Đề xuất namespace ảnh
+  banner riêng, reuse primitive encode/self-host, save riêng với kệ sách;
+  fallback banner cũ, controls/pause/SSR/cache và cleanup/backup có tiêu chí.
+  Đây là thiết kế chờ duyệt, chưa viết code hoặc chạy migration/test sản phẩm.
+- Bước tiếp: owner duyệt thiết kế, sau đó writing-plans; không deploy live.
