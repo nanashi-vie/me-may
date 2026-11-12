@@ -4,7 +4,7 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
 - Banner followup HERO-C14: cover3:1, trượt trái→phải550ms, nútadmin rõ;
-  FE336đạt/browser1280+390đạt, đang syncdev/4200.
+  FE336/dev-ui337đạt, browser1280+390 và4200 đạt; đã syncdev/4200.
 - Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
   Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
   FE332đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
