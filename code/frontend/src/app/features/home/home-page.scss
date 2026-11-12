@@ -1,7 +1,12 @@
+:host { display: block; }
+:host > section:not(.hero):not(.flash-section), :host > app-public-skeleton, :host > app-public-error {
+  display: block;
+  width: min(1200px, calc(100% - 40px));
+  margin-inline: auto;
+}
 .hero {
-  /* Full-bleed: break out of the centred .wrap column, flush under the nav like IPM. */
-  width: 100vw;
-  margin: 0 calc(50% - 50vw) 2rem;
+  width: 100%;
+  margin: 0 0 2rem;
 }
 .hero img {
   display: block;
@@ -149,7 +154,8 @@
     var(--bolt) left 16px center / 140px auto no-repeat,
     var(--bolt) right 16px center / 140px auto no-repeat,
     #ff625c;
-  margin: 0 calc(50% - 50vw) 2.5rem;
+  width: 100%;
+  margin: 0 0 2.5rem;
   padding: 1.5rem 0;
 }
 .flash-section header {

@@ -14,7 +14,7 @@ Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Thay banner hero, tối đa10banner và tự chuyển5giây | [Thiết kế chờ duyệt](HERO_BANNER_SPEC.md) |
+| Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
 | Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: tổng quan, cơ chế, upload máy/Drive, ghép nguồn và so Cloudinary | [Hệ thống ảnh](IMAGES.md) |
 | Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |

@@ -98,16 +98,20 @@ public class SecurityConfiguration {
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/**",
                                                                 "/api/v1/collections", "/api/v1/collections/**",
                                                                 "/api/v1/taxonomy", "/api/v1/home", "/api/v1/contact",
-                                                                "/api/v1/flash-sale", "/api/v1/cache-policy")
+                                                                "/api/v1/flash-sale", "/api/v1/cache-policy", "/api/v1/hero-banners/**")
                                                 .permitAll()
-                                                .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**")
+                                                .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**", "/api/v1/admin/hero-banners", "/api/v1/admin/hero-banners/**")
                                                 .hasRole("OWNER")
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")
                                                 .hasAnyRole("OWNER", "STAFF")
                                                 .requestMatchers("/api/v1/admin/**").hasRole("OWNER")
                                                 .anyRequest().authenticated())
                                 .headers(headers -> headers.addHeaderWriter((req, res) -> {
-                                        if (req.getRequestURI().startsWith("/api/"))
+                                        boolean publicBanner = req.getMethod().equals("GET")
+                                                        && req.getRequestURI().startsWith("/api/v1/hero-banners/")
+                                                        && (res.getStatus() == 200 || res.getStatus() == 304)
+                                                        && res.getHeader("Cache-Control") != null;
+                                        if (req.getRequestURI().startsWith("/api/") && !publicBanner)
                                                 res.setHeader("Cache-Control", "no-store");
                                         if (req.getMethod().equals("GET") && req.getRequestURI().startsWith("/api/v1/")
                                                         && !req.getRequestURI().startsWith("/api/v1/admin/")

@@ -30,7 +30,7 @@ public final class PublicCatalogueDtos {
     public record Shelf(String title, String href, List<Book> books) {
     }
 
-    public record Home(List<Shelf> shelves) {
+    public record Home(List<Shelf> shelves, List<HeroBannerService.Banner> banners) {
     }
 
     public record Contact(String hotlineUrl, String groupUrl) {

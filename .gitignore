@@ -55,3 +55,6 @@ __screenshots__/
 __pycache__/
 
 /output/playwright/
+# Dependency symlinks used by isolated worktrees.
+code/frontend/node_modules
+code/image-worker/node_modules

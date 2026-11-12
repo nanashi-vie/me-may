@@ -48,7 +48,7 @@ describe('HomePage banner info boxes', () => {
     expect(image.getAttribute('fetchpriority')).toBe('high');
     expect(image.alt).toContain('Tiệm sách ngoại văn Mẹ Mây');
     expect(hero.querySelector('h1.sr-only')).toBeTruthy();
-    expect(hero.querySelector('a')).toBeNull();
+    expect(hero.querySelector('a')?.getAttribute('href')).toBe('/sach');
   });
 
   function communityLink(element: HTMLElement) {

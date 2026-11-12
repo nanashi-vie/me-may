@@ -1,0 +1,101 @@
+<section class="banner-card" aria-labelledby="banner-heading">
+  <header>
+    <div>
+      <p class="eyebrow">Cấu hình trang chủ</p>
+      <h2 id="banner-heading">Banner trang chủ</h2>
+    </div>
+    <span class="counter">{{ rows().length }} / 10 ảnh</span>
+  </header>
+  <p class="hint">Banner tự chuyển sau 5 giây. Bấm vào ảnh để xem tất cả sách tại /sach.</p>
+  <p class="hint">
+    Khuyến nghị ảnh 3240 × 1080 (tỉ lệ 3:1). JPEG, PNG hoặc WebP tĩnh, tối đa 10 MiB và 25 MP. Ảnh
+    hiển thị trọn khung.
+  </p>
+  @if (error()) {
+    <p class="error" role="alert">{{ error() }}</p>
+  }
+  @if (notice()) {
+    <p class="notice" role="status">{{ notice() }}</p>
+  }
+  @if (loading()) {
+    <p role="status">Đang tải banner…</p>
+  }
+  <fieldset [disabled]="saving() || loading()">
+    <ol>
+      @for (row of rows(); track row.key; let i = $index) {
+        <li>
+          <div class="preview">
+            @if (row.preview) {
+              <img [src]="row.preview" alt="" width="800" height="267" />
+            } @else {
+              <span>Chờ ảnh mới</span>
+            }
+          </div>
+          <div class="details">
+            <strong>Banner {{ i + 1 }}</strong>
+            <label
+              >Mô tả ảnh
+              <input
+                type="text"
+                maxlength="300"
+                [(ngModel)]="row.alt"
+                (ngModelChange)="changed()"
+                placeholder="Ví dụ: Sách mới về tại Mẹ Mây"
+                [name]="'alt-' + row.key"
+            /></label>
+            @if (row.pending) {
+              <p role="status">Đang tải và xử lý ảnh…</p>
+            }
+            @if (row.error) {
+              <p class="error" role="alert">{{ row.error }}</p>
+              <button type="button" (click)="retry(row)">Kiểm tra lại / Thử lại</button>
+            }
+            <div class="row-actions">
+              <button
+                type="button"
+                (click)="move(i, -1)"
+                [disabled]="i === 0"
+                [attr.aria-label]="'Đưa banner ' + (i + 1) + ' lên'"
+              >
+                ↑
+              </button>
+              <button
+                type="button"
+                (click)="move(i, 1)"
+                [disabled]="i === rows().length - 1"
+                [attr.aria-label]="'Đưa banner ' + (i + 1) + ' xuống'"
+              >
+                ↓
+              </button>
+              <label class="file-action"
+                >Thay ảnh<input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  (change)="onFile($event, row)"
+              /></label>
+              <button type="button" class="remove" (click)="remove(row)">Xóa</button>
+            </div>
+          </div>
+        </li>
+      } @empty {
+        <li class="empty">Chưa có banner tùy chỉnh. Trang chủ đang dùng banner mặc định.</li>
+      }
+    </ol>
+    <div class="actions">
+      <label class="file-action" [class.disabled]="rows().length >= 10"
+        >+ Thêm banner<input
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          [disabled]="rows().length >= 10"
+          (change)="onFile($event)"
+      /></label>
+      <button type="button" (click)="load()" [disabled]="pending()">Tải lại banner</button>
+      <button type="button" class="primary" (click)="save()" [disabled]="!canSave()">
+        {{ saving() ? 'Đang lưu…' : 'Lưu banner' }}
+      </button>
+    </div>
+  </fieldset>
+  <p class="hint">
+    Thay đổi chỉ xuất hiện trên trang chủ sau khi bấm Lưu banner. Phần ghim sách có nút lưu riêng.
+  </p>
+</section>

@@ -6,9 +6,12 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 
-- Banner hero12/11: owner yêu cầu quản lý tại `/admin/sach-noi-bat`, tối đa10,
-  tự chuyển5giây, mọi ảnh dẫn cố định `/sach`. Đã soạn
-  [thiết kế ngắn chờ duyệt](HERO_BANNER_SPEC.md); chưa triển khai hoặc migrate.
+- Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
+  Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
+  FE332đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
+  browser1280/390 và backup/restoreQA đạt. Đang tích hợp dev/sync4200.
+  Local hiện chưa bật self-host; chờ chọn cấu hình runtime để upload tại4200.
+  Chưa migrate/deployproduction; giữ gate digest/mount/backup/artwork/device.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
   field riêng chỉ username, nhãn Tên Zalo/Tên TikTok/Tên Threads; OWNER ghi,

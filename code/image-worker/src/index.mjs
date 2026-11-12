@@ -29,13 +29,16 @@ function encode(args, signal) {
 }
 
 async function paths(root, job) {
-  const input = /^staging\/([^/]+)\/input$/.exec(job.inputKey ?? '');
+  const banner = job.inputKey?.startsWith('banners/');
+  const input = /^(?:banners\/)?staging\/([^/]+)\/input$/.exec(job.inputKey ?? '');
+  if (banner && job.kind !== 'PROCESS') throw new Error('invalid_job');
   if (!['PROCESS', 'PREVIEW', 'MIGRATE', 'REBUILD'].includes(job.kind) || ![job.jobId, job.token, job.mediaId, job.generationId, input?.[1]]
       .every(value => typeof value === 'string' && uuid.test(value))) throw new Error('invalid_job');
   if (!Object.hasOwn(recipes, job.recipeVersion)) throw new Error('unknown_recipe');
-  const staging = join(root, 'staging');
+  const namespace = banner ? join(root, 'banners') : root;
+  const staging = join(namespace, 'staging');
   const inputDir = join(staging, input[1]);
-  for (const folder of [root, staging, inputDir]) {
+  for (const folder of [root, namespace, staging, inputDir]) {
     if (!(await lstat(folder)).isDirectory()) throw new Error('invalid_job');
   }
   const attempt = join(staging, job.token);

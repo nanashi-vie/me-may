@@ -17,6 +17,12 @@ public final class PgTestData {
  }
  public static void clean(JdbcTemplate jdbc){
   if(!"me_may_test".equals(jdbc.queryForObject("select current_database()",String.class))) throw new IllegalStateException("Refusing non-test database");
+  if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass('hero_banner_upload') is not null",Boolean.class))){
+   var media=jdbc.queryForList("select media_id from hero_banner_upload",java.util.UUID.class);
+   jdbc.execute("delete from hero_banner_item");jdbc.execute("delete from hero_banner_upload");
+   for(var id:media){jdbc.update("delete from image_job where media_id=?",id);jdbc.update("delete from image_generation where media_id=?",id);jdbc.update("delete from image_source_binding where media_id=?",id);jdbc.update("delete from image_asset where media_id=?",id);}
+   jdbc.execute("update hero_banner_config set version=0");
+  }
   for(String table:new String[]{"customer","drive_image_batch_item","drive_image_batch","image_recovery_item","image_recovery_operation","image_migration_rollback","image_migration_apply_item","image_migration_apply_book","image_migration_apply","image_migration_receipt","book_import_item","book_import_batch","temporary_media","upload_session","audit_event","home_featured_item","flash_sale_item","book_media","listing_feature","listing_collection","listing_age_group","book_variant","listing","book_copy","book_storage_box","collection"}) {
    if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass(?) is not null",Boolean.class,table))) jdbc.execute("delete from "+table);
   }

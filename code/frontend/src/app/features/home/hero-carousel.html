@@ -1,0 +1,58 @@
+<div
+  class="carousel"
+  role="region"
+  aria-roledescription="băng chuyền"
+  aria-label="Banner trang chủ"
+  (mouseenter)="hover(true)"
+  (mouseleave)="hover(false)"
+  (focusin)="focus(true)"
+  (focusout)="focusOut($event)"
+>
+  <a routerLink="/sach" class="image-link">
+    @if (!fallbackBroken()) {
+      <img
+        [src]="current().src"
+        [srcset]="current().srcset"
+        sizes="100vw"
+        [width]="current().width"
+        [height]="current().height"
+        [alt]="current().alt"
+        [attr.fetchpriority]="active() === 0 ? 'high' : 'auto'"
+        [attr.loading]="active() === 0 ? 'eager' : 'lazy'"
+        (error)="failed(current().id)"
+      />
+    } @else {
+      <span class="fallback-text">Mẹ Mây · Khám phá tất cả sách</span>
+    }
+  </a>
+  @if (slides().length > 1) {
+    <button class="arrow previous" type="button" aria-label="Banner trước" (click)="next(-1)">
+      ‹
+    </button>
+    <button class="arrow next" type="button" aria-label="Banner tiếp theo" (click)="next(1)">
+      ›
+    </button>
+    <div class="controls">
+      @for (slide of slides(); track slide.id; let i = $index) {
+        <button
+          class="dot"
+          type="button"
+          [class.selected]="active() === i"
+          [attr.aria-label]="'Xem banner ' + (i + 1)"
+          [attr.aria-pressed]="active() === i"
+          (click)="choose(i)"
+        >
+          <span></span>
+        </button>
+      }
+      <button
+        class="pause"
+        type="button"
+        (click)="togglePause()"
+        [attr.aria-label]="paused() ? 'Chạy tự động' : 'Tạm dừng tự động'"
+      >
+        {{ paused() ? '▶' : 'Ⅱ' }}
+      </button>
+    </div>
+  }
+</div>

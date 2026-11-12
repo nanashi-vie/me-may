@@ -106,3 +106,27 @@ test('REBUILD attests its pinned recipe and reports an unavailable recipe as a m
     { ...job, token: randomUUID(), kind: 'REBUILD', recipeVersion: 'unavailable' }, { workerDigest }), 'failed');
   assert.deepEqual(failures, [['recipe_mismatch', false]]);
 });
+
+test('banner PROCESS uses its isolated namespace with the real encoder', async t => {
+  const { root, job } = await fixture(t);
+  const { rename } = await import('node:fs/promises');
+  await mkdir(join(root, 'banners'));
+  await rename(join(root, 'staging'), join(root, 'banners', 'staging'));
+  const manifests = [];
+  assert.equal(await runJob({complete: async (_, m) => manifests.push(m), fail: async () => assert.fail('banner failed')},
+    root, {...job, inputKey: 'banners/' + job.inputKey}), 'ready');
+  assert.equal(manifests[0].variants.length, 9);
+  await sharp(join(root, 'banners', 'staging', job.token, 'output', '1400.webp')).metadata();
+});
+
+test('banner namespace refuses a symlink and unknown prefixes', async t => {
+  const { root, job } = await fixture(t);
+  const { symlink } = await import('node:fs/promises');
+  await symlink(root, join(root, 'banners'));
+  for (const prefix of ['banners/', 'other/', '../']) {
+    let failed = false;
+    assert.equal(await runJob({fail: async () => {failed = true;}}, root, {...job, inputKey: prefix + job.inputKey},
+      {processor: async () => assert.fail('invalid namespace reached encoder')}), 'failed');
+    assert.ok(failed);
+  }
+});

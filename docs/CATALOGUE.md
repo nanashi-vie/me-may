@@ -365,3 +365,9 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
   tạo sách, giữ khả năng retry payload cũ. Lưu theo version/audit của sách.
 - Migration V20 thêm danh mục và FK tùy chọn trên `book_copy`. Sách cũ và sách
   mới import chưa phân thùng. Vị trí và danh mục chỉ xuất hiện trong quản trị.
+
+## Banner trang chủ
+
+OWNER quản lý tối đa10banner tại `/admin/sach-noi-bat`, cấu hình/version
+riêng với ghim sách. Contract/recipe/backup/rollout và bằng chứng ở
+[HERO_BANNERS](HERO_BANNERS.md); khung3:1,5giây, mọi ảnh dẫn `/sach`.

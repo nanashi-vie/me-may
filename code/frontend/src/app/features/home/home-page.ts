@@ -1,4 +1,13 @@
-import { Component, inject, signal, effect, RESPONSE_INIT, DestroyRef, ViewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  signal,
+  effect,
+  RESPONSE_INIT,
+  DestroyRef,
+  ViewChild,
+} from '@angular/core';
+import { HeroCarousel } from './hero-carousel';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,7 +25,16 @@ import { ShippingPromoDialog } from './shipping-promo-dialog/shipping-promo-dial
 
 @Component({
   selector: 'app-home-page',
-  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, HowToBuyDialog, ShippingPromoDialog, CommunityDialog],
+  imports: [
+    HeroCarousel,
+    PublicSkeleton,
+    RouterLink,
+    BookCard,
+    PublicError,
+    HowToBuyDialog,
+    ShippingPromoDialog,
+    CommunityDialog,
+  ],
   templateUrl: './home-page.html',
   styleUrl: './home-page.scss',
 })
@@ -121,8 +139,15 @@ export class HomePage {
       : 0;
   }
   openCommunity(event: MouseEvent): void {
-    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey ||
-        event.shiftKey || event.altKey) return;
+    if (
+      event.defaultPrevented ||
+      event.button !== 0 ||
+      event.metaKey ||
+      event.ctrlKey ||
+      event.shiftKey ||
+      event.altKey
+    )
+      return;
 
     const trigger = event.currentTarget as HTMLAnchorElement;
     const view = trigger.ownerDocument.defaultView;
@@ -130,8 +155,11 @@ export class HomePage {
 
     const { userAgent, maxTouchPoints } = view.navigator;
     // iPadOS can advertise itself as a Mac when requesting desktop sites.
-    if (/Android|iPhone|iPad|iPod/i.test(userAgent) ||
-        (/Macintosh/i.test(userAgent) && maxTouchPoints > 1)) return;
+    if (
+      /Android|iPhone|iPad|iPod/i.test(userAgent) ||
+      (/Macintosh/i.test(userAgent) && maxTouchPoints > 1)
+    )
+      return;
 
     const desktopOs = /Windows NT|Macintosh|X11|Linux|CrOS/i.test(userAgent);
     if (!desktopOs && view.matchMedia?.('(pointer: coarse) and (hover: none)').matches) return;

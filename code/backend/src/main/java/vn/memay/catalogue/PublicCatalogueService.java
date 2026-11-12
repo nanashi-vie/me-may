@@ -16,6 +16,7 @@ import vn.memay.catalogue.PublicCatalogueDtos.Collection;
 public class PublicCatalogueService {
     @org.springframework.beans.factory.annotation.Autowired private tools.jackson.databind.ObjectMapper json;
     private final JdbcTemplate jdbc;
+    @org.springframework.beans.factory.annotation.Autowired private HeroBannerService heroBanners;
 
     private final MediaReadService mediaReader;
 
@@ -226,7 +227,7 @@ public class PublicCatalogueService {
         shelf(shelves, "CATEGORY:PICTURE_BOOK", "Picture books", "/sach?category=PICTURE_BOOK", "PICTURE_BOOK", null);
         for (Collection c : collections().stream().limit(2).toList())
             shelf(shelves, "COLLECTION:" + c.slug(), c.name(), "/bo-suu-tap/" + c.slug(), null, c.slug());
-        return new Home(shelves);
+        return new Home(shelves,heroBanners.published());
     }
 
     private void shelf(List<Shelf> rows, String shelfKey, String title, String href, String category, String collection) {

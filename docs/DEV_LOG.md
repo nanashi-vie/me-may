@@ -3746,3 +3746,133 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   fallback banner cũ, controls/pause/SSR/cache và cleanup/backup có tiêu chí.
   Đây là thiết kế chờ duyệt, chưa viết code hoặc chạy migration/test sản phẩm.
 - Bước tiếp: owner duyệt thiết kế, sau đó writing-plans; không deploy live.
+
+## 2026-11-12 — HERO-C02 — Sửa local4200 rồi triển khai banner tuần tự
+
+- Owner duyệt thiết kế, yêu cầu triển khai tuần tự; trước đó kiểm mục Khách
+  hàng không hiện ở localhost4200. Dùng systematic-debugging và writing-plans.
+- PID81477 phục vụ4200 từ dev-ui/code/frontend, nhánh95a6a89 chưa có customer;
+  root dev và feature đã có e349464. Không phải quyền hay route bị thiếu ở dev.
+- Merge dev vào dev-ui sạch, giữ footer/chi tiết sách riêng. Chỉ xung đột
+  PROGRESS/DEV_LOG: giữ đủ lịch sử hai bên và snapshot customer mới; merge local
+  3a30532, không push dev-ui hoặc thay main. Source feature làm ở worktree native.
+- Khi kiểm lại, cả4200/8080 không còn listener. Cấu hình backend root trỏ
+  localhost5432/me_may_dev; đang backup riêng0600 và khởi động lại backend/
+  frontend mới. Không dùng DB thật/production hoặc test cleaner trên DB dev.
+- Tiếp theo: xác minh menu/API local, lập plan cụ thể và thực thi theo lệnh
+  tuần tự đã được owner cấp; không yêu cầu chọn lại phương thức thực thi.
+- Local đã có V32 từ trước; backup riêng DB dev xong, backend healthUP và
+  frontend4200 mới lên. Browser xác nhận menu Khách hàng→/admin/customers
+  trên code thật, dùng identity fixture chỉ ở browser (không tạo account/khách
+  trong DB). Chưa dùng fixture này làm bằng chứng API local authenticated.
+- Đã lập HERO_BANNER_PLAN186dòng, tự rà10AC/5Review Focus/interfaces; theo
+  lệnh triển khai rõ ràng của owner, dùng executing-plans/TDD không xin lại
+  quyền thực thi. Tận dụng recipev1/queuePROCESS,640/1400, namespace banners;
+  không tạo recipe/digest hoặc pipeline Drive mới. Bắt đầu T1 trên worktree
+  codex/hero-banners; dependency symlink local ignored, QA PostgreSQL riêng.
+
+### HERO-C03 — API cấu hình banner
+
+- Task 1: schema V33, config/version riêng, OWNER-only, tối đa 10 ảnh READY,
+  audit trong transaction; Home trả banners theo thứ tự, không đổi shelves.
+- QA PostgreSQL riêng cổng 55437: HeroBannerApiTest RED (API/schema thiếu),
+  sau triển khai GREEN 3 tests, 0 failures/errors. Chưa triển khai upload/UI.
+- Thay đổi còn local trên codex/hero-banners; không migrate production.
+
+### HERO-C04 — Upload và namespace banner
+
+- Upload OWNER có requestKey/hash, quota 30 draft/owner, TTL 24h. Worker PROCESS
+  dùng recipe v1 nguyên trạng, namespace banners tách khỏi ảnh sách.
+- HeroBannerMediaTest: 4/4; API config 3/3; LocalUploadIntegrationTest và
+  LocalImageStoreTest xanh. Sharp thật được gọi từ test integration.
+  Worker 12/12, đã thấy test namespace thất bại trước thay đổi rồi qua.
+- Nội dung private trước save; URL public chỉ đọc ảnh đã publish còn hạn;
+  private no-store, public ETag/cache 24h; cleanup giữ current/draft/lease active.
+- Lựa chọn triển khai: trả bytes đã xác minh checksum, giới hạn 10MiB thay vì
+  mở lại stream sau xác minh; tránh đọc file bị thay giữa xác minh và gửi.
+- Chưa kiểm tra browser/SSR và chưa chạy full suite. Không đổi runtime user.
+
+### HERO-C05 — Tạm dừng theo yêu cầu người dùng, 12/11/2026
+
+- User yêu cầu dừng; không tiếp tục triển khai hay tích hợp branch.
+- Commit `c231a24` (config/API), `c00b763` (upload/worker), chưa push dev.
+  Task 2 GREEN: HeroBannerMediaTest 4/4, HeroBannerApiTest 3/3,
+  LocalUploadIntegrationTest/LocalImageStoreTest xanh; worker 12/12.
+- Task 3 chỉ có file test mới chưa commit `hero-banner-editor.spec.ts`.
+  Lệnh `npm test --prefix code/frontend -- --watch=false
+  --include='**/hero-banner-editor.spec.ts'` đỏ do component chưa tồn tại,
+  kéo theo type unknown. Đây chưa là kiểm tra hành vi hoàn chỉnh.
+- Chưa có editor/carousel, chưa full suite/build/browser hay review độc lập.
+- Giữ localhost user 4200/8080, QA container memay-hero-test và scratch ledger.
+  Lần sau xác minh runtime/Git, tiếp tục Task 3; không làm lại Task 1/2.
+
+### HERO-C06 — Tiếp tục checkpoint, 12/11/2026
+
+- User yêu cầu tiếp tục; đối chiếu Git xác nhận Task 1/2 đã commit, không làm lại.
+- Phạm vi đang làm: Task 3 editor độc lập, Task 4 carousel và nghiệm thu toàn luồng.
+  File test editor còn local, component chưa tồn tại; chưa có kết quả mới.
+
+### HERO-C07 — Editor và nâng chất lượng đã duyệt
+
+- Task 3 editor/guard hai phần độc lập đã triển khai; FE full suite 323/323,
+  57 files. Bao gồm response muộn, retry key, timeout recheck, conflict và saves.
+- Owner duyệt nâng riêng banner lên 800/1600/3200, WebP quality88, khung4:1.
+  Quyết định mới thay hướng reuse recipev1/640/1400 của HERO-C02–C04.
+  Ảnh test hiện tại chỉ1584×396, không dùng làm artwork chính thức.
+- Bổ sung bước recipe banner riêng trước carousel; recipe ảnh sách giữ nguyên.
+  Không upscale nguồn nhỏ; file gốc khuyến nghị3200×800 hoặc3840×960.
+
+### HERO-C08 — Chất lượng banner riêng
+
+- Recipe hero-v1: 800/1600/3200, JPEG90/WebP88; recipe sách v1 không đổi.
+  Backend chọn/kiểm đúng recipe và 6 variants; thiếu đăng ký recipe trả503.
+- Worker RED unknown_recipe → GREEN13/13; backend banner API/media7/7.
+  Ảnh input nhỏ không phóng lớn (processor dùng withoutEnlargement).
+- Chưa đăng ký recipe/migrate ở production. Cần pin worker chứa hero-v1 và
+  đăng ký worker digest/config hash trước bật upload; source được giữ backup.
+
+### HERO-C09 — Khung 3:1 theo quyết định mới
+
+- Owner chốt 3:1 sau đối chiếu ảnh mẫu Kim Đồng1920×775 (~2,48:1).
+  Thay khung4:1 đã duyệt trước; file thiết kế gốc3240×1080 hoặc3840×1280.
+  Giữ3200px/WebP88, contain, không đưa artwork mẫu lên sản phẩm.
+- FE331/331,58files; BE317total/3skip,0fail/error ở lần full suite đầu.
+  Build SSR đạt (sandbox exit134, chạy lại ngoài sandbox thành công).
+- Test bổ sung phát hiện SecurityConfiguration ghi đè public cache thành no-store;
+  sửa hẹp cho GET banner200/304. Test cache RED→GREEN4/4.
+- Đang chuẩn bị browser QA riêng; full suite cuối/review còn phải chạy sau sửa.
+
+### HERO-C10 — Carousel và browser QA
+
+- Carousel5s, manual/pause/hover/focus/tab-hidden/reduced-motion, một ảnh không
+  timer, ảnh hỏng bỏ qua/fallback; SSR có ảnh đầu/srcset/high priority.
+- Browser QA dùng DB me_may_hero_browser, backend18080/management18081,
+  frontend4208/SSR4408, worker Sharp thật và2ảnh fixture3240×1080.
+  Upload2ảnh/draftkhôngpublic/save/refresh, autoplay/pause/link đạt.
+- Mobile390 phát hiện100vw tính cả scrollbar làm hero lệch/tràn ngang;
+  đổi Home sang containerfullwidth, section khác giữ1200px/20px. Không JS đo.
+- Workers proxy giữ cache immutable chỉ route public banner hợp lệ200/304,
+  chuyển If-None-Match; private/error vẫn no-store. Test RED→GREEN17/17.
+- Fullsuite cuối và review độc lập đang thực hiện; chưa tích hợp/pushdev.
+
+### HERO-C11 — Review, nghiệm thu và chuẩn bị tích hợp
+
+- Review độc lập gpt-6-astra:2Important,0Critical,0minor, không declined.
+  Đã kiểm lại và sửa trong một pass: GET config/version dùng1SQL snapshot;
+  FlashSale giữfullwidth. Controlled snapshot test và browser sale1280/390 RED→GREEN.
+- Suite cuối: FE332/33258files; BE319total,0fail/error,3provider-live skip;
+  worker13/13. BuildSSR/Workers/proxy đạt; sandbox chặn build/listen được chạy
+  lại ngoài sandbox, không ghi thành lỗi ứng dụng.
+- Browser realQA:2upload/encode/draftprivate/save/persist, reorder/replacement,
+  fakefile giữpublic,409 giữdraft; autoplay/pause/keyboard/link; hero3:1 và
+  sale fullwidth ở1280/390. FB iframe có warnings policy cũ, không là lỗi banner.
+- Backup DBQA+22file ảnh, restore DB/mount riêng, SHA originals/variants khớp;
+  hai banner×3WebP sizes200, isolated mutation409. Không đọc/mutate production.
+- Hợp nhất spec/plan thành HERO_BANNERS, sửa chỉ mục/master/catalogue/progress;
+  gỡ spec/plan đã chuyển đủ AC. Không bỏ gate artwork thật/device/digest/livebackup.
+- Các quyết định builder: thực thi tiếp theo quyền đã cấp; reusev1 ban đầu đã
+  được owner thay bằng hero-v1/3200/WebP88 và khung3:1; bytes đã xác minh tối đa
+  10MiB thay stream mở lại (chi phí RAM/request). Không có minor deferred.
+- Local4200/8080 chưa bật LOCAL; đã hỏi owner cấu hình runtime vì cờ hiện có
+  cũng đổi provider upload sách mới. Chờ trả lời; không tự bật khi đang chờ.
+- Chuẩn bị tích hợp/pushdev theo workflow đã cho phép; không đụng main.
