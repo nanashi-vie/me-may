@@ -3843,3 +3843,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Local4200/8080 chưa bật LOCAL; đã hỏi owner cấu hình runtime vì cờ hiện có
   cũng đổi provider upload sách mới. Chờ trả lời; không tự bật khi đang chờ.
 - Chuẩn bị tích hợp/pushdev theo workflow đã cho phép; không đụng main.
+
+### HERO-C12 — Tích hợp và bật self-host local theo owner
+
+- Dev fast-forward b691147; dev-ui merge24b6ce9 giữ2chỉnhUI riêng. Conflict chỉ
+  PROGRESS, giữ checkpointS065 và trạng thái banner mới; không mất code/logUI.
+- Owner chọn bật self-hostlocal, đã backup me_may_dev trướcV33 vào file private
+  `.local/hero-banners/before-v33.dump` ở root checkout. Không đổi `.env`.
+- Runtime private helper `.local/hero-banners/run.py` (backend/worker/register),
+  token0600, ảnh `.local/hero-banners/images`. Backend8080/management8081 loopback,
+  worker chạy source mới; container memay-local-images/Nginx18084 chỉ mountbookderived.
+  Backend localV33/health200; Nginxhealth204; recipe v1/hero-v1 config hash khớp.
+  Marker local-source chỉ dànhlocal; không gọi deploy/migrationproduction.
+- Lệnh kiểm trong worktree triển khai: `npm test --prefix code/frontend`332/332;
+  `TEST_DB_URL=jdbc:postgresql://127.0.0.1:55437/me_may_test ... mvn -q -f code/backend/pom.xml test`
+  319total/3skip/0fail/error; DB credentials chỉ fakeQA, không ghi vào log.
+  `npm test --prefix code/image-worker`13/13, `npm run build --prefix code/frontend`,
+  `npm run build:workers --prefix code/frontend`, `npm run check:workers:proxy --prefix code/frontend` đạt.
+- Sau merge: `npm test` tại dev-ui/code/frontend333/33358files. Native/rootdev
+  code bằng fast-forward đã test; dev-ui thêm1test riêng. Local4200 main có customer
+  routes. Không dùng authfixture làm bằng chứng ghi trên DB dev; owner đăng nhập lại
+  vì backendrestart. QA backend/browser/restore riêng đã kiểm ghi/encode đầy đủ.
+- Sẽ dọn riêng runtime/container/scratchQA sau lưu checkpoint; giữ local4200/8080,
+  worker38350 và Nginx cho owner test. Giữ backupprivate; không đụng my-postgres.
+- Tích hợp/pushdev theo quy ước; không pushdev-ui/main. Worktree này là primary
+  native của chat nên giữ, không cưỡng ép archive/xóa; branch đã gộp giữ tại đây.
