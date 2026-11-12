@@ -4029,3 +4029,24 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Không sửaHeroBannerMedia.cleanup hoặc bỏ/disabletest. Javahelper giữ riêng
   stdoutmanifest/stderrdiagnostic, timeout210s và cleanupfiletạm.
 - CIonline sẽ kiểmquaPRnhápdev→main; không tựmerge hoặc deploymain.
+
+### HERO-C23 — 12/11/2026: CI GitHub đạt, xác minh cleanup customers
+
+- Bản sửa 8e6db62 đã push cả dev và dev-ui. Connector tạo PR trả 403
+  Resource not accessible by integration; dùng GitHub UI đang đăng nhập tạo
+  PR nháp #44 dev → main, không merge/publish/deploy.
+- Run 43248770015, job 131288530073 đạt trên Ubuntu/Node22/PostgreSQL17:
+  npm ci, worker 14/14, Flyway và Maven đạt. Backend 320 tests, 0 failures,
+  0 errors, 3 provider-live skips; HeroBannerMediaTest 5/5.
+  https://github.com/nanashi-vie/me-may/actions/runs/43248770015
+- Xác nhận lỗi CI cũ do thiếu môi trường Node/Sharp; không sửa nghiệp vụ
+  HeroBannerMedia.cleanup(), không bỏ/disable test cũ. Stderr subprocess
+  được giữ trong log riêng tư có giới hạn và assertion để chẩn đoán.
+- Dừng container QA memay-hero-ci; log .local/hero-ci đã sao lưu sang
+  root/.local/customer-worktree-backup/hero-ci. BE/FE vẫn dừng:
+  lsof các cổng 4200/4209/8080/8081 không có listener.
+- archive_worktree đúng identity customers vẫn trả
+  "The task's primary checkout cannot be removed." Worktree chưa bị gỡ.
+  Host không cho chat tự handoff; bước cần thiết là người dùng chuyển chat
+  về Local/root, sau đó archive attachment bằng công cụ native. Không force.
+- Commit tiếp theo chỉ ghi kết quả bàn giao; giữ dev và dev-ui cùng HEAD.

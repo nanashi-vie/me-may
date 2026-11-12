@@ -6,7 +6,12 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 
-- HERO-C21: đang sửa CI thiếu dependency image-worker, kiểm319tests vàcleanupcustomers.
+- HERO-C23: đã sửa CI thiếu dependency image-worker và bổ sung stderr riêng tư.
+  [PR nháp #44](https://github.com/nanashi-vie/me-may/pull/44),
+  [CI GitHub đạt](https://github.com/nanashi-vie/me-may/actions/runs/43248770015):
+  backend 320/0 lỗi/3 live skip, media 5/5, worker 14/14; không đổi cleanup().
+  Code 8e6db62 đã push dev/dev-ui. QA đã dừng, log đã backup.
+  Gỡ customers vẫn bị chặn primary checkout; cần chuyển chat về Local trước.
 - HERO-C19: autoplayphải→trái/hovervẫnchạy,2mũitên28px hovertrắng,
   bỏ dots/pausebar; test338đạt, SSR/Workersđạt,4200đãnhận.
 - Dev-ui đã gộp đầyđủ vàodev,2nhánh cùngHEAD; giữ footer/detailUIriêng.
