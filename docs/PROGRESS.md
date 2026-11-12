@@ -4,6 +4,10 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
+- Quản lý khách hàng12/11: owner đã duyệt [thiết kế](CUSTOMER_SPEC.md);
+  field riêng chỉ lưu username; nhãn Tên Zalo/Tên TikTok/Tên Threads.
+  OWNER ghi, STAFF chỉ xem/tìm kiếm. Đã lập [kế hoạch](CUSTOMER_PLAN.md),
+  chưa triển khai; bước tiếp là review plan và chọn cách thực thi.
 - Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
   và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),
   [runbook](IMAGE_OPERATIONS.md), [bằng chứng/tiêu chí](IMAGE_VERIFICATION.md).

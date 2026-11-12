@@ -3561,6 +3561,33 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   ngang. Nguồn ảnh 1584px nên phóng nhẹ trên màn hình rộng hơn; chưa kiểm mobile
   thật.
 
+## 2026-11-12 — CUSTOMER-C01 — Thiết kế quản lý khách hàng
+
+- Mục tiêu: tiếp nhận spec Customer Management owner cung cấp và hoàn thiện
+  thiết kế trước lập plan; không triển khai sản phẩm trong checkpoint này.
+- Owner chốt: Zalo/TikTok/Threads chỉ lưu username, dùng field riêng;
+  nhãn Zalo là Tên Zalo; STAFF chỉ xem, OWNER thao tác ghi.
+- Bắt đầu trên dev khớp origin/dev, working tree sạch. Đã đọc README,
+  PROGRESS, checkpoint cuối DEV_LOG, MASTER_PLAN và spec nguồn đầy đủ.
+  Graph đúng project không có Customer; đã đọc SecurityConfiguration và
+  AdminLayout bằng graph, đối chiếu API/quyền/version ở tài liệu hiện hành.
+- Đang viết CUSTOMER_SPEC, đăng ký README và cập nhật PROGRESS. Bản gốc
+  Ready for Development chưa bao gồm quyết định bổ sung; bản repo chờ owner
+  duyệt thiết kế. Chưa chạy test/build/migration hoặc truy cập live.
+- Tiếp theo: builder check độc lập, kiểm dòng/link/diff, bàn giao thiết kế
+  để duyệt; sau duyệt mới dùng writing-plans. Thay đổi còn local trên dev.
+- Kết quả: CUSTOMER_SPEC299dòng giữ CUS01–08/AC01–12 nguồn, bổ sung Threads,
+  quyền đã chốt và AC13–19. Quy tắc kỹ thuật agent đề xuất được tách rõ:
+  prefix v1/ID chuỗi, version chống ghi đè, chuẩn phone, username giữ @,
+  audit metadata không PII. Chưa coi các đề xuất này là owner đã duyệt.
+- Builder check độc lập customer_spec_check: không còn câu hỏi quan trọng
+  cần trả lời trước lập plan; vẫn cần owner duyệt bản thiết kế.
+- Kiểm từ root: git diff --check đạt; Python kiểm trần400 và đường dẫn link
+  local trên4file thay đổi đạt; kiểm nội dung field/quyền/errorcode đạt.
+  Không chạy test/build sản phẩm vì chỉ đổi Markdown; không migrate/deploy.
+- Bàn giao thiết kế chờ duyệt trên dev; chưa lập implementation plan hoặc
+  viết code. Sau khi owner duyệt, dùng writing-plans theo spec này.
+
 ## 2026-11-11 — S063-C01 — Sửa "Mở bằng Zalo Web" không mở tab
 
 - Làm trên dev-ui sau khi fast-forward dev lên origin/dev và merge dev vào dev-ui.
@@ -3569,6 +3596,32 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Chuyển sang `onBackdropClick()` không trả giá trị.
 - Thêm assertion hồi quy ở home-page.spec.ts. `npm test` từ code/frontend đạt
   284/284. Chrome headless trên ng serve dev-ui: bấm nút mở tab id.zalo.me.
+
+## 2026-11-12 — CUSTOMER-C02 — Duyệt thiết kế và lập plan
+
+- Owner duyệt thiết kế; trước duyệt có chỉnh trực tiếp một dòng trong
+  CUSTOMER_SPEC thành nhãn Tên X cho mọi nền tảng. Giữ chỉnh sửa đó, đồng bộ
+  các mục validation/form/detail/AC thành Tên Zalo/Tên TikTok/Tên Threads.
+- Phạm vi: tài liệu kế hoạch Customer Management; chưa viết code sản phẩm.
+  Bắt đầu dev khớp origin/dev, chỉ CUSTOMER_SPEC có chỉnh sửa owner nêu trên.
+- Đã đọc writing-plans đầy đủ; dùng graph khám phá và đọc auth/AdminHttp,
+  lỗi API/audit/CollectionService. Graph không trả frontend file inventory,
+  fallback rg --files và đọc route/template/test hiện hành; migration mới
+  dự kiến V32 sau V31 nhưng phải kiểm lại khi thực thi.
+- Ghi trạng thái spec đã duyệt, đăng ký CUSTOMER_PLAN trong README/PROGRESS.
+  Đang viết và tự rà plan theo spec; chưa chạy test/build/migration/live.
+- Tiếp theo: kiểm dòng/link/diff và coverage AC, commit/push dev; owner review
+  plan/chọn cách thực thi theo writing-plans trước triển khai. Không đổi main.
+- Kết quả: CUSTOMER_PLAN290dòng,6task T1–T6 có file/interface/test/command/
+  commit; tự rà AC01–19 và5Review Focus, không dispatch reviewer plan theo skill.
+  Đề xuất thực thi trực tiếp, review độc lập toàn branch do các task phụ thuộc
+  DTO/API/form của nhau; chưa tự chọn cách thực thi thay owner.
+- Kiểm từ root: Python trên5file thay đổi xác nhận trần400(trừDEV_LOG),
+  link local tồn tại, fence cân bằng; assert label/task/interface/DBtest đạt.
+  git diff --check đạt; rg không còn nhãn TikTok ID/Threads ID hoặc chờ duyệt
+  trong spec/plan (exit1 là không có match). Không test/build/migrate sản phẩm.
+- Bàn giao spec đã duyệt và plan chờ review/chọn cách thực thi trên dev;
+  giữ nguyên chỉnh sửa nhãn owner, không đổi code, data, hạ tầng hoặc main.
 
 ## 2026-11-12 — S065-C03 — Tinh chỉnh UI chi tiết sách (book-detail)
 
