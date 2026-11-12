@@ -15,8 +15,8 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
   FE338đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
   browser1280/390 và backup/restoreQA đạt. Đã tích hợp dev/sync4200.
-  Owner đã chọn bật self-host local;8080/8081 +worker/Nginx18084 đang chạy.
-  DB local backup trướcV33; backend/worker vẫn chạy, không restart tronglầnnày.
+  Self-host local đã cấuhình; owner yêucầudừng BE/FE/worker ởHERO-C20.
+  DB local backup trướcV33;4200/4209/8080/8081 đã không cònlistener.
   Chưa migrate/deployproduction; giữ gate digest/mount/backup/artwork/device.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;

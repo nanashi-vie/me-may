@@ -3990,3 +3990,14 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chuyển chat này sangLocal rồi archiveattachmentcustomers bằng công cụnative.
 - Không có blocker vềcode/test/Git. Blocker chỉ cleanupattachmentprimary;
   không coi việc backupartifact hoặc gộpbranch là đã xóa worktree.
+
+### HERO-C20 — Dừng BE/FE theo owner
+
+- Owner yêu cầu dừngphiênBE/FE củaagent. Đã dừngbackendlocal, frontend4200
+  vàworkerảnh đi cùngphiên;4209QA/browserđãdừng trướcđó.
+- `lsof -nP -iTCP:4200 -iTCP:4209 -iTCP:8080 -iTCP:8081 -sTCP:LISTEN`
+  không cònlistener. Không stop/delete PostgreSQL hoặc backup/media local.
+- Dev/dev-ui local vàorigin đều cùng9b0e34d trước checkpointnày; pushcả2đạt,
+  không forcepush/main. Cậpnhậtcheckpointdừng rồi tiếp tục giữ2nhánh cùngHEAD.
+- Cleanupcustomers vẫn bịCodexprimaryprotection chặn nhưHERO-C19; không tuyênbố
+  đãxóa. Bước còn lại: chuyểnchatvềLocal rồi archiveattachmentcustomers.
