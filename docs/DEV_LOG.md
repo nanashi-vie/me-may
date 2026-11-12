@@ -3864,7 +3864,7 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   code bằng fast-forward đã test; dev-ui thêm1test riêng. Local4200 main có customer
   routes. Không dùng authfixture làm bằng chứng ghi trên DB dev; owner đăng nhập lại
   vì backendrestart. QA backend/browser/restore riêng đã kiểm ghi/encode đầy đủ.
-- Sẽ dọn riêng runtime/container/scratchQA sau lưu checkpoint; giữ local4200/8080,
+- Đã dọn riêng runtime/container/scratchQA sau lưu checkpoint; giữ local4200/8080,
   worker38350 và Nginx cho owner test. Giữ backupprivate; không đụng my-postgres.
 - Tích hợp/pushdev theo quy ước; không pushdev-ui/main. Worktree này là primary
   native của chat nên giữ, không cưỡng ép archive/xóa; branch đã gộp giữ tại đây.
