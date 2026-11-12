@@ -3913,3 +3913,23 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Scratch `.local/hero-followup` ignored giữ test/buildlog để đối chiếu; screenshots
   ở output/playwright ignored. Gitdiff/local links/trần400dòng đã kiểm.
 - Tích hợp/pushdev theo workflow; không pushdev-ui/main hoặc deployproduction.
+
+### HERO-C16 — Đổi chiều/thu nhỏ nút, gộp dev-ui và dọn customers
+
+- Owner yêu cầu autoplayphải→trái, thu nhỏ2mũi tên/hover nềntrắng, bỏ thanh
+  dots/pause; giữ2mũi tên. Targetclick44px, vòngtròn hiển thị28px/SVG12px.
+- Pause quahover/focus vàSpace trênlinkbanner; reduced-motiongiữinstant.
+- Sau kiểm: merge dev-ui→dev (gồm2chỉnhUIriêng), đồng bộ vàpushcả2nhánh theo
+  yêu cầu mới; dọnworktreecustomers saubảo toàncode/ignoredartifactcầnthiết.
+- Worktreecustomers là attachmentprimary của chat. Sẽ dùng toolnativearchive
+  sauintegration; nếuhostchặn thì không cưỡngxóa workspaceđangđược bảovệ.
+
+### HERO-C17 — Kiểm UI trước gộp nhánh
+
+- TDD carousel RED3case (chiều/bar/SVG), fullFE GREEN337/33758files.
+- Browser1280/390 trên4209 chỉ đọc public: đúng2button/no.controls;
+  vùngbấm44px, circle28px, SVG12px; hover nềnrgb255/255/255/mũiđỏ.
+  Actualautoplay enter-rtl từtranslateX100%→0,5giâygiữ; không đổi bannerconfig.
+- Đã xác định dev-ui có2chỉnhUIriêng (footerfanpage native, bố cụctiêuđềdetail)
+  vàmergehistory/log. Sẽ gộp đầyđủ vào dev, không cherry-pick bỏhistory.
+- Đanggộpnhánh vàkiểm lại trênkếtquả; chưa thao tác main/production.

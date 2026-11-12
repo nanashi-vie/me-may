@@ -36,11 +36,12 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 - Mỗi banner `{id,alt,src,srcset,width,height}`; srcset800/1600/3200, sizes100vw.
   Khung do CSS giữ3:1 và cover, metadata width3200/height1067. Mọi ảnh link `/sach`, cùng tab.
 - Một ảnh không controls/timer. Hai đến10ảnh tự chuyển5000ms, quay vòng;
-  nút trước/sau, chấm chọn, tạm dừng/chạy lại hỗ trợ keyboard và target>=44px.
-- Theo owner đổi12/11: tự chuyển trượt trái→phải trong550ms (ảnh mới
-  từtrái, ảnh cũ sangphải); nútTrước đảo chiều, chấm chọn theoLTR.
-  Hai lớp ảnh đồng bộ khi bấm nhanh; lớp cũ aria-hidden, hếtanimation dọn.
-  Reduced-motion đổi ảnh ngay, không trượt kể cả bật autoplay thủcông.
+  chỉ hai nút trước/sau, hỗ trợ keyboard và target44px.
+  Vòng tròn hiển thị28px/SVG12px, hover nềntrắng/mũi tênđỏ; không thanh dots/pause.
+- Owner chốt lại: autoplay phải→trái550ms (ảnhmới từphải, ảnhcũ sangtrái);
+  nútTrước đảochiều. Hai lớp ảnh đồngbộ khi bấmnhanh, lớpcũ aria-hidden.
+  Space trên linkbanner tạmdừng/chạylại; giữ hover/focus pause và reduced-motion.
+  Reduced-motion đổiảnh ngay, khôngtrượt kể cả bậtautoplay thủcông.
 - Hover/focus/tab ẩn dừng timer; resume/manual navigation bắt đầu5giây mới,
   không nhảy bù. Reduced motion mặc định tắt autoplay, có thể bật chủ động.
 - Ảnh lỗi bị bỏ qua, tất cả lỗi dùng fallback; fallback lỗi có tên tiệm/link sách.

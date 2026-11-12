@@ -32,7 +32,7 @@ export class HeroCarousel implements OnChanges {
   readonly broken = signal(new Set<string>());
   readonly fallbackBroken = signal(false);
   readonly outgoing = signal<HeroBanner | null>(null);
-  readonly direction = signal<'ltr' | 'rtl'>('ltr');
+  readonly direction = signal<'ltr' | 'rtl'>('rtl');
   private readonly doc = inject(DOCUMENT);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private ready = false;
@@ -86,7 +86,7 @@ export class HeroCarousel implements OnChanges {
   current() {
     return this.slides()[this.active()] ?? fallback;
   }
-  choose(index: number, direction: 'ltr' | 'rtl' = 'ltr') {
+  choose(index: number, direction: 'ltr' | 'rtl' = 'rtl') {
     const before = this.current();
     const count = this.slides().length;
     this.active.set(count ? (index + count) % count : 0);
@@ -97,7 +97,7 @@ export class HeroCarousel implements OnChanges {
     this.schedule();
   }
   next(delta: number) {
-    this.choose(this.active() + delta, delta < 0 ? 'rtl' : 'ltr');
+    this.choose(this.active() + delta, delta < 0 ? 'ltr' : 'rtl');
   }
   finishTransition(event: AnimationEvent) {
     if (event.target === event.currentTarget) this.outgoing.set(null);

@@ -3,6 +3,7 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- HERO-C16 đang làm: đảoRTL/thu nhỏ mũi tên/bỏ dots, merge dev-ui→dev/cleanup.
 - Banner followup HERO-C14: cover3:1, trượt trái→phải550ms, nútadmin rõ;
   FE336/dev-ui337đạt, browser1280+390 và4200 đạt; đã syncdev/4200.
 - Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
