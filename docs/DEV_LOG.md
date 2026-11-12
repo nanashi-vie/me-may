@@ -3645,3 +3645,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - T5:21customer+sidebar test đạt, có21bao gồm API/validation/form/list/detail;
   query/back/paging, response cũ, STAFF, no-order placeholder/text XSS đạt.
   UI tham khảo bố cục, dùng đỏ var(--red),3tên mạng riêng, không nút Tạo đơn.
+- T6 hồi quy trước review: FE312/312, BE310total/0failure/0error/3skip
+  (customer12test đều chạy); buildSSR/Workers/proxy đạt. Sandbox chặn socket/
+  build lần đầu; rerun escalated đạt. CLI npm DNS fail trong sandbox,
+  rerun ngoài sandbox đạt. Không thay dependency hoặc kết nối DB đang dùng.
+- Browser QA thật đang chạy trên8426/4426→PG55436. Đã tạo/sửa/status và
+  conflict2tab; kịch bản có lượt sai chờ URL encoding, no-op ghi chú lặp
+  và exact label có dấu*, đã sửa kịch bản; chưa tuyên bố toàn luồng đạt.
+- Browser QA cuối đạt21check với backend/PGQA thật: duplicate/confirm,
+  two-tab409 giữ draft/reload, dirty/Escape/focus, phone normalization, Threads
+  search, lỗi mạng giữ input, mobile390, STAFFUI/API403, anonymous401/redirect
+  và shell không có PII. Visual desktop1280/mobile390 đã xem ảnh sau splash;
+  test confirm có kiểm soát bằng window.confirm sau ca native đầu.
+- Style local focus/radius giữ đỏ web; Prettier format frontend mới; chưa
+  đổi dependency. Đang review độc lập trước tích hợp dev; chưa deploy/live.

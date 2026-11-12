@@ -1,31 +1,137 @@
-<dialog #dialog aria-labelledby="customer-form-title" (cancel)="onCancel($event)" (click)="onBackdrop($event)">
- @if (owner()) {
- <form [formGroup]="form" (ngSubmit)="save()">
-  <header><h2 id="customer-form-title">{{ customer() ? 'Chỉnh sửa khách hàng' : 'Thêm khách mới' }}</h2><button type="button" class="close secondary" aria-label="Đóng form" [disabled]="busy()" (click)="requestClose()">×</button></header>
-  <fieldset [disabled]="busy()">
-   <label for="customer-name">Tên khách hàng <span aria-hidden="true">*</span></label>
-   <input id="customer-name" formControlName="fullName" required maxlength="150" placeholder="Ví dụ: Nguyễn Thị Lan" autofocus [attr.aria-invalid]="!!errors()['fullName']" aria-describedby="customer-name-error">
-   <p id="customer-name-error" class="field-error">{{ errors()['fullName']?.[0] }}</p>
-   <label for="customer-phone">Số điện thoại</label><input id="customer-phone" formControlName="phone" inputmode="tel" autocomplete="tel" placeholder="Ví dụ: 0987123456" [attr.aria-invalid]="!!errors()['phone']" aria-describedby="customer-phone-error customer-duplicates">
-   <p id="customer-phone-error" class="field-error">{{ errors()['phone']?.[0] }}</p>
-   <section id="customer-duplicates" aria-live="polite">
-    @if (duplicates(); as matches) { @if (matches.totalElements) {
-     <div class="duplicate-warning"><strong>Số điện thoại đã có trong {{ matches.totalElements }} hồ sơ</strong>
-      <ul>@for (match of matches.items; track match.id) {<li><a [routerLink]="['/admin/customers',match.id]" (click)="openDuplicate($event)">{{ match.fullName }} ({{ match.customerCode }})</a> · {{ match.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Đang hoạt động' }}</li>}</ul>
-      @if (matches.page + 1 < matches.totalPages) {<button class="secondary" type="button" (click)="moreDuplicates()">Xem thêm hồ sơ trùng</button>}
-      <button type="button" class="secondary" (click)="confirmDuplicates()">{{ customer() ? 'Vẫn lưu thay đổi' : 'Vẫn tạo khách mới' }}</button>
-     </div>
-    }}
-   </section>
-   <label for="customer-address">Địa chỉ nhận hàng</label><textarea id="customer-address" formControlName="defaultAddress" rows="2" maxlength="500" placeholder="Số nhà, đường, phường/xã, tỉnh/thành phố…" aria-describedby="customer-address-error" [attr.aria-invalid]="!!errors()['defaultAddress']"></textarea><p id="customer-address-error" class="field-error">{{ errors()['defaultAddress']?.[0] }}</p>
-   <div class="additional"><h3>Thông tin bổ sung <span>(không bắt buộc)</span></h3><div class="social-grid">
-    @for (field of socialFields; track field.key) {<div><label [for]="'customer-'+field.key">{{ field.label }}</label><input [id]="'customer-'+field.key" [formControlName]="field.key" [maxlength]="field.max" placeholder="Tên tài khoản" [attr.aria-describedby]="'error-'+field.key" [attr.aria-invalid]="!!errors()[field.key]"><p [id]="'error-'+field.key" class="field-error">{{ errors()[field.key]?.[0] }}</p></div>}
-   </div>
-   <label for="customer-note">Ghi chú nội bộ</label><textarea id="customer-note" formControlName="note" rows="2" maxlength="1000" placeholder="Thông tin cần lưu ý về khách…" aria-describedby="customer-note-error" [attr.aria-invalid]="!!errors()['note']"></textarea><p id="customer-note-error" class="field-error">{{ errors()['note']?.[0] }}</p></div>
-  </fieldset>
-  @if (error()) {<p class="error" role="alert">{{ error() }}</p>}
-  @if (conflict()) {<button class="secondary" type="button" [disabled]="busy()" (click)="reload()">Tải lại hồ sơ mới</button>}
-  <footer><button type="button" class="secondary" [disabled]="busy()" (click)="requestClose()">Hủy</button><button type="submit" [disabled]="busy() || !owner()">{{ busy() ? 'Đang lưu…' : customer() ? 'Lưu thay đổi' : 'Lưu khách hàng' }}</button></footer>
- </form>
- }
+<dialog
+  #dialog
+  aria-labelledby="customer-form-title"
+  (cancel)="onCancel($event)"
+  (click)="onBackdrop($event)"
+>
+  @if (owner()) {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <header>
+        <h2 id="customer-form-title">
+          {{ customer() ? 'Chỉnh sửa khách hàng' : 'Thêm khách mới' }}
+        </h2>
+        <button
+          type="button"
+          class="close secondary"
+          aria-label="Đóng form"
+          [disabled]="busy()"
+          (click)="requestClose()"
+        >
+          ×
+        </button>
+      </header>
+      <fieldset [disabled]="busy()">
+        <label for="customer-name">Tên khách hàng <span aria-hidden="true">*</span></label>
+        <input
+          id="customer-name"
+          formControlName="fullName"
+          required
+          maxlength="150"
+          placeholder="Ví dụ: Nguyễn Thị Lan"
+          autofocus
+          [attr.aria-invalid]="!!errors()['fullName']"
+          aria-describedby="customer-name-error"
+        />
+        <p id="customer-name-error" class="field-error">{{ errors()['fullName']?.[0] }}</p>
+        <label for="customer-phone">Số điện thoại</label
+        ><input
+          id="customer-phone"
+          formControlName="phone"
+          inputmode="tel"
+          autocomplete="tel"
+          placeholder="Ví dụ: 0987123456"
+          [attr.aria-invalid]="!!errors()['phone']"
+          aria-describedby="customer-phone-error customer-duplicates"
+        />
+        <p id="customer-phone-error" class="field-error">{{ errors()['phone']?.[0] }}</p>
+        <section id="customer-duplicates" aria-live="polite">
+          @if (duplicates(); as matches) {
+            @if (matches.totalElements) {
+              <div class="duplicate-warning">
+                <strong>Số điện thoại đã có trong {{ matches.totalElements }} hồ sơ</strong>
+                <ul>
+                  @for (match of matches.items; track match.id) {
+                    <li>
+                      <a
+                        [routerLink]="['/admin/customers', match.id]"
+                        (click)="openDuplicate($event)"
+                        >{{ match.fullName }} ({{ match.customerCode }})</a
+                      >
+                      · {{ match.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Đang hoạt động' }}
+                    </li>
+                  }
+                </ul>
+                @if (matches.page + 1 < matches.totalPages) {
+                  <button class="secondary" type="button" (click)="moreDuplicates()">
+                    Xem thêm hồ sơ trùng
+                  </button>
+                }
+                <button type="button" class="secondary" (click)="confirmDuplicates()">
+                  {{ customer() ? 'Vẫn lưu thay đổi' : 'Vẫn tạo khách mới' }}
+                </button>
+              </div>
+            }
+          }
+        </section>
+        <label for="customer-address">Địa chỉ nhận hàng</label
+        ><textarea
+          id="customer-address"
+          formControlName="defaultAddress"
+          rows="2"
+          maxlength="500"
+          placeholder="Số nhà, đường, phường/xã, tỉnh/thành phố…"
+          aria-describedby="customer-address-error"
+          [attr.aria-invalid]="!!errors()['defaultAddress']"
+        ></textarea>
+        <p id="customer-address-error" class="field-error">{{ errors()['defaultAddress']?.[0] }}</p>
+        <div class="additional">
+          <h3>Thông tin bổ sung <span>(không bắt buộc)</span></h3>
+          <div class="social-grid">
+            @for (field of socialFields; track field.key) {
+              <div>
+                <label [for]="'customer-' + field.key">{{ field.label }}</label
+                ><input
+                  [id]="'customer-' + field.key"
+                  [formControlName]="field.key"
+                  [maxlength]="field.max"
+                  placeholder="Tên tài khoản"
+                  [attr.aria-describedby]="'error-' + field.key"
+                  [attr.aria-invalid]="!!errors()[field.key]"
+                />
+                <p [id]="'error-' + field.key" class="field-error">
+                  {{ errors()[field.key]?.[0] }}
+                </p>
+              </div>
+            }
+          </div>
+          <label for="customer-note">Ghi chú nội bộ</label
+          ><textarea
+            id="customer-note"
+            formControlName="note"
+            rows="2"
+            maxlength="1000"
+            placeholder="Thông tin cần lưu ý về khách…"
+            aria-describedby="customer-note-error"
+            [attr.aria-invalid]="!!errors()['note']"
+          ></textarea>
+          <p id="customer-note-error" class="field-error">{{ errors()['note']?.[0] }}</p>
+        </div>
+      </fieldset>
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      @if (conflict()) {
+        <button class="secondary" type="button" [disabled]="busy()" (click)="reload()">
+          Tải lại hồ sơ mới
+        </button>
+      }
+      <footer>
+        <button type="button" class="secondary" [disabled]="busy()" (click)="requestClose()">
+          Hủy</button
+        ><button type="submit" [disabled]="busy() || !owner()">
+          {{ busy() ? 'Đang lưu…' : customer() ? 'Lưu thay đổi' : 'Lưu khách hàng' }}
+        </button>
+      </footer>
+    </form>
+  }
 </dialog>

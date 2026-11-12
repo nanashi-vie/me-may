@@ -6,7 +6,8 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Quản lý khách hàng12/11: owner đã duyệt [thiết kế](CUSTOMER_SPEC.md);
   field riêng chỉ lưu username; nhãn Tên Zalo/Tên TikTok/Tên Threads.
   OWNER ghi, STAFF chỉ xem/tìm kiếm. Đã lập [kế hoạch](CUSTOMER_PLAN.md),
-  owner đã duyệt plan, đang triển khai tuần tự trên codex/customers (T1).
+  owner đã duyệt plan, T1–T5 đã triển khai trên codex/customers.
+  T6 đang QA/review; FE312đạt, BE310total/3skip, buildSSR/Workers/proxy đạt.
 
 - Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
   và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),

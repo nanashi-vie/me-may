@@ -1,16 +1,147 @@
 <section class="customer-panel">
- <header class="page-heading"><div><h1>Khách hàng</h1><p>Quản lý thông tin khách hàng của cửa hàng</p></div>@if (owner()) {<button class="primary" type="button" (click)="openNew()">＋ Thêm khách mới</button>}</header>
- <div class="customer-toolbar"><label class="search"><span class="sr-only">Tìm khách hàng</span><input type="search" [value]="filter().q" (input)="search($any($event.target).value)" placeholder="Tìm tên, mã KH, SĐT, Zalo, TikTok, Threads…"></label><label class="status-filter"><span class="sr-only">Lọc trạng thái</span><select [value]="filter().status" (change)="changeStatus($any($event.target).value)"><option value="ACTIVE">Đang hoạt động</option><option value="ARCHIVED">Đã lưu trữ</option><option value="ALL">Tất cả trạng thái</option></select></label></div>
- @if (toast()) {<p class="notice" role="status">{{ toast() }}</p>}
- @if (error()) {<div class="error" role="alert">{{ error() }} <button class="secondary" (click)="refresh()">Tải lại</button></div>}
- @if (loading()) {<p class="empty" role="status">Đang tải khách hàng…</p>} @else if (page(); as result) {
-  @if (result.items.length) {
-   <div class="table-scroll" role="region" aria-label="Danh sách khách hàng" tabindex="0"><table><thead><tr><th scope="col">Khách hàng</th><th scope="col">Số điện thoại</th><th scope="col">Địa chỉ mặc định</th><th scope="col">Ngày tạo</th><th scope="col">Thao tác</th></tr></thead><tbody>
-   @for (customer of result.items; track customer.id) {<tr><td><a class="customer-name" [routerLink]="['/admin/customers',customer.id]" [queryParams]="filter()">{{ customer.fullName }}</a><span class="customer-code">{{ customer.customerCode }}</span>@if (customer.status === 'ARCHIVED') {<span class="status-badge">Đã lưu trữ</span>}</td><td class="phone">{{ customer.phone || '—' }}</td><td>@if (customer.defaultAddress) {<details class="address"><summary>{{ customer.defaultAddress }}</summary><p>{{ customer.defaultAddress }}</p></details>} @else {—}</td><td class="date">{{ customer.createdAt | date:'dd/MM/yyyy':'+0700' }}</td><td><div class="row-actions"><a [routerLink]="['/admin/customers',customer.id]" [queryParams]="filter()" [attr.aria-label]="'Xem '+customer.fullName">Xem</a>@if (owner()) {<button class="text-button" type="button" [disabled]="actionBusy()" (click)="edit(customer)" [attr.aria-label]="'Sửa '+customer.fullName">Sửa</button><button class="text-button" type="button" [disabled]="actionBusy()" (click)="changeCustomerStatus(customer)">{{ customer.status === 'ACTIVE' ? 'Lưu trữ' : 'Khôi phục' }}</button>}</div></td></tr>}
-   </tbody></table></div>
-  } @else {<p class="empty">{{ filter().q || filter().status !== 'ACTIVE' ? 'Không tìm thấy khách hàng phù hợp.' : owner() ? 'Chưa có khách hàng nào. Nhấn "Thêm khách mới" để bắt đầu.' : 'Chưa có khách hàng nào.' }}</p>}
-  <footer class="pagination"><span>{{ result.totalElements }} khách hàng</span><div><button class="secondary" [disabled]="filter().page === 0" (click)="goPage(filter().page - 1)" aria-label="Trang trước">‹</button><span>Trang {{ filter().page + 1 }} / {{ result.totalPages || 1 }}</span><button class="secondary" [disabled]="filter().page + 1 >= result.totalPages" (click)="goPage(filter().page + 1)" aria-label="Trang sau">›</button></div></footer>
-  @if (!result.items.length && filter().page > 0) {<button class="secondary" (click)="goPage(0)">Về trang đầu</button>}
- }
+  <header class="page-heading">
+    <div>
+      <h1>Khách hàng</h1>
+      <p>Quản lý thông tin khách hàng của cửa hàng</p>
+    </div>
+    @if (owner()) {
+      <button class="primary" type="button" (click)="openNew()">＋ Thêm khách mới</button>
+    }
+  </header>
+  <div class="customer-toolbar">
+    <label class="search"
+      ><span class="sr-only">Tìm khách hàng</span
+      ><input
+        type="search"
+        [value]="filter().q"
+        (input)="search($any($event.target).value)"
+        placeholder="Tìm tên, mã KH, SĐT, Zalo, TikTok, Threads…" /></label
+    ><label class="status-filter"
+      ><span class="sr-only">Lọc trạng thái</span
+      ><select [value]="filter().status" (change)="changeStatus($any($event.target).value)">
+        <option value="ACTIVE">Đang hoạt động</option>
+        <option value="ARCHIVED">Đã lưu trữ</option>
+        <option value="ALL">Tất cả trạng thái</option>
+      </select></label
+    >
+  </div>
+  @if (toast()) {
+    <p class="notice" role="status">{{ toast() }}</p>
+  }
+  @if (error()) {
+    <div class="error" role="alert">
+      {{ error() }} <button class="secondary" (click)="refresh()">Tải lại</button>
+    </div>
+  }
+  @if (loading()) {
+    <p class="empty" role="status">Đang tải khách hàng…</p>
+  } @else if (page(); as result) {
+    @if (result.items.length) {
+      <div class="table-scroll" role="region" aria-label="Danh sách khách hàng" tabindex="0">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Khách hàng</th>
+              <th scope="col">Số điện thoại</th>
+              <th scope="col">Địa chỉ mặc định</th>
+              <th scope="col">Ngày tạo</th>
+              <th scope="col">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (customer of result.items; track customer.id) {
+              <tr>
+                <td>
+                  <a
+                    class="customer-name"
+                    [routerLink]="['/admin/customers', customer.id]"
+                    [queryParams]="filter()"
+                    >{{ customer.fullName }}</a
+                  ><span class="customer-code">{{ customer.customerCode }}</span>
+                  @if (customer.status === 'ARCHIVED') {
+                    <span class="status-badge">Đã lưu trữ</span>
+                  }
+                </td>
+                <td class="phone">{{ customer.phone || '—' }}</td>
+                <td>
+                  @if (customer.defaultAddress) {
+                    <details class="address">
+                      <summary>{{ customer.defaultAddress }}</summary>
+                      <p>{{ customer.defaultAddress }}</p>
+                    </details>
+                  } @else {
+                    —
+                  }
+                </td>
+                <td class="date">{{ customer.createdAt | date: 'dd/MM/yyyy' : '+0700' }}</td>
+                <td>
+                  <div class="row-actions">
+                    <a
+                      [routerLink]="['/admin/customers', customer.id]"
+                      [queryParams]="filter()"
+                      [attr.aria-label]="'Xem ' + customer.fullName"
+                      >Xem</a
+                    >
+                    @if (owner()) {
+                      <button
+                        class="text-button"
+                        type="button"
+                        [disabled]="actionBusy()"
+                        (click)="edit(customer)"
+                        [attr.aria-label]="'Sửa ' + customer.fullName"
+                      >
+                        Sửa</button
+                      ><button
+                        class="text-button"
+                        type="button"
+                        [disabled]="actionBusy()"
+                        (click)="changeCustomerStatus(customer)"
+                      >
+                        {{ customer.status === 'ACTIVE' ? 'Lưu trữ' : 'Khôi phục' }}
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="empty">
+        {{
+          filter().q || filter().status !== 'ACTIVE'
+            ? 'Không tìm thấy khách hàng phù hợp.'
+            : owner()
+              ? 'Chưa có khách hàng nào. Nhấn "Thêm khách mới" để bắt đầu.'
+              : 'Chưa có khách hàng nào.'
+        }}
+      </p>
+    }
+    <footer class="pagination">
+      <span>{{ result.totalElements }} khách hàng</span>
+      <div>
+        <button
+          class="secondary"
+          [disabled]="filter().page === 0"
+          (click)="goPage(filter().page - 1)"
+          aria-label="Trang trước"
+        >
+          ‹</button
+        ><span>Trang {{ filter().page + 1 }} / {{ result.totalPages || 1 }}</span
+        ><button
+          class="secondary"
+          [disabled]="filter().page + 1 >= result.totalPages"
+          (click)="goPage(filter().page + 1)"
+          aria-label="Trang sau"
+        >
+          ›
+        </button>
+      </div>
+    </footer>
+    @if (!result.items.length && filter().page > 0) {
+      <button class="secondary" (click)="goPage(0)">Về trang đầu</button>
+    }
+  }
 </section>
 <app-customer-form (saved)="onSaved($event)" />
