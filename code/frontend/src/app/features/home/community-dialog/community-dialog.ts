@@ -28,6 +28,13 @@ export class CommunityDialog {
     return true;
   }
 
+  // Not inline in the template: Angular preventDefaults when a handler returns false,
+  // which would cancel clicks on the Zalo Web link.
+  onBackdropClick(event: MouseEvent): void {
+    const dialog = this.dialog().nativeElement;
+    if (event.target === dialog) dialog.close();
+  }
+
   onClose(): void {
     const trigger = this.returnFocus;
     this.returnFocus = null;

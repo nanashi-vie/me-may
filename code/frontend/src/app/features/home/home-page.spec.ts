@@ -79,6 +79,15 @@ describe('HomePage banner info boxes', () => {
         fixture.detectChanges();
         expect(dialog.querySelector<HTMLImageElement>('.qr')?.src).toMatch(/^data:image\/gif;base64,/);
       });
+      const webLink = dialog.querySelector('a')!;
+      let prevented: boolean | undefined;
+      dialog.addEventListener('click', (event) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      }, { once: true });
+      webLink.click();
+      expect(prevented).toBe(false);
+      expect(dialog.open).toBe(true);
       dialog.querySelector('button')!.click();
       expect(dialog.open).toBe(false);
       expect(focus).toHaveBeenCalled();

@@ -3,7 +3,7 @@
   aria-labelledby="community-dialog-title"
   aria-describedby="community-dialog-description"
   (close)="onClose()"
-  (click)="$event.target === dialog && dialog.close()"
+  (click)="onBackdropClick($event)"
 >
   <div class="dialog-card">
     <button type="button" class="close" aria-label="Đóng" autofocus (click)="dialog.close()">×</button>
