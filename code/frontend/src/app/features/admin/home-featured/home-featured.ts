@@ -1,4 +1,5 @@
-import { Component, HostListener, inject, OnInit, signal } from '@angular/core';
+import { Component, HostListener, inject, OnInit, signal, viewChild } from '@angular/core';
+import { HeroBannerEditor } from './hero-banner-editor';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AdminHttp } from '../../../core/auth/admin-http';
@@ -33,11 +34,12 @@ export interface HomeFeaturedConfig {
 
 @Component({
   selector: 'app-home-featured-editor',
-  imports: [FormsModule],
+  imports: [FormsModule, HeroBannerEditor],
   templateUrl: './home-featured.html',
   styleUrl: './home-featured.scss',
 })
 export class HomeFeaturedEditor implements OnInit {
+  readonly bannerEditor = viewChild(HeroBannerEditor);
   private readonly http = inject(AdminHttp);
   readonly auth = inject(AuthService);
   readonly config = signal<HomeFeaturedConfig | null>(null);
@@ -70,7 +72,11 @@ export class HomeFeaturedEditor implements OnInit {
   }
 
   load() {
-    if (this.busy() || (this.dirty && !this.canLeave())) return;
+    if (
+      this.busy() ||
+      (this.dirty && !window.confirm('Kệ sách có thay đổi chưa lưu. Bỏ thay đổi để tải lại?'))
+    )
+      return;
     this.error.set('');
     this.notice.set('');
     this.busy.set(true);
@@ -94,9 +100,9 @@ export class HomeFeaturedEditor implements OnInit {
     this.searching.update((s) => ({ ...s, [shelfKey]: true }));
     const queryParam = q ? `&q=${encodeURIComponent(q)}` : '';
     this.http
-      .get<
-        PinnedBookItem[]
-      >(`/home-featured/candidates?shelfKey=${encodeURIComponent(shelfKey)}${queryParam}`)
+      .get<PinnedBookItem[]>(
+        `/home-featured/candidates?shelfKey=${encodeURIComponent(shelfKey)}${queryParam}`,
+      )
       .subscribe({
         next: (rows) => {
           this.candidates.update((c) => ({ ...c, [shelfKey]: rows }));
@@ -194,15 +200,15 @@ export class HomeFeaturedEditor implements OnInit {
 
   canLeave() {
     return (
-      !this.dirty ||
+      !(this.dirty || this.bannerEditor()?.dirty() || this.bannerEditor()?.pending()) ||
       typeof window === 'undefined' ||
-      window.confirm('Cấu hình sách nổi bật có thay đổi chưa lưu. Bỏ thay đổi?')
+      window.confirm('Cấu hình trang chủ có thay đổi chưa lưu. Bỏ thay đổi?')
     );
   }
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnload(e: BeforeUnloadEvent) {
-    if (this.dirty) {
+    if (this.dirty || this.bannerEditor()?.dirty() || this.bannerEditor()?.pending()) {
       e.preventDefault();
       e.returnValue = '';
     }

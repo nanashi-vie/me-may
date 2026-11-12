@@ -6,7 +6,8 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - Banner hero12/11: owner đã duyệt, yêu cầu triển khai tuần tự theo
   [thiết kế](HERO_BANNER_SPEC.md), trước hết sửa local4200 thiếu mục Khách hàng.
   Nguyên nhân:4200 phục vụ dev-ui chưa nhận customer từ dev; đã merge local
-  giữ UI riêng, đang backup/chạy lại backend local. Banner chưa triển khai.
+  giữ UI riêng, backend/frontend đã chạy lại. Banner xong API/upload trên branch riêng;
+  đang tiếp tục editor/carousel từ HERO-C06, chưa tích hợp dev.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
   field riêng chỉ username, nhãn Tên Zalo/Tên TikTok/Tên Threads; OWNER ghi,
@@ -367,3 +368,14 @@ Nguồn: [VERIFICATION](VERIFICATION.md#m5-pilot-và-link-hỏi-sách--28102026)
 - Chỉ commit/pushdev; user merge main/deploy. Không đọc/mutate live trong lần tổng
   hợp này, không kiểm quota hoặc tái xác minh revision/schemaonline; không coi
   trạng thái từ phiên trước là kiểm tra live01/11.
+# Checkpoint triển khai banner — tiếp tục HERO-C06, 12/11/2026
+
+- Branch `codex/hero-banners`: Task 1 config/API đã commit `c231a24`, Task 2
+  upload/worker đã commit `c00b763`; chưa tích hợp/push dev, chưa có UI banner.
+- Task 3 mới viết `hero-banner-editor.spec.ts` (chưa commit); test đang đỏ vì
+  component chưa tồn tại. Chưa triển khai editor/carousel, chưa chạy full suite.
+- Localhost 4200 đã có menu Khách hàng sau cập nhật dev-ui; giữ server user chạy.
+  QA container `memay-hero-test` giữ lại để tiếp tục; không thay DB dev bằng QA.
+- Tiếp tục từ Task 3 trong [HERO_BANNER_PLAN](HERO_BANNER_PLAN.md), đối chiếu
+  ledger `.superpowers/sdd/HERO_BANNER_PLAN/progress.md` và checkpoint DEV_LOG.
+

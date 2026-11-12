@@ -1,3 +1,6 @@
+@if (auth.user()?.role === 'OWNER') {
+  <app-hero-banner-editor />
+}
 <div class="featured-header">
   <div>
     <p class="eyebrow">Cấu hình trang chủ</p>

@@ -3758,3 +3758,33 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Lựa chọn triển khai: trả bytes đã xác minh checksum, giới hạn 10MiB thay vì
   mở lại stream sau xác minh; tránh đọc file bị thay giữa xác minh và gửi.
 - Chưa kiểm tra browser/SSR và chưa chạy full suite. Không đổi runtime user.
+
+### HERO-C05 — Tạm dừng theo yêu cầu người dùng, 12/11/2026
+
+- User yêu cầu dừng; không tiếp tục triển khai hay tích hợp branch.
+- Commit `c231a24` (config/API), `c00b763` (upload/worker), chưa push dev.
+  Task 2 GREEN: HeroBannerMediaTest 4/4, HeroBannerApiTest 3/3,
+  LocalUploadIntegrationTest/LocalImageStoreTest xanh; worker 12/12.
+- Task 3 chỉ có file test mới chưa commit `hero-banner-editor.spec.ts`.
+  Lệnh `npm test --prefix code/frontend -- --watch=false
+  --include='**/hero-banner-editor.spec.ts'` đỏ do component chưa tồn tại,
+  kéo theo type unknown. Đây chưa là kiểm tra hành vi hoàn chỉnh.
+- Chưa có editor/carousel, chưa full suite/build/browser hay review độc lập.
+- Giữ localhost user 4200/8080, QA container memay-hero-test và scratch ledger.
+  Lần sau xác minh runtime/Git, tiếp tục Task 3; không làm lại Task 1/2.
+
+### HERO-C06 — Tiếp tục checkpoint, 12/11/2026
+
+- User yêu cầu tiếp tục; đối chiếu Git xác nhận Task 1/2 đã commit, không làm lại.
+- Phạm vi đang làm: Task 3 editor độc lập, Task 4 carousel và nghiệm thu toàn luồng.
+  File test editor còn local, component chưa tồn tại; chưa có kết quả mới.
+
+### HERO-C07 — Editor và nâng chất lượng đã duyệt
+
+- Task 3 editor/guard hai phần độc lập đã triển khai; FE full suite 323/323,
+  57 files. Bao gồm response muộn, retry key, timeout recheck, conflict và saves.
+- Owner duyệt nâng riêng banner lên 800/1600/3200, WebP quality88, khung4:1.
+  Quyết định mới thay hướng reuse recipev1/640/1400 của HERO-C02–C04.
+  Ảnh test hiện tại chỉ1584×396, không dùng làm artwork chính thức.
+- Bổ sung bước recipe banner riêng trước carousel; recipe ảnh sách giữ nguyên.
+  Không upscale nguồn nhỏ; file gốc khuyến nghị3200×800 hoặc3840×960.
