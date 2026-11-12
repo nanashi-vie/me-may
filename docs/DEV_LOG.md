@@ -3975,3 +3975,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   trước chốtpush2nhánh/cleanup; chưa thay backend/DB/runtimeảnh.
 - Hoverfix GREEN338/33858files sau testRED; browser4209 thực giữpointertrênảnh
   vẫn bắtđược chuyển động mới enter-rtl100%→0 trong5giây. Không đổiDB.
+
+### HERO-C19 — Đồng bộ cuối và giới hạn cleanup primary
+
+- Code338test GREEN trên cây đã gộp, SSR/Workersbuildđạt; actual4200 đúng
+  2arrow/no.controls/enter-rtl. Hoverstillautoplayđãkiểm trên4209 saufix.
+- Dev-ui→dev fast-forward0ee1594, giữ cả2UIriêng/history; bổsunghoverfix12737aa
+  vào cả2nhánh. Chốtpushcảdev/dev-ui theo yêu cầu owner; main không đổi.
+- Đã dừng4209/browserQA; giữ4200/8080/8081/worker/Nginx. Log/ảnhQAignored
+  đã copy sang root `.local/customer-worktree-backup` private0700 trướccleanup.
+- Native `archive_worktree` đúngidentitycustomers trả lỗi:
+  "The task's primary checkout cannot be removed." Không xóa/cưỡngxóa
+  workspace được hostbảo vệ. Worktreecustomers còn nguyên; bước còn lại là
+  chuyển chat này sangLocal rồi archiveattachmentcustomers bằng công cụnative.
+- Không có blocker vềcode/test/Git. Blocker chỉ cleanupattachmentprimary;
+  không coi việc backupartifact hoặc gộpbranch là đã xóa worktree.

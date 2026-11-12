@@ -6,15 +6,17 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 
-- HERO-C16 đang làm: đảoRTL/thu nhỏ mũi tên/bỏ dots, merge dev-ui→dev/cleanup.
-- Banner followup HERO-C14: cover3:1, trượt trái→phải550ms, nútadmin rõ;
-  FE336/dev-ui337đạt, browser1280+390 và4200 đạt; đã syncdev/4200.
+- HERO-C19: autoplayphải→trái/hovervẫnchạy,2mũitên28px hovertrắng,
+  bỏ dots/pausebar; test338đạt, SSR/Workersđạt,4200đãnhận.
+- Dev-ui đã gộp đầyđủ vàodev,2nhánh cùngHEAD; giữ footer/detailUIriêng.
+  Cleanupcustomers bị Codexchặn vì primarycheckout củachat;
+  cần chuyểnchatvềLocal rồiarchive. Artifactsđãbackup ởroot/.local.
 - Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
   Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
-  FE332đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
+  FE338đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,
   browser1280/390 và backup/restoreQA đạt. Đã tích hợp dev/sync4200.
   Owner đã chọn bật self-host local;8080/8081 +worker/Nginx18084 đang chạy.
-  DB local backup trướcV33; dev-ui333tests đạt, giữ UIriêng; cần đăng nhập lại.
+  DB local backup trướcV33; backend/worker vẫn chạy, không restart tronglầnnày.
   Chưa migrate/deployproduction; giữ gate digest/mount/backup/artwork/device.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
