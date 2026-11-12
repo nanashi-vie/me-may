@@ -13,13 +13,19 @@ function encode(args, signal) {
   return new Promise((done, reject) => {
     const child = execFile(process.execPath, [fileURLToPath(new URL('./encode.mjs', import.meta.url))], {
       signal, timeout: 180_000, killSignal: 'SIGKILL', maxBuffer: 64 * 1024,
-    }, (error, output) => {
-      if (error) return reject(new Error('encode_failed'));
+    }, (error, output, stderr) => {
+      const diagnostic = () => process.stderr.write('image_encoder_failed: '
+        + String(stderr || error?.code || 'invalid_encoder_response').slice(-4096) + '\n');
+      if (error) { diagnostic(); return reject(new Error('encode_failed')); }
       try {
         const result = JSON.parse(output);
-        if (!result.manifest) return reject(new Error(result.code));
+        if (!result.manifest) {
+          if (result.code === 'encode_failed') diagnostic();
+          return reject(new Error(result.code));
+        }
         done(result.manifest);
       } catch {
+        diagnostic();
         reject(new Error('encode_failed'));
       }
     });
