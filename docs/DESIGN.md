@@ -13,6 +13,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
 | `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
+| `/admin/customers`, `/admin/customers/:id` | Khách hàng | OWNER ghi, STAFF xem/tìm; form modal chung |
 | `/admin/sach` | Bảng quản trị | Tìm mã, mở editor, xem trạng thái |
 | `/admin/sach/moi`, `/admin/sach/:id` | Editor | Nhập cuốn/listing, ảnh, preview, xuất bản/ẩn theo quyền |
 | `/admin/danh-muc`, `/admin/bo-suu-tap` | Biên tập taxonomy | Quản lý nhóm và thứ tự hiển thị |
@@ -361,3 +362,11 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
 - Icon thùng rác nằm bên phải Cập nhật, mở hộp thoại tên/mã và cảnh báo
   xóa vĩnh viễn sau 7 ngày. Hạn hiển thị theo giờ Việt Nam.
 - Hai ảnh bổ sung có checkbox **Hiện trên trang sách**, mặc định tắt.
+
+## Quản lý khách hàng —12/11/2026
+
+Bố cục theo ba ảnh list/form/detail owner gửi, giữ màu đỏ hiện hành; bảng phẳng
+trong panel viền nhẹ, form nhóm chính/bổ sung, profile và empty order history.
+Nhãn Tên Zalo/Tên TikTok/Tên Threads, chỉ text username, không link.
+Contract UI/dirty/modal/search/role tại [CUSTOMERS](CUSTOMERS.md);
+[bằng chứng desktop/mobile và giới hạn](CUSTOMER_VERIFICATION.md).

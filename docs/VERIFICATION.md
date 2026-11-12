@@ -2,7 +2,7 @@
 Drive batch 11/11: backend/FE/recovery fixture và giới hạn QA xem [checkpoint](DEV_LOG.md#2026-11-11--drive-batch--implementation-và-regression), [runbook](IMAGE_OPERATIONS.md#nhập-và-ghép-nguồn-drive-theo-lô-v31).
 
 Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
-Bằng chứng ảnh, benchmark S8 và tiêu chí ở [IMAGE_VERIFICATION](IMAGE_VERIFICATION.md).
+Bằng chứng ảnh ở [IMAGE_VERIFICATION](IMAGE_VERIFICATION.md); khách hàng ở [CUSTOMER_VERIFICATION](CUSTOMER_VERIFICATION.md).
 
 Bằng chứng22–29/10/2026 dưới đây theo revision/ngày từng mục; không là kiểm tra
 live01/11. Backlog duy nhất ở [PROGRESS](PROGRESS.md); cách đo/rollout ở

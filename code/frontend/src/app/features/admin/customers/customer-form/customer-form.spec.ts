@@ -193,6 +193,7 @@ describe('CustomerForm', () => {
     f.detectChanges();
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const link = f.nativeElement.querySelector('#customer-duplicates a') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe('/admin/customers/2');
     link.click();
     expect(confirm).toHaveBeenCalledTimes(1);
     expect(nav).not.toHaveBeenCalled();

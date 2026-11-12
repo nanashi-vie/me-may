@@ -3,11 +3,11 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- Quản lý khách hàng12/11: owner đã duyệt [thiết kế](CUSTOMER_SPEC.md);
-  field riêng chỉ lưu username; nhãn Tên Zalo/Tên TikTok/Tên Threads.
-  OWNER ghi, STAFF chỉ xem/tìm kiếm. Đã lập [kế hoạch](CUSTOMER_PLAN.md),
-  owner đã duyệt plan, T1–T5 đã triển khai trên codex/customers.
-  T6 đang QA/review; FE312đạt, BE310total/3skip, buildSSR/Workers/proxy đạt.
+- Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
+  field riêng chỉ username, nhãn Tên Zalo/Tên TikTok/Tên Threads; OWNER ghi,
+  STAFF xem/tìm. FE316đạt, BE310total/3skip, SSR/Workers/proxy đạt; browser21ca,
+  6smoke cuối, review và regression đã xử lý. [Bằng chứng/giới hạn](CUSTOMER_VERIFICATION.md).
+  Chưa migrate/deploy V32 thật; bước tiếp là backup/rollout/smoke domain thật.
 
 - Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
   và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),

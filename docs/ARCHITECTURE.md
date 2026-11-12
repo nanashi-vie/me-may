@@ -355,3 +355,14 @@ không dependency mới. Aggregate PUT gộp content/mediaMetadata/features/publ
 trong transaction/version/audit; public features SQL aggregate không thêm per-book
 query. Contract/bảo mật/idempotency ở [CATALOGUE](CATALOGUE.md), UX ở DESIGN,
 rollout/rollbackV15 ở [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).
+
+## Module customer —12/11/2026
+
+`vn.memay.customer` dùng Spring JDBC/FlywayV32, không thêm entity JPA/dependency.
+Service transaction khóa row/version và actor OWNER còn active; metadata audit
+cùng transaction, không PII. API `/api/v1/admin/customers` dùng chain session/
+CSRF hiện có. Frontend customer dùng AdminHttp, không session cache/TransferState;
+admin SSR Client/no-store/noindex. Hủy stream/request cũ khi đổi query/session
+hoặc mở form mới; dirty guard đóng editor khi chấp nhận rời route tái sử dụng.
+Contract/rollout ở [CUSTOMERS](CUSTOMERS.md),
+[bằng chứng](CUSTOMER_VERIFICATION.md). Không có customer login hoặc order.

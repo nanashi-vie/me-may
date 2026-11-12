@@ -1,6 +1,8 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật05/11/2026 | Đóng phạm vi tính năng, chuyển tối ưu UI; gate release ở PROGRESS**
+**Bản hiện hành | Cập nhật12/11/2026 | Gate release ở PROGRESS**
+> Mở rộng12/11: quản lý khách hàng thủ công được duyệt tại [CUSTOMERS](CUSTOMERS.md).
+> Không mở phạm vi đơn hàng/thanh toán; các gate release cũ vẫn giữ.
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 
