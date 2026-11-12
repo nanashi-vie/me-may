@@ -3467,3 +3467,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   logo/orbit/art-note và CSS tương ứng. Mobile co theo chiều rộng, không cắt.
 - Từ code/frontend: npm test đạt 296/296, npm run build đạt. Chrome headless đã
   chụp desktop 1280 và mobile. Chưa kiểm LCP/Lighthouse hay thiết bị thật.
+
+### S065-C02 — Banner hero tràn viền
+
+- Theo mẫu IPM: `.hero` dùng `width: 100vw` và margin âm để thoát khỏi cột `.wrap`,
+  sát dưới thanh menu; ảnh `sizes="100vw"`. body đã có `overflow-x: clip`.
+- npm test đạt 296/296. Chrome headless 1600px: banner tràn hai bên, không cuộn
+  ngang. Nguồn ảnh 1584px nên phóng nhẹ trên màn hình rộng hơn; chưa kiểm mobile
+  thật.
