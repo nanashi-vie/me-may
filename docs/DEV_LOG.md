@@ -4154,3 +4154,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Product UI fix reviewed without findings; HERO_BANNERS updated with causes,
   worker upgrade and recovery requirement. No main push/merge or live banner
   publish performed; UI rollout follows owner merge/deploy workflow.
+
+### 2026-11-12 - HERO-FIX-C03 - Production upload verified
+
+- User confirmed executing the prepared root remediation script. Agent could
+  not control Warp or reuse its sudo timestamp; no credentials requested.
+- Browser production existing owner draft: clicked its Retry once. Upload
+  entered processing, then preview of intended shop banner appeared, error
+  disappeared and Save banner became enabled. This verifies live upload,
+  hero-v1 processing and private preview after the worker/recipe remediation.
+- Did not click Save banner or publish/change home configuration; owner draft
+  remains ready for saving. Public/save/refresh after this operation not run.
+  Do not claim public publication verified from private preview alone.
+- Root backup directory/result details were not copied back; script saves
+  private DB/banner/service backups under /root/memay-banner-fix-<UTCstamp>.
+  Old v1 recipe/image retained by script; recovery uses its pinned old worker.
+- UI error improvements committed/pushed dev d9207db; FE341, worker14,
+  SSR/Workers builds pass, independent review no actionable findings. UI
+  release still requires owner merge/deploy; no agent main push/merge.
+- PROGRESS exceeded400 by one line while checkpoint was appended. Removed
+  superseded audit snapshot (all findings remain in DEV_LOG/HERO_BANNERS),
+  kept current remediation snapshot and all open release gates. Rechecked
+  changed docs limits/local targets and git diff whitespace before handoff.
+- No QA servers/containers started in this fix; existing production owner
+  browser/draft preserved. Remaining owner action: Save banner when desired.

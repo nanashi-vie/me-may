@@ -3,15 +3,11 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- HERO-FIX-C02: UI identifies recipe/LOCAL503; FE341, worker14, SSR/Workers pass.
-  Production worker old ff81bd0 has only v1. Root remediation script prepared,
-  reviewed and transferred; owner execution pending. No live recipe/worker
-  changes yet; old v1 recovery must retain its pinned worker. See HERO_BANNERS.
-
-- HERO-AUDIT-C01 (12/11,23:02): production banner upload503 Response confirmed
-  banner_recipe_unavailable; backend database lacks hero-v1. Verify worker
-  revision/digest/mount, register recipe then smoke. No live changes made.
-  UI currently shows generic retry text for this configuration failure.
+- HERO-FIX-C03: owner ran root worker/recipe remediation; production retry
+  now produces banner preview, no error, Save enabled. Draft not published.
+  UI503 guidance pushed dev d9207db; FE341, worker14, SSR/Workers pass.
+  Owner may Save banner; UI release still follows merge/deploy workflow.
+  Retain old pinned v1 worker for recovery; [contract](HERO_BANNERS.md).
 
 - IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
   cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
