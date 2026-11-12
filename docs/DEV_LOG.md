@@ -3639,3 +3639,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
   - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
   - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.
+
+## 2026-11-12 — S065-C04 — Thay iframe Facebook bằng thẻ Fanpage native ở Footer
+
+- Làm việc trên worktree `dev-ui` (`me-may.worktrees/dev-ui`).
+- Mục tiêu: Thực hiện tinh chỉnh mục KẾT NỐI VỚI CHÚNG TÔI ở Footer theo kết quả `/grill-me`:
+  1. Loại bỏ iframe Facebook Page Plugin vốn bị lỗi vỡ layout khi page có story (vòng tròn story đẩy avatar làm nút Theo dõi/Chia sẻ đè lên dòng số người theo dõi) và loại bỏ 2 nút bấm Theo dõi/Chia sẻ do Facebook đã ngừng hỗ trợ / báo lỗi "Sorry, something went wrong".
+  2. Thay thế bằng thẻ Fanpage native (`.fb-page-card`): nền trắng bo góc, logo tiệm (`/favicon/web-app-manifest-192x192.png`), tên "Sách Ngoại Văn Mẹ Mây" và dòng gợi ý "Theo dõi trên Facebook ↗" kèm biểu tượng Facebook SVG; bấm vào toàn bộ thẻ mở thẳng trang Facebook chính thức của Mẹ Mây trong tab mới.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: Thay thế `<div class="fb-embed-wrap"><iframe>...` bằng thẻ `<a class="fb-page-card" href="...">` chuẩn HTML5 và accessibility.
+  - `code/frontend/src/styles.scss`: Thay thế quy tắc `.fb-embed-wrap` cũ bằng CSS cho `.fb-page-card`, `.fb-page-avatar`, `.fb-page-info`, `.fb-page-name`, `.fb-page-cta` với hiệu ứng hover nâng nhẹ.
+  - `code/frontend/src/app/app.spec.ts`: Cập nhật test footer để kiểm tra thẻ Fanpage native, avatar, tên và link Facebook thay vì kiểm tra iframe.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Đồng bộ tài liệu thiết kế và tiến độ.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
+  - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
+  - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.

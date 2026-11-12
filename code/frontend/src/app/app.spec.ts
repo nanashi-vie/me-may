@@ -33,8 +33,13 @@ describe('public shell', () => {
     const footer = root.querySelector('.site-footer')!;
     expect(footer.textContent).toContain('KẾT NỐI VỚI CHÚNG TÔI');
     expect(footer.textContent).toContain('CÁC KÊNH KHÁC');
-    expect(footer.querySelector<HTMLIFrameElement>('.fb-embed-wrap iframe')?.getAttribute('src')).toContain(
-      'facebook.com/plugins/page.php?href=https%3A%2F%2Fwww.facebook.com%2Fsachngoaivanmemay%2F',
+    const fbCard = footer.querySelector<HTMLAnchorElement>('a.fb-page-card')!;
+    expect(fbCard).not.toBeNull();
+    expect(fbCard.href).toBe('https://www.facebook.com/sachngoaivanmemay/');
+    expect(fbCard.textContent).toContain('Sách Ngoại Văn Mẹ Mây');
+    expect(fbCard.textContent).toContain('Theo dõi trên Facebook ↗');
+    expect(fbCard.querySelector('img.fb-page-avatar')?.getAttribute('src')).toBe(
+      '/favicon/web-app-manifest-192x192.png',
     );
     const footerSocials = Array.from(footer.querySelectorAll<HTMLAnchorElement>('.footer-socials a.social-box')).map(
       (a) => a.href,

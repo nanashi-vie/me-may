@@ -76,7 +76,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 9. **Sách theo chủ đề:** một hàng của bộ sưu tập được chủ chọn, ví dụ động vật; không tự gắn nhãn bằng AI.
 10. **Banner nhóm 2 + sách cho bé bắt đầu tự đọc:** chỉ hiển thị nếu có cuốn phù hợp; không gán CEFR/Lexile khi thiếu bằng chứng.
 11. **Cách hỏi mua:** 3 bước ngắn: chọn sách → sao chép mã/link → nhắn tiệm xác nhận.
-12. **Footer (cập nhật 08/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (khung nhúng Facebook Page Plugin `embed_page` `340x130px` của fanpage `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
+12. **Footer (cập nhật 12/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (thẻ Fanpage native nền trắng bo góc gồm logo tiệm, tên `Sách Ngoại Văn Mẹ Mây` và link mở thẳng fanpage `sachngoaivanmemay`, thay thế iframe Facebook bị lỗi 2 nút Follow/Share và vỡ layout khi có story) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
 
 Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ liệu. Không kéo dài Home bằng các nhóm lặp sách chỉ để đủ chiều cao như screenshot.
 
