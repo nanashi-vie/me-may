@@ -3622,3 +3622,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   trong spec/plan (exit1 là không có match). Không test/build/migrate sản phẩm.
 - Bàn giao spec đã duyệt và plan chờ review/chọn cách thực thi trên dev;
   giữ nguyên chỉnh sửa nhãn owner, không đổi code, data, hạ tầng hoặc main.
+
+## 2026-11-12 — CUSTOMER-C03 — Triển khai tuần tự
+
+- Owner duyệt plan và chọn tuần tự; UI tham khảo list/form/detail, giữ màu
+  đỏ chủ đạo web; nhãn Tên Zalo/Tên TikTok/Tên Threads, quyền giữ spec.
+- Branch codex/customers từ dev5c5ddac. Native worktree customers tạo được
+  nhưng sandbox chặn ghi; theo fallback skill làm root checkout trên branch riêng.
+- PostgreSQL QA container riêng đang chuẩn bị, không dùng my-postgres/live.
+  Ledger .superpowers/sdd/CUSTOMER_PLAN; đang T1, chưa có kết quả test mới.
+- T1: validation3 + migration1 đạt; đã thấy đỏ thiếu class/V32 trước code.
+  Migration schema QA riêng bảo toàn sách; mã KH tăng qua1000000 không cắt.
+  Baseline FE296đạt, backend trước customer exit0; log chi tiết local ignored.
