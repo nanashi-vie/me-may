@@ -3639,3 +3639,6 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   audit chỉ metadata. Chưa chạy frontend mới hoặc browser QA.
 - T3:5test client/validation đạt sau đỏ thiếu module; giữ username @/dấu/chấm,
   reject URL, API gửi CSRF/version và không retry500. Đang form T4.
+- T4:5formtest đạt; phát hiện response trùng cũ xuất hiện khi đóng/mở lại
+  form, đã có regression đỏ→xanh và hủy stream khi reset. Giữ draft lỗi mạng/
+  version, chống submit2lần, dirty confirm và xóa PII khi auth epoch thay đổi.
