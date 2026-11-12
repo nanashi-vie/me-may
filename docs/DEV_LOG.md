@@ -3634,3 +3634,6 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - T1: validation3 + migration1 đạt; đã thấy đỏ thiếu class/V32 trước code.
   Migration schema QA riêng bảo toàn sách; mã KH tăng qua1000000 không cắt.
   Baseline FE296đạt, backend trước customer exit0; log chi tiết local ignored.
+- T2:4APItest đỏ404→xanh;4test PostgreSQL thật race create/update/status,
+  rollback audit và no-op đạt. Quyền/CSRF/duplicates/paging/currentVersion đạt;
+  audit chỉ metadata. Chưa chạy frontend mới hoặc browser QA.
