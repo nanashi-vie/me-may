@@ -4118,3 +4118,39 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Existing local QA is not evidence that production banner upload works.
 - Next: operator verify/register hero-v1; distinct UI error message is a
   separate fix. Record review on dev; no main or production changes.
+
+### 2026-11-12 - HERO-FIX-C01 - Fix banner recipe failure
+
+- Owner authorized continuing remediation: UI error detail and production
+  hero-v1 readiness/registration after worker digest/mount verification.
+- Started on clean dev; scope excludes unrelated deployment/main changes.
+  Production investigation through existing Dokploy terminal; no secrets
+  copied to logs. Tests and results pending.
+
+### 2026-11-12 - HERO-FIX-C02 - UI fix verified, worker remediation prepared
+
+- HeroBannerEditor now distinguishes503 banner_recipe_unavailable and
+  local_media_unavailable; previous image/request key/retry behavior retained.
+- RED2/8 demonstrated missing specific messages; full frontend GREEN341/341
+  in58files. SSR and Workers builds pass; worker14/14 pass on current source.
+  No backend product changes, backend suite not rerun for frontend-only fix.
+- Read-only production verification: backend LOCAL enabled/root configured;
+  worker release-candidate-ff81bd0 only exports v1, lacks hero-v1. Did not
+  insert recipe or update worker before resolving this mismatch.
+- Host terminal Dokploy SSH authentication failed. Existing SSH memay login
+  refreshed through Cloudflare Access; memayadmin lacks Docker permission and
+  sudo needs password. User opened root shell; Warp computer control denied,
+  so root actions remain with user, no password requested or logged.
+- Prepared ignored .local/banner-production/remediate.py and pinned worker
+  source from origin/main536ee9db846faca28572958631babb4fde12d3da. Copied to
+  /home/memayadmin/banner-fix-536ee9db on host; local/remote syntax checks pass.
+  Independent readonly review found no critical/important script issues.
+- Script verifies target DB/shared mounts/idle queue, backs up DB+banners and
+  private service snapshot, builds worker, compares v1 hash/Sharp versions,
+  changes worker then inserts immutable hero-v1, verifies health and identity.
+  Retains old image/service snapshot for rollback and old v1 REBUILD; does not
+  overwrite v1 recipe or claim new worker can attest the old image digest.
+- User asked to run the concrete root command; execution/result pending.
+  Product UI fix reviewed without findings; HERO_BANNERS updated with causes,
+  worker upgrade and recovery requirement. No main push/merge or live banner
+  publish performed; UI rollout follows owner merge/deploy workflow.

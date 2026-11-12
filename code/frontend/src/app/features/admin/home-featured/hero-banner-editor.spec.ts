@@ -53,6 +53,21 @@ describe('HeroBannerEditor', () => {
     expect(c.rows()[0].id).toBe('b');
     expect(c.error()).toContain('thay đổi');
   });
+  it.each([
+    ['banner_recipe_unavailable', 'hero-v1'],
+    ['local_media_unavailable', 'chưa được bật'],
+  ])('explains configuration error %s while preserving the previous image', (code, message) => {
+    const { c, upload, fixture } = setup();
+    const response = new Subject();
+    upload.mockReturnValue(response);
+    const row = c.rows()[0];
+    c.select(new File(['x'], 'banner.jpg', {type:'image/jpeg'}), row);
+    response.error({status:503,error:{error:code}});
+    fixture.detectChanges();
+    expect(row.id).toBe('a');
+    expect(row.pending).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain(message);
+  });
   it('retains the previous image after failed replacement and reuses requestKey on retry', () => {
     const { c, upload } = setup();
     const row = c.rows()[0];

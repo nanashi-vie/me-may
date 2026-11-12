@@ -3,6 +3,11 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- HERO-FIX-C02: UI identifies recipe/LOCAL503; FE341, worker14, SSR/Workers pass.
+  Production worker old ff81bd0 has only v1. Root remediation script prepared,
+  reviewed and transferred; owner execution pending. No live recipe/worker
+  changes yet; old v1 recovery must retain its pinned worker. See HERO_BANNERS.
+
 - HERO-AUDIT-C01 (12/11,23:02): production banner upload503 Response confirmed
   banner_recipe_unavailable; backend database lacks hero-v1. Verify worker
   revision/digest/mount, register recipe then smoke. No live changes made.
