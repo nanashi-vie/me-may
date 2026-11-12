@@ -221,7 +221,7 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 
 - book_feature/code và listing_feature/position là danh mục mở rộng được, không
   dùng label làm khóa;0–3code/sách không trùng, thứ tự lưu ổn định. Schema/seed
-  và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách--06112026).
+  và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách-06112026).
 - Sách cũ không tự có tag. Không suy từ tên/category; sách có cơ chế hỏng cần
   mô tả trung thực, tag không phải cam kết mọi bản đang hoạt động hoàn hảo.
 - Tối đa tám ảnh ACTIVE, hiển thị cùng sách khi xuất bản.
@@ -236,3 +236,10 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 `book_copy.deleted_at` xác định Thùng rác và hạn khôi phục sau 7 ngày.
 Sau khi dọn, snapshot mã/ID/tên trên receipt và audit tiếp tục tra được.
 Ảnh chờ dọn có thể có `book_copy_id` rỗng và không được ở trạng thái ACTIVE.
+
+## Hồ sơ khách hàng —12/11/2026
+
+Schema V32, field/giới hạn/chuẩn hóa/index/actor/version và AC tại
+[CUSTOMERS](CUSTOMERS.md#3-dữ-liệu). Hồ sơ độc lập user_account và sách;
+không UNIQUE SĐT/username, không gộp hoặc liên kết tài khoản tự động.
+Mã KH sinh từ identity an toàn đồng thời, không MAX+1; dữ liệu cá nhân chỉ admin.

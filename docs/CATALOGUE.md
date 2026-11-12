@@ -170,6 +170,13 @@ Các path dưới đây có prefix `/api/v1/admin`. ID bigint trả qua JSON dư
 
 ## 8. Vòng đời tối đa8ảnh
 
+Contract đầy đủ cho LOCAL/Drive và so sánh cloud ở [IMAGES](IMAGES.md).
+LOCAL nhận JPEG/PNG/WebP tĩnh nguyên bytes, xử lý bất đồng bộ; ảnh sách cũ
+còn provider CLOUDINARY giữ đường legacy dưới đây. Không áp giới hạn định
+dạng hoặc cách attach đồng bộ của Cloudinary cho LOCAL.
+
+### Nhánh Cloudinary legacy
+
 Chọn **upload qua backend**, tránh hai bước client tự attach URL. File nhỏ và tối đa tám ảnh/cuốn cho phép kiểm quyền/validation tại một boundary; direct signed upload chưa thuộc contract hiện hành.
 
 - Chỉ JPEG/PNG, tối đa 10 MiB/file và 25 megapixel; kiểm magic/decode/kích thước bằng ImageIO, không tin extension/content-type do trình duyệt gửi.
@@ -211,7 +218,7 @@ Quy trình upload/thay slot:
 
 ## 10. Migration và vận hành
 
-- FlywayV1–V12 là nguồn schema duy nhất; không sửa checksum migration đã chạy. Rollout/backup/restore/V10–V11 tại DEPLOYMENT.
+- Flyway migrations hiện hành là nguồn schema duy nhất; ảnh dùng V24–V31 theo IMAGES, không sửa checksum migration đã chạy. Rollout/backup/restore/V10–V11 tại DEPLOYMENT.
 - Test dùng me_may_test với guard tên DB như M1; chỉ xóa fixture test, không truncate bảng/dev/database dùng chung của Docker.
 - Chỉ seed taxonomy/reference; không seed sách bán thật hoặc fixture SYNTHETIC dưới trạng thái published.
 - Thêm biến mẫu CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAMESPACE (memay/dev, memay/test hoặc memay/online-test) vào .env.example bằng giá trị mẫu; credential thật chỉ trong .env ignored, không gửi qua chat/log.
@@ -358,3 +365,9 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
   tạo sách, giữ khả năng retry payload cũ. Lưu theo version/audit của sách.
 - Migration V20 thêm danh mục và FK tùy chọn trên `book_copy`. Sách cũ và sách
   mới import chưa phân thùng. Vị trí và danh mục chỉ xuất hiện trong quản trị.
+
+## Banner trang chủ
+
+OWNER quản lý tối đa10banner tại `/admin/sach-noi-bat`, cấu hình/version
+riêng với ghim sách. Contract/recipe/backup/rollout và bằng chứng ở
+[HERO_BANNERS](HERO_BANNERS.md); khung3:1,5giây, mọi ảnh dẫn `/sach`.

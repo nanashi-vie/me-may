@@ -3434,6 +3434,91 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Proxy workerd smoke đạt; diff whitespace, trần dòng và liên kết tài liệu
   hiện hành đạt. Commit/push dev; owner merge main/deploy frontend.
 
+## 2026-11-12 — Owner nghiệm thu upload ảnh và dọn QA
+
+- Owner xác nhận đã test upload ảnh mượt, cho dọn container QA và tài nguyên
+  liên quan. Không mở lại các ca nghiệm thu đã xác nhận.
+- Kiểm kê: memay-drive-flow-test và memay-s057-pg đều dừng, PostgreSQL18,
+  anonymous volume riêng không dùng chung; S057 là fixture S1 gallery theo
+  checkpoint S057-C01. my-postgres đang chạy và container dự án khác giữ nguyên.
+- Không có tiến trình fixture API :18882/frontend QA :4208/workerd probe
+  thuộc luồng ảnh đang chạy. Có frontend dev khác đang dùng, không dừng.
+- Chuẩn bị xóa đúng hai container/volume và 29 file tạm (~1 MB) của các lượt
+  drive-flow/drive-button/match/publish-error/bulk-photo ở /private/tmp.
+  Không prune Docker toàn cục, không xóa source, worktree, secrets hoặc media.
+- Đã chạy docker rm -v cho đúng hai fixture; đối chiếu docker ps -a và
+  docker volume ls theo hai volume ID: đều không còn, my-postgres vẫn Up.
+  Đã xóa 29 file QA tạm, kiểm lại còn 0 file thuộc các prefix đã kiểm kê.
+- git diff --check và trần dòng PROGRESS đạt. Không chạy lại test sản phẩm
+  vì chỉ dọn fixture và cập nhật bàn giao; kết quả test trước giữ trong log.
+  Commit/push tài liệu lên dev, không deploy hoặc thay đổi main.
+
+## 2026-11-12 — Tổng quan hệ ảnh self-host và chuẩn hóa docs
+
+- Owner yêu cầu một Markdown tổng quan đầy đủ cơ chế/luồng/xử lý ảnh LOCAL
+  so với Cloudinary, sau đó rà và dọn docs. Đối chiếu code hiện hành và
+  chứng cứ trước; không biến dự kiến spec cũ thành cấu hình đang vận hành.
+- Dự kiến nguồn chuẩn IMAGES.md (tổng quan và contract), IMAGE_OPERATIONS.md
+  (thao tác vận hành), IMAGE_VERIFICATION.md (bằng chứng/tiêu chí chuyển từ
+  plan cũ). Chuyển đủ gate còn mở trước gỡ sáu spec/plan ảnh đã hết vai trò.
+- Kiểm Git dev sạch khi bắt đầu; không đổi sản phẩm, schema, dữ liệu hoặc
+  hạ tầng. Chưa có tài liệu mới hoàn tất; sẽ kiểm link, trần dòng, tham chiếu
+  cũ và mâu thuẫn baseline trước commit/push dev.
+
+### Chuẩn hóa docs ảnh — Kết quả đối chiếu và chuyển giao
+
+- Tạo IMAGES.md: bản chất LOCAL so với Cloudinary, ba luồng máy/IMPORT/MATCH,
+  thuật ngữ, pipeline, 9variants thực của recipe v1, staging không là kho gốc,
+  queue/lease/retry, gắn cả lô, nguồn/publish gate, cache/delivery/ZIP, cleanup,
+  backup/rebuild/migration/rollback, xử lý lỗi và bản đồ code/API.
+- Đối chiếu LocalUploadService, ImageJobService/Repository, MediaReadService,
+  LocalImageCleanup, worker processor/recipes/index, Compose, frontend upload
+  và các checkpoint owner. Phân biệt cấu hình mẫu/thiết kế với live acceptance.
+- Chuyển acceptance matrix/gate S1–S8/R1–R6/DriveTask7 và nguyên số liệu S8
+  sang IMAGE_VERIFICATION.md. Giữ gate Drive thật/benchmark Dell/RPO/RTO/
+  monitoring và migration/rollback cũ, không đánh hoàn thành từ upload mượt.
+- IMAGE_OPERATIONS giữ lệnh vận hành; bổ sung đủ export/preview/apply/rollback/
+  inventory/rebuild, session0600 và restore isolated từ recovery plan. Cập nhật
+  V31, sách đã lưu/gắn cả lô, owner đã nghiệm thu; không yêu cầu lặp upload.
+- Gỡ sáu spec/plan ảnh sau chuyển contract/tiêu chí; không archive bản trùng.
+  Cập nhật chỉ mục duy nhất, snapshot PROGRESS và baseline media trong AGENTS,
+  MASTER_PLAN/ARCHITECTURE/CATALOGUE/DEPLOYMENT/VERIFICATION. Giữ mọi checkpoint
+  DEV_LOG cũ. Sửa một anchor DATA→CATALOGUE bị sai từ trước.
+- Lượt audit đầu: 27 Markdown, không path hỏng; phát hiện DEPLOYMENT vượt2dòng
+  và một anchor cũ sai. Đã thu gọn phần dẫn và bỏ blank thừa, sửa anchor;
+  đang chạy audit cuối. Không thay code/schema, không test sản phẩm hoặc deploy.
+- Đối chiếu thêm MediaConfiguration: cờ LOCAL còn bật/tắt gateway đọc, không
+  là cờ chỉ dừng upload. Đã sửa lời khuyên rollback từ spec cũ để không gây
+  mất đường đọc ảnh LOCAL; ghi rõ giới hạn này trong tổng quan và runbook.
+- Audit cuối đạt trên27Markdown: local path/heading anchor, trần400 (trừ
+  DEV_LOG), không tham chiếu tài liệu đã gỡ ngoài log lịch sử, code fence của
+  ba tài liệu ảnh cân bằng; git diff --check đạt, `.env` vẫn ignored.
+- Import trực tiếp recipes.mjs bằng Node/assert xác nhận9variants, 10MiB và
+  25MP đúng phần mô tả. Thay đổi tracked chỉ Markdown; không chạy lại test
+  sản phẩm/build hoặc truy cập production vì không đổi code/schema/hạ tầng.
+- IMAGES382dòng, runbook281, verification139; gỡ6file cũ, giữ nội dung vận
+  hành/acceptance còn giá trị, không tạo archive/index song song. Bàn giao
+  tài liệu qua commit/push dev; user merge main theo workflow, không deploy.
+
+## 2026-11-12 — Rà soát và dọn worktree ảnh
+
+- Owner yêu cầu dọn worktree, bổ sung giữ dev-ui. Kiểm git worktree list,
+  status, ancestry và branch log trước xóa; không đổi dev-ui/main.
+- image-system trong .codex/worktrees đang ở codex/drive-source-batch e2e6759,
+  sạch; .local/image-system ở codex/image-system 3be348d, chỉ untracked symlink
+  node_modules trỏ dependency root. .env cũng là symlink tới root, không là
+  secret riêng. Cả hai branch có 0 commit ngoài dev.
+- Artifact API không có worktree managed attached nên dùng Git cleanup.
+  File ignored gồm dependency/build/cache và ledger/log QA đã hoàn tất,
+  không có source chưa commit; không có process cwd trong hai worktree ảnh.
+- dev-ui giữ nguyên: e6f40ac, clean, ahead origin/dev-ui34 commit; còn1commit
+  chưa vào dev. Không push, reset, merge hoặc xóa branch/worktree này.
+- Đã git worktree remove hai checkout ảnh; force chỉ cho symlink dependency
+  untracked đã kiểm. Xóa hai branch đã merge bằng git branch -d, không force.
+- Xác minh worktree list chỉ còn root/dev và dev-ui; dev-ui vẫn e6f40ac,
+  sạch, ahead34 như trước. .env và node_modules root vẫn tồn tại. Không chạy
+  lại test/build vì không đổi code; git diff --check đạt. Ghi/push log lên dev.
+
 ## 2026-11-11 — S064-C01 — Chỉnh UI chấm công
 
 - Làm trực tiếp trên dev (đã khớp origin/dev). Phạm vi: attendance.scss, punch.html/ts,
@@ -3457,3 +3542,462 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   đậm cỡ lớn màu đỏ; vẫn là details thu gọn, không thêm dòng phụ.
 - npm test và npm run build từ code/frontend đạt. Xem trước tĩnh danh sách nhân
   viên bằng Chrome headless. Chưa xem form nhập sách trên trình duyệt thật.
+
+## 2026-11-12 — S065-C01 — Banner mới cho hero Home
+
+- Làm trên dev (đã khớp origin/dev). Nguồn: input/Banner.png (1584×396, input/ bị ignore).
+- Tạo public/images/hero-banner-1584.webp (~119 KB) và hero-banner-800.webp (~45 KB)
+  bằng sharp, dùng srcset; ảnh fetchpriority=high, có alt đầy đủ.
+- Hero chỉ còn ảnh full chiều rộng; h1 giữ ở dạng sr-only; bỏ nút Khám phá sách,
+  logo/orbit/art-note và CSS tương ứng. Mobile co theo chiều rộng, không cắt.
+- Từ code/frontend: npm test đạt 296/296, npm run build đạt. Chrome headless đã
+  chụp desktop 1280 và mobile. Chưa kiểm LCP/Lighthouse hay thiết bị thật.
+
+### S065-C02 — Banner hero tràn viền
+
+- Theo mẫu IPM: `.hero` dùng `width: 100vw` và margin âm để thoát khỏi cột `.wrap`,
+  sát dưới thanh menu; ảnh `sizes="100vw"`. body đã có `overflow-x: clip`.
+- npm test đạt 296/296. Chrome headless 1600px: banner tràn hai bên, không cuộn
+  ngang. Nguồn ảnh 1584px nên phóng nhẹ trên màn hình rộng hơn; chưa kiểm mobile
+  thật.
+
+## 2026-11-12 — CUSTOMER-C01 — Thiết kế quản lý khách hàng
+
+- Mục tiêu: tiếp nhận spec Customer Management owner cung cấp và hoàn thiện
+  thiết kế trước lập plan; không triển khai sản phẩm trong checkpoint này.
+- Owner chốt: Zalo/TikTok/Threads chỉ lưu username, dùng field riêng;
+  nhãn Zalo là Tên Zalo; STAFF chỉ xem, OWNER thao tác ghi.
+- Bắt đầu trên dev khớp origin/dev, working tree sạch. Đã đọc README,
+  PROGRESS, checkpoint cuối DEV_LOG, MASTER_PLAN và spec nguồn đầy đủ.
+  Graph đúng project không có Customer; đã đọc SecurityConfiguration và
+  AdminLayout bằng graph, đối chiếu API/quyền/version ở tài liệu hiện hành.
+- Đang viết CUSTOMER_SPEC, đăng ký README và cập nhật PROGRESS. Bản gốc
+  Ready for Development chưa bao gồm quyết định bổ sung; bản repo chờ owner
+  duyệt thiết kế. Chưa chạy test/build/migration hoặc truy cập live.
+- Tiếp theo: builder check độc lập, kiểm dòng/link/diff, bàn giao thiết kế
+  để duyệt; sau duyệt mới dùng writing-plans. Thay đổi còn local trên dev.
+- Kết quả: CUSTOMER_SPEC299dòng giữ CUS01–08/AC01–12 nguồn, bổ sung Threads,
+  quyền đã chốt và AC13–19. Quy tắc kỹ thuật agent đề xuất được tách rõ:
+  prefix v1/ID chuỗi, version chống ghi đè, chuẩn phone, username giữ @,
+  audit metadata không PII. Chưa coi các đề xuất này là owner đã duyệt.
+- Builder check độc lập customer_spec_check: không còn câu hỏi quan trọng
+  cần trả lời trước lập plan; vẫn cần owner duyệt bản thiết kế.
+- Kiểm từ root: git diff --check đạt; Python kiểm trần400 và đường dẫn link
+  local trên4file thay đổi đạt; kiểm nội dung field/quyền/errorcode đạt.
+  Không chạy test/build sản phẩm vì chỉ đổi Markdown; không migrate/deploy.
+- Bàn giao thiết kế chờ duyệt trên dev; chưa lập implementation plan hoặc
+  viết code. Sau khi owner duyệt, dùng writing-plans theo spec này.
+
+## 2026-11-11 — S063-C01 — Sửa "Mở bằng Zalo Web" không mở tab
+
+- Làm trên dev-ui sau khi fast-forward dev lên origin/dev và merge dev vào dev-ui.
+- Nguyên nhân: `(click)="$event.target === dialog && dialog.close()"` trả `false`
+  khi bấm vào link, Angular gọi preventDefault nên link không điều hướng.
+  Chuyển sang `onBackdropClick()` không trả giá trị.
+- Thêm assertion hồi quy ở home-page.spec.ts. `npm test` từ code/frontend đạt
+  284/284. Chrome headless trên ng serve dev-ui: bấm nút mở tab id.zalo.me.
+
+## 2026-11-12 — CUSTOMER-C02 — Duyệt thiết kế và lập plan
+
+- Owner duyệt thiết kế; trước duyệt có chỉnh trực tiếp một dòng trong
+  CUSTOMER_SPEC thành nhãn Tên X cho mọi nền tảng. Giữ chỉnh sửa đó, đồng bộ
+  các mục validation/form/detail/AC thành Tên Zalo/Tên TikTok/Tên Threads.
+- Phạm vi: tài liệu kế hoạch Customer Management; chưa viết code sản phẩm.
+  Bắt đầu dev khớp origin/dev, chỉ CUSTOMER_SPEC có chỉnh sửa owner nêu trên.
+- Đã đọc writing-plans đầy đủ; dùng graph khám phá và đọc auth/AdminHttp,
+  lỗi API/audit/CollectionService. Graph không trả frontend file inventory,
+  fallback rg --files và đọc route/template/test hiện hành; migration mới
+  dự kiến V32 sau V31 nhưng phải kiểm lại khi thực thi.
+- Ghi trạng thái spec đã duyệt, đăng ký CUSTOMER_PLAN trong README/PROGRESS.
+  Đang viết và tự rà plan theo spec; chưa chạy test/build/migration/live.
+- Tiếp theo: kiểm dòng/link/diff và coverage AC, commit/push dev; owner review
+  plan/chọn cách thực thi theo writing-plans trước triển khai. Không đổi main.
+- Kết quả: CUSTOMER_PLAN290dòng,6task T1–T6 có file/interface/test/command/
+  commit; tự rà AC01–19 và5Review Focus, không dispatch reviewer plan theo skill.
+  Đề xuất thực thi trực tiếp, review độc lập toàn branch do các task phụ thuộc
+  DTO/API/form của nhau; chưa tự chọn cách thực thi thay owner.
+- Kiểm từ root: Python trên5file thay đổi xác nhận trần400(trừDEV_LOG),
+  link local tồn tại, fence cân bằng; assert label/task/interface/DBtest đạt.
+  git diff --check đạt; rg không còn nhãn TikTok ID/Threads ID hoặc chờ duyệt
+  trong spec/plan (exit1 là không có match). Không test/build/migrate sản phẩm.
+- Bàn giao spec đã duyệt và plan chờ review/chọn cách thực thi trên dev;
+  giữ nguyên chỉnh sửa nhãn owner, không đổi code, data, hạ tầng hoặc main.
+
+## 2026-11-12 — S065-C03 — Tinh chỉnh UI chi tiết sách (book-detail)
+
+- Làm việc trên worktree `dev-ui` (`me-may.worktrees/dev-ui`).
+- Mục tiêu: Thực hiện tinh chỉnh UI chi tiết sách theo kết quả `/grill-me`:
+  1. Tiêu đề `<h1>` trong bài viết chỉ hiển thị tên sách (`b.title`), loại bỏ việc ghép nối `| Nhà xuất bản | Tác giả | Độ tuổi`. Giữ nguyên thẻ `<title>` tab trình duyệt và thẻ OpenGraph/SEO meta chứa đầy đủ NXB và Tác giả để tối ưu tìm kiếm và chia sẻ link.
+  2. Dời toàn bộ khối thông tin cơ bản (`<dl>` gồm Nhà xuất bản, Tác giả, Kiểu bìa, Độ tuổi, Trình độ đọc, Đọc tham khảo) từ dưới mô tả sách lên trên mô tả sách (nằm giữa khối giá `.pricing` và `.description`).
+  3. Bổ sung đường kẻ mảnh `border-bottom: 1px solid var(--line);` và `padding-bottom: 1.5rem;` dưới bảng thông tin cơ bản để phân tách rõ ràng với phần mô tả sách.
+- File thay đổi:
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.html`: Đổi `<h1>{{ title(b) }}</h1>` sang `<h1>{{ b.title }}</h1>`; dời khối `<dl>` lên trước `@if (b.description)`; thêm điều kiện `@if` bọc `<dl>` tránh hiển thị viền trống khi sách không có trường thông tin nào.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.scss`: Thêm `border-bottom: 1px solid var(--line);` và `padding-bottom: 1.5rem;` cho `dl`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.spec.ts`: Bổ sung test kiểm tra `h1` chỉ chứa tên sách, `<title>` trình duyệt vẫn đủ NXB/Tác giả, và `dl` nằm trước `.description` trong cấu trúc DOM.
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Ghi nhận tiến độ và nhật ký kỹ thuật.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
+  - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
+  - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.
+
+## 2026-11-12 — S065-C04 — Thay iframe Facebook bằng thẻ Fanpage native ở Footer
+
+- Làm việc trên worktree `dev-ui` (`me-may.worktrees/dev-ui`).
+- Mục tiêu: Thực hiện tinh chỉnh mục KẾT NỐI VỚI CHÚNG TÔI ở Footer theo kết quả `/grill-me`:
+  1. Loại bỏ iframe Facebook Page Plugin vốn bị lỗi vỡ layout khi page có story (vòng tròn story đẩy avatar làm nút Theo dõi/Chia sẻ đè lên dòng số người theo dõi) và loại bỏ 2 nút bấm Theo dõi/Chia sẻ do Facebook đã ngừng hỗ trợ / báo lỗi "Sorry, something went wrong".
+  2. Thay thế bằng thẻ Fanpage native (`.fb-page-card`): nền trắng bo góc, logo tiệm (`/favicon/web-app-manifest-192x192.png`), tên "Sách Ngoại Văn Mẹ Mây" và dòng gợi ý "Theo dõi trên Facebook ↗" kèm biểu tượng Facebook SVG; bấm vào toàn bộ thẻ mở thẳng trang Facebook chính thức của Mẹ Mây trong tab mới.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: Thay thế `<div class="fb-embed-wrap"><iframe>...` bằng thẻ `<a class="fb-page-card" href="...">` chuẩn HTML5 và accessibility.
+  - `code/frontend/src/styles.scss`: Thay thế quy tắc `.fb-embed-wrap` cũ bằng CSS cho `.fb-page-card`, `.fb-page-avatar`, `.fb-page-info`, `.fb-page-name`, `.fb-page-cta` với hiệu ứng hover nâng nhẹ.
+  - `code/frontend/src/app/app.spec.ts`: Cập nhật test footer để kiểm tra thẻ Fanpage native, avatar, tên và link Facebook thay vì kiểm tra iframe.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Đồng bộ tài liệu thiết kế và tiến độ.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
+  - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
+  - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.
+
+## 2026-11-12 — CUSTOMER-C03 — Triển khai tuần tự
+
+- Owner duyệt plan và chọn tuần tự; UI tham khảo list/form/detail, giữ màu
+  đỏ chủ đạo web; nhãn Tên Zalo/Tên TikTok/Tên Threads, quyền giữ spec.
+- Branch codex/customers từ dev5c5ddac. Native worktree customers tạo được
+  nhưng sandbox chặn ghi; theo fallback skill làm root checkout trên branch riêng.
+- PostgreSQL QA container riêng đang chuẩn bị, không dùng my-postgres/live.
+  Ledger .superpowers/sdd/CUSTOMER_PLAN; đang T1, chưa có kết quả test mới.
+- T1: validation3 + migration1 đạt; đã thấy đỏ thiếu class/V32 trước code.
+  Migration schema QA riêng bảo toàn sách; mã KH tăng qua1000000 không cắt.
+  Baseline FE296đạt, backend trước customer exit0; log chi tiết local ignored.
+- T2:4APItest đỏ404→xanh;4test PostgreSQL thật race create/update/status,
+  rollback audit và no-op đạt. Quyền/CSRF/duplicates/paging/currentVersion đạt;
+  audit chỉ metadata. Chưa chạy frontend mới hoặc browser QA.
+- T3:5test client/validation đạt sau đỏ thiếu module; giữ username @/dấu/chấm,
+  reject URL, API gửi CSRF/version và không retry500. Đang form T4.
+- T4:5formtest đạt; phát hiện response trùng cũ xuất hiện khi đóng/mở lại
+  form, đã có regression đỏ→xanh và hủy stream khi reset. Giữ draft lỗi mạng/
+  version, chống submit2lần, dirty confirm và xóa PII khi auth epoch thay đổi.
+- T5:21customer+sidebar test đạt, có21bao gồm API/validation/form/list/detail;
+  query/back/paging, response cũ, STAFF, no-order placeholder/text XSS đạt.
+  UI tham khảo bố cục, dùng đỏ var(--red),3tên mạng riêng, không nút Tạo đơn.
+- T6 hồi quy trước review: FE312/312, BE310total/0failure/0error/3skip
+  (customer12test đều chạy); buildSSR/Workers/proxy đạt. Sandbox chặn socket/
+  build lần đầu; rerun escalated đạt. CLI npm DNS fail trong sandbox,
+  rerun ngoài sandbox đạt. Không thay dependency hoặc kết nối DB đang dùng.
+- Browser QA thật đang chạy trên8426/4426→PG55436. Đã tạo/sửa/status và
+  conflict2tab; kịch bản có lượt sai chờ URL encoding, no-op ghi chú lặp
+  và exact label có dấu*, đã sửa kịch bản; chưa tuyên bố toàn luồng đạt.
+- Browser QA cuối đạt21check với backend/PGQA thật: duplicate/confirm,
+  two-tab409 giữ draft/reload, dirty/Escape/focus, phone normalization, Threads
+  search, lỗi mạng giữ input, mobile390, STAFFUI/API403, anonymous401/redirect
+  và shell không có PII. Visual desktop1280/mobile390 đã xem ảnh sau splash;
+  test confirm có kiểm soát bằng window.confirm sau ca native đầu.
+- Style local focus/radius giữ đỏ web; Prettier format frontend mới; chưa
+  đổi dependency. Đang review độc lập trước tích hợp dev; chưa deploy/live.
+- Review độc lập toàn branch:0Critical/4Important/1Minor; không re-review.
+  Đã tái hiện5regression frontend + protocol-relative backend đỏ→xanh,
+  targetedFE20đạt và BEvalidation3đạt. Sửa edit-request cũ ghi đè draft tạo,
+  same-component navigation để editor cũ còn mở, tìm lại q sau reset, URL//.
+  Regrade duplicate-link thành Important vì từ chối vẫn khởi chạy điều hướng;
+  bỏ RouterLink song song, một quyết định discard rồi navigate/reset.
+  Router reuse test dùng RouterTestingHarness và route thật, gồm đổi id/query.
+- Đang chạy lại fullsuite/build trên bản sửa; chưa tích hợp dev hoặc deploy.
+
+## 2026-11-12 — CUSTOMER-C04 — Nghiệm thu và tích hợp
+
+- Sau đổi context, working copy DEV_LOG mất riêng CUSTOMER-C01–03; đối chiếu
+  diff và phục hồi nguyên nội dung từ788f38e, không thay checkpoint khác.
+  Một lệnh Python lỗi encoding đã không dừng shell trước commit dc1ebbe;
+  checkpoint phục hồi này sửa ngay việc thiếu lịch sử, không rút gọn log.
+- Fullsuite cuối FE316/316(56file), BE310total/0failure/0error/3skip provider-live
+  cũ; cả12test customer chạy thật. SSR/Workers/proxy cuối đạt. Form6/6 gồm href.
+- Browser21check trước review +6smoke sau sửa đạt trên backend8426/frontend4426
+  và PostgreSQL QA riêng55436. Có duplicate một quyết định, hủy giữB/đồng ý
+  sangA, BrowserBack cùng component đóng draft cũ, tìm lại q sau reset và URL//.
+- Review0Critical/4Important/1Minor; sửa một pass bằng RED→GREEN, không re-review.
+  Duplicate-link regrade Important vì từ chối phải chặn navigation; không còn
+  minor defer. Code fix788f38e; rulings và giới hạn ở CUSTOMER_VERIFICATION.
+- Contract CUSTOMERS331dòng và bằng chứng đã thay spec/plan; đủ AC01–19,
+  README/baseline/PROGRESS cập nhật, kiểm trần400/path/heading/diff đạt.
+  Chưa chạy thiết bị thật, backup/migration/deploy live hoặc smoke domain thật.
+- HMR từng phục vụ template cũ; xác minh binding, restart --no-hmr giải quyết.
+  Worktree native sạch5c5ddac, archive tool từ chối primary checkout; giữ nguyên.
+- Đang tích hợp/push dev theo workflow; không đổi main/dev-ui. Dừng runtime/
+  container QA do task tạo. Bước sau: backup/rollout V32 và smoke domain thật.
+
+- Kết quả cuối: đã fast-forward và push dev tới d228905; npm test trên dev
+  tiếp tục đạt316/316. Backend/frontend/browser QA đã dừng; container và volume
+  memay-customer-test đã xóa, không đụng my-postgres hoặc DB đang dùng.
+  Hợp nhất là fast-forward, code giống bản full backend/build đã kiểm chứng.
+- Giữ worktree primary của chat theo guard host; đồng bộ detached HEAD tới dev
+  cuối sau khi kiểm checkout sạch. Không sao chép .env/dependency hoặc đổi dev-ui.
+  Dọn workspace tạm riêng CUSTOMER_PLAN sau khi chuyển đủ bằng chứng/rulings.
+
+## 2026-11-12 — HERO-C01 — Thiết kế banner quản trị
+
+- Owner yêu cầu feat nhỏ ở admin/sach-noi-bat: thay banner, tối đa10,
+  tự chuyển5giây; chốt mọi banner link cố định/sach. Ảnh tham khảo có arrows,
+  giữ màu chủ đạo web. Không yêu cầu link riêng/chiến dịch/crop editor.
+- Bắt đầu primary worktree sạch, detached51f4924; fetch không có dev mới.
+  Tạo codex/hero-banners từ origin/dev, không tạo worktree khác.
+- Đọc README/PROGRESS/checkpoint cuối, brainstorming, các mục Home/media liên
+  quan; graph HomePage/HomeFeaturedEditor/HomeFeaturedService/LocalUploadService.
+  Hero hiện là asset4:1 cố định; upload sách gắn với phiên/nguồn riêng.
+- Soạn HERO_BANNER_SPEC và đăng ký chỉ mục/snapshot. Đề xuất namespace ảnh
+  banner riêng, reuse primitive encode/self-host, save riêng với kệ sách;
+  fallback banner cũ, controls/pause/SSR/cache và cleanup/backup có tiêu chí.
+  Đây là thiết kế chờ duyệt, chưa viết code hoặc chạy migration/test sản phẩm.
+- Bước tiếp: owner duyệt thiết kế, sau đó writing-plans; không deploy live.
+
+## 2026-11-12 — HERO-C02 — Sửa local4200 rồi triển khai banner tuần tự
+
+- Owner duyệt thiết kế, yêu cầu triển khai tuần tự; trước đó kiểm mục Khách
+  hàng không hiện ở localhost4200. Dùng systematic-debugging và writing-plans.
+- PID81477 phục vụ4200 từ dev-ui/code/frontend, nhánh95a6a89 chưa có customer;
+  root dev và feature đã có e349464. Không phải quyền hay route bị thiếu ở dev.
+- Merge dev vào dev-ui sạch, giữ footer/chi tiết sách riêng. Chỉ xung đột
+  PROGRESS/DEV_LOG: giữ đủ lịch sử hai bên và snapshot customer mới; merge local
+  3a30532, không push dev-ui hoặc thay main. Source feature làm ở worktree native.
+- Khi kiểm lại, cả4200/8080 không còn listener. Cấu hình backend root trỏ
+  localhost5432/me_may_dev; đang backup riêng0600 và khởi động lại backend/
+  frontend mới. Không dùng DB thật/production hoặc test cleaner trên DB dev.
+- Tiếp theo: xác minh menu/API local, lập plan cụ thể và thực thi theo lệnh
+  tuần tự đã được owner cấp; không yêu cầu chọn lại phương thức thực thi.
+- Local đã có V32 từ trước; backup riêng DB dev xong, backend healthUP và
+  frontend4200 mới lên. Browser xác nhận menu Khách hàng→/admin/customers
+  trên code thật, dùng identity fixture chỉ ở browser (không tạo account/khách
+  trong DB). Chưa dùng fixture này làm bằng chứng API local authenticated.
+- Đã lập HERO_BANNER_PLAN186dòng, tự rà10AC/5Review Focus/interfaces; theo
+  lệnh triển khai rõ ràng của owner, dùng executing-plans/TDD không xin lại
+  quyền thực thi. Tận dụng recipev1/queuePROCESS,640/1400, namespace banners;
+  không tạo recipe/digest hoặc pipeline Drive mới. Bắt đầu T1 trên worktree
+  codex/hero-banners; dependency symlink local ignored, QA PostgreSQL riêng.
+
+### HERO-C03 — API cấu hình banner
+
+- Task 1: schema V33, config/version riêng, OWNER-only, tối đa 10 ảnh READY,
+  audit trong transaction; Home trả banners theo thứ tự, không đổi shelves.
+- QA PostgreSQL riêng cổng 55437: HeroBannerApiTest RED (API/schema thiếu),
+  sau triển khai GREEN 3 tests, 0 failures/errors. Chưa triển khai upload/UI.
+- Thay đổi còn local trên codex/hero-banners; không migrate production.
+
+### HERO-C04 — Upload và namespace banner
+
+- Upload OWNER có requestKey/hash, quota 30 draft/owner, TTL 24h. Worker PROCESS
+  dùng recipe v1 nguyên trạng, namespace banners tách khỏi ảnh sách.
+- HeroBannerMediaTest: 4/4; API config 3/3; LocalUploadIntegrationTest và
+  LocalImageStoreTest xanh. Sharp thật được gọi từ test integration.
+  Worker 12/12, đã thấy test namespace thất bại trước thay đổi rồi qua.
+- Nội dung private trước save; URL public chỉ đọc ảnh đã publish còn hạn;
+  private no-store, public ETag/cache 24h; cleanup giữ current/draft/lease active.
+- Lựa chọn triển khai: trả bytes đã xác minh checksum, giới hạn 10MiB thay vì
+  mở lại stream sau xác minh; tránh đọc file bị thay giữa xác minh và gửi.
+- Chưa kiểm tra browser/SSR và chưa chạy full suite. Không đổi runtime user.
+
+### HERO-C05 — Tạm dừng theo yêu cầu người dùng, 12/11/2026
+
+- User yêu cầu dừng; không tiếp tục triển khai hay tích hợp branch.
+- Commit `c231a24` (config/API), `c00b763` (upload/worker), chưa push dev.
+  Task 2 GREEN: HeroBannerMediaTest 4/4, HeroBannerApiTest 3/3,
+  LocalUploadIntegrationTest/LocalImageStoreTest xanh; worker 12/12.
+- Task 3 chỉ có file test mới chưa commit `hero-banner-editor.spec.ts`.
+  Lệnh `npm test --prefix code/frontend -- --watch=false
+  --include='**/hero-banner-editor.spec.ts'` đỏ do component chưa tồn tại,
+  kéo theo type unknown. Đây chưa là kiểm tra hành vi hoàn chỉnh.
+- Chưa có editor/carousel, chưa full suite/build/browser hay review độc lập.
+- Giữ localhost user 4200/8080, QA container memay-hero-test và scratch ledger.
+  Lần sau xác minh runtime/Git, tiếp tục Task 3; không làm lại Task 1/2.
+
+### HERO-C06 — Tiếp tục checkpoint, 12/11/2026
+
+- User yêu cầu tiếp tục; đối chiếu Git xác nhận Task 1/2 đã commit, không làm lại.
+- Phạm vi đang làm: Task 3 editor độc lập, Task 4 carousel và nghiệm thu toàn luồng.
+  File test editor còn local, component chưa tồn tại; chưa có kết quả mới.
+
+### HERO-C07 — Editor và nâng chất lượng đã duyệt
+
+- Task 3 editor/guard hai phần độc lập đã triển khai; FE full suite 323/323,
+  57 files. Bao gồm response muộn, retry key, timeout recheck, conflict và saves.
+- Owner duyệt nâng riêng banner lên 800/1600/3200, WebP quality88, khung4:1.
+  Quyết định mới thay hướng reuse recipev1/640/1400 của HERO-C02–C04.
+  Ảnh test hiện tại chỉ1584×396, không dùng làm artwork chính thức.
+- Bổ sung bước recipe banner riêng trước carousel; recipe ảnh sách giữ nguyên.
+  Không upscale nguồn nhỏ; file gốc khuyến nghị3200×800 hoặc3840×960.
+
+### HERO-C08 — Chất lượng banner riêng
+
+- Recipe hero-v1: 800/1600/3200, JPEG90/WebP88; recipe sách v1 không đổi.
+  Backend chọn/kiểm đúng recipe và 6 variants; thiếu đăng ký recipe trả503.
+- Worker RED unknown_recipe → GREEN13/13; backend banner API/media7/7.
+  Ảnh input nhỏ không phóng lớn (processor dùng withoutEnlargement).
+- Chưa đăng ký recipe/migrate ở production. Cần pin worker chứa hero-v1 và
+  đăng ký worker digest/config hash trước bật upload; source được giữ backup.
+
+### HERO-C09 — Khung 3:1 theo quyết định mới
+
+- Owner chốt 3:1 sau đối chiếu ảnh mẫu Kim Đồng1920×775 (~2,48:1).
+  Thay khung4:1 đã duyệt trước; file thiết kế gốc3240×1080 hoặc3840×1280.
+  Giữ3200px/WebP88, contain, không đưa artwork mẫu lên sản phẩm.
+- FE331/331,58files; BE317total/3skip,0fail/error ở lần full suite đầu.
+  Build SSR đạt (sandbox exit134, chạy lại ngoài sandbox thành công).
+- Test bổ sung phát hiện SecurityConfiguration ghi đè public cache thành no-store;
+  sửa hẹp cho GET banner200/304. Test cache RED→GREEN4/4.
+- Đang chuẩn bị browser QA riêng; full suite cuối/review còn phải chạy sau sửa.
+
+### HERO-C10 — Carousel và browser QA
+
+- Carousel5s, manual/pause/hover/focus/tab-hidden/reduced-motion, một ảnh không
+  timer, ảnh hỏng bỏ qua/fallback; SSR có ảnh đầu/srcset/high priority.
+- Browser QA dùng DB me_may_hero_browser, backend18080/management18081,
+  frontend4208/SSR4408, worker Sharp thật và2ảnh fixture3240×1080.
+  Upload2ảnh/draftkhôngpublic/save/refresh, autoplay/pause/link đạt.
+- Mobile390 phát hiện100vw tính cả scrollbar làm hero lệch/tràn ngang;
+  đổi Home sang containerfullwidth, section khác giữ1200px/20px. Không JS đo.
+- Workers proxy giữ cache immutable chỉ route public banner hợp lệ200/304,
+  chuyển If-None-Match; private/error vẫn no-store. Test RED→GREEN17/17.
+- Fullsuite cuối và review độc lập đang thực hiện; chưa tích hợp/pushdev.
+
+### HERO-C11 — Review, nghiệm thu và chuẩn bị tích hợp
+
+- Review độc lập gpt-6-astra:2Important,0Critical,0minor, không declined.
+  Đã kiểm lại và sửa trong một pass: GET config/version dùng1SQL snapshot;
+  FlashSale giữfullwidth. Controlled snapshot test và browser sale1280/390 RED→GREEN.
+- Suite cuối: FE332/33258files; BE319total,0fail/error,3provider-live skip;
+  worker13/13. BuildSSR/Workers/proxy đạt; sandbox chặn build/listen được chạy
+  lại ngoài sandbox, không ghi thành lỗi ứng dụng.
+- Browser realQA:2upload/encode/draftprivate/save/persist, reorder/replacement,
+  fakefile giữpublic,409 giữdraft; autoplay/pause/keyboard/link; hero3:1 và
+  sale fullwidth ở1280/390. FB iframe có warnings policy cũ, không là lỗi banner.
+- Backup DBQA+22file ảnh, restore DB/mount riêng, SHA originals/variants khớp;
+  hai banner×3WebP sizes200, isolated mutation409. Không đọc/mutate production.
+- Hợp nhất spec/plan thành HERO_BANNERS, sửa chỉ mục/master/catalogue/progress;
+  gỡ spec/plan đã chuyển đủ AC. Không bỏ gate artwork thật/device/digest/livebackup.
+- Các quyết định builder: thực thi tiếp theo quyền đã cấp; reusev1 ban đầu đã
+  được owner thay bằng hero-v1/3200/WebP88 và khung3:1; bytes đã xác minh tối đa
+  10MiB thay stream mở lại (chi phí RAM/request). Không có minor deferred.
+- Local4200/8080 chưa bật LOCAL; đã hỏi owner cấu hình runtime vì cờ hiện có
+  cũng đổi provider upload sách mới. Chờ trả lời; không tự bật khi đang chờ.
+- Chuẩn bị tích hợp/pushdev theo workflow đã cho phép; không đụng main.
+
+### HERO-C12 — Tích hợp và bật self-host local theo owner
+
+- Dev fast-forward b691147; dev-ui merge24b6ce9 giữ2chỉnhUI riêng. Conflict chỉ
+  PROGRESS, giữ checkpointS065 và trạng thái banner mới; không mất code/logUI.
+- Owner chọn bật self-hostlocal, đã backup me_may_dev trướcV33 vào file private
+  `.local/hero-banners/before-v33.dump` ở root checkout. Không đổi `.env`.
+- Runtime private helper `.local/hero-banners/run.py` (backend/worker/register),
+  token0600, ảnh `.local/hero-banners/images`. Backend8080/management8081 loopback,
+  worker chạy source mới; container memay-local-images/Nginx18084 chỉ mountbookderived.
+  Backend localV33/health200; Nginxhealth204; recipe v1/hero-v1 config hash khớp.
+  Marker local-source chỉ dànhlocal; không gọi deploy/migrationproduction.
+- Lệnh kiểm trong worktree triển khai: `npm test --prefix code/frontend`332/332;
+  `TEST_DB_URL=jdbc:postgresql://127.0.0.1:55437/me_may_test ... mvn -q -f code/backend/pom.xml test`
+  319total/3skip/0fail/error; DB credentials chỉ fakeQA, không ghi vào log.
+  `npm test --prefix code/image-worker`13/13, `npm run build --prefix code/frontend`,
+  `npm run build:workers --prefix code/frontend`, `npm run check:workers:proxy --prefix code/frontend` đạt.
+- Sau merge: `npm test` tại dev-ui/code/frontend333/33358files. Native/rootdev
+  code bằng fast-forward đã test; dev-ui thêm1test riêng. Local4200 main có customer
+  routes. Không dùng authfixture làm bằng chứng ghi trên DB dev; owner đăng nhập lại
+  vì backendrestart. QA backend/browser/restore riêng đã kiểm ghi/encode đầy đủ.
+- Đã dọn riêng runtime/container/scratchQA sau lưu checkpoint; giữ local4200/8080,
+  worker38350 và Nginx cho owner test. Giữ backupprivate; không đụng my-postgres.
+- Tích hợp/pushdev theo quy ước; không pushdev-ui/main. Worktree này là primary
+  native của chat nên giữ, không cưỡng ép archive/xóa; branch đã gộp giữ tại đây.
+
+### HERO-C13 — Phủ kín banner và chuyển động theo phản hồi owner
+
+- Owner test ảnh1920×775 và3000×1125, yêu cầu tràn ngang và trượt trái→phải.
+  Điều tra: object-fit:contain trong khung3:1 tạo khoảng dư ngang khi ảnh thấp
+  hơn tỉ lệ3:1; owner đã chọn cover/cắt trên dưới thay quyết định contain cũ.
+- Phạm vi: public+preview cover căn giữa3:1; animation ngang550ms, autoplay5s
+  giữ nguyên. Reduced-motion không trượt; ảnh lỗi/đổiinput không giữ layer cũ.
+- Screenshot còn cho thấy nút lên/xuống admin trắng trên nền trắng; stylebutton
+  đặt backgroundwhite nhưng thiếucolor nên kế thừa globalwhite. Sửa màu ink.
+- Đang triển khai TDD/browser, chưa có kết quả mới. Giữ backend/worker/DB user.
+
+### HERO-C14 — Nghiệm thu cover/chuyển động
+
+- Cập nhật public+preview cover3:1/căn giữa; hint upload nói rõ crop. Fieldalt
+  giữ nguyên chức năng SEO/accessibility. Nút reorder có màuink trên nềnwhite.
+- Carousel2layer550ms: incomingtrái→giữa/outgoinggiữa→phải, nútTrướcđảochiều;
+  reduced-motioninstant; ngOnChanges/error/tabhidden dọn lớp cũ, destroy dọn timer.
+- Review readonly phát hiện rapidNext cùngchiều tái sử dụngoutgoingDOM nên
+  animationlệchnhịp/hởnền. Regrade Important do ảnh hưởng hiển thị, đã thêmtest
+  RED→GREEN và keyoutgoing theoID để cả2layer tạo mới cùngnhịp. Không minor deferred.
+- `npm test --prefix code/frontend -- --include='**/hero-carousel.spec.ts'` RED
+  2case thiếuanimation, sauđó11đạt; rapidcase RED1/12→GREEN. Full `npm test --prefix
+  code/frontend`336/33658files. `npm run build --prefix code/frontend` và
+  `npm run build:workers --prefix code/frontend` đạt sau sửa cuối.
+- Browser4209 chỉ đọc backendlocal8080: hai ảnhpublic đãupload, viewport1280/390
+  đềucover/frame3:1; đo actualautoplaykeyframes enter-ltr từ-100%→0,5giâygiữ;
+  rapidNext180ms haianimation cùngcurrentTime0. Không thay banner/config trongDB.
+- Admin style kiểm bằng readonlyidentity/configfixtures (không phải login/ghiDB):
+  arrowcolor rgb41/39/36 trên nềnwhite; previewcover. Không tạo account/dữliệuQA.
+- Chỉ frontend/docs đổi, không migrate/restartbackend/worker hoặc chạy lạiBE
+  khôngliênquan. Đang tích hợpdev/dev-ui, giữ UI riêng; sẽ kiểm4200 và dọn4209.
+
+### HERO-C15 — Đồng bộ followup vào4200
+
+- Codefixdeeb63f đã fast-forwarddev; dev-ui merge2ddbc82. Conflict chỉPROGRESS,
+  giữ2checkpointS065 cùngHERO-C14. `npm test --prefix code/frontend` ởdev-ui
+  337/33758files đạt. Không sửa2chỉnhUIriêng hoặc tạo tài khoản/bản ghi trênDB.
+- Browserlocalhost4200 thật sau sync: object-fitcover, actualanimation enter-ltr;
+  đã unroute fixture trước đo. Native336test, dev-ui337test, SSR/Workersbuild đạt.
+  Không thay API/backend/media recipe nên không chạy lại database suite.
+- Đã đóng browserQA và frontend4209; giữ4200/8080/8081/worker/Nginx đang chạy.
+  Scratch `.local/hero-followup` ignored giữ test/buildlog để đối chiếu; screenshots
+  ở output/playwright ignored. Gitdiff/local links/trần400dòng đã kiểm.
+- Tích hợp/pushdev theo workflow; không pushdev-ui/main hoặc deployproduction.
+
+### HERO-C16 — Đổi chiều/thu nhỏ nút, gộp dev-ui và dọn customers
+
+- Owner yêu cầu autoplayphải→trái, thu nhỏ2mũi tên/hover nềntrắng, bỏ thanh
+  dots/pause; giữ2mũi tên. Targetclick44px, vòngtròn hiển thị28px/SVG12px.
+- Pause quahover/focus vàSpace trênlinkbanner; reduced-motiongiữinstant.
+- Sau kiểm: merge dev-ui→dev (gồm2chỉnhUIriêng), đồng bộ vàpushcả2nhánh theo
+  yêu cầu mới; dọnworktreecustomers saubảo toàncode/ignoredartifactcầnthiết.
+- Worktreecustomers là attachmentprimary của chat. Sẽ dùng toolnativearchive
+  sauintegration; nếuhostchặn thì không cưỡngxóa workspaceđangđược bảovệ.
+
+### HERO-C17 — Kiểm UI trước gộp nhánh
+
+- TDD carousel RED3case (chiều/bar/SVG), fullFE GREEN337/33758files.
+- Browser1280/390 trên4209 chỉ đọc public: đúng2button/no.controls;
+  vùngbấm44px, circle28px, SVG12px; hover nềnrgb255/255/255/mũiđỏ.
+  Actualautoplay enter-rtl từtranslateX100%→0,5giâygiữ; không đổi bannerconfig.
+- Đã xác định dev-ui có2chỉnhUIriêng (footerfanpage native, bố cụctiêuđềdetail)
+  vàmergehistory/log. Sẽ gộp đầyđủ vào dev, không cherry-pick bỏhistory.
+- Đanggộpnhánh vàkiểm lại trênkếtquả; chưa thao tác main/production.
+
+### HERO-C18 — Hover vẫn autoplay theo owner bổ sung
+
+- Owner đổi rõ hành vi: rêchuột không dừngcarousel; bỏ hoverpause, giữfocus/
+  tabhidden/Space vàreduced-motion. Testmouseenter ở5000ms REDtrêncode cũ.
+- Dev/dev-ui đã cùng0ee1594 sau gộp đầy đủ2chỉnhUIriêng. Đang bổsunghoverfix
+  trước chốtpush2nhánh/cleanup; chưa thay backend/DB/runtimeảnh.
+- Hoverfix GREEN338/33858files sau testRED; browser4209 thực giữpointertrênảnh
+  vẫn bắtđược chuyển động mới enter-rtl100%→0 trong5giây. Không đổiDB.
+
+### HERO-C19 — Đồng bộ cuối và giới hạn cleanup primary
+
+- Code338test GREEN trên cây đã gộp, SSR/Workersbuildđạt; actual4200 đúng
+  2arrow/no.controls/enter-rtl. Hoverstillautoplayđãkiểm trên4209 saufix.
+- Dev-ui→dev fast-forward0ee1594, giữ cả2UIriêng/history; bổsunghoverfix12737aa
+  vào cả2nhánh. Chốtpushcảdev/dev-ui theo yêu cầu owner; main không đổi.
+- Đã dừng4209/browserQA; giữ4200/8080/8081/worker/Nginx. Log/ảnhQAignored
+  đã copy sang root `.local/customer-worktree-backup` private0700 trướccleanup.
+- Native `archive_worktree` đúngidentitycustomers trả lỗi:
+  "The task's primary checkout cannot be removed." Không xóa/cưỡngxóa
+  workspace được hostbảo vệ. Worktreecustomers còn nguyên; bước còn lại là
+  chuyển chat này sangLocal rồi archiveattachmentcustomers bằng công cụnative.
+- Không có blocker vềcode/test/Git. Blocker chỉ cleanupattachmentprimary;
+  không coi việc backupartifact hoặc gộpbranch là đã xóa worktree.
+
+### HERO-C20 — Dừng BE/FE theo owner
+
+- Owner yêu cầu dừngphiênBE/FE củaagent. Đã dừngbackendlocal, frontend4200
+  vàworkerảnh đi cùngphiên;4209QA/browserđãdừng trướcđó.
+- `lsof -nP -iTCP:4200 -iTCP:4209 -iTCP:8080 -iTCP:8081 -sTCP:LISTEN`
+  không cònlistener. Không stop/delete PostgreSQL hoặc backup/media local.
+- Dev/dev-ui local vàorigin đều cùng9b0e34d trước checkpointnày; pushcả2đạt,
+  không forcepush/main. Cậpnhậtcheckpointdừng rồi tiếp tục giữ2nhánh cùngHEAD.
+- Cleanupcustomers vẫn bịCodexprimaryprotection chặn nhưHERO-C19; không tuyênbố
+  đãxóa. Bước còn lại: chuyểnchatvềLocal rồi archiveattachmentcustomers.

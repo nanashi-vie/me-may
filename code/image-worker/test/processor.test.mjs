@@ -65,3 +65,13 @@ test('rejects animated WebP and images over 25 megapixels', async t => {
     .png().toFile(oversized.inputPath);
   await assert.rejects(processImage(oversized), { code: 'invalid_image' });
 });
+
+test('hero-v1 preserves full-bleed detail at 800/1600/3200 without changing v1', async t => {
+ const input=await fixture(t);
+ await sharp({create:{width:3200,height:800,channels:3,background:'red'}}).png().toFile(input.inputPath);
+ const result=await processImage({...input,recipeVersion:'hero-v1'});
+ assert.deepEqual(result.variants.map(v=>[v.name,v.width,v.height]),[['800',800,200],['800',800,200],['1600',1600,400],['1600',1600,400],['3200',3200,800],['3200',3200,800]]);
+ const {recipes}=await import('../src/recipes.mjs');
+ assert.ok(recipes['hero-v1'].formats.filter(f=>f.extension==='webp').every(f=>f.quality===88));
+ assert.equal(recipes.v1.formats.length,9);
+});

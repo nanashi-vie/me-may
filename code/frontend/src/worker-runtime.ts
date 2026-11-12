@@ -81,12 +81,21 @@ export async function handleWorkerRequest(
   }
   const anonymous = !request.headers.has('cookie') && !request.headers.has('authorization');
   const home = request.method === 'GET' && url.pathname === '/' && !url.search;
-  const media = request.method === 'GET'
-    && /^\/api\/v1\/books\/[a-z0-9-]+\/media\/(FRONT|BACK|SPINE|INSIDE_[1-5])$/.test(url.pathname)
-    && /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(url.searchParams.get('v') ?? '')
-    && ['320', '480', '640', '1400'].includes(url.searchParams.get('size') ?? '')
-    && ['webp', 'jpg'].includes(url.searchParams.get('format') ?? '')
-    && [...url.searchParams.keys()].sort().join(',') === 'format,size,v';
+  const banner =
+    request.method === 'GET' &&
+    /^\/api\/v1\/hero-banners\/[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}\/content$/.test(
+      url.pathname,
+    ) &&
+    ['800', '1600', '3200'].includes(url.searchParams.get('size') ?? '') &&
+    ['jpg', 'webp'].includes(url.searchParams.get('format') ?? '') &&
+    [...url.searchParams.keys()].sort().join(',') === 'format,size';
+  const media =
+    request.method === 'GET' &&
+    /^\/api\/v1\/books\/[a-z0-9-]+\/media\/(FRONT|BACK|SPINE|INSIDE_[1-5])$/.test(url.pathname) &&
+    /^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(url.searchParams.get('v') ?? '') &&
+    ['320', '480', '640', '1400'].includes(url.searchParams.get('size') ?? '') &&
+    ['webp', 'jpg'].includes(url.searchParams.get('format') ?? '') &&
+    [...url.searchParams.keys()].sort().join(',') === 'format,size,v';
   const cacheable = env.MEMAY_PUBLIC_CACHE === 'true' && anonymous && (home || media) && cache;
   const keyUrl = new URL(url);
   if (home) keyUrl.searchParams.set('__release', env.MEMAY_VERSION?.id ?? 'local');
@@ -98,7 +107,10 @@ export async function handleWorkerRequest(
     result.headers.delete('X-Memay-Public-Cache');
     if (media && result.ok) {
       result.headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
-      if (result.status === 200 && request.headers.get('if-none-match') === result.headers.get('etag'))
+      if (
+        result.status === 200 &&
+        request.headers.get('if-none-match') === result.headers.get('etag')
+      )
         return new Response(null, { status: 304, headers: result.headers });
     }
     return result;
@@ -108,12 +120,19 @@ export async function handleWorkerRequest(
       const hit = await cache.match(key);
       if (hit && Number(hit.headers.get('X-Memay-Cache-Expires')) > Date.now())
         return finish(hit, 'HIT');
-    } catch { /* A cache outage falls back to the authoritative origin. */ }
+    } catch {
+      /* A cache outage falls back to the authoritative origin. */
+    }
   }
   const store = async (response: Response, expires: number) => {
     const seconds = Math.min(30, Math.floor((expires - Date.now()) / 1000));
-    if (cacheable && response.status === 200 && !response.headers.has('set-cookie')
-        && !response.headers.has('X-Memay-No-Cache') && seconds > 0) {
+    if (
+      cacheable &&
+      response.status === 200 &&
+      !response.headers.has('set-cookie') &&
+      !response.headers.has('X-Memay-No-Cache') &&
+      seconds > 0
+    ) {
       const copy = new Response(response.clone().body, response);
       copy.headers.set('Cache-Control', 'public, max-age=' + seconds);
       copy.headers.set('X-Memay-Cache-Expires', String(Date.now() + seconds * 1000));
@@ -130,24 +149,42 @@ export async function handleWorkerRequest(
       target.pathname = url.pathname;
       target.search = url.search;
       const headers = new Headers();
-      for (const name of ['accept', 'content-type', 'cookie', 'x-csrf-token']) {
+      for (const name of ['accept', 'content-type', 'cookie', 'x-csrf-token', 'if-none-match']) {
         const value = request.headers.get(name);
         if (value !== null) headers.set(name, value);
       }
       const started = Date.now();
       const response = await fetch(target, {
-          method: request.method,
-          headers,
-          body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
-          redirect: 'manual',
-          signal: AbortSignal.timeout(70000),
-        });
+        method: request.method,
+        headers,
+        body: ['GET', 'HEAD'].includes(request.method) ? undefined : request.body,
+        redirect: 'manual',
+        signal: AbortSignal.timeout(70000),
+      });
       if (media && response.ok && response.headers.get('X-Memay-Public-Cache') === '30') {
         const headers = new Headers(response.headers);
-        headers.set('ETag', '"' + url.searchParams.get('v') + '-' + url.searchParams.get('size')
-          + '-' + url.searchParams.get('format') + '"');
-        return store(new Response(response.body, { status: response.status, headers }), started + 30000);
+        headers.set(
+          'ETag',
+          '"' +
+            url.searchParams.get('v') +
+            '-' +
+            url.searchParams.get('size') +
+            '-' +
+            url.searchParams.get('format') +
+            '"',
+        );
+        return store(
+          new Response(response.body, { status: response.status, headers }),
+          started + 30000,
+        );
       }
+      if (
+        banner &&
+        [200, 304].includes(response.status) &&
+        !response.headers.has('set-cookie') &&
+        response.headers.get('Cache-Control') === 'public, max-age=86400, immutable'
+      )
+        return response;
       return noStore(response);
     } catch {
       return noStore(Response.json({ error: 'backend_unavailable' }, { status: 503 }));
@@ -162,7 +199,11 @@ export async function handleWorkerRequest(
   if (/\.[a-z0-9]+$/i.test(url.pathname) && !/\.html?$/i.test(url.pathname)) {
     const asset = await env.ASSETS.fetch(request);
     if (privatePage) return noStore(asset);
-    if (asset.status === 200 && (/^\/(?:main|styles|chunk|polyfills)-[A-Z0-9]{8,}\.(?:js|css)$/.test(url.pathname) || /^\/fonts\/[a-z0-9-]+\.woff2$/.test(url.pathname))) {
+    if (
+      asset.status === 200 &&
+      (/^\/(?:main|styles|chunk|polyfills)-[A-Z0-9]{8,}\.(?:js|css)$/.test(url.pathname) ||
+        /^\/fonts\/[a-z0-9-]+\.woff2$/.test(url.pathname))
+    ) {
       const result = new Response(asset.body, asset);
       result.headers.set('Cache-Control', 'public, max-age=31536000, immutable');
       return result;
@@ -180,17 +221,28 @@ export async function handleWorkerRequest(
     if (cacheable && home) {
       const started = Date.now();
       try {
-        const policyResponse = await fetch(origins.MEMAY_API_ORIGIN + '/api/v1/cache-policy',
-          { signal: AbortSignal.timeout(3000), headers: { accept: 'application/json' } });
+        const policyResponse = await fetch(origins.MEMAY_API_ORIGIN + '/api/v1/cache-policy', {
+          signal: AbortSignal.timeout(3000),
+          headers: { accept: 'application/json' },
+        });
         if (policyResponse.ok) {
-          const policy = await policyResponse.json() as { enabled: boolean; expiresAt: string; serverNow: string };
-          if (policy.enabled) expires = started + Math.min(30000,
-            Date.parse(policy.expiresAt) - Date.parse(policy.serverNow));
+          const policy = (await policyResponse.json()) as {
+            enabled: boolean;
+            expiresAt: string;
+            serverNow: string;
+          };
+          if (policy.enabled)
+            expires =
+              started +
+              Math.min(30000, Date.parse(policy.expiresAt) - Date.parse(policy.serverNow));
         }
-      } catch { /* Render without caching when policy cannot be verified. */ }
+      } catch {
+        /* Render without caching when policy cannot be verified. */
+      }
     }
     const renderRequest = new Request(request, { headers });
-    const response = (await render(renderRequest, origins)) ?? new Response('Not found', { status: 404 });
+    const response =
+      (await render(renderRequest, origins)) ?? new Response('Not found', { status: 404 });
     return store(response, expires);
   } catch {
     return noStore(new Response('Service unavailable', { status: 503 }));

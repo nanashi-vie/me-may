@@ -1,8 +1,9 @@
 # Vận hành ảnh Mẹ Mây trên Ubuntu
 
-Runbook S8. Owner dựng Ubuntu và chọn namespace kiểm thử trước khi nghiệm thu.
-Dùng [Storage plan](IMAGE_STORAGE_PLAN.md) và [Recovery plan](IMAGE_RECOVERY_PLAN.md)
-để theo dõi gate R6. Các lệnh dưới đây dành cho owner ở môi trường được xác nhận.
+Cập nhật 12/11/2026. Contract/tổng quan ở [IMAGES](IMAGES.md), bằng chứng và
+tiêu chí nghiệm thu ở [IMAGE_VERIFICATION](IMAGE_VERIFICATION.md). Owner đã
+xác nhận upload mượt; các lệnh dưới đây dành cho operator trên môi trường
+được xác nhận, không là yêu cầu chạy lại upload hoặc migrate ảnh thật.
 
 ## 1. Chuẩn bị Ubuntu
 
@@ -44,12 +45,13 @@ checksum. Giữ backend/worker ở chế độ cách ly trong drill.
 | V28 | Image operation receipts |
 | V29 | Image migration apply |
 | V30 | Image recovery operations |
+| V31 | Drive image batches/items |
 
 Đối chiếu trước/sau đủ tám bảng chấm công, sách, listing, media và lịch sử
 Flyway V1–V23. V24 đổi role `INTERNAL_1/2` thành `INSIDE_4/5`, bỏ cờ
 `show_on_product` và tăng version một lần cho mỗi sách có ảnh đổi role.
 V25 giữ storage reference Cloudinary, thêm provider/generation. V27 bổ sung
-provider/generation cho ảnh tạm. Kiểm Flyway V24–V30 đều thành công và
+provider/generation cho ảnh tạm. Kiểm Flyway V24–V31 đều thành công và
 kiểm tất cả bảng Image Server mới.
 
 DB local từng chạy chuỗi ảnh đánh số cũ V21–V27 cần dựng lại từ fixture hoặc
@@ -126,7 +128,7 @@ events. Restart policy chỉ phản ứng khi tiến trình thoát.
 4. Kiểm riêng luồng upload từ trình duyệt. Khi capability trả `LOCAL`, form
    gửi file gốc trong multipart. Nhánh Cloudinary mới chuẩn hóa ảnh. Xác nhận
    capability của QA là `LOCAL`, tải cùng JPEG và xác minh với cùng file Drive.
-   Ca qua API đã đạt theo log owner. Ca qua UI và hai ca lỗi vẫn cần chạy trên QA.
+   Ca qua API đã đạt theo log owner. Owner đã xác nhận upload UI mượt12/11; hai ca lỗi thật cần ghi bằng chứng riêng nếu chưa có.
 
 ### Smoke toàn luồng
 
@@ -136,13 +138,15 @@ container cùng mạng. Để chạy CLI hiện có, dùng HTTPS QA có kiểm s
 hoặc chạy CLI trong cùng network namespace với container backend QA và đặt
 `MEMAY_SITE_ORIGIN=http://127.0.0.1:8080`. Giữ giới hạn HTTPS/loopback của CLI.
 
-Đợt đầu dùng lô Drive để nhập sách mới trên LOCAL. Giữ ảnh đã lưu trên
-Cloudinary và kiểm đọc từ một sách cũ. Hoãn mapping, migration apply và
-rollback con trỏ của sách cũ đến đợt riêng.
+Ảnh mới nhập bằng file hoặc Drive dùng LOCAL khi đã bật capability. Ảnh
+Cloudinary đã lưu vẫn đọc bằng provider cũ. Mapping/migration apply và
+rollback con trỏ của sách Cloudinary cũ chỉ thực hiện ở đợt được owner yêu cầu.
 
 `MEMAY_IMAGE_LOCAL_ENABLED` bật khả năng upload LOCAL cho toàn backend.
+Cờ này cũng tạo LocalMediaGateway; tắt cờ sẽ mất đường đọc LOCAL, không chỉ dừng upload.
 Form sửa sách cũ cũng dùng LOCAL nếu thêm hoặc thay ảnh khi cờ đang bật.
-Trong đợt đầu chỉ thao tác ảnh trên sách mới để giữ ảnh cũ ở Cloudinary.
+Thêm/thay ảnh trên sách đã lưu cũng dùng LOCAL; không tự chuyển các ảnh
+Cloudinary khác. Bước này khác với migration hàng loạt sách cũ.
 
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
@@ -157,7 +161,7 @@ Trong đợt đầu chỉ thao tác ảnh trên sách mới để giữ ảnh c�
 4. Trong namespace thử, dừng worker khi job đang chạy rồi bật lại. Kiểm lease
    mới, retry và không có ảnh dở được publish. Thử thiếu dung lượng bằng mount
    riêng, sau đó giải phóng dung lượng và retry. Giữ nguyên ảnh đang phục vụ.
-5. Dùng [CLI R5](IMAGE_RECOVERY_PLAN.md) để inventory và rebuild ảnh LOCAL
+5. Dùng [CLI inventory/rebuild](#6-cli-mapping-migration-và-recovery) để inventory và rebuild ảnh LOCAL
    của sách mới trên môi trường cách ly. Nếu nguồn Drive bị xóa, ghi media ID
    và báo owner xử lý thủ công.
 6. Owner cung cấp lịch/retention và mẫu backup R2. Restore vào DB + mount riêng
@@ -182,49 +186,82 @@ byte đầu vào/ra, block đĩa và lỗi. `wallMs` tính cả dọn output t�
 trong một process và lấy mẫu API đồng thời. Đo riêng queue, Docker và tốc độ
 ngoài LAN ở Dell, vì mẫu này không tính chi phí Drive, claim/lease và cache CDN.
 
-## 6. Bằng chứng local S8
+## 6. CLI mapping, migration và recovery
 
-Mac arm64, macOS 15.7.9, Node 22, Spring + PostgreSQL test loopback. Catalog
-fixture có 50 sách giả lập. Baseline đo trước encode, chưa warm cùng mức với
-lượt dưới tải. Số dưới đây dùng để tái lập phép đo, không suy ra tốc độ Dell.
+Chạy từ root với `MEMAY_SITE_ORIGIN` là HTTPS đích hoặc loopback đã xác nhận.
+`MEMAY_OWNER_SESSION_FILE` trỏ tới JSON mode0600 thuộc user hiện tại,
+chứa `cookie` (chỉ MEMAYSESSION) và `csrf` của cùng phiên OWNER. Giữ ngoài
+Git; không đưa password/token vào argv hoặc log. CLI gọi API, không ghi DB trực tiếp.
 
-| Lô | Encode p50/p95 | API p50/p95 trước tải | API p50/p95 dưới tải | CPU | Peak RSS | Input/output | Block đĩa output |
-|---|---:|---:|---:|---:|---:|---:|---:|
-| 20×2 | 157,33/226,29 ms | 35,09/48,63 ms | 22,64/47,32 ms | 7,22 s | 195 MiB | 17,28/20,38 MB | 21,22 MB |
-| 50×8 | 157,12/196,21 ms | 31,42/40,29 ms | 22,13/31,67 ms | 71,37 s | 218 MiB | 173,36/204,00 MB | 212,38 MB |
+```sh
+node scripts/image-system/media-operations.mjs export > mapping.csv
+node scripts/image-system/media-operations.mjs preview mapping.csv
+node scripts/image-system/media-operations.mjs show <receipt-id>
+```
 
-Cả 440 lượt encode và 771 probe API không báo lỗi. Harness wall 6,73 s và
-65,51 s. Compose Docker local xác minh cgroup 1 CPU/768 MiB, Nginx phục vụ đúng
-JPEG/WebP, từ chối staging/symlink/variant sai và mount derived đọc.
-Worker amd64 thử ENOSPC trên tmpfs 64 KiB, không complete và retry thành công
-sau khi giải phóng dung lượng. Kill claimant thử, rút ngắn lease đúng job
-fixture, khởi động worker thật và nhận READY trên PostgreSQL test.
+Mỗi trang export tối đa100ảnh; nếu CLI trả cursor, dùng `export <cursor>`.
+CSV UTF-8 giữ header `media_id,book_code,role,drive_file_id,expected_book_version`;
+điền Drive File ID, giữ guard sách/role/version. Không để credential trong CSV.
+Dry-run không đổi sách/media/binding; có operation/receipt/staging tạm.
+Receipt READY có currentPhotoPath/previewPath để OWNER đối chiếu qua trình duyệt
+đăng nhập; dòng INVALID có mã riêng, receipt hết24h trả410.
 
-Playwright với backend/worker thật ở loopback xác nhận form 0/2/8 ảnh, từ chối
-lô làm vượt 8 ảnh, khôi phục phiên khi reload, báo link thư mục sai, lưu Ẩn,
-thay bìa và giữ nội dung tab bị xung đột version. Gallery đủ tám ảnh trên
-viewport desktop/mobile, ZIP OWNER có tám entry. Bản SSR build trả 200 khi
-fixture public và 404 sau khi Ẩn. Publication gallery được tạo bằng fixture DB.
-Gate nguồn VERIFIED đã kiểm qua backend test với Drive giả lập. Chất lượng
-chữ và HTTP ngoài LAN chờ thử nghiệm trên Ubuntu.
+Chỉ apply danh sách đã xem và xác nhận. Dùng UUID riêng cho mỗi thao tác;
+gửi lại cùng payload thì giữ nguyên UUID để retry idempotent.
 
-## 7. Điều kiện mở R6
+```sh
+node scripts/image-system/media-operations.mjs apply --receipt <receipt-id> \
+  --digest <preview-digest> --request-key <uuid> --confirm-media <media-id>
+node scripts/image-system/media-operations.mjs show-apply <receipt-id>
+node scripts/image-system/media-operations.mjs rollback --receipt <receipt-id> \
+  --request-key <uuid-khac> --expect-book <book-id>:<applied-version>
+```
 
-- Cần Ubuntu chạy được Nginx/worker, backend fixture truy cập mount/Drive và bản
-  backup R2 có thể khôi phục ở đích cách ly.
-- Owner chọn lô 20–50 sách mới thử, duyệt ngưỡng p95 và chất lượng ảnh chữ.
-  Ghi RTO đo được, độ phủ binding và RPO DB. Giữ Cloudinary phục vụ sách cũ.
-  Bằng chứng local xem [DEV_LOG](DEV_LOG.md).
+Lặp `--confirm-media` cho từng ảnh và `--expect-book` cho từng sách rollback.
+Apply202 xử lý theo queue; show-apply trả kết quả/version theo sách. Nguồn hoặc
+book version đổi thì dry-run lại; không sửa receipt để vượt kiểm tra. Cloudinary
+ref cũ giữ cho rollback; không xóa cloud hoặc drop schema khi hoàn tất apply.
+Đợt chuyển sách cũ hiện được hoãn; có tool không đồng nghĩa đã được duyệt chạy live.
+
+Rebuild mặc định chỉ kiểm kê, apply phải explicit. Mỗi trang tối đa100ảnh;
+`--after <next>` cho trang DB, `--after-disk <nextDisk>` cho scan đĩa.
+
+```sh
+node scripts/image-system/media-operations.mjs inventory --scope all --scan-disk
+node scripts/image-system/media-operations.mjs rebuild --media <media-id>
+node scripts/image-system/media-operations.mjs rebuild --media <media-id> --apply --request-key <uuid>
+node scripts/image-system/media-operations.mjs show-rebuild <operation-id>
+```
+
+Restore DB + mount riêng bằng profile `restore`, để recovery mode mặc định
+isolated. Kiểm counts/FK/binding/recipe/pointer, file ngoài DB và lease; không
+mount derived live hoặc bật cleanup trong lúc kiểm. Xác nhận namespace, mount,
+credential và image/config digest rồi mới đặt `MEMAY_MEDIA_RECOVERY_MODE=active`.
+Recipe cần `image_recipe.worker_digest` đúng worker OCI digest và
+`configuration.sha256` đúng JSON recipe. Worker nhận `MEMAY_IMAGE_WORKER_DIGEST`
+tương ứng. Không tự dùng recipe mới khi rebuild; mismatch phải điều tra.
+
+## 7. Bằng chứng và gate vận hành
+
+Bảng benchmark local S8, ca thực tế và acceptance matrix đã chuyển nguyên
+số liệu về [IMAGE_VERIFICATION](IMAGE_VERIFICATION.md). [PROGRESS](PROGRESS.md)
+giữ gate còn mở. Upload đã được owner nghiệm thu12/11, restore R2 đã được owner
+xác nhận; benchmark Dell/ảnh chữ/ngoài LAN, RPO/retention/RTO và migration/
+rollback sách cũ không được tự đánh đạt từ hai xác nhận đó.
 
 ## Nhập và ghép nguồn Drive theo lô (V31)
 
 - Chia sẻ một folder gốc quyền Viewer cho email service account; mỗi sách
   có folder con. File thêm sau thường kế thừa quyền; tránh limited access
   hoặc chặn tải xuống. Không cần public folder và không scan cả kho.
-- Dành cho sách mới: dán 1–8 link file/File ID, ngăn bằng dòng, khoảng trắng
+- Cho sách mới hoặc thêm ảnh vào sách đã lưu: dán 1–8 link file/File ID,
+  ngăn bằng dòng, khoảng trắng
   hoặc dấu phẩy, chọn **Tải ảnh từ Drive**. Link được xử lý tuần tự; xem
   thumbnail LOCAL, chọn vai trò rồi xác nhận một lần. Thứ tự link tùy ý.
-- Đã upload LOCAL: **Tự ghép nguồn** tìm bằng SHA-256 file gốc. Hash trùng
+  Sau confirm, khối Drive chỉ hiện n/tổng. Sách mới gắn ảnh khi lưu sách;
+  sách đã lưu dùng Gắn tất cả ảnh vào sách, tiến độ và retry phần còn lại.
+- Đã upload LOCAL: **Tự ghép nguồn** tìm bằng SHA-256 file gốc, không tạo
+  thêm ảnh hoặc encode lại. Ảnh đã gắn không cần gắn lại sau MATCH. Hash trùng
   nhiều ảnh cần chọn cặp một-một. Chỉ xác nhận các dòng thành công; dòng lỗi
   báo riêng. File Drive phải giữ nguyên bytes, không dùng JPEG đã nén lại.
 - Chưa xác nhận thì ảnh IMPORT chưa dùng để lưu sách. Bỏ lô giải phóng chỗ;

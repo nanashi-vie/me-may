@@ -18,7 +18,7 @@ app.use('/api', express.raw({ type: () => true, limit: '11mb' }), async (req, re
   res.setHeader('Cache-Control', 'no-store');
   try {
     const headers = new Headers();
-    for (const name of ['accept', 'content-type', 'cookie', 'x-csrf-token']) {
+    for (const name of ['accept', 'content-type', 'cookie', 'x-csrf-token', 'if-none-match']) {
       const value = req.headers[name];
       if (typeof value === 'string') headers.set(name, value);
     }

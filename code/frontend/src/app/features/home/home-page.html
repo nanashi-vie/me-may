@@ -1,19 +1,6 @@
 <section class="hero">
-  <div>
-    <p class="eyebrow">Tiệm sách ngoại văn Mẹ Mây</p>
-    <h1>Mở sách nhỏ.<br />Khám phá thế giới lớn.</h1>
-    <p>
-      Sách đã qua sử dụng, được tiệm chọn và chụp ảnh thật từng cuốn. Cùng bé tìm một câu chuyện mới
-      mỗi ngày.
-    </p>
-    <a class="button" routerLink="/sach">Khám phá sách →</a>
-  </div>
-  <div class="hero-art" aria-hidden="true">
-    <span class="orbit">✦</span><img src="/favicon/web-app-manifest-512x512.png" alt="" width="280" height="280" /><span
-      class="art-note"
-      >Đọc cùng con<br />lớn cùng những trang sách</span
-    >
-  </div>
+  <h1 class="sr-only">Tiệm sách ngoại văn Mẹ Mây — Mở sách nhỏ, khám phá thế giới lớn</h1>
+  <app-hero-carousel [banners]="data()?.banners ?? []" />
 </section>
 
 <section class="banner-info-boxes" aria-label="Tiện ích & Hỗ trợ">

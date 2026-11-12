@@ -1,0 +1,149 @@
+:host {
+  display: block;
+}
+.carousel {
+  container-type: inline-size;
+  position: relative;
+  aspect-ratio: 3/1;
+  background: #faf6ed;
+  overflow: hidden;
+}
+.viewport {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 3/1;
+  overflow: hidden;
+}
+.image-link,
+.outgoing {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  color: #a51c30;
+  text-decoration: none;
+}
+.image-link img,
+.outgoing img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+.outgoing {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  animation: exit-ltr 550ms ease-in-out both;
+}
+.incoming {
+  position: relative;
+  animation: enter-ltr 550ms ease-in-out both;
+}
+.rtl .outgoing {
+  animation-name: exit-rtl;
+}
+.rtl .incoming {
+  animation-name: enter-rtl;
+}
+@keyframes enter-ltr {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes exit-ltr {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes enter-rtl {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes exit-rtl {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .outgoing,
+  .incoming {
+    animation: none;
+  }
+}
+.fallback-text {
+  font-size: clamp(1rem, 3vw, 3rem);
+  font-weight: 700;
+}
+.arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #fff;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.arrow::before {
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: #ad2034;
+  box-shadow: 0 1px 5px #0002;
+  transition: background-color 150ms ease;
+}
+.arrow svg {
+  position: relative;
+}
+.arrow:hover,
+.arrow:focus-visible {
+  color: #ad2034;
+}
+.arrow:hover::before,
+.arrow:focus-visible::before {
+  background: #fff;
+}
+.previous {
+  left: 4px;
+}
+.next {
+  right: 4px;
+}
+.image-link:focus-visible,
+.arrow:focus-visible {
+  outline: 3px solid #fff;
+  outline-offset: -3px;
+  box-shadow: inset 0 0 0 5px #ad2034;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrow::before {
+    transition: none;
+  }
+}

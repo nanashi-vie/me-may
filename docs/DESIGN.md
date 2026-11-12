@@ -13,6 +13,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/quan-tam` | Danh sách cục bộ trên thiết bị | Xem trạng thái mới; xóa; sao chép nhiều cuốn; mở kênh chat |
 | `/lien-he` | Nội dung cửa hàng | Đọc thông tin thật, chọn liên hệ |
 | `/admin/dang-nhap` | Đăng nhập quản trị | Xác thực Owner/Staff |
+| `/admin/customers`, `/admin/customers/:id` | Khách hàng | OWNER ghi, STAFF xem/tìm; form modal chung |
 | `/admin/sach` | Bảng quản trị | Tìm mã, mở editor, xem trạng thái |
 | `/admin/sach/moi`, `/admin/sach/:id` | Editor | Nhập cuốn/listing, ảnh, preview, xuất bản/ẩn theo quyền |
 | `/admin/danh-muc`, `/admin/bo-suu-tap` | Biên tập taxonomy | Quản lý nhóm và thứ tự hiển thị |
@@ -76,7 +77,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 9. **Sách theo chủ đề:** một hàng của bộ sưu tập được chủ chọn, ví dụ động vật; không tự gắn nhãn bằng AI.
 10. **Banner nhóm 2 + sách cho bé bắt đầu tự đọc:** chỉ hiển thị nếu có cuốn phù hợp; không gán CEFR/Lexile khi thiếu bằng chứng.
 11. **Cách hỏi mua:** 3 bước ngắn: chọn sách → sao chép mã/link → nhắn tiệm xác nhận.
-12. **Footer (cập nhật 08/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (khung nhúng Facebook Page Plugin `embed_page` `340x130px` của fanpage `sachngoaivanmemay`) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
+12. **Footer (cập nhật 12/11):** nền tối `#292724` tràn toàn chiều ngang theo mẫu IPM, chia 2 cột trong `.wrap`: cột trái gồm thương hiệu Mẹ Mây, thông điệp, liên kết nhanh (`Khám phá sách`, `Liên hệ`, `Quản trị`), email CSKH `support@memaybooks.com` và lưu ý xác nhận giá/tình trạng; cột phải gồm `KẾT NỐI VỚI CHÚNG TÔI` (thẻ Fanpage native nền trắng bo góc gồm logo tiệm, tên `Sách Ngoại Văn Mẹ Mây` và link mở thẳng fanpage `sachngoaivanmemay`, thay thế iframe Facebook bị lỗi 2 nút Follow/Share và vỡ layout khi có story) và `CÁC KÊNH KHÁC` (3 nút vuông trắng bo góc chứa logo `Facebook`, `Threads`, `TikTok`). Không hiển thị chứng nhận, địa chỉ hay chính sách không có thật.
 
 Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ liệu. Không kéo dài Home bằng các nhóm lặp sách chỉ để đủ chiều cao như screenshot.
 
@@ -124,9 +125,9 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `Tên | NXB | Tác giả | Độ tuổi` → mã/khả dụng → Flash Sale/giá → mô tả/thông số/mức đọc/video. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
+Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `<h1>` chỉ hiển thị `Tên sách` (thẻ `<title>`/SEO vẫn đủ NXB/Tác giả) → mã/khả dụng → Flash Sale/giá → khối `<dl>` thông số cơ bản (có đường kẻ phân cách mảnh) → mô tả sách. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
-Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
+Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số nằm ngay trên mô tả, hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
 Các nút trên detail:
 
@@ -361,3 +362,11 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
 - Icon thùng rác nằm bên phải Cập nhật, mở hộp thoại tên/mã và cảnh báo
   xóa vĩnh viễn sau 7 ngày. Hạn hiển thị theo giờ Việt Nam.
 - Hai ảnh bổ sung có checkbox **Hiện trên trang sách**, mặc định tắt.
+
+## Quản lý khách hàng —12/11/2026
+
+Bố cục theo ba ảnh list/form/detail owner gửi, giữ màu đỏ hiện hành; bảng phẳng
+trong panel viền nhẹ, form nhóm chính/bổ sung, profile và empty order history.
+Nhãn Tên Zalo/Tên TikTok/Tên Threads, chỉ text username, không link.
+Contract UI/dirty/modal/search/role tại [CUSTOMERS](CUSTOMERS.md);
+[bằng chứng desktop/mobile và giới hạn](CUSTOMER_VERIFICATION.md).

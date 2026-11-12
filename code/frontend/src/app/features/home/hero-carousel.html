@@ -1,0 +1,65 @@
+<div
+  class="carousel"
+  role="region"
+  aria-roledescription="băng chuyền"
+  aria-label="Banner trang chủ"
+  (focusin)="focus(true)"
+  (focusout)="focusOut($event)"
+>
+  <div class="viewport" [class.rtl]="direction() === 'rtl'">
+    @if (outgoing(); as leaving) {
+      @for (previous of [leaving]; track previous.id) {
+        <div class="outgoing" aria-hidden="true">
+          <img
+            [src]="previous.src"
+            [srcset]="previous.srcset"
+            sizes="100vw"
+            [width]="previous.width"
+            [height]="previous.height"
+            alt=""
+            fetchpriority="low"
+          />
+        </div>
+      }
+    }
+    @for (banner of [current()]; track banner.id) {
+      <a
+        routerLink="/sach"
+        class="image-link"
+        aria-keyshortcuts="Space"
+        title="Nhấn Space để tạm dừng/chạy tự động"
+        (keydown.space)="$event.preventDefault(); togglePause()"
+        [class.incoming]="outgoing() !== null"
+        (animationend)="finishTransition($event)"
+      >
+        @if (!fallbackBroken()) {
+          <img
+            [src]="banner.src"
+            [srcset]="banner.srcset"
+            sizes="100vw"
+            [width]="banner.width"
+            [height]="banner.height"
+            [alt]="banner.alt"
+            [attr.fetchpriority]="active() === 0 ? 'high' : 'auto'"
+            [attr.loading]="active() === 0 ? 'eager' : 'lazy'"
+            (error)="failed(banner.id)"
+          />
+        } @else {
+          <span class="fallback-text">Mẹ Mây · Khám phá tất cả sách</span>
+        }
+      </a>
+    }
+  </div>
+  @if (slides().length > 1) {
+    <button class="arrow previous" type="button" aria-label="Banner trước" (click)="next(-1)">
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
+    </button>
+    <button class="arrow next" type="button" aria-label="Banner tiếp theo" (click)="next(1)">
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" />
+      </svg>
+    </button>
+  }
+</div>

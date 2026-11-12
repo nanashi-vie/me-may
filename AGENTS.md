@@ -29,7 +29,7 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Các ràng buộc chính từ master plan
 
 - Angular + Spring Boot modular monolith. Không đổi sang React/Next.js theo mặc định của skill.
-- Frontend Cloudflare; backend VPS/Dokploy; PostgreSQL tự quản trên VPS/Dokploy qua Spring JDBC; ảnh Cloudinary. Resend sau MVP.
+- Frontend Cloudflare; backend VPS/Dokploy; PostgreSQL tự quản trên VPS/Dokploy qua Spring JDBC; ảnh LOCAL self-host cho upload mới và Cloudinary legacy theo `docs/IMAGES.md`. Resend sau MVP.
 - Public mobile-first; admin desktop-first; quyền OWNER/STAFF kiểm tra ở backend.
 - MVP: catalogue + wishlist trên thiết bị + liên hệ Facebook/Zalo + quản trị. Không tạo order, checkout, payment, reservation, hold timer, đồng bộ đa kênh hay pipeline AI.
 - Mỗi cuốn vật lý có mã duy nhất; `BookCopy` tách `Listing`; xuất bản khác khả dụng; giá nguyên VND; audit và chống ghi đè dữ liệu cũ.

@@ -76,7 +76,7 @@
       />
     </div>
     <article>
-      <h1>{{ title(b) }}</h1>
+      <h1>{{ b.title }}</h1>
       @if(b.features?.length) {
         <ul class="book-features" aria-label="Đặc điểm sách">
           @for(feature of b.features;track feature.code) {<li>{{feature.label}}</li>}
@@ -113,45 +113,47 @@
         }
         <small>{{ priceNote }}</small>
       </div>
+      @if (b.publisher || b.author || b.binding || b.ageGroups.length || b.readingLevel || b.readingVideoUrl) {
+        <dl>
+          @if (b.publisher) {
+            <dt>Nhà xuất bản</dt>
+            <dd>{{ b.publisher }}</dd>
+          }
+          @if (b.author) {
+            <dt>Tác giả</dt>
+            <dd>{{ b.author }}</dd>
+          }
+          @if (b.binding) {
+            <dt>Kiểu bìa</dt>
+            <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
+          }
+          @if (b.ageGroups.length) {
+            <dt>Độ tuổi</dt>
+            <dd>
+              @for (a of b.ageGroups; track a) {
+                {{ ages[a] }}{{ $last ? '' : ', ' }}
+              }
+            </dd>
+          }
+          @if (b.readingLevel) {
+            <dt>Trình độ đọc</dt>
+            <dd>
+              {{ levels[b.readingLevel] }}<small>{{ readingNote }}</small>
+            </dd>
+          }
+          @if (b.readingVideoUrl) {
+            <dt>Đọc tham khảo</dt>
+            <dd>
+              <a [href]="b.readingVideoUrl" target="_blank" rel="noopener noreferrer"
+                >Xem video đọc sách ↗</a
+              >
+            </dd>
+          }
+        </dl>
+      }
       @if (b.description) {
         <p class="description">{{ b.description }}</p>
       }
-      <dl>
-        @if (b.publisher) {
-          <dt>Nhà xuất bản</dt>
-          <dd>{{ b.publisher }}</dd>
-        }
-        @if (b.author) {
-          <dt>Tác giả</dt>
-          <dd>{{ b.author }}</dd>
-        }
-        @if (b.binding) {
-          <dt>Kiểu bìa</dt>
-          <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
-        }
-        @if (b.ageGroups.length) {
-          <dt>Độ tuổi</dt>
-          <dd>
-            @for (a of b.ageGroups; track a) {
-              {{ ages[a] }}{{ $last ? '' : ', ' }}
-            }
-          </dd>
-        }
-        @if (b.readingLevel) {
-          <dt>Trình độ đọc</dt>
-          <dd>
-            {{ levels[b.readingLevel] }}<small>{{ readingNote }}</small>
-          </dd>
-        }
-        @if (b.readingVideoUrl) {
-          <dt>Đọc tham khảo</dt>
-          <dd>
-            <a [href]="b.readingVideoUrl" target="_blank" rel="noopener noreferrer"
-              >Xem video đọc sách ↗</a
-            >
-          </dd>
-        }
-      </dl>
     </article>
   </div>
   <section class="related-section" aria-label="Sách cùng nhà xuất bản">

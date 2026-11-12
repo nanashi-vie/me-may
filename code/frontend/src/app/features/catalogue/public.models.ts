@@ -16,9 +16,13 @@ import {
   Taxonomy,
 } from '../admin/books/book.models';
 export type { Page, Taxonomy, AgeGroup, CategoryCode, Binding };
-export interface PublicVariant { id: string; name: string | null; available: boolean; }
+export interface PublicVariant {
+  id: string;
+  name: string | null;
+  available: boolean;
+}
 export interface PublicBook {
-  features?: {code:string;label:string}[];
+  features?: { code: string; label: string }[];
   variants: PublicVariant[];
   id: string;
   bookCode: string;
@@ -40,7 +44,13 @@ export interface PublicBook {
   readingLevel: ReadingLevel | null;
   readingVideoUrl: string | null;
   availability: Availability;
-  media: { role: string; alt: string | null; contentPath: string; cacheKey?: string; imageVariants?: PublicImageVariant[] }[];
+  media: {
+    role: string;
+    alt: string | null;
+    contentPath: string;
+    cacheKey?: string;
+    imageVariants?: PublicImageVariant[];
+  }[];
 }
 export interface RelatedBooks {
   samePublisherBooks: PublicBook[];
@@ -50,7 +60,16 @@ export interface Collection {
   slug: string;
   name: string;
 }
+export interface HeroBanner {
+  id: string;
+  alt: string;
+  src: string;
+  srcset: string;
+  width: number;
+  height: number;
+}
 export interface HomeData {
+  banners?: HeroBanner[];
   shelves: { title: string; href: string; books: PublicBook[] }[];
 }
 export interface ContactConfig {

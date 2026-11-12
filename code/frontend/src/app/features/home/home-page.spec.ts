@@ -40,6 +40,17 @@ describe('HomePage banner info boxes', () => {
     expect(titles).toContain('HOTLINE:');
   });
 
+  it('uses the banner image as hero with an accessible hidden h1 and no CTA', () => {
+    const { fixture } = setup();
+    const hero = (fixture.nativeElement as HTMLElement).querySelector('.hero')!;
+    const image = hero.querySelector('img')!;
+    expect(image.getAttribute('src')).toBe('/images/hero-banner-1584.webp');
+    expect(image.getAttribute('fetchpriority')).toBe('high');
+    expect(image.alt).toContain('Tiệm sách ngoại văn Mẹ Mây');
+    expect(hero.querySelector('h1.sr-only')).toBeTruthy();
+    expect(hero.querySelector('a')?.getAttribute('href')).toBe('/sach');
+  });
+
   function communityLink(element: HTMLElement) {
     return element.querySelector<HTMLAnchorElement>(
       'a.info-box-item[aria-label="Cộng đồng Mẹ Mây trên Zalo"]',
@@ -68,6 +79,15 @@ describe('HomePage banner info boxes', () => {
         fixture.detectChanges();
         expect(dialog.querySelector<HTMLImageElement>('.qr')?.src).toMatch(/^data:image\/gif;base64,/);
       });
+      const webLink = dialog.querySelector('a')!;
+      let prevented: boolean | undefined;
+      dialog.addEventListener('click', (event) => {
+        prevented = event.defaultPrevented;
+        event.preventDefault();
+      }, { once: true });
+      webLink.click();
+      expect(prevented).toBe(false);
+      expect(dialog.open).toBe(true);
       dialog.querySelector('button')!.click();
       expect(dialog.open).toBe(false);
       expect(focus).toHaveBeenCalled();

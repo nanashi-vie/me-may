@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import { signal } from '@angular/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { HomeFeaturedEditor, HomeFeaturedConfig } from './home-featured';
 import { AuthService } from '../../../core/auth/auth.service';
 
@@ -64,6 +64,7 @@ describe('HomeFeaturedEditor', () => {
     const fixture = TestBed.createComponent(HomeFeaturedEditor);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/v1/admin/hero-banners').flush({ version: 0, banners: [] });
     return { fixture, component: fixture.componentInstance, http };
   }
 
@@ -83,21 +84,19 @@ describe('HomeFeaturedEditor', () => {
 
     component.searchQuery['NEWEST'] = 'MM-000003';
     component.searchCandidates('NEWEST');
-    http
-      .expectOne('/api/v1/admin/home-featured/candidates?shelfKey=NEWEST&q=MM-000003')
-      .flush([
-        {
-          id: '3',
-          bookCode: 'MM-000003',
-          title: 'Cuốn số 3',
-          priceMinVnd: 30000,
-          priceMaxVnd: 30000,
-          publicationStatus: 'PUBLISHED',
-          availability: 'AVAILABLE',
-          coverUrl: null,
-          activeOnHome: true,
-        },
-      ]);
+    http.expectOne('/api/v1/admin/home-featured/candidates?shelfKey=NEWEST&q=MM-000003').flush([
+      {
+        id: '3',
+        bookCode: 'MM-000003',
+        title: 'Cuốn số 3',
+        priceMinVnd: 30000,
+        priceMaxVnd: 30000,
+        publicationStatus: 'PUBLISHED',
+        availability: 'AVAILABLE',
+        coverUrl: null,
+        activeOnHome: true,
+      },
+    ]);
     fixture.detectChanges();
 
     component.addBook(component.shelves[0], component.availableCandidates(component.shelves[0])[0]);
@@ -126,6 +125,29 @@ describe('HomeFeaturedEditor', () => {
     http.verify();
   });
 
+  it('keeps banner and shelf saves independent and uses one shared leave guard', () => {
+    const { fixture, component, http } = setup();
+    http.expectOne('/api/v1/admin/home-featured').flush(sampleConfig);
+    fixture.detectChanges();
+    const banners = component.bannerEditor()!;
+    component.removeBook(component.shelves[0], 1);
+    banners.dirty.set(true);
+    banners.save();
+    http.expectOne('/api/v1/auth/csrf').flush({ headerName: 'X-CSRF-TOKEN', token: 'x' });
+    http.expectOne('/api/v1/admin/hero-banners').flush({ version: 1, banners: [] });
+    expect(component.dirty).toBe(true);
+    banners.dirty.set(true);
+    component.save();
+    http.expectOne('/api/v1/auth/csrf').flush({ headerName: 'X-CSRF-TOKEN', token: 'x' });
+    http.expectOne('/api/v1/admin/home-featured').flush({ ...sampleConfig, version: 3 });
+    expect(banners.dirty()).toBe(true);
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    expect(component.canLeave()).toBe(false);
+    expect(confirm).toHaveBeenCalledTimes(1);
+    confirm.mockRestore();
+    http.verify();
+  });
+
   it('preserves unsaved edits and shows conflict message on 409', () => {
     const { component, http } = setup();
     http.expectOne('/api/v1/admin/home-featured').flush(sampleConfig);
@@ -143,4 +165,3 @@ describe('HomeFeaturedEditor', () => {
     http.verify();
   });
 });
-

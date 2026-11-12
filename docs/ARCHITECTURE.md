@@ -1,7 +1,7 @@
 # Mẹ Mây — kiến trúc và hạ tầng
 
-Cập nhật05/11/2026: Angular/Spring Boot modular monolith, Spring JDBC/Flyway,
-Workers/homelab Dell qua Dokploy và Cloudinary; Render/Neon là testhost cũ.
+Cập nhật12/11/2026 (phần media): Angular/Spring Boot modular monolith, Spring JDBC/Flyway,
+Workers/homelab Dell qua Dokploy, ảnh LOCAL + Cloudinary legacy; Render/Neon là testhost cũ.
 Giữ code/frontend và code/backend; các package minh họa chưa dùng không cần tạo. [CATALOGUE](CATALOGUE.md) giữ API/quyền/
 media quản trị; [DATA](DATA.md) giữ field; [PROGRESS](PROGRESS.md) giữ việc còn mở.
 Khảo sát source cũ và quyết định không tái sử dụng được giữ trong Git/DEV_LOG.
@@ -33,7 +33,7 @@ me-may/
 │           ├── main/java/vn/memay/
 │           │   ├── catalogue/   # BookCopy, public catalogue; controller/service/repository/DTO
 │           │   ├── listing/     # publication/price
-│           │   ├── media/       # Cloudinary adapter + media lifecycle
+│           │   ├── media/       # LOCAL/Cloudinary adapters + media lifecycle
 │           │   ├── taxonomy/    # nhóm/collection
 │           │   ├── auth/        # session, OWNER/STAFF
 │           │   ├── audit/
@@ -129,7 +129,7 @@ Cloudflare build root là `code/frontend`; Spring build context `code/backend`. 
 | `memaybooks.com/admin` | Cùng Cloudflare FE | Frontend route admin; **quyền thực thi do Spring API kiểm tra** |
 | `api.memaybooks.com` | Dell/Dokploy qua Cloudflare Tunnel | Browser dùng proxy cùng origin; giữ CSRF/Secure cookie; DB/profile live chưa xác minh |
 | PostgreSQL test endpoint / internal service:5432 | Neon test cũ; đích DB Dell chưa xác minh | JDBC chỉ từ Spring backend, TLS mạng ngoài, direct migrations riêng |
-| Cloudinary delivery domain | Cloudinary CDN | Chỉ giao ảnh đã xuất bản; quản lý signed uploads/delete qua API |
+| Cloudinary delivery domain | Provider legacy | Backend đọc authenticated asset qua adapter; LOCAL đọc Nginx nội bộ; quyền public theo sách |
 | Resend API | Resend, **chưa kích hoạt ở MVP** | Gọi từ Spring Boot khi đã có tính năng email |
 
 **Kết nối PostgreSQL tự quản (hướng production, chưa có VPS):**
@@ -162,7 +162,7 @@ Cloudflare build root là `code/frontend`; Spring build context `code/backend`. 
 **Backup / khôi phục:**
 
 - PostgreSQL tự quản: chủ dự án chịu trách nhiệm lịch backup, bản vá, retention và restore. Đề xuất RPO tối đa 24 giờ; retention ban đầu 7 bản ngày + 4 bản tuần ngoài VPS, quyền truy cập hạn chế và mã hóa nơi lưu. Chốt RTO sau phép thử phục hồi, không mặc định có PITR hoặc failover.
-- DB backup **không đồng nghĩa backup file ảnh Cloudinary**; ghi nhận public IDs, phương án giữ ảnh gốc trên Drive hoặc xuất file định kỳ. Không mất tham chiếu media khi restore DB; kiểm thử phục hồi chéo DB/media.
+- DB backup **không đồng nghĩa backup bytes ảnh**; LOCAL cần nguồn Drive và recipe đúng theo [IMAGES](IMAGES.md). Với Cloudinary legacy, ghi nhận public IDs, phương án giữ ảnh gốc trên Drive hoặc xuất file định kỳ. Không mất tham chiếu media khi restore DB; kiểm thử phục hồi chéo DB/media.
 - Lưu runbook cho lỗi PostgreSQL mất kết nối, DB pool cạn, VPS full disk, Cloudflare deploy lỗi, Cloudinary upload lỗi và certificate hết hạn.
 
 **Resend — mở rộng sau MVP:**
@@ -339,6 +339,15 @@ Giới hạn/thứtự/nhãn ở DATA; rolloutbackend trướcfrontend và gate 
 - CDN cache chỉ bật trong production config; local/preview mặc định không bật.
   Thiết lập và smoke online nằm DEPLOYMENT. Chưa có đo cải thiện sau deploy.
 
+## Hệ ảnh hiện hành — cập nhật12/11/2026
+
+Theo quyết định08–11/11, LOCAL nhận upload mới qua worker Sharp/SSD/Nginx
+nội bộ; Cloudinary giữ ảnh cũ. Backend sở hữu nguồn Drive, queue/lease,
+generation và gate publication. [IMAGES](IMAGES.md) giữ toàn bộ contract;
+[runbook](IMAGE_OPERATIONS.md) giữ cấu hình/lệnh, [kiểm chứng](IMAGE_VERIFICATION.md)
+giữ bằng chứng và tiêu chí. Không dùng mô tả adapter cloud legacy làm
+contract duy nhất cho LOCAL; quyết định cũ về visibility đã được V24 thay thế.
+
 ## Media/save/features —06/11/2026
 
 V15 mở rộng2internal roles và feature catalogue/mapping; giữ Angular/Spring/JDBC,
@@ -346,3 +355,14 @@ không dependency mới. Aggregate PUT gộp content/mediaMetadata/features/publ
 trong transaction/version/audit; public features SQL aggregate không thêm per-book
 query. Contract/bảo mật/idempotency ở [CATALOGUE](CATALOGUE.md), UX ở DESIGN,
 rollout/rollbackV15 ở [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).
+
+## Module customer —12/11/2026
+
+`vn.memay.customer` dùng Spring JDBC/FlywayV32, không thêm entity JPA/dependency.
+Service transaction khóa row/version và actor OWNER còn active; metadata audit
+cùng transaction, không PII. API `/api/v1/admin/customers` dùng chain session/
+CSRF hiện có. Frontend customer dùng AdminHttp, không session cache/TransferState;
+admin SSR Client/no-store/noindex. Hủy stream/request cũ khi đổi query/session
+hoặc mở form mới; dirty guard đóng editor khi chấp nhận rời route tái sử dụng.
+Contract/rollout ở [CUSTOMERS](CUSTOMERS.md),
+[bằng chứng](CUSTOMER_VERIFICATION.md). Không có customer login hoặc order.

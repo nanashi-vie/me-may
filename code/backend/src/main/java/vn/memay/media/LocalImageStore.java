@@ -28,6 +28,25 @@ public final class LocalImageStore {
 
     public record StagedInput(String key, long bytes, String sha256) {}
 
+    byte[] readVariant(UUID media, ImageTypes.Variant variant) throws IOException {
+        String extension = variant.mime().equals("image/jpeg") ? "jpg" : "webp";
+        String prefix = "derived/" + media + "/";
+        if (!variant.key().startsWith(prefix) || variant.bytes() < 1 || variant.bytes() > MAX_INPUT_BYTES)
+            throw new IOException("Invalid variant");
+        String[] parts = variant.key().split("/");
+        if (parts.length != 4 || !UUID.fromString(parts[2]).toString().equals(parts[2])
+                || !parts[3].equals(variant.name() + "." + extension)
+                || !Set.of("800", "1600", "3200").contains(variant.name())) throw new IOException("Invalid variant");
+        Path file = directory(prefix + parts[2], false).resolve(parts[3]);
+        if (!Files.isRegularFile(file, NOFOLLOW_LINKS)) throw new IOException("Variant missing");
+        try (var input = Files.newInputStream(file, READ, NOFOLLOW_LINKS)) {
+            byte[] bytes = input.readNBytes((int)variant.bytes() + 1);
+            if (bytes.length != variant.bytes() || !HexFormat.of().formatHex(sha256().digest(bytes)).equals(variant.sha256()))
+                throw new IOException("Variant corrupt");
+            return bytes;
+        }
+    }
+
     public StagedInput stage(UUID operationId, InputStream input) throws IOException {
         String directory = "staging/" + operationId;
         Path staging = directory("staging", true);
@@ -238,6 +257,14 @@ public final class LocalImageStore {
                 || manifest.variants().stream().anyMatch(v ->
                     Math.max(v.width(), v.height()) > Integer.parseInt(v.name())))
             throw new IOException("Incomplete migration variants");
+    }
+
+    void validateBannerVariants(Manifest manifest) throws IOException {
+        var required = Set.of("800:image/jpeg", "800:image/webp", "1600:image/jpeg", "1600:image/webp", "3200:image/jpeg", "3200:image/webp");
+        var actual = manifest.variants().stream().map(v -> v.name() + ":" + v.mime()).collect(java.util.stream.Collectors.toSet());
+        if (!manifest.recipeVersion().equals("hero-v1") || !required.equals(actual) || manifest.variants().size()!=required.size()
+                || manifest.variants().stream().anyMatch(v -> Math.max(v.width(),v.height())>Integer.parseInt(v.name())))
+            throw new IOException("Invalid banner variants");
     }
 
     void validateMigrationPreview(Manifest manifest, UUID attempt) throws IOException {
