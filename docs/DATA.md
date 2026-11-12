@@ -236,3 +236,10 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 `book_copy.deleted_at` xác định Thùng rác và hạn khôi phục sau 7 ngày.
 Sau khi dọn, snapshot mã/ID/tên trên receipt và audit tiếp tục tra được.
 Ảnh chờ dọn có thể có `book_copy_id` rỗng và không được ở trạng thái ACTIVE.
+
+## Hồ sơ khách hàng —12/11/2026
+
+Schema V32, field/giới hạn/chuẩn hóa/index/actor/version và AC tại
+[CUSTOMERS](CUSTOMERS.md#3-dữ-liệu). Hồ sơ độc lập user_account và sách;
+không UNIQUE SĐT/username, không gộp hoặc liên kết tài khoản tự động.
+Mã KH sinh từ identity an toàn đồng thời, không MAX+1; dữ liệu cá nhân chỉ admin.

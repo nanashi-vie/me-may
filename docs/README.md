@@ -1,7 +1,7 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật12/11/2026. Đây là chỉ mục duy nhất. User đóng phạm vi tính năng để
-chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
+Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách hàng12/11
+đã triển khai local; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Bắt đầu hoặc tiếp tục phiên
 
@@ -14,7 +14,8 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Thiết kế đã duyệt](CUSTOMER_SPEC.md), [kế hoạch](CUSTOMER_PLAN.md) |
+| Thay banner hero, tối đa10banner và tự chuyển5giây | [Thiết kế chờ duyệt](HERO_BANNER_SPEC.md) |
+| Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: tổng quan, cơ chế, upload máy/Drive, ghép nguồn và so Cloudinary | [Hệ thống ảnh](IMAGES.md) |
 | Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |
 | Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |

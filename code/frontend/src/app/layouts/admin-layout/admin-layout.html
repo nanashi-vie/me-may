@@ -90,6 +90,8 @@
         </div>
       </div>
 
+      <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item"><span class="nav-text">Khách hàng</span></a>
+
       @if (auth.user()?.role === 'OWNER') {
         <div class="sidebar-divider" role="separator"></div>
         <div class="nav-group">

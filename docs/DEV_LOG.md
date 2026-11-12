@@ -3655,3 +3655,94 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
   - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
   - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.
+
+## 2026-11-12 — CUSTOMER-C03 — Triển khai tuần tự
+
+- Owner duyệt plan và chọn tuần tự; UI tham khảo list/form/detail, giữ màu
+  đỏ chủ đạo web; nhãn Tên Zalo/Tên TikTok/Tên Threads, quyền giữ spec.
+- Branch codex/customers từ dev5c5ddac. Native worktree customers tạo được
+  nhưng sandbox chặn ghi; theo fallback skill làm root checkout trên branch riêng.
+- PostgreSQL QA container riêng đang chuẩn bị, không dùng my-postgres/live.
+  Ledger .superpowers/sdd/CUSTOMER_PLAN; đang T1, chưa có kết quả test mới.
+- T1: validation3 + migration1 đạt; đã thấy đỏ thiếu class/V32 trước code.
+  Migration schema QA riêng bảo toàn sách; mã KH tăng qua1000000 không cắt.
+  Baseline FE296đạt, backend trước customer exit0; log chi tiết local ignored.
+- T2:4APItest đỏ404→xanh;4test PostgreSQL thật race create/update/status,
+  rollback audit và no-op đạt. Quyền/CSRF/duplicates/paging/currentVersion đạt;
+  audit chỉ metadata. Chưa chạy frontend mới hoặc browser QA.
+- T3:5test client/validation đạt sau đỏ thiếu module; giữ username @/dấu/chấm,
+  reject URL, API gửi CSRF/version và không retry500. Đang form T4.
+- T4:5formtest đạt; phát hiện response trùng cũ xuất hiện khi đóng/mở lại
+  form, đã có regression đỏ→xanh và hủy stream khi reset. Giữ draft lỗi mạng/
+  version, chống submit2lần, dirty confirm và xóa PII khi auth epoch thay đổi.
+- T5:21customer+sidebar test đạt, có21bao gồm API/validation/form/list/detail;
+  query/back/paging, response cũ, STAFF, no-order placeholder/text XSS đạt.
+  UI tham khảo bố cục, dùng đỏ var(--red),3tên mạng riêng, không nút Tạo đơn.
+- T6 hồi quy trước review: FE312/312, BE310total/0failure/0error/3skip
+  (customer12test đều chạy); buildSSR/Workers/proxy đạt. Sandbox chặn socket/
+  build lần đầu; rerun escalated đạt. CLI npm DNS fail trong sandbox,
+  rerun ngoài sandbox đạt. Không thay dependency hoặc kết nối DB đang dùng.
+- Browser QA thật đang chạy trên8426/4426→PG55436. Đã tạo/sửa/status và
+  conflict2tab; kịch bản có lượt sai chờ URL encoding, no-op ghi chú lặp
+  và exact label có dấu*, đã sửa kịch bản; chưa tuyên bố toàn luồng đạt.
+- Browser QA cuối đạt21check với backend/PGQA thật: duplicate/confirm,
+  two-tab409 giữ draft/reload, dirty/Escape/focus, phone normalization, Threads
+  search, lỗi mạng giữ input, mobile390, STAFFUI/API403, anonymous401/redirect
+  và shell không có PII. Visual desktop1280/mobile390 đã xem ảnh sau splash;
+  test confirm có kiểm soát bằng window.confirm sau ca native đầu.
+- Style local focus/radius giữ đỏ web; Prettier format frontend mới; chưa
+  đổi dependency. Đang review độc lập trước tích hợp dev; chưa deploy/live.
+- Review độc lập toàn branch:0Critical/4Important/1Minor; không re-review.
+  Đã tái hiện5regression frontend + protocol-relative backend đỏ→xanh,
+  targetedFE20đạt và BEvalidation3đạt. Sửa edit-request cũ ghi đè draft tạo,
+  same-component navigation để editor cũ còn mở, tìm lại q sau reset, URL//.
+  Regrade duplicate-link thành Important vì từ chối vẫn khởi chạy điều hướng;
+  bỏ RouterLink song song, một quyết định discard rồi navigate/reset.
+  Router reuse test dùng RouterTestingHarness và route thật, gồm đổi id/query.
+- Đang chạy lại fullsuite/build trên bản sửa; chưa tích hợp dev hoặc deploy.
+
+## 2026-11-12 — CUSTOMER-C04 — Nghiệm thu và tích hợp
+
+- Sau đổi context, working copy DEV_LOG mất riêng CUSTOMER-C01–03; đối chiếu
+  diff và phục hồi nguyên nội dung từ788f38e, không thay checkpoint khác.
+  Một lệnh Python lỗi encoding đã không dừng shell trước commit dc1ebbe;
+  checkpoint phục hồi này sửa ngay việc thiếu lịch sử, không rút gọn log.
+- Fullsuite cuối FE316/316(56file), BE310total/0failure/0error/3skip provider-live
+  cũ; cả12test customer chạy thật. SSR/Workers/proxy cuối đạt. Form6/6 gồm href.
+- Browser21check trước review +6smoke sau sửa đạt trên backend8426/frontend4426
+  và PostgreSQL QA riêng55436. Có duplicate một quyết định, hủy giữB/đồng ý
+  sangA, BrowserBack cùng component đóng draft cũ, tìm lại q sau reset và URL//.
+- Review0Critical/4Important/1Minor; sửa một pass bằng RED→GREEN, không re-review.
+  Duplicate-link regrade Important vì từ chối phải chặn navigation; không còn
+  minor defer. Code fix788f38e; rulings và giới hạn ở CUSTOMER_VERIFICATION.
+- Contract CUSTOMERS331dòng và bằng chứng đã thay spec/plan; đủ AC01–19,
+  README/baseline/PROGRESS cập nhật, kiểm trần400/path/heading/diff đạt.
+  Chưa chạy thiết bị thật, backup/migration/deploy live hoặc smoke domain thật.
+- HMR từng phục vụ template cũ; xác minh binding, restart --no-hmr giải quyết.
+  Worktree native sạch5c5ddac, archive tool từ chối primary checkout; giữ nguyên.
+- Đang tích hợp/push dev theo workflow; không đổi main/dev-ui. Dừng runtime/
+  container QA do task tạo. Bước sau: backup/rollout V32 và smoke domain thật.
+
+- Kết quả cuối: đã fast-forward và push dev tới d228905; npm test trên dev
+  tiếp tục đạt316/316. Backend/frontend/browser QA đã dừng; container và volume
+  memay-customer-test đã xóa, không đụng my-postgres hoặc DB đang dùng.
+  Hợp nhất là fast-forward, code giống bản full backend/build đã kiểm chứng.
+- Giữ worktree primary của chat theo guard host; đồng bộ detached HEAD tới dev
+  cuối sau khi kiểm checkout sạch. Không sao chép .env/dependency hoặc đổi dev-ui.
+  Dọn workspace tạm riêng CUSTOMER_PLAN sau khi chuyển đủ bằng chứng/rulings.
+
+## 2026-11-12 — HERO-C01 — Thiết kế banner quản trị
+
+- Owner yêu cầu feat nhỏ ở admin/sach-noi-bat: thay banner, tối đa10,
+  tự chuyển5giây; chốt mọi banner link cố định/sach. Ảnh tham khảo có arrows,
+  giữ màu chủ đạo web. Không yêu cầu link riêng/chiến dịch/crop editor.
+- Bắt đầu primary worktree sạch, detached51f4924; fetch không có dev mới.
+  Tạo codex/hero-banners từ origin/dev, không tạo worktree khác.
+- Đọc README/PROGRESS/checkpoint cuối, brainstorming, các mục Home/media liên
+  quan; graph HomePage/HomeFeaturedEditor/HomeFeaturedService/LocalUploadService.
+  Hero hiện là asset4:1 cố định; upload sách gắn với phiên/nguồn riêng.
+- Soạn HERO_BANNER_SPEC và đăng ký chỉ mục/snapshot. Đề xuất namespace ảnh
+  banner riêng, reuse primitive encode/self-host, save riêng với kệ sách;
+  fallback banner cũ, controls/pause/SSR/cache và cleanup/backup có tiêu chí.
+  Đây là thiết kế chờ duyệt, chưa viết code hoặc chạy migration/test sản phẩm.
+- Bước tiếp: owner duyệt thiết kế, sau đó writing-plans; không deploy live.

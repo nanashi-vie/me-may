@@ -1,7 +1,8 @@
-# SPEC — Quản lý khách hàng
+# Quản lý khách hàng — contract hiện hành
 
 Ngày12/11/2026 · Customer Management MVP · Backend + Frontend + Database.
-**Trạng thái: owner đã duyệt12/11/2026**, chưa là bằng chứng triển khai.
+**Trạng thái: đã triển khai local theo thiết kế owner duyệt12/11/2026**.
+Bằng chứng và giới hạn tại [CUSTOMER_VERIFICATION](CUSTOMER_VERIFICATION.md).
 Nguồn: spec owner cung cấp trong chat và các quyết định bổ sung12/11.
 
 ## 1. Mục tiêu và nguồn quyết định
@@ -10,8 +11,8 @@ Quản lý hồ sơ người mua thủ công trong admin, làm nền cho Order M
 sau này. Khách không cần tài khoản website, OTP, SĐT hay địa chỉ để được tạo.
 Không tự gộp khách hoặc liên kết tài khoản đăng nhập vì cùng SĐT.
 
-Yêu cầu mới mở phạm vi quản lý khách hàng ngoài giai đoạn tối ưu UI tại
-[MASTER_PLAN](MASTER_PLAN.md); không mở phạm vi đơn hàng của kế hoạch đó.
+Yêu cầu12/11 mở phạm vi quản lý khách hàng theo [MASTER_PLAN](MASTER_PLAN.md);
+không mở phạm vi đơn hàng/thanh toán.
 Stack giữ Angular + Spring Boot modular monolith + Spring JDBC/PostgreSQL.
 Quy ước hiện hành theo [ARCHITECTURE](ARCHITECTURE.md) và
 [CATALOGUE](CATALOGUE.md); không thay contract sách/auth.
@@ -31,11 +32,11 @@ Quy ước hiện hành theo [ARCHITECTURE](ARCHITECTURE.md) và
 | Field riêng trong customer | Gọn, dễ form/tìm kiếm; một username mỗi nền tảng | Owner chọn |
 | Bảng tài khoản mạng xã hội riêng | Nhiều tài khoản/nền tảng nhưng tăng bảng và luồng quản lý | Không chọn cho MVP |
 
-### Chi tiết kỹ thuật trong thiết kế đã duyệt
+### Contract kỹ thuật
 
 Dùng prefix API `/api/v1/admin`, ID JSON dạng chuỗi, version chống ghi đè,
 chuẩn SĐT nội địa, giữ nguyên dấu `@` và cách viết username do admin nhập.
-Các chi tiết này do agent đề xuất và nằm trong bản thiết kế owner đã duyệt.
+Chi tiết này nằm trong bản thiết kế owner đã duyệt, đã được triển khai local.
 Không làm giao diện lịch sử thay đổi từng field; audit tối thiểu chỉ ghi
 actor/thao tác/customerId/version/thời điểm, không sao chép PII vào audit.
 
@@ -296,5 +297,35 @@ repo; browser QA OWNER/STAFF, desktop/mobile layout, keyboard/modal/dirty flow.
 Kiểm hồi quy Book Management/Listing/Auth, không tạo/sửa khách thật ngoài yêu cầu.
 Ghi lệnh/kết quả/giới hạn vào VERIFICATION/DEV_LOG, cập nhật PROGRESS.
 Backup/rollout migration theo quy trình hiện hành; không tự deploy/migrate live.
-Sau hoàn tất mới hợp nhất contract/bằng chứng vào tài liệu chuẩn và gỡ spec/plan
-đã hết vai trò theo README. Kế hoạch triển khai tại [CUSTOMER_PLAN](CUSTOMER_PLAN.md).
+Bản thiết kế/plan đã được hợp nhất vào contract này và bằng chứng nêu trên.
+Không đánh đồng local acceptance với rollout trên môi trường thật.
+
+## 11. Hướng dẫn và rollout
+
+- Vào **Khách hàng** trong sidebar. OWNER chọn **Thêm khách mới**, tối thiểu
+  nhập tên; SĐT, địa chỉ, ba tên tài khoản và ghi chú có thể để trống.
+- Khi có SĐT trùng, xem các hồ sơ trước; chỉ chọn **Vẫn tạo khách mới** khi
+  muốn giữ nhiều hồ sơ. Đổi số phải kiểm lại; không có gộp tự động.
+- Nhấn tên/Xem để mở chi tiết; Sửa dùng cùng form. Hủy/Escape/rời trang có
+  dữ liệu chưa lưu sẽ hỏi xác nhận. Chọn không thoát giữ nguyên draft.
+- Lưu trữ giữ nguyên hồ sơ/mã; chọn bộ lọc Đã lưu trữ để tìm và Khôi phục.
+  STAFF chỉ xem và tìm, không có thao tác ghi.
+- Khi có cảnh báo dữ liệu cũ, kiểm tra bản mới trước khi sửa lại; tải lại
+  hồ sơ là quyết định bỏ draft có xác nhận. Không tự ghi đè tab/người khác.
+- Khi mất kết nối lúc lưu, kiểm danh sách trước tạo lại vì kết quả có thể
+  chưa xác định; MVP chưa có idempotency xuyên request độc lập.
+
+Migration hiện hành V32__customers.sql. Trước rollout, xác minh revision và
+chuỗi Flyway thực tế; backup database/offhost và kiểm restore theo
+[DEPLOYMENT](DEPLOYMENT.md), thử migration trên bản sao có dữ liệu cũ.
+Backend thêm schema/API trước frontend để tránh giao diện gọi endpoint chưa có.
+Không dùng DB production để chạy CatalogueTestSupport/PgTestData.clean.
+
+Smoke trên domain thật: session/CSRF/no-store, OWNER create/edit/archive/restore,
+STAFF GET200/write403, anonymous401, username/phone/trùng/version409 và public
+không có PII. Đối chiếu counts sách/admin/media trước/sau, theo dõi lỗi DB/API.
+
+Rollback app có thể giữ bảng mới; không drop customer hoặc reset sequence khi
+đã có khách. Giữ backup và xác minh schema tương thích; khôi phục toàn DB cần
+đối chiếu mọi ghi phát sinh, không làm mất dữ liệu mới của module khác.
+Task local12/11 không chạy rollout, backup live hoặc rollback production.

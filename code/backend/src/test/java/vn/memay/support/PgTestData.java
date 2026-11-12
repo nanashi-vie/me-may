@@ -17,7 +17,7 @@ public final class PgTestData {
  }
  public static void clean(JdbcTemplate jdbc){
   if(!"me_may_test".equals(jdbc.queryForObject("select current_database()",String.class))) throw new IllegalStateException("Refusing non-test database");
-  for(String table:new String[]{"drive_image_batch_item","drive_image_batch","image_recovery_item","image_recovery_operation","image_migration_rollback","image_migration_apply_item","image_migration_apply_book","image_migration_apply","image_migration_receipt","book_import_item","book_import_batch","temporary_media","upload_session","audit_event","home_featured_item","flash_sale_item","book_media","listing_feature","listing_collection","listing_age_group","book_variant","listing","book_copy","book_storage_box","collection"}) {
+  for(String table:new String[]{"customer","drive_image_batch_item","drive_image_batch","image_recovery_item","image_recovery_operation","image_migration_rollback","image_migration_apply_item","image_migration_apply_book","image_migration_apply","image_migration_receipt","book_import_item","book_import_batch","temporary_media","upload_session","audit_event","home_featured_item","flash_sale_item","book_media","listing_feature","listing_collection","listing_age_group","book_variant","listing","book_copy","book_storage_box","collection"}) {
    if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass(?) is not null",Boolean.class,table))) jdbc.execute("delete from "+table);
   }
   if(Boolean.TRUE.equals(jdbc.queryForObject("select to_regclass('flash_sale') is not null",Boolean.class))) jdbc.update("update flash_sale set enabled=false,starts_at=null,ends_at=null,version=0");
