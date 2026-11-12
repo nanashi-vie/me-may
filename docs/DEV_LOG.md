@@ -3689,3 +3689,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Worktree native sạch5c5ddac, archive tool từ chối primary checkout; giữ nguyên.
 - Đang tích hợp/push dev theo workflow; không đổi main/dev-ui. Dừng runtime/
   container QA do task tạo. Bước sau: backup/rollout V32 và smoke domain thật.
+
+- Kết quả cuối: đã fast-forward và push dev tới d228905; npm test trên dev
+  tiếp tục đạt316/316. Backend/frontend/browser QA đã dừng; container và volume
+  memay-customer-test đã xóa, không đụng my-postgres hoặc DB đang dùng.
+  Hợp nhất là fast-forward, code giống bản full backend/build đã kiểm chứng.
+- Giữ worktree primary của chat theo guard host; đồng bộ detached HEAD tới dev
+  cuối sau khi kiểm checkout sạch. Không sao chép .env/dependency hoặc đổi dev-ui.
+  Dọn workspace tạm riêng CUSTOMER_PLAN sau khi chuyển đủ bằng chứng/rulings.
