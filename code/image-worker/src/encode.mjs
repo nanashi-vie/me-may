@@ -7,5 +7,6 @@ try {
   process.stdout.write(JSON.stringify({ manifest }));
 } catch (error) {
   const code = ['invalid_image', 'unknown_recipe'].includes(error.code) ? error.code : 'encode_failed';
+  if (code === 'encode_failed') process.stderr.write(String(error.stack || error.message || code).slice(-4096) + '\n');
   process.stdout.write(JSON.stringify({ code }));
 }

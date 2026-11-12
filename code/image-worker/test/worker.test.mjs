@@ -130,3 +130,20 @@ test('banner namespace refuses a symlink and unknown prefixes', async t => {
     assert.ok(failed);
   }
 });
+
+test('missing encoder dependency keeps the public error code and records bounded stderr', async t => {
+  const { root, job } = await fixture(t);
+  const { cp } = await import('node:fs/promises');
+  const { execFile: exec } = await import('node:child_process');
+  const { promisify } = await import('node:util');
+  const isolated = join(root, 'isolated-worker');
+  await cp(new URL('../src/', import.meta.url), join(isolated, 'src'), { recursive: true });
+  const script = `import {runJob} from './src/index.mjs'; const job=JSON.parse(process.argv[2]);
+    await runJob({fail:async(_job,code)=>process.stdout.write(JSON.stringify({code})),
+      complete:async()=>{throw Error('must not complete')}},process.argv[1],job);`;
+  const result = await promisify(exec)(process.execPath, ['--input-type=module','-e',script,root,JSON.stringify(job)], {cwd:isolated});
+  assert.deepEqual(JSON.parse(result.stdout), {code:'encode_failed'});
+  assert.match(result.stderr, /ERR_MODULE_NOT_FOUND/);
+  assert.match(result.stderr, /sharp/);
+  assert.ok(result.stderr.length <= 4600, 'diagnostic stays bounded');
+});

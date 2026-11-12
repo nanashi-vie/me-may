@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'code/backend/**'
+      - 'code/image-worker/**'
       - '.github/workflows/publish-backend.yml'
   workflow_dispatch:
 
@@ -52,6 +53,21 @@ jobs:
           java-version: '21'
           cache: maven
           cache-dependency-path: code/backend/pom.xml
+
+      - name: Set up Node.js 22 for image worker integration tests
+        uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: code/image-worker/package-lock.json
+
+      - name: Install image worker dependencies
+        working-directory: code/image-worker
+        run: npm ci
+
+      - name: Run image worker tests
+        working-directory: code/image-worker
+        run: npm test
 
       - name: Initialize test database with Flyway
         run: |

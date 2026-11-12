@@ -4001,3 +4001,31 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   không forcepush/main. Cậpnhậtcheckpointdừng rồi tiếp tục giữ2nhánh cùngHEAD.
 - Cleanupcustomers vẫn bịCodexprimaryprotection chặn nhưHERO-C19; không tuyênbố
   đãxóa. Bước còn lại: chuyểnchatvềLocal rồi archiveattachmentcustomers.
+
+### HERO-C21 — Kiểm lỗi CI sau PR43
+
+- Owner cung cấp nhận xét CI/testworker, yêu cầu kiểm/sửa rồi dọncustomers.
+- PR43 đãmerge main, head4e29204. Run43243003550/job131268207271 fail đúng3
+  HeroBannerMediaTest tạifinish(), 319total/3fail/3skip; logchỉencode_failed,
+  không cóSharpstack do encoderwrapper nuốtstderr. Không suy đây là cleanupbug.
+- Workflow publish-backend chưa setupNode/npmci cho code/image-worker và chưa
+  pathfilterworker. Sửa môi trường trước; giữ cả4testmedia/logiccleanup hiệncó.
+- Bổ sung chẩn đoán stderr bounded/private để lỗi import/quyềnfile/encode hiện
+  trong kết quảtest; publicjoberror vẫn mã ổnđịnh, không ghi credentials.
+- Đang làm trên branchtriểnkhai từdev; runtimeBE/FE userđãdừng, không khởi động.
+- Reproduction worker cô lập khôngnode_modules: publiccode encode_failed giữ
+  nguyên, stderr hiệnERR_MODULE_NOT_FOUND/sharp; testdiagnostic RED→GREEN14/14.
+- Media5/5đạt gồmtestmới stderr/assertion và4testcũ nguyênvẹn. Workflow thêm
+  setup-node22/cachelock/npmci/npmtestworker trướcMaven, pushpathworker.
+- Fullbackend đangchạy trênDBQA55438. Chuẩn bịPRnhápdev→main để kiểmCI thực,
+  không merge/deploymain. Không chạyBE/FE serverlocal củaowner.
+
+### HERO-C22 — Local CI candidate đạt
+
+- `TEST_DB_URL=jdbc:postgresql://127.0.0.1:55438/me_may_test ... mvn -q -f code/backend/pom.xml test`
+  đạt320total/0failure/error/3providerlive skip. Testworker14/14đạt, gồmcase
+  môphỏng thiếuSharp nhưng giữmãpublicổnđịnh vàstderrbounded4KiB.
+- YAML parse và kiểm thứtự setupNode22/npmci/npmtestworker trướcMaven đạt.
+  Không sửaHeroBannerMedia.cleanup hoặc bỏ/disabletest. Javahelper giữ riêng
+  stdoutmanifest/stderrdiagnostic, timeout210s và cleanupfiletạm.
+- CIonline sẽ kiểmquaPRnhápdev→main; không tựmerge hoặc deploymain.

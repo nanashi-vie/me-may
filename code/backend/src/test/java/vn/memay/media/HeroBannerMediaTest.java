@@ -63,7 +63,28 @@ class HeroBannerMediaTest extends CatalogueTestSupport {
  private void finish()throws Exception{
   var lease=worker.claim().orElseThrow();assertThat(lease.inputKey()).startsWith("banners/staging/");assertThat(lease.recipeVersion()).isEqualTo("hero-v1");
   String script="import {runJob} from './src/index.mjs'; const j=JSON.parse(process.argv[2]); await runJob({complete:async(_,m)=>process.stdout.write(JSON.stringify(m)),fail:async(_,c)=>{throw Error(c)}},process.argv[1],j);";
-  var p=new ProcessBuilder("node","--input-type=module","-e",script,root.toRealPath().toString(),json(lease)).directory(Path.of("../image-worker").toFile()).redirectError(ProcessBuilder.Redirect.INHERIT).start();
-  String output=new String(p.getInputStream().readAllBytes());assertThat(p.waitFor()).isZero();assertThat(output).isNotBlank();var manifest=JSON.readValue(output,ImageTypes.Manifest.class);worker.complete(lease.jobId(),lease.token(),manifest);
+  String output=runNode(script,root.toRealPath().toString(),json(lease));assertThat(output).isNotBlank();var manifest=JSON.readValue(output,ImageTypes.Manifest.class);worker.complete(lease.jobId(),lease.token(),manifest);
  }
+ @Test void nodeFailureRetainsCapturedStderrInAssertion(){
+  assertThatThrownBy(()->runNode("await import('memay-test-missing-dependency')"))
+   .isInstanceOf(AssertionError.class).hasMessageContaining("ERR_MODULE_NOT_FOUND")
+   .hasMessageContaining("memay-test-missing-dependency");
+ }
+ private String runNode(String script,String... args)throws Exception{
+  Path out=Files.createTempFile(root,"worker-stdout-",".log"),err=Files.createTempFile(root,"worker-stderr-",".log");
+  try{
+   var command=new ArrayList<>(List.of("node","--input-type=module","-e",script));command.addAll(List.of(args));
+   var process=new ProcessBuilder(command).directory(Path.of("../image-worker").toFile())
+    .redirectOutput(out.toFile()).redirectError(err.toFile()).start();
+   boolean finished=process.waitFor(210,java.util.concurrent.TimeUnit.SECONDS);
+   if(!finished){process.descendants().forEach(ProcessHandle::destroyForcibly);process.destroyForcibly();process.waitFor();}
+   String stdout,stderr;
+   try(var input=Files.newInputStream(out)){stdout=new String(input.readNBytes(65536),java.nio.charset.StandardCharsets.UTF_8);}
+   try(var input=Files.newInputStream(err)){stderr=new String(input.readNBytes(65536),java.nio.charset.StandardCharsets.UTF_8);}
+   assertThat(finished).as("Node worker timed out. stderr:%n%s",stderr).isTrue();
+   assertThat(process.exitValue()).as("Node worker failed. stderr:%n%s%nstdout:%n%s",stderr,stdout).isZero();
+   return stdout;
+  }finally{Files.deleteIfExists(out);Files.deleteIfExists(err);}
+ }
+
 }
