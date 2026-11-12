@@ -2,7 +2,7 @@
 
 **Bản hiện hành | Cập nhật12/11/2026 | Gate release ở PROGRESS**
 > Mở rộng12/11: quản lý khách hàng thủ công được duyệt tại [CUSTOMERS](CUSTOMERS.md).
-> Không mở phạm vi đơn hàng/thanh toán; các gate release cũ vẫn giữ.
+> Banner Home12/11: [HERO_BANNERS](HERO_BANNERS.md). Không mở đơn hàng/thanh toán; gate release cũ giữ.
 
 > **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
 

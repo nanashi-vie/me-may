@@ -56,4 +56,22 @@ class HeroBannerApiTest extends CatalogueTestSupport {
   }
  }
 
+ @org.springframework.beans.factory.annotation.Autowired HeroBannerService bannerService;
+ @org.springframework.beans.factory.annotation.Autowired vn.memay.audit.AuditService audit;
+ @Test void configurationReadRemainsConsistentWhenSaveCommitsDuringRead(){
+  UUID id=upload(owner.getId(),"READY");var once=new java.util.concurrent.atomic.AtomicBoolean(true);
+  var observed=new org.springframework.jdbc.core.JdbcTemplate(jdbc.getDataSource()){
+   @Override public <T> T query(String sql,org.springframework.jdbc.core.ResultSetExtractor<T> extractor){
+    T result=super.query(sql,extractor);
+    if(sql.toLowerCase(java.util.Locale.ROOT).contains("from hero_banner_config")&&once.compareAndSet(true,false))
+     bannerService.save(owner,new HeroBannerService.Update(0L,List.of(new HeroBannerService.Item(id,"Concurrent"))));
+    return result;
+   }
+  };
+  var view=new HeroBannerService(observed,audit).get(owner);
+  assertThat(once.get()).as("Controlled interleaving executed").isFalse();
+  assertThat(view.version()==0&&view.banners().isEmpty()||view.version()==1&&view.banners().size()==1)
+   .as("A reader sees a complete version, never old version with new items").isTrue();
+ }
+
 }

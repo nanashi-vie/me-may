@@ -3821,3 +3821,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Workers proxy giữ cache immutable chỉ route public banner hợp lệ200/304,
   chuyển If-None-Match; private/error vẫn no-store. Test RED→GREEN17/17.
 - Fullsuite cuối và review độc lập đang thực hiện; chưa tích hợp/pushdev.
+
+### HERO-C11 — Review, nghiệm thu và chuẩn bị tích hợp
+
+- Review độc lập gpt-6-astra:2Important,0Critical,0minor, không declined.
+  Đã kiểm lại và sửa trong một pass: GET config/version dùng1SQL snapshot;
+  FlashSale giữfullwidth. Controlled snapshot test và browser sale1280/390 RED→GREEN.
+- Suite cuối: FE332/33258files; BE319total,0fail/error,3provider-live skip;
+  worker13/13. BuildSSR/Workers/proxy đạt; sandbox chặn build/listen được chạy
+  lại ngoài sandbox, không ghi thành lỗi ứng dụng.
+- Browser realQA:2upload/encode/draftprivate/save/persist, reorder/replacement,
+  fakefile giữpublic,409 giữdraft; autoplay/pause/keyboard/link; hero3:1 và
+  sale fullwidth ở1280/390. FB iframe có warnings policy cũ, không là lỗi banner.
+- Backup DBQA+22file ảnh, restore DB/mount riêng, SHA originals/variants khớp;
+  hai banner×3WebP sizes200, isolated mutation409. Không đọc/mutate production.
+- Hợp nhất spec/plan thành HERO_BANNERS, sửa chỉ mục/master/catalogue/progress;
+  gỡ spec/plan đã chuyển đủ AC. Không bỏ gate artwork thật/device/digest/livebackup.
+- Các quyết định builder: thực thi tiếp theo quyền đã cấp; reusev1 ban đầu đã
+  được owner thay bằng hero-v1/3200/WebP88 và khung3:1; bytes đã xác minh tối đa
+  10MiB thay stream mở lại (chi phí RAM/request). Không có minor deferred.
+- Local4200/8080 chưa bật LOCAL; đã hỏi owner cấu hình runtime vì cờ hiện có
+  cũng đổi provider upload sách mới. Chờ trả lời; không tự bật khi đang chờ.
+- Chuẩn bị tích hợp/pushdev theo workflow đã cho phép; không đụng main.
