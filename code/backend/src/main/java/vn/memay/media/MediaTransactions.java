@@ -46,14 +46,13 @@ public class MediaTransactions {
     private final BookMapper mapper;
     private final AuditService audit;
     private final Clock clock;
-    private final SourceBindingRepository sources;
     private final UploadSessionTransactions sessions;
     private final EntityManager em;
     private final JdbcTemplate jdbc;
 
     public MediaTransactions(vn.memay.auth.AdminUserRepository users, BookCopyRepository books,
             ListingRepository listings, BookMediaRepository images, BookAccess access, BookMapper mapper,
-            AuditService audit, Clock clock, EntityManager em, JdbcTemplate jdbc, SourceBindingRepository sources,
+            AuditService audit, Clock clock, EntityManager em, JdbcTemplate jdbc,
             UploadSessionTransactions sessions) {
         this.users = users;
         this.books = books;
@@ -63,7 +62,6 @@ public class MediaTransactions {
         this.mapper = mapper;
         this.audit = audit;
         this.clock = clock;
-        this.sources = sources;
         this.sessions = sessions;
         this.em = em;
         this.jdbc = jdbc;
@@ -139,8 +137,6 @@ public class MediaTransactions {
         m.height = uploaded.height();
         m.updatedAt = clock.instant();
         em.flush();
-        if (l.publicationStatus == Publication.PUBLISHED)
-            sources.requireVerifiedForBook(bookId);
         var result = mapper.detail(b, l);
         audit.record(actor, "BOOK", bookId,
                 before.media().stream().anyMatch(v -> v.role() == m.role) ? "MEDIA_REPLACED" : "MEDIA_ATTACHED",
@@ -190,7 +186,6 @@ public class MediaTransactions {
         }
         em.flush();
         sessions.consumeReady(mediaId, bookId, role, role.label() + " " + b.bookCode);
-        if (l.publicationStatus == Publication.PUBLISHED) sources.requireVerifiedForBook(bookId);
         var after = mapper.detail(b, l);
         audit.record(actor, "BOOK", bookId, "MEDIA_REPLACED", audit.snapshot(before), audit.snapshot(after), b.version);
         jdbc.update("""

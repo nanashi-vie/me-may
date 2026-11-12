@@ -8,7 +8,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { BookApi } from '../book-api';
 import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
-import { AVAILABILITY_LABELS, CATEGORY_LABELS, PUBLICATION_LABELS } from '../book-copy';
+import { AVAILABILITY_LABELS, CATEGORY_LABELS, MEDIA_LABELS, PUBLICATION_LABELS } from '../book-copy';
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -18,6 +18,12 @@ import { AVAILABILITY_LABELS, CATEGORY_LABELS, PUBLICATION_LABELS } from '../boo
 export class BookList {
   readonly auth=inject(AuthService);
   readonly price = formatAdminPriceRange;
+  sourceWarning(book: BookSummary): string {
+    const roles = book.unverifiedSourceRoles ?? [];
+    return roles.length ? 'Nguồn ảnh Drive chưa được xác minh: '
+      + roles.map(role => MEDIA_LABELS[role]).join(' · ')
+      + '. Vẫn được xuất bản; cần bổ sung nguồn để khôi phục ảnh.' : '';
+  }
   private readonly api = inject(BookApi);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);

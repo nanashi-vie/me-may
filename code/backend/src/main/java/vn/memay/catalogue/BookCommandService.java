@@ -31,7 +31,6 @@ public class BookCommandService {
     @org.springframework.beans.factory.annotation.Autowired private BookStorageBoxes storageBoxes;
     private final BookMapper mapper;
     private final AuditService audit;
-    private final vn.memay.media.SourceBindingRepository sources;
     private final JdbcTemplate jdbc;
     private final Clock clock;
     private final EntityManager em;
@@ -42,7 +41,7 @@ public class BookCommandService {
     public BookCommandService(BookCopyRepository books, ListingRepository listings, CategoryRepository categories,
             BookCodeGenerator codes, BookValidation validation, BookAccess access, BookMapper mapper,
             AuditService audit, JdbcTemplate jdbc, Clock clock, EntityManager em, UploadSessionTransactions uploads,
-            BookMediaRepository images, ObjectMapper json, BookVariantStore variants, vn.memay.media.SourceBindingRepository sources) {
+            BookMediaRepository images, ObjectMapper json, BookVariantStore variants) {
         this.books = books;
         this.variants = variants;
         this.listings = listings;
@@ -53,7 +52,6 @@ public class BookCommandService {
         this.mapper = mapper;
         this.audit = audit;
         this.jdbc = jdbc;
-        this.sources = sources;
         this.clock = clock;
         this.em = em;
         this.uploads = uploads;
@@ -195,7 +193,6 @@ public class BookCommandService {
         var prepared = mapper.detail(b, l);
         if(target==Publication.PUBLISHED) {
             validation.validatePublished(prepared);
-            sources.requireVerifiedForBook(id);
             l.publicationStatus = Publication.PUBLISHED;
             l.publishedAt = clock.instant().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
             em.flush();
@@ -296,7 +293,6 @@ public class BookCommandService {
         if (l.publicationStatus == Publication.PUBLISHED || publishing) {
             validation.validateWrite(w);
             validation.validatePublished(after);
-            sources.requireVerifiedForBook(id);
         }
         if(publishing) {
             l.publicationStatus=Publication.PUBLISHED;

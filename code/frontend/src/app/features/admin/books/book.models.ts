@@ -67,6 +67,7 @@ export interface BookDetail extends BookWrite {
   media: MediaView[];
 }
 export interface BookSummary {
+  unverifiedSourceRoles?: MediaRole[];
   storageBoxNumber?: number | null;
   missingFields?: string[];
   publishedAt: string | null;
