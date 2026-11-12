@@ -3,9 +3,10 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- Banner hero12/11: owner yêu cầu quản lý tại `/admin/sach-noi-bat`, tối đa10,
-  tự chuyển5giây, mọi ảnh dẫn cố định `/sach`. Đã soạn
-  [thiết kế ngắn chờ duyệt](HERO_BANNER_SPEC.md); chưa triển khai hoặc migrate.
+- Banner hero12/11: owner đã duyệt, yêu cầu triển khai tuần tự theo
+  [thiết kế](HERO_BANNER_SPEC.md), trước hết sửa local4200 thiếu mục Khách hàng.
+  Nguyên nhân:4200 phục vụ dev-ui chưa nhận customer từ dev; đã merge local
+  giữ UI riêng, đang backup/chạy lại backend local. Banner chưa triển khai.
 
 - Quản lý khách hàng12/11: [contract](CUSTOMERS.md) đã triển khai/kiểm local;
   field riêng chỉ username, nhãn Tên Zalo/Tên TikTok/Tên Threads; OWNER ghi,

@@ -1,6 +1,6 @@
 # Thiết kế — Banner hero trang chủ
 
-Ngày12/11/2026 · **Chờ duyệt thiết kế** · mở rộng nhỏ trong quản trị Home.
+Ngày12/11/2026 · **Owner đã duyệt, yêu cầu triển khai tuần tự** · mở rộng quản trị Home.
 
 ## Mục tiêu và quyết định đã chốt
 

@@ -3713,3 +3713,35 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   fallback banner cũ, controls/pause/SSR/cache và cleanup/backup có tiêu chí.
   Đây là thiết kế chờ duyệt, chưa viết code hoặc chạy migration/test sản phẩm.
 - Bước tiếp: owner duyệt thiết kế, sau đó writing-plans; không deploy live.
+
+## 2026-11-12 — HERO-C02 — Sửa local4200 rồi triển khai banner tuần tự
+
+- Owner duyệt thiết kế, yêu cầu triển khai tuần tự; trước đó kiểm mục Khách
+  hàng không hiện ở localhost4200. Dùng systematic-debugging và writing-plans.
+- PID81477 phục vụ4200 từ dev-ui/code/frontend, nhánh95a6a89 chưa có customer;
+  root dev và feature đã có e349464. Không phải quyền hay route bị thiếu ở dev.
+- Merge dev vào dev-ui sạch, giữ footer/chi tiết sách riêng. Chỉ xung đột
+  PROGRESS/DEV_LOG: giữ đủ lịch sử hai bên và snapshot customer mới; merge local
+  3a30532, không push dev-ui hoặc thay main. Source feature làm ở worktree native.
+- Khi kiểm lại, cả4200/8080 không còn listener. Cấu hình backend root trỏ
+  localhost5432/me_may_dev; đang backup riêng0600 và khởi động lại backend/
+  frontend mới. Không dùng DB thật/production hoặc test cleaner trên DB dev.
+- Tiếp theo: xác minh menu/API local, lập plan cụ thể và thực thi theo lệnh
+  tuần tự đã được owner cấp; không yêu cầu chọn lại phương thức thực thi.
+- Local đã có V32 từ trước; backup riêng DB dev xong, backend healthUP và
+  frontend4200 mới lên. Browser xác nhận menu Khách hàng→/admin/customers
+  trên code thật, dùng identity fixture chỉ ở browser (không tạo account/khách
+  trong DB). Chưa dùng fixture này làm bằng chứng API local authenticated.
+- Đã lập HERO_BANNER_PLAN186dòng, tự rà10AC/5Review Focus/interfaces; theo
+  lệnh triển khai rõ ràng của owner, dùng executing-plans/TDD không xin lại
+  quyền thực thi. Tận dụng recipev1/queuePROCESS,640/1400, namespace banners;
+  không tạo recipe/digest hoặc pipeline Drive mới. Bắt đầu T1 trên worktree
+  codex/hero-banners; dependency symlink local ignored, QA PostgreSQL riêng.
+
+### HERO-C03 — API cấu hình banner
+
+- Task 1: schema V33, config/version riêng, OWNER-only, tối đa 10 ảnh READY,
+  audit trong transaction; Home trả banners theo thứ tự, không đổi shelves.
+- QA PostgreSQL riêng cổng 55437: HeroBannerApiTest RED (API/schema thiếu),
+  sau triển khai GREEN 3 tests, 0 failures/errors. Chưa triển khai upload/UI.
+- Thay đổi còn local trên codex/hero-banners; không migrate production.

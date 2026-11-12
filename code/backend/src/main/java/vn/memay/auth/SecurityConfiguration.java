@@ -98,9 +98,9 @@ public class SecurityConfiguration {
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/books", "/api/v1/books/**",
                                                                 "/api/v1/collections", "/api/v1/collections/**",
                                                                 "/api/v1/taxonomy", "/api/v1/home", "/api/v1/contact",
-                                                                "/api/v1/flash-sale", "/api/v1/cache-policy")
+                                                                "/api/v1/flash-sale", "/api/v1/cache-policy", "/api/v1/hero-banners/**")
                                                 .permitAll()
-                                                .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**")
+                                                .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**", "/api/v1/admin/hero-banners", "/api/v1/admin/hero-banners/**")
                                                 .hasRole("OWNER")
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")
                                                 .hasAnyRole("OWNER", "STAFF")
