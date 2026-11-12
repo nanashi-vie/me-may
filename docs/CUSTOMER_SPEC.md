@@ -1,7 +1,7 @@
 # SPEC — Quản lý khách hàng
 
 Ngày12/11/2026 · Customer Management MVP · Backend + Frontend + Database.
-**Trạng thái: thiết kế chờ duyệt**, chưa là bằng chứng triển khai.
+**Trạng thái: owner đã duyệt12/11/2026**, chưa là bằng chứng triển khai.
 Nguồn: spec owner cung cấp trong chat và các quyết định bổ sung12/11.
 
 ## 1. Mục tiêu và nguồn quyết định
@@ -20,7 +20,8 @@ Quy ước hiện hành theo [ARCHITECTURE](ARCHITECTURE.md) và
 
 - Mỗi nền tảng một field riêng: `zalo_name`, `tiktok_id`, `threads_id`.
 - Cả ba chỉ lưu username/tên nhận diện do admin nhập, không lưu đường dẫn.
-- Nhãn UI Zalo chính xác là **Tên Zalo**, không dùng “Username Zalo”.
+- Nhãn UI: **Tên Zalo**, **Tên TikTok**, **Tên Threads**, theo chỉnh sửa
+  trực tiếp của owner trước khi duyệt; không dùng “Username X”.
 - OWNER được ghi; STAFF chỉ xem danh sách, chi tiết và tìm kiếm.
 
 ### Các hướng đã cân nhắc
@@ -30,11 +31,11 @@ Quy ước hiện hành theo [ARCHITECTURE](ARCHITECTURE.md) và
 | Field riêng trong customer | Gọn, dễ form/tìm kiếm; một username mỗi nền tảng | Owner chọn |
 | Bảng tài khoản mạng xã hội riêng | Nhiều tài khoản/nền tảng nhưng tăng bảng và luồng quản lý | Không chọn cho MVP |
 
-### Chi tiết kỹ thuật agent đề xuất trong bản chờ duyệt
+### Chi tiết kỹ thuật trong thiết kế đã duyệt
 
 Dùng prefix API `/api/v1/admin`, ID JSON dạng chuỗi, version chống ghi đè,
 chuẩn SĐT nội địa, giữ nguyên dấu `@` và cách viết username do admin nhập.
-Các chi tiết này là đề xuất của agent, không ghi thành quyết định owner.
+Các chi tiết này do agent đề xuất và nằm trong bản thiết kế owner đã duyệt.
 Không làm giao diện lịch sử thay đổi từng field; audit tối thiểu chỉ ghi
 actor/thao tác/customerId/version/thời điểm, không sao chép PII vào audit.
 
@@ -112,7 +113,7 @@ Trim đầu/cuối mọi văn bản; optional rỗng thành NULL; không cắt d
 Tên chỉ khoảng trắng hoặc vượt150 ký tự trả400 tại field.
 Địa chỉ/note/ba username đều tùy chọn, giới hạn theo bảng dữ liệu.
 
-Tên Zalo/TikTok ID/Threads ID là text thuần, cho phép có hoặc không có `@`;
+Tên Zalo/Tên TikTok/Tên Threads là text thuần, cho phép có hoặc không có `@`;
 giữ nguyên chữ hoa/thường và dấu `@` khi lưu. Không tự xây link, không gọi
 nền tảng để kiểm username, không ép Zalo dùng regex handle của TikTok.
 Từ chối giá trị dạng URL (`http://`, `https://`, `www.` hoặc tên miền/link
@@ -160,7 +161,7 @@ Giữ thiết kế admin hiện tại, desktop-first, responsive; không thêm U
 | Nhóm | Nhãn theo thứ tự | Bắt buộc |
 |---|---|---|
 | Chính | Tên khách hàng; Số điện thoại; Địa chỉ nhận hàng | Chỉ Tên khách hàng |
-| Bổ sung | Tên Zalo; TikTok ID; Threads ID; Ghi chú nội bộ | Không |
+| Bổ sung | Tên Zalo; Tên TikTok; Tên Threads; Ghi chú nội bộ | Không |
 
 Footer **Hủy** / **Lưu khách hàng** (sửa: **Lưu thay đổi**).
 Loading khi lấy hồ sơ/gửi; khóa submit đồng bộ ngay khi gửi để double-click,
@@ -181,7 +182,7 @@ Modal có tên truy cập, label/error liên kết, focus trap/return focus,
 thao tác keyboard, vùng thông báo và loading phù hợp screen reader.
 
 Route chi tiết `/admin/customers/:id`: mã, tên, SĐT, địa chỉ, Tên Zalo,
-TikTok ID, Threads ID, ghi chú, trạng thái, thời gian tạo/cập nhật.
+Tên TikTok, Tên Threads, ghi chú, trạng thái, thời gian tạo/cập nhật.
 OWNER có Chỉnh sửa/Lưu trữ/Khôi phục; mọi người có Quay về danh sách.
 Phần lịch sử đơn chỉ hiển thị “Khách hàng chưa có đơn hàng.”; không tạo bảng,
 query đơn hoặc nút Tạo đơn có thể dùng. 404 có thông báo và đường về danh sách.
@@ -281,7 +282,7 @@ dựng lịch sử. Lượt chốt/đặt cọc/thanh toán/kiện giao là ph�
 | 11 | Create song song → customer_code không trùng, không MAX+1 |
 | 12 | Anonymous API401/URL không lộ hồ sơ; public HTML/API/cache không chứa PII |
 | 13 | Ba username tùy chọn, trim/NULL/giới hạn đúng; URL bị từ chối, text không thành link |
-| 14 | UI ghi đúng Tên Zalo/TikTok ID/Threads ID; username tìm có/không @ đều được |
+| 14 | UI ghi đúng Tên Zalo/Tên TikTok/Tên Threads; username tìm có/không @ đều được |
 | 15 | +84 và0 tương đương; trùng kể cả archived; sửa loại chính mình, giữ số không cảnh báo |
 | 16 | Lỗi API giữ form; dirty có xác nhận; double-submit chỉ phát một request |
 | 17 | Hai update/status cùng version → một thành công, còn lại409; không ghi đè |
@@ -296,4 +297,4 @@ Kiểm hồi quy Book Management/Listing/Auth, không tạo/sửa khách thật 
 Ghi lệnh/kết quả/giới hạn vào VERIFICATION/DEV_LOG, cập nhật PROGRESS.
 Backup/rollout migration theo quy trình hiện hành; không tự deploy/migrate live.
 Sau hoàn tất mới hợp nhất contract/bằng chứng vào tài liệu chuẩn và gỡ spec/plan
-đã hết vai trò theo README. Bản thiết kế này cần owner duyệt trước writing-plans.
+đã hết vai trò theo README. Kế hoạch triển khai tại [CUSTOMER_PLAN](CUSTOMER_PLAN.md).

@@ -3596,3 +3596,29 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Chuyển sang `onBackdropClick()` không trả giá trị.
 - Thêm assertion hồi quy ở home-page.spec.ts. `npm test` từ code/frontend đạt
   284/284. Chrome headless trên ng serve dev-ui: bấm nút mở tab id.zalo.me.
+
+## 2026-11-12 — CUSTOMER-C02 — Duyệt thiết kế và lập plan
+
+- Owner duyệt thiết kế; trước duyệt có chỉnh trực tiếp một dòng trong
+  CUSTOMER_SPEC thành nhãn Tên X cho mọi nền tảng. Giữ chỉnh sửa đó, đồng bộ
+  các mục validation/form/detail/AC thành Tên Zalo/Tên TikTok/Tên Threads.
+- Phạm vi: tài liệu kế hoạch Customer Management; chưa viết code sản phẩm.
+  Bắt đầu dev khớp origin/dev, chỉ CUSTOMER_SPEC có chỉnh sửa owner nêu trên.
+- Đã đọc writing-plans đầy đủ; dùng graph khám phá và đọc auth/AdminHttp,
+  lỗi API/audit/CollectionService. Graph không trả frontend file inventory,
+  fallback rg --files và đọc route/template/test hiện hành; migration mới
+  dự kiến V32 sau V31 nhưng phải kiểm lại khi thực thi.
+- Ghi trạng thái spec đã duyệt, đăng ký CUSTOMER_PLAN trong README/PROGRESS.
+  Đang viết và tự rà plan theo spec; chưa chạy test/build/migration/live.
+- Tiếp theo: kiểm dòng/link/diff và coverage AC, commit/push dev; owner review
+  plan/chọn cách thực thi theo writing-plans trước triển khai. Không đổi main.
+- Kết quả: CUSTOMER_PLAN290dòng,6task T1–T6 có file/interface/test/command/
+  commit; tự rà AC01–19 và5Review Focus, không dispatch reviewer plan theo skill.
+  Đề xuất thực thi trực tiếp, review độc lập toàn branch do các task phụ thuộc
+  DTO/API/form của nhau; chưa tự chọn cách thực thi thay owner.
+- Kiểm từ root: Python trên5file thay đổi xác nhận trần400(trừDEV_LOG),
+  link local tồn tại, fence cân bằng; assert label/task/interface/DBtest đạt.
+  git diff --check đạt; rg không còn nhãn TikTok ID/Threads ID hoặc chờ duyệt
+  trong spec/plan (exit1 là không có match). Không test/build/migrate sản phẩm.
+- Bàn giao spec đã duyệt và plan chờ review/chọn cách thực thi trên dev;
+  giữ nguyên chỉnh sửa nhãn owner, không đổi code, data, hạ tầng hoặc main.
