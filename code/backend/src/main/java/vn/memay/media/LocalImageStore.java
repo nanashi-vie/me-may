@@ -28,6 +28,25 @@ public final class LocalImageStore {
 
     public record StagedInput(String key, long bytes, String sha256) {}
 
+    byte[] readVariant(UUID media, ImageTypes.Variant variant) throws IOException {
+        String extension = variant.mime().equals("image/jpeg") ? "jpg" : "webp";
+        String prefix = "derived/" + media + "/";
+        if (!variant.key().startsWith(prefix) || variant.bytes() < 1 || variant.bytes() > MAX_INPUT_BYTES)
+            throw new IOException("Invalid variant");
+        String[] parts = variant.key().split("/");
+        if (parts.length != 4 || !UUID.fromString(parts[2]).toString().equals(parts[2])
+                || !parts[3].equals(variant.name() + "." + extension)
+                || !Set.of("640", "1400").contains(variant.name())) throw new IOException("Invalid variant");
+        Path file = directory(prefix + parts[2], false).resolve(parts[3]);
+        if (!Files.isRegularFile(file, NOFOLLOW_LINKS)) throw new IOException("Variant missing");
+        try (var input = Files.newInputStream(file, READ, NOFOLLOW_LINKS)) {
+            byte[] bytes = input.readNBytes((int)variant.bytes() + 1);
+            if (bytes.length != variant.bytes() || !HexFormat.of().formatHex(sha256().digest(bytes)).equals(variant.sha256()))
+                throw new IOException("Variant corrupt");
+            return bytes;
+        }
+    }
+
     public StagedInput stage(UUID operationId, InputStream input) throws IOException {
         String directory = "staging/" + operationId;
         Path staging = directory("staging", true);

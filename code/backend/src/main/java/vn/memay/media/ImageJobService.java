@@ -18,6 +18,7 @@ public class ImageJobService {
     private final ImageMigrationPreviewQueue previews;
     @org.springframework.beans.factory.annotation.Autowired private MediaRecoveryMode mode;
     @org.springframework.beans.factory.annotation.Autowired private ImageRecoveryService recovery;
+    @org.springframework.beans.factory.annotation.Autowired private HeroBannerMedia banners;
 
     public ImageJobService(ImageJobRepository jobs, LocalImageStore store, ImageMigrationPreviewQueue previews) {
         this.jobs = jobs;
@@ -29,12 +30,12 @@ public class ImageJobService {
     public UUID enqueue(UUID mediaId, UUID generationId, JobKind kind, String inputKey,
                         String recipeVersion, String dedupeKey, int priority) {
         requireActive();
-        if (!inputKey.matches("staging/[a-f0-9-]{36}/input"))
+        if (!inputKey.matches("(banners/)?staging/[a-f0-9-]{36}/input"))
             throw new AdminApiException(400, "invalid_image_input_key");
         String originalHash = null;
         if (kind == JobKind.PROCESS || kind == JobKind.MIGRATE) {
             try {
-                originalHash = store.originalHash(inputKey);
+                originalHash = inputKey.startsWith("banners/") ? banners.store().originalHash(inputKey.substring(8)) : store.originalHash(inputKey);
             } catch (IOException e) {
                 throw new AdminApiException(422, "image_input_unavailable");
             }
@@ -78,22 +79,24 @@ public class ImageJobService {
             return;
         }
         boolean migrate = lease.kind() == JobKind.MIGRATE;
+        boolean banner = lease.inputKey().startsWith("banners/");
+        var outputStore = banner ? banners.store() : store;
         if (!lease.mediaId().equals(manifest.mediaId()) || !lease.generationId().equals(manifest.generationId())
                 || !lease.recipeVersion().equals(manifest.recipeVersion())
                 || (migrate ? !jobs.isMigrationJob(jobId, lease.generationId())
-                        : lease.kind() != JobKind.PROCESS || !jobs.lockUpload(lease.mediaId())))
+                        : lease.kind() != JobKind.PROCESS || !(banner ? banners.lockUpload(lease.mediaId(),lease.generationId()) : jobs.lockUpload(lease.mediaId()))))
             throw new AdminApiException(409, "image_generation_conflict");
         String originalHash;
         try {
-            originalHash = store.originalHash(lease.inputKey());
+            originalHash = outputStore.originalHash(banner ? lease.inputKey().substring(8) : lease.inputKey());
             jobs.requireOriginalHash(lease.generationId(), originalHash);
-            if (migrate) store.validateMigrationVariants(manifest);
-            store.publishAttempt(manifest, token);
+            if (migrate || banner) outputStore.validateMigrationVariants(manifest);
+            outputStore.publishAttempt(manifest, token);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_output_not_publishable");
         }
         jobs.ready(jobId, token, manifest, originalHash);
-        if (!migrate) jobs.finishLocalUpload(manifest);
+        if (!migrate && !banner) jobs.finishLocalUpload(manifest);
     }
 
     public void fail(UUID jobId, UUID token, String code, boolean retryable) {

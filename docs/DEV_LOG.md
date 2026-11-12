@@ -3745,3 +3745,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - QA PostgreSQL riêng cổng 55437: HeroBannerApiTest RED (API/schema thiếu),
   sau triển khai GREEN 3 tests, 0 failures/errors. Chưa triển khai upload/UI.
 - Thay đổi còn local trên codex/hero-banners; không migrate production.
+
+### HERO-C04 — Upload và namespace banner
+
+- Upload OWNER có requestKey/hash, quota 30 draft/owner, TTL 24h. Worker PROCESS
+  dùng recipe v1 nguyên trạng, namespace banners tách khỏi ảnh sách.
+- HeroBannerMediaTest: 4/4; API config 3/3; LocalUploadIntegrationTest và
+  LocalImageStoreTest xanh. Sharp thật được gọi từ test integration.
+  Worker 12/12, đã thấy test namespace thất bại trước thay đổi rồi qua.
+- Nội dung private trước save; URL public chỉ đọc ảnh đã publish còn hạn;
+  private no-store, public ETag/cache 24h; cleanup giữ current/draft/lease active.
+- Lựa chọn triển khai: trả bytes đã xác minh checksum, giới hạn 10MiB thay vì
+  mở lại stream sau xác minh; tránh đọc file bị thay giữa xác minh và gửi.
+- Chưa kiểm tra browser/SSR và chưa chạy full suite. Không đổi runtime user.
