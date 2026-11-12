@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { By } from '@angular/platform-browser';
+import { CustomerForm } from '../customer-form/customer-form';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, Subject, of } from 'rxjs';
@@ -102,5 +104,43 @@ describe('CustomerList', () => {
     expect(f.nativeElement.textContent).not.toContain('Nhấn');
     c.changeCustomerStatus(row);
     expect(api.setStatus).not.toHaveBeenCalled();
+  });
+  it('searches the same previous term again after a route reset', async () => {
+    const { f, c, query, nav } = setup();
+    await f.whenStable();
+    c.search('Mai');
+    await new Promise((r) => setTimeout(r, 330));
+    query.next(convertToParamMap({ q: 'Mai' }));
+    query.next(convertToParamMap({ q: '' }));
+    nav.mockClear();
+    c.search('Mai');
+    await new Promise((r) => setTimeout(r, 330));
+    expect(nav).toHaveBeenCalledWith(
+      [],
+      expect.objectContaining({ queryParams: expect.objectContaining({ q: 'Mai', page: 0 }) }),
+    );
+  });
+  it('does not let an old edit response replace a new create draft', async () => {
+    const { f, c, api } = setup();
+    await f.whenStable();
+    const pending = new Subject<any>();
+    api.detail.mockReturnValue(pending as any);
+    c.edit(row);
+    c.openNew();
+    const editor = f.debugElement.query(By.directive(CustomerForm))
+      .componentInstance as CustomerForm;
+    editor.form.controls.fullName.setValue('New draft');
+    editor.form.markAsDirty();
+    pending.next({
+      ...row,
+      zaloName: null,
+      tiktokId: null,
+      threadsId: null,
+      note: null,
+      createdBy: '1',
+      updatedAt: row.createdAt,
+    });
+    expect(editor.customer()).toBeNull();
+    expect(editor.form.controls.fullName.value).toBe('New draft');
   });
 });

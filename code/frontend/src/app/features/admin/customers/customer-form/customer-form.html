@@ -53,8 +53,8 @@
                   @for (match of matches.items; track match.id) {
                     <li>
                       <a
-                        [routerLink]="['/admin/customers', match.id]"
-                        (click)="openDuplicate($event)"
+                        [href]="'/admin/customers/' + match.id"
+                        (click)="openDuplicate($event, match.id)"
                         >{{ match.fullName }} ({{ match.customerCode }})</a
                       >
                       · {{ match.status === 'ARCHIVED' ? 'Đã lưu trữ' : 'Đang hoạt động' }}

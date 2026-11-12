@@ -1,6 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { Router, provideRouter } from '@angular/router';
 import { of, Subject, throwError } from 'rxjs';
 import { vi, afterEach } from 'vitest';
 import { CustomerForm } from './customer-form';
@@ -166,5 +166,42 @@ describe('CustomerForm', () => {
     c.save();
     expect(api.create).not.toHaveBeenCalled();
     expect(api.update).not.toHaveBeenCalled();
+  });
+  it('makes exactly one discard decision for a real duplicate-link click', () => {
+    const { f, c } = setup();
+    const router = TestBed.inject(Router);
+    const nav = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    const byUrl = vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    c.open();
+    c.form.controls.fullName.setValue('Dirty');
+    c.form.markAsDirty();
+    c.duplicates.set({
+      items: [
+        {
+          id: '2',
+          customerCode: 'KH-000002',
+          fullName: 'Other',
+          phone: '0987123456',
+          status: 'ACTIVE',
+        },
+      ],
+      page: 0,
+      size: 20,
+      totalPages: 1,
+      totalElements: 1,
+    });
+    f.detectChanges();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    const link = f.nativeElement.querySelector('#customer-duplicates a') as HTMLAnchorElement;
+    link.click();
+    expect(confirm).toHaveBeenCalledTimes(1);
+    expect(nav).not.toHaveBeenCalled();
+    expect(byUrl).not.toHaveBeenCalled();
+    expect(c.visible()).toBe(true);
+    confirm.mockReturnValue(true);
+    link.click();
+    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(nav).toHaveBeenCalledWith(['/admin/customers', '2']);
+    expect(c.visible()).toBe(false);
   });
 });

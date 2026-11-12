@@ -13,7 +13,7 @@ class CustomerValidationTest {
  }
  @Test void rejectsInvalidTextAndLinks(){
   for(String phone:new String[]{"123","098712345a","0287123456","+849871234567","0987/123456"})assertThatThrownBy(()->CustomerValidation.normalizePhone(phone)).isInstanceOf(AdminApiException.class);
-  for(String link:new String[]{"https://threads.com/@lan","HTTP://foo","www.foo.com","zalo.me/123","tiktok.com/@lan","threads.net/@lan","threads.com"})assertThatThrownBy(()->CustomerValidation.normalize(write("Lan",null,null,null,link,null,null))).isInstanceOf(AdminApiException.class);
+  for(String link:new String[]{"https://threads.com/@lan","HTTP://foo","www.foo.com","zalo.me/123","tiktok.com/@lan","threads.net/@lan","threads.com","//www.tiktok.com/@lan","//threads.net/@lan"})assertThatThrownBy(()->CustomerValidation.normalize(write("Lan",null,null,null,link,null,null))).isInstanceOf(AdminApiException.class);
   assertThatThrownBy(()->CustomerValidation.normalize(write(" ",null,null,null,null,null,null))).isInstanceOf(AdminApiException.class);
   assertThatThrownBy(()->CustomerValidation.normalize(write("x".repeat(151),null,null,null,null,null,null))).isInstanceOf(AdminApiException.class);
   for(int field=0;field<5;field++){final int f=field;assertThatThrownBy(()->CustomerValidation.normalize(write("Lan",null,f==0?"x".repeat(151):null,f==1?"x".repeat(101):null,f==2?"x".repeat(101):null,f==3?"x".repeat(501):null,f==4?"x".repeat(1001):null))).isInstanceOf(AdminApiException.class);}

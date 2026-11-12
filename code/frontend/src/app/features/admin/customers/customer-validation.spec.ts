@@ -27,6 +27,8 @@ describe('Customer validation', () => {
       'tiktok.com/@lan',
       'threads.net/@lan',
       'threads.com',
+      '//www.tiktok.com/@lan',
+      '//threads.net/@lan',
     ])
       expect(validateCustomer({ ...body, threadsId })['threadsId']).toBeDefined();
     expect(validateCustomer(body)).toEqual({});

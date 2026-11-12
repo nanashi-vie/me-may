@@ -4,10 +4,10 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   Subject,
+  Subscription,
   catchError,
   combineLatest,
   debounceTime,
-  distinctUntilChanged,
   of,
   startWith,
   switchMap,
@@ -33,6 +33,8 @@ export class CustomerList {
   private readonly reloads = new Subject<void>();
   private readonly searches = new Subject<string>();
   private creating = false;
+  private editGeneration = 0;
+  private editRequest?: Subscription;
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
   readonly page = signal<Page<CustomerSummary> | null>(null);
   readonly loading = signal(true);
@@ -48,6 +50,7 @@ export class CustomerList {
     ])
       .pipe(
         switchMap(([params]) => {
+          this.cancelPendingEdit();
           this.page.set(null);
           this.error.set('');
           this.loading.set(true);
@@ -82,9 +85,10 @@ export class CustomerList {
         this.page.set(page);
         this.loading.set(false);
       });
-    this.searches
-      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroy))
-      .subscribe((q) => this.navigate({ q, page: 0 }));
+    this.searches.pipe(debounceTime(300), takeUntilDestroyed(this.destroy)).subscribe((value) => {
+      const q = value.trim().replace(/\s+/g, ' ');
+      if (q !== this.filter().q) this.navigate({ q, page: 0 });
+    });
   }
   search(value: string) {
     this.searches.next(value);
@@ -107,25 +111,29 @@ export class CustomerList {
   }
   openNew() {
     if (!this.owner()) return;
+    this.cancelPendingEdit();
     this.creating = true;
     this.editor()?.open();
   }
   edit(row: CustomerSummary) {
     if (!this.owner() || this.actionBusy()) return;
+    this.cancelPendingEdit();
     this.creating = false;
     this.actionBusy.set(true);
-    const epoch = this.auth.epoch();
-    this.api
+    const epoch = this.auth.epoch(),
+      generation = this.editGeneration;
+    this.editRequest = this.api
       .detail(row.id)
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (c) => {
-          if (epoch !== this.auth.epoch() || !this.owner()) return;
+          if (epoch !== this.auth.epoch() || generation !== this.editGeneration || !this.owner())
+            return;
           this.actionBusy.set(false);
           this.editor()?.open(c);
         },
         error: () => {
-          if (epoch === this.auth.epoch()) {
+          if (epoch === this.auth.epoch() && generation === this.editGeneration) {
             this.actionBusy.set(false);
             this.error.set('Chưa tải được hồ sơ để chỉnh sửa.');
           }
@@ -175,7 +183,15 @@ export class CustomerList {
         },
       });
   }
+  private cancelPendingEdit() {
+    this.editGeneration++;
+    this.editRequest?.unsubscribe();
+    this.actionBusy.set(false);
+  }
   canLeave() {
-    return this.editor()?.canLeave() ?? true;
+    const editor = this.editor();
+    if (editor?.visible() && !editor.requestClose()) return false;
+    this.cancelPendingEdit();
+    return true;
   }
 }

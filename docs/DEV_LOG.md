@@ -3659,3 +3659,11 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   test confirm có kiểm soát bằng window.confirm sau ca native đầu.
 - Style local focus/radius giữ đỏ web; Prettier format frontend mới; chưa
   đổi dependency. Đang review độc lập trước tích hợp dev; chưa deploy/live.
+- Review độc lập toàn branch:0Critical/4Important/1Minor; không re-review.
+  Đã tái hiện5regression frontend + protocol-relative backend đỏ→xanh,
+  targetedFE20đạt và BEvalidation3đạt. Sửa edit-request cũ ghi đè draft tạo,
+  same-component navigation để editor cũ còn mở, tìm lại q sau reset, URL//.
+  Regrade duplicate-link thành Important vì từ chối vẫn khởi chạy điều hướng;
+  bỏ RouterLink song song, một quyết định discard rồi navigate/reset.
+  Router reuse test dùng RouterTestingHarness và route thật, gồm đổi id/query.
+- Đang chạy lại fullsuite/build trên bản sửa; chưa tích hợp dev hoặc deploy.

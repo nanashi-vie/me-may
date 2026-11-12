@@ -4,7 +4,7 @@ import vn.memay.common.AdminApiException;
 import static vn.memay.customer.CustomerDtos.*;
 public final class CustomerValidation {
  private CustomerValidation(){}
- private static final Pattern LINK=Pattern.compile("(?i)^(?:[a-z][a-z0-9+.-]*://|www\\.|(?:[a-z0-9-]+\\.)*(?:zalo\\.me|zalo\\.com|tiktok\\.com|threads\\.net|threads\\.com)(?:[/:?#]|$))");
+ private static final Pattern LINK=Pattern.compile("(?i)^(?:[a-z][a-z0-9+.-]*://|//|www\\.|(?:[a-z0-9-]+\\.)*(?:zalo\\.me|zalo\\.com|tiktok\\.com|threads\\.net|threads\\.com)(?:[/:?#]|$))");
  public static CustomerWrite normalize(CustomerWrite w){
   String name=text(w.fullName(),"fullName",150);
   if(name==null)throw AdminApiException.field("fullName","Vui lòng nhập tên khách hàng");

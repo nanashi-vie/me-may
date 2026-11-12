@@ -9,7 +9,7 @@ const limits: Record<keyof CustomerWrite, number> = {
   note: 1000,
 };
 const link =
-  /^(?:[a-z][a-z0-9+.-]*:\/\/|www\.|(?:[a-z0-9-]+\.)*(?:zalo\.me|zalo\.com|tiktok\.com|threads\.net|threads\.com)(?:[/:?#]|$))/i;
+  /^(?:[a-z][a-z0-9+.-]*:\/\/|\/\/|www\.|(?:[a-z0-9-]+\.)*(?:zalo\.me|zalo\.com|tiktok\.com|threads\.net|threads\.com)(?:[/:?#]|$))/i;
 export function normalizePhone(value: string | null): string | null {
   let phone = value?.replace(/[\s.\-]/g, '') || null;
   if (phone?.startsWith('+84')) phone = '0' + phone.slice(3);

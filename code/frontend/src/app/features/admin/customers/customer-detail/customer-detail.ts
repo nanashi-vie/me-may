@@ -112,6 +112,7 @@ export class CustomerDetailPage {
       });
   }
   canLeave() {
-    return this.editor()?.canLeave() ?? true;
+    const editor = this.editor();
+    return !editor?.visible() || editor.requestClose();
   }
 }

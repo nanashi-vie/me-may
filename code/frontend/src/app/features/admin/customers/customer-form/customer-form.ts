@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Subscription, catchError, distinctUntilChanged, map, of, switchMap, timer } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
@@ -28,12 +28,13 @@ import { normalizeCustomer, normalizePhone, validateCustomer } from '../customer
 
 @Component({
   selector: 'app-customer-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule],
   templateUrl: './customer-form.html',
   styleUrl: './customer-form.scss',
 })
 export class CustomerForm {
   private readonly api = inject(CustomerApi);
+  private readonly router = inject(Router);
   readonly auth = inject(AuthService);
   private readonly destroy = inject(DestroyRef);
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
@@ -161,13 +162,11 @@ export class CustomerForm {
   onBackdrop(event: MouseEvent) {
     if (event.target === this.dialog()?.nativeElement) this.requestClose();
   }
-  openDuplicate(event: Event) {
-    if (!this.canLeave()) event.preventDefault();
-    else this.requestCloseAfterApproval();
-  }
-  private requestCloseAfterApproval() {
-    this.reset();
-    this.cancelled.emit();
+  openDuplicate(event: Event, id: string) {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!this.requestClose()) return;
+    void this.router.navigate(['/admin/customers', id]);
   }
   @HostListener('window:beforeunload', ['$event']) beforeUnload(event: BeforeUnloadEvent) {
     if (this.visible() && (this.form.dirty || this.busy())) event.preventDefault();
