@@ -148,6 +148,14 @@ Config dùng GET/PUT riêng; savebody {version,banners:[{id,alt}]}.
   lâu hoặc ghi hồ sơ vào localStorage. Revoke objectURL nếu dùng preview tạm.
 - [ ] Chạy tests xanh; commit `feat: manage hero banners in home editor`.
 
+## Task 3b: Nâng chất lượng banner theo owner duyệt bổ sung
+
+- Recipe riêng `hero-v1`:800/1600/3200, WebP88/JPEG90; giữ recipev1 sách.
+- Test Sharp thật xác minh3200×800 không bị thu xuống1400; input nhỏ không upscale.
+- API/preview/srcset/store validate đổi sang sizes mới, đăng ký recipe riêng
+  theo runbook với worker digest/config hash tương ứng; thiếu recipe trả503.
+- Quyết định này thay hướng reusev1/640/1400 ở các Task1/2 và preflight cũ.
+
 ## Task 4: Carousel và nghiệm thu cuối
 
 **Interfaces:** HeroCarousel input banners:Banner[] (default[]), mọi link/sizes

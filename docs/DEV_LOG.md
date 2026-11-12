@@ -3788,3 +3788,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Ảnh test hiện tại chỉ1584×396, không dùng làm artwork chính thức.
 - Bổ sung bước recipe banner riêng trước carousel; recipe ảnh sách giữ nguyên.
   Không upscale nguồn nhỏ; file gốc khuyến nghị3200×800 hoặc3840×960.
+
+### HERO-C08 — Chất lượng banner riêng
+
+- Recipe hero-v1: 800/1600/3200, JPEG90/WebP88; recipe sách v1 không đổi.
+  Backend chọn/kiểm đúng recipe và 6 variants; thiếu đăng ký recipe trả503.
+- Worker RED unknown_recipe → GREEN13/13; backend banner API/media7/7.
+  Ảnh input nhỏ không phóng lớn (processor dùng withoutEnlargement).
+- Chưa đăng ký recipe/migrate ở production. Cần pin worker chứa hero-v1 và
+  đăng ký worker digest/config hash trước bật upload; source được giữ backup.

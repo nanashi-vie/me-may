@@ -90,7 +90,8 @@ public class ImageJobService {
         try {
             originalHash = outputStore.originalHash(banner ? lease.inputKey().substring(8) : lease.inputKey());
             jobs.requireOriginalHash(lease.generationId(), originalHash);
-            if (migrate || banner) outputStore.validateMigrationVariants(manifest);
+            if (migrate) outputStore.validateMigrationVariants(manifest);
+            if (banner) outputStore.validateBannerVariants(manifest);
             outputStore.publishAttempt(manifest, token);
         } catch (IOException e) {
             throw new AdminApiException(422, "image_output_not_publishable");

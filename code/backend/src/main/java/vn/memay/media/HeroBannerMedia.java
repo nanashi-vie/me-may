@@ -43,8 +43,9 @@ public class HeroBannerMedia {
    }
    int drafts=jdbc.queryForObject("select count(*) from hero_banner_upload where owner_id=? and published_at is null and expires_at>clock_timestamp()",Integer.class,a.getId());
    if(drafts>=30)throw new AdminApiException(429,"banner_draft_limit");
+   if(!Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from image_recipe where version='hero-v1')",Boolean.class)))throw new AdminApiException(503,"banner_recipe_unavailable");
    UUID media=UUID.randomUUID(),generation=UUID.randomUUID();String key="banners/"+staged.key();
-   UUID job=jobs.enqueue(media,generation,ImageTypes.JobKind.PROCESS,key,"v1","hero:"+a.getId()+":"+requestKey,10);
+   UUID job=jobs.enqueue(media,generation,ImageTypes.JobKind.PROCESS,key,"hero-v1","hero:"+a.getId()+":"+requestKey,10);
    jobs.registerOriginalHash(generation,staged.sha256());
    jdbc.update("insert into hero_banner_upload(media_id,generation_id,job_id,owner_id,request_key,input_key,sha256) values(?,?,?,?,?,?,?)",media,generation,job,a.getId(),requestKey,key,staged.sha256());
    return status(a,media);
@@ -59,7 +60,7 @@ public class HeroBannerMedia {
  }
  boolean lockUpload(UUID media,UUID generation){return !jdbc.queryForList("select media_id from hero_banner_upload where media_id=? and generation_id=? and expires_at>clock_timestamp() for update",UUID.class,media,generation).isEmpty();}
  @Transactional(readOnly=true) public Content content(AdminUser actor,UUID id,int size,String format,boolean privatePreview){
-  if(!Set.of(640,1400).contains(size)||!Set.of("jpg","webp").contains(format))throw new AdminApiException(400,"invalid_banner_variant");
+  if(!Set.of(800,1600,3200).contains(size)||!Set.of("jpg","webp").contains(format))throw new AdminApiException(400,"invalid_banner_variant");
   if(privatePreview)status(actor,id);
   String mime=format.equals("jpg")?"image/jpeg":"image/webp";
   var variants=jdbc.query("select v.* from hero_banner_upload u join image_job j on j.id=u.job_id join image_variant v on v.generation_id=u.generation_id where u.media_id=? and j.status='READY' and u.expires_at>clock_timestamp() and (? or u.published_at is not null) and v.name=? and v.mime=?",(r,n)->new ImageTypes.Variant(r.getString("name"),r.getString("storage_key"),r.getString("mime"),r.getInt("width"),r.getInt("height"),r.getLong("bytes"),r.getString("sha256")),id,privatePreview,Integer.toString(size),mime);

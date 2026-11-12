@@ -8,6 +8,8 @@ Ngày12/11/2026 · **Owner đã duyệt, yêu cầu triển khai tuần tự** �
 - Tối đa10banner, tự chuyển sau5giây và quay vòng theo thứ tự đã lưu.
 - Mọi banner dẫn cố định tới **`/sach`**, cùng tab; không có field nhập link.
 - Giữ màu đỏ chủ đạo và vị trí hero tràn ngang hiện tại.
+- Owner duyệt bổ sung: ảnh gốc khuyến nghị3200×800 hoặc3840×960; đầu ra riêng
+  banner800/1600/3200px, WebP quality88 (JPEG90), không upscale nguồn nhỏ.
 - Ảnh tham khảo thể hiện carousel có nút trái/phải; không sao chép artwork.
 
 ## Cách triển khai đề xuất
@@ -32,7 +34,7 @@ Không tạo nền tảng CMS, lịch chiến dịch hoặc pipeline Drive mới
   Validate bytes/MIME/dimensions ở backend, không chỉ dựa đuôi file.
 - Từng hàng có thumbnail, thứ tự, mô tả ảnh tùy chọn, **Thay ảnh**, **Xóa**,
   **Lên/Xuống**. Không nhận URL ảnh bên ngoài hoặc link đích tùy chỉnh.
-- Khuyến nghị ảnh1584×396 hoặc cùng tỉ lệ4:1; preview cho thấy đúng khung Home.
+- Khuyến nghị ảnh3200×800 hoặc cùng tỉ lệ4:1; preview cho thấy đúng khung Home.
   Ảnh khác tỉ lệ hiện trọn trong khung, không tự cắt mất chữ; nền kem nếu dư.
 - Chọn ảnh mới chỉ làm draft. Chờ ảnh xử lý xong mới **Lưu banner**;
   lỗi upload/lưu giữ cấu hình đang công khai và các dữ liệu draft còn hợp lệ.

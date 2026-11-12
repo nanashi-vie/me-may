@@ -28,7 +28,7 @@ public class HeroBannerService {
   var items=jdbc.query("select i.media_id,i.alt from hero_banner_item i join hero_banner_upload u using(media_id) join image_job j on j.id=u.job_id where j.status='READY' and u.published_at is not null order by i.position",(r,n)->banner(r.getObject(1,UUID.class),r.getString(2)));
   return new Config(version,items);
  }
- private Banner banner(UUID id,String alt){String path="/api/v1/hero-banners/"+id+"/content";return new Banner(id.toString(),alt,path+"?size=1400&format=webp",path+"?size=640&format=webp 640w, "+path+"?size=1400&format=webp 1400w",1400,350);}
+ private Banner banner(UUID id,String alt){String path="/api/v1/hero-banners/"+id+"/content";return new Banner(id.toString(),alt,path+"?size=1600&format=webp",path+"?size=800&format=webp 800w, "+path+"?size=1600&format=webp 1600w, "+path+"?size=3200&format=webp 3200w",3200,800);}
  @Transactional public Config save(AdminUser actor,Update request){
   owner(actor,true);
   long version=jdbc.queryForObject("select version from hero_banner_config where id=1 for update",Long.class);
