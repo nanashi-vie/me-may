@@ -3569,3 +3569,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Chuyển sang `onBackdropClick()` không trả giá trị.
 - Thêm assertion hồi quy ở home-page.spec.ts. `npm test` từ code/frontend đạt
   284/284. Chrome headless trên ng serve dev-ui: bấm nút mở tab id.zalo.me.
+
+## 2026-11-12 — S065-C03 — Tinh chỉnh UI chi tiết sách (book-detail)
+
+- Làm việc trên worktree `dev-ui` (`me-may.worktrees/dev-ui`).
+- Mục tiêu: Thực hiện tinh chỉnh UI chi tiết sách theo kết quả `/grill-me`:
+  1. Tiêu đề `<h1>` trong bài viết chỉ hiển thị tên sách (`b.title`), loại bỏ việc ghép nối `| Nhà xuất bản | Tác giả | Độ tuổi`. Giữ nguyên thẻ `<title>` tab trình duyệt và thẻ OpenGraph/SEO meta chứa đầy đủ NXB và Tác giả để tối ưu tìm kiếm và chia sẻ link.
+  2. Dời toàn bộ khối thông tin cơ bản (`<dl>` gồm Nhà xuất bản, Tác giả, Kiểu bìa, Độ tuổi, Trình độ đọc, Đọc tham khảo) từ dưới mô tả sách lên trên mô tả sách (nằm giữa khối giá `.pricing` và `.description`).
+  3. Bổ sung đường kẻ mảnh `border-bottom: 1px solid var(--line);` và `padding-bottom: 1.5rem;` dưới bảng thông tin cơ bản để phân tách rõ ràng với phần mô tả sách.
+- File thay đổi:
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.html`: Đổi `<h1>{{ title(b) }}</h1>` sang `<h1>{{ b.title }}</h1>`; dời khối `<dl>` lên trước `@if (b.description)`; thêm điều kiện `@if` bọc `<dl>` tránh hiển thị viền trống khi sách không có trường thông tin nào.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.scss`: Thêm `border-bottom: 1px solid var(--line);` và `padding-bottom: 1.5rem;` cho `dl`.
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.spec.ts`: Bổ sung test kiểm tra `h1` chỉ chứa tên sách, `<title>` trình duyệt vẫn đủ NXB/Tác giả, và `dl` nằm trước `.description` trong cấu trúc DOM.
+  - `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Ghi nhận tiến độ và nhật ký kỹ thuật.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 50/50 test files, 297/297 tests PASS.
+  - `cd code/frontend && npm run build`: build SSR đạt 0 warning, 0 error.
+  - `cd code/frontend && npm run build:workers`: build Workers đạt 0 error.

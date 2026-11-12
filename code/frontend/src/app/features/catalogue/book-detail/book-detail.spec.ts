@@ -331,4 +331,38 @@ describe('Detail refresh and public origin', () => {
       'Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.',
     );
   });
+  it('renders only the book title in h1, keeps meta title with publisher/author, and places dl before description', async () => {
+    const richBook: PublicBook = {
+      ...a,
+      title: 'Under the Bed',
+      publisher: 'Walker Books',
+      author: 'Michael Rosen',
+      ageGroups: ['AGE_0_3', 'AGE_4_6'],
+      description: 'Chuyện gì xảy ra trước giờ ngủ?',
+    };
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of(richBook),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    const h1 = el.querySelector('h1');
+    expect(h1?.textContent?.trim()).toBe('Under the Bed');
+    expect(document.title).toContain('Under the Bed | Walker Books | Michael Rosen');
+
+    const dl = el.querySelector('dl');
+    const desc = el.querySelector('.description');
+    expect(dl).not.toBeNull();
+    expect(desc).not.toBeNull();
+    expect(dl!.compareDocumentPosition(desc!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });
