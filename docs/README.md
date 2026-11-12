@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật06/11/2026. Đây là chỉ mục duy nhất. User đóng phạm vi tính năng để
+Cập nhật12/11/2026. Đây là chỉ mục duy nhất. User đóng phạm vi tính năng để
 chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Bắt đầu hoặc tiếp tục phiên
@@ -14,10 +14,10 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Nhập ảnh bằng link Drive, tự ghép nguồn và giảm request | [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md), [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) |
+| Ảnh self-host: tổng quan, cơ chế, upload máy/Drive, ghép nguồn và so Cloudinary | [Hệ thống ảnh](IMAGES.md) |
 | Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |
 | Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |
-| Self-host ảnh, bỏ ảnh nội bộ; đang triển khai Native | [Storage spec](IMAGE_STORAGE_SPEC.md), [Recovery spec](IMAGE_RECOVERY_SPEC.md), [Storage plan](IMAGE_STORAGE_PLAN.md), [Recovery plan](IMAGE_RECOVERY_PLAN.md), [Runbook Ubuntu](IMAGE_OPERATIONS.md) |
+| Vận hành ảnh, migration, backup/restore, rebuild và benchmark | [Runbook](IMAGE_OPERATIONS.md), [bằng chứng và tiêu chí](IMAGE_VERIFICATION.md), [gate hiện hành](PROGRESS.md) |
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế](BOOK_COMPLETENESS_SPEC.md) |
@@ -70,6 +70,9 @@ chuyển tối ưu UI; các gate release chưa đạt vẫn giữ. Quy tắc ở
   [VERIFICATION](VERIFICATION.md#tối-ưu-ui-navbar-và-trang-danh-sách-sách--02112026). Không
   tự triển khai thiết kế ngoài phạm vi duyệt hoặc bỏ gate bảo mật/khôi phục/SEO.
 - Commit/pushdev; user merge main/deploy. Không tự migrate/backfill dữ liệu bán thật.
+
+Contract/spec và ba plan ảnh 08–11/11 đã hợp nhất vào IMAGES, runbook và
+bằng chứng nêu trên ngày12/11; tiêu chí chưa đạt được chuyển, không tự đóng.
 
 ## Giữ tài liệu gọn
 

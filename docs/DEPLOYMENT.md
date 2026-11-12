@@ -19,7 +19,8 @@
 - Các mục Render/Neon dưới đây là hướng dẫn/bằng chứng môi trường test cũ;
   không dùng chúng làm xác nhận cấu hình Dell hoặc chạy migration sang target mới.
 
-[Runbook Ubuntu cho ảnh LOCAL](IMAGE_OPERATIONS.md) hướng dẫn mạng nội bộ, mount và nghiệm thu R6.
+[Contract ảnh](IMAGES.md), [runbook](IMAGE_OPERATIONS.md) và
+[bằng chứng/gate](IMAGE_VERIFICATION.md); owner nghiệm thu upload12/11.
 
 ## Môi trường test cũ — Workers + Render + Neon
 
@@ -367,7 +368,6 @@ rollout V13, smoke taxonomy/form/publicfilter/import với nhãn và code mới;
 xác minh schema live trong đợt rà soát05/11.
 QAworkload V1=100sách/500variants, V2=100sách/100variantdefault; không trộn số đo.
 Header16/dòng2data/nhãn/defaults và retry hỗtrợV1 phải smoke trên candidateonline.
-
 
 ## Cache public — cấu hình và smoke 04/11/2026
 

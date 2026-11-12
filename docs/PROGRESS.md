@@ -3,34 +3,16 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- Owner xác nhận 12/11 đã test upload ảnh mượt; đã dọn 2 container/volume
-  QA luồng ảnh và 29 file tạm. DB đang dùng giữ nguyên; gate khác vẫn theo dõi.
-- Đã thu gọn kết quả Drive và thêm Gắn tất cả ảnh theo duyệt owner
-  11/11: tiến độ n/tổng, không ảnh lặp sau confirm. Retry giữ phần đã gắn.
-  Frontend 294/294, Workers build và browser fixture đạt; owner đã test
-  luồng upload. Không đổi backend/schema trong thay đổi giao diện này.
-- Đã sửa contract MATCH trả400 invalid_request (11/11): bookId HTTP là
-  chuỗi, target snapshot tùy chọn. API ghép/xác nhận 5 ảnh và DOM đạt;
-  frontend 292/292 đạt, backend 298 total/3 skip không lỗi. Cần deploy backend,
-  không cần migration hoặc tải lại ảnh.
-- Đã sửa thông báo publish image_source_unverified bị nhầm thành
-  version conflict (11/11): nêu vai trò tiếng Việt, giữ nội dung sửa; sách
-  mới bị từ chối publish vẫn lưu Ẩn được. Frontend 291/291 và build Workers
-  đạt; chờ owner merge main/deploy frontend, giữ gate xác minh nguồn.
-- Rà toàn luồng Drive (11/11): đã sửa dropdown lệch dữ liệu, lý do khóa
-  xác nhận, refresh digest và thumbnail sau gắn. Frontend 289/289 đạt;
-  browser local nhập→chọn→confirm→gắn 5 ảnh→reload đạt. Backend API fixture
-  gắn 5 ảnh/retry/receipt đạt; clean verify cuối 295 total/3 skip, không lỗi.
-  Build Workers/proxy đạt; chờ owner merge main/deploy frontend.
-- Đã sửa nút nhập Drive bị ẩn khi sửa sách đã lưu (11/11).
-  Tái dùng phiên ảnh LOCAL và Gắn ảnh vào sách từng ảnh. Frontend 286/286
-  đạt, build Workers đạt; chờ owner merge main/deploy và smoke Drive thật.
-- Nguồn Drive (11/11): owner chọn nhập ảnh chỉ bằng link, tự ghép SHA-256
-  khi đã upload và giảm request. [Thiết kế](IMAGE_SOURCE_BATCH_SPEC.md)
-  đã duyệt, [kế hoạch](IMAGE_SOURCE_BATCH_PLAN.md) đã triển khai Task 1–6.
-  Backend clean verify 293 ca (3 skip), recovery fixture đạt; review cuối
-  phát hiện 3 lỗi restore/retry đã sửa; FE 284 đạt, build/proxy đạt. QA/rollout
-  V31 do owner thực hiện; chưa có benchmark Drive thật.
+- Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
+  và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),
+  [runbook](IMAGE_OPERATIONS.md), [bằng chứng/tiêu chí](IMAGE_VERIFICATION.md).
+- LOCAL/Drive IMPORT/MATCH, nguồn VERIFIED, UI không lặp ảnh và Gắn tất cả
+  đã triển khai/kiểm; backend298total/3skip, FE294 ở các checkpoint ảnh.
+  Sáu spec/plan cũ được hợp nhất12/11, không là task implementation đang mở.
+- Gate ảnh còn cần hồ sơ: benchmark Dell20–50sách và8nguồn thật/ảnh chữ/
+  ngoàiLAN, mixed-provider live, monitoring, chính sách backup/RPO/RTO.
+  Restore R2 đã được owner xác nhận; migration/rollback sách cloud cũ hoãn
+  đến đợt riêng. Không dùng nghiệm thu upload để tự đóng các gate này.
 - R6.1 (10/11): owner xác nhận ca Drive thật đạt, nguồn VERIFIED v1. Sau khi
   đổi bind QA, worker nhận 200/401/404 đúng kỳ vọng. Owner bỏ qua chạy lại upload.
   [Runbook](IMAGE_OPERATIONS.md#r61--kiểm-drive-với-một-ảnh-riêng-tư).
@@ -58,19 +40,9 @@ Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   frontend 252 đạt, build SSR/Workers đạt. Còn smoke trình duyệt và rollout V20.
   [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [kế hoạch](BOOK_STORAGE_PLAN.md).
 - S055-C01 (08/11): Hoàn tất chỉnh UI chi tiết sách (`book-detail`) theo kết quả `/grill-me`: ẩn hiển thị `Trọng lượng sách` phía người dùng, dời mục `Độ tuổi` xuống nằm ngay phía trên `Trình độ đọc` (đổi nhãn từ `Trình độ đọc tham khảo`), và cập nhật ghi chú `READING_NOTE` thành `"Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng."`. Vitest 44/44 files (251/251 tests PASS), build SSR & Workers 0 warning, 0 error.
-- S061 (09/11): S5 nối upload LOCAL với queue và gắn ảnh trong transaction.
-  S6 có dán tối đa 8 link file Drive hoặc File ID và xem ghép ảnh trước khi xác minh.
-  S062 đã kiểm local S7 delivery public, preview và ZIP cho hai provider.
-  Backend 255 đạt, 3 skip. Frontend 261 đạt, build và proxy Workers đạt.
-  S063 đã kiểm R3 dry-run Cloudinary theo lô, tối đa 100 ảnh và receipt 24 giờ.
-  S064 đã kiểm R4 apply Cloudinary → LOCAL theo sách và rollback có version.
-  S065 đã kiểm R5 inventory/rebuild đúng manifest và restore mode cách ly.
-  Backend 266 đạt, 3 skip. Worker 10, CLI 4, drill restore PostgreSQL 4 test đạt.
-  S066 đã kiểm S8 local, sửa khôi phục ảnh sau reload form mới, bàn giao Ubuntu.
-  Backend 266 đạt, 3 skip. Frontend 262, worker 10, build và proxy đạt.
-  R6 chờ Ubuntu/Drive/R2 và smoke ngoài LAN trên namespace owner.
-  [Runbook](IMAGE_OPERATIONS.md), [Storage plan](IMAGE_STORAGE_PLAN.md),
-  [Recovery plan](IMAGE_RECOVERY_PLAN.md).
+- S061–S067: phần mềm upload/delivery/mapping/migration/rebuild và S8 đã
+  kiểm local; mốc/giới hạn được giữ tại IMAGE_VERIFICATION và DEV_LOG.
+  Không chạy lại fixture chỉ để cập nhật snapshot.
 
 - Nâng trần giới hạn tải ảnh tại `UploadLimiter` ([CATALOGUE](CATALOGUE.md#8-vòng-đời-tối-đa8ảnh)) từ `30 lần/10 phút` (`inFlight = 4`) lên **`300 lần/10 phút`** (`inFlight = 8`), giúp chủ tiệm tải ảnh liên tục cho nhiều sách (tối đa 8 ảnh/cuốn) mà không bị chạm lỗi `429`. Backend `UploadLimiterTest` (3/3 PASS).
 - Bỏ khối "Hướng dẫn các field" tại `/admin/sach/import`: giao diện import sách tinh gọn, đi thẳng vào bước Kiểm tra file. Frontend 250 tests PASS, build Workers/SSR đạt.

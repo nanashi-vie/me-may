@@ -3453,6 +3453,53 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   vì chỉ dọn fixture và cập nhật bàn giao; kết quả test trước giữ trong log.
   Commit/push tài liệu lên dev, không deploy hoặc thay đổi main.
 
+## 2026-11-12 — Tổng quan hệ ảnh self-host và chuẩn hóa docs
+
+- Owner yêu cầu một Markdown tổng quan đầy đủ cơ chế/luồng/xử lý ảnh LOCAL
+  so với Cloudinary, sau đó rà và dọn docs. Đối chiếu code hiện hành và
+  chứng cứ trước; không biến dự kiến spec cũ thành cấu hình đang vận hành.
+- Dự kiến nguồn chuẩn IMAGES.md (tổng quan và contract), IMAGE_OPERATIONS.md
+  (thao tác vận hành), IMAGE_VERIFICATION.md (bằng chứng/tiêu chí chuyển từ
+  plan cũ). Chuyển đủ gate còn mở trước gỡ sáu spec/plan ảnh đã hết vai trò.
+- Kiểm Git dev sạch khi bắt đầu; không đổi sản phẩm, schema, dữ liệu hoặc
+  hạ tầng. Chưa có tài liệu mới hoàn tất; sẽ kiểm link, trần dòng, tham chiếu
+  cũ và mâu thuẫn baseline trước commit/push dev.
+
+### Chuẩn hóa docs ảnh — Kết quả đối chiếu và chuyển giao
+
+- Tạo IMAGES.md: bản chất LOCAL so với Cloudinary, ba luồng máy/IMPORT/MATCH,
+  thuật ngữ, pipeline, 9variants thực của recipe v1, staging không là kho gốc,
+  queue/lease/retry, gắn cả lô, nguồn/publish gate, cache/delivery/ZIP, cleanup,
+  backup/rebuild/migration/rollback, xử lý lỗi và bản đồ code/API.
+- Đối chiếu LocalUploadService, ImageJobService/Repository, MediaReadService,
+  LocalImageCleanup, worker processor/recipes/index, Compose, frontend upload
+  và các checkpoint owner. Phân biệt cấu hình mẫu/thiết kế với live acceptance.
+- Chuyển acceptance matrix/gate S1–S8/R1–R6/DriveTask7 và nguyên số liệu S8
+  sang IMAGE_VERIFICATION.md. Giữ gate Drive thật/benchmark Dell/RPO/RTO/
+  monitoring và migration/rollback cũ, không đánh hoàn thành từ upload mượt.
+- IMAGE_OPERATIONS giữ lệnh vận hành; bổ sung đủ export/preview/apply/rollback/
+  inventory/rebuild, session0600 và restore isolated từ recovery plan. Cập nhật
+  V31, sách đã lưu/gắn cả lô, owner đã nghiệm thu; không yêu cầu lặp upload.
+- Gỡ sáu spec/plan ảnh sau chuyển contract/tiêu chí; không archive bản trùng.
+  Cập nhật chỉ mục duy nhất, snapshot PROGRESS và baseline media trong AGENTS,
+  MASTER_PLAN/ARCHITECTURE/CATALOGUE/DEPLOYMENT/VERIFICATION. Giữ mọi checkpoint
+  DEV_LOG cũ. Sửa một anchor DATA→CATALOGUE bị sai từ trước.
+- Lượt audit đầu: 27 Markdown, không path hỏng; phát hiện DEPLOYMENT vượt2dòng
+  và một anchor cũ sai. Đã thu gọn phần dẫn và bỏ blank thừa, sửa anchor;
+  đang chạy audit cuối. Không thay code/schema, không test sản phẩm hoặc deploy.
+- Đối chiếu thêm MediaConfiguration: cờ LOCAL còn bật/tắt gateway đọc, không
+  là cờ chỉ dừng upload. Đã sửa lời khuyên rollback từ spec cũ để không gây
+  mất đường đọc ảnh LOCAL; ghi rõ giới hạn này trong tổng quan và runbook.
+- Audit cuối đạt trên27Markdown: local path/heading anchor, trần400 (trừ
+  DEV_LOG), không tham chiếu tài liệu đã gỡ ngoài log lịch sử, code fence của
+  ba tài liệu ảnh cân bằng; git diff --check đạt, `.env` vẫn ignored.
+- Import trực tiếp recipes.mjs bằng Node/assert xác nhận9variants, 10MiB và
+  25MP đúng phần mô tả. Thay đổi tracked chỉ Markdown; không chạy lại test
+  sản phẩm/build hoặc truy cập production vì không đổi code/schema/hạ tầng.
+- IMAGES382dòng, runbook281, verification139; gỡ6file cũ, giữ nội dung vận
+  hành/acceptance còn giá trị, không tạo archive/index song song. Bàn giao
+  tài liệu qua commit/push dev; user merge main theo workflow, không deploy.
+
 ## 2026-11-11 — S064-C01 — Chỉnh UI chấm công
 
 - Làm trực tiếp trên dev (đã khớp origin/dev). Phạm vi: attendance.scss, punch.html/ts,

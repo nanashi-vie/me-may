@@ -221,7 +221,7 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 
 - book_feature/code và listing_feature/position là danh mục mở rộng được, không
   dùng label làm khóa;0–3code/sách không trùng, thứ tự lưu ổn định. Schema/seed
-  và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách--06112026).
+  và API ở [CATALOGUE](CATALOGUE.md#12-lưu8ảnh-và-đặc-điểm-sách-06112026).
 - Sách cũ không tự có tag. Không suy từ tên/category; sách có cơ chế hỏng cần
   mô tả trung thực, tag không phải cam kết mọi bản đang hoạt động hoàn hảo.
 - Tối đa tám ảnh ACTIVE, hiển thị cùng sách khi xuất bản.

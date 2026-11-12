@@ -51,7 +51,7 @@ Angular 21.2 standalone/SSR-ready; Java 21/Spring Boot 4.1.1; PostgreSQL 18.4 co
 | Chốt mua | **Zalo hotline cá nhân có zBusiness**, ngoài website | Detail dùng Zalo; Facebook vẫn có thể là link thông tin cửa hàng. Không tự gửi tin |
 | Kho & đơn livestream | **Giữ luồng hiện tại** | Không ép livestream → website, không tự đồng bộ Excel/Zalo |
 | Sách cũ | **Một mục sách = mã MM, tồn gộp** | User duyệt06/11: chủ tự tăng tồn, xác nhận bản/tình trạng qua tin nhắn; giữ dòng legacy bên trong |
-| Tech stack | Angular + Spring Boot + **PostgreSQL** + Cloudinary | Local giữ Docker; test online dùng Neon đã cung cấp; chỉ Spring truy cập JDBC |
+| Tech stack | Angular + Spring Boot + **PostgreSQL** + LOCAL/Cloudinary legacy | Local giữ Docker; test online dùng Neon đã cung cấp; chỉ Spring truy cập JDBC |
 | Hosting frontend | **Cloudflare Workers + Angular SSR**, user đã chốt | Cần spike runtime/SSR/SEO/OG thực tế; upload browser assets không tự có SSR |
 | Hosting backend | Test: dịch vụ miễn phí do user chuẩn bị, ví dụ Render | Chưa thuê VPS/chốt provider; VPS + Dokploy là hướng production hoãn, không chặn test online |
 | Email | **Resend (sau MVP)** | Dự trù cổng tích hợp, chưa làm gửi mail/notification tại MVP |
@@ -239,8 +239,7 @@ flowchart TB
   A[Admin - desktop-first] --> CF
   CF -->|HTTPS API request| API[Spring Boot - free test host TBD]
   API -->|JDBC TLS| DB[(Neon PostgreSQL online test)]
-  API --> MEDIA[Cloudinary - signed media operations]
-  CF -->|Public optimized images| MEDIA
+  API --> MEDIA[Media gateway - LOCAL / Cloudinary legacy]
   C --> CHAT[Zalo hotline - contact outside web]
   API -. Future: EmailService .-> EMAIL[Resend transactional email]
   API -. Future: AI review API .-> AI[AI ingestion / reconciliation worker - capstone]
@@ -250,7 +249,7 @@ flowchart TB
 - **Frontend / Cloudflare Workers:** user chốt thay Pages để giữ SSR. Một Angular app, public mobile-first/admin desktop-first CSR. Build hiện dùng Node/Express; cần worker SSR handler/runtime tương thích, route assets/API và kiểm chứng HTML đầu tiên/OG/404/hydration/publish-sold-cache. Workers Assets đơn thuần không chứng minh SSR. Giữ Angular, không tự chuyển SSR sang VPS hoặc bỏ SEO gate.
 - **Backend:** Spring Boot modular monolith, module `catalogue`, `listing`, `media`, `taxonomy`, `auth`, `audit`, `contact-config`. Dùng REST API DTO versioned; validation; transactions ở boundaries thích hợp. **Không cần** microservice, event bus, search engine riêng hay Redis khi dữ liệu còn nhỏ.
 - **Database:** PostgreSQL, chỉ Spring truy cập JDBC (JPA/Hibernate + Flyway); Workers SSR gọi Spring API. Local giữ Docker/DBtest. Neon V1–V5 đã migrate/validate26/10 bằng direct endpoint; datasource pooled/Flyway direct ở Render profile, secrets sinh private riêng local. Backup/restore/online auth vẫn gate riêng. Production VPS/Dokploy vẫn là hướng hoãn, không public Docker DB.
-- **Media:** Cloudinary phục vụ ảnh tối ưu và thumbnail; backend cấp/signed upload hoặc kiểm soát tải lên; loại ảnh, kích thước, thứ tự; xử lý ảnh mồ côi khi upload thành công nhưng DB lưu lỗi. Google Drive (nếu dùng) chỉ là nơi nhân viên quản lý ảnh gốc, **không có tự động import/sync ở MVP**.
+- **Media:** quyết định được duyệt08–11/11 thay baseline cloud-only bằng LOCAL cho upload mới, Cloudinary cho ảnh legacy. Backend/worker Sharp tạo derived trên SSD; Drive giữ nguồn gốc và hỗ trợ IMPORT/MATCH theo link từng sách, không tự đồng bộ thư mục. Contract và khôi phục ở [IMAGES](IMAGES.md).
 - **Security:** Spring Security session cookie `HttpOnly`, `Secure`, `SameSite` phù hợp; RBAC owner/staff, CSRF trên request thay đổi trạng thái, rate limit login/upload, MIME/size verification, HTTPS và không public Actuator nhạy cảm. Với FE `www.example.com` và API `api.example.com`, đây là **cross-origin nhưng có thể same-site**: cấu hình CORS theo origin xác định, `credentials: true`, client gửi cookies đúng chỗ; kiểm tra chính sách cookie/CSRF trong trình duyệt và staging cùng site. Không dùng CORS `*` với credentials. Nên dùng cookie host-only của API; không lưu token admin ở localStorage.
 - **Deployment:** trước M5 chưa có VPS. Frontend Workers đã chốt; Render Docker và Workers SSR/proxy/config đã chuẩn bị; Neon migration remote đạt, services chưa deploy. M5 còn nghiệm thu online auth/CSRF/health/rollback/CPUquota. Production VPS/Dokploy chưa nghiệm thu, cần quyết định riêng; tách DB/media/secrets test với production.
 - **Caching:** cache Angular JS/CSS có fingerprint dài hạn; `index.html`, HTML metadata và `/api/v1/books/**` dùng cache có TTL/invalidation thích hợp, **không cache admin response hoặc cookie/token**. Giá/trạng thái thay đổi phải thấy sau refresh; OG previews do Facebook/Zalo có cache riêng nên cần test lại và không cam kết cập nhật tức thì.
@@ -361,7 +360,7 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 - [ ] Nháp/ẩn không lộ public API, sitemap và chi tiết URL; XSS/file upload/authorization được kiểm thử; concurrent edit không ghi đè âm thầm.
 - [ ] Title, description, canonical, OG image theo listing ở initial HTML; 404 thật; URL chia sẻ vẫn tồn tại sau sold (trừ khi chủ archive).
 - [ ] LCP mục tiêu **≤2,5 giây trong lab mobile có cấu hình đo được** trên trang đại diện; ảnh responsive/compression/lazy loading; ghi số đo chứ không tuyên bố đã đạt trước test.
-- [ ] PostgreSQL production có **backup ngoài VPS đã thử restore**; ảnh Cloudinary/Drive có phương án phục hồi; thông báo rõ khi upload lỗi; có checklist rollout & rollback.
+- [ ] PostgreSQL production có **backup ngoài VPS đã thử restore**; ảnh LOCAL/Cloudinary và nguồn Drive có phương án phục hồi theo IMAGES; thông báo rõ khi upload lỗi; có checklist rollout & rollback.
 - [ ] Angular FE đã deploy qua **Cloudflare**, Spring API chạy trên **VPS/Dokploy** HTTPS; JDBC PostgreSQL private network, TLS khi qua mạng khác máy, secrets không có ở browser; login admin/cookie/CORS/CSRF được kiểm thử với domain triển khai thật.
 - [ ] SEO/OG trang sách **đúng trong HTML đầu tiên hoặc phương án đã được chấp thuận qua spike**; lỗi 404 và trạng thái sold/published không bị Cloudflare cache sai.
 - [ ] Có tài liệu ngắn cho chủ/nhân viên: thêm cuốn, chọn ảnh, publish/ẩn, đổi sold, xử lý hỏi mua qua chat.
@@ -396,4 +395,4 @@ Có thể dùng GitHub Issues/Projects + PR riêng theo milestone; giao Codex c�
 
 ### Kết luận
 
-Mẹ Mây cần catalogue đáng tin theo từng cuốn và admin nhập/sửa nhanh. Stack giữ Angular/Spring Boot/PostgreSQL/Cloudinary. Hướng test M5: Workers cho Angular SSR, backend Render Docker đã chuẩn bị, Neon V1–V5 migrate/validate đạt; production VPS/Dokploy hoãn. Render/SEO, auth, backup/restore vẫn phải kiểm chứng, không đổi mô hình dữ liệu hoặc thêm nghiệp vụ chỉ vì đổi nơi test.
+Mẹ Mây cần catalogue đáng tin theo từng cuốn và admin nhập/sửa nhanh. Stack giữ Angular/Spring Boot/PostgreSQL; media theo [IMAGES](IMAGES.md). Hướng test M5: Workers cho Angular SSR, backend Render Docker đã chuẩn bị, Neon V1–V5 migrate/validate đạt; production VPS/Dokploy hoãn. Render/SEO, auth, backup/restore vẫn phải kiểm chứng, không đổi mô hình dữ liệu hoặc thêm nghiệp vụ chỉ vì đổi nơi test.
