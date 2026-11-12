@@ -415,7 +415,7 @@
       </thead>
       <tbody>
         @for (book of data.items; track book.id) {
-          <tr [id]="'admin-book-' + book.id">
+          <tr [id]="'admin-book-' + book.id" [class.source-warning]="book.unverifiedSourceRoles?.length">
             <td>
               <div class="book-cell">
                 @if (auth.user()?.role === 'OWNER') {
@@ -442,6 +442,9 @@
                     book.title || 'Chưa có tên'
                   }}</a>
                   <small>{{ book.bookCode }}</small>
+                  @if (sourceWarning(book); as warning) {
+                    <small class="source-warning-reason">{{ warning }}</small>
+                  }
                   @if (book.missingFields?.length) { <small>Thiếu {{ book.missingFields?.join(' · ') }}</small> }
                 </div>
               </div>

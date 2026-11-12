@@ -150,7 +150,7 @@ Cloudinary khác. Bước này khác với migration hàng loạt sách cũ.
 
 1. Owner cấp quyền đọc nguồn Drive cho service account. Dùng một sách với
    hai ảnh và một sách tám ảnh. Upload ảnh gốc, xem poll/reload và đối chiếu
-   link/file ID. Thử nguồn sai và xuất bản thiếu ảnh đã VERIFIED.
+   link/file ID. Thử nguồn sai: xuất bản vẫn được, dòng admin phải cảnh báo nguồn.
 2. Kiểm replace, chuyển Ẩn và phiên bản cũ từ hai tab. Tải gallery, preview và
    ZIP từ desktop/mobile, gồm một lượt ngoài LAN. Kiểm ảnh chữ ở 480/1400 và
    chốt chất lượng thực tế trước khi mở upload LOCAL. Kiểm lại gallery và

@@ -4050,3 +4050,47 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Host không cho chat tự handoff; bước cần thiết là người dùng chuyển chat
   về Local/root, sau đó archive attachment bằng công cụ native. Không force.
 - Commit tiếp theo chỉ ghi kết quả bàn giao; giữ dev và dev-ui cùng HEAD.
+
+### 2026-11-12 — IMG-HF-C01 — Hotfix xuất bản thiếu nguồn ảnh
+
+- Owner yêu cầu triển khai ngay phạm vi nhỏ: thiếu nguồn vẫn xuất bản; cả dòng
+  sách quản trị nền đỏ nhạt, có lý do. Luồng Drive/ghép nguồn bàn tiếp sau.
+- Đang làm trên dev sạch; bỏ gate nguồn ở create/update/publication/attach/
+  replacement, giữ READY/admission/quyền/version và xác minh nguồn thật.
+- Bổ sung cảnh báo từ truy vấn admin cho ảnh LOCAL ACTIVE chưa VERIFIED đúng
+  generation/hash; không gắn nhãn VERIFIED giả hoặc thay đổi dữ liệu nguồn.
+- Kiểm tra đang chuẩn bị: regression API và UI RED→GREEN, suite/build.
+  Chưa chạy kiểm tra mới; chưa deploy/migrate hoặc thay DB bán thật.
+
+### 2026-11-12 — IMG-HF-C02 — Nghiệm thu hotfix cảnh báo nguồn
+
+- Thay gate nguồn bằng cảnh báo theo yêu cầu owner: create PUBLISHED, publish
+  riêng, update/publishAfterSave và attach/replacement không chặn vì nguồn.
+  Giữ READY/admission, đủ ảnh, quyền, version, audit và kiểm nguồn migration.
+- BookQueryService/BookDtos thêm unverifiedSourceRoles cho ACTIVE LOCAL với
+  binding/generation/hash chưa hợp lệ. BookList tô tất cả td #fff0f0, nêu vai
+  trò và lý do chưa xác minh; nguồn đúng thì hết cảnh báo khi tải danh sách.
+  Cloudinary và ảnh đã gỡ không bị cảnh báo. Không giả VERIFIED, không lộ
+  source ID/hash ra public; không đổi IMPORT/MATCH hoặc schema.
+- Regression UI RED1/10 vì chưa highlight → GREEN10/10. Backend RED2/11 do
+  gate409 → GREEN11/11; kiểm createpublic, publish, sửa, thayảnh, cảnhbáo/hết
+  cảnhbáo, nguồnđổi, conflictversion và pending chưaREADY vẫn bịchặn.
+- Từ root: `npm test --prefix code/frontend`339/339,58files; `npm run build
+  --prefix code/frontend` và `npm run build:workers --prefix code/frontend`đạt.
+  Hai build trong sandbox dừng134 không có diagnostic; chạy lại ngoài đạt.
+- `bash .local/source-hotfix/test.sh verify` từ root:320total,0failure/error,
+  3live opt-in skip; JARđạt. Runner ignored override endpoint15441/me_may_test
+  trong container PostgreSQL18.4 mới; không dùng DB bán thật. Lần đầu database
+  test cũ lỗi checksumV21 (ngoài sandbox), không repair hoặc sửa migration.
+- Playwright dùng identity/listfixtures chỉ đọc trên frontend4211:1440/390
+  cả7td rgb255/240/240, dòngverified không tô; reason Bìa/Lưng và côngkhai
+  đúng. Screenshot output/playwright/source-hotfix-desktop.png ignored. Đây là
+  kiểmUI fixture, không là nghiệmthuDrive live hoặc dữliệuproduction.
+- Review độc lập readonly: không actionable findings. `git diff --check`,
+  trần400dòng(trừDEV_LOG) và local link targets của docs đổi đều đạt.
+  Đã đóng browser/frontend4211 và xóa containerQA do phiênnày tạo; runtime
+  user và DB hiệncó giữnguyên. Log/runner nằm .local và /tmp ignored.
+- Cập nhật IMAGES/IMAGE_OPERATIONS/IMAGE_VERIFICATION/README và PROGRESS,
+  không tạo spec/plan trùng cho hotfix đã được yêu cầu làm ngay.
+- Bàn giao commit/pushdev theo workflow. Chưa deploy/main/migrateproduction;
+  bước owner tiếp theo: merge/redeploy BE+FE rồi kiểm sách thiếu nguồn thật.

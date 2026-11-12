@@ -244,10 +244,15 @@ generation. `sourceRef` chỉ là ghi chú, không phải binding đã xác minh
 Đổi nội dung nguồn cần replacement/generation mới, không sửa hash để lách gate.
 Đang kiểm một candidate mới không được phá binding VERIFIED đang dùng.
 
-Mọi đường xuất bản LOCAL kiểm tất cả ảnh ACTIVE đã VERIFIED đúng input hash:
-create, update+publish, publish riêng và replacement trên sách công khai.
-Thiếu nguồn trả `image_source_unverified`, chỉ rõ ảnh; khác với version conflict.
-Lưu Ẩn/preview vẫn được. Cloudinary legacy chưa migrate giữ publication gate cũ.
+Hotfix được owner duyệt12/11: thiếu nguồn LOCAL không chặn create+publish,
+update+publish, publish riêng, gắn/thay ảnh hoặc sửa sách đang công khai.
+Vẫn kiểm READY/admission, đủ bìa/lưng, dữ liệu bắt buộc, OWNER và version.
+Danh sách admin trả `unverifiedSourceRoles` cho ảnh LOCAL ACTIVE chưa VERIFIED
+đúng input hash/generation; cả dòng nền đỏ nhạt và nêu vai trò chưa xác minh.
+Nguồn mất/đổi/lỗi quyền hoặc hash lệch cũng tiếp tục cảnh báo; khi nguồn hợp
+lệ hoặc ảnh không còn ACTIVE thì cảnh báo tương ứng tự hết ở lần tải danh sách.
+Cloudinary legacy không bị gắn cảnh báo thiếu nguồn LOCAL. Không đổi trạng thái
+nguồn thành VERIFIED để cho xuất bản; migration/rebuild giữ kiểm nguồn riêng.
 
 Mutation kiểm OWNER, CSRF, expected version, owner/session/namespace và audit.
 Request key/payload lặp trả receipt cũ; khác payload trả conflict. Confirm lô
@@ -340,7 +345,7 @@ Không drop schema hay xóa Cloudinary để thử chứng minh rollback/rebuild
 
 | Lỗi/tình huống | Ý nghĩa và bước xử lý |
 |---|---|
-| `image_source_unverified` | Ảnh LOCAL chưa có nguồn đúng; bổ sung/xác minh Drive hoặc lưu Ẩn |
+| Nền đỏ nhạt ở dòng admin | Nguồn LOCAL chưa xác minh; vẫn xuất bản được, bổ sung nguồn đúng để khôi phục |
 | `source_hash_mismatch` | Bytes không giống file đã upload; dùng đúng bản gốc, không sửa hash để vượt kiểm |
 | `SOURCE_CHANGED` | Nguồn đổi sau snapshot; xử lý nguồn rồi tạo lượt xác minh mới |
 | `ACCESS_ERROR` / `SOURCE_MISSING` | Kiểm credential/quyền tải/file; không mặc định xóa ảnh đang có |

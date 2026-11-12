@@ -62,7 +62,7 @@ class LocalUploadIntegrationTest extends MediaTestSupport {
     @Autowired ImageJobService worker;
     @Value("${local.server.port}") int port;
 
-    @Test void uploadReplayFinalizeGateAndReplacementAreAtomic() throws Exception {
+    @Test void uploadReplayReadinessAndUnverifiedPublishedReplacementAreAtomic() throws Exception {
         var api = new AdminHttpClient(port);
         api.login(owner.getEmail());
         jdbc.update("INSERT INTO image_recipe VALUES('v1','fixture','{}') ON CONFLICT DO NOTHING");
@@ -97,13 +97,10 @@ class LocalUploadIntegrationTest extends MediaTestSupport {
         var preview = api.download(endpoint + "/" + accepted.path("mediaId").asString());
         assertThat(preview.statusCode()).isEqualTo(200);
         assertThat(preview.body()).containsExactly(jpeg);
-        var blocked = api.send("POST", "/api/v1/admin/books", json(body), true);
-        assertThat(blocked.statusCode()).isEqualTo(409);
-        assertThat(blocked.body()).contains("image_source_unverified");
-        body.put("publication", "ARCHIVED");
         var saved = api.send("POST", "/api/v1/admin/books", json(body), true);
         assertThat(saved.statusCode()).isEqualTo(201);
         var book = tree(saved);
+        assertThat(book.path("publication").asString()).isEqualTo("PUBLISHED");
         assertThat(tree(api.send("POST", "/api/v1/admin/books", json(body), true)).path("id")).isEqualTo(book.path("id"));
 
         String replacementSession = tree(api.send("POST", sessions, "{}", true)).path("id").asString();

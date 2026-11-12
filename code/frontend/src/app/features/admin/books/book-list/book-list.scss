@@ -220,3 +220,6 @@ small {
 }
 .cover-placeholder{width:42px;height:58px;flex-shrink:0;display:flex;align-items:center;text-align:center;font-size:.65rem;background:var(--paper,#f5f3ef);color:var(--muted);}
 tr.saved-book > td { background: #fff3d8; }
+
+tr.source-warning > td { background: #fff0f0; }
+.source-warning-reason { color: #9a2633; margin-top: 0.35rem; }

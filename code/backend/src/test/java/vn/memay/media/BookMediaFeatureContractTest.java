@@ -47,7 +47,7 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
         body=createBody(a,1);((Map<String,Object>)body.get("write")).remove("title");
         assertThat(a.send("POST","/api/v1/admin/books",json(body),true).statusCode()).isEqualTo(201);
     }
-    @Test void localSourceGateCoversPublicationAndPublishedEdits() throws Exception {
+    @Test void unverifiedSourcesWarnInAdminButAllowPublicationAndPublishedEdits() throws Exception {
         var a = api();
         var body = createBody(a, 2);
         body.put("write", BookFixtures.write("Local source gate", "BOARD_BOOK", null,
@@ -74,16 +74,16 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
             assertThat(saved.statusCode()).isEqualTo(200);
             long version = tree(saved).path("version").asLong();
             String publish = json(Map.of("version", version, "status", "PUBLISHED", "confirmedActualCopy", true));
-            var rejected = a.send("PATCH", path + "/publication", publish, true);
-            assertThat(rejected.statusCode()).isEqualTo(409);
-            assertThat(rejected.body()).contains("image_source_unverified");
-
+            var published = a.send("PATCH", path + "/publication", publish, true);
+            assertThat(published.statusCode()).isEqualTo(200);
+            var warning = tree(a.send("GET", "/api/v1/admin/books", null, false)).path("items").get(0);
+            assertThat(warning.path("unverifiedSourceRoles").toString()).isEqualTo("[\"FRONT\"]");
             jdbc.update("""
                     INSERT INTO image_source_binding(media_id,file_id,sha256,source_bytes,mime,status,verified_at)
                     VALUES(?,'private-drive-id',?,3,'image/jpeg','VERIFIED',now())
                     """, media, hash);
-            var published = a.send("PATCH", path + "/publication", publish, true);
-            assertThat(published.statusCode()).isEqualTo(200);
+            assertThat(tree(a.send("GET", "/api/v1/admin/books", null, false)).path("items").get(0)
+                    .path("unverifiedSourceRoles").size()).isZero();
             var publishedBook = tree(published);
             String slug = publishedBook.path("slug").asString();
             assertThat(a.send("GET", "/api/v1/books/" + slug, null, false).body())
@@ -91,10 +91,13 @@ class BookMediaFeatureContractTest extends MediaTestSupport {
 
             jdbc.update("UPDATE image_source_binding SET status='SOURCE_CHANGED' WHERE media_id=?", media);
             var changed = updateBody(publishedBook);
-            changed.put("title", "Rejected edit");
-            assertThat(a.send("PUT", path, json(changed), true).statusCode()).isEqualTo(409);
-            assertThat(a.upload(path + "/media/BACK", publishedBook.path("version").asLong(),
-                    ImageValidatorTest.image("jpeg"), true).statusCode()).isEqualTo(409);
+            changed.put("title", "Allowed edit");
+            var edited = a.send("PUT", path, json(changed), true);
+            assertThat(edited.statusCode()).isEqualTo(200);
+            assertThat(tree(a.send("GET", "/api/v1/admin/books", null, false)).path("items").get(0)
+                    .path("unverifiedSourceRoles").toString()).isEqualTo("[\"FRONT\"]");
+            assertThat(a.upload(path + "/media/BACK", tree(edited).path("version").asLong(),
+                    ImageValidatorTest.image("jpeg"), true).statusCode()).isEqualTo(201);
         } finally {
             jdbc.update("UPDATE book_media SET provider='CLOUDINARY',serving_generation=NULL WHERE id=?", media);
             jdbc.update("DELETE FROM image_source_binding WHERE media_id=?", media);

@@ -92,7 +92,7 @@ public final class BookDtos {
         public record BookSummary(String id, String bookCode, String title, Long priceMinVnd, Long priceMaxVnd,
                         Publication publication,
                         Availability availability, long version, Instant updatedAt, String frontContentPath,
-                        long totalStock, Instant publishedAt, List<String> missingFields, Integer storageBoxNumber) {
+                        long totalStock, Instant publishedAt, List<String> missingFields, Integer storageBoxNumber, List<String> unverifiedSourceRoles) {
         }
 
         public record BookFilter(String q, Publication publication, Availability availability, int page, int size, Boolean unpublishedOnly, Boolean missingOnly, String category, String binding, Long focusId, Integer storageBoxNumber) {
