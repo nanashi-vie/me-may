@@ -3933,3 +3933,16 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   arrowcolor rgb41/39/36 trên nềnwhite; previewcover. Không tạo account/dữliệuQA.
 - Chỉ frontend/docs đổi, không migrate/restartbackend/worker hoặc chạy lạiBE
   khôngliênquan. Đang tích hợpdev/dev-ui, giữ UI riêng; sẽ kiểm4200 và dọn4209.
+
+### HERO-C15 — Đồng bộ followup vào4200
+
+- Codefixdeeb63f đã fast-forwarddev; dev-ui merge2ddbc82. Conflict chỉPROGRESS,
+  giữ2checkpointS065 cùngHERO-C14. `npm test --prefix code/frontend` ởdev-ui
+  337/33758files đạt. Không sửa2chỉnhUIriêng hoặc tạo tài khoản/bản ghi trênDB.
+- Browserlocalhost4200 thật sau sync: object-fitcover, actualanimation enter-ltr;
+  đã unroute fixture trước đo. Native336test, dev-ui337test, SSR/Workersbuild đạt.
+  Không thay API/backend/media recipe nên không chạy lại database suite.
+- Đã đóng browserQA và frontend4209; giữ4200/8080/8081/worker/Nginx đang chạy.
+  Scratch `.local/hero-followup` ignored giữ test/buildlog để đối chiếu; screenshots
+  ở output/playwright ignored. Gitdiff/local links/trần400dòng đã kiểm.
+- Tích hợp/pushdev theo workflow; không pushdev-ui/main hoặc deployproduction.
