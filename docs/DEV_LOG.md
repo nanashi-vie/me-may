@@ -3561,6 +3561,33 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   ngang. Nguồn ảnh 1584px nên phóng nhẹ trên màn hình rộng hơn; chưa kiểm mobile
   thật.
 
+## 2026-11-12 — CUSTOMER-C01 — Thiết kế quản lý khách hàng
+
+- Mục tiêu: tiếp nhận spec Customer Management owner cung cấp và hoàn thiện
+  thiết kế trước lập plan; không triển khai sản phẩm trong checkpoint này.
+- Owner chốt: Zalo/TikTok/Threads chỉ lưu username, dùng field riêng;
+  nhãn Zalo là Tên Zalo; STAFF chỉ xem, OWNER thao tác ghi.
+- Bắt đầu trên dev khớp origin/dev, working tree sạch. Đã đọc README,
+  PROGRESS, checkpoint cuối DEV_LOG, MASTER_PLAN và spec nguồn đầy đủ.
+  Graph đúng project không có Customer; đã đọc SecurityConfiguration và
+  AdminLayout bằng graph, đối chiếu API/quyền/version ở tài liệu hiện hành.
+- Đang viết CUSTOMER_SPEC, đăng ký README và cập nhật PROGRESS. Bản gốc
+  Ready for Development chưa bao gồm quyết định bổ sung; bản repo chờ owner
+  duyệt thiết kế. Chưa chạy test/build/migration hoặc truy cập live.
+- Tiếp theo: builder check độc lập, kiểm dòng/link/diff, bàn giao thiết kế
+  để duyệt; sau duyệt mới dùng writing-plans. Thay đổi còn local trên dev.
+- Kết quả: CUSTOMER_SPEC299dòng giữ CUS01–08/AC01–12 nguồn, bổ sung Threads,
+  quyền đã chốt và AC13–19. Quy tắc kỹ thuật agent đề xuất được tách rõ:
+  prefix v1/ID chuỗi, version chống ghi đè, chuẩn phone, username giữ @,
+  audit metadata không PII. Chưa coi các đề xuất này là owner đã duyệt.
+- Builder check độc lập customer_spec_check: không còn câu hỏi quan trọng
+  cần trả lời trước lập plan; vẫn cần owner duyệt bản thiết kế.
+- Kiểm từ root: git diff --check đạt; Python kiểm trần400 và đường dẫn link
+  local trên4file thay đổi đạt; kiểm nội dung field/quyền/errorcode đạt.
+  Không chạy test/build sản phẩm vì chỉ đổi Markdown; không migrate/deploy.
+- Bàn giao thiết kế chờ duyệt trên dev; chưa lập implementation plan hoặc
+  viết code. Sau khi owner duyệt, dùng writing-plans theo spec này.
+
 ## 2026-11-11 — S063-C01 — Sửa "Mở bằng Zalo Web" không mở tab
 
 - Làm trên dev-ui sau khi fast-forward dev lên origin/dev và merge dev vào dev-ui.

@@ -3,6 +3,12 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Quản lý khách hàng12/11: đã soạn spec từ bản owner cung cấp;
+  field Zalo/TikTok/Threads riêng, chỉ lưu username; nhãn **Tên Zalo**.
+  OWNER ghi, STAFF chỉ xem/tìm kiếm. Builder check không còn câu hỏi cản
+  lập plan. Chưa triển khai; bước tiếp là duyệt
+  [thiết kế](CUSTOMER_SPEC.md), rồi lập kế hoạch triển khai.
+
 - Hệ ảnh self-host: owner xác nhận12/11 upload mượt, đã dọn2container QA
   và29file tạm; DB đang dùng giữ nguyên. [Tổng quan/contract](IMAGES.md),
   [runbook](IMAGE_OPERATIONS.md), [bằng chứng/tiêu chí](IMAGE_VERIFICATION.md).
