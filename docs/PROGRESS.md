@@ -3,6 +3,11 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- HERO-AUDIT-C01 (12/11,23:02): production banner upload503 Response confirmed
+  banner_recipe_unavailable; backend database lacks hero-v1. Verify worker
+  revision/digest/mount, register recipe then smoke. No live changes made.
+  UI currently shows generic retry text for this configuration failure.
+
 - IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
   cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
   FE339 đạt, BE320total/3skip, SSR/Workers đạt; browser1440/390 và review đạt.
