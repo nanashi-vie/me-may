@@ -8,23 +8,47 @@
   (focusin)="focus(true)"
   (focusout)="focusOut($event)"
 >
-  <a routerLink="/sach" class="image-link">
-    @if (!fallbackBroken()) {
-      <img
-        [src]="current().src"
-        [srcset]="current().srcset"
-        sizes="100vw"
-        [width]="current().width"
-        [height]="current().height"
-        [alt]="current().alt"
-        [attr.fetchpriority]="active() === 0 ? 'high' : 'auto'"
-        [attr.loading]="active() === 0 ? 'eager' : 'lazy'"
-        (error)="failed(current().id)"
-      />
-    } @else {
-      <span class="fallback-text">Mẹ Mây · Khám phá tất cả sách</span>
+  <div class="viewport" [class.rtl]="direction() === 'rtl'">
+    @if (outgoing(); as leaving) {
+      @for (previous of [leaving]; track previous.id) {
+        <div class="outgoing" aria-hidden="true">
+          <img
+            [src]="previous.src"
+            [srcset]="previous.srcset"
+            sizes="100vw"
+            [width]="previous.width"
+            [height]="previous.height"
+            alt=""
+            fetchpriority="low"
+          />
+        </div>
+      }
     }
-  </a>
+    @for (banner of [current()]; track banner.id) {
+      <a
+        routerLink="/sach"
+        class="image-link"
+        [class.incoming]="outgoing() !== null"
+        (animationend)="finishTransition($event)"
+      >
+        @if (!fallbackBroken()) {
+          <img
+            [src]="banner.src"
+            [srcset]="banner.srcset"
+            sizes="100vw"
+            [width]="banner.width"
+            [height]="banner.height"
+            [alt]="banner.alt"
+            [attr.fetchpriority]="active() === 0 ? 'high' : 'auto'"
+            [attr.loading]="active() === 0 ? 'eager' : 'lazy'"
+            (error)="failed(banner.id)"
+          />
+        } @else {
+          <span class="fallback-text">Mẹ Mây · Khám phá tất cả sách</span>
+        }
+      </a>
+    }
+  </div>
   @if (slides().length > 1) {
     <button class="arrow previous" type="button" aria-label="Banner trước" (click)="next(-1)">
       ‹

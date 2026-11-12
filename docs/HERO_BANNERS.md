@@ -7,7 +7,8 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 
 - Vào `/admin/sach-noi-bat`, khối **Banner trang chủ** trên các kệ sách.
 - OWNER thêm/thay/xóa/lên/xuống, nhập mô tả ảnh tối đa300ký tự rồi **Lưu banner**.
-  Rỗng dùng mô tả mặc định. STAFF không thấy khối này, API quản trị403.
+  Rỗng dùng mô tả mặc định.
+  Mô tả là alt cho accessibility và SEO; nên mô tả nội dung thật, không nhồi từ khóa. STAFF không thấy khối này, API quản trị403.
 - Lưu banner và lưu kệ sách độc lập. Đổi phần này không mất draft phần kia;
   rời trang có một cảnh báo chung. Save409 giữ draft để đối chiếu/tải lại.
 - Chọn ảnh mới chưa đổi trang chủ. Chờ xử lý READY mới lưu; upload lỗi giữ ảnh
@@ -19,7 +20,7 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 
 | Hạng mục | Contract/khuyến nghị |
 |---|---|
-| Khung | Tràn ngang3:1, contain, không crop chữ; nền kem nếu dư |
+| Khung | Tràn ngang3:1, cover căn giữa; cắt phần dư trên/dưới |
 | File thiết kế gốc |3240×1080 hoặc3840×1280, chữ lớn/ít chữ, cách mép khoảng5% |
 | Input | JPEG/PNG/WebP tĩnh; tối đa10MiB và25MP; kiểm bytes/giải mã ở worker |
 | Output | recipe `hero-v1`,800/1600/3200px, JPEG90 và WebP88, sRGB/strip metadata |
@@ -33,9 +34,13 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 
 - `GET /api/v1/home` thêm `banners`, theo thứ tự đã lưu. Rỗng dùng asset fallback.
 - Mỗi banner `{id,alt,src,srcset,width,height}`; srcset800/1600/3200, sizes100vw.
-  Khung do CSS giữ3:1, metadata width3200/height1067. Mọi ảnh link `/sach`, cùng tab.
+  Khung do CSS giữ3:1 và cover, metadata width3200/height1067. Mọi ảnh link `/sach`, cùng tab.
 - Một ảnh không controls/timer. Hai đến10ảnh tự chuyển5000ms, quay vòng;
   nút trước/sau, chấm chọn, tạm dừng/chạy lại hỗ trợ keyboard và target>=44px.
+- Theo owner đổi12/11: tự chuyển trượt trái→phải trong550ms (ảnh mới
+  từtrái, ảnh cũ sangphải); nútTrước đảo chiều, chấm chọn theoLTR.
+  Hai lớp ảnh đồng bộ khi bấm nhanh; lớp cũ aria-hidden, hếtanimation dọn.
+  Reduced-motion đổi ảnh ngay, không trượt kể cả bật autoplay thủcông.
 - Hover/focus/tab ẩn dừng timer; resume/manual navigation bắt đầu5giây mới,
   không nhảy bù. Reduced motion mặc định tắt autoplay, có thể bật chủ động.
 - Ảnh lỗi bị bỏ qua, tất cả lỗi dùng fallback; fallback lỗi có tên tiệm/link sách.

@@ -31,11 +31,14 @@ export class HeroCarousel implements OnChanges {
   readonly paused = signal(false);
   readonly broken = signal(new Set<string>());
   readonly fallbackBroken = signal(false);
+  readonly outgoing = signal<HeroBanner | null>(null);
+  readonly direction = signal<'ltr' | 'rtl'>('ltr');
   private readonly doc = inject(DOCUMENT);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private ready = false;
   private hovering = false;
   private focused = false;
+  private reducedMotion = false;
   private timer?: ReturnType<typeof setTimeout>;
   constructor() {
     const destroy = inject(DestroyRef);
@@ -43,10 +46,18 @@ export class HeroCarousel implements OnChanges {
       if (!this.browser || destroy.destroyed) return;
       this.ready = true;
       const preference = this.doc.defaultView?.matchMedia?.('(prefers-reduced-motion: reduce)');
-      this.paused.set(preference?.matches ?? false);
-      const visibility = () => this.schedule();
+      this.reducedMotion = preference?.matches ?? false;
+      this.paused.set(this.reducedMotion);
+      const visibility = () => {
+        this.outgoing.set(null);
+        this.schedule();
+      };
       const motion = (event: MediaQueryListEvent) => {
-        if (event.matches) this.paused.set(true);
+        this.reducedMotion = event.matches;
+        if (event.matches) {
+          this.paused.set(true);
+          this.outgoing.set(null);
+        }
         this.schedule();
       };
       this.doc.addEventListener('visibilitychange', visibility);
@@ -63,6 +74,7 @@ export class HeroCarousel implements OnChanges {
     });
   }
   ngOnChanges() {
+    this.outgoing.set(null);
     this.active.set(0);
     this.broken.set(new Set());
     this.fallbackBroken.set(false);
@@ -74,13 +86,21 @@ export class HeroCarousel implements OnChanges {
   current() {
     return this.slides()[this.active()] ?? fallback;
   }
-  choose(index: number) {
+  choose(index: number, direction: 'ltr' | 'rtl' = 'ltr') {
+    const before = this.current();
     const count = this.slides().length;
     this.active.set(count ? (index + count) % count : 0);
+    this.direction.set(direction);
+    this.outgoing.set(
+      this.ready && !this.reducedMotion && before.id !== this.current().id ? before : null,
+    );
     this.schedule();
   }
   next(delta: number) {
-    this.choose(this.active() + delta);
+    this.choose(this.active() + delta, delta < 0 ? 'rtl' : 'ltr');
+  }
+  finishTransition(event: AnimationEvent) {
+    if (event.target === event.currentTarget) this.outgoing.set(null);
   }
   togglePause() {
     this.paused.update((p) => !p);
@@ -99,6 +119,7 @@ export class HeroCarousel implements OnChanges {
       this.focus(false);
   }
   failed(id: string) {
+    this.outgoing.set(null);
     if (id === 'fallback') {
       this.fallbackBroken.set(true);
       return;
