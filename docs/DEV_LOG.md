@@ -3434,6 +3434,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Proxy workerd smoke đạt; diff whitespace, trần dòng và liên kết tài liệu
   hiện hành đạt. Commit/push dev; owner merge main/deploy frontend.
 
+## 2026-11-12 — Owner nghiệm thu upload ảnh và dọn QA
+
+- Owner xác nhận đã test upload ảnh mượt, cho dọn container QA và tài nguyên
+  liên quan. Không mở lại các ca nghiệm thu đã xác nhận.
+- Kiểm kê: memay-drive-flow-test và memay-s057-pg đều dừng, PostgreSQL18,
+  anonymous volume riêng không dùng chung; S057 là fixture S1 gallery theo
+  checkpoint S057-C01. my-postgres đang chạy và container dự án khác giữ nguyên.
+- Không có tiến trình fixture API :18882/frontend QA :4208/workerd probe
+  thuộc luồng ảnh đang chạy. Có frontend dev khác đang dùng, không dừng.
+- Chuẩn bị xóa đúng hai container/volume và 29 file tạm (~1 MB) của các lượt
+  drive-flow/drive-button/match/publish-error/bulk-photo ở /private/tmp.
+  Không prune Docker toàn cục, không xóa source, worktree, secrets hoặc media.
+- Đã chạy docker rm -v cho đúng hai fixture; đối chiếu docker ps -a và
+  docker volume ls theo hai volume ID: đều không còn, my-postgres vẫn Up.
+  Đã xóa 29 file QA tạm, kiểm lại còn 0 file thuộc các prefix đã kiểm kê.
+- git diff --check và trần dòng PROGRESS đạt. Không chạy lại test sản phẩm
+  vì chỉ dọn fixture và cập nhật bàn giao; kết quả test trước giữ trong log.
+  Commit/push tài liệu lên dev, không deploy hoặc thay đổi main.
+
 ## 2026-11-11 — S064-C01 — Chỉnh UI chấm công
 
 - Làm trực tiếp trên dev (đã khớp origin/dev). Phạm vi: attendance.scss, punch.html/ts,

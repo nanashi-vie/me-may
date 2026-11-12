@@ -1,12 +1,14 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 11/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- Owner xác nhận 12/11 đã test upload ảnh mượt; đã dọn 2 container/volume
+  QA luồng ảnh và 29 file tạm. DB đang dùng giữ nguyên; gate khác vẫn theo dõi.
 - Đã thu gọn kết quả Drive và thêm Gắn tất cả ảnh theo duyệt owner
   11/11: tiến độ n/tổng, không ảnh lặp sau confirm. Retry giữ phần đã gắn.
-  Frontend 294/294, Workers build và browser fixture đạt. Chờ merge main
-  và deploy frontend; không đổi backend/schema.
+  Frontend 294/294, Workers build và browser fixture đạt; owner đã test
+  luồng upload. Không đổi backend/schema trong thay đổi giao diện này.
 - Đã sửa contract MATCH trả400 invalid_request (11/11): bookId HTTP là
   chuỗi, target snapshot tùy chọn. API ghép/xác nhận 5 ảnh và DOM đạt;
   frontend 292/292 đạt, backend 298 total/3 skip không lỗi. Cần deploy backend,
