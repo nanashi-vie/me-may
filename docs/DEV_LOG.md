@@ -3966,3 +3966,12 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Đã xác định dev-ui có2chỉnhUIriêng (footerfanpage native, bố cụctiêuđềdetail)
   vàmergehistory/log. Sẽ gộp đầyđủ vào dev, không cherry-pick bỏhistory.
 - Đanggộpnhánh vàkiểm lại trênkếtquả; chưa thao tác main/production.
+
+### HERO-C18 — Hover vẫn autoplay theo owner bổ sung
+
+- Owner đổi rõ hành vi: rêchuột không dừngcarousel; bỏ hoverpause, giữfocus/
+  tabhidden/Space vàreduced-motion. Testmouseenter ở5000ms REDtrêncode cũ.
+- Dev/dev-ui đã cùng0ee1594 sau gộp đầy đủ2chỉnhUIriêng. Đang bổsunghoverfix
+  trước chốtpush2nhánh/cleanup; chưa thay backend/DB/runtimeảnh.
+- Hoverfix GREEN338/33858files sau testRED; browser4209 thực giữpointertrênảnh
+  vẫn bắtđược chuyển động mới enter-rtl100%→0 trong5giây. Không đổiDB.

@@ -40,9 +40,9 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
   Vòng tròn hiển thị28px/SVG12px, hover nềntrắng/mũi tênđỏ; không thanh dots/pause.
 - Owner chốt lại: autoplay phải→trái550ms (ảnhmới từphải, ảnhcũ sangtrái);
   nútTrước đảochiều. Hai lớp ảnh đồngbộ khi bấmnhanh, lớpcũ aria-hidden.
-  Space trên linkbanner tạmdừng/chạylại; giữ hover/focus pause và reduced-motion.
+  Space trên linkbanner tạmdừng/chạylại; hover không dừng, giữ focus pause và reduced-motion.
   Reduced-motion đổiảnh ngay, khôngtrượt kể cả bậtautoplay thủcông.
-- Hover/focus/tab ẩn dừng timer; resume/manual navigation bắt đầu5giây mới,
+- Hover vẫn autoplay; focus/tab ẩn dừng timer; resume/manual navigation bắt đầu5giây mới,
   không nhảy bù. Reduced motion mặc định tắt autoplay, có thể bật chủ động.
 - Ảnh lỗi bị bỏ qua, tất cả lỗi dùng fallback; fallback lỗi có tên tiệm/link sách.
 - SSR xuất ảnh đầu/srcset/dimensions/high priority ngay trong HTML; timer chỉ chạy

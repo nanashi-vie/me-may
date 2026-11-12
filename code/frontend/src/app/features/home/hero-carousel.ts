@@ -36,7 +36,6 @@ export class HeroCarousel implements OnChanges {
   private readonly doc = inject(DOCUMENT);
   private readonly browser = isPlatformBrowser(inject(PLATFORM_ID));
   private ready = false;
-  private hovering = false;
   private focused = false;
   private reducedMotion = false;
   private timer?: ReturnType<typeof setTimeout>;
@@ -106,10 +105,6 @@ export class HeroCarousel implements OnChanges {
     this.paused.update((p) => !p);
     this.schedule();
   }
-  hover(value: boolean) {
-    this.hovering = value;
-    this.schedule();
-  }
   focus(value: boolean) {
     this.focused = value;
     this.schedule();
@@ -137,7 +132,6 @@ export class HeroCarousel implements OnChanges {
     if (
       !this.ready ||
       this.paused() ||
-      this.hovering ||
       this.focused ||
       this.doc.hidden ||
       this.slides().length < 2

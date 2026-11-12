@@ -74,28 +74,29 @@ describe('HeroCarousel', () => {
     fixture.detectChanges();
     for (const button of el.querySelectorAll('button')) expect(button.closest('a')).toBeNull();
   });
-  it('pauses on hover/focus/hidden and resumes without catching up', () => {
-    const { c } = setup();
-    c.hover(true);
-    vi.advanceTimersByTime(20000);
-    expect(c.active()).toBe(0);
-    c.hover(false);
-    vi.advanceTimersByTime(4999);
-    expect(c.active()).toBe(0);
-    vi.advanceTimersByTime(1);
+  it('keeps autoplay while hovered and pauses only on focus/hidden', () => {
+    const { c, el } = setup();
+    const region = el.querySelector('.carousel')!;
+    region.dispatchEvent(new MouseEvent('mouseenter'));
+    vi.advanceTimersByTime(5000);
     expect(c.active()).toBe(1);
+    region.dispatchEvent(new MouseEvent('mouseleave'));
+    vi.advanceTimersByTime(5000);
+    expect(c.active()).toBe(0);
     c.focus(true);
     vi.advanceTimersByTime(10000);
-    expect(c.active()).toBe(1);
+    expect(c.active()).toBe(0);
     c.focus(false);
     Object.defineProperty(document, 'hidden', { configurable: true, value: true });
     document.dispatchEvent(new Event('visibilitychange'));
     vi.advanceTimersByTime(20000);
-    expect(c.active()).toBe(1);
+    expect(c.active()).toBe(0);
     Object.defineProperty(document, 'hidden', { configurable: true, value: false });
     document.dispatchEvent(new Event('visibilitychange'));
-    vi.advanceTimersByTime(5000);
+    vi.advanceTimersByTime(4999);
     expect(c.active()).toBe(0);
+    vi.advanceTimersByTime(1);
+    expect(c.active()).toBe(1);
   });
   it('defaults to paused for reduced motion, with manual navigation and explicit resume', () => {
     const { c } = setup(2, true);
