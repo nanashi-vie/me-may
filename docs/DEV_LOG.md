@@ -3457,3 +3457,13 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   đậm cỡ lớn màu đỏ; vẫn là details thu gọn, không thêm dòng phụ.
 - npm test và npm run build từ code/frontend đạt. Xem trước tĩnh danh sách nhân
   viên bằng Chrome headless. Chưa xem form nhập sách trên trình duyệt thật.
+
+## 2026-11-12 — S065-C01 — Banner mới cho hero Home
+
+- Làm trên dev (đã khớp origin/dev). Nguồn: input/Banner.png (1584×396, input/ bị ignore).
+- Tạo public/images/hero-banner-1584.webp (~119 KB) và hero-banner-800.webp (~45 KB)
+  bằng sharp, dùng srcset; ảnh fetchpriority=high, có alt đầy đủ.
+- Hero chỉ còn ảnh full chiều rộng; h1 giữ ở dạng sr-only; bỏ nút Khám phá sách,
+  logo/orbit/art-note và CSS tương ứng. Mobile co theo chiều rộng, không cắt.
+- Từ code/frontend: npm test đạt 296/296, npm run build đạt. Chrome headless đã
+  chụp desktop 1280 và mobile. Chưa kiểm LCP/Lighthouse hay thiết bị thật.

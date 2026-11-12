@@ -1,50 +1,10 @@
 .hero {
   margin: 1.5rem 0 2rem;
-  background: #f8f1e6;
-  display: grid;
-  grid-template-columns: 1.3fr 1fr;
-  gap: 2rem;
-  padding: clamp(1.5rem, 4vw, 3.5rem);
-  overflow: hidden;
 }
-.hero h1 {
-  font-size: clamp(2rem, 4.3vw, 3.7rem);
-  max-width: none;
-  line-height: 1.15;
-  margin: 1rem 0 1.5rem;
-}
-.hero p:not(.eyebrow) {
-  max-width: 48ch;
-  color: var(--muted);
-  font-size: 1rem;
-  margin-bottom: 1.8rem;
-}
-.hero-art {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.hero-art img {
-  width: 75%;
-  max-width: 280px;
+.hero img {
+  display: block;
+  width: 100%;
   height: auto;
-  border-radius: 50%;
-  mix-blend-mode: multiply;
-}
-.art-note {
-  font: italic 1rem/1.5 var(--font-sans);
-  text-align: center;
-  color: #796446;
-  margin-top: 0.7rem;
-}
-.orbit {
-  position: absolute;
-  color: #c99644;
-  font-size: 3rem;
-  top: 0;
-  right: 0;
 }
 .banner-info-boxes {
   margin: 0 0 2.5rem;
@@ -337,27 +297,6 @@
   }
 }
 @media (max-width: 560px) {
-  .hero {
-    grid-template-columns: 1fr;
-    padding: 1.5rem;
-    gap: 1rem;
-  }
-  .hero-art {
-    flex-direction: row;
-    gap: 1rem;
-    img {
-      width: 100px;
-    }
-  }
-  .art-note,
-  .hero p:not(.eyebrow) {
-    font-size: 0.9rem;
-  }
-  .orbit {
-    font-size: 1.8rem;
-    top: -20px;
-  }
-  .hero .eyebrow,
   .shelf header a {
     font-size: 0.75rem;
   }
