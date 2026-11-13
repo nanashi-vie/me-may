@@ -194,9 +194,14 @@ export class HeroBannerEditor implements OnInit {
             this.watch(row, attempt, epoch);
           }
         },
-        error: () => {
-          if (this.valid(row, attempt, epoch))
-            this.failed(row, 'Chưa tải được ảnh. Thử lại để tiếp tục; ảnh cũ được giữ nguyên.');
+        error: (e) => {
+          if (!this.valid(row, attempt, epoch)) return;
+          const code = e.status === 503 ? e.error?.error : undefined;
+          this.failed(row, code === 'banner_recipe_unavailable'
+            ? 'Máy chủ chưa có cấu hình xử lý banner hero-v1. Cần kiểm tra worker và đăng ký cấu hình trước khi thử lại; ảnh cũ được giữ nguyên.'
+            : code === 'local_media_unavailable'
+              ? 'Dịch vụ ảnh trên máy chủ chưa được bật. Cần kiểm tra cấu hình trước khi thử lại; ảnh cũ được giữ nguyên.'
+              : 'Chưa tải được ảnh. Thử lại để tiếp tục; ảnh cũ được giữ nguyên.');
         },
       });
     this.requests.set(row, request);

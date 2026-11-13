@@ -105,6 +105,24 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 - Không deploy/migrate production trong task này. Thiết bị thật, artwork chính
   thức, live digest/mount/backup/monitoring vẫn là gate rollout do owner thực hiện.
 
+## Chẩn đoán upload503 và rollout worker
+
+- `banner_recipe_unavailable`: DB backend chưa đăng ký `hero-v1`; request chưa
+  tạo job. `local_media_unavailable`: LOCAL đang tắt. UI nêu riêng hai lỗi này;
+  thử lại file không thay được cấu hình máy chủ, ảnh cũ vẫn giữ nguyên.
+- Kiểm trực tiếp recipe trong worker đang chạy trước khi thêm record DB. Ca
+  production12/11 cho thấy backend mới nhưng worker release-candidate-ff81bd0
+  chỉ có `v1`; chỉ thêm `hero-v1` vào DB sẽ dẫn tới job `unknown_recipe`.
+- Sao lưu DB, namespace banners và service config riêng tư. Build worker từ
+  revision đã ghim; đối chiếu mount, hash recipe sách v1 và phiên bản Sharp/
+  libvips trước thay worker. Đợi queue rỗng; giữ image cũ để rollback.
+- Đăng ký `hero-v1` với digest worker mới/hash recipe đúng, không ghi đè record
+  bất biến. Kiểm worker→backend health, upload→READY→save→public và refresh.
+- Không thay digest của record `v1` cũ chỉ để khớp worker mới. REBUILD ảnh cũ
+  kiểm digest và output nghiêm ngặt; dùng đúng worker đã ghim của v1 trong
+  đợt bảo trì recovery. Giữ image cũ và service snapshot để thực hiện việc đó.
+- Xác minh quyền backup, không in service env/token hoặc dump ra log công khai.
+
 ## Bằng chứng local12/11
 
 - Test backend: config10/11/duplicates/READY/owner/expired/no-op/auditrollback,

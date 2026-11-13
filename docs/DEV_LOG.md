@@ -4094,3 +4094,87 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   không tạo spec/plan trùng cho hotfix đã được yêu cầu làm ngay.
 - Bàn giao commit/pushdev theo workflow. Chưa deploy/main/migrateproduction;
   bước owner tiếp theo: merge/redeploy BE+FE rồi kiểm sách thiếu nguồn thật.
+
+### 2026-11-12 - HERO-AUDIT-C01 - Production banner upload503
+
+- Scope: owner requested review from screenshot; read-only investigation,
+  no product code, deployment, configuration or database mutation.
+- Read HERO_BANNERS, HeroBannerMedia/Controller, editor, worker and runbook.
+  Brave DevTools existing failed POST Response at23:02:44 Asia/Ho_Chi_Minh
+  confirmed error banner_recipe_unavailable. Did not retry/upload/save or
+  change owner draft, Dokploy, worker or database.
+- HeroBannerMedia.upload returns this503 when image_recipe lacks hero-v1,
+  before enqueue. LOCAL service is enabled; otherwise error would instead
+  be local_media_unavailable. This request does not establish an input-file,
+  Drive or encoder failure. Live worker digest/mount not inspected.
+- Operational finding: missing recipe registration in backend database.
+  General IMAGE_OPERATIONS section3 illustrates v1 only; HERO_BANNERS has
+  separate hero-v1 registration instructions. Operator must verify matching
+  live worker revision/digest, recipe hash and shared mount before registering
+  immutable hero-v1, then smoke upload/save/public. Do not overwrite recipe.
+- UI finding: HeroBannerEditor.send ignores backend error body and tells
+  owner to retry for all failures; retry cannot fix missing recipe.
+- No product changes, suite/build not rerun for this read-only review.
+  Existing local QA is not evidence that production banner upload works.
+- Next: operator verify/register hero-v1; distinct UI error message is a
+  separate fix. Record review on dev; no main or production changes.
+
+### 2026-11-12 - HERO-FIX-C01 - Fix banner recipe failure
+
+- Owner authorized continuing remediation: UI error detail and production
+  hero-v1 readiness/registration after worker digest/mount verification.
+- Started on clean dev; scope excludes unrelated deployment/main changes.
+  Production investigation through existing Dokploy terminal; no secrets
+  copied to logs. Tests and results pending.
+
+### 2026-11-12 - HERO-FIX-C02 - UI fix verified, worker remediation prepared
+
+- HeroBannerEditor now distinguishes503 banner_recipe_unavailable and
+  local_media_unavailable; previous image/request key/retry behavior retained.
+- RED2/8 demonstrated missing specific messages; full frontend GREEN341/341
+  in58files. SSR and Workers builds pass; worker14/14 pass on current source.
+  No backend product changes, backend suite not rerun for frontend-only fix.
+- Read-only production verification: backend LOCAL enabled/root configured;
+  worker release-candidate-ff81bd0 only exports v1, lacks hero-v1. Did not
+  insert recipe or update worker before resolving this mismatch.
+- Host terminal Dokploy SSH authentication failed. Existing SSH memay login
+  refreshed through Cloudflare Access; memayadmin lacks Docker permission and
+  sudo needs password. User opened root shell; Warp computer control denied,
+  so root actions remain with user, no password requested or logged.
+- Prepared ignored .local/banner-production/remediate.py and pinned worker
+  source from origin/main536ee9db846faca28572958631babb4fde12d3da. Copied to
+  /home/memayadmin/banner-fix-536ee9db on host; local/remote syntax checks pass.
+  Independent readonly review found no critical/important script issues.
+- Script verifies target DB/shared mounts/idle queue, backs up DB+banners and
+  private service snapshot, builds worker, compares v1 hash/Sharp versions,
+  changes worker then inserts immutable hero-v1, verifies health and identity.
+  Retains old image/service snapshot for rollback and old v1 REBUILD; does not
+  overwrite v1 recipe or claim new worker can attest the old image digest.
+- User asked to run the concrete root command; execution/result pending.
+  Product UI fix reviewed without findings; HERO_BANNERS updated with causes,
+  worker upgrade and recovery requirement. No main push/merge or live banner
+  publish performed; UI rollout follows owner merge/deploy workflow.
+
+### 2026-11-12 - HERO-FIX-C03 - Production upload verified
+
+- User confirmed executing the prepared root remediation script. Agent could
+  not control Warp or reuse its sudo timestamp; no credentials requested.
+- Browser production existing owner draft: clicked its Retry once. Upload
+  entered processing, then preview of intended shop banner appeared, error
+  disappeared and Save banner became enabled. This verifies live upload,
+  hero-v1 processing and private preview after the worker/recipe remediation.
+- Did not click Save banner or publish/change home configuration; owner draft
+  remains ready for saving. Public/save/refresh after this operation not run.
+  Do not claim public publication verified from private preview alone.
+- Root backup directory/result details were not copied back; script saves
+  private DB/banner/service backups under /root/memay-banner-fix-<UTCstamp>.
+  Old v1 recipe/image retained by script; recovery uses its pinned old worker.
+- UI error improvements committed/pushed dev d9207db; FE341, worker14,
+  SSR/Workers builds pass, independent review no actionable findings. UI
+  release still requires owner merge/deploy; no agent main push/merge.
+- PROGRESS exceeded400 by one line while checkpoint was appended. Removed
+  superseded audit snapshot (all findings remain in DEV_LOG/HERO_BANNERS),
+  kept current remediation snapshot and all open release gates. Rechecked
+  changed docs limits/local targets and git diff whitespace before handoff.
+- No QA servers/containers started in this fix; existing production owner
+  browser/draft preserved. Remaining owner action: Save banner when desired.

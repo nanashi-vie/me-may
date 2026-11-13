@@ -3,6 +3,12 @@
 Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- HERO-FIX-C03: owner ran root worker/recipe remediation; production retry
+  now produces banner preview, no error, Save enabled. Draft not published.
+  UI503 guidance pushed dev d9207db; FE341, worker14, SSR/Workers pass.
+  Owner may Save banner; UI release still follows merge/deploy workflow.
+  Retain old pinned v1 worker for recovery; [contract](HERO_BANNERS.md).
+
 - IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
   cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
   FE339 đạt, BE320total/3skip, SSR/Workers đạt; browser1440/390 và review đạt.
