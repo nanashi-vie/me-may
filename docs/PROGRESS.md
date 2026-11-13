@@ -5,6 +5,17 @@ Cập nhật 13/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - S065-C06 (13/11, dev-ui): Bổ sung UI language switcher (`.lang-switcher`) ngay bên phải `Danh sách quan tâm` trên cả desktop và mobile `≤720px`: nút ngoài dạng pill chỉ hiển thị lá cờ + chevron `⌄`; bấm mở dropdown `Tiếng Việt` (cờ VN) và `English (US)` (cờ Mỹ), lưu lựa chọn ở `localStorage` (`memay.uiLang.v1`, chưa dịch nội dung trang); đóng khi chọn, bấm ngoài hoặc nhấn `Escape`. Vitest 58/58 files (340/340 tests PASS), `build` và `build:workers` đạt 0 warning, 0 error.
 - S065-C05 (13/11, dev-ui): Thiết kế lại nút `Danh sách quan tâm` trên header (`public-layout`): icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` ở dưới, màu `--ink` đổi `--red` khi hover/focus/active, badge đỏ góc trên-phải icon chỉ hiện khi `> 0`; gỡ nút `Nhắn tiệm` khỏi `.header-links` (giữ `/lien-he` ở nav/sidebar/footer). Mobile `≤720px` chỉ hiện icon 44×44px. Vitest 58/58 files (339/339 tests PASS), `build` và `build:workers` exit 0.
+- HERO-FIX-C03: owner ran root worker/recipe remediation; production retry
+  now produces banner preview, no error, Save enabled. Draft not published.
+  UI503 guidance pushed dev d9207db; FE341, worker14, SSR/Workers pass.
+  Owner may Save banner; UI release still follows merge/deploy workflow.
+  Retain old pinned v1 worker for recovery; [contract](HERO_BANNERS.md).
+
+- IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
+  cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
+  FE339 đạt, BE320total/3skip, SSR/Workers đạt; browser1440/390 và review đạt.
+  Tích hợp dev; chưa deployproduction. Luồng Drive/ghép nguồn chưa đổi.
+
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 

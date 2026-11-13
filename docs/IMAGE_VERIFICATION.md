@@ -6,6 +6,13 @@ mới. Contract ở [IMAGES](IMAGES.md), thao tác ở [runbook](IMAGE_OPERATION
 gate hiện hành ở [PROGRESS](PROGRESS.md). Kết quả dưới đây có ngày/phạm vi,
 không thay kiểm live của revision mới.
 
+Hotfix12/11: nguồn LOCAL chưa xác minh chuyển thành cảnh báo, không chặn
+xuất bản. FE339/339, BE320total/3skip, SSR/Workers đạt; browser fixture
+1440/390 kiểm cả7ô nềnđỏnhạt và dòngverified không tô. Regression RED→GREEN
+kiểm createpublic/publish/sửa/thayảnh và READY/version giữ; review không finding.
+Bằng chứng/giới hạn: [IMG-HF-C02](DEV_LOG.md#2026-11-12--img-hf-c02--nghiệm-thu-hotfix-cảnh-báo-nguồn).
+Chưa deploy hoặc kiểm Drive thật cho hotfix; không dùng kếtquảlocal đónggatekhác.
+
 ## 1. Mốc đã có bằng chứng
 
 | Mốc | Bằng chứng | Giới hạn |
@@ -17,7 +24,7 @@ không thay kiểm live của revision mới.
 | 11/11 — Drive batch | Clean verify293total/3skip; FE284, worker10, CLI4, build/proxy; V30→V31 giữ dữ liệu/checksum; rebuild fixture | Lô8Drive thật/latency/RSS chưa có số đo |
 | 11/11 — import vào sách đã lưu | FE286; commit từng ảnh dùng pendingLocal/version, build/proxy | Không tự deploy |
 | 11/11 — xác nhận/refresh | FE289; backend295total/3skip; API gắn5ảnh/replay, browser fixture reload giữa các lần gắn | Backend snapshot sau thêm regression |
-| 11/11 — source gate | FE291, Workers build; thông báo đúng image_source_unverified, sách mới còn lưu Ẩn được | Không nới publication gate |
+| 11/11 — source gate cũ | FE291, Workers build; từng chặn xuất bản thiếu nguồn | Được hotfix12/11 thay bằng cảnh báo, xem IMAGES §10 |
 | 11/11 — MATCH HTTP | Backend298total/3skip; FE292; request bookId chuỗi/target snapshot optional, ghép8hash đảo thứ tự | Fixture khác Drive thật |
 | 11/11 — UI gắn cả lô | FE294, Workers/proxy, browser fixture: một bộ5ảnh, counter5/5, một nút; lỗi/retry queue | Không đổi backend/schema |
 | 12/11 — owner nghiệm thu | Owner xác nhận upload ảnh đã test mượt; cho dọn fixture QA | Không tự đóng benchmark/migration/rollback gate |

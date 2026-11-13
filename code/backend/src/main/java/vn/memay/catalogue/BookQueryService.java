@@ -131,6 +131,15 @@ public class BookQueryService {
         var items = jdbc.query(
                 "select b.id,b.book_code,b.title,b.storage_box_number,l.price_min_vnd,l.price_max_vnd,l.publication_status,l.published_at,b.availability,b.version,b.updated_at,(select coalesce(sum(v.stock),0) from book_variant v where v.book_copy_id=b.id) total_stock,exists(select 1 from book_media m where m.book_copy_id=b.id and m.role='FRONT' and m.state='ACTIVE') has_front"
                         + ", " + MISSING_FIELDS + " missing_fields"
+                        + """
+                        , array(select m.role from book_media m
+                            left join image_generation g on g.id=m.serving_generation
+                            left join image_source_binding sb on sb.media_id=m.id
+                            where m.book_copy_id=b.id and m.state='ACTIVE' and m.provider='LOCAL'
+                              and (sb.status is distinct from 'VERIFIED' or g.input_sha256 is null
+                                or sb.sha256 is distinct from g.input_sha256)
+                            order by m.role) unverified_source_roles
+                        """
                         + where + " order by " + ADMIN_ORDER + " limit ? offset ?",
                 (r, n) -> new BookSummary(r.getString("id"), r.getString("book_code"), r.getString("title"),
                         r.getObject("price_min_vnd", Long.class), r.getObject("price_max_vnd", Long.class),
@@ -141,7 +150,8 @@ public class BookQueryService {
                                 : null,
                         r.getLong("total_stock"),r.getTimestamp("published_at")==null?null:r.getTimestamp("published_at").toInstant(),
                         Arrays.asList((String[]) r.getArray("missing_fields").getArray()),
-                        r.getObject("storage_box_number", Integer.class)),
+                        r.getObject("storage_box_number", Integer.class),
+                        Arrays.asList((String[]) r.getArray("unverified_source_roles").getArray())),
                 args.toArray());
         return new Page<>(items, requestedPage, filter.size(), total,
                 (int) ((total + filter.size() - 1) / filter.size()));

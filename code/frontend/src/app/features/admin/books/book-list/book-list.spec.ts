@@ -7,6 +7,24 @@ import { vi } from 'vitest';
 import { BookList } from './book-list';
 import { BookApi } from '../book-api';
 describe('BookList', () => {
+  it('highlights the whole row with a source reason and clears it when verified', () => {
+    const item = {id:'7',bookCode:'MM-000007',title:'Book',publication:'PUBLISHED',version:1,
+      priceMinVnd:20000,priceMaxVnd:20000,totalStock:1,unverifiedSourceRoles:['FRONT','BACK']};
+    TestBed.configureTestingModule({providers:[provideRouter([]),
+      {provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},
+      {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+      {provide:BookApi,useValue:{storageBoxes:()=>of([]),list:()=>of({items:[item],page:0,totalPages:1})}}]});
+    const f=TestBed.createComponent(BookList);f.detectChanges();
+    const row=f.nativeElement.querySelector('#admin-book-7') as HTMLElement;
+    expect(row.classList.contains('source-warning')).toBe(true);
+    expect(row.querySelector('.source-warning-reason')?.textContent).toContain('Bìa · Lưng');
+    expect(row.querySelector('.source-warning-reason')?.textContent).toContain('chưa được xác minh');
+    expect(row.textContent).toContain('Công khai');
+    f.componentInstance.result.update(page=>({...page!,items:[{...page!.items[0],unverifiedSourceRoles:[]}]}));
+    f.detectChanges();
+    expect(row.classList.contains('source-warning')).toBe(false);
+    expect(row.querySelector('.source-warning-reason')).toBeNull();
+  });
   it('downloads only the checked books and reports which books have no photos', () => {
     const response = new Subject<HttpResponse<Blob>>();
     const downloadPhotos = vi.fn(() => response);
