@@ -1,5 +1,13 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  afterNextRender,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
@@ -11,11 +19,29 @@ import { WishlistStore } from '../../features/wishlist/wishlist-store';
 import { TaxonomyOption } from '../../features/admin/books/book.models';
 import { AuthService } from '../../core/auth/auth.service';
 
+export type UiLang = 'vi' | 'en-US';
+export const UI_LANG_KEY = 'memay.uiLang.v1';
+
+interface UiLangOption {
+  code: UiLang;
+  label: string;
+  flagId: string;
+}
+
+const UI_LANGS: ReadonlyArray<UiLangOption> = [
+  { code: 'vi', label: 'Tiếng Việt', flagId: 'flag-vi' },
+  { code: 'en-US', label: 'English (US)', flagId: 'flag-en-us' },
+];
+
 @Component({
   selector: 'app-public-layout',
   imports: [RouterLink, RouterOutlet, FormsModule],
   templateUrl: './public-layout.html',
   styleUrl: './public-layout.scss',
+  host: {
+    '(document:click)': 'onDocumentClick($event)',
+    '(document:keydown.escape)': 'onDocumentEscape()',
+  },
 })
 export class PublicLayout {
   readonly wishlist = inject(WishlistStore);
@@ -30,6 +56,12 @@ export class PublicLayout {
     return list?.length ? list : DEFAULT_CATEGORIES;
   });
   readonly openMenu = signal<'books' | 'collections' | null>(null);
+  readonly langs = UI_LANGS;
+  readonly currentLang = signal<UiLang>('vi');
+  readonly currentLangOption = computed(
+    () => this.langs.find((l) => l.code === this.currentLang()) ?? this.langs[0],
+  );
+  readonly langMenuOpen = signal(false);
   readonly sidebarOpen = signal(false);
   readonly sidebarBooksOpen = signal(false);
   readonly sidebarCollectionsOpen = signal(false);
@@ -40,11 +72,14 @@ export class PublicLayout {
   private readonly doc = inject(DOCUMENT);
   private readonly sidebarDialog = viewChild<ElementRef<HTMLDialogElement>>('sidebarDialog');
   private readonly menuTrigger = viewChild<ElementRef<HTMLButtonElement>>('menuTrigger');
+  private readonly langSwitcher = viewChild<ElementRef<HTMLElement>>('langSwitcher');
+  private readonly langTrigger = viewChild<ElementRef<HTMLButtonElement>>('langTrigger');
 
   constructor() {
     const api = inject(PublicApi);
     api.collections().subscribe({ next: (c) => this.collections.set(c), error: () => {} });
     api.taxonomy().subscribe({ next: (t) => this.taxonomy.set(t), error: () => {} });
+    afterNextRender(() => this.loadSavedLang());
     this.syncRoute();
     this.router.events
       .pipe(
@@ -54,8 +89,48 @@ export class PublicLayout {
       .subscribe(() => {
         this.syncRoute();
         this.openMenu.set(null);
+        this.langMenuOpen.set(false);
         if (this.sidebarOpen()) this.closeSidebar();
       });
+  }
+
+  private loadSavedLang() {
+    try {
+      const saved = this.doc.defaultView?.localStorage?.getItem(UI_LANG_KEY);
+      if (saved === 'vi' || saved === 'en-US') {
+        this.currentLang.set(saved);
+      }
+    } catch {
+      // Ignore storage access failures in private browsing.
+    }
+  }
+
+  toggleLangMenu() {
+    this.langMenuOpen.update((open) => !open);
+  }
+
+  selectLang(code: UiLang) {
+    this.currentLang.set(code);
+    try {
+      this.doc.defaultView?.localStorage?.setItem(UI_LANG_KEY, code);
+    } catch {
+      // Ignore storage access failures in private browsing.
+    }
+    this.langMenuOpen.set(false);
+  }
+
+  onDocumentClick(event: MouseEvent) {
+    if (!this.langMenuOpen()) return;
+    const host = this.langSwitcher()?.nativeElement;
+    if (host && event.target instanceof Node && !host.contains(event.target)) {
+      this.langMenuOpen.set(false);
+    }
+  }
+
+  onDocumentEscape() {
+    if (!this.langMenuOpen()) return;
+    this.langMenuOpen.set(false);
+    this.langTrigger()?.nativeElement.focus();
   }
 
   private syncRoute() {

@@ -5,6 +5,7 @@ import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { Meta } from '@angular/platform-browser';
 import { WISHLIST_KEY, WishlistStore } from './features/wishlist/wishlist-store';
+import { UI_LANG_KEY } from './layouts/public-layout/public-layout';
 
 describe('public shell', () => {
   it('offers catalogue navigation without pretending checkout exists', async () => {
@@ -141,5 +142,53 @@ describe('public shell', () => {
     expect(wishlistLink.classList.contains('active')).toBe(true);
     expect(wishlistLink.getAttribute('aria-current')).toBe('page');
     localStorage.removeItem(WISHLIST_KEY);
+  });
+
+  it('renders flag-only language switcher beside wishlist and toggles dropdown options', async () => {
+    localStorage.removeItem(UI_LANG_KEY);
+    TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient()] });
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/');
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+
+    const headerLinks = Array.from(root.querySelector('.header-links')!.children);
+    expect(headerLinks[0].classList.contains('wishlist-link')).toBe(true);
+    expect(headerLinks[1].classList.contains('lang-switcher')).toBe(true);
+
+    const trigger = root.querySelector<HTMLButtonElement>('.lang-trigger')!;
+    expect(trigger).not.toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.textContent?.trim()).toBe('');
+    expect(trigger.querySelector('use')?.getAttribute('href')).toBe('#flag-vi');
+    expect(root.querySelector('#lang-menu')).toBeNull();
+
+    trigger.click();
+    harness.detectChanges();
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+
+    const options = Array.from(root.querySelectorAll<HTMLButtonElement>('#lang-menu .lang-option'));
+    expect(options.length).toBe(2);
+    expect(options[0].textContent).toContain('Tiếng Việt');
+    expect(options[0].querySelector('use')?.getAttribute('href')).toBe('#flag-vi');
+    expect(options[1].textContent).toContain('English (US)');
+    expect(options[1].querySelector('use')?.getAttribute('href')).toBe('#flag-en-us');
+
+    options[1].click();
+    harness.detectChanges();
+    expect(root.querySelector('#lang-menu')).toBeNull();
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    expect(trigger.querySelector('use')?.getAttribute('href')).toBe('#flag-en-us');
+    expect(localStorage.getItem(UI_LANG_KEY)).toBe('en-US');
+
+    // Escape closes opened menu
+    trigger.click();
+    harness.detectChanges();
+    expect(root.querySelector('#lang-menu')).not.toBeNull();
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    harness.detectChanges();
+    expect(root.querySelector('#lang-menu')).toBeNull();
+
+    localStorage.removeItem(UI_LANG_KEY);
   });
 });

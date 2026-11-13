@@ -4071,3 +4071,24 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   - `cd code/frontend && npm run build`: exit 0 (dist/me-may-web).
   - `cd code/frontend && npm run build:workers`: exit 0 (dist/me-may-workers).
 - Bước tiếp theo: Commit và push lên `origin/dev-ui` (không tự merge/push `main`).
+
+## 2026-11-13 — S065-C06 — Bổ sung UI language switcher ở header
+
+- Làm việc trên worktree `dev-ui` (`/Users/daoquanghung/Projects/me-may.worktrees/dev-ui`).
+- Mục tiêu: Làm trước phần UI switcher ngay bên phải `Danh sách quan tâm` theo kết quả `/grill-me`:
+  1. Nút trigger ngoài (`.lang-trigger`) dạng pill trắng viền mảnh chỉ hiển thị lá cờ SVG + chevron xuống `⌄`, không hiện chữ.
+  2. Bấm mở menu `#lang-menu` gồm 2 lựa chọn kèm cờ + chữ: `Tiếng Việt` (cờ VN, mặc định) và `English (US)` (cờ Mỹ); chọn item sẽ cập nhật cờ nút, đánh dấu mục active và lưu vào `localStorage` (`memay.uiLang.v1`, an toàn SSR qua `afterNextRender`) mà chưa dịch toàn bộ text trang.
+  3. Tự đóng dropdown khi bấm ngoài, nhấn `Escape` (trả focus về nút trigger), chọn mục hoặc chuyển route. Trên mobile (`<= 720px`), giữ hiển thị gọn ngay bên phải icon trái tim ở hàng 1 header.
+  4. Chuyển style `.lang-switcher` sang `code/frontend/src/styles.scss` để giữ `public-layout.scss` dưới ngưỡng budget `6kB` `anyComponentStyle`.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: Thêm SVG symbol `#flag-vi`, `#flag-en-us` và khối `.lang-switcher` ngay sau `.wishlist-link`.
+  - `code/frontend/src/app/layouts/public-layout/public-layout.ts`: Export `UiLang`, `UI_LANG_KEY`; thêm `currentLang`, `langMenuOpen`, `toggleLangMenu()`, `selectLang()`, `onDocumentClick()`, `onDocumentEscape()`.
+  - `code/frontend/src/styles.scss`: Thêm style cho `.lang-switcher`, `.lang-trigger`, `.lang-flag`, `.lang-menu`, `.lang-option` và tinh chỉnh mobile `<= 720px`.
+  - `code/frontend/src/app/layouts/public-layout/public-layout.scss`: Tinh chỉnh `.header-links` và `.wishlist-link` ở mobile `<= 720px`.
+  - `code/frontend/src/app/app.spec.ts`: Thêm test kiểm tra vị trí cạnh `.wishlist-link`, trigger chỉ có cờ, mở/chọn `English (US)`, lưu `localStorage` và đóng bằng `Escape`.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Đồng bộ tài liệu thiết kế và bàn giao.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 58/58 test files, 340/340 tests PASS.
+  - `cd code/frontend && npm run build`: exit 0, 0 warning, 0 error (`dist/me-may-web`).
+  - `cd code/frontend && npm run build:workers`: exit 0, 0 warning, 0 error (`dist/me-may-workers`).
+- Bước tiếp theo: Commit và push lên `origin/dev-ui` (không tự merge/push `main`).

@@ -87,8 +87,8 @@
   .brand, .brand-name { justify-self: center; font-size: 1.35rem; gap: .45rem; white-space: nowrap; }
   .brand img { width: 44px; height: 44px; }
   .brand small { font-size: .65rem; margin-top: .15rem; white-space: nowrap; }
-  .header-links { justify-self: end; grid-row: 1; grid-column: 3; }
-  .wishlist-link { min-width: 44px; min-height: 44px; }
+  .header-links { justify-self: end; grid-row: 1; grid-column: 3; gap: .35rem; }
+  .wishlist-link { min-width: 40px; min-height: 44px; }
   .wl-label { display: none; }
   .header-search { grid-column: 1/-1; grid-row: 2; max-width: none; }
 }

@@ -91,6 +91,18 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .utility-email { display: inline-flex; align-items: center; gap: .4rem; color: #fff; text-decoration: none; font-weight: 600; white-space: nowrap; }
 .utility-email:hover { text-decoration: underline; }
 .site-header { display: flex; justify-content: space-between; align-items: center; gap: 1.5rem; min-height: 110px; border-bottom: 1px solid var(--line); }
+.lang-switcher { position: relative; display: inline-flex; align-items: center; }
+.lang-switcher .lang-trigger { display: inline-flex; align-items: center; gap: .4rem; padding: .42rem .55rem; border: 1px solid var(--line, #ddd7ce); border-radius: 8px; background: #fff; color: #6b7280; cursor: pointer; line-height: 1; transition: border-color .15s ease, background-color .15s ease, color .15s ease; }
+.lang-switcher .lang-trigger:hover, .lang-switcher .lang-trigger:focus-visible, .lang-switcher .lang-trigger[aria-expanded='true'] { border-color: #c7bfb4; background: #faf9f7; color: var(--ink); }
+.lang-switcher .lang-flag { display: block; flex: 0 0 auto; border-radius: 2.5px; overflow: hidden; box-shadow: 0 0 0 1px #00000014; }
+.lang-switcher .lang-chevron { display: block; transition: transform .15s ease; }
+.lang-switcher .lang-trigger[aria-expanded='true'] .lang-chevron { transform: rotate(180deg); }
+.lang-switcher .lang-menu { position: absolute; top: calc(100% + 6px); right: 0; min-width: 170px; background: #fff; border: 1px solid var(--line, #ddd7ce); border-radius: 10px; box-shadow: 0 10px 24px #2927241f; padding: .3rem; z-index: 30; display: flex; flex-direction: column; gap: 2px; }
+.lang-switcher .lang-option { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .5rem .65rem; border: 0; border-radius: 7px; background: transparent; color: var(--ink, #292724); font: 500 .88rem/1.25 var(--font-sans); text-align: left; cursor: pointer; white-space: nowrap; }
+.lang-switcher .lang-option:hover, .lang-switcher .lang-option:focus-visible { background: #f5f2ed; }
+.lang-switcher .lang-option.active { background: #fdf2f2; color: var(--red, #b32635); font-weight: 700; }
+.lang-switcher .lang-check { margin-left: auto; font-size: .82rem; color: var(--red); }
+@media (max-width: 720px) { .lang-switcher .lang-trigger { padding: .35rem .42rem; min-height: 36px; gap: .25rem; } }
 .brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--red); font-size: 1.8rem; line-height: 1.2; font-weight: 750; text-decoration: none; flex-shrink: 0; }
 .brand img { object-fit: contain; }
 .brand-name { display: block; font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--red); }
