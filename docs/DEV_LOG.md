@@ -4050,3 +4050,24 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Host không cho chat tự handoff; bước cần thiết là người dùng chuyển chat
   về Local/root, sau đó archive attachment bằng công cụ native. Không force.
 - Commit tiếp theo chỉ ghi kết quả bàn giao; giữ dev và dev-ui cùng HEAD.
+
+## 2026-11-13 — S065-C05 — Thiết kế lại nút Danh sách quan tâm trên header và gỡ Nhắn tiệm
+
+- Làm việc trên worktree `dev-ui` (`/Users/daoquanghung/Projects/me-may.worktrees/dev-ui`).
+- Mục tiêu: Theo kết quả `/grill-me`, thiết kế lại liên kết `Danh sách quan tâm` trên `.site-header` và bỏ nút `Nhắn tiệm ↗` khỏi `.header-links`:
+  1. Bổ sung `<symbol id="icon-wishlist-heart" viewBox="0 -0.66 117.77 117.77">` (theo SVG người dùng cung cấp; dùng `fill="currentColor"` cho viền và `fill="#ffffff"` nội bộ để tránh rò CSS `.cls-1`).
+  2. Xếp dọc icon SVG 24×24 ở trên và nhãn `Danh sách quan tâm` ở dưới; màu mặc định `var(--ink)` không gạch chân, đổi sang `var(--red)` khi `:hover`, `:focus-visible`, hoặc đang ở `/quan-tam` (`.active`).
+  3. Badge số cuốn `.wishlist-count` neo góc trên-phải icon (`.wishlist-icon-wrap`), chỉ render khi `wishlist.ready() && wishlist.codes().length > 0`.
+  4. Gỡ `<a class="header-contact desktop-contact" routerLink="/lien-he">Nhắn tiệm ↗</a>` khỏi `.header-links`; giữ nguyên route `/lien-he` trong `.public-nav`, `#mobile-sidebar` và footer.
+  5. Mobile (`<= 720px`): ẩn `.wl-label`, giữ `.wishlist-link` `min-width: 44px; min-height: 44px` với icon + badge để khớp nút `☰`.
+- File thay đổi:
+  - `code/frontend/src/app/layouts/public-layout/public-layout.html`: Thêm `<symbol id="icon-wishlist-heart">`, cập nhật `.wishlist-link`, gỡ `.desktop-contact`.
+  - `code/frontend/src/app/layouts/public-layout/public-layout.ts`: Thêm `'wishlist'` (`p === '/quan-tam'`) vào `isActive()`.
+  - `code/frontend/src/app/layouts/public-layout/public-layout.scss`: Style dọc `.wishlist-link`, `.wishlist-icon-wrap`, `.wishlist-count`, trạng thái hover/focus/active và mobile 44×44px.
+  - `code/frontend/src/app/app.spec.ts`: Thêm unit test kiểm tra `.header-links` không còn `/lien-he` hay `Nhắn tiệm`, SVG `#icon-wishlist-heart`, ẩn badge khi 0 và hiện `2` khi có 2 cuốn, trạng thái `.active` tại `/quan-tam`.
+  - `docs/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`: Đồng bộ tài liệu thiết kế và bàn giao.
+- Kiểm tra đã chạy:
+  - `cd code/frontend && npm test -- --watch=false`: 58/58 test files, 339/339 tests PASS.
+  - `cd code/frontend && npm run build`: exit 0 (dist/me-may-web).
+  - `cd code/frontend && npm run build:workers`: exit 0 (dist/me-may-workers).
+- Bước tiếp theo: Commit và push lên `origin/dev-ui` (không tự merge/push `main`).

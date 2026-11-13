@@ -66,7 +66,7 @@ export class PublicLayout {
     this.q = (tree.queryParams['q'] as string) || '';
   }
 
-  isActive(section: 'home' | 'books' | 'sale' | 'collection' | 'contact'): boolean {
+  isActive(section: 'home' | 'books' | 'sale' | 'collection' | 'contact' | 'wishlist'): boolean {
     const p = this.currentPath();
     switch (section) {
       case 'home':
@@ -79,6 +79,8 @@ export class PublicLayout {
         return p.startsWith('/bo-suu-tap/');
       case 'contact':
         return p === '/lien-he';
+      case 'wishlist':
+        return p === '/quan-tam';
     }
   }
 

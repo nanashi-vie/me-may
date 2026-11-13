@@ -4,6 +4,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { routes } from './app.routes';
 import { Meta } from '@angular/platform-browser';
+import { WISHLIST_KEY, WishlistStore } from './features/wishlist/wishlist-store';
 
 describe('public shell', () => {
   it('offers catalogue navigation without pretending checkout exists', async () => {
@@ -103,5 +104,42 @@ describe('public shell', () => {
     const searchInput = root.querySelector('#site-search') as HTMLInputElement;
     expect(searchInput.placeholder).toBe('Bạn đang tìm…');
     expect(searchInput.value).toBe('gruffalo');
+  });
+
+  it('renders wishlist header icon without contact CTA and shows badge only when non-empty', async () => {
+    localStorage.removeItem(WISHLIST_KEY);
+    TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient()] });
+    const wishlist = TestBed.inject(WishlistStore);
+    wishlist.initialize();
+
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/');
+    harness.detectChanges();
+    const root = harness.routeNativeElement!;
+
+    expect(root.querySelector('.header-links a[href="/lien-he"]')).toBeNull();
+    expect(root.querySelector('.header-links')?.textContent).not.toContain('Nhắn tiệm');
+    expect(root.querySelector('.public-nav a[href="/lien-he"]')).not.toBeNull();
+
+    const wishlistLink = root.querySelector<HTMLAnchorElement>('.header-links a.wishlist-link')!;
+    expect(wishlistLink).not.toBeNull();
+    expect(wishlistLink.getAttribute('href')).toBe('/quan-tam');
+    expect(wishlistLink.querySelector('.wishlist-icon-wrap svg use')?.getAttribute('href')).toBe(
+      '#icon-wishlist-heart',
+    );
+    expect(wishlistLink.querySelector('.wl-label')?.textContent).toBe('Danh sách quan tâm');
+    expect(wishlistLink.querySelector('.wishlist-count')).toBeNull();
+    expect(wishlistLink.classList.contains('active')).toBe(false);
+
+    wishlist.toggle('MM-000001');
+    wishlist.toggle('MM-000002');
+    harness.detectChanges();
+    expect(wishlistLink.querySelector('.wishlist-icon-wrap .wishlist-count')?.textContent?.trim()).toBe('2');
+
+    await harness.navigateByUrl('/quan-tam');
+    harness.detectChanges();
+    expect(wishlistLink.classList.contains('active')).toBe(true);
+    expect(wishlistLink.getAttribute('aria-current')).toBe('page');
+    localStorage.removeItem(WISHLIST_KEY);
   });
 });

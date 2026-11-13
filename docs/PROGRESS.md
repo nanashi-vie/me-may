@@ -1,8 +1,9 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 12/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 13/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- S065-C05 (13/11, dev-ui): Thiết kế lại nút `Danh sách quan tâm` trên header (`public-layout`): icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` ở dưới, màu `--ink` đổi `--red` khi hover/focus/active, badge đỏ góc trên-phải icon chỉ hiện khi `> 0`; gỡ nút `Nhắn tiệm` khỏi `.header-links` (giữ `/lien-he` ở nav/sidebar/footer). Mobile `≤720px` chỉ hiện icon 44×44px. Vitest 58/58 files (339/339 tests PASS), `build` và `build:workers` exit 0.
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 
