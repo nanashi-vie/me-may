@@ -4411,3 +4411,54 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Only audit handoff docs committed to dev; existing two sample-image deletions
   remain excluded. Next if operational verification is requested: read-only
   media IDs/pending ages, actual config/logs and file presence on target host.
+
+### 2026-11-14 - WISHLIST-CTA-C01 - Approved compact CTA and heart
+
+- User approved Quan tâm / Đã quan tâm, SVG outline/filled red, heart-only
+  wiggle500ms when adding, one-line stable button≥44px, reduced-motion support.
+- Applying writing-plans/executing inline and TDD; plan registered in README.
+  Shared card/detail component; no dependencies/backend/header redesign.
+- dev a931675; pre-existing two sample-banner deletions excluded/untouched.
+  Tests/build/browser pending.
+
+### 2026-11-14 - WISHLIST-CTA-C02 - Tests and browser geometry
+
+- RED4tests on old long labels/Unicode hearts; shared SVG/grid-label/toggle
+  implementation GREEN full frontend61files/363tests, SSR/Workers build PASS.
+- SVG20px with red outline/currentColor fill, one-shot500ms rotations -10/+10;
+  label slots overlap in CSS grid and reserve longest width, nowrap/min44px.
+- Chromium/SSR4459/API fixture4451: card/detail at320/390/1440 light/dark
+  no overflow, same before/after dimensions and icon/label X. Card heights44px;
+  widths116/151/198.95px. Space/Enter and restore-no-animation PASS at320.
+- Reduced motion computed animation none; regular add wiggle then none after
+ 500ms; failed add at100cap has no wiggle in unit regression.
+- QA initially compared exact animation name; Angular prefixes scoped keyframes,
+  corrected QA suffix match only. Initial320 auto-scroll changes viewport Y,
+  separately verified label relative X/Y unchanged on keyboard activation.
+- Independent review no actionable findings. Visual QA noticed wishlist44px
+  versus contact50px in detail bar; host flex now allows equal row stretch.
+  Final suite/build rerun and final layout check pending after that CSS change.
+
+### 2026-11-14 - WISHLIST-CTA-C03 - Verified and handoff
+
+- Final WishlistButton shared by card/detail uses Quan tâm / Đã quan tâm,
+  reserved grid label width and fixed20px SVG; native aria-pressed/full book
+  label/keyboard unchanged. Successful add only wiggles500ms; restore/remove/
+  failed-cap add do not animate. Reduced-motion CSS disables animation.
+- Final npm test (code/frontend):61files/363tests PASS; npm run build and
+  build:workers PASS0warning/error after host flex alignment change.
+  Backend tests not run for frontend-only change. Independent review no findings.
+- Chromium with isolated fixture API4451/SSR4459, six combinations of320/390/
+  1440px and light/dark: card/button before-after width/height and relative
+  icon-center/label X/Y unchanged; no overflow, one line. Card height44px;
+  detail button49.97px now equals Contact49.97px. No font shrink workaround.
+- Separate320px checks: Space add/Enter remove, reload restored filled heart
+  without wiggle, normal animation500ms then none, reduced-motion none PASS.
+- Snapshot previews at /tmp/memay-wishlist-cta-mobile-detail.png and
+  /tmp/memay-wishlist-cta-dark.png; QA fixtures are artificial, no real media/DB
+  changes. Servers4451/4459 and browser stopped. No production/device claims.
+- Approved contract consolidated in DESIGN, plan removed and README index
+  updated per project workflow. PROGRESS snapshot replaced in place.
+- Commit/push code/tests/docs together to dev. Existing two sample-banner
+  deletions remain local/unmodified/excluded; no main/deploy. Next owner:
+  merge/redeploy frontend and smoke actual final candidate as desired.

@@ -125,7 +125,7 @@ Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết q
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `<h1>` chỉ hiển thị `Tên sách` (thẻ `<title>`/SEO vẫn đủ NXB/Tác giả) → mã/khả dụng → Flash Sale/giá → khối `<dl>` thông số cơ bản (có đường kẻ phân cách mảnh) → mô tả sách. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
+Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `Quan tâm` (tim viền đỏ, khi đã lưu đổi thành `Đã quan tâm` với tim đỏ đặc) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `<h1>` chỉ hiển thị `Tên sách` (thẻ `<title>`/SEO vẫn đủ NXB/Tác giả) → mã/khả dụng → Flash Sale/giá → khối `<dl>` thông số cơ bản (có đường kẻ phân cách mảnh) → mô tả sách. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số nằm ngay trên mô tả, hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -153,6 +153,12 @@ Dưới phần thông tin chi tiết cuốn, hiển thị 2 section kệ sách l
 - **Dữ liệu:** Endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, chỉ lấy sách `PUBLISHED`, loại trừ chính cuốn đang xem (`id != currentId`), ưu tiên `AVAILABLE` trước và sắp xếp `published_at DESC`.
 
 ## Danh sách quan tâm — khách mobile
+
+- CTA card/detail duyệt14/11: `Quan tâm` / `Đã quan tâm`, một dòng, tối thiểu44px;
+  dành sẵn chỗ cho nhãn dài để tim/chữ không dịch khi đổi trạng thái.
+- Tim SVG20px viền đỏ/đỏ đặc, chỉ lắc500ms khi thêm thành công; không lắc lúc
+  restore/bỏ sách/hover. Reduced motion tắt lắc, giữ native button/aria/keyboard.
+- Giữ theme/font hiện hành; không nền chấm bi, không thay đổi wishlist storage.
 
 Mỗi dòng: ảnh nhỏ, tên, mã, giá tham khảo mới nhất, trạng thái mới nhất, mở chi tiết và xóa. Không có quantity, phí ship, nút thanh toán hoặc tổng đơn. Dưới danh sách: Sao chép danh sách hỏi mua, mở Zalo hotline với luồng copy dự phòng như detail; giải thích danh sách lưu trên thiết bị, không giữ sách.
 

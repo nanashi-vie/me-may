@@ -3,8 +3,8 @@
 Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- MEDIA-REMOVE-AUDIT-C01 (14/11): đã rà code gỡ banner/ảnh sách; xóa vật lý qua cleanup.
-  Chưa kiểm DB/file/log production; chi tiết checkpoint DEV_LOG, không xóa ảnh thật.
+- WISHLIST-CTA-C03 (14/11): CTA Quan tâm/Đã quan tâm, tim SVG wiggle500ms; không nhảy dòng.
+  FE363/SSR/Workers và browser320/390/1440 sáng/tối đạt; chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
