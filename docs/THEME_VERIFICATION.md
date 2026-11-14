@@ -58,3 +58,21 @@ không lấy503 đó làm bằng chứng SEO. Nghiệm thu trang dùng API giả
 - SSR mặc định light; lựa chọn máy đọc sau hydration, splash hiện hành vẫn giữ.
   Không cam kết không có đổi màu trong thời gian bootstrap khi reload dark.
 - Nhân vật chatbot là phạm vi sau; chỉ chia sẻ runtime nếu tương thích renderer.
+
+## Khóa khi chuyển cảnh — cập nhật14/11
+
+- User báo bấm nhanh gây icon đêm trên nền sáng; hành vi UI cũ đổi theme mỗi
+  click trong khi Rive gộp target. User yêu cầu chặn bấm khi chuyển chưa xong.
+- Native button dùng aria-disabled giữ focus; guard busy đồng bộ ngay trong
+  handler để chặn cả click/Enter/Space trước khi Angular cập nhật DOM.
+- Rive báo busy khi chuyển, mở khóa sau pose settling. Bấm bị chặn không queue.
+  Timeout6s destroy renderer/về SVG, mở khóa; motion giảm/lỗi tải cũng mở khóa.
+- Thêm3regression:30activations chỉ đổi1lần, mở khóa mới nhận lần kế; runtime
+  busy giữ qua999ms settling và mở tại1000ms; stalled renderer về SVG sau6s.
+- npm test61files/360tests PASS; SSR/Workers build PASS0warning/error.
+  Review độc lập không finding. Chromium/SSR/API giả:3đợt100clicks kèm
+  Space/Enter chỉ đổi1lần/đợt; canvas vẫn hoạt động, không pageerror.
+  Dark có0pixel vàng, light2365pixel vàng: mặt trời/mặt trăng khớp theme.
+  Hover giữ frame; reload giữ dark. So hash tuyệt đối giữa hai lần cùng theme
+  không dùng làm oracle vì frame trang trí có thể khác; đã xem ảnh thật hai trạng thái.
+- Mobile390 chặn /rive/**: đổi dark/light vẫn được, aria-disabled=false sau lỗi tải.

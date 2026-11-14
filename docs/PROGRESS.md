@@ -5,8 +5,8 @@ Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - LOGO-ROUND-C02 (14/11): logo header/splash/bootstrap bo tròn; SSR/Workers build đạt, chưa deploy.
 
-- THEME-C04 (14/11): switch sáng/tối public Rive click-only, nhớ lựa chọn; admin sáng.
-  FE356, SSR/Workers/proxy và browser320–1440đạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
+- THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
+  FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
 
 - HERO-EMPTY-C02 (14/11): không banner thì ẩn khối ảnh, không dùng mẫu mặc định.
   FE357, SSR/Workers và browser1440/390đạt; chưa deploy. [Contract](HERO_BANNERS.md).

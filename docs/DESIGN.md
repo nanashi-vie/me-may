@@ -380,9 +380,11 @@ Contract UI/dirty/modal/search/role tại [CUSTOMERS](CUSTOMERS.md);
 - Sáng mặc định; nhớ light/dark qua localStorage memay.theme.v1. Không tự theo
   hệ điều hành, không lưu tài khoản/backend; storage lỗi vẫn chuyển trong phiên.
 - Rive day-night do user cung cấp: click/Enter/Space, không hover; dừng khi idle.
-  Theme là nguồn trạng thái; bấm nhanh gộp về lựa chọn cuối, không lệch canvas.
+  Theme là nguồn trạng thái; khi chuyển cảnh bỏ qua bấm thêm, không xếp hàng.
 - Runtime tải sau; SVG dự phòng luôn thao tác được. Reduced motion dùng SVG
   tĩnh, không tải Rive. Canvas44px cố định, không đổi kích thước khi tải xong.
 - Nền than ấm/chữ sáng/đỏ hồng cho dark; nền nút vẫn đỏ sẫm dưới chữ trắng.
   Ảnh sách/logo/banner giữ nguyên màu. Không triển khai nhân vật/chatbot ở đây.
+- Bổ sung14/11: khóa click/Enter/Space đến khi Rive ổn định; giữ focus và báo
+  aria-disabled. Nếu kẹt quá6s, về hình tĩnh và mở khóa để tiếp tục đổi theme.
 - [Bằng chứng và giới hạn](THEME_VERIFICATION.md).

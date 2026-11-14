@@ -4329,3 +4329,37 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   browser/device screenshot verification not run in this small change.
 - DESIGN contract and PROGRESS updated; docs limits/local links and diff checked.
   Commit/push dev per workflow; no main/deploy/backend changes.
+
+### 2026-11-14 - THEME-LOCK-C01 - Guard repeated clicks
+
+- User reports rapid clicks before animation finishes can leave a night icon
+  on a light page; requests blocking/limiting repeated clicks.
+- Clean dev4df73cc. Existing HTML toggles every click while adapter queues
+  targets; replace UI behavior with a single in-flight transition lock.
+- Lock releases after Rive pose settles; no queued extra clicks. Keep keyboard
+  focus, reduced-motion/failure fallback, bounded recovery if animation stalls.
+- TDD/debugging/verification in progress; no implementation results yet.
+
+### 2026-11-14 - THEME-LOCK-C02 - Verified transition locking
+
+- ThemeSwitch.toggle guards synchronously with busy/aria-disabled, retains
+  keyboard focus, drops extra activations instead of queueing them.
+- Rive busy callback releases after pose settling; six-second watchdog
+  destroys stalled renderer/returns SVG/unlocks. Load errors and reduced motion
+  clear lock; destroy cancels watchdog. No dependency/backend changes.
+- Focused12tests PASS; full frontend61files/360tests PASS. SSR and Workers
+  builds PASS0warning/error, from code/frontend. Independent review no findings.
+- Chromium + SSR4439/API fixture4431:3bursts of100clicks plus Space/Enter
+  accepted exactly1toggle/transition; canvas stayed active,0pageerror.
+  Dark0yellow pixels/light2365yellow pixels, visual moon/sun matched theme;
+  hover stable and reload persistence PASS. Exact full-canvas hashes differ
+  between settles due decorative frames, so replaced that too-strict QA oracle
+  with sun-color classification plus visual inspection. No product change for it.
+- Mobile390 abort /rive/**: static switch toggles dark/light without lock.
+- Docs contract/evidence/snapshot updated; limits/local links/diff checked.
+  QA4431/4439/browser stopped; no main/deploy/live-data mutation.
+- Concurrent deletions of public/images/hero-banner-1584.webp and
+  hero-banner-800.webp detected after QA; not made by this task, left untouched
+  and excluded from switch commit. No restoration or staging of those deletions.
+- Commit/push switch files and handoff docs to dev per workflow. Next owner:
+  merge/redeploy frontend and verify repeated clicks on real candidate.

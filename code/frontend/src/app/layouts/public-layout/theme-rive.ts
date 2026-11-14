@@ -9,6 +9,7 @@ export interface ThemeAnimation {
 
 export function mountThemeAnimation(
   canvas: HTMLCanvasElement, dark: boolean, ready: (ready: boolean) => void,
+  busy: (busy: boolean) => void,
 ): ThemeAnimation {
   RuntimeLoader.setWasmUrl('/rive/canvas-lite-2.50.0/rive.wasm');
   RuntimeLoader.setWasmFallbackUrl('/rive/canvas-lite-2.50.0/rive_fallback.wasm');
@@ -32,9 +33,11 @@ export function mountThemeAnimation(
         instance.pause();
         instance.stopRendering();
         ready(true);
+        busy(false);
       }, 1000);
     } else {
       moving = true;
+      busy(true);
       instance.play('Button_Animation');
       click?.fire();
     }
@@ -56,7 +59,7 @@ export function mountThemeAnimation(
       const hover = inputs.find((input) => input.name === 'Hover');
       if (hover) hover.value = false;
       click = inputs.find((input) => input.name === 'Click');
-      if (!click) { ready(false); instance.cleanup(); dead = true; return; }
+      if (!click) { ready(false); busy(false); instance.cleanup(); dead = true; return; }
       if (!visible) instance.stopRendering();
     },
     onStateChange: (event) => {
@@ -71,6 +74,7 @@ export function mountThemeAnimation(
     onLoadError: () => {
       if (dead) return;
       ready(false);
+      busy(false);
       instance.cleanup();
       dead = true;
     },

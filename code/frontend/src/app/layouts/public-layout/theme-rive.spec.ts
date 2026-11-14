@@ -29,9 +29,10 @@ describe('Rive theme reconciliation', () => {
   function flushFrames() { vi.advanceTimersByTime(1000); }
   function setup(dark = false) {
     const ready = vi.fn();
-    const animation = mountThemeAnimation(document.createElement('canvas'), dark, ready);
+    const busy = vi.fn();
+    const animation = mountThemeAnimation(document.createElement('canvas'), dark, ready, busy);
     fake.options.onLoad();
-    return { animation, ready, state: (name: string) => { fake.options.onStateChange({ data: [name] }); flushFrames(); } };
+    return { animation, ready, busy, state: (name: string) => { fake.options.onStateChange({ data: [name] }); flushFrames(); } };
   }
   it('disables Rive pointer handling and leaves Hover false', () => {
     const { state, ready } = setup();
@@ -65,6 +66,16 @@ describe('Rive theme reconciliation', () => {
     expect(fake.click).toHaveBeenCalledTimes(2);
     state('Idle_day');
     expect(fake.click).toHaveBeenCalledTimes(2);
+  });
+  it('reports busy through the transition and full settling interval', () => {
+    const { animation, state, busy } = setup(); state('Idle_day');
+    animation.setDark(true);
+    expect(busy).toHaveBeenLastCalledWith(true);
+    fake.options.onStateChange({ data: ['Idle_night'] });
+    vi.advanceTimersByTime(999);
+    expect(busy).toHaveBeenLastCalledWith(true);
+    vi.advanceTimersByTime(1);
+    expect(busy).toHaveBeenLastCalledWith(false);
   });
   it('does not advance hidden animations; reconciles when visible again', () => {
     const { animation, state } = setup();

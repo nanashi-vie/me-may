@@ -13,7 +13,7 @@ describe('Deferred Rive enhancement', () => {
     vi.stubGlobal('cancelIdleCallback', vi.fn());
     vi.spyOn(document, 'readyState', 'get').mockReturnValue('complete');
   });
-  afterEach(() => { TestBed.resetTestingModule(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  afterEach(() => { TestBed.resetTestingModule(); vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
   function setup(loader = vi.fn().mockRejectedValue(Error('offline'))) {
     TestBed.configureTestingModule({ providers: [{ provide: THEME_ANIMATION_LOADER, useValue: loader }] });
@@ -30,6 +30,45 @@ describe('Deferred Rive enhancement', () => {
     expect(loader).toHaveBeenCalledTimes(1);
     expect(f.nativeElement.querySelector('canvas')?.style.opacity).toBe('0');
   });
+  it('ignores repeated click/keyboard activations until Rive settles, then accepts one new toggle', async () => {
+    let settled!: (busy: boolean) => void;
+    const animation = { setDark: vi.fn(), setVisible: vi.fn(), destroy: vi.fn() };
+    const mount = (_canvas: unknown, _dark: boolean, ready: (v: boolean) => void, busy: (v: boolean) => void) => {
+      settled = busy; ready(true); return animation;
+    };
+    const { f } = setup(vi.fn().mockResolvedValue({ mountThemeAnimation: mount }));
+    const values: boolean[] = [];
+    f.componentInstance.darkChange.subscribe(value => { values.push(value); f.componentRef.setInput('dark', value); });
+    runIdle(); await f.whenStable(); f.detectChanges();
+    const button = f.nativeElement.querySelector('button') as HTMLButtonElement;
+    button.focus();
+    for (let i = 0; i < 30; i++) { button.click(); f.detectChanges(); }
+    expect(values).toEqual([true]);
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(document.activeElement).toBe(button);
+    settled(false); f.detectChanges();
+    button.click(); f.detectChanges();
+    expect(values).toEqual([true, false]);
+  });
+
+  it('recovers to the working static switch if animation never completes', async () => {
+    const animation = { setDark: vi.fn(), setVisible: vi.fn(), destroy: vi.fn() };
+    const { f } = setup(vi.fn().mockResolvedValue({ mountThemeAnimation: (_c: unknown, _d: boolean, ready: (v: boolean) => void) => { ready(true); return animation; } }));
+    runIdle(); await f.whenStable(); f.detectChanges();
+    vi.useFakeTimers();
+    const values: boolean[] = [];
+    f.componentInstance.darkChange.subscribe(value => { values.push(value); f.componentRef.setInput('dark', value); });
+    const button = f.nativeElement.querySelector('button') as HTMLButtonElement;
+    button.click(); f.detectChanges();
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    vi.advanceTimersByTime(6000); f.detectChanges();
+    expect(button.getAttribute('aria-disabled')).toBe('false');
+    expect(f.nativeElement.querySelector('canvas').style.opacity).toBe('0');
+    expect(animation.destroy).toHaveBeenCalledTimes(1);
+    button.click(); f.detectChanges();
+    expect(values).toEqual([true, false]);
+  });
+
   it('skips the runtime entirely for reduced motion', () => {
     motion.matches = true;
     const { f, loader } = setup();

@@ -376,7 +376,9 @@ Contract/rollout ở [CUSTOMERS](CUSTOMERS.md),
 - @rive-app/canvas-lite2.50.0 exact; Angular copy WASM/fallback từ node_modules
   sang /rive/canvas-lite-2.50.0; .riv self-host /rive/day-night.riv.
 - File legacy cần input/event API của2.50; không bật pointer listeners, Hover=false,
-  Click điều khiển state machine Button_Animation. Pause khi idle; pause/stop
+  Click điều khiển state machine Button_Animation; UI khóa ngay lần bấm đầu,
+  callback busy mở khóa sau settling;6s không xong thì destroy/về SVG.
+  Pause khi idle; pause/stop
   ngoài viewport/tab ẩn; destroy cleanup. Không âm thầm nâng runtime major.
 - Reduced motion không import runtime, lỗi tải giữ SVG/native button.
   SSR vẫn có button/content/SEO, không khởi tạo WASM; không deploy chatbot.

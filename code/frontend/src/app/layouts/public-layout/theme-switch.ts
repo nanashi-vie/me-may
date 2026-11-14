@@ -10,9 +10,9 @@ export const THEME_ANIMATION_LOADER = new InjectionToken<() => Promise<typeof im
 @Component({
   selector: 'app-theme-switch',
   template: `<button type="button" role="switch" class="theme-switch"
-    aria-label="Chế độ tối" [attr.aria-checked]="dark()"
-    [title]="dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
-    (click)="darkChange.emit(!dark())">
+    aria-label="Chế độ tối" [attr.aria-checked]="dark()" [attr.aria-disabled]="busy()"
+    [title]="busy() ? 'Đang chuyển giao diện…' : dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+    (click)="toggle()">
     <canvas #canvas width="88" height="88" aria-hidden="true" [style.opacity]="ready() ? 1 : 0"></canvas>
     <svg [style.visibility]="ready() ? 'hidden' : null" viewBox="0 0 44 44" width="44" height="44" aria-hidden="true">
       <circle cx="22" cy="22" r="20" [attr.fill]="dark() ? '#24364b' : '#c6e3e4'" />
@@ -28,6 +28,7 @@ export const THEME_ANIMATION_LOADER = new InjectionToken<() => Promise<typeof im
   styles: `:host { display:inline-flex; flex:0 0 44px; width:44px; height:44px; }
     .theme-switch { position:relative; display:grid; place-items:center; width:44px; height:44px;
       padding:0; border:0; border-radius:50%; background:transparent; color:inherit; }
+    .theme-switch[aria-disabled="true"] { cursor: progress; }
     svg { display:block; }
     canvas { position:absolute; inset:0; width:44px; height:44px;
       border-radius:50%; pointer-events:none; }`,
@@ -36,6 +37,8 @@ export class ThemeSwitch {
   readonly dark = input(false);
   readonly darkChange = output<boolean>();
   readonly ready = signal(false);
+  readonly busy = signal(false);
+  private unlockTimer?: ReturnType<typeof setTimeout>;
   private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly doc = inject(DOCUMENT);
   private readonly loader = inject(THEME_ANIMATION_LOADER);
@@ -46,6 +49,28 @@ export class ThemeSwitch {
   constructor() {
     effect(() => { const dark = this.dark(); this.animation?.setDark(dark); });
     afterNextRender(() => this.initialize());
+    this.destroyRef.onDestroy(() => clearTimeout(this.unlockTimer));
+  }
+
+  toggle() {
+    if (this.busy()) return;
+    // Lock synchronously: a second activation must not race Angular rendering.
+    if (this.animation) this.setBusy(true);
+    this.darkChange.emit(!this.dark());
+  }
+
+  private setBusy(busy: boolean) {
+    clearTimeout(this.unlockTimer);
+    this.busy.set(busy);
+    if (busy) {
+      // A stalled/hidden renderer must never leave the control permanently locked.
+      this.unlockTimer = setTimeout(() => {
+        this.animation?.destroy();
+        this.animation = undefined;
+        this.ready.set(false);
+        this.busy.set(false);
+      }, 6000);
+    }
   }
 
   private initialize() {
@@ -73,9 +98,15 @@ export class ThemeSwitch {
         const module = await this.loader();
         if (dead || motion?.matches) { attempted = false; return; }
         this.animation = module.mountThemeAnimation(this.canvas().nativeElement, this.dark(),
-          (ready) => { if (!dead) this.ready.set(ready); });
+          (ready) => {
+            if (!dead) {
+              this.ready.set(ready);
+              if (!ready) { this.animation = undefined; this.setBusy(false); }
+            }
+          },
+          (busy) => { if (!dead) this.setBusy(busy); });
         this.animation.setVisible(visible());
-      } catch { this.ready.set(false); }
+      } catch { this.ready.set(false); this.setBusy(false); }
       finally { loading = false; }
     };
     this.schedule = () => {
@@ -94,6 +125,7 @@ export class ThemeSwitch {
       this.animation = undefined;
       attempted = false;
       this.ready.set(false);
+      this.setBusy(false);
       this.schedule?.();
     };
     const observer = typeof IntersectionObserver === 'undefined' ? undefined :
