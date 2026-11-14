@@ -118,10 +118,10 @@ Header tìm kiếm và Quan tâm dùng chung với Home. Contract URL `q`, `cate
 
 - **Desktop (>720px):** Breadcrumb (`Trang chủ / Tất cả sách [/ Thể loại]` hoặc `Trang chủ / Bộ sưu tập / Tên`) → bố cục 2 cột:
   - Cột trái: `DANH MỤC` gồm link `Tất cả sách` + 9 thể loại (trên `/sach` giữ `q/age/sort`, reset `page/binding`, mục đang chọn tô `--red`; trên `/bo-suu-tap/:slug` là link rời trang sang `/sach?category=CODE`, không tô active); bên dưới là nhóm `Độ tuổi` (checkbox 0–3, 4–6, 7–9, 10+ chọn nhiều) kèm nút **Áp dụng**.
-  - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), số cuốn và select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi chọn một thể loại ngoài Board book, hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
-- **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + số cuốn + Sắp xếp → chip Paperback/Hardcover (khi lọc thể loại ngoài Board book) → dòng kết quả `q` → grid 2 cột → pagination.
+  - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi chọn một thể loại ngoài Board book, hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
+- **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + Sắp xếp → chip Paperback/Hardcover (khi lọc thể loại ngoài Board book) → dòng kết quả `q` → grid 2 cột → pagination.
 
-Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
+Trang khách `/sach` không hiện tổng số sách (duyệt14/11); vẫn giữ phân trang. Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
 
 ## Chi tiết cuốn — khách mobile
 
@@ -233,8 +233,11 @@ Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có
 - Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
 - Custom Dropdown Popover (áp dụng cho Thể loại, Trình độ đọc tham khảo và thanh Bộ lọc tại `/admin/sach`):
   - Menu xổ xuống nền sáng `#FFFFFF`, viền `#E4E7EC`, bo góc `10px`, đổ bóng mềm, hover tím nhạt `#F4F3FF`, mục đang chọn hiển thị dấu `✓` bên phải.
-  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Chỉ cần hover chuột vào dòng thể loại có `›` là tự động xổ menu con bên phải. Ô Thể loại hiển thị kèm kiểu bìa đã chọn.
-  - Thanh Bộ lọc tại `/admin/sach` đặt trực tiếp trên một hàng ngang gồm: `Tên hoặc mã sách`, `Xuất bản`, `Khả dụng`, `Thể loại` (gộp `Kiểu bìa`), 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin`, và nút `Tìm sách`; tự động lọc ngay khi chọn dropdown hoặc bật/tắt pill.
+  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Hover/focus dòng `›` mở kiểu bìa; ở bộ lọc chung menu con nằm trong cột điều kiện để vừa màn hình. Nhóm Thể loại hiển thị kèm kiểu bìa đã chọn.
+  - `/admin/sach` (duyệt14/11): ngoài bảng giữ tìm tên/mã và nút Bộ lọc có số nhóm đang áp dụng; tái sử dụng CSS dropdown trên.
+  - Bảng gồm Xuất bản (có Chưa xuất bản), Khả dụng, Thể loại & Kiểu bìa, Nơi lưu trữ, Thiếu thông tin; desktop hai cột, mobile nhóm cuộn ngang trên điều kiện.
+  - Chọn nhiều nhóm rồi Áp dụng mới cập nhật URL/tải và về trang1. Đặt lại chỉ xóa bản chọn tạm; đóng/click ngoài/Escape hủy bản tạm. Search/phân trang giữ điều kiện đã áp dụng; Back/reload khôi phục URL.
+  - Nhãn điều kiện bên ngoài có nút ×; bỏ từng nhãn/Xóa tất cả áp dụng ngay, giữ tìm kiếm. Board book bỏ kiểu bìa; thùng0 là chưa phân thùng. Escape/đóng/áp dụng trả focus về nút Bộ lọc.
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
 

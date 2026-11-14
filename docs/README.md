@@ -40,6 +40,8 @@ Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
+- Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
+
 - Switch sáng/tối Rive public: [contract](DESIGN.md#sángtối-public--duyệt14112026),
   [bằng chứng](THEME_VERIFICATION.md), đã kiểm local14/11, chưa deploy.
 

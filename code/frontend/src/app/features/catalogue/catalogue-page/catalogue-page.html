@@ -60,7 +60,7 @@
     <header class="catalogue-heading">
       <div class="heading-title">
         <h1>{{ title() }}</h1>
-        @if (!loading() && !error()) {
+        @if (isCollection() && !loading() && !error()) {
           <p class="book-count">{{ page()?.totalElements }} cuốn sách</p>
         }
       </div>

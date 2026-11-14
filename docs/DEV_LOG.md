@@ -4462,3 +4462,49 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Commit/push code/tests/docs together to dev. Existing two sample-banner
   deletions remain local/unmodified/excluded; no main/deploy. Next owner:
   merge/redeploy frontend and smoke actual final candidate as desired.
+
+### 2026-11-14 - ADMIN-FILTER-C01 - Approved unified filter
+
+- User approved consolidated admin book filters, draft conditions then Áp dụng,
+  explicitly reusing existing dropdown CSS. Search stays outside; five groups,
+  applied chips, reset draft, dismiss discards draft; URL/back/page preserved.
+- Scope: BookList TS/template/styles/tests and current contract/handoff docs.
+  Inline implementation on dev; no dependencies/backend/public filter changes.
+  Existing two sample-banner image deletions remain untouched/excluded.
+- Tests/build/browser pending. Plan registered in README before implementation.
+
+### 2026-11-14 - ADMIN-FILTER-C02 - Draft implementation and review
+
+- RED5new cases against old toolbar; focused13tests then full61files/366tests
+  PASS. SSR build PASS outside sandbox (prerender loopback EPERM in sandbox).
+- Existing dropdown classes reused for button/panel/options/category submenu;
+  draft form separated, combined apply/page0, cancel/reset/chips/URL restore.
+- Independent review found mobile right anchor could clip panel; align trigger
+  to right of toolbar. Browser checks and final CSS build still pending.
+- User additionally requested hiding total count on public /sach after this task.
+  Scope: presentation only, pagination/API untouched; implementation pending.
+
+### 2026-11-14 - ADMIN-FILTER-C03 - Verified unified panel and public count
+
+- Unified Bộ lọc on /admin/sach reuses global dropdown trigger/popover/item
+  CSS. Five groups, draft-only changes, Áp dụng combined URL/page0; Đặt lại
+  affects draft only. Close/outside/Escape discard; applied chips/remove/clear
+  preserve search. Category binding submenu stays within panel column.
+- FE code/frontend npm test:61files/366tests PASS. Final npm run build and
+  npm run build:workers PASS, no warnings/errors. Backend not run: no changes.
+  Initial npm command used repo root (no package); reran correct frontend cwd.
+- SSR4469 with browser API fixtures: combined selections do not fetch before
+  Apply; storage0/unpublished, reset, chip removal/clear, Escape focus, browser
+  Back/outside cancel PASS. Tab/Enter binding and panel bounding x/right fit
+  at320/375/390/1440 PASS; screenshots /tmp/memay-admin-filter-*.png.
+- Review caught mobile left clipping; trigger now margin-left:auto and geometry
+  verified. Final independent review no findings. Browser escape check first
+  inspected DOM before Angular render; wait for hidden resolves QA timing.
+- User steering: hide total count only on /sach; collection count retained.
+  Browser client-shell fixture with total42/3pages confirms no count and sort
+  retained; no backend count-query change. No production/live DB claims.
+- CLI network ENOTFOUND and Angular loopback EPERM in sandbox resolved by
+  approved outside-sandbox reruns. No dependency/config changes.
+- Contract consolidated in DESIGN (399lines); plan removed, README updated;
+  PROGRESS stays400lines. Scoped code/tests/docs commit/push to dev; existing
+  two hero sample asset deletions remain local/excluded. No main/deploy.

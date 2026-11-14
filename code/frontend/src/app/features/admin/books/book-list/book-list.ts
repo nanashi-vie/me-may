@@ -8,7 +8,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { BookApi } from '../book-api';
 import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
-import { AVAILABILITY_LABELS, CATEGORY_LABELS, MEDIA_LABELS, PUBLICATION_LABELS } from '../book-copy';
+import { CATEGORY_LABELS, MEDIA_LABELS, PUBLICATION_LABELS } from '../book-copy';
+type FilterGroup = 'publication' | 'availability' | 'category' | 'storageBoxNumber' | 'missingOnly';
+function createFilters() { return new FormGroup({
+    q: new FormControl('', { nonNullable: true }),
+    publication: new FormControl('', { nonNullable: true }),
+    availability: new FormControl('', { nonNullable: true }),
+    storageBoxNumber: new FormControl('', { nonNullable: true }),
+    category: new FormControl('', { nonNullable: true }),
+    binding: new FormControl('', { nonNullable: true }),
+    missingOnly: new FormControl(false, { nonNullable: true }),
+    unpublishedOnly: new FormControl(false,{nonNullable:true}),
+  });
+}
+
+
 @Component({
   selector: 'app-book-list',
   imports: [RouterLink, ReactiveFormsModule, DatePipe],
@@ -34,23 +48,21 @@ export class BookList {
     { code: 'PAPERBACK', label: 'Paperback' },
     { code: 'HARDCOVER', label: 'Hardcover' },
   ];
-  readonly openMenu = signal<'publication' | 'availability' | 'category' | null>(null);
   readonly bindingCategory = signal<CategoryCode | null>(null);
   readonly notice = signal('');
   private focusId?: string;
   private returnScroll = 0;
   readonly storageBoxes = signal<number[]>([]);
   readonly storageBoxesError = signal(false);
-  readonly filters = new FormGroup({
-    q: new FormControl('', { nonNullable: true }),
-    publication: new FormControl('', { nonNullable: true }),
-    availability: new FormControl('', { nonNullable: true }),
-    storageBoxNumber: new FormControl('', { nonNullable: true }),
-    category: new FormControl('', { nonNullable: true }),
-    binding: new FormControl('', { nonNullable: true }),
-    missingOnly: new FormControl(false, { nonNullable: true }),
-    unpublishedOnly: new FormControl(false,{nonNullable:true}),
-  });
+  readonly filters = createFilters();
+  readonly draftFilters = createFilters();
+  readonly filterPanelOpen = signal(false);
+  readonly activeGroup = signal<FilterGroup>('publication');
+  readonly filterGroups: {key: FilterGroup; label: string}[] = [
+    {key:'publication',label:'Xuất bản'}, {key:'availability',label:'Khả dụng'},
+    {key:'category',label:'Thể loại & Kiểu bìa'},
+    {key:'storageBoxNumber',label:'Nơi lưu trữ'}, {key:'missingOnly',label:'Thiếu thông tin'},
+  ];
   readonly result = signal<Page<BookSummary> | null>(null);
   readonly loading = signal(false);
   readonly error = signal('');
@@ -81,6 +93,7 @@ export class BookList {
         availability = p.get('availability');
       const rawBox = p.get('storageBoxNumber') ?? '';
       const storageBoxNumber = /^\d+$/.test(rawBox) && Number(rawBox) <= 2147483647 ? rawBox : '';
+      this.closeFilters();
       this.filters.setValue({
         storageBoxNumber,
         q: p.get('q') ?? '',
@@ -324,8 +337,7 @@ export class BookList {
     });
   }
   search(page = 0) {
-    this.openMenu.set(null);
-    this.bindingCategory.set(null);
+    this.closeFilters();
     void this.router.navigate([], {
       relativeTo: this.route,
       queryParams: { ...this.filters.getRawValue(), page },
@@ -333,84 +345,102 @@ export class BookList {
     });
   }
 
-  publicationDisplayLabel(): string {
-    if (this.filters.controls.unpublishedOnly.value) return 'Chưa xuất bản';
-    const val = this.filters.controls.publication.value;
-    if (!val) return 'Tất cả';
-    return PUBLICATION_LABELS[val as Publication] ?? val;
+  toggleFilters() {
+    if (this.filterPanelOpen()) { this.closeFilters(); return; }
+    this.draftFilters.setValue(this.filters.getRawValue());
+    this.activeGroup.set('publication');
+    this.bindingCategory.set(null);
+    this.filterPanelOpen.set(true);
   }
 
-  availabilityDisplayLabel(): string {
-    const val = this.filters.controls.availability.value;
-    if (!val) return 'Tất cả';
-    return AVAILABILITY_LABELS[val as Availability] ?? val;
+  closeFilters(returnFocus = false) {
+    this.filterPanelOpen.set(false);
+    this.bindingCategory.set(null);
+    if (returnFocus) this.document.querySelector<HTMLButtonElement>('.filter-toggle')?.focus();
   }
 
-  categoryDisplayLabel(): string {
-    const code = this.filters.controls.category.value as CategoryCode | '';
-    const binding = this.filters.controls.binding.value as Binding | '';
-    if (!code) {
-      if (binding) return binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
-      return 'Tất cả';
-    }
-    const catLabel = CATEGORY_LABELS[code] ?? code;
-    if (code !== 'BOARD_BOOK' && binding) {
-      const bLabel = binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover';
-      return `${catLabel} · ${bLabel}`;
-    }
-    return catLabel;
+  resetDraft() { this.draftFilters.reset(); }
+
+  applyFilters() {
+    const {q, ...conditions} = this.draftFilters.getRawValue();
+    this.filters.patchValue(conditions);
+    this.search();
+    this.document.querySelector<HTMLButtonElement>('.filter-toggle')?.focus();
   }
 
-  toggleMenu(menu: 'publication' | 'availability' | 'category', event: Event) {
-    event.stopPropagation();
-    if (this.openMenu() === menu) {
-      this.openMenu.set(null);
-      this.bindingCategory.set(null);
-    } else {
-      this.openMenu.set(menu);
-      const cat = this.filters.controls.category.value as CategoryCode | '';
-      this.bindingCategory.set(menu === 'category' && cat && cat !== 'BOARD_BOOK' ? cat : null);
+  optionsFor(group: FilterGroup): {value:string; label:string}[] {
+    switch (group) {
+      case 'publication': return [{value:'',label:'Tất cả'}, {value:'PUBLISHED',label:'Công khai'},
+        {value:'ARCHIVED',label:'Ẩn'}, {value:'UNPUBLISHED',label:'Chưa xuất bản'}];
+      case 'availability': return [{value:'',label:'Tất cả'}, {value:'AVAILABLE',label:'Còn hàng'}, {value:'SOLD',label:'Hết hàng'}];
+      case 'storageBoxNumber': return [{value:'',label:'Tất cả'}, {value:'0',label:'Chưa phân thùng'},
+        ...this.storageBoxes().map(n=>({value:String(n),label:`Thùng ${n}`}))];
+      case 'missingOnly': return [{value:'',label:'Tất cả'}, {value:'true',label:'Thiếu thông tin'}];
+      default: return [];
     }
   }
 
-  selectPublication(value: '' | Publication | 'UNPUBLISHED', event: Event) {
-    event.stopPropagation();
-    if (value === 'UNPUBLISHED') {
-      this.filters.controls.publication.setValue('');
-      this.filters.controls.unpublishedOnly.setValue(true);
-    } else {
-      this.filters.controls.publication.setValue(value);
-      this.filters.controls.unpublishedOnly.setValue(false);
-    }
-    this.search(0);
+  selectedValue(group: FilterGroup, draft = true): string {
+    const value = (draft ? this.draftFilters : this.filters).getRawValue();
+    if (group === 'publication' && value.unpublishedOnly) return 'UNPUBLISHED';
+    if (group === 'missingOnly') return value.missingOnly ? 'true' : '';
+    return value[group];
   }
 
-  selectAvailability(value: '' | Availability, event: Event) {
-    event.stopPropagation();
-    this.filters.controls.availability.setValue(value);
-    this.search(0);
+  selectOption(group: FilterGroup, value: string) {
+    if (group === 'publication') {
+      this.draftFilters.patchValue({publication:value === 'UNPUBLISHED' ? '' : value, unpublishedOnly:value === 'UNPUBLISHED'});
+    } else if (group === 'missingOnly') {
+      this.draftFilters.controls.missingOnly.setValue(value === 'true');
+    } else if (group !== 'category') {
+      this.draftFilters.controls[group].setValue(value);
+    }
+  }
+
+  groupSummary(group: FilterGroup, draft = true): string {
+    const value = (draft ? this.draftFilters : this.filters).getRawValue();
+    if (group === 'category') {
+      const category = value.category as CategoryCode;
+      const binding = this.bindings.find(b=>b.code === value.binding)?.label;
+      return [CATEGORY_LABELS[category], category !== 'BOARD_BOOK' ? binding : ''].filter(Boolean).join(' · ') || 'Tất cả';
+    }
+    const selected = this.selectedValue(group, draft);
+    return this.optionsFor(group).find(o=>o.value === selected)?.label
+      ?? (group === 'storageBoxNumber' && selected ? `Thùng ${selected}` : 'Tất cả');
+  }
+
+  appliedChips() {
+    return this.filterGroups.filter(g=>g.key === 'category'
+      ? !!(this.filters.controls.category.value || this.filters.controls.binding.value)
+      : !!this.selectedValue(g.key, false))
+      .map(g=>({...g, text: `${g.label}: ${this.groupSummary(g.key, false)}`}));
+  }
+
+  removeFilter(group: FilterGroup) {
+    if (group === 'publication') this.filters.patchValue({publication:'',unpublishedOnly:false});
+    else if (group === 'category') this.filters.patchValue({category:'',binding:''});
+    else if (group === 'missingOnly') this.filters.controls.missingOnly.setValue(false);
+    else this.filters.controls[group].setValue('');
+    this.search();
+  }
+
+  clearFilters() {
+    const q = this.filters.controls.q.value;
+    this.filters.reset();
+    this.filters.controls.q.setValue(q);
+    this.search();
   }
 
   selectCategoryFilter(category: '' | CategoryCode, binding: '' | Binding, event: Event) {
     event.stopPropagation();
-    this.filters.controls.category.setValue(category);
-    this.filters.controls.binding.setValue(category === 'BOARD_BOOK' ? '' : binding);
-    this.search(0);
+    this.draftFilters.patchValue({category, binding:category === 'BOARD_BOOK' ? '' : binding});
   }
 
   @HostListener('document:click', ['$event']) onDocumentClick(event: MouseEvent) {
-    if (!this.openMenu()) return;
-    const target = event.target as HTMLElement | null;
-    if (!target?.closest('.custom-dropdown')) {
-      this.openMenu.set(null);
-      this.bindingCategory.set(null);
-    }
+    if (this.filterPanelOpen() && !(event.target as HTMLElement | null)?.closest('.unified-filter')) this.closeFilters();
   }
 
   @HostListener('document:keydown.escape') onEscapeKey() {
-    if (this.openMenu()) {
-      this.openMenu.set(null);
-      this.bindingCategory.set(null);
-    }
+    if (this.filterPanelOpen()) this.closeFilters(true);
   }
 }
