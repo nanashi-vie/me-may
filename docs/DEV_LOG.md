@@ -4219,3 +4219,166 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   changed docs limits/local targets and git diff whitespace before handoff.
 - No QA servers/containers started in this fix; existing production owner
   browser/draft preserved. Remaining owner action: Save banner when desired.
+
+### 2026-11-14 — THEME-C01 — Bắt đầu switch sáng/tối public
+
+- User duyệt Rive tải sau + HTML fallback, chỉ khách; bổ sung bỏ hover, click-only.
+- Clean dev d7d3ea4; làm tại checkout hiện tại theo workflow dev project,
+  không tạo worktree hoặc thay nhánh main. Thực thi inline theo yêu cầu bắt đầu.
+- Spec/plan THEME_SWITCH đăng ký README; sẽ gộp khi hoàn thành.
+- Baseline frontend `npm test` tại code/frontend:58files/343tests PASS.
+- Cài exact canvas-lite để inspect compatibility; npm báo18moderate,
+  sẽ đối chiếu baseline, không tự audit fix ngoài phạm vi.
+- Chưa triển khai/chưa chạy SSR/Workers/browser; bước tiếp: test RED và inspect Rive.
+
+### 2026-11-14 — THEME-C02 — Theme và Rive local
+
+- Thay admin header bằng native switch44px; public scoped tokens, lưu
+  memay.theme.v1. Admin/footer/sidebar link giữ truy cập quản trị.
+- Rive canvas-lite2.50.0 exact; WASM/fallback copy từ node_modules qua Angular
+  assets, import động sau window load+idle, không gọi trong SSR.
+- Listener Rive tắt, Hover=false; điều khiển Click và chờ Idle_day/Idle_night
+  để gộp thao tác nhanh. Reduced motion không tải runtime, hidden/offscreen
+  dừng render, destroy hủy listener/timer và renderer.
+- RED4tests thiếu switch → GREEN; test effect bắt lỗi input không được theo dõi
+  trước mount → sửa đọc signal luôn. Full frontend61files/356tests PASS.
+- Full suite ban đầu1FAIL assertion admin-entry-btn cũ; cập nhật theo UI mới.
+- Browser phát hiện dùng nhầm Layout bounds nguồn thay vì đích: canvas trống;
+  thêm regression RED, đổi bounds translate/scale; browser night44px đã hiện.
+- Review độc lập1P2 tương phản nền đỏ/chữ trắng: giữ action đỏ sẫm cho
+  utility/sidebar/chip/social, không dùng accent hồng làm nền chữ trắng.
+- SSR và Workers build đạt; bản SSR cuối sau crop/contrast đang build lại.
+  SSR QA trả200, HTML có sách giả/OG/native button, không cần runtime server.
+- Runtime đo gzip:JS~63KB+WASM~353KB+RIV~4.8KB≈420KB tải sau; không phải chỉ11KB.
+  npm audit18moderate/0high/0critical; không có finding Rive.
+- QA local API giả4321; không đọc/ghi dữ liệu thật. Browser full flow/mobile
+  và docs consolidation còn tiếp tục, thay đổi còn local trên dev.
+
+### 2026-11-14 — THEME-C03 — Sửa dừng frame thực tế
+
+- Browser pixel check phát hiện stopRendering trong state callback bị runtime
+  requeue ở cuối draw; pause ngay Idle entry lại đóng băng pose cũ khi blend
+  chưa hoàn tất. Hai RAF không đủ; đã đối chiếu nguồn runtime và review độc lập.
+- Asset này dùng settling1s sau Idle entry rồi pause/stop ngoài draw;
+  khởi động lại state machine khi click, hủy timer khi destroy.
+- Pixel browser: hai hình ngày/đêm hash khác, đứng yên/hover hash không đổi
+  (1449414125 giữ nguyên, trạng thái kia -1249192014). Không đổi asset gốc.
+- Trace tạm đã gỡ; tests/build bản cuối đang chạy lại. Chưa claim production
+  Lighthouse, thiết bị thật hoặc zero cost.
+
+### 2026-11-14 - THEME-C04 - Final verification and handoff
+
+- Final frontend npm test:61files/356tests PASS. SSR/Workers builds PASS
+  with0warning/error; check:workers:proxy PASS. Commands from code/frontend.
+  Build/proxy required outside sandbox after EPERM/listen restriction.
+- Chromium with NodeSSR4399/API fixture4321: click/no-hover pixel/Space/Enter,
+  rapid toggles/reload/list/detail dark/admin white PASS;0pageerror.
+- Responsive320/390/768/1440:44px switch/no header overflow. Reduced motion
+  sends0Rive requests; blocking /rive/** still allows theme toggle via fallback.
+- SSR public200/unknown404; detail data/canonical/OG retained. Wishlist/admin
+  noindex in HTML or response header. Admin initial generic CSR title unchanged.
+- QA corrected immediate post-click assertion to await Angular; privacy check
+  reads X-Robots-Tag as well as HTML. No product changes for those QA defects.
+- Independent review found1P2 contrast, fixed with action-red backgrounds;
+  follow-up review confirmed state-entry versus pose-blending timing cause.
+- Contracts consolidated into DESIGN/ARCHITECTURE; THEME_VERIFICATION holds
+  evidence/limits. README updated; completed spec/plan removed per project rule.
+  PROGRESS superseded old header snapshots, retained release gates/history.
+- No deploy/main/live database mutation. Production Lighthouse, real devices
+  and battery profiling not run; deferred Rive costs approx420KB gzip.
+- Finalizing code/docs together on dev and pushing per authorized workflow.
+  Next owner action: merge/redeploy when desired, smoke/Lighthouse real candidate.
+- QA servers4318/4320/4321/4399 stopped after checks; existing user services untouched.
+- Checked changed docs<=400lines and local targets, diff whitespace, ignored .env/QA files.
+
+### 2026-11-14 - HERO-EMPTY-C01 - Remove default banner
+
+- User requests no default image when all configured banners are removed.
+- Clean dev206773b; scope: public carousel empty/all-failed behavior, admin empty
+  message, preserve uploaded banner carousel/hidden h1/SSR. No media deletion.
+- Applying debugging/TDD and verification workflow; tests/build pending.
+
+### 2026-11-14 - HERO-EMPTY-C02 - Verified empty banner behavior
+
+- Removed built-in fallback image/text from HeroCarousel; empty/all failed
+  renders no carousel. Home hero has0margin without carousel, hidden h1 kept.
+  Admin empty text now says no banner is displayed. Source image files retained.
+- RED4tests confirmed old fallback; final npm test61files/357tests PASS.
+  npm run build and build:workers PASS0warning/error, from code/frontend.
+- Browser Chromium + isolated API fixture/NodeSSR: home200, no default-image
+  references, viewport1440/390 hero height0/margin0/no img/no overflow, h1 kept.
+  Independent review: no actionable findings. No backend/live changes or deploy.
+- Contract/evidence updated HERO_BANNERS, snapshot PROGRESS; no temporary plan.
+  QA4431/4439 and browser stopped. User services untouched.
+- Integrating code/docs together on dev and pushing per project workflow.
+  Next: owner merge/redeploy frontend, verify existing empty production config.
+
+### 2026-11-14 - LOGO-ROUND-C01 - Round public and startup logos
+
+- User requests circular logo in header and first-load/reload splash.
+- Clean dev802fc93; scope CSS border-radius only, original assets/dimensions
+  retained. No behavior/dependency changes; no new tests for low-impact styling.
+- Verification/build pending.
+
+### 2026-11-14 - LOGO-ROUND-C02 - CSS verified and handoff
+
+- styles.scss .brand img and index.html startup-splash/bootstrap-screen img
+  now use border-radius50%; source files and image dimensions unchanged.
+- npm run build / npm run build:workers from code/frontend both PASS,
+  no warnings/errors. No new tests or full suite rerun for CSS-only styling;
+  browser/device screenshot verification not run in this small change.
+- DESIGN contract and PROGRESS updated; docs limits/local links and diff checked.
+  Commit/push dev per workflow; no main/deploy/backend changes.
+
+### 2026-11-14 - THEME-LOCK-C01 - Guard repeated clicks
+
+- User reports rapid clicks before animation finishes can leave a night icon
+  on a light page; requests blocking/limiting repeated clicks.
+- Clean dev4df73cc. Existing HTML toggles every click while adapter queues
+  targets; replace UI behavior with a single in-flight transition lock.
+- Lock releases after Rive pose settles; no queued extra clicks. Keep keyboard
+  focus, reduced-motion/failure fallback, bounded recovery if animation stalls.
+- TDD/debugging/verification in progress; no implementation results yet.
+
+### 2026-11-14 - THEME-LOCK-C02 - Verified transition locking
+
+- ThemeSwitch.toggle guards synchronously with busy/aria-disabled, retains
+  keyboard focus, drops extra activations instead of queueing them.
+- Rive busy callback releases after pose settling; six-second watchdog
+  destroys stalled renderer/returns SVG/unlocks. Load errors and reduced motion
+  clear lock; destroy cancels watchdog. No dependency/backend changes.
+- Focused12tests PASS; full frontend61files/360tests PASS. SSR and Workers
+  builds PASS0warning/error, from code/frontend. Independent review no findings.
+- Chromium + SSR4439/API fixture4431:3bursts of100clicks plus Space/Enter
+  accepted exactly1toggle/transition; canvas stayed active,0pageerror.
+  Dark0yellow pixels/light2365yellow pixels, visual moon/sun matched theme;
+  hover stable and reload persistence PASS. Exact full-canvas hashes differ
+  between settles due decorative frames, so replaced that too-strict QA oracle
+  with sun-color classification plus visual inspection. No product change for it.
+- Mobile390 abort /rive/**: static switch toggles dark/light without lock.
+- Docs contract/evidence/snapshot updated; limits/local links/diff checked.
+  QA4431/4439/browser stopped; no main/deploy/live-data mutation.
+- Concurrent deletions of public/images/hero-banner-1584.webp and
+  hero-banner-800.webp detected after QA; not made by this task, left untouched
+  and excluded from switch commit. No restoration or staging of those deletions.
+- Commit/push switch files and handoff docs to dev per workflow. Next owner:
+  merge/redeploy frontend and verify repeated clicks on real candidate.
+
+### 2026-11-14 - HEADER-ORDER-C01 - Swap theme and language controls
+
+- User requests swapping theme/language positions. Order becomes wishlist,
+  theme, language on desktop/mobile. Shared template also sets keyboard order.
+- dev884b3aa; pre-existing deletions of two sample banner images left untouched
+  and excluded. Low-impact template reorder; existing order test updated.
+- Verification pending; no new dependencies or behavior changes.
+
+### 2026-11-14 - HEADER-ORDER-C02 - Verified control order
+
+- Moved app-theme-switch before lang-switcher in shared public header template;
+  desktop/mobile and keyboard order now wishlist/theme/language.
+- Updated existing header-order assertions; npm test at code/frontend:
+  61files/360tests PASS, template compile PASS. No new tests for simple reorder.
+- SSR/Workers builds and browser smoke not rerun for this DOM-order-only change.
+  DESIGN/PROGRESS updated, docs limits/local links and git diff checked.
+- Only template/test/docs committed and pushed dev; pre-existing sample-image
+  deletions remain local/unmodified/excluded. No main/deploy changes.

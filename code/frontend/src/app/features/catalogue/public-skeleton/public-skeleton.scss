@@ -1,6 +1,6 @@
 :host { display: block; }
 .placeholders { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1.2rem; padding-block: 1rem; }
-.cover, .line { background: #eee9e3; border-radius: 3px; animation: breathe 1.6s ease-in-out infinite alternate; }
+.cover, .line { background: var(--skeleton); border-radius: 3px; animation: breathe 1.6s ease-in-out infinite alternate; }
 .cover { aspect-ratio: 3 / 4; }
 .line { height: 1rem; width: 65%; margin-top: .8rem; }
 .wide { width: 100%; }

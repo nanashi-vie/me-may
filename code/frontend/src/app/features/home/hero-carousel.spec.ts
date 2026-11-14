@@ -43,13 +43,26 @@ describe('HeroCarousel', () => {
     expect(el.querySelector('a')?.getAttribute('href')).toBe('/sach');
     expect(vi.getTimerCount()).toBe(0);
   });
-  it('uses fallback for zero and no autoplay controls/timer for one', () => {
+  it('renders nothing for zero and no autoplay controls/timer for one', () => {
     const { fixture, el } = setup(0);
-    expect(el.querySelector('img')?.getAttribute('src')).toContain('hero-banner-1584');
+    expect(el.querySelector('.carousel')).toBeNull();
+    expect(el.querySelector('img')).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
     fixture.componentRef.setInput('banners', banners.slice(0, 1));
     fixture.detectChanges();
     expect(el.querySelector('button')).toBeNull();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+  it('omits fallback images from empty SSR and clears an active carousel when all banners are removed', () => {
+    const { fixture, el } = setup(0, false, 'server');
+    expect(el.querySelector('.carousel')).toBeNull();
+    expect(el.querySelector('img')).toBeNull();
+    fixture.componentRef.setInput('banners', banners);
+    fixture.detectChanges();
+    expect(el.querySelector('img')?.getAttribute('src')).toBe('a.webp');
+    fixture.componentRef.setInput('banners', []);
+    fixture.detectChanges();
+    expect(el.querySelector('.carousel')).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
   });
   it('waits exactly 5000ms, wraps and clears the timer on destroy', () => {
@@ -109,7 +122,7 @@ describe('HeroCarousel', () => {
     vi.advanceTimersByTime(5000);
     expect(c.active()).toBe(0);
   });
-  it('skips failed images, falls back once all fail and resets on new input', () => {
+  it('skips failed images, hides once all fail and resets on new input', () => {
     const { fixture, c, el } = setup();
     c.failed('a');
     fixture.detectChanges();
@@ -117,7 +130,8 @@ describe('HeroCarousel', () => {
     expect(vi.getTimerCount()).toBe(0);
     c.failed('b');
     fixture.detectChanges();
-    expect(el.querySelector('img')?.getAttribute('src')).toContain('hero-banner-1584');
+    expect(el.querySelector('.carousel')).toBeNull();
+    expect(el.querySelector('img')).toBeNull();
     expect(vi.getTimerCount()).toBe(0);
     fixture.componentRef.setInput('banners', [banners[0]]);
     fixture.detectChanges();

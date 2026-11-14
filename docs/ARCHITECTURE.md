@@ -366,3 +366,21 @@ admin SSR Client/no-store/noindex. Hủy stream/request cũ khi đổi query/ses
 hoặc mở form mới; dirty guard đóng editor khi chấp nhận rời route tái sử dụng.
 Contract/rollout ở [CUSTOMERS](CUSTOMERS.md),
 [bằng chứng](CUSTOMER_VERIFICATION.md). Không có customer login hoặc order.
+
+## Rive switch và theme public —14/11/2026
+
+- PublicLayout sở hữu data-theme/light/dark; token ở _public-theme.scss,
+  không ghi theme lên html/body nên admin không kế thừa. Storage đọc sau render.
+- ThemeSwitch dùng HTML button role=switch/aria-checked; theme độc lập canvas.
+  Import theme-rive chỉ sau browser hydration, window load và idle (fallback1.5s).
+- @rive-app/canvas-lite2.50.0 exact; Angular copy WASM/fallback từ node_modules
+  sang /rive/canvas-lite-2.50.0; .riv self-host /rive/day-night.riv.
+- File legacy cần input/event API của2.50; không bật pointer listeners, Hover=false,
+  Click điều khiển state machine Button_Animation; UI khóa ngay lần bấm đầu,
+  callback busy mở khóa sau settling;6s không xong thì destroy/về SVG.
+  Pause khi idle; pause/stop
+  ngoài viewport/tab ẩn; destroy cleanup. Không âm thầm nâng runtime major.
+- Reduced motion không import runtime, lỗi tải giữ SVG/native button.
+  SSR vẫn có button/content/SEO, không khởi tạo WASM; không deploy chatbot.
+- Gzip local≈420KB tải sau (JS63KB/WASM353KB/RIV4.8KB); fallback WASM chỉ tải
+  nếu runtime cần. Gate production/thiết bị thật ở [bằng chứng](THEME_VERIFICATION.md).

@@ -1,6 +1,6 @@
 # Banner trang chủ
 
-Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt tối đa10ảnh,
+Contract hiện hành14/11/2026, thay spec/plan đã triển khai. OWNER duyệt tối đa10ảnh,
 5000ms và đích cố định `/sach`; sau đó duyệt3200px/WebP88 và đổi khung sang3:1.
 
 ## Sử dụng
@@ -27,12 +27,12 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 | Nguồn nhỏ | Không upscale; nguồn đã mờ không thể phục hồi bằng tăng kích thước |
 | Dung lượng | Mục tiêu bản web lớn200–600KB tùy nội dung, không là giới hạn bắt buộc |
 
-Ảnh test cũ1584×396 (4:1) chỉ là fallback. Ảnh mẫu Kim Đồng1920×775 được dùng
+Ảnh test cũ1584×396 (4:1) không dùng làm fallback từ14/11. Ảnh mẫu Kim Đồng1920×775 được dùng
 đối chiếu tỉ lệ; không đưa artwork đó vào repo hoặc cấu hình public.
 
 ## Public và carousel
 
-- `GET /api/v1/home` thêm `banners`, theo thứ tự đã lưu. Rỗng dùng asset fallback.
+- `GET /api/v1/home` thêm `banners`, theo thứ tự đã lưu. Rỗng không hiển thị banner, không chừa khung ảnh.
 - Mỗi banner `{id,alt,src,srcset,width,height}`; srcset800/1600/3200, sizes100vw.
   Khung do CSS giữ3:1 và cover, metadata width3200/height1067. Mọi ảnh link `/sach`, cùng tab.
 - Một ảnh không controls/timer. Hai đến10ảnh tự chuyển5000ms, quay vòng;
@@ -44,7 +44,9 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
   Reduced-motion đổiảnh ngay, khôngtrượt kể cả bậtautoplay thủcông.
 - Hover vẫn autoplay; focus/tab ẩn dừng timer; resume/manual navigation bắt đầu5giây mới,
   không nhảy bù. Reduced motion mặc định tắt autoplay, có thể bật chủ động.
-- Ảnh lỗi bị bỏ qua, tất cả lỗi dùng fallback; fallback lỗi có tên tiệm/link sách.
+- Ảnh lỗi bị bỏ qua; tất cả lỗi cũng ẩn khối banner, không thay bằng ảnh mẫu.
+- Quyết định14/11: bỏ fallback mẫu ở public/images khi xóa hết banner; giữ h1
+  ẩn cho SEO và các khối hỗ trợ/kệ sách. Admin báo không hiển thị banner.
 - SSR xuất ảnh đầu/srcset/dimensions/high priority ngay trong HTML; timer chỉ chạy
   sau render phía browser và được dọn khi rời trang. Ảnh sau lazy/priority thấp.
 - Home fullwidth; các kệ giữ chiều rộng1200px/lề20px; Flash Sale giữ dải tràn ngang.
@@ -156,3 +158,13 @@ Contract hiện hành12/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 - Bật LOCAL cũng chuyển upload ảnh sách mới sangself-host theo owner đã duyệt;
   các quy tắc ảnh sách/Drive hiện có vẫn giữ. Không tạo dữ liệu QA
   vào DB dev khi bàn giao; nghiệm thu upload thực đã chạy trên DBQA riêng.
+
+## Bỏ banner mặc định14/11
+
+- User đổi contract: danh sách trống hoặc tất cả ảnh lỗi không dùng ảnh mẫu.
+  Không xóa asset nguồn, không sửa cấu hình/banner production trong task.
+- RED4tests cho empty/browser/SSR/all-failed/home gap; GREEN toàn frontend
+  61files/357tests. SSR và Workers build PASS0warning/error.
+- Chromium với API giả, NodeSSR trả200: desktop1440/mobile390 vùng hero cao0px,
+  margin0px, không img/carousel, h1 vẫn có, không tràn ngang.
+- Review độc lập không finding. Chưa deploy, chưa smoke production.

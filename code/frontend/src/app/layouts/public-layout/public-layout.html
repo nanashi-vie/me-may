@@ -153,6 +153,7 @@
       </span>
       <span class="wl-label">Danh sách quan tâm</span>
     </a>
+    <app-theme-switch [dark]="dark()" (darkChange)="setDark($event)" />
     <div class="lang-switcher" #langSwitcher>
       <button
         #langTrigger
@@ -201,18 +202,6 @@
         </div>
       }
     </div>
-    <a
-      class="header-contact admin-entry-btn desktop-only"
-      [routerLink]="adminLink()"
-      [class.logged-in]="isLoggedInAdmin()"
-      [attr.aria-label]="isLoggedInAdmin() ? 'Vào trang quản trị (đã đăng nhập)' : 'Đăng nhập quản trị'"
-    >
-      <span class="admin-gear-icon" aria-hidden="true">⚙</span>
-      <span class="admin-entry-text">Quản trị</span>
-      @if (isLoggedInAdmin()) {
-        <span class="admin-active-dot" aria-hidden="true" title="Đang đăng nhập"></span>
-      }
-    </a>
   </div>
 </header>
 @if (wishlist.warning()) {

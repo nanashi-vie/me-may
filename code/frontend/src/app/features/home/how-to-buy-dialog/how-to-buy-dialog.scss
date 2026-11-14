@@ -2,7 +2,7 @@ dialog {
   padding: 0;
   border: none;
   border-radius: 20px;
-  background: #ffffff;
+  background: var(--surface);
   width: min(760px, calc(100% - 32px));
   max-height: min(92vh, 800px);
   box-shadow: 0 16px 48px rgba(41, 39, 36, 0.22);
@@ -33,9 +33,9 @@ dialog {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 1px solid #e8e2d8;
-  background: #ffffff;
-  color: #68615a;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -45,9 +45,9 @@ dialog {
   z-index: 2;
 
   &:hover {
-    background: #fdf2f2;
-    color: #9b1c28;
-    border-color: #9b1c28;
+    background: var(--cream);
+    color: var(--promo-ink);
+    border-color: var(--promo-ink);
   }
 }
 
@@ -64,7 +64,7 @@ dialog {
   height: 105px;
   border-radius: 50%;
   overflow: hidden;
-  background: #fdf2f2;
+  background: var(--cream);
   margin-bottom: 0.85rem;
   border: 3px solid #ffffff;
   box-shadow: 0 4px 16px rgba(155, 28, 40, 0.12);
@@ -85,14 +85,14 @@ dialog {
   font-family: var(--font-display, 'Baloo 2', cursive);
   font-size: 1.4rem;
   font-weight: 800;
-  color: #9b1c28;
+  color: var(--promo-ink);
   margin: 0 0 0.35rem;
   line-height: 1.25;
 }
 
 .dialog-subtitle {
   font-size: 0.9rem;
-  color: #68615a;
+  color: var(--muted);
   margin: 0;
   line-height: 1.4;
   max-width: 520px;
@@ -109,15 +109,15 @@ dialog {
 .step-card {
   display: flex;
   gap: 0.85rem;
-  background: #faf8f5;
-  border: 1px solid #eee7dc;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 1rem 1.1rem;
   align-items: flex-start;
   transition: background 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 
   &:hover {
-    background: #fcfbfa;
+    background: var(--surface-hover);
     border-color: rgba(155, 28, 40, 0.25);
     box-shadow: 0 4px 12px rgba(155, 28, 40, 0.05);
   }
@@ -149,14 +149,14 @@ dialog {
   font-family: var(--font-body, 'Plus Jakarta Sans', sans-serif);
   font-size: 0.95rem;
   font-weight: 750;
-  color: #292724;
+  color: var(--ink);
   margin: 0;
   line-height: 1.35;
 }
 
 .step-desc {
   font-size: 0.84rem;
-  color: #55504a;
+  color: var(--promo-muted);
   margin: 0.4rem 0 0;
   line-height: 1.4;
 }
