@@ -118,14 +118,14 @@ Header tìm kiếm và Quan tâm dùng chung với Home. Contract URL `q`, `cate
 
 - **Desktop (>720px):** Breadcrumb (`Trang chủ / Tất cả sách [/ Thể loại]` hoặc `Trang chủ / Bộ sưu tập / Tên`) → bố cục 2 cột:
   - Cột trái: `DANH MỤC` gồm link `Tất cả sách` + 9 thể loại (trên `/sach` giữ `q/age/sort`, reset `page/binding`, mục đang chọn tô `--red`; trên `/bo-suu-tap/:slug` là link rời trang sang `/sach?category=CODE`, không tô active); bên dưới là nhóm `Độ tuổi` (checkbox 0–3, 4–6, 7–9, 10+ chọn nhiều) kèm nút **Áp dụng**.
-  - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), số cuốn và select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi chọn một thể loại ngoài Board book, hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
-- **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + số cuốn + Sắp xếp → chip Paperback/Hardcover (khi lọc thể loại ngoài Board book) → dòng kết quả `q` → grid 2 cột → pagination.
+  - Vùng phải: tiêu đề IN HOA theo thể loại đang chọn (mặc định `TẤT CẢ SÁCH`, `<title>` `{Tên thể loại} | Mẹ Mây`), select `Sắp xếp theo:` ở góc phải (đổi là áp ngay, về trang 1). Khi chọn một thể loại ngoài Board book, hiện 3 chip ngay dưới tiêu đề: `Tất cả · Paperback · Hardcover` (`aria-current` cho chip đang chọn). Khi URL có `q` hiện dòng `Kết quả cho “q”` + nút `✕ Xóa` (bỏ `q`, giữ filter khác). Bỏ ô tìm tên/mã và select Thể loại/Kiểu bìa cũ trong panel lọc.
+- **Mobile (≤720px):** ẩn tiêu đề cột trái; thứ tự dưới breadcrumb là hàng chip cuộn ngang thể loại (có bóng mờ cạnh phải, vùng chạm ≥44px) → hàng chip checkbox độ tuổi cuộn ngang + nút Áp dụng → tiêu đề + Sắp xếp → chip Paperback/Hardcover (khi lọc thể loại ngoài Board book) → dòng kết quả `q` → grid 2 cột → pagination.
 
-Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
+Trang khách `/sach` không hiện tổng số sách (duyệt14/11); vẫn giữ phân trang. Nhấn áp dụng cập nhật URL và đưa người dùng tới đầu kết quả; browser back giữ query/filter/page. Xóa tất cả có thể trở lại catalogue mặc định. Khi đổi filter, page về 1. Page/filter không hợp lệ được chuẩn hóa hoặc báo lỗi có hướng dẫn, không crash. Trạng thái không kết quả có nút bỏ bớt bộ lọc; lỗi tải có nút thử lại; loading không giả thành “0 cuốn”.
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `♡ Thêm vào danh sách quan tâm` (viền đỏ, khi đã lưu đổi thành `♥ Đã thêm vào danh sách`) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `<h1>` chỉ hiển thị `Tên sách` (thẻ `<title>`/SEO vẫn đủ NXB/Tác giả) → mã/khả dụng → Flash Sale/giá → khối `<dl>` thông số cơ bản (có đường kẻ phân cách mảnh) → mô tả sách. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
+Breadcrumb → cột ảnh/CTA (chốt 04/11, theo mẫu Fahasa): một ảnh lớn khung 3:4 `contain` (ảnh FRONT eager/high priority) + hàng thumbnail 2–8 ảnh (bìa, lưng bắt buộc; gáy, nội dung 1–3 tùy chọn; button `aria-label`/`aria-pressed`, chỉ đổi ảnh khi bấm, nhãn Bìa/Lưng/… ở chú thích ảnh lớn) → hai nút `Quan tâm` (tim viền đỏ, khi đã lưu đổi thành `Đã quan tâm` với tim đỏ đặc) và `Liên hệ` (nền đỏ) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: tiêu đề `<h1>` chỉ hiển thị `Tên sách` (thẻ `<title>`/SEO vẫn đủ NXB/Tác giả) → mã/khả dụng → Flash Sale/giá → khối `<dl>` thông số cơ bản (có đường kẻ phân cách mảnh) → mô tả sách. Desktop: cột ảnh sticky khi đọc mô tả; mobile: một cột, thumbnail cuộn ngang, nút quan tâm/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được (trừ lúc đang xác minh); không yêu cầu chọn bản; tiệm xác nhận tình trạng qua tin nhắn. Các trường tiêu đề lưu riêng; bỏ phần thiếu và dấu phân cách thừa.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số nằm ngay trên mô tả, hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -153,6 +153,12 @@ Dưới phần thông tin chi tiết cuốn, hiển thị 2 section kệ sách l
 - **Dữ liệu:** Endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, chỉ lấy sách `PUBLISHED`, loại trừ chính cuốn đang xem (`id != currentId`), ưu tiên `AVAILABLE` trước và sắp xếp `published_at DESC`.
 
 ## Danh sách quan tâm — khách mobile
+
+- CTA card/detail duyệt14/11: `Quan tâm` / `Đã quan tâm`, một dòng, tối thiểu44px;
+  dành sẵn chỗ cho nhãn dài để tim/chữ không dịch khi đổi trạng thái.
+- Tim SVG20px viền đỏ/đỏ đặc, chỉ lắc500ms khi thêm thành công; không lắc lúc
+  restore/bỏ sách/hover. Reduced motion tắt lắc, giữ native button/aria/keyboard.
+- Giữ theme/font hiện hành; không nền chấm bi, không thay đổi wishlist storage.
 
 Mỗi dòng: ảnh nhỏ, tên, mã, giá tham khảo mới nhất, trạng thái mới nhất, mở chi tiết và xóa. Không có quantity, phí ship, nút thanh toán hoặc tổng đơn. Dưới danh sách: Sao chép danh sách hỏi mua, mở Zalo hotline với luồng copy dự phòng như detail; giải thích danh sách lưu trên thiết bị, không giữ sách.
 
@@ -227,8 +233,11 @@ Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có
 - Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
 - Custom Dropdown Popover (áp dụng cho Thể loại, Trình độ đọc tham khảo và thanh Bộ lọc tại `/admin/sach`):
   - Menu xổ xuống nền sáng `#FFFFFF`, viền `#E4E7EC`, bo góc `10px`, đổ bóng mềm, hover tím nhạt `#F4F3FF`, mục đang chọn hiển thị dấu `✓` bên phải.
-  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Chỉ cần hover chuột vào dòng thể loại có `›` là tự động xổ menu con bên phải. Ô Thể loại hiển thị kèm kiểu bìa đã chọn.
-  - Thanh Bộ lọc tại `/admin/sach` đặt trực tiếp trên một hàng ngang gồm: `Tên hoặc mã sách`, `Xuất bản`, `Khả dụng`, `Thể loại` (gộp `Kiểu bìa`), 2 pill/checkbox `Chưa xuất bản` & `Thiếu thông tin`, và nút `Tìm sách`; tự động lọc ngay khi chọn dropdown hoặc bật/tắt pill.
+  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Hover/focus dòng `›` mở kiểu bìa; ở bộ lọc chung menu con nằm trong cột điều kiện để vừa màn hình. Nhóm Thể loại hiển thị kèm kiểu bìa đã chọn.
+  - `/admin/sach` (duyệt14/11): ngoài bảng giữ tìm tên/mã và nút Bộ lọc có số nhóm đang áp dụng; tái sử dụng CSS dropdown trên.
+  - Bảng gồm Xuất bản (có Chưa xuất bản), Khả dụng, Thể loại & Kiểu bìa, Nơi lưu trữ, Thiếu thông tin; desktop hai cột, mobile nhóm cuộn ngang trên điều kiện.
+  - Chọn nhiều nhóm rồi Áp dụng mới cập nhật URL/tải và về trang1. Đặt lại chỉ xóa bản chọn tạm; đóng/click ngoài/Escape hủy bản tạm. Search/phân trang giữ điều kiện đã áp dụng; Back/reload khôi phục URL.
+  - Nhãn điều kiện bên ngoài có nút ×; bỏ từng nhãn/Xóa tất cả áp dụng ngay, giữ tìm kiếm. Board book bỏ kiểu bìa; thùng0 là chưa phân thùng. Escape/đóng/áp dụng trả focus về nút Bộ lọc.
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
 

@@ -151,46 +151,6 @@ describe('BookList', () => {
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},{provide:BookApi,useValue:{ storageBoxes: () => of([]), list:()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.querySelector('a[href="/admin/sach/moi"]')).toBeNull();expect(f.nativeElement.querySelector('option[value="DRAFT"]')).toBeNull();
   });
-  it('opens category binding submenu on hover and filters immediately when selecting dropdown or chip', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
-        { provide: BookApi, useValue: { storageBoxes: () => of([]), list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
-      ],
-    });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const fixture = TestBed.createComponent(BookList);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-
-    expect(root.querySelector('details')).toBeNull();
-    const categoryField = root.querySelector('.filter-category') as HTMLElement;
-    expect(categoryField).not.toBeNull();
-    const trigger = categoryField.querySelector('.dropdown-trigger') as HTMLButtonElement;
-    trigger.click();
-    fixture.detectChanges();
-
-    const submenuWraps = Array.from(categoryField.querySelectorAll('.dropdown-submenu-wrap')) as HTMLElement[];
-    expect(submenuWraps.length).toBeGreaterThan(0);
-    submenuWraps[0].dispatchEvent(new MouseEvent('mouseenter'));
-    fixture.detectChanges();
-
-    const submenuItems = Array.from(categoryField.querySelectorAll('.dropdown-submenu .dropdown-item')) as HTMLButtonElement[];
-    expect(submenuItems.map((b) => b.querySelector('.item-text')?.textContent?.trim())).toEqual([
-      'Tất cả kiểu bìa',
-      'Paperback',
-      'Hardcover',
-    ]);
-
-    submenuItems[1].click();
-    fixture.detectChanges();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: expect.objectContaining({ category: 'PICTURE_BOOK', binding: 'PAPERBACK', page: 0 }),
-    }));
-    expect(trigger.textContent).toContain('Picture book · Paperback');
-  });
   it('renders bulk toolbar with inline select-all checkbox and dedicated row checkbox column', () => {
     const item = { id: '7', bookCode: 'MM-000007', title: 'Imported', publication: 'ARCHIVED', version: 2, totalStock: 1 };
     TestBed.configureTestingModule({
@@ -217,41 +177,69 @@ describe('BookList', () => {
     expect(rowCheck.checked).toBe(true);
     expect(toolbar.querySelector('.bulk-trash-btn')?.textContent?.trim()).toBe('Chuyển 1 cuốn vào Thùng rác');
   });
-  it('includes Chưa xuất bản in Xuất bản dropdown and removes duplicate checkbox', () => {
-    TestBed.configureTestingModule({
-      providers: [
-        provideRouter([]),
-        { provide: AuthService, useValue: { user: () => ({ role: 'OWNER' }) } },
-        { provide: ActivatedRoute, useValue: { queryParamMap: of(new Map()) } },
-        { provide: BookApi, useValue: { storageBoxes: () => of([]), list: () => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }) } },
-      ],
-    });
-    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
-    const fixture = TestBed.createComponent(BookList);
-    fixture.detectChanges();
-    const root = fixture.nativeElement as HTMLElement;
-
-    const filterChips = Array.from(root.querySelectorAll('.filter-checks .filter-chip'));
-    expect(filterChips.map((c) => c.textContent?.trim())).toEqual(['Thiếu thông tin']);
-
-    const pubField = root.querySelector('.filter-publication') as HTMLElement;
-    const trigger = pubField.querySelector('.dropdown-trigger') as HTMLButtonElement;
-    trigger.click();
-    fixture.detectChanges();
-
-    const items = Array.from(pubField.querySelectorAll('.dropdown-item')) as HTMLButtonElement[];
-    expect(items.map((b) => b.querySelector('.item-text')?.textContent?.trim())).toEqual([
-      'Tất cả',
-      'Công khai',
-      'Ẩn',
-      'Chưa xuất bản',
-    ]);
-
-    items[3].click();
-    fixture.detectChanges();
-    expect(navigate).toHaveBeenCalledWith([], expect.objectContaining({
-      queryParams: expect.objectContaining({ publication: '', unpublishedOnly: true, page: 0 }),
-    }));
-    expect(trigger.textContent).toContain('Chưa xuất bản');
+  function setupFilters(params = new Map<string,string>()) {
+    const queryParamMap = new Subject<Map<string,string>>();
+    const list = vi.fn(() => of({items:[],page:0,size:20,totalElements:0,totalPages:0}));
+    TestBed.configureTestingModule({providers:[provideRouter([]),
+      {provide:AuthService,useValue:{user:()=>({role:'OWNER'})}},
+      {provide:ActivatedRoute,useValue:{queryParamMap}},
+      {provide:BookApi,useValue:{storageBoxes:()=>of([2,7]),list}}]});
+    const navigate=vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const f=TestBed.createComponent(BookList);
+    queryParamMap.next(params);f.detectChanges();
+    const root=f.nativeElement as HTMLElement;
+    const click=(selector:string)=>{root.querySelector<HTMLButtonElement>(selector)!.click();f.detectChanges();};
+    const textClick=(label:string)=>{Array.from(root.querySelectorAll<HTMLButtonElement>('button'))
+      .find(b=>b.textContent.trim()===label)!.click();f.detectChanges();};
+    const open=()=>click('.filter-toggle');
+    return {f,root,click,textClick,open,navigate,list,queryParamMap};
+  }
+  it('keeps multiple draft conditions local until Apply and resets the page',()=>{
+    const {f,root,open,textClick,click,navigate,list}=setupFilters();open();
+    textClick('Chưa xuất bản');click('[data-filter-group="availability"]');textClick('Còn hàng');
+    click('[data-filter-group="storageBoxNumber"]');textClick('Chưa phân thùng');
+    click('[data-filter-group="missingOnly"]');textClick('Thiếu thông tin');
+    expect(navigate).not.toHaveBeenCalled();expect(list).toHaveBeenCalledTimes(1);
+    expect(root.querySelector('.applied-filters')).toBeNull();
+    textClick('Áp dụng');
+    expect(navigate).toHaveBeenCalledExactlyOnceWith([],expect.objectContaining({queryParams:expect.objectContaining({
+      publication:'',unpublishedOnly:true,availability:'AVAILABLE',storageBoxNumber:'0',missingOnly:true,page:0})}));
+    expect(root.querySelector('.filter-panel')).toBeNull();
+  });
+  it('discards draft on Escape/outside click and reset only affects draft',()=>{
+    const {f,root,open,textClick,navigate}=setupFilters(new Map([['publication','ARCHIVED']]));open();
+    textClick('Công khai');textClick('Đặt lại');
+    expect(navigate).not.toHaveBeenCalled();
+    f.componentInstance.onEscapeKey();f.detectChanges();
+    expect(root.querySelector('.filter-panel')).toBeNull();
+    expect(root.querySelector('.applied-filters')!.textContent).toContain('Ẩn');
+    open();expect(root.querySelector('.filter-options .selected')?.textContent).toContain('Ẩn');
+    textClick('Công khai');document.body.click();f.detectChanges();open();
+    expect(root.querySelector('.filter-options .selected')?.textContent).toContain('Ẩn');
+  });
+  it('supports binding submenu selection as draft and clears binding for Board book',()=>{
+    const {f,root,open,click,textClick,navigate}=setupFilters();open();click('[data-filter-group="category"]');
+    root.querySelector<HTMLElement>('.dropdown-submenu-wrap')!.dispatchEvent(new MouseEvent('mouseenter'));f.detectChanges();
+    const options=root.querySelectorAll<HTMLButtonElement>('.dropdown-submenu .dropdown-item');
+    options[1].click();f.detectChanges();expect(navigate).not.toHaveBeenCalled();
+    textClick('Áp dụng');expect(navigate).toHaveBeenLastCalledWith([],expect.objectContaining({queryParams:expect.objectContaining({category:'PICTURE_BOOK',binding:'PAPERBACK'})}));
+    open();click('[data-filter-group="category"]');textClick('Board book');textClick('Áp dụng');
+    expect(navigate).toHaveBeenLastCalledWith([],expect.objectContaining({queryParams:expect.objectContaining({category:'BOARD_BOOK',binding:''})}));
+  });
+  it('removes applied chips immediately while preserving other conditions and search',()=>{
+    const {root,click,navigate}=setupFilters(new Map([['q','cat'],['publication','ARCHIVED'],['storageBoxNumber','0'],['missingOnly','true']]));
+    expect(root.querySelector('.applied-filters')?.textContent).toContain('Chưa phân thùng');
+    click('[aria-label="Bỏ bộ lọc Xuất bản: Ẩn"]');
+    expect(navigate).toHaveBeenLastCalledWith([],expect.objectContaining({queryParams:expect.objectContaining({q:'cat',publication:'',missingOnly:true,storageBoxNumber:'0',page:0})}));
+    click('.clear-filters');expect(navigate).toHaveBeenLastCalledWith([],expect.objectContaining({queryParams:expect.objectContaining({q:'cat',storageBoxNumber:'',missingOnly:false})}));
+  });
+  it('search and pagination use applied filters and URL updates dismiss stale drafts',()=>{
+    const {f,root,open,textClick,navigate,queryParamMap}=setupFilters(new Map([['publication','ARCHIVED']]));open();textClick('Công khai');
+    f.componentInstance.search(2);
+    expect(navigate).toHaveBeenLastCalledWith([],expect.objectContaining({queryParams:expect.objectContaining({publication:'ARCHIVED',page:2})}));
+    open();textClick('Công khai');queryParamMap.next(new Map([['unpublishedOnly','true'],['storageBoxNumber','7']]));f.detectChanges();
+    expect(root.querySelector('.filter-panel')).toBeNull();
+    expect(root.querySelector('.applied-filters')?.textContent).toContain('Chưa xuất bản');
+    expect(root.querySelector('.applied-filters')?.textContent).toContain('Thùng 7');
   });
 });

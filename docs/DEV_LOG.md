@@ -4382,3 +4382,129 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   DESIGN/PROGRESS updated, docs limits/local links and git diff checked.
 - Only template/test/docs committed and pushed dev; pre-existing sample-image
   deletions remain local/unmodified/excluded. No main/deploy changes.
+
+### 2026-11-14 - MEDIA-REMOVE-AUDIT-C01 - Read-only deletion lifecycle audit
+
+- User asks whether removing banners and book photos fully deletes DB/server
+  files. Traced graph symbols and current dev77075d6 source plus existing tests.
+- Banner remove is draft-only until Save; save deletes configuration item and
+  expires former upload at+24h. Hourly scheduled cleanup deletes original
+  staging, generation files and upload/job/generation/asset rows after expiry;
+  image_variant cascades. Valid/current/active-lease resources are retained.
+  Old published URL can remain valid in grace and cached bytes may remain.
+- Existing book photo Remove sends DELETE immediately, independent of form
+  Save; MediaTransactions.remove marks DELETE_PENDING and audits/version bumps.
+  Published FRONT/BACK removal is rejected. Unsaved LOCAL photo removes from
+  temporary session instead; selection not yet uploaded only disappears client-side.
+- Local cleanup grace1h from updated_at/delete_after, scheduled via media job
+  default10min; deletes generations/staging and media/job/source-binding/asset
+  rows. Cloudinary pending cleanup uses gateway.destroy(invalidate=true), then
+  removes DB row after success/not-found; errors retain pending for retry.
+- Drive source originals, audit events, backups and already cached/downloaded
+  bytes are not erased by these actions. Isolated recovery skips cleanup;
+  LOCAL cleanup/banner service requires local.enabled. Batch limit100.
+- No product changes, no live server/DB inspection or deletion, no tests run.
+  Existing HeroBannerMediaTest/MediaCleanupIntegrationTest read as evidence of
+  intended lifecycle, not claimed as a fresh successful run. Production cleanup
+  cadence/config/backlog/files remain unverified; this audit cannot certify a
+  particular screenshot image was physically deleted.
+- Only audit handoff docs committed to dev; existing two sample-image deletions
+  remain excluded. Next if operational verification is requested: read-only
+  media IDs/pending ages, actual config/logs and file presence on target host.
+
+### 2026-11-14 - WISHLIST-CTA-C01 - Approved compact CTA and heart
+
+- User approved Quan tâm / Đã quan tâm, SVG outline/filled red, heart-only
+  wiggle500ms when adding, one-line stable button≥44px, reduced-motion support.
+- Applying writing-plans/executing inline and TDD; plan registered in README.
+  Shared card/detail component; no dependencies/backend/header redesign.
+- dev a931675; pre-existing two sample-banner deletions excluded/untouched.
+  Tests/build/browser pending.
+
+### 2026-11-14 - WISHLIST-CTA-C02 - Tests and browser geometry
+
+- RED4tests on old long labels/Unicode hearts; shared SVG/grid-label/toggle
+  implementation GREEN full frontend61files/363tests, SSR/Workers build PASS.
+- SVG20px with red outline/currentColor fill, one-shot500ms rotations -10/+10;
+  label slots overlap in CSS grid and reserve longest width, nowrap/min44px.
+- Chromium/SSR4459/API fixture4451: card/detail at320/390/1440 light/dark
+  no overflow, same before/after dimensions and icon/label X. Card heights44px;
+  widths116/151/198.95px. Space/Enter and restore-no-animation PASS at320.
+- Reduced motion computed animation none; regular add wiggle then none after
+ 500ms; failed add at100cap has no wiggle in unit regression.
+- QA initially compared exact animation name; Angular prefixes scoped keyframes,
+  corrected QA suffix match only. Initial320 auto-scroll changes viewport Y,
+  separately verified label relative X/Y unchanged on keyboard activation.
+- Independent review no actionable findings. Visual QA noticed wishlist44px
+  versus contact50px in detail bar; host flex now allows equal row stretch.
+  Final suite/build rerun and final layout check pending after that CSS change.
+
+### 2026-11-14 - WISHLIST-CTA-C03 - Verified and handoff
+
+- Final WishlistButton shared by card/detail uses Quan tâm / Đã quan tâm,
+  reserved grid label width and fixed20px SVG; native aria-pressed/full book
+  label/keyboard unchanged. Successful add only wiggles500ms; restore/remove/
+  failed-cap add do not animate. Reduced-motion CSS disables animation.
+- Final npm test (code/frontend):61files/363tests PASS; npm run build and
+  build:workers PASS0warning/error after host flex alignment change.
+  Backend tests not run for frontend-only change. Independent review no findings.
+- Chromium with isolated fixture API4451/SSR4459, six combinations of320/390/
+  1440px and light/dark: card/button before-after width/height and relative
+  icon-center/label X/Y unchanged; no overflow, one line. Card height44px;
+  detail button49.97px now equals Contact49.97px. No font shrink workaround.
+- Separate320px checks: Space add/Enter remove, reload restored filled heart
+  without wiggle, normal animation500ms then none, reduced-motion none PASS.
+- Snapshot previews at /tmp/memay-wishlist-cta-mobile-detail.png and
+  /tmp/memay-wishlist-cta-dark.png; QA fixtures are artificial, no real media/DB
+  changes. Servers4451/4459 and browser stopped. No production/device claims.
+- Approved contract consolidated in DESIGN, plan removed and README index
+  updated per project workflow. PROGRESS snapshot replaced in place.
+- Commit/push code/tests/docs together to dev. Existing two sample-banner
+  deletions remain local/unmodified/excluded; no main/deploy. Next owner:
+  merge/redeploy frontend and smoke actual final candidate as desired.
+
+### 2026-11-14 - ADMIN-FILTER-C01 - Approved unified filter
+
+- User approved consolidated admin book filters, draft conditions then Áp dụng,
+  explicitly reusing existing dropdown CSS. Search stays outside; five groups,
+  applied chips, reset draft, dismiss discards draft; URL/back/page preserved.
+- Scope: BookList TS/template/styles/tests and current contract/handoff docs.
+  Inline implementation on dev; no dependencies/backend/public filter changes.
+  Existing two sample-banner image deletions remain untouched/excluded.
+- Tests/build/browser pending. Plan registered in README before implementation.
+
+### 2026-11-14 - ADMIN-FILTER-C02 - Draft implementation and review
+
+- RED5new cases against old toolbar; focused13tests then full61files/366tests
+  PASS. SSR build PASS outside sandbox (prerender loopback EPERM in sandbox).
+- Existing dropdown classes reused for button/panel/options/category submenu;
+  draft form separated, combined apply/page0, cancel/reset/chips/URL restore.
+- Independent review found mobile right anchor could clip panel; align trigger
+  to right of toolbar. Browser checks and final CSS build still pending.
+- User additionally requested hiding total count on public /sach after this task.
+  Scope: presentation only, pagination/API untouched; implementation pending.
+
+### 2026-11-14 - ADMIN-FILTER-C03 - Verified unified panel and public count
+
+- Unified Bộ lọc on /admin/sach reuses global dropdown trigger/popover/item
+  CSS. Five groups, draft-only changes, Áp dụng combined URL/page0; Đặt lại
+  affects draft only. Close/outside/Escape discard; applied chips/remove/clear
+  preserve search. Category binding submenu stays within panel column.
+- FE code/frontend npm test:61files/366tests PASS. Final npm run build and
+  npm run build:workers PASS, no warnings/errors. Backend not run: no changes.
+  Initial npm command used repo root (no package); reran correct frontend cwd.
+- SSR4469 with browser API fixtures: combined selections do not fetch before
+  Apply; storage0/unpublished, reset, chip removal/clear, Escape focus, browser
+  Back/outside cancel PASS. Tab/Enter binding and panel bounding x/right fit
+  at320/375/390/1440 PASS; screenshots /tmp/memay-admin-filter-*.png.
+- Review caught mobile left clipping; trigger now margin-left:auto and geometry
+  verified. Final independent review no findings. Browser escape check first
+  inspected DOM before Angular render; wait for hidden resolves QA timing.
+- User steering: hide total count only on /sach; collection count retained.
+  Browser client-shell fixture with total42/3pages confirms no count and sort
+  retained; no backend count-query change. No production/live DB claims.
+- CLI network ENOTFOUND and Angular loopback EPERM in sandbox resolved by
+  approved outside-sandbox reruns. No dependency/config changes.
+- Contract consolidated in DESIGN (399lines); plan removed, README updated;
+  PROGRESS stays400lines. Scoped code/tests/docs commit/push to dev; existing
+  two hero sample asset deletions remain local/excluded. No main/deploy.

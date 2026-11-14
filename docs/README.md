@@ -21,6 +21,7 @@ Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 | Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |
 | Vận hành ảnh, migration, backup/restore, rebuild và benchmark | [Runbook](IMAGE_OPERATIONS.md), [bằng chứng và tiêu chí](IMAGE_VERIFICATION.md), [gate hiện hành](PROGRESS.md) |
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
+| CTA Quan tâm/Đã quan tâm và tim wiggle | [Contract](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [bằng chứng WISHLIST-CTA-C03](DEV_LOG.md) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
 | Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế](BOOK_COMPLETENESS_SPEC.md) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
@@ -38,6 +39,8 @@ Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 | Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |
 
 ## Phần còn thực thi
+
+- Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 
 - Switch sáng/tối Rive public: [contract](DESIGN.md#sángtối-public--duyệt14112026),
   [bằng chứng](THEME_VERIFICATION.md), đã kiểm local14/11, chưa deploy.

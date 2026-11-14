@@ -3,14 +3,14 @@
 Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- HEADER-ORDER-C02 (14/11): header quan tâm → theme → ngôn ngữ; FE360đạt, chưa deploy.
+- ADMIN-FILTER-C03 (14/11): bộ lọc chung /admin/sach, chọn rồi Áp dụng, CSS dropdown cũ;
+  bỏ tổng số ở /sach. FE366/SSR/Workers và browser320–1440 đạt; chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
 
 - HERO-EMPTY-C02 (14/11): không banner thì ẩn khối ảnh, không dùng mẫu mặc định.
   FE357, SSR/Workers và browser1440/390đạt; chưa deploy. [Contract](HERO_BANNERS.md).
-  Production upload trước đã xác minh; giữ worker v1 cũ để recovery.
 
 - IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
   cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
