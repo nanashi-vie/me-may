@@ -144,7 +144,7 @@ describe('public shell', () => {
     localStorage.removeItem(WISHLIST_KEY);
   });
 
-  it('renders flag-only language switcher beside wishlist and toggles dropdown options', async () => {
+  it('renders language after the theme switch and toggles dropdown options', async () => {
     localStorage.removeItem(UI_LANG_KEY);
     TestBed.configureTestingModule({ providers: [provideRouter(routes), provideHttpClient()] });
     const harness = await RouterTestingHarness.create();
@@ -154,7 +154,8 @@ describe('public shell', () => {
 
     const headerLinks = Array.from(root.querySelector('.header-links')!.children);
     expect(headerLinks[0].classList.contains('wishlist-link')).toBe(true);
-    expect(headerLinks[1].classList.contains('lang-switcher')).toBe(true);
+    expect(headerLinks[1].tagName.toLowerCase()).toBe('app-theme-switch');
+    expect(headerLinks[2].classList.contains('lang-switcher')).toBe(true);
 
     const trigger = root.querySelector<HTMLButtonElement>('.lang-trigger')!;
     expect(trigger).not.toBeNull();

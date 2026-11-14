@@ -3,7 +3,7 @@
 Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- LOGO-ROUND-C02 (14/11): logo header/splash/bootstrap bo tròn; SSR/Workers build đạt, chưa deploy.
+- HEADER-ORDER-C02 (14/11): header quan tâm → theme → ngôn ngữ; FE360đạt, chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).

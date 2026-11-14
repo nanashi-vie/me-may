@@ -4363,3 +4363,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   and excluded from switch commit. No restoration or staging of those deletions.
 - Commit/push switch files and handoff docs to dev per workflow. Next owner:
   merge/redeploy frontend and verify repeated clicks on real candidate.
+
+### 2026-11-14 - HEADER-ORDER-C01 - Swap theme and language controls
+
+- User requests swapping theme/language positions. Order becomes wishlist,
+  theme, language on desktop/mobile. Shared template also sets keyboard order.
+- dev884b3aa; pre-existing deletions of two sample banner images left untouched
+  and excluded. Low-impact template reorder; existing order test updated.
+- Verification pending; no new dependencies or behavior changes.
+
+### 2026-11-14 - HEADER-ORDER-C02 - Verified control order
+
+- Moved app-theme-switch before lang-switcher in shared public header template;
+  desktop/mobile and keyboard order now wishlist/theme/language.
+- Updated existing header-order assertions; npm test at code/frontend:
+  61files/360tests PASS, template compile PASS. No new tests for simple reorder.
+- SSR/Workers builds and browser smoke not rerun for this DOM-order-only change.
+  DESIGN/PROGRESS updated, docs limits/local links and git diff checked.
+- Only template/test/docs committed and pushed dev; pre-existing sample-image
+  deletions remain local/unmodified/excluded. No main/deploy changes.
