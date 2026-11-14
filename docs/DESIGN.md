@@ -283,6 +283,8 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
 - Reduced-motion giữ400ms và bỏ fade. Failsafe8s để overlay không khóa trang nếu
   ảnh/script lỗi; tắt JS bỏ overlay. CSR chậm tiếp tục có fallback Đang mở tiệm sách,
   sau10s chưa bootstrap hiện link tải lại.
+- Cập nhật14/11: logo header và cả startup-splash/bootstrap-screen bo tròn50%;
+  giữ ảnh nguồn/kích thước hiện hành, áp dụng cả lần đầu mở và reload.
 - Home và Flash Sale có skeleton5cột desktop/2cột mobile; danh mục4cột,3cột ở
   ≤1050px và2cột ở≤720px. Detail skeleton ảnh + nội dung, xếp dọc mobile.
 - Skeleton có role=status/aria-busy, hình khối trang trí aria-hidden, reduced-motion

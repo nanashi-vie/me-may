@@ -3,6 +3,8 @@
 Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- LOGO-ROUND-C02 (14/11): logo header/splash/bootstrap bo tròn; SSR/Workers build đạt, chưa deploy.
+
 - THEME-C04 (14/11): switch sáng/tối public Rive click-only, nhớ lựa chọn; admin sáng.
   FE356, SSR/Workers/proxy và browser320–1440đạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
 

@@ -4312,3 +4312,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   QA4431/4439 and browser stopped. User services untouched.
 - Integrating code/docs together on dev and pushing per project workflow.
   Next: owner merge/redeploy frontend, verify existing empty production config.
+
+### 2026-11-14 - LOGO-ROUND-C01 - Round public and startup logos
+
+- User requests circular logo in header and first-load/reload splash.
+- Clean dev802fc93; scope CSS border-radius only, original assets/dimensions
+  retained. No behavior/dependency changes; no new tests for low-impact styling.
+- Verification/build pending.
+
+### 2026-11-14 - LOGO-ROUND-C02 - CSS verified and handoff
+
+- styles.scss .brand img and index.html startup-splash/bootstrap-screen img
+  now use border-radius50%; source files and image dimensions unchanged.
+- npm run build / npm run build:workers from code/frontend both PASS,
+  no warnings/errors. No new tests or full suite rerun for CSS-only styling;
+  browser/device screenshot verification not run in this small change.
+- DESIGN contract and PROGRESS updated; docs limits/local links and diff checked.
+  Commit/push dev per workflow; no main/deploy/backend changes.

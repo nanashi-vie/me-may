@@ -117,7 +117,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid 
 .lang-switcher .lang-check { margin-left: auto; font-size: .82rem; color: var(--red); }
 @media (max-width: 720px) { .lang-switcher .lang-trigger { padding: .35rem .42rem; min-height: 36px; gap: .25rem; } }
 .brand { display: inline-flex; align-items: center; gap: .6rem; color: var(--red); font-size: 1.8rem; line-height: 1.2; font-weight: 750; text-decoration: none; flex-shrink: 0; }
-.brand img { object-fit: contain; }
+.brand img { object-fit: contain; border-radius: 50%; }
 .brand-name { display: block; font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; color: var(--red); }
 .brand small { display: block; font-family: var(--font-sans); color: var(--muted); font-size: .7rem; font-weight: 400; margin-top: .4rem; }
 nav { display: flex; gap: 1.5rem; }
