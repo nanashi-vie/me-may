@@ -6,8 +6,9 @@
 }
 .hero {
   width: 100%;
-  margin: 0 0 2rem;
+  margin: 0;
 }
+.hero:has(.carousel) { margin-bottom: 2rem; }
 .hero img {
   display: block;
   width: 100%;

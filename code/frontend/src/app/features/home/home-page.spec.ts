@@ -40,15 +40,14 @@ describe('HomePage banner info boxes', () => {
     expect(titles).toContain('HOTLINE:');
   });
 
-  it('uses the banner image as hero with an accessible hidden h1 and no CTA', () => {
+  it('keeps the accessible h1 and support content without a default banner or reserved hero gap', () => {
     const { fixture } = setup();
-    const hero = (fixture.nativeElement as HTMLElement).querySelector('.hero')!;
-    const image = hero.querySelector('img')!;
-    expect(image.getAttribute('src')).toBe('/images/hero-banner-1584.webp');
-    expect(image.getAttribute('fetchpriority')).toBe('high');
-    expect(image.alt).toContain('Tiệm sách ngoại văn Mẹ Mây');
+    const el = fixture.nativeElement as HTMLElement;
+    const hero = el.querySelector('.hero')!;
+    expect(hero.querySelector('img')).toBeNull();
     expect(hero.querySelector('h1.sr-only')).toBeTruthy();
-    expect(hero.querySelector('a')?.getAttribute('href')).toBe('/sach');
+    expect(getComputedStyle(hero).marginBottom).toBe('0px');
+    expect(el.querySelector('.banner-info-boxes')).toBeTruthy();
   });
 
   function communityLink(element: HTMLElement) {

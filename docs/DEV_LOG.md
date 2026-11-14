@@ -4290,3 +4290,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Next owner action: merge/redeploy when desired, smoke/Lighthouse real candidate.
 - QA servers4318/4320/4321/4399 stopped after checks; existing user services untouched.
 - Checked changed docs<=400lines and local targets, diff whitespace, ignored .env/QA files.
+
+### 2026-11-14 - HERO-EMPTY-C01 - Remove default banner
+
+- User requests no default image when all configured banners are removed.
+- Clean dev206773b; scope: public carousel empty/all-failed behavior, admin empty
+  message, preserve uploaded banner carousel/hidden h1/SSR. No media deletion.
+- Applying debugging/TDD and verification workflow; tests/build pending.
+
+### 2026-11-14 - HERO-EMPTY-C02 - Verified empty banner behavior
+
+- Removed built-in fallback image/text from HeroCarousel; empty/all failed
+  renders no carousel. Home hero has0margin without carousel, hidden h1 kept.
+  Admin empty text now says no banner is displayed. Source image files retained.
+- RED4tests confirmed old fallback; final npm test61files/357tests PASS.
+  npm run build and build:workers PASS0warning/error, from code/frontend.
+- Browser Chromium + isolated API fixture/NodeSSR: home200, no default-image
+  references, viewport1440/390 hero height0/margin0/no img/no overflow, h1 kept.
+  Independent review: no actionable findings. No backend/live changes or deploy.
+- Contract/evidence updated HERO_BANNERS, snapshot PROGRESS; no temporary plan.
+  QA4431/4439 and browser stopped. User services untouched.
+- Integrating code/docs together on dev and pushing per project workflow.
+  Next: owner merge/redeploy frontend, verify existing empty production config.

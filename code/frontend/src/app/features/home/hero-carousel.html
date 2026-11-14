@@ -1,3 +1,4 @@
+@if (current(); as slide) {
 <div
   class="carousel"
   role="region"
@@ -22,7 +23,7 @@
         </div>
       }
     }
-    @for (banner of [current()]; track banner.id) {
+    @for (banner of [slide]; track banner.id) {
       <a
         routerLink="/sach"
         class="image-link"
@@ -32,7 +33,6 @@
         [class.incoming]="outgoing() !== null"
         (animationend)="finishTransition($event)"
       >
-        @if (!fallbackBroken()) {
           <img
             [src]="banner.src"
             [srcset]="banner.srcset"
@@ -44,9 +44,6 @@
             [attr.loading]="active() === 0 ? 'eager' : 'lazy'"
             (error)="failed(banner.id)"
           />
-        } @else {
-          <span class="fallback-text">Mẹ Mây · Khám phá tất cả sách</span>
-        }
       </a>
     }
   </div>
@@ -63,3 +60,5 @@
     </button>
   }
 </div>
+
+}

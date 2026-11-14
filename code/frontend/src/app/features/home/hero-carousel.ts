@@ -11,14 +11,6 @@ import {
 import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HeroBanner } from '../catalogue/public.models';
-const fallback: HeroBanner = {
-  id: 'fallback',
-  src: '/images/hero-banner-1584.webp',
-  srcset: '/images/hero-banner-800.webp 800w, /images/hero-banner-1584.webp 1584w',
-  width: 1584,
-  height: 396,
-  alt: 'Tiệm sách ngoại văn Mẹ Mây. Pre-loved books, endless stories. Sách đã qua sử dụng tuyển chọn cho 0–16 tuổi. Ảnh và tình trạng thật, giá rẻ, đa dạng thể loại.',
-};
 @Component({
   selector: 'app-hero-carousel',
   imports: [RouterLink],
@@ -30,7 +22,6 @@ export class HeroCarousel implements OnChanges {
   readonly active = signal(0);
   readonly paused = signal(false);
   readonly broken = signal(new Set<string>());
-  readonly fallbackBroken = signal(false);
   readonly outgoing = signal<HeroBanner | null>(null);
   readonly direction = signal<'ltr' | 'rtl'>('rtl');
   private readonly doc = inject(DOCUMENT);
@@ -76,14 +67,13 @@ export class HeroCarousel implements OnChanges {
     this.outgoing.set(null);
     this.active.set(0);
     this.broken.set(new Set());
-    this.fallbackBroken.set(false);
     this.schedule();
   }
   slides() {
     return this.banners.slice(0, 10).filter((b) => !this.broken().has(b.id));
   }
   current() {
-    return this.slides()[this.active()] ?? fallback;
+    return this.slides()[this.active()] ?? null;
   }
   choose(index: number, direction: 'ltr' | 'rtl' = 'rtl') {
     const before = this.current();
@@ -91,7 +81,7 @@ export class HeroCarousel implements OnChanges {
     this.active.set(count ? (index + count) % count : 0);
     this.direction.set(direction);
     this.outgoing.set(
-      this.ready && !this.reducedMotion && before.id !== this.current().id ? before : null,
+      this.ready && !this.reducedMotion && before && before.id !== this.current()?.id ? before : null,
     );
     this.schedule();
   }
@@ -115,10 +105,6 @@ export class HeroCarousel implements OnChanges {
   }
   failed(id: string) {
     this.outgoing.set(null);
-    if (id === 'fallback') {
-      this.fallbackBroken.set(true);
-      return;
-    }
     this.broken.update((b) => new Set([...b, id]));
     this.active.set(0);
     this.schedule();

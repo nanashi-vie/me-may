@@ -6,11 +6,9 @@ Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - THEME-C04 (14/11): switch sáng/tối public Rive click-only, nhớ lựa chọn; admin sáng.
   FE356, SSR/Workers/proxy và browser320–1440đạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
 
-- HERO-FIX-C03: owner ran root worker/recipe remediation; production retry
-  now produces banner preview, no error, Save enabled. Draft not published.
-  UI503 guidance pushed dev d9207db; FE341, worker14, SSR/Workers pass.
-  Owner may Save banner; UI release still follows merge/deploy workflow.
-  Retain old pinned v1 worker for recovery; [contract](HERO_BANNERS.md).
+- HERO-EMPTY-C02 (14/11): không banner thì ẩn khối ảnh, không dùng mẫu mặc định.
+  FE357, SSR/Workers và browser1440/390đạt; chưa deploy. [Contract](HERO_BANNERS.md).
+  Production upload trước đã xác minh; giữ worker v1 cũ để recovery.
 
 - IMG-HF-C02 (12/11): hotfix thiếu nguồn LOCAL vẫn xuất bản/sửa/thay ảnh được;
   cả dòng admin nền đỏ nhạt, nêu vai trò chưa xác minh. [Contract](IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè).
