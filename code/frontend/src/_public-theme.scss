@@ -1,0 +1,47 @@
+// Theme is owned by the public layout, so admin/login never inherit dark tokens.
+app-public-layout {
+  display: block;
+  min-height: 100svh;
+  background: var(--page);
+  color: var(--ink);
+
+  &[data-theme='dark'] {
+    color-scheme: dark;
+    --page: #191b1f;
+    --surface: #24272c;
+    --surface-soft: #202328;
+    --surface-hover: #34383e;
+    --ink: #f1ece5;
+    --muted: #bbb4ab;
+    --line: #46494e;
+    --cream: #2b2a29;
+    --red: #ff929e;
+    --stock: #a8d4b5;
+    --sold: #efb09b;
+    --promo-ink: #ff9eaa;
+    --promo-muted: #c5bdb4;
+    --link: #8abfff;
+    --skeleton: #35383e;
+  }
+
+  .secondary, .skip-link { background: var(--surface); color: var(--red); }
+  input:not([type='checkbox']):not([type='radio']), select, textarea {
+    background-color: var(--surface);
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  input::placeholder, textarea::placeholder { color: var(--muted); opacity: 1; }
+  .lang-switcher {
+    .lang-trigger, .lang-menu { background: var(--surface); color: var(--ink); }
+    .lang-trigger:hover, .lang-option:hover, .lang-option:focus-visible {
+      background: var(--surface-hover);
+    }
+    .lang-option.active { background: var(--cream); }
+  }
+  .wishlist-count { background: var(--action); }
+  .error { color: var(--red); }
+  :is(a, button, input, select, textarea):focus-visible {
+    outline-color: var(--red);
+  }
+}
+body:has(app-public-layout[data-theme='dark']) { background: #191b1f; }

@@ -17,6 +17,7 @@ import { DEFAULT_CATEGORIES } from '../../features/catalogue/catalogue-state';
 import { CategoryCode, Collection, Taxonomy } from '../../features/catalogue/public.models';
 import { WishlistStore } from '../../features/wishlist/wishlist-store';
 import { TaxonomyOption } from '../../features/admin/books/book.models';
+import { ThemeSwitch } from './theme-switch';
 import { AuthService } from '../../core/auth/auth.service';
 
 export type UiLang = 'vi' | 'en-US';
@@ -35,10 +36,11 @@ const UI_LANGS: ReadonlyArray<UiLangOption> = [
 
 @Component({
   selector: 'app-public-layout',
-  imports: [RouterLink, RouterOutlet, FormsModule],
+  imports: [RouterLink, RouterOutlet, FormsModule, ThemeSwitch],
   templateUrl: './public-layout.html',
   styleUrl: './public-layout.scss',
   host: {
+    '[attr.data-theme]': "dark() ? 'dark' : 'light'",
     '(document:click)': 'onDocumentClick($event)',
     '(document:keydown.escape)': 'onDocumentEscape()',
   },
@@ -48,6 +50,7 @@ export class PublicLayout {
   readonly auth = inject(AuthService);
   readonly isLoggedInAdmin = computed(() => !!this.auth.user());
   readonly adminLink = computed(() => (this.isLoggedInAdmin() ? '/admin' : '/admin/dang-nhap'));
+  readonly dark = signal(false);
   q = '';
   readonly collections = signal<Collection[]>([]);
   readonly taxonomy = signal<Taxonomy | null>(null);
@@ -79,7 +82,11 @@ export class PublicLayout {
     const api = inject(PublicApi);
     api.collections().subscribe({ next: (c) => this.collections.set(c), error: () => {} });
     api.taxonomy().subscribe({ next: (t) => this.taxonomy.set(t), error: () => {} });
-    afterNextRender(() => this.loadSavedLang());
+    afterNextRender(() => {
+      this.loadSavedLang();
+      try { this.dark.set(this.doc.defaultView?.localStorage?.getItem('memay.theme.v1') === 'dark'); }
+      catch { /* Storage may be denied; the switch still works. */ }
+    });
     this.syncRoute();
     this.router.events
       .pipe(
@@ -92,6 +99,12 @@ export class PublicLayout {
         this.langMenuOpen.set(false);
         if (this.sidebarOpen()) this.closeSidebar();
       });
+  }
+
+  setDark(dark: boolean) {
+    this.dark.set(dark);
+    try { this.doc.defaultView?.localStorage?.setItem('memay.theme.v1', dark ? 'dark' : 'light'); }
+    catch { /* Keep the in-memory preference when storage is unavailable. */ }
   }
 
   private loadSavedLang() {

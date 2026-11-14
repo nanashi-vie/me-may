@@ -39,6 +39,9 @@ Cập nhật12/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
+- Switch sáng/tối Rive public: [contract](DESIGN.md#sángtối-public--duyệt14112026),
+  [bằng chứng](THEME_VERIFICATION.md), đã kiểm local14/11, chưa deploy.
+
 - Ảnh bổ sung, đặc điểm, Thùng rác và hàng chờ tại [CATALOGUE](CATALOGUE.md)
   và [DESIGN](DESIGN.md). Rà soát import tại [BOOK_IMPORT](BOOK_IMPORT.md).
   Rollout V17–V19 tại [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).

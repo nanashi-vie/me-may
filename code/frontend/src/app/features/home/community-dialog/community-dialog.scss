@@ -23,7 +23,7 @@ dialog::backdrop {
   gap: 0.75rem;
   padding: 1.5rem clamp(0.75rem, 4vw, 1.25rem) 1.25rem;
   border-radius: 1rem;
-  background: white;
+  background: var(--surface);
   text-align: center;
 }
 
@@ -32,11 +32,11 @@ dialog::backdrop {
   margin-top: -3rem;
   padding: 0.375rem;
   border-radius: 50%;
-  background: white;
+  background: var(--surface);
 }
 
 .channel {
-  color: #435771;
+  color: var(--muted);
   font-size: 0.9rem;
 }
 
@@ -72,7 +72,7 @@ h2 {
 
 .button, .secondary {
   justify-self: stretch;
-  border-color: #165abe;
+  border-color: var(--link);
 }
 
 .button {
@@ -81,7 +81,7 @@ h2 {
 }
 
 .secondary {
-  color: #165abe;
+  color: var(--link);
 }
 
 .copy-message:empty {

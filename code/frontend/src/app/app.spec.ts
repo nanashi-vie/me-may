@@ -14,7 +14,7 @@ describe('public shell', () => {
     await harness.navigateByUrl('/');
     expect(harness.routeNativeElement?.textContent).toContain('Mẹ Mây');
     expect(harness.routeNativeElement?.querySelector('a[href="/sach"]')).not.toBeNull();
-    expect(harness.routeNativeElement?.querySelector('.admin-entry-btn')).not.toBeNull();
+    expect(harness.routeNativeElement?.querySelector('button[role="switch"]')).not.toBeNull();
     expect(harness.routeNativeElement?.querySelector('.sidebar-admin-link')).not.toBeNull();
     expect(harness.routeNativeElement?.textContent).not.toContain('Thanh toán');
 

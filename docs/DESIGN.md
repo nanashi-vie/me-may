@@ -62,7 +62,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 ## Desktop — thứ tự từ trên xuống
 
 1. **Utility bar:** dải đỏ trên cùng (`.utility`) trên desktop (>720px; ẩn ở ≤720px) chia 3 vùng trong khung `.wrap`: bên trái là 3 icon trắng mạng xã hội (`Facebook`: `sachngoaivanmemay`, `Threads`: `@sachngoaivanmemay`, `TikTok`: `@andamdaily`); ở giữa là thông điệp “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” chạy ngang (`marquee`, tự dừng khi hover hoặc bật `prefers-reduced-motion`); bên phải là icon phong bì kèm email CSKH `support@memaybooks.com` (`mailto:`). Không tự nhận freeship/giảm giá.
-2. **Header (cập nhật 13/11):** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), nút `Danh sách quan tâm` (icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` bên dưới, màu `--ink` đổi `--red` khi hover/focus/active; badge số cuốn đỏ chỉ hiện ở góc trên-phải icon khi `> 0`), nút chuyển ngôn ngữ UI `.lang-switcher` ngay bên phải `Danh sách quan tâm` (nút pill bên ngoài chỉ hiện cờ + chevron `⌄`; menu thả xuống click-to-open gồm cờ + tên `Tiếng Việt` / `English (US)`, lưu lựa chọn ở `localStorage` `memay.uiLang.v1`, chưa dịch toàn trang), và nút `Quản trị` (đã gỡ `Nhắn tiệm ↗` khỏi header). Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · icon trái tim + switcher cờ bên phải; hàng 2 là search full-width. Không sticky header để giữ ổn định CLS.
+2. **Header (cập nhật 13/11):** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), nút `Danh sách quan tâm` (icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` bên dưới, màu `--ink` đổi `--red` khi hover/focus/active; badge số cuốn đỏ chỉ hiện ở góc trên-phải icon khi `> 0`), nút chuyển ngôn ngữ UI `.lang-switcher` ngay bên phải `Danh sách quan tâm` (nút pill bên ngoài chỉ hiện cờ + chevron `⌄`; menu thả xuống click-to-open gồm cờ + tên `Tiếng Việt` / `English (US)`, lưu lựa chọn ở `localStorage` `memay.uiLang.v1`, chưa dịch toàn trang), và switch sáng/tối Rive44px thay nút `Quản trị` (14/11, đã gỡ `Nhắn tiệm ↗` khỏi header). Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · icon trái tim + switcher cờ + sáng/tối bên phải; hàng 2 là search full-width. Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ; gỡ mục `Cách mua` vì đã tích hợp popup trực tiếp từ box tiện ích Home). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
    - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
@@ -175,7 +175,7 @@ Sidebar Modern Clean (rộng 240px, nền be kem #FBF8F2, viền phải #E8E2D8,
 - Menu điều hướng kèm icon SVG trực quan: Tổng quan (📊), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
 - Mục Active: nền đỏ kem nhạt #FDF2F2, chữ và icon đỏ thương hiệu #9B1C28 (font-weight 700), viền trái đỏ 3px. Hover: nền be sáng #F3EDE2.
 - Đáy sidebar: Thẻ tài khoản (avatar chữ cái đầu, email, badge OWNER/STAFF) và nút Đăng xuất. Bỏ thanh admin-header phía trên để không gian nội dung bên phải rộng rãi.
-- Nút "Quản trị" trên trang public (/ và toàn site): desktop nằm ở header cạnh "Nhắn tiệm ↗", mobile nằm cuối menu trượt; nhận diện phiên đăng nhập để chuyển thẳng /admin hoặc /admin/dang-nhap.
+- Link "Quản trị" public: footer và cuối menu mobile; header dùng switch sáng/tối từ14/11. Link menu nhận diện phiên để chuyển /admin hoặc /admin/dang-nhap.
 
 Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
 
@@ -370,3 +370,17 @@ trong panel viền nhẹ, form nhóm chính/bổ sung, profile và empty order h
 Nhãn Tên Zalo/Tên TikTok/Tên Threads, chỉ text username, không link.
 Contract UI/dirty/modal/search/role tại [CUSTOMERS](CUSTOMERS.md);
 [bằng chứng desktop/mobile và giới hạn](CUSTOMER_VERIFICATION.md).
+
+## Sáng/tối public — duyệt14/11/2026
+
+- Switch44px bên phải ngôn ngữ, cả desktop/mobile; ≤420px header chỉ logo
+  (ẩn chữ thương hiệu) để giữ đủ chỗ. Chỉ phần khách, admin/login giữ sáng.
+- Sáng mặc định; nhớ light/dark qua localStorage memay.theme.v1. Không tự theo
+  hệ điều hành, không lưu tài khoản/backend; storage lỗi vẫn chuyển trong phiên.
+- Rive day-night do user cung cấp: click/Enter/Space, không hover; dừng khi idle.
+  Theme là nguồn trạng thái; bấm nhanh gộp về lựa chọn cuối, không lệch canvas.
+- Runtime tải sau; SVG dự phòng luôn thao tác được. Reduced motion dùng SVG
+  tĩnh, không tải Rive. Canvas44px cố định, không đổi kích thước khi tải xong.
+- Nền than ấm/chữ sáng/đỏ hồng cho dark; nền nút vẫn đỏ sẫm dưới chữ trắng.
+  Ảnh sách/logo/banner giữ nguyên màu. Không triển khai nhân vật/chatbot ở đây.
+- [Bằng chứng và giới hạn](THEME_VERIFICATION.md).

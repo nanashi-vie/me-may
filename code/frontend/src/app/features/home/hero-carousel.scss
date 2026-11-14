@@ -5,7 +5,7 @@
   container-type: inline-size;
   position: relative;
   aspect-ratio: 3/1;
-  background: #faf6ed;
+  background: var(--cream);
   overflow: hidden;
 }
 .viewport {
@@ -22,7 +22,7 @@
   height: 100%;
   align-items: center;
   justify-content: center;
-  color: #a51c30;
+  color: var(--red);
   text-decoration: none;
 }
 .image-link img,
