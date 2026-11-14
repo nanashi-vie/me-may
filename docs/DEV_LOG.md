@@ -4382,3 +4382,32 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   DESIGN/PROGRESS updated, docs limits/local links and git diff checked.
 - Only template/test/docs committed and pushed dev; pre-existing sample-image
   deletions remain local/unmodified/excluded. No main/deploy changes.
+
+### 2026-11-14 - MEDIA-REMOVE-AUDIT-C01 - Read-only deletion lifecycle audit
+
+- User asks whether removing banners and book photos fully deletes DB/server
+  files. Traced graph symbols and current dev77075d6 source plus existing tests.
+- Banner remove is draft-only until Save; save deletes configuration item and
+  expires former upload at+24h. Hourly scheduled cleanup deletes original
+  staging, generation files and upload/job/generation/asset rows after expiry;
+  image_variant cascades. Valid/current/active-lease resources are retained.
+  Old published URL can remain valid in grace and cached bytes may remain.
+- Existing book photo Remove sends DELETE immediately, independent of form
+  Save; MediaTransactions.remove marks DELETE_PENDING and audits/version bumps.
+  Published FRONT/BACK removal is rejected. Unsaved LOCAL photo removes from
+  temporary session instead; selection not yet uploaded only disappears client-side.
+- Local cleanup grace1h from updated_at/delete_after, scheduled via media job
+  default10min; deletes generations/staging and media/job/source-binding/asset
+  rows. Cloudinary pending cleanup uses gateway.destroy(invalidate=true), then
+  removes DB row after success/not-found; errors retain pending for retry.
+- Drive source originals, audit events, backups and already cached/downloaded
+  bytes are not erased by these actions. Isolated recovery skips cleanup;
+  LOCAL cleanup/banner service requires local.enabled. Batch limit100.
+- No product changes, no live server/DB inspection or deletion, no tests run.
+  Existing HeroBannerMediaTest/MediaCleanupIntegrationTest read as evidence of
+  intended lifecycle, not claimed as a fresh successful run. Production cleanup
+  cadence/config/backlog/files remain unverified; this audit cannot certify a
+  particular screenshot image was physically deleted.
+- Only audit handoff docs committed to dev; existing two sample-image deletions
+  remain excluded. Next if operational verification is requested: read-only
+  media IDs/pending ages, actual config/logs and file presence on target host.
