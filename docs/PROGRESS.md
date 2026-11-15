@@ -1,10 +1,10 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 15/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- ADMIN-FILTER-C03 (14/11): bộ lọc chung /admin/sach, chọn rồi Áp dụng, CSS dropdown cũ;
-  bỏ tổng số ở /sach. FE366/SSR/Workers và browser320–1440 đạt; chưa deploy.
+- CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
+  FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).

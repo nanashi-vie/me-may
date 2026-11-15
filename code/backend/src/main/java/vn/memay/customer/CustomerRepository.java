@@ -31,7 +31,7 @@ public class CustomerRepository {
   }
   long total=jdbc.queryForObject("select count(*) from customer"+where,Long.class,args.toArray());
   Collections.addAll(args,size,(long)page*size);
-  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,status,version,created_at from customer"+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant()),args.toArray());
+  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,zalo_name,tiktok_id,threads_id,status,version,created_at from customer"+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant()),args.toArray());
   return new Page<>(items,page,size,total,(total+size-1)/size);
  }
  private static String literal(String s){return "%"+s.replace("!","!!").replace("%","!%").replace("_","!_")+"%";}

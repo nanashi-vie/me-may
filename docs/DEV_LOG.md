@@ -4508,3 +4508,50 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Contract consolidated in DESIGN (399lines); plan removed, README updated;
   PROGRESS stays400lines. Scoped code/tests/docs commit/push to dev; existing
   two hero sample asset deletions remain local/excluded. No main/deploy.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C01 - Requested table and nav spacing
+
+- User requests columns Khách hàng/Zalo/TikTok/Threads/Số điện thoại/Tổng số
+  đơn hàng; clarified increasing horizontal gaps in public navbar.
+- Implement existing social fields in list API/DTO/template, preserve actions
+  and permissions. Orders column shows — (not implemented), no order schema.
+- Public desktop nav gap increase; tablet stays compact and mobile unchanged.
+  Scoped quick presentation/API addition on dev; two existing hero deletions
+  remain excluded. Tests/build/browser pending.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C02 - Details own actions
+
+- User clarified removing the entire Thao tác column: only customer name link
+  opens detail for edit/archive. Removed dead inline edit/archive handlers;
+  list retains create modal and unsaved creation guard. Detail unchanged.
+- RED frontend social mapping and then no-actions regression observed; backend
+  integration RED confirms list omitted social fields. Implementation now
+  projects all three existing fields without N+1/detail calls or note exposure.
+- First full frontend367PASS; final tests/build/browser pending new refinement.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C03 - Verified and handoff
+
+- Final /admin/customers columns: Khách hàng (name links detail, code below),
+  Zalo/TikTok/Threads/Số điện thoại/Tổng số đơn hàng. No action column/buttons.
+  Blank social/phone values and future order count show —, never fabricated0.
+- List SQL/DTO/model now includes three existing account names, no N+1, no new
+  schema/order APIs. Detail OWNER edit/archive/restore and STAFF view unchanged.
+  List inline handlers removed; create modal and dirty navigation guard remain.
+- Navbar desktop gap clamp(3rem,5vw,4.5rem), tablet≤960 retains1.15rem; mobile
+  menu unchanged. Existing CSS/fonts/design retained; no dependencies.
+- Final FE code/frontend npm test61files/367PASS; SSR and Workers builds PASS
+  without warning/error. Backend code/backend mvn -q test on isolated ephemeral
+  PostgreSQL17 localhost55446/me_may_test:320tests/0failure/0error/3live skips.
+  Focused backend RED for missing social fields and frontend RED for social
+  mapping/no-actions observed before respective implementations.
+- Chromium fixture QA at1440:6columns/order placeholder, nullable names/phone,
+  long username wrap, no row buttons, name→detail with Sửa PASS. Customer page
+ 390/1024 no outer overflow; table scrolls. Public nav1440/1024/768 gap and
+  same-row/no-overflow assertions PASS. Screenshots /tmp/memay-customer-columns-
+  desktop.png and /tmp/memay-navbar-spacing.png. No live customer data used.
+- QA initially expected Chỉnh sửa; actual existing detail label Sửa, corrected
+  browser check only. Independent final review including removal: no findings.
+- Contract CUSTOMERS/DESIGN updated; docs stay≤400lines, PROGRESS snapshot
+  replaced. Commit/push scoped code/tests/docs to dev, no main/deploy; frontend
+  needs matching backend release for social fields. Two prior hero asset
+  deletions remain local/unmodified/excluded.

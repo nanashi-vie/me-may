@@ -42,10 +42,11 @@
           <thead>
             <tr>
               <th scope="col">Khách hàng</th>
+              <th scope="col">Zalo</th>
+              <th scope="col">TikTok</th>
+              <th scope="col">Threads</th>
               <th scope="col">Số điện thoại</th>
-              <th scope="col">Địa chỉ mặc định</th>
-              <th scope="col">Ngày tạo</th>
-              <th scope="col">Thao tác</th>
+              <th scope="col">Tổng số đơn hàng</th>
             </tr>
           </thead>
           <tbody>
@@ -62,46 +63,11 @@
                     <span class="status-badge">Đã lưu trữ</span>
                   }
                 </td>
+                <td class="social-account">{{ customer.zaloName || '—' }}</td>
+                <td class="social-account">{{ customer.tiktokId || '—' }}</td>
+                <td class="social-account">{{ customer.threadsId || '—' }}</td>
                 <td class="phone">{{ customer.phone || '—' }}</td>
-                <td>
-                  @if (customer.defaultAddress) {
-                    <details class="address">
-                      <summary>{{ customer.defaultAddress }}</summary>
-                      <p>{{ customer.defaultAddress }}</p>
-                    </details>
-                  } @else {
-                    —
-                  }
-                </td>
-                <td class="date">{{ customer.createdAt | date: 'dd/MM/yyyy' : '+0700' }}</td>
-                <td>
-                  <div class="row-actions">
-                    <a
-                      [routerLink]="['/admin/customers', customer.id]"
-                      [queryParams]="filter()"
-                      [attr.aria-label]="'Xem ' + customer.fullName"
-                      >Xem</a
-                    >
-                    @if (owner()) {
-                      <button
-                        class="text-button"
-                        type="button"
-                        [disabled]="actionBusy()"
-                        (click)="edit(customer)"
-                        [attr.aria-label]="'Sửa ' + customer.fullName"
-                      >
-                        Sửa</button
-                      ><button
-                        class="text-button"
-                        type="button"
-                        [disabled]="actionBusy()"
-                        (click)="changeCustomerStatus(customer)"
-                      >
-                        {{ customer.status === 'ACTIVE' ? 'Lưu trữ' : 'Khôi phục' }}
-                      </button>
-                    }
-                  </div>
-                </td>
+                <td class="order-count"><span aria-label="Chưa có dữ liệu đơn hàng">—</span></td>
               </tr>
             }
           </tbody>

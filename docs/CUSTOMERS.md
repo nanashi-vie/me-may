@@ -132,9 +132,12 @@ Không OTP, không xác minh số có người sử dụng thực tế, không d
 Route `/admin/customers`; mục **Khách hàng** trong sidebar cho OWNER/STAFF.
 Tiêu đề **Khách hàng**, nút OWNER **+ Thêm khách mới**.
 Toolbar: một ô tìm kiếm; trạng thái Đang hoạt động/Đã lưu trữ/Tất cả,
-mặc định ACTIVE. Bảng: Mã KH, Tên khách hàng, Số điện thoại, Địa chỉ mặc định
-rút gọn (có thể xem đầy đủ bằng focus/chạm), Ngày tạo, Thao tác.
-OWNER có Xem/Sửa/Lưu trữ hoặc Khôi phục theo trạng thái; STAFF chỉ Xem.
+mặc định ACTIVE. Bảng (đổi15/11): Khách hàng (tên + mã KH), Zalo, TikTok,
+Threads, Số điện thoại, Tổng số đơn hàng. Không có cột Thao tác; bấm tên mở
+chi tiết, OWNER sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem.
+Ba tên tài khoản lấy từ API danh sách, field rỗng hiện —; không gọi từng hồ sơ.
+Cột tổng đơn tạm hiện — (nhãn truy cập Chưa có dữ liệu đơn hàng), không ghi0
+hoặc tạo field/bảng/query đơn hàng trước khi triển khai module đơn hàng.
 
 Tìm chuỗi con trên mã/tên/SĐT/ba username; không phân biệt hoa/thường,
 trim và gom khoảng trắng thừa ở truy vấn. Không hứa tìm không dấu.
@@ -236,7 +239,8 @@ CustomerWrite chỉ fullName/phone/defaultAddress/zaloName/tiktokId/threadsId/no
 Ví dụ username: zaloName="Lan Nguyễn", tiktokId="@lanbooks", threadsId="@lanbooks".
 Create bỏ optional coi NULL; PUT thay đủ field, optional bỏ/rỗng thành NULL.
 Detail gồm id/customerCode, bảy field, status/version/createdBy/createdAt/updatedAt.
-Summary chỉ id/customerCode/fullName/phone/defaultAddress/status/version/createdAt.
+Summary gồm id/customerCode/fullName/phone/defaultAddress/zaloName/tiktokId/
+threadsId/status/version/createdAt; không trả note hoặc đếm đơn.
 DuplicateSummary chỉ id/customerCode/fullName/phone/status.
 Page = {items,page,size,totalElements,totalPages}; BIGINT ID JSON string.
 

@@ -13,6 +13,9 @@ export interface CustomerMutation extends CustomerWrite {
   confirmedPhone?: string;
 }
 export interface CustomerSummary {
+  zaloName: string | null;
+  tiktokId: string | null;
+  threadsId: string | null;
   id: string;
   customerCode: string;
   fullName: string;
@@ -23,9 +26,6 @@ export interface CustomerSummary {
   createdAt: string;
 }
 export interface CustomerDetail extends CustomerSummary {
-  zaloName: string | null;
-  tiktokId: string | null;
-  threadsId: string | null;
   note: string | null;
   createdBy: string | null;
   updatedAt: string;

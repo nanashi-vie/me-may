@@ -1,10 +1,8 @@
 import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   Subject,
-  Subscription,
   catchError,
   combineLatest,
   debounceTime,
@@ -19,7 +17,7 @@ import { CustomerForm } from '../customer-form/customer-form';
 
 @Component({
   selector: 'app-customer-list',
-  imports: [DatePipe, RouterLink, CustomerForm],
+  imports: [RouterLink, CustomerForm],
   templateUrl: './customer-list.html',
   styleUrls: ['../customer-pages.scss'],
 })
@@ -33,12 +31,9 @@ export class CustomerList {
   private readonly reloads = new Subject<void>();
   private readonly searches = new Subject<string>();
   private creating = false;
-  private editGeneration = 0;
-  private editRequest?: Subscription;
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
   readonly page = signal<Page<CustomerSummary> | null>(null);
   readonly loading = signal(true);
-  readonly actionBusy = signal(false);
   readonly error = signal('');
   readonly toast = signal('');
   readonly filter = signal<CustomerFilter>({ q: '', status: 'ACTIVE', page: 0, size: 20 });
@@ -50,11 +45,9 @@ export class CustomerList {
     ])
       .pipe(
         switchMap(([params]) => {
-          this.cancelPendingEdit();
           this.page.set(null);
           this.error.set('');
           this.loading.set(true);
-          this.actionBusy.set(false);
           const n = (key: string, defaultValue: number, max: number) => {
             const v = Number(params.get(key) ?? defaultValue);
             return Number.isSafeInteger(v) && v >= 0 && v <= max ? v : defaultValue;
@@ -111,34 +104,8 @@ export class CustomerList {
   }
   openNew() {
     if (!this.owner()) return;
-    this.cancelPendingEdit();
     this.creating = true;
     this.editor()?.open();
-  }
-  edit(row: CustomerSummary) {
-    if (!this.owner() || this.actionBusy()) return;
-    this.cancelPendingEdit();
-    this.creating = false;
-    this.actionBusy.set(true);
-    const epoch = this.auth.epoch(),
-      generation = this.editGeneration;
-    this.editRequest = this.api
-      .detail(row.id)
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({
-        next: (c) => {
-          if (epoch !== this.auth.epoch() || generation !== this.editGeneration || !this.owner())
-            return;
-          this.actionBusy.set(false);
-          this.editor()?.open(c);
-        },
-        error: () => {
-          if (epoch === this.auth.epoch() && generation === this.editGeneration) {
-            this.actionBusy.set(false);
-            this.error.set('Chưa tải được hồ sơ để chỉnh sửa.');
-          }
-        },
-      });
   }
   onSaved(_customer: CustomerDetail) {
     this.toast.set(this.creating ? 'Đã thêm khách hàng thành công' : 'Đã cập nhật khách hàng');
@@ -146,52 +113,9 @@ export class CustomerList {
     this.creating = false;
     this.refresh();
   }
-  changeCustomerStatus(row: CustomerSummary) {
-    if (!this.owner() || this.actionBusy()) return;
-    if (
-      row.status === 'ACTIVE' &&
-      !window.confirm(
-        'Bạn có chắc muốn lưu trữ khách hàng này? Thông tin khách hàng sẽ được giữ lại nhưng không còn xuất hiện trong danh sách đang hoạt động.',
-      )
-    )
-      return;
-    const status = row.status === 'ACTIVE' ? 'ARCHIVED' : 'ACTIVE',
-      epoch = this.auth.epoch();
-    this.actionBusy.set(true);
-    this.error.set('');
-    this.api
-      .setStatus(row.id, row.version, status)
-      .pipe(takeUntilDestroyed(this.destroy))
-      .subscribe({
-        next: () => {
-          if (epoch !== this.auth.epoch()) return;
-          this.toast.set(status === 'ACTIVE' ? 'Đã khôi phục khách hàng' : 'Đã lưu trữ khách hàng');
-          const page = this.page();
-          if (page?.items.length === 1 && this.filter().page > 0 && this.filter().status !== 'ALL')
-            this.goPage(this.filter().page - 1);
-          this.refresh();
-        },
-        error: (e) => {
-          if (epoch === this.auth.epoch()) {
-            this.actionBusy.set(false);
-            this.error.set(
-              e.status === 409
-                ? 'Dữ liệu đã thay đổi. Tải lại danh sách trước khi thao tác.'
-                : 'Chưa thay đổi được trạng thái. Vui lòng thử lại.',
-            );
-          }
-        },
-      });
-  }
-  private cancelPendingEdit() {
-    this.editGeneration++;
-    this.editRequest?.unsubscribe();
-    this.actionBusy.set(false);
-  }
   canLeave() {
     const editor = this.editor();
     if (editor?.visible() && !editor.requestClose()) return false;
-    this.cancelPendingEdit();
     return true;
   }
 }
