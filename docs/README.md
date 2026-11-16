@@ -14,7 +14,7 @@ Cập nhật16/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Quản lý đơn hàng nội bộ: spec chuẩn hóa theo code, chưa triển khai | [Spec](ORDER_MANAGEMENT_SPEC.md), [quyết định cần chốt](ORDER_MANAGEMENT_SPEC.md#15-các-quyết-định-đề-xuất-cần-owner-chốt-trước-triển-khai) |
+| Quản lý đơn hàng nội bộ: spec chuẩn hóa theo code, chưa triển khai | [Spec](ORDER_MANAGEMENT_SPEC.md), [đã chốt và còn cần làm rõ](ORDER_MANAGEMENT_SPEC.md#15-quyết-định-đã-chốt-và-phần-còn-cần-làm-rõ) |
 | Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
 | Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: upload máy/Drive, ghép nguồn, cảnh báo thiếu nguồn vẫn xuất bản12/11 | [Hệ thống ảnh](IMAGES.md) |
@@ -41,9 +41,9 @@ Cập nhật16/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
-- Order Management: đang duyệt [spec](ORDER_MANAGEMENT_SPEC.md); giá bán cụ thể
-  từng cuốn do admin chốt đã được user xác nhận16/11. Chưa lập plan/triển khai;
-  các đề xuất tồn/quyền/tiền ship/hoàn tiền/reopen chưa thay baseline MASTER_PLAN.
+- Order Management: [spec](ORDER_MANAGEMENT_SPEC.md) chốt giá từng cuốn, keep trừ
+  tồn ngay, chỉ admin, phí ship nhập tay, tổng keep≤một tháng16/11. Còn làm rõ
+  thu ship/hoàn tiền/reopen và cách tính tháng; chưa lập plan/triển khai.
 
 - Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 

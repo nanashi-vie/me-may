@@ -4593,3 +4593,23 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   order/reservation/J&T hoặc live, không coi review spec là nghiệm thu feature.
 - Git dev, base035d7ab; hai hero deletions giữ nguyên/không stage. Bước tiếp:
   commit/push tài liệu lên dev, owner chốt mục15 rồi mới lập implementation plan.
+
+### 2026-11-16 - ORDER-SPEC-C03 - Chốt từng phần, làm rõ nghiệp vụ còn lại
+
+- User chốt: keep trừ tồn ngay; tạm chỉ admin; ship nhập thủ công; tổng thời
+  gian keep kể cả gia hạn tối đa một tháng đã gồm hai tuần đầu. Còn lại user
+  chưa rõ đề xuất, không được coi là duyệt toàn bộ mục15.
+- Cập nhật ORDER_MANAGEMENT_SPEC/README/PROGRESS. Đổi mô hình stock thành
+  lượng còn bán, keep trừ ngay, ship không trừ lần hai, hủy/giảm item hoàn lại
+  đúng phần đã trừ. Không lấy stock trừ reservation lần nữa. Giữ pooled legacy,
+  khóa/version/idempotency và kiểm hoàn tồn khi dòng legacy hết sức chứa.
+- Admin ánh xạ OWNER hiện có, STAFF chặn cả GET order; không tạo role ADMIN.
+  Ship nhập tay chưa quyết định phí khách trả J&T hay trả tiệm. Trần một tháng
+  từ keepStartedAt đã chốt; tháng lịch hay30ngày còn cần xác nhận, ví dụ16/11
+  đến hết16/12 chỉ là đề xuất. Hoàn cọc/VOID/complete/reopen vẫn chờ chốt.
+- Kiểm tài liệu root bằng Python: line≤400/local links và anchor mục15,
+  không còn công thức S−R/R≤S cũ; git diff --check PASS. Spec396dòng;
+  README99/PROGRESS400, DEV_LOG ngoại lệ. Chưa chạy runtime/test/build vì chỉ docs.
+- C02 đã push dev/f167de5. Phiên này tiếp tục commit/push docs dev; giữ hai
+  hero deletions trước đó, không stage; không thay code/migration/deploy.
+  Bước tiếp: giải thích bằng ví dụ, chốt cách thu ship trước rồi các điểm còn lại.
