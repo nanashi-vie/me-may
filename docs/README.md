@@ -41,9 +41,9 @@ Cập nhật16/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
-- Order Management: [spec](ORDER_MANAGEMENT_SPEC.md) chốt giá từng cuốn, keep trừ
-  tồn ngay, chỉ admin, phí ship nhập tay, tổng keep≤một tháng16/11. Còn làm rõ
-  thu ship/hoàn tiền/reopen và cách tính tháng; chưa lập plan/triển khai.
+- Order Management: [spec](ORDER_MANAGEMENT_SPEC.md) chốt keep trừ tồn, admin,
+  thu cả ship nhập tay, keep≤30ngày; bàn giao là Hoàn tất, hoàn/gửi lại thủ công.
+  Còn đề xuất VOID/mã ship ở mục15; chưa lập plan/triển khai.
 
 - Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 

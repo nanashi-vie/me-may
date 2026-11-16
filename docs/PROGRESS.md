@@ -3,9 +3,9 @@
 Cập nhật 16/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- ORDER-SPEC-C03 (16/11): [spec đơn hàng](ORDER_MANAGEMENT_SPEC.md) chốt keep trừ
-  tồn ngay, chỉ admin, ship nhập tay, tổng keep≤một tháng gồm14ngày đầu.
-  Còn làm rõ mục15; chưa lập plan/triển khai, chưa thay baseline/gate release.
+- ORDER-SPEC-C04 (16/11): [spec đơn hàng](ORDER_MANAGEMENT_SPEC.md) thu cả ship,
+  keep≤30ngày; bàn giao→Hoàn tất; Không thành công→gửi lại hoặc hoàn/nhập tồn.
+  Hoàn tiền khi thực hoàn; còn đề xuất mục15, chưa lập plan/code/deploy.
 
 - CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
   FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.

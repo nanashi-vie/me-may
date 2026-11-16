@@ -1,8 +1,8 @@
 # SPEC — Quản lý đơn hàng nội bộ
 
 Chuẩn hóa 16/11/2026 từ Order Management v1.0 do owner cung cấp.
-**Trạng thái:** nghiệp vụ gốc được user cung cấp là đã chốt; các bổ sung kỹ thuật
-chưa rõ ở mục 15 còn chờ chốt trước lập plan/triển khai. Chưa có code order.
+**Trạng thái:** nghiệp vụ đã chốt từng phần; mục15 còn quyết định cần làm rõ.
+Chưa lập plan/triển khai code order.
 User bổ sung 16/11: **admin chỉnh giá bán cụ thể từng cuốn khi thêm vào đơn**.
 Đây là mở rộng riêng sau catalogue MVP, không đổi wishlist thành giỏ hàng.
 Chỉ sau khi duyệt, spec này mới thay giới hạn không có đơn/giữ tồn/thanh toán
@@ -12,16 +12,16 @@ trong MASTER_PLAN cho khu admin; public và các gate release hiện hành giữ
 
 Thay dần Excel theo dõi đơn nội bộ: chọn/tạo khách, đơn giao ngay hoặc keep,
 CATALOG/MANUAL, giữ tồn, cọc/thanh toán/hoàn tiền, cân kiện và ghi vận đơn J&T.
-Một đơn một lần giao/một kiện. Không public checkout, payment gateway, thông
-báo tự động, đồng bộ kho livestream, tự đối soát COD/ngân hàng, hoàn hàng,
-giao thất bại, chia kiện hoặc xuất Excel/API J&T trong bản đầu.
+Mỗi lần giao một kiện; user mở rộng16/11 cho ghi không thành công, gửi lại hoặc
+hoàn hàng/nhập lại tồn bằng tay. Không public checkout, payment gateway,
+thông báo tự động, đồng bộ kho livestream, tự đối soát COD/ngân hàng,
+chia kiện đồng thời hoặc xuất Excel/API J&T trong bản đầu.
 
 Hướng phù hợp code hiện có: Angular standalone, Spring Boot modular monolith,
 PostgreSQL/Flyway; module order dùng Spring JDBC và transaction theo customer.
 Tái sử dụng auth/session/CSRF, CustomerForm, page/errors/version và audit có
 điều chỉnh. Không thêm framework CRM, kho hoặc workflow engine.
-Giữ tồn theo từng vật thể sẽ cần đổi mô hình tồn gộp đã duyệt06/11; không chọn
-làm mặc định. Gắn order vào tổng tồn của mã MM, giữ nguyên các dòng legacy.
+Order dùng tồn gộp mã MM đã duyệt06/11, giữ dòng legacy, không dựng kho từng vật thể.
 
 ## 2. Đối chiếu code hiện tại
 
@@ -38,9 +38,8 @@ làm mặc định. Gắn order vào tổng tồn của mã MM, giữ nguyên c�
 | AuditService chỉ giữ field trong allowlist, customer ghi metadata rỗng | Không truyền payload order rồi cho rằng toàn bộ thay đổi đã được lưu |
 | Flyway source mới nhất V33__hero_banners.sql; chưa có order/reservation | Lấy số migration kế tiếp còn trống lúc triển khai; không sửa V1–V33 |
 
-Nguồn: [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026),
-[CUSTOMERS](CUSTOMERS.md), [CATALOGUE](CATALOGUE.md), [ARCHITECTURE](ARCHITECTURE.md).
-Các thay đổi trong spec là yêu cầu tương lai, không mô tả chức năng đang chạy.
+Nguồn: [DATA](DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE](CATALOGUE.md),
+[ARCHITECTURE](ARCHITECTURE.md).
 
 ## 3. Trạng thái và thao tác
 
@@ -49,28 +48,31 @@ Các thay đổi trong spec là yêu cầu tương lai, không mô tả chức n
 | DRAFT — Nháp | Chọn khách, thêm/sửa/xóa item, chưa giữ tồn |
 | KEEPING — Đang keep | Giữ tồn, thêm/sửa/xóa item và ghi nhận tiền |
 | READY_TO_SHIP — Chờ giao | Đã chốt item, người nhận, kiện/COD/khai giá; còn giữ tồn |
-| SHIPPED — Đã gửi | Đã bàn giao, không trừ tồn lần nữa, khóa item |
-| COMPLETED — Hoàn tất | Xác nhận giao và đối soát; không xuất kho lại |
-| CANCELLED — Đã hủy | Trạng thái cuối; giải phóng reservation, giữ lịch sử tiền |
+| COMPLETED — Hoàn tất | Admin xác nhận đã bàn giao vận chuyển; khóa item, không trừ tồn nữa |
+| UNSUCCESSFUL — Đơn không thành công | Chủ ghi nhận thủ công đơn hoàn về; chờ gửi lại hoặc hoàn đơn/nhập tồn |
+| CANCELLED — Đã hủy/hoàn đơn | Hủy trước gửi hoặc đóng hoàn đơn sau thất bại; giữ lịch sử tiền/tồn |
 
-- Giao ngay: DRAFT → READY_TO_SHIP → SHIPPED → COMPLETED.
-- Keep: DRAFT → KEEPING → READY_TO_SHIP → SHIPPED → COMPLETED.
-- Hủy từ DRAFT/KEEPING/READY_TO_SHIP; không hủy thông thường sau SHIPPED.
+- Giao ngay: DRAFT → READY_TO_SHIP → COMPLETED; keep thêm KEEPING sau DRAFT.
+- COMPLETED → UNSUCCESSFUL do chủ xác nhận hoàn về, lưu lý do/thời điểm.
+- UNSUCCESSFUL → READY_TO_SHIP để gửi lại, hoặc CANCELLED để hoàn đơn/nhập tồn.
+- READY lần gửi lại → UNSUCCESSFUL nếu chủ dừng gửi lại; không hoàn tồn/tiền.
+- Hủy thường từ DRAFT/KEEPING/READY_TO_SHIP trước lần gửi đầu; sau bàn giao
+  đi qua luồng không thành công/hoàn đơn. Không giữ SHIPPED làm trạng thái riêng.
 - Không EXPIRED; quá hạn là thuộc tính tính từ thời gian, không tự hủy/nhả tồn.
-- Không cập nhật status qua PUT/PATCH thường; mỗi chuyển trạng thái có command.
-- READY muốn sửa item phải reopen có lý do/audit; đích và hạn keep ở mục15.
-- SHIPPED/COMPLETED không sửa item/giá/khai giá/kiện đã chốt; vẫn cần ghi nhận
-  tiền thực nhận/hoàn tiền theo quyền, không cho sửa tổng tiền thủ công.
+- READY trước lần gửi đầu được reopen có lý do: KEEP về KEEPING giữ hạn cũ;
+  IMMEDIATE về DRAFT và hoàn tồn, cảnh báo trước khi nhả; user đã duyệt.
+- COMPLETED/UNSUCCESSFUL khóa item/giá; luồng gửi lại chỉ sửa snapshot giao mới.
+  Thanh toán độc lập: vẫn ghi thực nhận/hoàn tiền, không sửa tổng đã nhận bằng tay.
 
 ## 4. Danh sách, tạo đơn và khách hàng
 
 Route `/admin/orders`, `/admin/orders/new`, `/admin/orders/:id`.
 Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách,
-ngày tạo dd/MM/yyyy, tổng quantity, goodsTotal, paidAmount, trạng thái,
+ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
 hạn keep và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
 Tìm mã đơn/tên/SĐT/mã KH; lọc status, khoảng ngày tạo và keep sắp/đến/quá hạn.
 Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
-Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Đã gửi do backend tính,
+Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Hoàn tất/Không thành công do backend tính,
 không cộng chỉ các dòng trong trang; đề xuất dùng cùng bộ lọc danh sách.
 
 Chọn khách ACTIVE bằng API customer hiện có, tìm cả ba username đã hỗ trợ.
@@ -103,15 +105,13 @@ các lượng giữ trước đó, không trừ reservation đơn khác thêm l�
 
 MANUAL bắt buộc tên, đơn giá VND, quantity, gram/quyển. Không tạo book_copy,
 book_variant/listing, không giữ/trừ tồn website. Các FK catalogue phải NULL.
-CATALOG lưu book_copy_id/listing_id khớp nhau, snapshot mã/tên/giá/trọng lượng;
-không bắt FK variant hoặc dựng định danh vật thể mới. Ảnh chỉ giúp nhận diện,
-không giữ media vĩnh viễn chỉ vì có item; thiếu ảnh có fallback.
+CATALOG lưu book_copy_id/listing_id khớp nhau và snapshot mã/tên/giá/trọng lượng.
+Ảnh để nhận diện, thiếu có fallback; không giữ media vĩnh viễn vì item.
 
 DRAFT/KEEPING được thêm/sửa/xóa có xác nhận. KEEPING cập nhật reservation cùng
 transaction; không có tình huống item đã lưu nhưng giữ tồn thất bại.
 Draft được thiếu weight CATALOG trong lúc bổ sung; đề xuất chỉ giữ/chốt khi
-mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở draft,
-khác mâu thuẫn NOT NULL trong logical schema gốc.
+mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở draft.
 
 ## 6. Cảnh báo MANUAL giống danh mục
 
@@ -125,8 +125,7 @@ lý do khác. Không đổi nguồn tự động, không chặn tuyệt đối v
 Backend kiểm lại lúc lưu; trả409 `manual_match_confirmation_required` kèm
 kết quả mới cần xác nhận. Đề xuất xác nhận gắn normalizedTitle và fingerprint
 kết quả (id/version), lưu lý do; đổi tên/kết quả mới làm mất hiệu lực xác nhận.
-Không chỉ dùng boolean xác nhận vô điều kiện. Không include sách đã purge;
-phạm vi tìm sách Thùng rác chốt ở mục15.
+Không xác nhận vô điều kiện, không tìm sách đã purge; phạm vi Thùng rác ở mục15.
 
 ## 7. Tiền, trọng lượng và validation
 
@@ -134,10 +133,13 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
 - subtotal = SUM(unitPriceVnd × quantity); goodsTotal = subtotal − discountAmount.
 - 0 ≤ discountAmount ≤ subtotal; tiền VND nguyên không âm, không cộng cọc vào hàng.
 - paidAmount = SUM(DEPOSIT + PAYMENT) − SUM(REFUND) của giao dịch hợp lệ.
-- Đề xuất dư tiền hàng = goodsTotal − paidAmount; hiển thị dư âm là cần xử lý
-  tiền thừa, không giấu bằng0; số còn thu tham khảo = max(0, dư tiền hàng).
-- UNPAID khi paidAmount=0<goodsTotal; PARTIALLY_PAID khi0<paidAmount<goodsTotal;
-  PAID khi bằng nhau (kể cả0/0); OVERPAID khi lớn hơn. Refund không vượt tiền nhận.
+- **Tiệm thu cả ship:** orderTotal = goodsTotal + shippingFee (phí thu khách nhập tay).
+  balance = orderTotal − paidAmount; còn thu = max(0,balance), dư âm là tiền thừa.
+  Chưa nhập phí ship thì tổng/còn thu là tạm tính, không coi phí chưa biết là0;
+  finalize bắt nhập phí, cho0 nếu miễn ship. Không cộng ship hai lần vào COD.
+- UNPAID khi paidAmount=0<orderTotal; PARTIALLY_PAID khi0<paidAmount<orderTotal;
+  PAID khi bằng nhau (kể cả0/0); OVERPAID khi lớn hơn. Ship chưa biết thì trạng
+  thái thanh toán tạm tính. Refund không vượt tiền nhận, không tự xóa khoản phải thu.
 - itemWeight = unitWeightGrams × quantity; totalBookWeightGrams = SUM(itemWeight).
   Thiếu bất kỳ weight hiển thị “Chưa đủ dữ liệu”, không coi thiếu là0.
 - parcelWeightGrams mặc định bằng tổng khi đầy đủ; chưa override thì theo item.
@@ -149,8 +151,7 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
 unitPrice≤999999999999; weight dương≤9007199254740991gram như catalogue.
 Mọi tích/tổng tiền/gram phải≤9007199254740991, kiểm overflow trước lưu;
 tiền ship/COD/discount/khai giá cũng nguyên trong miền cho phép, không clamp.
-Backend dùng số nguyên đủ rộng/checked arithmetic, UI không mất độ chính xác.
-Giá0 được bản gốc cho phép; nếu cửa hàng không cho tặng sách cần chốt lại.
+Backend dùng checked arithmetic, UI không mất chính xác; giá0 được bản gốc cho phép.
 
 ## 8. Keep và gia hạn
 
@@ -165,9 +166,10 @@ UI hiển thị hạn30/11; lưu TIMESTAMPTZ, API ISO8601 có offset/UTC.
 Quá hạn nếu now≥keepUntil; đến hạn nếu hôm nay là ngày giữ cuối và chưa quá;
 sắp hạn nếu còn1..3ngày lịch; chỉ áp dụng đơn KEEPING. Backend/Clock là nguồn giờ.
 Gia hạn nhập hạn mới>hạn cũ, lý do bắt buộc; giữ lịch sử cũ/mới, actor/time,
-extensionCount. User chốt tổng thời gian giữ kể cả gia hạn tối đa **một tháng
-tính từ keepStartedAt**, đã gồm14ngày đầu; không cộng thêm một tháng sau hạn cũ.
-Cách quy đổi một tháng và ranh cuối ngày là đề xuất cần xác nhận ở mục15.
+extensionCount. User chốt tổng keep kể cả gia hạn tối đa **30ngày từ đầu**,
+đã gồm14ngày ban đầu; không tính tháng lịch hoặc cộng30ngày sau hạn cũ.
+Giữ cách tính ngày lịch ở trên: hạn cuối không vượt ngày bắt đầu+30ngày,
+cuối ngày đó; bắt đầu16/11 → tối đa hết16/12. Không reset trần khi reopen.
 Không tự gia hạn/cancel/release theo timer, kể cả đã vượt trần.
 Kết thúc keep mở Chốt giao, kiểm lại dữ liệu rồi READY; không nhả reservation.
 
@@ -176,9 +178,8 @@ Kết thúc keep mở Chốt giao, kiểm lại dữ liệu rồi READY; không 
 **User chốt16/11:** xác nhận keep là trừ tồn kho ngay. S = SUM(book_variant.stock)
 là lượng còn bán được; availableStock = S. Reservation chỉ theo dõi lượng đã
 trừ đang thuộc đơn nào, phục vụ hoàn tồn/handoff; không lấy S trừ reservation nữa.
-CATALOG theo book_copy_id và quantity gộp các dòng; giữ dòng legacy, không
-lưu variant allocation vì UI đã bỏ chọn biến thể. Tồn vật lý còn tại tiệm có
-thể gồm cả phần đã keep; không gọi S là tổng lượng vật lý đang trong tiệm.
+CATALOG theo book_copy_id và quantity gộp các dòng, không lưu variant allocation.
+Tồn vật lý tại tiệm còn gồm phần đã keep; S chỉ là lượng còn bán được.
 DRAFT chỉ kiểm/thông báo tồn hiện tại, không đảm bảo giữ; phải kiểm lại lúc xác nhận.
 
 | Thao tác | Tồn bán được và kết quả |
@@ -188,8 +189,11 @@ DRAFT chỉ kiểm/thông báo tồn hiện tại, không đảm bảo giữ; ph
 | KEEPING giảm/xóa item | Cộng S phần bỏ, giảm/đóng reservation đúng một lần |
 | KEEPING → READY | Giữ reservation hiện có, không giữ lần hai |
 | Cancel trước ship | Reservation RELEASED, cộng S phần đã trừ chưa hoàn đúng một lần |
-| READY → SHIPPED | Reservation CONSUMED; S không đổi vì đã trừ lúc keep/chốt giao ngay |
-| COMPLETED hoặc retry ship/cancel | Không trừ/nhả tồn thêm |
+| READY → COMPLETED | Reservation CONSUMED; S không đổi vì đã trừ lúc keep/chốt giao ngay |
+| COMPLETED → UNSUCCESSFUL | Không tự hoàn tồn/hoàn tiền chỉ vì đổi trạng thái |
+| Gửi lại sau không thành công | Không trừ tồn lần nữa, giữ phần đã trừ của đơn |
+| Xác nhận hoàn đơn sau thất bại | Chủ xác nhận hàng thực nhập và cộng tồn CATALOG đúng một lần |
+| Retry ship/cancel/return | Không trừ/nhả tồn thêm |
 
 Khóa order rồi book_copy theo id tăng dần và các dòng/reservation liên quan;
 kiểm version và S sau khóa. Mọi đường ghi tồn, kể cả BookCommandService và
@@ -213,7 +217,7 @@ không clamp hoặc âm thầm bỏ lượng hoàn. Plan phải kiểm case tăn
 
 DEPOSIT/PAYMENT/REFUND lưu amount>0, method, occurredAt thực nhận/hoàn,
 note, createdBy/createdAt; phương thức đề xuất CASH/BANK_TRANSFER/OTHER.
-Không tạo PAYMENT giả cho COD khi SHIPPED/COMPLETED. Khi thực nhận COD,
+Không tạo PAYMENT giả cho COD khi COMPLETED. Khi thực nhận COD,
 OWNER ghi PAYMENT thủ công. Không sửa/xóa trực tiếp giao dịch đã xác nhận.
 Đề xuất điều chỉnh sai bằng VOID có lý do/actor/time, giữ bản gốc; tổng bỏ
 giao dịch VOID, kiểm lại tổng refund không vượt nhận hợp lệ. Cần duyệt mục15.
@@ -227,10 +231,13 @@ khác payload trả409 `idempotency_conflict`; kiểm auth hiện tại trước
 Receipt cùng transaction với item/reservation/payment/audit; lỗi rollback hết.
 Không coi disable nút hoặc optimistic locking đủ ngăn payment lặp.
 
-Cancel lưu lý do, actor/time và giải phóng toàn bộ tồn một lần. Tiền đã nhận
-vẫn còn trong sổ, không tự REFUND/VOID hoặc coi hoàn xong. Đề xuất đơn đã hủy
-có cờ/chỉ báo số tiền cần hoàn, chỉ cho REFUND/điều chỉnh hợp lệ sau hủy;
-không nhận tiền mới. Quy tắc giữ cọc/hoàn hết và complete ở mục15.
+Hủy trước gửi lưu lý do/actor/time và hoàn phần tồn đang giữ đúng một lần.
+Hoàn đơn sau thất bại chỉ nhập lại tồn khi chủ xác nhận hàng thực nhận; không
+tự cộng khi đơn bị trả. MANUAL không cập nhật kho web; không cộng phần đã nhập.
+**User chốt:** chỉ ghi REFUND khi admin xác nhận hoàn thực tế, nhập số tiền/thời
+gian/phương thức. Không tự hoàn hết, tự giữ cọc hoặc coi đổi trạng thái là hoàn tiền.
+Tiền cần hoàn/giữ lại do chủ quyết định thủ công theo từng trường hợp, lưu lý do;
+đơn hủy/hoàn vẫn xem tiền còn giữ, chỉ REFUND/điều chỉnh hợp lệ, không nhận tiền mới.
 
 ## 11. Chốt giao, J&T và snapshot
 
@@ -238,35 +245,41 @@ Người nhận mặc định từ customer, sửa riêng cho đơn. Validate t�
 trắng, SĐT theo CustomerValidation hiện hành (+84→0), địa chỉ≤500 không trắng.
 Không ghi đè hồ sơ customer khi sửa địa chỉ giao. Không bắt có SĐT lúc DRAFT.
 
-Finalize: ≥1item, giá/quantity/weight hợp lệ, đủ reservation (DRAFT tạo mới,
+Finalize lần đầu: ≥1item, giá/quantity/weight hợp lệ, đủ reservation (DRAFT tạo mới,
 KEEPING tái dùng), parcelWeight>0 hết needsReview, đủ người nhận và shipping.
 Backend tính/chốt declaredValue=goodsTotal; không gồm phí ship, không trừ cọc.
 Ví dụ hàng650.000−giảm50.000, ship35.000, cọc100.000 → khai giá600.000đ.
-Không cho frontend tự ghi declaredValue hoặc paidAmount.
 
 Cấu hình theo bản user cung cấp: J&T Express, EXPRESS, sản phẩm Sách,
 HÀNG HÓA, không gửi tại bưu cục, parcelCount1, không dùng dài/rộng/cao.
-shippingPaymentType: CC_CASH mặc định (người nhận), PP_CASH (người gửi),
-PP_PM (cuối tháng); tách khỏi phương thức thanh toán tiền hàng.
+shippingPaymentType: CC_CASH (người nhận), PP_CASH (người gửi), PP_PM (cuối tháng);
+tách khỏi tiền khách trả tiệm. Tiệm thu ship nên đề xuất mặc định PP_CASH thay
+CC_CASH của bản gốc để tránh khách trả phí hai lần; cần owner chốt mã mặc định.
 **User chốt:** shippingFee do admin nhập thủ công, không tự tra/tính phí J&T;
-nullable khi chưa biết. COD nguyên≥0 mặc định0, admin nhập/xác nhận.
-Đổi hàng/giảm giá/tiền nhận hoặc hoàn làm thay số dư → COD needsReview;
+nullable khi chưa biết ở draft/keep, phải có khi chốt (0 nếu miễn). COD nguyên≥0
+mặc định0, admin nhập/xác nhận; tham khảo cả tiền hàng+ship trừ tiền đã nhận.
+Đổi hàng/giảm giá/phí ship (kể cả gửi lại)/tiền nhận hoặc hoàn → COD needsReview;
 không tự sửa COD. Finalize phải xác nhận COD theo version đang đọc.
 Sau READY có giao dịch làm đổi số dư: đề xuất chặn ship đến khi review COD
 qua command shipping; không tự reopen/chỉnh declaredValue vì nhận thêm cọc.
-Phí ship khách phải trả tiệm và xử lý thay đổi phí sau ship ở mục15.
-
-READY nhập trackingCode và xác nhận bàn giao → SHIPPED, lưu actor/time,
-consume reservation cùng transaction. Bản gốc cho nhập vận đơn khi có;
-đề xuất không bắt trackingCode khi ship, cho bổ sung sau bằng command audit.
-COMPLETED yêu cầu xác nhận giao và đối soát; điều kiện tiền cần chốt ở mục15.
+READY nhập trackingCode do chủ nhập và xác nhận bàn giao → COMPLETED, lưu
+actor/time và consume reservation cùng transaction; không đợi giao thành công
+hoặc nhận đủ tiền. Đề xuất bắt mã vận đơn trước bàn giao; sửa mã có lý do/audit.
+COMPLETED → UNSUCCESSFUL khi chủ ghi hoàn về. Chủ chọn gửi lại: tạo lần giao
+mới READY, giữ item/giá/tồn đã trừ, nhập mã mới và kiểm người nhận/kiện/COD/ship
+rồi bàn giao → COMPLETED. Không ghi đè mất mã/lịch sử lần giao trước.
+Resend kiểm lượng CONSUMED chưa nhập lại, không đòi ACTIVE/reserve/trừ tồn lần nữa.
+Chọn hoàn đơn: xác nhận số lượng CATALOG thực nhập lại (0..quantity từng dòng),
+lưu phần không nhập/lý do, đóng CANCELLED và ghi hoàn tồn một lần; refund riêng.
+Không cho gửi lại đơn đã đóng hoàn/nhập tồn. Phí phát sinh gửi lại nhập thủ công;
+chỉ khoản chủ xác nhận thu thêm khách mới tăng shippingFee/orderTotal, không tự
+thu lại phí cũ. Snapshot mỗi lần giao giữ fee/COD/weight/tracking tại lần đó.
 
 Sau MVP mới xuất .xlsx theo file mẫu J&T gốc: STT, người nhận/SĐT/địa chỉ,
 mã đơn, EXPRESS, không gửi bưu cục, paymentType, Sách/HÀNG HÓA, gram/1000
 thành số Excel kg, ba kích thước trống, số kiện1, COD và declaredValue;
-giao một phần trống. Có lịch sử lô/cảnh báo xuất trùng; xuất không đổi SHIPPED.
-Chưa có file mẫu gốc trong phiên này: không khẳng định mapping/mã dịch vụ
-hoặc kích thước trống đã được J&T chấp nhận; kiểm template thật khi làm export.
+giao một phần trống. Có lịch sử lô/cảnh báo xuất trùng; xuất không đổi trạng thái đơn.
+Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước trống; phải kiểm khi export.
 
 ## 12. Schema logic cần bổ sung
 
@@ -274,9 +287,11 @@ hoặc kích thước trống đã được J&T chấp nhận; kiểm template t
 |---|---|
 | orders | BIGINT id; order_code UNIQUE DH-000001 theo identity/sequence, không MAX+1; customer_id FK; customer_code/name/phone_snapshot; status/fulfillment_type CHECK; version≥0; actor/time |
 | orders — keep | keep_started_at/keep_until TIMESTAMPTZ; keep_extension_count; required_deposit_vnd; deposit_override_reason/actor/time; không unique keep/customer |
-| orders — giao | recipient_name/phone/shipping_address; shipping_provider/service/payment_type; shipping_fee nullable; parcel_weight_grams/overridden/needs_review; parcel_count=1; cod_amount/cod_needs_review; declared_value; tracking_code; shipped/completed/cancelled actor/time; cancellation_reason |
+| orders — giao | recipient_name/phone/shipping_address; shipping_provider/service/payment_type; shipping_fee nullable trước chốt; parcel_weight_grams/overridden/needs_review; parcel_count=1; cod_amount/cod_needs_review; declared_value; tracking_code hiện tại; completed/failed/cancelled actor/time/reason |
 | order_items | id/order_id; source_type; book_copy_id/listing_id nullable theo source; book_code/title_snapshot; unit_price_vnd NOT NULL≥0; quantity>0; unit_weight_grams nullable khi draft; manual_match_override_reason/evidence; created_by/added_at; không unique(order,book) |
-| order_reservation | id/order_id/book_copy_id; quantity>0; state ACTIVE/RELEASED/CONSUMED; timestamps; UNIQUE(order_id,book_copy_id), điều chỉnh row theo tổng item |
+| order_reservation | id/order_id/book_copy_id; quantity>0; state ACTIVE/RELEASED/CONSUMED; timestamps; returned_quantity/restocked_quantity; UNIQUE(order_id,book_copy_id), không nhập lại quá phần đã trừ |
+| order_shipments | id/order_id/attempt_no UNIQUE; state PLANNED/HANDED_OVER/FAILED/ABORTED; snapshot người nhận, fee/COD/weight/provider/service/payment_type/tracking; actor/time/reason; một lần giao hiện hành, một kiện/lần |
+| order_returns | order_id/item_id/quantity_received/quantity_restocked/reason/actor/time/request_id; giữ xác nhận thực nhập và chống nhập trùng, MANUAL không restock web |
 | order_payments | id/order_id; transaction_type; amount>0; payment_method; occurred_at/note; actor/time; void metadata nếu duyệt |
 | order_mutation_receipt | request_id/actor/operation/order_id/fingerprint/kết quả tối thiểu; unique scope; không log raw payload hoặc trả dữ liệu trước auth |
 
@@ -286,7 +301,6 @@ Keep extension và thay đổi giá/quantity/weight/shipping cần audit đủ b
 có cấu trúc; không chỉ đếm extensionCount. S≥0 và hoàn/trừ đúng lượng kiểm dưới
 khóa trong transaction, không giả định constraint liên bảng sẵn có. Index status/created,
 customer/created, keepUntil và reservation book/state; tiền/order và audit target.
-FK không hard delete lịch sử; migration additive thử trên bản sao schema cũ.
 
 ## 13. API, quyền, audit và bảo mật
 
@@ -306,12 +320,13 @@ Page={items,page,size,totalElements,totalPages}, không trả entity trực ti�
 | POST /{id}/keep, /extend-keep | Kiểm cọc/reserve hoặc gia hạn có lý do |
 | POST /{id}/finalize, /reopen | Chốt giao hoặc mở sửa có audit, không PATCH status |
 | PATCH /{id}/shipping | Field whitelist theo trạng thái, review COD/kiện hoặc bổ sung tracking |
-| POST /{id}/ship, /complete, /cancel | Command trạng thái, version/requestId và xác nhận/lý do cần thiết |
+| POST /{id}/ship, /cancel | Bàn giao chuyển COMPLETED hoặc hủy trước gửi; version/requestId |
+| POST /{id}/fail, /return | Ghi không thành công hoặc đóng hoàn/nhập tồn; version/requestId/lý do |
+| POST /{id}/resend, /abort-resend | Chuẩn bị gửi lại hoặc dừng gửi lại về UNSUCCESSFUL, giữ tồn/tiền; version/requestId |
 
 Customer search/create dùng `/api/v1/admin/customers`, không nhân đôi endpoint.
-Order customer history dùng list với customerId; thay placeholder/tổng đơn ở
-customer bằng query phân trang/tổng aggregate, tránh N+1 và chưa tự định nghĩa
-“Tổng số đơn” gồm CANCELLED/DRAFT khi user chưa chốt (mục15).
+Customer history dùng list với customerId, tổng aggregate không N+1;
+phạm vi trạng thái tính “Tổng số đơn” còn ở mục15.
 400 validation/query;401 anonymous;403 quyền/CSRF;404 không tồn tại/khác order;
 409 version/transition/stock/manual-match/idempotency; lỗi `{error,fieldErrors?,
 currentVersion?}` theo convention, không lộ SQL/stack. Item/payment id phải thuộc đơn.
@@ -341,10 +356,11 @@ AC gốc01–20 được giữ qua nhóm kiểm tra sau và bổ sung các case 
 - 05–07: tổng gram đúng, thiếu weight không thành0, override không bị đè,
   sửa quantity/weight buộc review; giá riêng không gây review cân sai.
 - 08–09: keep qua ranh ngày/tháng, hạn+14ngày lịch, thêm sách không gia hạn,
-  gia hạn không vượt một tháng từ đầu; thiếu cọc chỉ OWNER ngoại lệ có lý do;
-  quá hạn không tự nhả tồn. Cách quy đổi tháng cần chốt trước viết test.
+  gia hạn không vượt ngày bắt đầu+30ngày; thiếu cọc chỉ OWNER ngoại lệ có lý do;
+  quá hạn không tự nhả tồn, reopen không reset hạn.
 - 10/14/15: nhiều lần cọc/payment/refund, discount/overpaid/0đ, COD review,
-  khai giá không trừ cọc/ship; retry/time-out không ghi tiền hai lần.
+  tổng phải thu gồm ship, khai giá không gồm ship; hoàn chỉ khi xác nhận thực tế;
+  retry/time-out không ghi tiền hai lần, gửi lại không cộng phí cũ lần nữa.
 - 11/12: hai đơn giành tồn1 chỉ một thành công; nhiều dòng cùng MM cộng đủ;
   keep trừ ngay, ship không trừ nữa, hủy hoàn đúng lượng đã trừ; mọi retry không
   trừ/nhả lặp; hủy còn tiền chưa coi đã hoàn; test hoàn tồn vượt sức chứa legacy.
@@ -354,6 +370,9 @@ AC gốc01–20 được giữ qua nhóm kiểm tra sau và bổ sung các case 
   CSRF, cross-order id, audit rollback, no PII public/cache/log.
 - 20: race edit stock↔reserve/ship, metadata editor cũ, trash/purge có FK,
   giữ legacy variant UUID/tên/thứ tự; public/Home/sale/wishlist/SEO/cache nhất quán.
+- Bổ sung16/11: bàn giao→COMPLETED dù tiền chưa đủ; fail không tự hoàn tồn/tiền;
+  resend/abort giữ lịch sử mã/tồn, COD review khi đổi phí; return nhập thực tế, retry không
+  nhập trùng, không resend sau restock; reopen trước gửi theo đúng loại đơn.
 
 DoD: PostgreSQL integration thật cho transaction/concurrency/migration/RBAC,
 frontend test tính tiền/weight/review/errors/permissions; build SSR/Workers;
@@ -368,29 +387,14 @@ main/deploy theo workflow. Chưa lập implementation plan, không tự migrate 
 
 ## 15. Quyết định đã chốt và phần còn cần làm rõ
 
-Đã chốt16/11: keep trừ tồn ngay; tạm chỉ admin (OWNER hiện có); phí ship nhập
-tay; tổng keep kể cả gia hạn tối đa một tháng từ đầu, đã gồm hai tuần keep.
+Đã chốt16/11: giá cụ thể từng cuốn, keep trừ tồn ngay, chỉ admin, tiệm thu cả
+ship nhập tay; hoàn tiền chỉ xác nhận khi thực hoàn; bàn giao→Hoàn tất và nhập
+mã vận đơn; chủ ghi Không thành công rồi gửi lại/mã mới hoặc hoàn/nhập tồn.
+Reopen trước gửi theo đề xuất đã duyệt; trần keep30ngày gồm14ngày đầu.
+User đã thay tiêu chí hoàn tất/đối soát và mở xử lý hoàn thủ công của bản gốc.
 
-Những điểm dưới đây **chưa được duyệt**, không hiểu câu chốt từng phần là duyệt hết:
-1. **Thu phí ship:** nhập tay đã chốt, nhưng cần phân biệt khách trả ship trực
-   tiếp J&T hay trả cùng tiền sách cho tiệm. Ví dụ hàng500.000, ship30.000,
-   cọc100.000: còn trả tiệm400.000 nếu ship trả J&T;430.000 nếu tiệm thu cả ship.
-   Công thức mục7 hiện mới đề xuất chỉ tính tiền hàng; chưa chốt công thức cuối.
-2. **Hủy và sửa ghi nhận tiền:** khách cọc100.000 rồi hủy, tiệm hoàn hết hay giữ
-   cọc theo tình huống? Hệ thống chỉ ghi đã hoàn khi admin xác nhận hoàn thực tế.
-   Ghi nhầm100.000 thành1.000.000: đề xuất đánh dấu bản ghi sai (VOID), lưu
-   lý do rồi ghi đúng; không xóa dấu vết và không coi đó là hoàn tiền thực tế.
-3. **Hoàn tất đơn:** đề xuất chỉ Hoàn tất khi khách đã nhận và tiền đã đối soát
-   đủ; gửi hàng/COD chưa nhận về vẫn Đã gửi. Có cho còn nợ khi Hoàn tất không?
-4. **Mở lại đơn chờ giao:** KEEP quay KEEPING giữ hạn cũ; đề xuất IMMEDIATE về
-   DRAFT và hoàn tồn, admin được cảnh báo. Chưa chốt có tiếp tục giữ sách trong
-   lúc sửa đơn giao ngay hay không; không áp trần mới vì reopen.
-5. **Một tháng và mặc định phụ:** đề xuất tháng lịch, ví dụ bắt đầu16/11 thì giữ
-   tối đa hết16/12; cuối tháng lấy ngày cuối tháng sau. Nếu ý user là30ngày cần
-   đổi cách tính. Cho sáchẨn còn tồn nhưng chặn Thùng rác; match bỏ Thùng rác;
-   thiếu weight bổ sung trước keep; có tiền/rời DRAFT không đổi khách;
-   cho ship trước, bổ sung mã vận đơn sau; stats theo filter; số đơn mua bỏ
-   DRAFT/CANCELLED, lịch sử giữ đủ. Các giới hạn kỹ thuật ở mục7 vẫn là đề xuất.
-
-Giá bán cụ thể do admin chốt từng cuốn đã được user xác nhận16/11, không còn là
-câu hỏi chọn min/max/sale. Không triển khai phần chưa rõ như thể đã được duyệt.
+Chưa coi là đã duyệt: VOID giao dịch nhập sai; mặc định J&T PP_CASH thay CC_CASH
+vì tiệm thu ship; bắt mã vận đơn trước bàn giao. Các chi tiết này cần owner chốt.
+Các mặc định phụ ở mục4–7/13 vẫn là đề xuất: sáchẨn/Thùng rác, weight trước
+keep, khóa đổi khách, stats theo filter, giới hạn và đếm đơn mua bỏ nháp/hủy/
+không thành công. Không triển khai như đã duyệt khi còn quyết định nghiệp vụ chưa rõ.

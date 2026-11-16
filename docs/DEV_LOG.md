@@ -4613,3 +4613,37 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - C02 đã push dev/f167de5. Phiên này tiếp tục commit/push docs dev; giữ hai
   hero deletions trước đó, không stage; không thay code/migration/deploy.
   Bước tiếp: giải thích bằng ví dụ, chốt cách thu ship trước rồi các điểm còn lại.
+
+### 2026-11-16 - ORDER-SPEC-C04 - Thu ship, hoàn tất khi bàn giao và đơn hoàn
+
+- User chốt tiệm thu ship, refund chỉ ghi khi admin xác nhận thực hoàn,
+  COMPLETED khi đã gửi bên vận chuyển (chủ nhập mã); đơn hoàn đánh dấu Không
+  thành công rồi chủ gửi lại/mã mới hoặc hoàn đơn/cập nhật tồn thủ công.
+  User duyệt reopen theo đề xuất, xác nhận một tháng=30ngày gồm14ngày đầu.
+- Cập nhật ORDER_MANAGEMENT_SPEC/README/PROGRESS. Tổng thu=goodsTotal+ship,
+  khai giá vẫn chỉ goodsTotal; bàn giao→COMPLETED không đợi tiền/COD; bỏ bước
+  SHIPPED riêng, thêm UNSUCCESSFUL và lịch sử lần giao/mã. Gửi lại không trừ
+  tồn lần nữa; đổi thất bại chưa tự cộng tồn hoặc refund; xác nhận hoàn mới nhập
+  số sách thực tế một lần. Thay đổi này mở phạm vi xử lý hoàn thủ công so bản gốc.
+- Không diễn giải refund-confirm thành chính sách tự hoàn hết/giữ cọc. Reopen
+  KEEP giữ hạn, IMMEDIATE về DRAFT/nhả tồn trước lần gửi đầu; trần30ngày không
+  reset. Tiệm thu ship chưa tự chốt mã thanh toán J&T: đề xuất PP_CASH thay
+  CC_CASH để tránh thu hai lần, vẫn chờ owner. VOID và bắt tracking trước gửi
+  là đề xuất chưa coi đã duyệt; chưa viết implementation plan/code/migration.
+- Đang chạy builder check và kiểm docs; chưa chạy test/build/browser vì chỉ
+  tài liệu. Base dev/6c8342d; hai hero deletions giữ nguyên ngoài phạm vi.
+
+### 2026-11-16 - ORDER-SPEC-C05 - Kiểm luồng gửi lại và bàn giao tài liệu
+
+- Builder check phát hiện cần rõ COD review khi đổi phí ship; resend phải dùng
+  lượng CONSUMED chưa hoàn thay vì đòi ACTIVE; READY của lần gửi lại cần đường
+  dừng gửi lại về UNSUCCESSFUL không tự hoàn tồn/tiền. Đã bổ sung cả ba, thêm
+  state lần giao PLANNED/HANDED_OVER/FAILED/ABORTED và command abort-resend.
+- Python kiểm line≤400/local file links/anchor và contract mới PASS;
+  git diff --check PASS. Spec400/README99/PROGRESS400; DEV_LOG ngoại lệ.
+  Kiểm loại bỏ điều kiện hoàn tất phải nhận đủ tiền, bước SHIPPED riêng và
+  trần tháng lịch; không coi source spec là nghiệm thu hành vi runtime.
+- Chưa chạy BE/FE test/build/browser (chỉ docs). Commit/push docs lên dev;
+  không stage hai hero deletions, không sửa code/migrate/deploy/main.
+  Bước tiếp: owner xác nhận mặc định J&T khi tiệm đã thu ship, quy tắc mã vận
+  đơn và VOID nhập sai còn đề xuất ở mục15; sau duyệt spec mới lập plan.
