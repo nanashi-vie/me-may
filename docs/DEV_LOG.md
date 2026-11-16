@@ -4555,3 +4555,41 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   replaced. Commit/push scoped code/tests/docs to dev, no main/deploy; frontend
   needs matching backend release for social fields. Two prior hero asset
   deletions remain local/unmodified/excluded.
+
+### 2026-11-16 - ORDER-SPEC-C01 - Rà soát và chuẩn hóa spec
+
+- User cung cấp Order Management v1.0, yêu cầu đối chiếu code và chuẩn hóa nếu
+  cần; phạm vi phiên là tài liệu, chưa triển khai module hoặc migrate/deploy.
+- Bắt đầu trên dev/035d7ab, fetch origin dev thành công; hai hero WebP đã bị
+  xóa từ trước, giữ nguyên và loại khỏi phạm vi. Đọc README/PROGRESS/checkpoint
+  cuối, MASTER_PLAN/DATA/CUSTOMERS và skill Superpowers brainstorming.
+- Graph me-may không tồn tại; dùng project đã index
+  Users-daoquanghung-Projects-me-may. Đọc source qua search_graph/snippet,
+  trace caller BookVariantStore.save và search_code các consumer availability.
+- Phát hiện: tồn gộp chứ không định danh từng vật thể; giá khoảng; API v1,
+  OWNER ghi/STAFF đọc, customer optional phone/address, audit allowlist chưa
+  hỗ trợ order; chưa có order/reservation. Migration mới nhất trong source V33.
+- Đang soạn ORDER_MANAGEMENT_SPEC, giữ nghiệp vụ gốc và tách đề xuất cần chốt;
+  chưa chạy kiểm tra tài liệu, chưa commit.
+
+### 2026-11-16 - ORDER-SPEC-C02 - Spec chuẩn hóa, giá từng cuốn và review
+
+- User bổ sung: admin chỉnh giá cụ thể từng cuốn khi thêm vào đơn. Spec bắt
+  nhập giá trước lưu dòng, kể cả DRAFT; nhiều bản cùng MM khác giá là nhiều
+  dòng riêng, không tự gộp theo mã. Khoảng giá/sale chỉ tham khảo, không chốt tự động.
+- Thêm docs/ORDER_MANAGEMENT_SPEC.md; đăng ký trong README, cập nhật PROGRESS.
+  Giữ đủ nghiệp vụ/AC01–20; chuẩn hóa API v1, tồn gộp/reservation, customer,
+  transaction/version/idempotency, audit allowlist và snapshot/giờ Việt Nam.
+- Đề xuất còn cần owner chốt ở mục15: tồn khả dụng/public và sáchẨn, quyền,
+  ship thu từ khách, hoàn/VOID/đối soát, reopen/gia hạn và mặc định phụ.
+  Không sửa MASTER_PLAN thành phạm vi đã duyệt, không lập plan/viết code order.
+- Builder check độc lập theo Superpowers: không mất yêu cầu gốc; phát hiện
+  draft cho giá NULL nhưng công thức tổng chưa xử lý thiếu. Đã sửa thành giá
+  cụ thể bắt buộc trước thêm dòng đúng bổ sung user, schema NOT NULL≥0.
+- Kiểm docs tại root: Python kiểm line≤400 cho ba file Markdown thay đổi,
+  local target links và15mục/core contract PASS; git diff --check PASS.
+  Spec376dòng, README99, PROGRESS400; DEV_LOG là ngoại lệ lịch sử.
+  Chưa chạy BE/FE test/build/browser vì chỉ thay tài liệu; chưa test runtime
+  order/reservation/J&T hoặc live, không coi review spec là nghiệm thu feature.
+- Git dev, base035d7ab; hai hero deletions giữ nguyên/không stage. Bước tiếp:
+  commit/push tài liệu lên dev, owner chốt mục15 rồi mới lập implementation plan.
