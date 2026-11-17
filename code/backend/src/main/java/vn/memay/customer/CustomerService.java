@@ -33,7 +33,7 @@ public class CustomerService {
   if(phone!=null){var matches=customers.duplicates(phone,id,0,20);if(matches.totalElements()>0&&!Boolean.TRUE.equals(confirmed))throw new DuplicatePhoneException(matches);}
  }
  @Transactional(readOnly=true)
- public Page<CustomerSummary> list(String q,String status,int page,int size,AdminUser actor){paging(page,size);if(!Set.of("ACTIVE","ARCHIVED","ALL").contains(status))throw new AdminApiException(400,"invalid_request");return customers.list(CustomerValidation.normalizeQuery(q),status,page,size);}
+ public Page<CustomerSummary> list(String q,String status,int page,int size,AdminUser actor){paging(page,size);if(!Set.of("ACTIVE","ARCHIVED","ALL").contains(status))throw new AdminApiException(400,"invalid_request");return customers.list(CustomerValidation.normalizeQuery(q),status,page,size,!jdbc.queryForList("select id from admin_user where id=? and active=true and role='OWNER'",Long.class,actor.getId()).isEmpty());}
  @Transactional(readOnly=true)
  public CustomerDetail detail(long id,AdminUser actor){return current(id,false);}
  @Transactional(readOnly=true)

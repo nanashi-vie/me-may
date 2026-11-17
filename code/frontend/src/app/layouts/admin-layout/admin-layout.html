@@ -93,6 +93,7 @@
       <a routerLink="/admin/customers" routerLinkActive="active" class="nav-item"><span class="nav-text">Khách hàng</span></a>
 
       @if (auth.user()?.role === 'OWNER') {
+        <a routerLink="/admin/orders" routerLinkActive="active" class="nav-item"><span class="nav-text">Đơn hàng</span></a>
         <div class="sidebar-divider" role="separator"></div>
         <div class="nav-group">
           <button type="button" class="nav-item nav-group-btn"

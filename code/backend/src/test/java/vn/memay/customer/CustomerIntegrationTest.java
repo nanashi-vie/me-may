@@ -46,6 +46,11 @@ class CustomerIntegrationTest extends CatalogueTestSupport {
  @Test void searchFiltersAndPagination()throws Exception{
   var a=ownerApi();var b=body("Lan Nguyễn","0987123456");b.put("zaloName","Lan Zalo");b.put("tiktokId","@Special_Tik");b.put("threadsId","@Lan.Books");b.put("note","secret-note");b.put("defaultAddress","secret-address");
   var c=tree(a.send("POST",BASE,json(b),true));
+  var listed=tree(a.send("GET",BASE,null,false)).path("items").get(0);
+  assertThat(listed.path("zaloName").asString()).isEqualTo("Lan Zalo");
+  assertThat(listed.path("tiktokId").asString()).isEqualTo("@Special_Tik");
+  assertThat(listed.path("threadsId").asString()).isEqualTo("@Lan.Books");
+  assertThat(listed.has("note")).isFalse();
   for(String q:List.of("lan","ZALO","Special_Tik","@lan.books","lan.books","%2B84987123456","987123",c.path("customerCode").asString()))assertThat(tree(a.send("GET",BASE+"?q="+q,null,false)).path("totalElements").asLong()).as(q).isEqualTo(1);
   for(String q:List.of("%25","secret-note","secret-address"))assertThat(tree(a.send("GET",BASE+"?q="+q,null,false)).path("totalElements").asLong()).isZero();
   for(String query:List.of("page=-1","size=101","status=BAD"))assertThat(a.send("GET",BASE+"?"+query,null,false).statusCode()).isEqualTo(400);

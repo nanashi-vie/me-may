@@ -1,10 +1,14 @@
 # Tiến độ Mẹ Mây
 
-Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
+Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- ADMIN-FILTER-C03 (14/11): bộ lọc chung /admin/sach, chọn rồi Áp dụng, CSS dropdown cũ;
-  bỏ tổng số ở /sach. FE366/SSR/Workers và browser320–1440 đạt; chưa deploy.
+- ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
+  Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
+  Đã push dev/f4fffb1; 383BE(3skip)/391FE/SSR/Workers/browser/review đạt; [bằng chứng](ORDER_VERIFICATION.md).
+
+- CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
+  FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
@@ -20,17 +24,13 @@ Cập nhật 14/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 - S065-C04 (12/11, dev-ui): Thay iframe Facebook Page Plugin ở Footer bằng thẻ Fanpage native: logo tiệm, tên Sách Ngoại Văn Mẹ Mây và link dẫn trực tiếp Facebook; loại bỏ 2 nút Follow/Share bị lỗi Facebook popup và chấm dứt tình trạng vỡ layout khi page có story. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 - S065-C03 (12/11, dev-ui): Tinh gọn UI trang chi tiết sách (`book-detail`): tiêu đề `<h1>` chỉ hiển thị tên sách (`b.title`), giữ nguyên `<title>` trình duyệt / thẻ SEO đầy đủ NXB và Tác giả; dời toàn bộ khối thông tin cơ bản (`<dl>`) lên trên mô tả sách (`.description`), bổ sung đường kẻ mảnh `border-bottom` ngăn cách rõ ràng. Vitest 50/50 files (297/297 tests PASS), build SSR/Workers đạt 0 warning, 0 error.
 
-- HERO-C23: đã sửa CI thiếu dependency image-worker và bổ sung stderr riêng tư.
-  [PR nháp #44](https://github.com/nanashi-vie/me-may/pull/44),
-  [CI GitHub đạt](https://github.com/nanashi-vie/me-may/actions/runs/43248770015):
-  backend 320/0 lỗi/3 live skip, media 5/5, worker 14/14; không đổi cleanup().
-  Code 8e6db62 đã push dev/dev-ui. QA đã dừng, log đã backup.
-  Gỡ customers vẫn bị chặn primary checkout; cần chuyển chat về Local trước.
-- HERO-C19: autoplayphải→trái/hovervẫnchạy,2mũitên28px hovertrắng,
-  bỏ dots/pausebar; test338đạt, SSR/Workersđạt,4200đãnhận.
-- Dev-ui đã gộp đầyđủ vàodev,2nhánh cùngHEAD; giữ footer/detailUIriêng.
-  Cleanupcustomers bị Codexchặn vì primarycheckout củachat;
-  cần chuyểnchatvềLocal rồiarchive. Artifactsđãbackup ởroot/.local.
+- HERO-C23: CI/worker đã sửa, dev/dev-ui8e6db62; [PR nháp #44](https://github.com/nanashi-vie/me-may/pull/44).
+  [CI đạt](https://github.com/nanashi-vie/me-may/actions/runs/43248770015): BE320/3skip,
+  media5/worker14; không đổi cleanup(). QA dừng/log backup; gỡ customers còn
+  chặn primary checkout, cần chuyển chat về Local. Bằng chứng chi tiết DEV_LOG.
+- HERO-C19: autoplay phải→trái/hover vẫn chạy, mũi tên28px, bỏ dots/pausebar;
+  FE338/SSR/Workers đạt,4200 đã nhận. Dev-ui gộp dev; giữ footer/detail riêng.
+  Cleanup customers cần chuyển chat Local rồi archive; artifacts backup root/.local.
 - Banner hero12/11: [contract](HERO_BANNERS.md) đã triển khai và kiểm QA.
   Tối đa10,5giây, link/sach, khung3:1,3200px/WebP88; saves riêng với kệ.
   FE338đạt, BE319total/3skip, worker13đạt; review2Important đã sửa RED→GREEN,

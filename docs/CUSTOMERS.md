@@ -8,11 +8,11 @@ Nguồn: spec owner cung cấp trong chat và các quyết định bổ sung12/1
 ## 1. Mục tiêu và nguồn quyết định
 
 Quản lý hồ sơ người mua thủ công trong admin, làm nền cho Order Management
-sau này. Khách không cần tài khoản website, OTP, SĐT hay địa chỉ để được tạo.
+trong [ORDERS](ORDERS.md). Khách không cần tài khoản, OTP, SĐT/địa chỉ để tạo.
 Không tự gộp khách hoặc liên kết tài khoản đăng nhập vì cùng SĐT.
 
 Yêu cầu12/11 mở phạm vi quản lý khách hàng theo [MASTER_PLAN](MASTER_PLAN.md);
-không mở phạm vi đơn hàng/thanh toán.
+Order admin được duyệt riêng17/11 tại [ORDERS](ORDERS.md); public không checkout.
 Stack giữ Angular + Spring Boot modular monolith + Spring JDBC/PostgreSQL.
 Quy ước hiện hành theo [ARCHITECTURE](ARCHITECTURE.md) và
 [CATALOGUE](CATALOGUE.md); không thay contract sách/auth.
@@ -62,8 +62,8 @@ Khách chưa đăng nhập không đọc được bất kỳ API khách hàng n�
 Không chỉ ẩn nút: backend bảo vệ toàn bộ route, kể cả duplicates.
 STAFF xem được các field hồ sơ, gồm ghi chú nội bộ, trong khu admin.
 
-Ngoài phạm vi: đơn hàng, checkout, thanh toán, vận chuyển, giữ chỗ, doanh thu,
-lịch sử mua thực tế, VIP/tích điểm, nhập/xuất Excel, nhiều địa chỉ mỗi khách,
+Đơn/giữ tồn/tiền/giao hàng do [ORDERS](ORDERS.md) quản lý, không xử lý trong customer.
+Ngoài phạm vi: checkout public, doanh thu/VIP/tích điểm, Excel, nhiều địa chỉ mỗi khách,
 đồng bộ tài khoản website/danh bạ hoặc nền tảng xã hội, SMS/OTP.
 Không xóa cứng khách qua giao diện hoặc cung cấp API DELETE trong module.
 
@@ -132,9 +132,12 @@ Không OTP, không xác minh số có người sử dụng thực tế, không d
 Route `/admin/customers`; mục **Khách hàng** trong sidebar cho OWNER/STAFF.
 Tiêu đề **Khách hàng**, nút OWNER **+ Thêm khách mới**.
 Toolbar: một ô tìm kiếm; trạng thái Đang hoạt động/Đã lưu trữ/Tất cả,
-mặc định ACTIVE. Bảng: Mã KH, Tên khách hàng, Số điện thoại, Địa chỉ mặc định
-rút gọn (có thể xem đầy đủ bằng focus/chạm), Ngày tạo, Thao tác.
-OWNER có Xem/Sửa/Lưu trữ hoặc Khôi phục theo trạng thái; STAFF chỉ Xem.
+mặc định ACTIVE. Bảng (đổi15/11): Khách hàng (tên + mã KH), Zalo, TikTok,
+Threads, Số điện thoại, Tổng số đơn hàng. Không có cột Thao tác; bấm tên mở
+chi tiết, OWNER sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem.
+Ba tên tài khoản lấy từ API danh sách, field rỗng hiện —; không gọi từng hồ sơ.
+Cột tổng đơn chỉ OWNER: orderCount thật theo [ORDERS](ORDERS.md#13-api-quyền-audit-và-bảo-mật),
+0 khi chưa có đơn được tính; STAFF ẩn cột và API trả null, không query order.
 
 Tìm chuỗi con trên mã/tên/SĐT/ba username; không phân biệt hoa/thường,
 trim và gom khoảng trắng thừa ở truy vấn. Không hứa tìm không dấu.
@@ -185,8 +188,9 @@ thao tác keyboard, vùng thông báo và loading phù hợp screen reader.
 Route chi tiết `/admin/customers/:id`: mã, tên, SĐT, địa chỉ, Tên Zalo,
 Tên TikTok, Tên Threads, ghi chú, trạng thái, thời gian tạo/cập nhật.
 OWNER có Chỉnh sửa/Lưu trữ/Khôi phục; mọi người có Quay về danh sách.
-Phần lịch sử đơn chỉ hiển thị “Khách hàng chưa có đơn hàng.”; không tạo bảng,
-query đơn hoặc nút Tạo đơn có thể dùng. 404 có thông báo và đường về danh sách.
+OWNER xem lịch sử thật qua order list customerId/paging20 và có Tạo đơn chọn sẵn ID.
+Chỉ hiện chưa có đơn khi API trả rỗng; lỗi có Retry. STAFF ẩn section/không gọi API order.
+404 có thông báo và đường về danh sách.
 
 ## 7. Trùng SĐT, lưu trữ và cập nhật đồng thời
 
@@ -236,7 +240,8 @@ CustomerWrite chỉ fullName/phone/defaultAddress/zaloName/tiktokId/threadsId/no
 Ví dụ username: zaloName="Lan Nguyễn", tiktokId="@lanbooks", threadsId="@lanbooks".
 Create bỏ optional coi NULL; PUT thay đủ field, optional bỏ/rỗng thành NULL.
 Detail gồm id/customerCode, bảy field, status/version/createdBy/createdAt/updatedAt.
-Summary chỉ id/customerCode/fullName/phone/defaultAddress/status/version/createdAt.
+Summary gồm id/customerCode/fullName/phone/defaultAddress/zaloName/tiktokId/
+threadsId/status/version/createdAt/orderCount; không trả note. Count OWNER, STAFF null.
 DuplicateSummary chỉ id/customerCode/fullName/phone/status.
 Page = {items,page,size,totalElements,totalPages}; BIGINT ID JSON string.
 
@@ -260,11 +265,11 @@ Text thuần cho mọi field, không innerHTML; SQL parameterized, sort allowlis
 Audit metadata không chứa phone/địa chỉ/note/username hoặc toàn bộ payload.
 Không dùng dữ liệu khách thật trong fixture/screenshot/log kiểm thử.
 
-Tương lai: order tham chiếu customer.id ổn định, không tên/SĐT; chỉ ACTIVE
+Order tham chiếu customer.id ổn định theo [ORDERS](ORDERS.md); chỉ ACTIVE
 được chọn mặc định khi tạo mới, ARCHIVED vẫn giữ lịch sử cũ. Form tạo trả id
 và hồ sơ để caller chọn ngay. Tìm khách sau này gồm mã/tên/SĐT/ba username.
 Order lưu snapshot tên/SĐT/địa chỉ giao hàng, không đọc field hiện tại để tái
-dựng lịch sử. Lượt chốt/đặt cọc/thanh toán/kiện giao là phạm vi spec order sau.
+dựng lịch sử. Chốt/cọc/thanh toán/kiện giao theo contract ORDERS riêng.
 
 ## 10. Acceptance và Definition of Done
 
@@ -279,7 +284,7 @@ dựng lịch sử. Lượt chốt/đặt cọc/thanh toán/kiện giao là ph�
 | 07 | ACTIVE xác nhận lưu trữ → ARCHIVED, giữ dữ liệu, ẩn ở ACTIVE |
 | 08 | Khôi phục ARCHIVED → ACTIVE, giữ nguyên mã |
 | 09 | STAFF đọc/tìm được; POST/PUT/PATCH403 kể cả gọi API trực tiếp |
-| 10 | ID ổn định phục vụ FK tương lai; không tạo bảng/order query/logic ngoài scope |
+| 10 | ID ổn định cho order FK; OWNER có count/history, STAFF không nhận dữ liệu order |
 | 11 | Create song song → customer_code không trùng, không MAX+1 |
 | 12 | Anonymous API401/URL không lộ hồ sơ; public HTML/API/cache không chứa PII |
 | 13 | Ba username tùy chọn, trim/NULL/giới hạn đúng; URL bị từ chối, text không thành link |

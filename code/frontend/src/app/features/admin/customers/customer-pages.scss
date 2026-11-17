@@ -139,23 +139,8 @@ th:last-child {
   display: flex;
   align-items: center;
 }
-.address {
-  max-width: 220px;
-}
-.address summary {
-  cursor: pointer;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.address[open] summary {
-  white-space: normal;
-}
-.address p {
-  font-size: 0.85rem;
-  margin: 6px 0;
-  overflow-wrap: anywhere;
-}
+.social-account { min-width: 100px; max-width: 180px; overflow-wrap: anywhere; }
+.order-count { text-align: center; font-variant-numeric: tabular-nums; }
 .pagination {
   display: flex;
   align-items: center;

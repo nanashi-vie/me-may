@@ -1,6 +1,4 @@
 import { signal } from '@angular/core';
-import { By } from '@angular/platform-browser';
-import { CustomerForm } from '../customer-form/customer-form';
 import { TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, Subject, of } from 'rxjs';
@@ -13,6 +11,9 @@ const row = {
   customerCode: 'KH-000001',
   fullName: 'Lan',
   phone: '0987123456',
+  zaloName: 'Lan Zalo',
+  tiktokId: '@lan.tik',
+  threadsId: '@lan.books',
   defaultAddress: null,
   status: 'ACTIVE' as const,
   version: 0,
@@ -55,6 +56,14 @@ describe('CustomerList', () => {
     f.detectChanges();
     return { f, c: f.componentInstance, api, query, nav, user, epoch };
   }
+  it('shows social accounts from the list without per-customer detail requests', async () => {
+    const {f, api} = setup();
+    await f.whenStable();f.detectChanges();
+    const cells=Array.from(f.nativeElement.querySelectorAll('tbody td')) as HTMLElement[];
+    expect(cells.slice(1,5).map(c=>c.textContent?.trim())).toEqual(['Lan Zalo','@lan.tik','@lan.books','0987123456']);
+    expect(cells[5].textContent?.trim()).toBe('—');
+    expect(api.detail).not.toHaveBeenCalled();
+  });
   it('preserves route filters and resets page on filter changes', async () => {
     const { f, c, api, nav } = setup();
     await f.whenStable();
@@ -102,8 +111,7 @@ describe('CustomerList', () => {
     f.detectChanges();
     expect(f.nativeElement.textContent).not.toContain('Thêm khách mới');
     expect(f.nativeElement.textContent).not.toContain('Nhấn');
-    c.changeCustomerStatus(row);
-    expect(api.setStatus).not.toHaveBeenCalled();
+    expect(f.nativeElement.querySelector('.row-actions')).toBeNull();
   });
   it('searches the same previous term again after a route reset', async () => {
     const { f, c, query, nav } = setup();
@@ -120,27 +128,13 @@ describe('CustomerList', () => {
       expect.objectContaining({ queryParams: expect.objectContaining({ q: 'Mai', page: 0 }) }),
     );
   });
-  it('does not let an old edit response replace a new create draft', async () => {
-    const { f, c, api } = setup();
-    await f.whenStable();
-    const pending = new Subject<any>();
-    api.detail.mockReturnValue(pending as any);
-    c.edit(row);
-    c.openNew();
-    const editor = f.debugElement.query(By.directive(CustomerForm))
-      .componentInstance as CustomerForm;
-    editor.form.controls.fullName.setValue('New draft');
-    editor.form.markAsDirty();
-    pending.next({
-      ...row,
-      zaloName: null,
-      tiktokId: null,
-      threadsId: null,
-      note: null,
-      createdBy: '1',
-      updatedAt: row.createdAt,
-    });
-    expect(editor.customer()).toBeNull();
-    expect(editor.form.controls.fullName.value).toBe('New draft');
+  it('opens customer details through the name and has no row actions', async () => {
+    const {f} = setup();await f.whenStable();f.detectChanges();
+    const root=f.nativeElement as HTMLElement;
+    expect(Array.from(root.querySelectorAll('th')).map(h=>h.textContent?.trim())).toEqual([
+      'Khách hàng','Zalo','TikTok','Threads','Số điện thoại','Tổng số đơn hàng']);
+    expect(root.querySelector('tbody button')).toBeNull();
+    expect(root.querySelector('a.customer-name')?.getAttribute('href')).toContain('/admin/customers/1');
+    expect(root.querySelector('a.customer-name')?.textContent).toContain('Lan');
   });
 });

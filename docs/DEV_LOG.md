@@ -4508,3 +4508,461 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Contract consolidated in DESIGN (399lines); plan removed, README updated;
   PROGRESS stays400lines. Scoped code/tests/docs commit/push to dev; existing
   two hero sample asset deletions remain local/excluded. No main/deploy.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C01 - Requested table and nav spacing
+
+- User requests columns Khách hàng/Zalo/TikTok/Threads/Số điện thoại/Tổng số
+  đơn hàng; clarified increasing horizontal gaps in public navbar.
+- Implement existing social fields in list API/DTO/template, preserve actions
+  and permissions. Orders column shows — (not implemented), no order schema.
+- Public desktop nav gap increase; tablet stays compact and mobile unchanged.
+  Scoped quick presentation/API addition on dev; two existing hero deletions
+  remain excluded. Tests/build/browser pending.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C02 - Details own actions
+
+- User clarified removing the entire Thao tác column: only customer name link
+  opens detail for edit/archive. Removed dead inline edit/archive handlers;
+  list retains create modal and unsaved creation guard. Detail unchanged.
+- RED frontend social mapping and then no-actions regression observed; backend
+  integration RED confirms list omitted social fields. Implementation now
+  projects all three existing fields without N+1/detail calls or note exposure.
+- First full frontend367PASS; final tests/build/browser pending new refinement.
+
+### 2026-11-15 - CUSTOMER-COLUMNS-C03 - Verified and handoff
+
+- Final /admin/customers columns: Khách hàng (name links detail, code below),
+  Zalo/TikTok/Threads/Số điện thoại/Tổng số đơn hàng. No action column/buttons.
+  Blank social/phone values and future order count show —, never fabricated0.
+- List SQL/DTO/model now includes three existing account names, no N+1, no new
+  schema/order APIs. Detail OWNER edit/archive/restore and STAFF view unchanged.
+  List inline handlers removed; create modal and dirty navigation guard remain.
+- Navbar desktop gap clamp(3rem,5vw,4.5rem), tablet≤960 retains1.15rem; mobile
+  menu unchanged. Existing CSS/fonts/design retained; no dependencies.
+- Final FE code/frontend npm test61files/367PASS; SSR and Workers builds PASS
+  without warning/error. Backend code/backend mvn -q test on isolated ephemeral
+  PostgreSQL17 localhost55446/me_may_test:320tests/0failure/0error/3live skips.
+  Focused backend RED for missing social fields and frontend RED for social
+  mapping/no-actions observed before respective implementations.
+- Chromium fixture QA at1440:6columns/order placeholder, nullable names/phone,
+  long username wrap, no row buttons, name→detail with Sửa PASS. Customer page
+ 390/1024 no outer overflow; table scrolls. Public nav1440/1024/768 gap and
+  same-row/no-overflow assertions PASS. Screenshots /tmp/memay-customer-columns-
+  desktop.png and /tmp/memay-navbar-spacing.png. No live customer data used.
+- QA initially expected Chỉnh sửa; actual existing detail label Sửa, corrected
+  browser check only. Independent final review including removal: no findings.
+- Contract CUSTOMERS/DESIGN updated; docs stay≤400lines, PROGRESS snapshot
+  replaced. Commit/push scoped code/tests/docs to dev, no main/deploy; frontend
+  needs matching backend release for social fields. Two prior hero asset
+  deletions remain local/unmodified/excluded.
+
+### 2026-11-16 - ORDER-SPEC-C01 - Rà soát và chuẩn hóa spec
+
+- User cung cấp Order Management v1.0, yêu cầu đối chiếu code và chuẩn hóa nếu
+  cần; phạm vi phiên là tài liệu, chưa triển khai module hoặc migrate/deploy.
+- Bắt đầu trên dev/035d7ab, fetch origin dev thành công; hai hero WebP đã bị
+  xóa từ trước, giữ nguyên và loại khỏi phạm vi. Đọc README/PROGRESS/checkpoint
+  cuối, MASTER_PLAN/DATA/CUSTOMERS và skill Superpowers brainstorming.
+- Graph me-may không tồn tại; dùng project đã index
+  Users-daoquanghung-Projects-me-may. Đọc source qua search_graph/snippet,
+  trace caller BookVariantStore.save và search_code các consumer availability.
+- Phát hiện: tồn gộp chứ không định danh từng vật thể; giá khoảng; API v1,
+  OWNER ghi/STAFF đọc, customer optional phone/address, audit allowlist chưa
+  hỗ trợ order; chưa có order/reservation. Migration mới nhất trong source V33.
+- Đang soạn ORDER_MANAGEMENT_SPEC, giữ nghiệp vụ gốc và tách đề xuất cần chốt;
+  chưa chạy kiểm tra tài liệu, chưa commit.
+
+### 2026-11-16 - ORDER-SPEC-C02 - Spec chuẩn hóa, giá từng cuốn và review
+
+- User bổ sung: admin chỉnh giá cụ thể từng cuốn khi thêm vào đơn. Spec bắt
+  nhập giá trước lưu dòng, kể cả DRAFT; nhiều bản cùng MM khác giá là nhiều
+  dòng riêng, không tự gộp theo mã. Khoảng giá/sale chỉ tham khảo, không chốt tự động.
+- Thêm docs/ORDER_MANAGEMENT_SPEC.md; đăng ký trong README, cập nhật PROGRESS.
+  Giữ đủ nghiệp vụ/AC01–20; chuẩn hóa API v1, tồn gộp/reservation, customer,
+  transaction/version/idempotency, audit allowlist và snapshot/giờ Việt Nam.
+- Đề xuất còn cần owner chốt ở mục15: tồn khả dụng/public và sáchẨn, quyền,
+  ship thu từ khách, hoàn/VOID/đối soát, reopen/gia hạn và mặc định phụ.
+  Không sửa MASTER_PLAN thành phạm vi đã duyệt, không lập plan/viết code order.
+- Builder check độc lập theo Superpowers: không mất yêu cầu gốc; phát hiện
+  draft cho giá NULL nhưng công thức tổng chưa xử lý thiếu. Đã sửa thành giá
+  cụ thể bắt buộc trước thêm dòng đúng bổ sung user, schema NOT NULL≥0.
+- Kiểm docs tại root: Python kiểm line≤400 cho ba file Markdown thay đổi,
+  local target links và15mục/core contract PASS; git diff --check PASS.
+  Spec376dòng, README99, PROGRESS400; DEV_LOG là ngoại lệ lịch sử.
+  Chưa chạy BE/FE test/build/browser vì chỉ thay tài liệu; chưa test runtime
+  order/reservation/J&T hoặc live, không coi review spec là nghiệm thu feature.
+- Git dev, base035d7ab; hai hero deletions giữ nguyên/không stage. Bước tiếp:
+  commit/push tài liệu lên dev, owner chốt mục15 rồi mới lập implementation plan.
+
+### 2026-11-16 - ORDER-SPEC-C03 - Chốt từng phần, làm rõ nghiệp vụ còn lại
+
+- User chốt: keep trừ tồn ngay; tạm chỉ admin; ship nhập thủ công; tổng thời
+  gian keep kể cả gia hạn tối đa một tháng đã gồm hai tuần đầu. Còn lại user
+  chưa rõ đề xuất, không được coi là duyệt toàn bộ mục15.
+- Cập nhật ORDER_MANAGEMENT_SPEC/README/PROGRESS. Đổi mô hình stock thành
+  lượng còn bán, keep trừ ngay, ship không trừ lần hai, hủy/giảm item hoàn lại
+  đúng phần đã trừ. Không lấy stock trừ reservation lần nữa. Giữ pooled legacy,
+  khóa/version/idempotency và kiểm hoàn tồn khi dòng legacy hết sức chứa.
+- Admin ánh xạ OWNER hiện có, STAFF chặn cả GET order; không tạo role ADMIN.
+  Ship nhập tay chưa quyết định phí khách trả J&T hay trả tiệm. Trần một tháng
+  từ keepStartedAt đã chốt; tháng lịch hay30ngày còn cần xác nhận, ví dụ16/11
+  đến hết16/12 chỉ là đề xuất. Hoàn cọc/VOID/complete/reopen vẫn chờ chốt.
+- Kiểm tài liệu root bằng Python: line≤400/local links và anchor mục15,
+  không còn công thức S−R/R≤S cũ; git diff --check PASS. Spec396dòng;
+  README99/PROGRESS400, DEV_LOG ngoại lệ. Chưa chạy runtime/test/build vì chỉ docs.
+- C02 đã push dev/f167de5. Phiên này tiếp tục commit/push docs dev; giữ hai
+  hero deletions trước đó, không stage; không thay code/migration/deploy.
+  Bước tiếp: giải thích bằng ví dụ, chốt cách thu ship trước rồi các điểm còn lại.
+
+### 2026-11-16 - ORDER-SPEC-C04 - Thu ship, hoàn tất khi bàn giao và đơn hoàn
+
+- User chốt tiệm thu ship, refund chỉ ghi khi admin xác nhận thực hoàn,
+  COMPLETED khi đã gửi bên vận chuyển (chủ nhập mã); đơn hoàn đánh dấu Không
+  thành công rồi chủ gửi lại/mã mới hoặc hoàn đơn/cập nhật tồn thủ công.
+  User duyệt reopen theo đề xuất, xác nhận một tháng=30ngày gồm14ngày đầu.
+- Cập nhật ORDER_MANAGEMENT_SPEC/README/PROGRESS. Tổng thu=goodsTotal+ship,
+  khai giá vẫn chỉ goodsTotal; bàn giao→COMPLETED không đợi tiền/COD; bỏ bước
+  SHIPPED riêng, thêm UNSUCCESSFUL và lịch sử lần giao/mã. Gửi lại không trừ
+  tồn lần nữa; đổi thất bại chưa tự cộng tồn hoặc refund; xác nhận hoàn mới nhập
+  số sách thực tế một lần. Thay đổi này mở phạm vi xử lý hoàn thủ công so bản gốc.
+- Không diễn giải refund-confirm thành chính sách tự hoàn hết/giữ cọc. Reopen
+  KEEP giữ hạn, IMMEDIATE về DRAFT/nhả tồn trước lần gửi đầu; trần30ngày không
+  reset. Tiệm thu ship chưa tự chốt mã thanh toán J&T: đề xuất PP_CASH thay
+  CC_CASH để tránh thu hai lần, vẫn chờ owner. VOID và bắt tracking trước gửi
+  là đề xuất chưa coi đã duyệt; chưa viết implementation plan/code/migration.
+- Đang chạy builder check và kiểm docs; chưa chạy test/build/browser vì chỉ
+  tài liệu. Base dev/6c8342d; hai hero deletions giữ nguyên ngoài phạm vi.
+
+### 2026-11-16 - ORDER-SPEC-C05 - Kiểm luồng gửi lại và bàn giao tài liệu
+
+- Builder check phát hiện cần rõ COD review khi đổi phí ship; resend phải dùng
+  lượng CONSUMED chưa hoàn thay vì đòi ACTIVE; READY của lần gửi lại cần đường
+  dừng gửi lại về UNSUCCESSFUL không tự hoàn tồn/tiền. Đã bổ sung cả ba, thêm
+  state lần giao PLANNED/HANDED_OVER/FAILED/ABORTED và command abort-resend.
+- Python kiểm line≤400/local file links/anchor và contract mới PASS;
+  git diff --check PASS. Spec400/README99/PROGRESS400; DEV_LOG ngoại lệ.
+  Kiểm loại bỏ điều kiện hoàn tất phải nhận đủ tiền, bước SHIPPED riêng và
+  trần tháng lịch; không coi source spec là nghiệm thu hành vi runtime.
+- Chưa chạy BE/FE test/build/browser (chỉ docs). Commit/push docs lên dev;
+  không stage hai hero deletions, không sửa code/migrate/deploy/main.
+  Bước tiếp: owner xác nhận mặc định J&T khi tiệm đã thu ship, quy tắc mã vận
+  đơn và VOID nhập sai còn đề xuất ở mục15; sau duyệt spec mới lập plan.
+
+### 2026-11-17 - ORDER-SPEC-C06 - Chốt tiệm trả J&T từng đơn
+
+- User xác nhận bill khách đã gồm hàng+ship, tiệm thanh toán J&T từng đơn.
+  Cập nhật ORDER_MANAGEMENT_SPEC mục11/15: mặc định PP_CASH, thay đề xuất
+  CC_CASH gốc; không mặc định PP_PM cuối tháng. Bill/orderTotal vẫn gồm ship,
+  khai giá chỉ tiền hàng, COD vẫn admin xác nhận, không thu ship hai lần.
+- README/PROGRESS cập nhật quyết định và ngày. Còn VOID nhập sai/mã vận đơn
+  bắt buộc trước bàn giao là đề xuất; không diễn giải xác nhận ship là duyệt hết.
+- Kiểm root: Python line≤400/local links và contract PP_CASH PASS;
+  git diff --check PASS. Chỉ docs, chưa chạy BE/FE test/build/browser.
+- Base dev/702ba86; commit/push docs dev, không code/migration/deploy/main;
+  hai hero deletions có sẵn giữ nguyên ngoài stage. Bước tiếp: hoàn tất duyệt
+  các đề xuất còn lại rồi mới lập implementation plan.
+
+### 2026-11-17 - ORDER-PLAN-C01 - Spec được duyệt, tham khảo UI và lập plan
+
+- User duyệt spec và gửi ba ảnh UI tham khảo: danh sách đơn, chi tiết keep,
+  form MANUAL. Ghi nhận duyệt cả các đề xuất còn lại trong spec hiện hành,
+  không mở thêm checkout/public order hoặc integration J&T/Excel.
+- Lưu nguyên ba ảnh trong docs/assets/order-management, không dùng tên/SĐT
+  trong ảnh làm dữ liệu thật/seed/test. Ảnh chỉ tham khảo bố cục, không thay
+  contract giá từng cuốn/ship/payment/trạng thái/thời hạn đã chốt.
+- Đọc Superpowers writing-plans; lập ORDER_MANAGEMENT_PLAN theo convention
+  docs root hiện có, chưa code. Graph transport closed hai lần; fallback đọc
+  source trực tiếp theo AGENTS. Đối chiếu JDBC customer, CatalogueTestSupport,
+  PgTestData, stock/trash/purge, auth OWNER/STAFF, AdminHttp, route/layout/customer.
+- Base dev/8cf380d, fetch origin dev đạt; hai hero deletions giữ nguyên.
+  Đang cập nhật trạng thái duyệt/master baseline, UI refs và task/test interfaces.
+  Chưa kiểm tài liệu/commit, chưa chạy runtime/test/build/browser.
+
+### 2026-11-17 - ORDER-PLAN-C02 - Plan tự rà và bàn giao
+
+- Thêm ORDER_MANAGEMENT_PLAN với11task RED→GREEN→commit, interface/file map,
+  migration/test DB cách ly, receipts/audit/OWNER, stock chung với editor/purge,
+  item/match không extension, keep/payment/shipping/return, API/UI/customer và QA.
+- Tự review theo writing-plans (không dispatch reviewer cho plan): phủ spec1–15
+  và năm Review focus có test gắn task. Chốt response MutationResult ổn định
+  cho replay rồi GET detail, query/header DELETE version/requestId để tái dùng
+  AdminHttp, fuzzy match bounded200candidate có ngưỡng0.8 và ceiling được nêu.
+- Spec trạng thái Approved, gồm VOID/tracking/mặc định phụ đã được user duyệt;
+  master ghi mở rộng admin thay baseline no-order, không đổi public/gate cũ.
+  UI3ảnh là tham khảo bố cục, không lấy dữ liệu ảnh làm seed hoặc logic thời gian.
+- Kiểm root: git diff --check PASS; Python docs≤400/local links/đủ11task,
+  spec Approved không còn pending approval và PNG copy byte-identical PASS.
+  Plan331/spec400/master400/README99/PROGRESS400; DEV_LOG ngoại lệ lịch sử.
+  Không chạy BE/FE build/test/browser vì chỉ soạn tài liệu, không tuyên bố đã
+  chạy feature hoặc migration; graph transport vẫn unavailable, đã dùng fallback.
+- Commit/push docs+ảnh dev, không stage2hero deletions, không code/deploy/main.
+  Bước tiếp: owner xem plan và chọn Native hoặc Subagent-driven trước code theo
+  writing-plans, đề xuất Native do các task chia sẻ transaction/version/tồn.
+
+### 2026-11-17 - ORDER-EXEC-C01 - Dọn customers và bắt đầu thực thi tuần tự
+
+- User duyệt plan, chọn triển khai tuần tự và yêu cầu dọn customers/me-may trước.
+  Worktree sạch, branch codex/hero-banners45bc83d đã trong dev, không ahead.
+  Native list_artifacts không có attachment để archive; dùng git worktree remove
+  sau backup48file ignored, surefire reports và wrangler state tại
+  .local/worktree-cleanup/customers-20261117. Xóa checkout và branch đã gộp đạt;
+  giữ dev-ui, hai hero deletions tại local vẫn không stage.
+- Dùng executing-plans/TDD; branch codex/order-management từ3898e40. Không tạo
+  managed worktree mới sau cleanup; ledger ghi rủi ro isolation. Native tuần tự,
+  không delegate implementer; fresh reviewer cuối theo skill.
+- Khởi tạo PostgreSQL QA ephemeral memay-order-test,127.0.0.1:55447/me_may_test;
+  không dùng my-postgres hoặc dịch vụ memay-local-images đang chạy. Baseline
+  BE/FE đang chạy; task1 chưa có code. Ledger/brief/log riêng cho plan trong
+  .superpowers/sdd/ORDER_MANAGEMENT_PLAN, wrapper QA ignored .local/orders.
+- Sandbox chặn Git ref/Docker socket, rerun bằng escalation đúng phạm vi đạt.
+  Chưa triển khai/migrate môi trường thật, không main/deploy.
+
+### 2026-11-17 - ORDER-EXEC-C02 - Task1 schema và phép tính
+
+- Baseline BE320/0failure/0error/3live skips đạt; FE lần đầu366/367 do spy
+  ShippingPromoDialog giữ5calls, chạy riêng6/6 rồi toàn bộ367/367 đạt mà không
+  đổi code. Ghi nhận lỗi isolation không ổn định có sẵn, không che bằng skip.
+- Task1 thêm V34 bảy bảng order/ledger/reservation/shipment/return/receipt,
+  DTO/repository JDBC và checked math/keep clock; test fixtures synthetic và
+  cleanup FK trong PgTestData. Không chạy Flyway trên DB thật.
+- RED migration thiếuV34, validation thiếu implementation; GREEN final focused
+  OrderMigrationTest/OrderValidationTest7test đạt (run-be-8). Kiểm overflow,
+  ship chưa biết/weight chưa biết, cọc/refund/VOID, thời hạn HCM/leap day và
+  migrate33→34 giữ sách/khách/FK/constraint. Full backend regression đang chạy.
+- Code branch codex/order-management; task1 commit cùng docs bàn giao, task2
+  chỉ bắt đầu khi verification task1 đạt. Hai hero deletions chưa stage.
+
+### 2026-11-17 - ORDER-EXEC-C03 - Task2 transaction, quyền và audit
+
+- Task1 full backend327test/0failure/0error/3live skips đạt, ledger task1 complete.
+- Task2 RED: STAFF GET404 thay vì403, wrapper chưa tồn tại. Thêm matcher OWNER
+  trước generic admin GET, transactional receipt/fingerprint canonical JSON,
+  lock/version, immutable MutationResult và audit order chỉ field số/ref đã lọc.
+- First focused run tìm ra @Repository AOP proxy không cho đọc package field
+  trực tiếp; JDBC-only OrderRepository dùng @Component như BookVariantStore,
+  JdbcTemplate vẫn dịch lỗi SQL. Audit rollback test siết đúng loại lỗi SQL để
+  không nhận nhầm NullPointerException là rollback đạt.
+- Focused final OrderMutationTest/OrderAccessTest6test đạt: concurrent replay
+  chỉ một lần ghi, canonical key order, payload khác409/version409, role bị
+  thu hồi vẫn403, audit fail rollback và không PII. Full suite đang chạy trước
+  task3; không deploy/migrate live, chưa tích hợp dev khi toàn feature chưa xong.
+
+### 2026-11-17 - ORDER-EXEC-C04 - Task3 tồn gộp và bảo vệ purge
+
+- Task2 full backend333test/0failure/0error/3live skips đạt, ledger complete.
+- Task3 RED thấy thiếu stock service; purge thực tế cho trash khi có ACTIVE
+  và FK làm rollback job purge cả lô. Thêm BookStockService dùng parent locks
+  cùng JPA editor/status, delta pooled giữ UUID/tên/thứ tự, version/audit/cache.
+- Trash chặn ACTIVE; purge thủ công có order ref409, job bỏ qua ref trước LIMIT
+  để không ngăn sách hết hạn khác. Hoàn tồn vượt capacity rollback, không clamp.
+- Focused OrderStockConcurrencyTest/OrderPurgeTest và ba regression sách đạt
+  (run-be-17); stock1 một winner, stale editor409, giữ metadata/dòng legacy,
+  overflow không đổi tồn, job purge giữ lịch sử. Full suite task3 đang chạy.
+- Ruling ledger: thêm OrderInventory domain helper tại task4 để draft KEEPING,
+  keep và shipping dùng chung reconciler, tránh vòng phụ thuộc service. Không
+  đổi nghiệp vụ/spec; không thêm framework. Task4 đợi gate task3 đạt.
+
+### 2026-11-17 - ORDER-EXEC-C05 - Task4 draft/item và match MANUAL
+
+- Task3 full backend338/0failure/0error/3live skips đạt. Task4 RED thiếu
+  service/request DTO; final focused12test draft/match/mutations đạt run-be-20.
+- Thêm create/update/item services, customer snapshot/ACTIVE và khóa đổi khách
+  sau tiền; giá cụ thể mandatory, không auto gộp; snapshot catalogue không đổi
+  theo dữ liệu gốc. DRAFT kiểm tổng theo mã nhưng không trừ, KEEPING sync delta.
+- OrderInventory là reconciler chung có transaction bắt buộc, parent lock trước
+  sorted book locks; giữ reservation RELEASED0 hợp lệ để tái dùng/audit. Không
+  tạo vòng phụ thuộc draft/keep/shipping. Draft/manual lỗi rollback toàn command.
+- Match SQL normalize NFD + bounded200candidate, Levenshtein≥0.8/max5, không
+  extension/dependency; test không dấu/near title/Ẩn/hết hàng/trash/top5. Xác
+  nhận ràng buộc title/fingerprint/lý do; match mới409, không auto đổi nguồn.
+- Audit item thêm digest tên, shipment mã để nhận ra sửa nội dung mà không
+  ghi tên khách/PII. Full task4 regression đang chạy; chưa API controller/UI.
+
+### 2026-11-17 - ORDER-EXEC-C06 - Task5 keep/gia hạn/reopen/hủy
+
+- Task4 full backend345/0failure/0error/3live skips đạt. Task5 RED thiếu keep
+  service/DTO, focused final15test keep/stock/mutation đạt run-be-24.
+- Keep trừ một lần, cọc đủ hoặc explicit owner reason, thêm không gia hạn;
+  extend kiểm hạn cũ/mới≤start+30ngày lịch, expired không tự release; reopen
+  KEEP giữ hạn/tồn, IMMEDIATE nhả ACTIVE về DRAFT trước lần giao đầu; cancel
+  hoàn ACTIVE đúng một lần, không tự refund. Hai order tranh2bản cuối chỉ1đạt.
+- Ruling: V34 thiếu nơi giữ lý do gia hạn/reopen nhiều lần trong khi audit
+  không chứa free text PII; thêm V35 order_action_notes riêng tư gắn version/
+  requestId/actor/time, history trả OWNER, audit chỉ ref. Không sửa checksumV34
+  đã chạy QA, không framework mới. Spec bổ sung logical row, không đổi nghiệp vụ.
+- Kiểm fixedClock16/11, hạn14ngày/hết30/11 và trần30ngày/hết16/12, lý do được
+  lưu, stock shortage rollback cả đơn. Full task5 regression đang chạy.
+
+### 2026-11-17 - ORDER-EXEC-C07 - Task6 thanh toán thực nhận/refund/VOID
+
+- Task5 full backend352/0failure/0error/3live skips đạt. Task6 RED service/DTO
+  còn thiếu, focused final OrderPaymentTest/OrderMutationTest10test đạt run-be-27.
+- Ledger DEPOSIT/PAYMENT/REFUND dương, method/time/note/actor server, refund
+  bắt actualConfirmed; không coi hủy/hoàn tất là hoàn/thu tiền. VOID giữ bản gốc
+  và lý do, không cho VOID làm tổng refund vượt nhận; lỗi rollback cùng receipt.
+- Test hàng500000+ship30000−cọc100000=430000; partial/overpaid/0invalid,
+  refund thực tế/retry một lần, refund vượt nhận bị chặn; CANCELLED không nhận
+  tiền mới nhưng hoàn được; tiền thay đổi chỉ review COD của lần chưa gửi.
+- Full task6 đang chạy; task7 sẽ triển khai handoff/fail/resend/return sau gate.
+  Chưa controller/UI, chưa deploy/live migrate; không coi unit/integration là
+  bằng chứng browser hoặc môi trường thật.
+
+### 2026-11-17 - KEEP-REMOVE-REASON-C01 - User bổ sung lý do bắt buộc
+
+- Trong lúc triển khai, user yêu cầu xóa sách khỏi đơn KEEPING phải nhập lý do.
+  Áp dụng cả giảm quantity vì cũng bỏ bớt sách; giá/weight sửa riêng không bị
+  yêu cầu lý do theo rule này. User scope được cập nhật SPEC/PLAN/PROGRESS.
+- Task6 full backend357/0failure/0error/3skip đạt trước bổ sung. Đang viết RED
+  xóa/giảm keep thiếu lý do, dự kiến trả400 và giữ item/stock/version nguyên.
+- Sẽ lưu private reason + snapshot mã/tên/itemId/quantityRemoved/actor/time,
+  liên kết version/requestId; audit chỉ ref, giữ nguyên khi item đã xóa.
+  DELETE dùng JSON ReasonRequest thay query meta để reason không vào URL.
+- Chưa có UI order; ghi requirement vào task8/10 để kiểm cả client/server.
+  Chưa sửa dữ liệu thật; task7 tiếp tục sau verification bổ sung này.
+
+### 2026-11-17 - KEEP-REMOVE-REASON-C02 - Backend RED→GREEN
+
+- RED2case thực tế: xóa/giảm quantity KEEPING không throw khi thiếu reason
+  (run-be-29). Sửa removeItem nhận ReasonRequest, ItemRequest thêm reason;
+  KEEPING xóa/giảm bắt nonblank≤1000, DRAFT không bị buộc lý do.
+- V36 thêm itemId/code/title/quantityRemoved snapshot vào private action notes,
+  không FK dòng item để history sống sau delete. Reason/history và hoàn tồn
+  trong một transaction; replay cùng request chỉ một lần restore.
+- Final focused OrderDraftTest/OrderMutationTest/OrderKeepTest22case đạt
+  run-be-30: missing/blank400 giữ dữ liệu/version, reason snapshot/actor/số bỏ,
+  xóa/retry restore một lần, giảm quantity có history, DRAFT vẫn xóa không lý do.
+- Full backend addendum đang chạy. UI tương ứng vẫn phải làm trong task10;
+  không coi backend focused là hoàn tất toàn module. Chưa deploy/migrate live.
+
+### 2026-11-17 - ORDER-EXEC-C08 - Task7 chốt giao/gửi lại/hoàn đơn
+
+- Bổ sung lý do keep full backend362/0failure/0error/3skip đạt run-be-31,
+  tiếp tục task7 tuần tự; không dừng task đơn hàng vì user bổ sung rule.
+- Task7 RED thiếu shipping/return service/DTO. Focused final25test shipping/
+  return/stock/mutations/payment đạt run-be-33: finalize validation/COD0,
+  weight override review, receipt/phí ship đổi bắt COD review, tracking required
+  và sửa mã có lý do/audit, keep→finalize→ship không trừ kho thêm.
+- Handoff→COMPLETED không tự PAYMENT. Fail không tự refund/restock; resend
+  snapshot mới/cod/phụ phí chỉ thu thêm, abort giữ lịch sử; hai lần gửi cùng
+  đơn giữ mã cũ, không cộng lại phí cũ hoặc trừ tồn lại.
+- Return xác nhận actual/đủ từng dòng/quantityReceived≥restocked, MANUAL không
+  nhập kho web, stock CATALOG chỉ phần thực nhập; đóng CANCELLED/retry không
+  nhập trùng, không resend sau đóng; audit fail rollback stock/return/receipt.
+- OrderDetail thêm return history riêng tư; audit chỉ số/ref, không recipient/
+  phone/address. Full task7 regression đang chạy, chưa controller/UI/browser.
+
+### 2026-11-17 - ORDER-EXEC-C09 - Task8 HTTP/read model và privacy
+
+- Task7 full backend374/0failure/0error/3skip đạt. Task8 RED7case HTTP404 và
+  thiếu customer count. Thêm OrderController/OrderQueryService: whitelist record
+  payload, reject float/string/bool cho integer và reject numeric JSON ID;
+  no-store/OWNER/CSRF, structured manual-match409, DELETE reason JSON body.
+- List/stats filter/paging/date inclusive theo HCM, literal wildcard/SQL safe;
+  summary SQL lateral aggregate, không gọi detail N+1. Customer count OWNER
+  aggregate3trạng thái giữ/chờ giao/hoàn tất; STAFF null và không query order.
+- Import actor resolver ban đầu sai package, đối chiếu source sửa về common;
+  focused19case API/privacy/customer đạt. Bổ sung test sale-reference RED7000→0,
+  thêm salePriceVnd chỉ campaign đang hiệu lực; missing unitPrice vẫn400.
+- Final focused22case API/privacy/customer/match đạt run-be-40. Kiểm date ranh
+ 17/11 23:59:59 vs18/11 00:00 HCM, invalid filters, cross-order404, unknown fields,
+  numeric coercion400, owner201/STAFF403/anonymous401/CSRF403, public không PII.
+- Full task8 đang chạy; tiếp theo client/list rồi chi tiết/form. Chưa browser
+  hoặc deploy/live migrate, không xem module hoàn tất chỉ vì backend đã có API.
+
+
+### 2026-11-17 - ORDER-EXEC-C10 - Danh sách/admin client
+
+- Task8 full backend382/0failure/0error/3skip đạt run-be-41. Task9 HTTP/list
+  RED thiếu client/component; GREEN6case run-fe-43. Test sidebar OWNER RED
+  thiếu link(run-fe-44), thêm menu OWNER và list requireOwner.
+- List lấy stats từ backend, filter URL/paging/search debounce, hủy response cũ,
+  xóa dữ liệu khi auth epoch đổi; ship chưa nhập hiện tạm tính. API snapshot
+  payload trước CSRF; retry CSRF dùng lại requestId/amount; DELETE lý do trong body.
+- Route tạo/chi tiết sẽ nối ở task10 khi component thật tồn tại, không tạo stub.
+  Hai hero deletion ban đầu giữ ngoài stage. Chưa browser/build/module hoàn tất.
+
+
+### 2026-11-17 - ORDER-EXEC-C11 - Chi tiết/form và lịch sử khách
+
+- Task9 full373FE đạt. Task10 RED thiếu component; focused9 UI đạt run-fe-50,
+  thêm history RED thiếu component(run-fe-51) và GREEN40case run-fe-54 gồm
+  order/customer: MANUAL2×75000/250g, giảm keep lý do, match debounce350ms,
+  retry cùng key và reload detail, archived rejected, OWNER history/STAFF không gọi.
+- Thêm detail/create/item/shipping dialogs; CustomerForm reuse; CATALOG giá chốt
+  bắt buộc không tự lấy sale; KEEPING delete reason form/history, giảm quantity
+  có reason; thanh toán thực tế/VOID/refund checkbox, giao/fail/resend/return từng dòng.
+- Customer count thật chỉ OWNER; history phân trang và phân biệt lỗi/empty;
+  dirty/epoch guard và unknown result khóa form, retry cùng request trong dialog.
+- Rà spec thấy lookup thiếu held/total: API test RED expected1 got0(run-be-53),
+  bổ sung aggregate ACTIVE reservation, totalStock=available+ACTIVE; focused6đạt55.
+- Build đầu sandbox esbuild deadlock/exit-6; chưa coi là lỗi business đã sửa,
+  đang chạy lại CI/noninteractive ngoài sandbox và fullFE. Chưa browser QA.
+
+- Full387FE đạt run-fe-63. Title bị xóa không hủy match pending: thêm test
+  RED(run-fe-60) rồi sửa stream switchMap nhận cả blank, GREEN6case(run-fe-61).
+  Build62 exit0 nhưng CSS chung warning81bytes; chuyển style order-code chỉ dùng
+  ở danh sách về file danh sách, giữ budget6/10kB; cần build xác minh lại task11.
+
+
+### 2026-11-17 - ORDER-EXEC-C12 - Phục hồi và review cuối
+
+- Tiếp tục task11 tại dc9b202; task1–10 đã có commit/ledger, không làm lại.
+  Full382BE/0fail/0error/3skip(run-be-59),387FE(run-fe-64), Workers65/proxy67 đạt;
+  proxy lần sandbox EPERM được chạy ngoài sandbox. Chưa deploy/live migration.
+- Browser QA: tạo nhanh khách/chọn ID, MANUAL2×75000/250g; cùng MM hai giá riêng,
+  keep ngoại lệ cọc trừ2tồn, xóa thiếu lý do chặn/không đổi tồn; có lý do trả1tồn,
+  history1 bản; handoff COMPLETED giữ stock7 và0payment. Ship=30000, bill290000,
+  khai giá260000; fail→resend thu thêm20000 đã chốt, còn kiểm abort/return.
+- Review độc lập bị ngắt quota rồi hoàn tất cùng reviewer khi user yêu cầu tiếp;
+  4 Important: reopen keep chưa bắt đầu thiếu hạn, refresh lệch route/version,
+  modal409 thiếu nút refresh giữ draft, parent bỏ sót CustomerForm dirty/busy.
+  Không Critical/Minor. Bắt đầu một lượt sửa RED→GREEN từng trường hợp, rồi full suite.
+
+- RED68 bốn UI assertion thất bại; RED69 reopen expectedDRAFT/actualKEEPING.
+  Sửa: reopen chỉ về KEEPING khi thực sự có start/until, còn lại DRAFT và nhả tồn;
+  page/read generation + monotonic version; modal refresh giữ draft/rebase xác nhận;
+  parent gọi CustomerForm.canLeave. Focused24FE70/15BE71 đạt; full391FE72 và
+  383BE73/0fail/0error/3skip đạt. SSR74/Workers75 exit0, không warning/budget tăng.
+- HTTP QA bổ sung: abort resend giữ tồn/tiền, lần gửi thứ3 handoff/fail/return,
+  replay return stock8 không trùng, đóng hoàn không gửi lại; actual cọc/max30,
+  partial/overpaid/refund chỉ actual/VOID, cancelMANUAL, STAFF403/countnull,
+  anonymous401 và owner thiếuCSRF403 đạt. Dữ liệu riêng me_may_orders_browser.
+
+
+### 2026-11-17 - ORDER-EXEC-C13 - QA cuối và chuẩn hóa tài liệu
+
+- Một lượt fix review hoàn tất tại b0921ae. Final gate391FE đạt;383BE(3live skip),
+  SSR74/Workers75/proxy76 đạt, không nới budget/dependency. Không còn Important/Minor hoãn.
+- Browser409 item giữ giá123456đ; server đã commit rồi client mất response,
+  retry cùng key/payload chỉ một item/stock delta. Shipping409 giữ recipient/fee/
+  cân tay1500g và bỏ xác nhận COD/cân cũ; chốt bill503456/khai giá473456 đúng.
+- UI reopen giữ hạn/start; gia hạn đến đúng trần30, cancel hoàn ACTIVE. Keyboard
+  CustomerForm/Escape/dirty/focus, STAFF direct redirect/không query order/count/
+  history, public Home/catalogue/sale/wishlist và sáchẨn404 đạt. Không outer overflow
+ 1440/1024/390; đã xem screenshot keep desktop/mobile. Artefact QA chỉ dữ liệu giả.
+- Restart riêng backend rồi replay receipt ITEM_ADD cũ sau cancel: đúng result cũ,
+  không thêm item/đổi tồn. Suite DB và browser DB đều thuộc container QA riêng;
+  không đọc/ghi DB live hoặc đụng dịch vụ my-postgres/memay-local-images của user.
+- Chuyển đủ contract/AC từ spec sang ORDERS.md, bằng chứng ORDER_VERIFICATION.md;
+  cập nhật chỉ mục/MASTER/DATA/ARCHITECTURE/CUSTOMERS/VERIFICATION/PROGRESS.
+  Xóa spec/plan hết vai trò sau khi đủ gate; lịch sử giữ bằng Git, log QA giữ local.
+- Chuẩn bị commit bàn giao/tích hợp/push dev theo workflow; giữ hai hero deletion
+  ban đầu ngoài stage; main/deploy/live backup/restore vẫn do owner/gate riêng.
+
+
+### 2026-11-17 - ORDER-EXEC-C14 - Tích hợp dev và bàn giao
+
+- Commit code/fix b0921ae, contract/bằng chứng f4fffb1. Đã fast-forward dev
+  3898e40→f4fffb1 và push origin/dev; rev-parse HEAD/origin/dev khớp
+  f4fffb15c6bd5f2b711524d642319fea487cddcd. Diff code giữa b0921ae/f4fffb1 rỗng,
+  đúng candidate đã qua383BE(3live skip)/391FE/SSR74/Workers75/proxy76/browser.
+- Kiểm toàn bộ Markdown tracked≤400 (DEV_LOG ngoại lệ), link local và diff-check
+  đạt; không còn spec/plan trùng đã hết vai trò. Chỉ mục trỏ ORDERS/ORDER_VERIFICATION.
+- Đã đóng browser QA orders, dừng backend/frontend QA và container memay-order-test;
+  my-postgres và memay-local-images vẫn chạy. Xóa đúng workspace tạm của plan
+  đơn đã hoàn tất; log/ảnh synthetic giữ ở .local/orders/evidence và output/playwright/orders.
+- Hai deletion hero-banner-1584.webp/800.webp có sẵn vẫn ngoài stage/commit;
+  worktree dev-ui giữ nguyên. Không push/merge main, không migrate/deploy live.
+- Việc tiếp theo là gate rollout riêng theo DEPLOYMENT: xác minh schema live,
+  backup/restore, backend trước FE và smoke/security/cache/SEO trên live.
+  Checkpoint này là commit tài liệu sau push candidate; không đổi application code.

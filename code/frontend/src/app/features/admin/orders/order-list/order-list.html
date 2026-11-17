@@ -1,0 +1,184 @@
+<section class="order-panel">
+  <header class="heading">
+    <div>
+      <p class="eyebrow">Vận hành cửa hàng</p>
+      <h1>Quản lý đơn hàng</h1>
+      <p>Danh sách và theo dõi các đơn hàng</p>
+    </div>
+    @if (owner()) {
+      <a class="primary button" routerLink="/admin/orders/new">＋ Tạo đơn hàng</a>
+    }
+  </header>
+  @if (!owner()) {
+    <p class="error" role="alert">Chỉ chủ tiệm được quản lý đơn hàng.</p>
+  } @else {
+    <div class="metrics" aria-label="Thống kê đơn hàng">
+      <div>
+        <span>Đang keep</span><strong>{{ stats()?.keeping ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Sắp đến hạn</span><strong>{{ stats()?.soon ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Đến hạn hôm nay</span><strong>{{ stats()?.due ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Quá hạn</span><strong>{{ stats()?.overdue ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Chờ giao</span><strong>{{ stats()?.readyToShip ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Hoàn tất</span><strong>{{ stats()?.completed ?? '—' }}</strong>
+      </div>
+      <div>
+        <span>Không thành công</span><strong>{{ stats()?.unsuccessful ?? '—' }}</strong>
+      </div>
+    </div>
+    <div class="toolbar">
+      <label class="search"
+        ><span class="sr-only">Tìm đơn hàng</span
+        ><input
+          type="search"
+          maxlength="200"
+          [value]="filter().q"
+          (input)="search($any($event.target).value)"
+          placeholder="Tìm mã đơn, tên khách, số điện thoại, mã KH…" /></label
+      ><label
+        ><span>Trạng thái</span
+        ><select [value]="filter().status" (change)="change('status', $any($event.target).value)">
+          <option value="ALL">Tất cả</option>
+          @for (s of statuses; track s) {
+            <option [value]="s">{{ statusLabels[s] }}</option>
+          }
+        </select></label
+      ><label
+        ><span>Hạn keep</span
+        ><select
+          [value]="filter().keepWarning"
+          (change)="change('keepWarning', $any($event.target).value)"
+        >
+          <option value="ALL">Tất cả</option>
+          <option value="SOON">Sắp hết hạn</option>
+          <option value="DUE">Đến hạn hôm nay</option>
+          <option value="OVERDUE">Quá hạn</option>
+        </select></label
+      ><label
+        ><span>Từ ngày tạo</span
+        ><input
+          type="date"
+          [value]="filter().createdFrom"
+          (change)="change('createdFrom', $any($event.target).value)" /></label
+      ><label
+        ><span>Đến ngày</span
+        ><input
+          type="date"
+          [value]="filter().createdTo"
+          (change)="change('createdTo', $any($event.target).value)"
+      /></label>
+    </div>
+    @if (error()) {
+      <p class="error" role="alert">
+        {{ error() }} <button type="button" class="secondary" (click)="refresh()">Thử lại</button>
+      </p>
+    }
+    @if (loading()) {
+      <p class="empty" role="status">Đang tải đơn hàng…</p>
+    } @else if (page(); as result) {
+      @if (result.items.length) {
+        <div class="table-scroll" role="region" aria-label="Danh sách đơn hàng" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th>Mã đơn</th>
+                <th>Khách hàng</th>
+                <th>Ngày tạo</th>
+                <th class="number">Số sách</th>
+                <th class="number">Tổng bill</th>
+                <th class="number">Đã thanh toán</th>
+                <th>Trạng thái</th>
+                <th>Hạn keep</th>
+                <th><span class="sr-only">Thao tác</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (o of result.items; track o.id) {
+                <tr>
+                  <td>
+                    <a
+                      class="order-code"
+                      [routerLink]="['/admin/orders', o.id]"
+                      [queryParams]="filter()"
+                      >{{ o.orderCode }}</a
+                    >
+                  </td>
+                  <td>
+                    <strong>{{ o.customerNameSnapshot }}</strong
+                    ><small>{{ o.customerPhoneSnapshot || 'Chưa có SĐT' }}</small>
+                  </td>
+                  <td class="nowrap">{{ o.createdAt | date: 'dd/MM/yyyy' : '+0700' }}</td>
+                  <td class="number">{{ o.totalQuantity }}</td>
+                  <td class="number nowrap">
+                    <strong>{{ money(o.totals.orderTotal ?? o.totals.goodsTotal) }}</strong>
+                    @if (o.totals.provisional) {
+                      <small>Tạm tính · chưa có phí ship</small>
+                    }
+                  </td>
+                  <td class="number nowrap">{{ money(o.totals.paidAmount) }}</td>
+                  <td>
+                    <span
+                      class="badge"
+                      [class.keeping]="o.status === 'KEEPING'"
+                      [class.danger]="o.status === 'UNSUCCESSFUL'"
+                      >{{ statusLabels[o.status] }}</span
+                    >
+                    @if (o.keepWarning) {
+                      <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{
+                        warningLabels[o.keepWarning]
+                      }}</small>
+                    }
+                  </td>
+                  <td class="nowrap">
+                    @if (o.keepUntil) {
+                      Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td>
+                    <a [routerLink]="['/admin/orders', o.id]" [queryParams]="filter()">Xem</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty">Chưa có đơn hàng phù hợp.</p>
+      }
+      <footer class="pagination">
+        <span>{{ result.totalElements }} đơn hàng</span>
+        <div>
+          <button
+            type="button"
+            class="secondary"
+            [disabled]="filter().page === 0"
+            (click)="navigate({ page: filter().page - 1 })"
+            aria-label="Trang trước"
+          >
+            ‹</button
+          ><span>Trang {{ filter().page + 1 }} / {{ result.totalPages || 1 }}</span
+          ><button
+            type="button"
+            class="secondary"
+            [disabled]="filter().page + 1 >= result.totalPages"
+            (click)="navigate({ page: filter().page + 1 })"
+            aria-label="Trang sau"
+          >
+            ›
+          </button>
+        </div>
+      </footer>
+    }
+  }
+</section>

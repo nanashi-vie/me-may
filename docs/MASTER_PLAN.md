@@ -1,10 +1,10 @@
 # MASTER PLAN — WEBSITE MẸ MÂY
 
-**Bản hiện hành | Cập nhật12/11/2026 | Gate release ở PROGRESS**
+**Bản hiện hành | Cập nhật17/11/2026 | Gate release ở PROGRESS**
 > Mở rộng12/11: quản lý khách hàng thủ công được duyệt tại [CUSTOMERS](CUSTOMERS.md).
-> Banner Home12/11: [HERO_BANNERS](HERO_BANNERS.md). Không mở đơn hàng/thanh toán; gate release cũ giữ.
+> Banner: [HERO_BANNERS](HERO_BANNERS.md); admin đơn hàng duyệt17/11: [contract](ORDERS.md), [bằng chứng local](ORDER_VERIFICATION.md).
 
-> **Mục tiêu:** Làm một website sách có trải nghiệm tìm và xem sản phẩm tương tự các website bán sách phổ biến (tham khảo [NXB Kim Đồng](https://nxbkimdong.com.vn/)), nhưng xử lý đúng bản chất sách cũ Mẹ Mây. MVP chỉ là **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. Không tạo đơn, giữ hàng tự động, thanh toán hoặc thay thế vận hành Excel/Facebook/Zalo. Thiết kế có đường mở rộng lên e-commerce và capstone AI, nhưng **không xây sẵn những module chưa sử dụng**.
+> **Mục tiêu:** Website sách giữ baseline MVP **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. User duyệt mở rộng quản lý đơn nội bộ17/11 theo ORDERS, thay giới hạn không order/giữ tồn/thanh toán ở admin trong baseline bên dưới. Public vẫn không checkout/đặt hàng/giữ hàng; gate release cũ giữ. Không tự mở e-commerce hoặc pipeline AI ngoài phạm vi duyệt.
 
 > **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Các proposal và phiên bản cũ đã được gộp/xóa; lịch sử xem trong Git.
 

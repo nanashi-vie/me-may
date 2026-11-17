@@ -238,7 +238,7 @@ public class BookCommandService {
 
     @Transactional
     public BookDetail update(long id, long version, AdminUser actor, BookWrite input, List<MediaAssignment> media, BookEntryInput.Options options, boolean publishAfterSave, boolean confirmedActualCopy, List<MediaMetadata> mediaMetadata) {
-        var b = books.findById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
+        var b = books.findLockedById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
         var l = listings.findByBookCopyId(id).orElseThrow();
         access.requireWritable(actor, l.publicationStatus);
         if (b.version != version)

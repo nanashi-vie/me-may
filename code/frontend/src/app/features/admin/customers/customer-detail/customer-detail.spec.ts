@@ -4,6 +4,7 @@ import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/route
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { CustomerDetailPage } from './customer-detail';
+import { OrderApi } from '../../orders/order-api';
 import { CustomerApi } from '../customer-api';
 import { AuthService } from '../../../../core/auth/auth.service';
 const customer = {
@@ -32,6 +33,7 @@ describe('CustomerDetailPage', () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([]),
+        {provide:OrderApi,useValue:{list:vi.fn(()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0}))}},
         {
           provide: ActivatedRoute,
           useValue: {
@@ -65,7 +67,7 @@ describe('CustomerDetailPage', () => {
     ])
       expect(text).toContain(value);
     expect(f.nativeElement.querySelector('script')).toBeNull();
-    expect(f.nativeElement.textContent).not.toContain('Tạo đơn hàng');
+    expect(f.nativeElement.textContent).toContain('Tạo đơn hàng');
   });
   it('handles not found and offers a route back', async () => {
     const { f, c, api } = setup();

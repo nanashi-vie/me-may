@@ -16,7 +16,7 @@ public final class CustomerDtos {
  public record CustomerDetail(String id,String customerCode,String fullName,String phone,String defaultAddress,String zaloName,String tiktokId,String threadsId,String note,Status status,long version,String createdBy,Instant createdAt,Instant updatedAt){
   public CustomerWrite write(){return new CustomerWrite(fullName,phone,defaultAddress,zaloName,tiktokId,threadsId,note);}
  }
- public record CustomerSummary(String id,String customerCode,String fullName,String phone,String defaultAddress,Status status,long version,Instant createdAt){}
+ public record CustomerSummary(String id,String customerCode,String fullName,String phone,String defaultAddress,String zaloName,String tiktokId,String threadsId,Status status,long version,Instant createdAt,Long orderCount){}
  public record DuplicateSummary(String id,String customerCode,String fullName,String phone,Status status){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}
 }

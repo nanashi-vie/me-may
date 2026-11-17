@@ -243,3 +243,15 @@ Schema V32, field/giới hạn/chuẩn hóa/index/actor/version và AC tại
 [CUSTOMERS](CUSTOMERS.md#3-dữ-liệu). Hồ sơ độc lập user_account và sách;
 không UNIQUE SĐT/username, không gộp hoặc liên kết tài khoản tự động.
 Mã KH sinh từ identity an toàn đồng thời, không MAX+1; dữ liệu cá nhân chỉ admin.
+
+
+## Đơn nội bộ — duyệt17/11/2026
+
+Contract field/business/validation: [ORDERS](ORDERS.md#12-schema-hiện-hành).
+V34–V36 additive: orders, order_items, order_reservation, order_payments,
+order_shipments, order_returns, order_mutation_receipt, order_action_notes.
+CATALOG dùng book_copy/listing FK khớp nhau; MANUAL không tạo catalogue.
+Receipt khóa theo actor/operation/requestId; private notes giữ lý do/snapshot
+xóa sách riêng audit. BIGINT ID JSON string; tiền/gram kiểm miền số nguyên an toàn.
+Customer.orderCount là read aggregate OWNER, không lưu cột counter; STAFF null.
+Bằng chứng transaction/concurrency/privacy: [ORDER_VERIFICATION](ORDER_VERIFICATION.md).
