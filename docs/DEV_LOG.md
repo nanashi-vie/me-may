@@ -4948,3 +4948,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Xóa spec/plan hết vai trò sau khi đủ gate; lịch sử giữ bằng Git, log QA giữ local.
 - Chuẩn bị commit bàn giao/tích hợp/push dev theo workflow; giữ hai hero deletion
   ban đầu ngoài stage; main/deploy/live backup/restore vẫn do owner/gate riêng.
+
+
+### 2026-11-17 - ORDER-EXEC-C14 - Tích hợp dev và bàn giao
+
+- Commit code/fix b0921ae, contract/bằng chứng f4fffb1. Đã fast-forward dev
+  3898e40→f4fffb1 và push origin/dev; rev-parse HEAD/origin/dev khớp
+  f4fffb15c6bd5f2b711524d642319fea487cddcd. Diff code giữa b0921ae/f4fffb1 rỗng,
+  đúng candidate đã qua383BE(3live skip)/391FE/SSR74/Workers75/proxy76/browser.
+- Kiểm toàn bộ Markdown tracked≤400 (DEV_LOG ngoại lệ), link local và diff-check
+  đạt; không còn spec/plan trùng đã hết vai trò. Chỉ mục trỏ ORDERS/ORDER_VERIFICATION.
+- Đã đóng browser QA orders, dừng backend/frontend QA và container memay-order-test;
+  my-postgres và memay-local-images vẫn chạy. Xóa đúng workspace tạm của plan
+  đơn đã hoàn tất; log/ảnh synthetic giữ ở .local/orders/evidence và output/playwright/orders.
+- Hai deletion hero-banner-1584.webp/800.webp có sẵn vẫn ngoài stage/commit;
+  worktree dev-ui giữ nguyên. Không push/merge main, không migrate/deploy live.
+- Việc tiếp theo là gate rollout riêng theo DEPLOYMENT: xác minh schema live,
+  backup/restore, backend trước FE và smoke/security/cache/SEO trên live.
+  Checkpoint này là commit tài liệu sau push candidate; không đổi application code.
