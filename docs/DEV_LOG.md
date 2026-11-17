@@ -4966,3 +4966,50 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Việc tiếp theo là gate rollout riêng theo DEPLOYMENT: xác minh schema live,
   backup/restore, backend trước FE và smoke/security/cache/SEO trên live.
   Checkpoint này là commit tài liệu sau push candidate; không đổi application code.
+
+### 2026-11-17 - PAGINATION-C01 - Khảo sát pagination
+
+- User yêu cầu phân trang theo ảnh cho public/admin; dùng Superpowers brainstorming.
+  Đề xuất component Angular chung: mũi tên, số, dấu chấm lửng, trang hiện tại nền
+  than bo góc; phạm vi gồm cả các khung phụ đang có phân trang.
+- Đọc chỉ mục/PROGRESS/checkpoint mới nhất và mục liên quan MASTER/DESIGN.
+  Graph không thấy component pagination frontend; tìm literal template xác định
+  catalogue, book list/trash/audit/queue, customer/order list/history/lookup.
+- Git dev theo origin/dev; hai deletion hero-banner-1584.webp/800.webp có sẵn giữ
+  nguyên. Chỉ sửa tài liệu bàn giao; chưa sửa application code, chưa commit/push.
+- Chưa chạy test/build/browser vì chưa triển khai. Lệnh cập nhật log bằng Python
+  lỗi encoding trước khi ghi; chuyển apply_patch. Chờ user chọn hướng/phạm vi rồi
+  viết thiết kế ngắn để duyệt theo brainstorming, sau đó lập kế hoạch thực thi.
+- Không deploy, truy cập DB/live hoặc đổi công việc đã hoàn tất.
+
+### 2026-11-17 - PAGINATION-C02 - Chốt hướng và màu đỏ
+
+- User đồng ý component chung/phạm vi và yêu cầu đỏ đồng bộ web. Kiểm styles.scss:
+  token thương hiệu --red hiện #b32635; dùng token thay màu than trong ảnh.
+- Viết PAGINATION_SPEC.md ngắn, đăng ký README và cập nhật PROGRESS: phạm vi
+  danh sách/khung phụ, responsive7/5vị trí, keyboard, loading/empty/one-page,
+  bảo toàn filter/URL/API và nghiệm thu. Chi tiết này là đề xuất chờ user duyệt.
+- Chưa code/test/build/browser hoặc deploy; thay đổi còn local, chưa commit.
+  Tiếp theo duyệt spec rồi writing-plans, triển khai và kiểm chứng theo spec.
+
+### 2026-11-17 - PAGINATION-C03 - Bắt đầu thực thi tuần tự
+
+- User duyệt spec/yêu cầu tuần tự; sau đó yêu cầu commit cả hai banner đã xóa.
+  Tạo codex/shared-pagination từ dev3818ee1 (khớp origin/dev), làm tại checkout
+  hiện tại theo workflow AGENTS. Không tạo worktree mới hoặc làm song song.
+- Viết PAGINATION_PLAN, cập nhật trạng thái spec/chỉ mục/PROGRESS; triển khai native
+  theo executing-plans và TDD. Theo yêu cầu triển khai hiện tại, không xin duyệt
+  thêm kế hoạch lặp lại; scope/kiến trúc giữ đúng spec đã duyệt.
+- Baseline npm test đang chạy, output /tmp/memay-pagination-baseline.log.
+  Chưa sửa application code, chưa có kết quả test/build/browser mới.
+
+### 2026-11-17 - PAGINATION-C04 - Component chung
+
+- Tạo shared/pagination với token số có giới hạn7/5, nút44px, ARIA/keyboard,
+  container query thu gọn theo không gian thực (kể cả dialog), không dependency.
+- RED thiếu module (red1); focused14test đạt (green1), full68files/405tests đạt
+  qua task-done1. Baseline67files/391tests đạt. Log /tmp/memay-pagination-*.log.
+- Nền selected dùng --action: cùng #b32635 ở sáng/admin, giữ tương phản chữ trắng
+  trong tối khi --red đổi sang hồng nhạt. Hover/focus vẫn theo --red/theme.
+- Chưa thay màn chủ, chưa build/browser/deploy. Tiếp theo test tích hợp rồi thay
+  public, admin và các khung phụ tuần tự. Hai banner sẽ commit lúc bàn giao.

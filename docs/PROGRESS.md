@@ -3,12 +3,13 @@
 Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- PAGINATION-C03 (17/11): [thiết kế](PAGINATION_SPEC.md) đã duyệt; thực thi tuần tự
+  theo [kế hoạch](PAGINATION_PLAN.md) trên codex/shared-pagination từ dev.
+  User yêu cầu commit cả hai banner đã xóa; đang kiểm baseline rồi làm component.
+
 - ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
   Đã push dev/f4fffb1; 383BE(3skip)/391FE/SSR/Workers/browser/review đạt; [bằng chứng](ORDER_VERIFICATION.md).
-
-- CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
-  FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
@@ -395,6 +396,5 @@ Nguồn: [VERIFICATION](VERIFICATION.md#m5-pilot-và-link-hỏi-sách--28102026)
   [DEPLOYMENT — quy trình đo](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện).
 - [BOOK_IMPORT](BOOK_IMPORT.md)/[BOOK_IMPORT_VERIFICATION](BOOK_IMPORT_VERIFICATION.md):
   contract/schema/hướng dẫn/bằng chứng và gate rolloutV11.
-- Chỉ commit/pushdev; user merge main/deploy. Không đọc/mutate live trong lần tổng
-  hợp này, không kiểm quota hoặc tái xác minh revision/schemaonline; không coi
-  trạng thái từ phiên trước là kiểm tra live01/11.
+- Chỉ commit/push dev; user merge main/deploy. Trạng thái từ phiên trước
+  không thay việc kiểm tra lại revision/schema/quota và môi trường live.

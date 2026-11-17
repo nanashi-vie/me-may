@@ -41,6 +41,9 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
+- Phân trang public/admin theo ảnh: [thiết kế](PAGINATION_SPEC.md) duyệt17/11,
+  [kế hoạch tuần tự](PAGINATION_PLAN.md) đang thực thi, component chung/màu đỏ.
+
 - Order Management: [contract](ORDERS.md) đã triển khai local17/11;
   [bằng chứng](ORDER_VERIFICATION.md) gồm kiểm thử/browser/review.
   Rollout migration/backup/restore/live smoke vẫn là gate riêng, chưa deploy.
