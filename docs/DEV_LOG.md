@@ -4731,3 +4731,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   migrate33→34 giữ sách/khách/FK/constraint. Full backend regression đang chạy.
 - Code branch codex/order-management; task1 commit cùng docs bàn giao, task2
   chỉ bắt đầu khi verification task1 đạt. Hai hero deletions chưa stage.
+
+### 2026-11-17 - ORDER-EXEC-C03 - Task2 transaction, quyền và audit
+
+- Task1 full backend327test/0failure/0error/3live skips đạt, ledger task1 complete.
+- Task2 RED: STAFF GET404 thay vì403, wrapper chưa tồn tại. Thêm matcher OWNER
+  trước generic admin GET, transactional receipt/fingerprint canonical JSON,
+  lock/version, immutable MutationResult và audit order chỉ field số/ref đã lọc.
+- First focused run tìm ra @Repository AOP proxy không cho đọc package field
+  trực tiếp; JDBC-only OrderRepository dùng @Component như BookVariantStore,
+  JdbcTemplate vẫn dịch lỗi SQL. Audit rollback test siết đúng loại lỗi SQL để
+  không nhận nhầm NullPointerException là rollback đạt.
+- Focused final OrderMutationTest/OrderAccessTest6test đạt: concurrent replay
+  chỉ một lần ghi, canonical key order, payload khác409/version409, role bị
+  thu hồi vẫn403, audit fail rollback và không PII. Full suite đang chạy trước
+  task3; không deploy/migrate live, chưa tích hợp dev khi toàn feature chưa xong.

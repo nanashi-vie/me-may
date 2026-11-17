@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** kế hoạch chưa thực thi; không có bằng chứng runtime order.
+**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1 đạt, task2 đang làm.
 
 ## Global constraints
 
@@ -95,18 +95,18 @@ OrderTestSupport; tests `T/order/OrderMigrationTest.java`, `OrderValidationTest.
 **Produces:** `OrderRepository.find(long id,boolean lock):Optional<OrderDetail>`;
 `OrderValidation.totals(List<ItemValue>,long discount,Long shippingFee,List<PaymentValue>):Totals`;
 `OrderValidation.keepUntil(Instant started,int days):Instant`, `normalizeTitle(String):String`.
-- [ ] RED: `totalsIncludeShippingNotDepositTwice` và missingShip/overflow/refund/NULLweight:
+- [x] RED: `totalsIncludeShippingNotDepositTwice` và missingShip/overflow/refund/NULLweight:
   `assertThat(totals.goodsTotal()).isEqualTo(600000);`
   `assertThat(totals.orderTotal()).isEqualTo(635000);`
   `assertThat(totals.balance()).isEqualTo(535000);` với subtotal650000/discount50000/ship35000/paid100000.
-- [ ] Chạy OrderValidationTest, xác nhận RED; thêm migration test migrate33→34
+- [x] Chạy OrderValidationTest, xác nhận RED; thêm migration test migrate33→34
   giữ nguyên sách/khách/media/auth/variant, DH code concurrent duy nhất, CHECK/FK đúng.
-- [ ] Tạo7bảng spec12; không CASCADE lịch sử. Mã identity không MAX+1;
+- [x] Tạo7bảng spec12; không CASCADE lịch sử. Mã identity không MAX+1;
   reservation cho quantity0 khi đóng/hoàn hết hoặc xóa row có audit, không lưu ACTIVE0.
   `order_returns` lưu item CATALOG/MANUAL cùng xác nhận, không restock MANUAL.
-- [ ] Implement checked BigInteger, nullable shipping tổng tạm; SQL prepared;
+- [x] Implement checked BigInteger, nullable shipping tổng tạm; SQL prepared;
   thêm fixture synthetic kế thừa CatalogueTestSupport, cleanup tables theo FK trước customer/books/admin.
-- [ ] Chạy hai test GREEN; commit `feat: add order schema and validated totals`.
+- [x] Chạy hai test GREEN; commit `feat: add order schema and validated totals`.
 
 ## Task 2 — Command transaction, receipt, auth và audit
 

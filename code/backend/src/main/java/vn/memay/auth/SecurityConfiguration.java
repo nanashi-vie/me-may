@@ -102,6 +102,7 @@ public class SecurityConfiguration {
                                                 .permitAll()
                                                 .requestMatchers("/api/v1/admin/owner-access", "/api/v1/admin/attendance/**", "/api/v1/admin/hero-banners", "/api/v1/admin/hero-banners/**")
                                                 .hasRole("OWNER")
+                                                .requestMatchers("/api/v1/admin/orders", "/api/v1/admin/orders/**").hasRole("OWNER")
                                                 .requestMatchers(HttpMethod.GET, "/api/v1/admin/**")
                                                 .hasAnyRole("OWNER", "STAFF")
                                                 .requestMatchers("/api/v1/admin/**").hasRole("OWNER")

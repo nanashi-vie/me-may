@@ -2,11 +2,11 @@ package vn.memay.order;
 import java.time.*;
 import java.sql.Timestamp;
 import java.util.*;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 import org.springframework.jdbc.core.JdbcTemplate;
 import tools.jackson.databind.ObjectMapper;
 import static vn.memay.order.OrderDtos.*;
-@Repository
+@Component
 public class OrderRepository {
  final JdbcTemplate jdbc;final ObjectMapper json;final Clock clock;
  public OrderRepository(JdbcTemplate jdbc,ObjectMapper json,Clock clock){this.jdbc=jdbc;this.json=json;this.clock=clock;}
