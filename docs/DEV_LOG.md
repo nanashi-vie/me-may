@@ -5047,3 +5047,22 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Focused21case và full410tests đạt sau fix; build cuối/review đang thực hiện.
   CSR shell có warning thiếu hydration và HMR WebSocket bị môi trường chặn;
   không coi lượt CSR là bằng chứng hydration SSR. Chưa deploy.
+
+### 2026-11-17 - PAGINATION-C07 - Nghiệm thu và bàn giao
+
+- Candidate a4fb57b: full68files/410tests đạt (final-tests2); SSR final-build và
+  Workers final-workers exit0/không warning, proxy final-proxy PASS. Không nới
+  budget/thêm dependency; frontend-only nên không chạy lại backend không đổi.
+- Browser public9/admin14nhóm đạt tại C06; fieldset repro riêng sau fix giữ68px
+  trước/sau đổi trang (cli35), admin complete cli38. Đã xem ảnh mobile public,
+  desktop admin và dialog queue390; nút đỏ/bo góc/vùng chạm đúng mẫu đã duyệt.
+- Review độc lập3818ee1..a4fb57b:0Critical/Important/Minor, declined-to-judge=[];
+  không có phát hiện hoãn. Reviewer đọc diff/handlers/layout, không tự chạy lại
+  tests/browser; bằng chứng runtime do implementer chạy, không mô tả là2lần QA.
+- Gộp đủ contract/tiêu chí vào PAGINATION, trỏ DESIGN/README/VERIFICATION, gỡ
+  spec/plan hết vai trò. User đồng ý cả2banner đã xóa vào commit bàn giao;
+  không còn reference dùng2tên file này ngoài lịch sử log.
+- Quyết định kỹ thuật: nền selected dùng --action thay --red để giữ đỏ/chữ trắng
+  trong tối; khác nhẹ màu accent chữ dark. Không thay phạm vi/UI đã duyệt.
+- Chuẩn bị commit/tích hợp/pushdev theo AGENTS; main/deploy/DB live không đổi.
+  Gate còn mở tiếp tục theo DEPLOYMENT/PROGRESS, không tự đóng bằng QA pagination.

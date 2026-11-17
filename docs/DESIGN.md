@@ -18,7 +18,7 @@ Cập nhật 22/10/2026. Phạm vi M0 và baseline MVP trước M2 đã duyệt;
 | `/admin/sach/moi`, `/admin/sach/:id` | Editor | Nhập cuốn/listing, ảnh, preview, xuất bản/ẩn theo quyền |
 | `/admin/danh-muc`, `/admin/bo-suu-tap` | Biên tập taxonomy | Quản lý nhóm và thứ tự hiển thị |
 
-Các tên route là thiết kế, chưa khóa OpenAPI hoặc cấu trúc controller.
+Route/API theo contract từng module; [phân trang public/admin](PAGINATION.md) dùng chung từ17/11.
 
 ## Luồng và các trạng thái cần nhìn thấy
 

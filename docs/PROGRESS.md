@@ -3,9 +3,9 @@
 Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- PAGINATION-C03 (17/11): [thiết kế](PAGINATION_SPEC.md) đã duyệt; thực thi tuần tự
-  theo [kế hoạch](PAGINATION_PLAN.md) trên codex/shared-pagination từ dev.
-  Component/tích hợp10vị trí đã qua410FE; tiếp theo SSR/Workers/browser/review.
+- PAGINATION-C07 (17/11): [phân trang đỏ public/admin](PAGINATION.md) đã triển khai.
+  410FE/SSR/Workers/proxy, browser23nhóm và review0issue đạt; chưa deploy.
+  Đang commit bàn giao/tích hợp dev; gồm2banner user đã xóa theo yêu cầu.
 
 - ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
