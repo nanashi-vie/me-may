@@ -4777,3 +4777,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   nhận ràng buộc title/fingerprint/lý do; match mới409, không auto đổi nguồn.
 - Audit item thêm digest tên, shipment mã để nhận ra sửa nội dung mà không
   ghi tên khách/PII. Full task4 regression đang chạy; chưa API controller/UI.
+
+### 2026-11-17 - ORDER-EXEC-C06 - Task5 keep/gia hạn/reopen/hủy
+
+- Task4 full backend345/0failure/0error/3live skips đạt. Task5 RED thiếu keep
+  service/DTO, focused final15test keep/stock/mutation đạt run-be-24.
+- Keep trừ một lần, cọc đủ hoặc explicit owner reason, thêm không gia hạn;
+  extend kiểm hạn cũ/mới≤start+30ngày lịch, expired không tự release; reopen
+  KEEP giữ hạn/tồn, IMMEDIATE nhả ACTIVE về DRAFT trước lần giao đầu; cancel
+  hoàn ACTIVE đúng một lần, không tự refund. Hai order tranh2bản cuối chỉ1đạt.
+- Ruling: V34 thiếu nơi giữ lý do gia hạn/reopen nhiều lần trong khi audit
+  không chứa free text PII; thêm V35 order_action_notes riêng tư gắn version/
+  requestId/actor/time, history trả OWNER, audit chỉ ref. Không sửa checksumV34
+  đã chạy QA, không framework mới. Spec bổ sung logical row, không đổi nghiệp vụ.
+- Kiểm fixedClock16/11, hạn14ngày/hết30/11 và trần30ngày/hết16/12, lý do được
+  lưu, stock shortage rollback cả đơn. Full task5 regression đang chạy.

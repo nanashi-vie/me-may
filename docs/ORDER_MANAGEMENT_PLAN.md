@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–3 đạt, task4 đang làm.
+**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–4 đạt, task5 đang làm.
 
 ## Global constraints
 
@@ -158,20 +158,20 @@ tests `T/order/OrderDraftTest.java`, `OrderCatalogMatchTest.java`.
 `update(long,UpdateRequest,AdminUser)`, `addItem(long,ItemRequest,AdminUser)`,
 `updateItem(long,long,ItemRequest,AdminUser)`, `removeItem(long,long,MutationMeta,AdminUser)` →MutationResult;
 `CatalogMatchService.find(String title):List<CatalogCandidate>`.
-- [ ] RED `sameBookDifferentPricesStaySeparate`:
+- [x] RED `sameBookDifferentPricesStaySeparate`:
   `assertThat(detail.items()).hasSize(2); assertThat(detail.totalQuantity()).isEqualTo(2);`
   giá120000/150000, customer ACTIVE, sáchẨn, null catalogue price bắt nhập giá cụ thể.
-- [ ] Chạy RED; test MANUAL refs NULL, archived customer reject, đổi khách có tiền409,
+- [x] Chạy RED; test MANUAL refs NULL, archived customer reject, đổi khách có tiền409,
   source snapshot bất biến, title changed làm mất match-confirm, backend phát hiện kết quả mới.
-- [ ] Implement services qua task2, create chưa trừ stock. Lock customer khi chọn;
+- [x] Implement services qua task2, create chưa trừ stock. Lock customer khi chọn;
   kiểm thuộc order/itemId, tối đa1000, quantity/weight/price đúng miền và capacity.
-- [ ] Match không dependency: SQL normalize NFD/lower/đ→d/bỏ combining marks/
+- [x] Match không dependency: SQL normalize NFD/lower/đ→d/bỏ combining marks/
   gộp whitespace, loại trash; exact đứng đầu. Fuzzy lấy≤200candidate theo prefix
   3ký tự từng token hoặc substring title, thứ tự shared-prefix/độ lệch chiều dài/id;
   Java Levenshtein normalized≥0.8, trả tối đa5, fingerprint(sorted id/version,title).
   Test `Hary Poter`→`Harry Potter`, không dấu/case, exact Ẩn/hết tồn; ghi ceiling
  200candidate, không hứa phát hiện mọi biến thể tên hoặc tải catalogue về browser.
-- [ ] GREEN tests; commit `feat: add priced order items and manual match confirmation`.
+- [x] GREEN tests; commit `feat: add priced order items and manual match confirmation`.
 
 ## Task 5 — Keep, gia hạn, reopen và hủy trước gửi
 

@@ -55,6 +55,7 @@ public class OrderMutations {
   m.put("discountAmount",d.discountAmount());m.put("shippingFee",d.shippingFee());m.put("parcelWeightGrams",d.parcelWeightGrams());m.put("codAmount",d.codAmount());m.put("declaredValue",d.declaredValue());m.put("shippingPaymentType",d.shippingPaymentType());
   m.put("orderItems",d.items().stream().map(i->Arrays.asList(i.id(),i.bookCopyId(),i.listingId(),i.unitPriceVnd(),i.quantity(),i.unitWeightGrams(),hash(i.titleSnapshot()))).toList());
   m.put("orderPayments",d.payments().stream().map(p->Arrays.asList(p.id(),p.transactionType(),p.amount(),p.voidedAt())).toList());
+  m.put("orderNotes",d.notes().stream().map(n->List.of(n.id(),n.operation(),n.version())).toList());
   m.put("orderShipments",d.shipments().stream().map(s->Arrays.asList(s.id(),s.attemptNo(),s.state(),s.trackingCode())).toList());
   return m;
  }

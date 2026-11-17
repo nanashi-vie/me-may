@@ -21,7 +21,7 @@ public final class OrderDtos {
   Status status,String fulfillmentType,long version,Instant createdAt,Instant updatedAt,Instant keepStartedAt,Instant keepUntil,int keepExtensionCount,
   long requiredDepositVnd,long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,
   boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String trackingCode,
-  List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,Totals totals,long totalQuantity,Instant serverNow){}
+  List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,Totals totals,long totalQuantity,Instant serverNow){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
   Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning){}
  public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size){}
@@ -33,5 +33,10 @@ public final class OrderDtos {
  public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}
  public record UpdateRequest(Long version,UUID requestId,String customerId,String fulfillmentType,Long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+
+ public record ActionNote(String id,String operation,String reason,long version,String actorId,Instant createdAt){}
+ public record KeepRequest(Long version,UUID requestId,Boolean allowInsufficientDeposit,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record ExtendRequest(Long version,UUID requestId,String keepUntilDate,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record ReasonRequest(Long version,UUID requestId,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
 }

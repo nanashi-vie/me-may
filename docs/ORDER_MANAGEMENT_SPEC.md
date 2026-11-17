@@ -293,6 +293,7 @@ Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước tr�
 | order_returns | order_id/item_id/quantity_received/quantity_restocked/reason/actor/time/request_id; giữ xác nhận thực nhập và chống nhập trùng, MANUAL không restock web |
 | order_payments | id/order_id; transaction_type; amount>0; payment_method; occurred_at/note; actor/time; void metadata nếu duyệt |
 | order_mutation_receipt | request_id/actor/operation/order_id/fingerprint/kết quả tối thiểu; unique scope; không log raw payload hoặc trả dữ liệu trước auth |
+| order_action_notes | reason riêng tư, order/version/requestId/operation/actor/time; audit chỉ giữ ref, lưu đủ lý do gia hạn/reopen |
 
 orders có discount_amount≥0; tổng hàng/weight/paid/paymentStatus tính backend,
 không phải field client được sửa. Finalize lưu snapshot declaredValue/parcel.
@@ -392,7 +393,6 @@ main/deploy theo workflow. Thực thi theo plan hiện hành, không tự migrat
 Đã chốt16/11: giá cụ thể từng cuốn, keep trừ tồn ngay, chỉ admin, tiệm thu cả
 ship nhập tay; hoàn tiền chỉ xác nhận khi thực hoàn; bàn giao→Hoàn tất và nhập
 mã vận đơn; chủ ghi Không thành công rồi gửi lại/mã mới hoặc hoàn/nhập tồn.
-Reopen trước gửi theo đề xuất đã duyệt; trần keep30ngày gồm14ngày đầu.
 
 Chốt17/11: bill gồm hàng+ship; tiệm trả J&T từng đơn, mặc định PP_CASH.
 Owner duyệt spec17/11: VOID nhập sai, bắt mã vận đơn trước bàn giao và mặc định
