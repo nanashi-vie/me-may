@@ -5025,3 +5025,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   main book list khóa mutation, dialog lookup khóa searching/locked/refreshing.
   Gỡ CSS nút pagination cũ, footer số kết quả giữ nguyên, mobile dùng chiều rộng thật.
 - Chưa build/browser/review/deploy. Tiếp theo task3 và commit cả hai banner theo user.
+
+### 2026-11-17 - PAGINATION-C06 - Browser QA và fix layout
+
+- Build SSR/Workers và proxy đạt sau khi chạy ngoài sandbox; lần đầu esbuild
+  sandbox abort và proxy/web EPERM listen, không sửa business code để né lỗi đó.
+- Browser Playwright dùng API giả, shell CSR và cổng4211 riêng, không DB/live.
+  Public9nhóm đạt: URL/Back/filter,1440/390/320, nút44px, một bộ điều khiển hiển thị,
+  nền đỏ/chữ trắng, theme tối, Enter, đầu/cuối,0/1trang, collection.
+- Admin14nhóm đạt: sách/trash, khách/đơn1440/390/320, lịch sử đơn, lookup khách/
+  sách, queue sidebar/dialog390 và audit. Ảnh output/playwright/pagination;
+  script/log .local/pagination, mock không thay nghiệm thu live.
+- Hai lỗi browser được tái hiện trước fix: nhãn absolute sr-only bảng đơn tràn
+  ngoài vùng cuộn (ẩn pager vẫn1002/390), position:relative vùng cuộn đưa về390;
+  container query trong fieldset làm nav mất sau đổi page (before68px/after0).
+  Tắt containment trong fieldset và fallback viewport720px giữ nav68px sau chuyển.
+  Wrapper riêng/đổi display:contents không giải quyết nên không giữ các thử đó.
+- Script ban đầu đợi text1 khớp10 hoặc chọn5 khi mobile đã ẩn; sửa điều kiện
+  đợi chính xác và chọn số đang hiển thị. Wrapper cần ngoài sandbox và callback
+  async page. Các lỗi harness này không là lỗi application.
+- Focused21case và full410tests đạt sau fix; build cuối/review đang thực hiện.
+  CSR shell có warning thiếu hydration và HMR WebSocket bị môi trường chặn;
+  không coi lượt CSR là bằng chứng hydration SSR. Chưa deploy.

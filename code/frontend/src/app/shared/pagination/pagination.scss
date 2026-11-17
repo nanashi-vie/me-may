@@ -3,6 +3,9 @@
   min-width: 0;
   container-type: inline-size;
 }
+// Chromium can drop the contained flex layout when a fieldset's buttons update.
+// Forms use the viewport fallback below; other contexts retain container sizing.
+:host-context(fieldset) { container-type: normal; }
 nav {
   display: flex;
   align-items: center;
@@ -41,6 +44,11 @@ button:disabled { opacity: .4; cursor: default; }
 svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
 .gap { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; color: var(--muted, #68615a); }
 @container (max-width: 440px) {
+  .wide { display: none; }
+  .compact { display: contents; }
+  nav { gap: 0; }
+}
+@media (max-width: 720px) {
   .wide { display: none; }
   .compact { display: contents; }
   nav { gap: 0; }

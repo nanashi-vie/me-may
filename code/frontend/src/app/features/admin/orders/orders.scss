@@ -180,6 +180,7 @@ input[type='checkbox'] {
   min-width: 0;
 }
 .table-scroll {
+  position: relative;
   overflow-x: auto;
   max-width: 100%;
 }

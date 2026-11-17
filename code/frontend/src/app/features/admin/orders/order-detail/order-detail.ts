@@ -55,7 +55,7 @@ type Panel =
   | 'edit';
 @Component({
   selector: 'app-order-detail',
-  imports: [Pagination, 
+  imports: [Pagination,
     DatePipe,
     KeyValuePipe,
     FormsModule,
