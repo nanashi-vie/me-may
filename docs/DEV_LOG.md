@@ -4850,3 +4850,21 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   nhập trùng, không resend sau đóng; audit fail rollback stock/return/receipt.
 - OrderDetail thêm return history riêng tư; audit chỉ số/ref, không recipient/
   phone/address. Full task7 regression đang chạy, chưa controller/UI/browser.
+
+### 2026-11-17 - ORDER-EXEC-C09 - Task8 HTTP/read model và privacy
+
+- Task7 full backend374/0failure/0error/3skip đạt. Task8 RED7case HTTP404 và
+  thiếu customer count. Thêm OrderController/OrderQueryService: whitelist record
+  payload, reject float/string/bool cho integer và reject numeric JSON ID;
+  no-store/OWNER/CSRF, structured manual-match409, DELETE reason JSON body.
+- List/stats filter/paging/date inclusive theo HCM, literal wildcard/SQL safe;
+  summary SQL lateral aggregate, không gọi detail N+1. Customer count OWNER
+  aggregate3trạng thái giữ/chờ giao/hoàn tất; STAFF null và không query order.
+- Import actor resolver ban đầu sai package, đối chiếu source sửa về common;
+  focused19case API/privacy/customer đạt. Bổ sung test sale-reference RED7000→0,
+  thêm salePriceVnd chỉ campaign đang hiệu lực; missing unitPrice vẫn400.
+- Final focused22case API/privacy/customer/match đạt run-be-40. Kiểm date ranh
+ 17/11 23:59:59 vs18/11 00:00 HCM, invalid filters, cross-order404, unknown fields,
+  numeric coercion400, owner201/STAFF403/anonymous401/CSRF403, public không PII.
+- Full task8 đang chạy; tiếp theo client/list rồi chi tiết/form. Chưa browser
+  hoặc deploy/live migrate, không xem module hoàn tất chỉ vì backend đã có API.

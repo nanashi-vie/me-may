@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** thực thi tuần tự17/11; task1–6 và lý do xóa keep đạt; task7 đang làm.
+**Trạng thái:** thực thi tuần tự17/11; task1–7 và lý do xóa keep đạt; task8 đang làm.
 
 ## Global constraints
 
@@ -217,26 +217,26 @@ tests `T/order/OrderShippingTest.java`, `OrderReturnTest.java`.
 `updateShipping(long,ShippingRequest,AdminUser)` cho PATCH shipping,
 `fail(long,ReasonRequest,AdminUser)`, `resend(long,ShippingRequest,AdminUser)`,
 `abortResend(long,ReasonRequest,AdminUser)`, `returnOrder(long,ReturnRequest,AdminUser)` →MutationResult.
-- [ ] RED `handoffCompletesWithoutMarkingPaid`:
+- [x] RED `handoffCompletesWithoutMarkingPaid`:
   `assertThat(result.status()).isEqualTo(Status.COMPLETED);`
   `assertThat(after.totals().paidAmount()).isEqualTo(before.totals().paidAmount());`
   `assertThat(stockAfter).isEqualTo(stockBefore);`.
-- [ ] Chạy RED; test finalize thiếu phone/address/weight/ship, overrideReview,
+- [x] Chạy RED; test finalize thiếu phone/address/weight/ship, overrideReview,
   declaredValue excludes ship, COD0 hợp lệ, đổi ship/payment/refund buộc review,
   tracking bắt buộc, snapshot khác lần giao, invalid transition409.
-- [ ] Implement finalize lần đầu trừ draft/giữ ACTIVE keep; một PLANNED shipment,
+- [x] Implement finalize lần đầu trừ draft/giữ ACTIVE keep; một PLANNED shipment,
   fee/COD/recipient/weight snapshot; PP_CASH/EXPRESS/parcel1, không cộng ship hai lần.
   PATCH shipping: READY review field/kiện/COD; COMPLETED chỉ sửa tracking có lý do,
   không sửa fee/recipient/weight của lần đã bàn giao, không đè lịch sử lần trước.
-- [ ] Ship consume ACTIVE lần đầu, CONSUMED giữ nguyên ở resend; COMPLETED
+- [x] Ship consume ACTIVE lần đầu, CONSUMED giữ nguyên ở resend; COMPLETED
   không đợi delivery hoặc paid. Fail chỉ ghi owner/time/reason, không hoàn gì.
   Resend dùng CONSUMED chưa return, snapshot mới/tracking mới; phụ phí chỉ
   tăng charge đúng phần owner nhập thu thêm, review COD; abort về UNSUCCESSFUL.
-- [ ] Return nhận từng item0..quantity, nhập lại chỉ CATALOG thực nhập;
+- [x] Return nhận từng item0..quantity, nhập lại chỉ CATALOG thực nhập;
   0≤quantityRestocked≤quantityReceived≤quantity; vượt trả400, không đổi stock.
   đồng thời lưu phần không restock/lý do, đóng CANCELLED; retry không cộng lại,
   audit lỗi rollback; sau đóng không resend; refund qua task6 độc lập.
-- [ ] GREEN tests + stock/mutation/payment tests; commit `feat: complete orders on handoff and handle manual returns`.
+- [x] GREEN tests + stock/mutation/payment tests; commit `feat: complete orders on handoff and handle manual returns`.
 
 ## Task 8 — API/read model và tích hợp khách hàng
 

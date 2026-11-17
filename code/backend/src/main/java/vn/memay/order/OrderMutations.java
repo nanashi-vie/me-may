@@ -13,8 +13,9 @@ import static vn.memay.order.OrderDtos.*;
 public class OrderMutations {
  private final OrderRepository db;private final AuditService audit;
  public OrderMutations(OrderRepository db,AuditService audit){this.db=db;this.audit=audit;}
- public void requireOwner(AdminUser actor){
-  if(actor==null||actor.getId()==null||db.jdbc.queryForList("select id from admin_user where id=? and active=true and role='OWNER' for share",Long.class,actor.getId()).isEmpty())throw new AdminApiException(403,"forbidden");
+ public void requireOwner(AdminUser actor){requireOwner(actor,true);}
+ public void requireOwner(AdminUser actor,boolean lock){
+  if(actor==null||actor.getId()==null||db.jdbc.queryForList("select id from admin_user where id=? and active=true and role='OWNER'"+(lock?" for share":""),Long.class,actor.getId()).isEmpty())throw new AdminApiException(403,"forbidden");
  }
  @Transactional
  public MutationResult run(AdminUser actor,String operation,Long orderId,MutationMeta meta,Object payload,LongSupplier write){

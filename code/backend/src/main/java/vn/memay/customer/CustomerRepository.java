@@ -14,7 +14,7 @@ public class CustomerRepository {
  public Optional<CustomerDetail> find(long id,boolean forUpdate){return jdbc.query("select * from customer where id=?"+(forUpdate?" for update":""),DETAIL,id).stream().findFirst();}
  public CustomerDetail insert(CustomerWrite w,long actorId,Instant now){return jdbc.queryForObject("insert into customer(full_name,phone,default_address,zalo_name,tiktok_id,threads_id,note,created_by,created_at,updated_at) values(?,?,?,?,?,?,?,?,?,?) returning *",DETAIL,w.fullName(),w.phone(),w.defaultAddress(),w.zaloName(),w.tiktokId(),w.threadsId(),w.note(),actorId,Timestamp.from(now),Timestamp.from(now));}
 
- public Page<CustomerSummary> list(String q,String status,int page,int size){
+ public Page<CustomerSummary> list(String q,String status,int page,int size,boolean includeOrders){
   var args=new ArrayList<Object>();var where=new StringBuilder(" where true");
   if(!status.equals("ALL")){where.append(" and status=?");args.add(status);}
   if(!q.isEmpty()){
@@ -31,7 +31,7 @@ public class CustomerRepository {
   }
   long total=jdbc.queryForObject("select count(*) from customer"+where,Long.class,args.toArray());
   Collections.addAll(args,size,(long)page*size);
-  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,zalo_name,tiktok_id,threads_id,status,version,created_at from customer"+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant()),args.toArray());
+  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,zalo_name,tiktok_id,threads_id,status,version,created_at,"+(includeOrders?"coalesce(oc.order_count,0)":"null::bigint")+" order_count from customer"+(includeOrders?" left join (select customer_id,count(*) order_count from orders where status in ('KEEPING','READY_TO_SHIP','COMPLETED') group by customer_id) oc on oc.customer_id=customer.id":"")+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant(),r.getObject("order_count",Long.class)),args.toArray());
   return new Page<>(items,page,size,total,(total+size-1)/size);
  }
  private static String literal(String s){return "%"+s.replace("!","!!").replace("%","!%").replace("_","!_")+"%";}
