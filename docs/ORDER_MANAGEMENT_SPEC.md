@@ -107,8 +107,8 @@ book_variant/listing, không giữ/trừ tồn website. Các FK catalogue phải
 CATALOG lưu book_copy_id/listing_id khớp nhau và snapshot mã/tên/giá/trọng lượng.
 Ảnh để nhận diện, thiếu có fallback; không giữ media vĩnh viễn vì item.
 
-DRAFT/KEEPING được thêm/sửa/xóa có xác nhận. KEEPING cập nhật reservation cùng
-transaction; không có tình huống item đã lưu nhưng giữ tồn thất bại.
+DRAFT/KEEPING được thêm/sửa/xóa; KEEPING xóa/giảm quantity bắt buộc nhập lý do.
+Lưu snapshot cuốn/số bỏ/actor/time trong history; hoàn tồn cùng transaction.
 Draft được thiếu weight CATALOG trong lúc bổ sung; chỉ giữ/chốt khi
 mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở draft.
 
@@ -293,7 +293,7 @@ Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước tr�
 | order_returns | order_id/item_id/quantity_received/quantity_restocked/reason/actor/time/request_id; giữ xác nhận thực nhập và chống nhập trùng, MANUAL không restock web |
 | order_payments | id/order_id; transaction_type; amount>0; payment_method; occurred_at/note; actor/time; void metadata nếu duyệt |
 | order_mutation_receipt | request_id/actor/operation/order_id/fingerprint/kết quả tối thiểu; unique scope; không log raw payload hoặc trả dữ liệu trước auth |
-| order_action_notes | reason riêng tư, order/version/requestId/operation/actor/time; audit chỉ giữ ref, lưu đủ lý do gia hạn/reopen |
+| order_action_notes | reason riêng tư, order/version/requestId/operation/actor/time; snapshot item/mã/tên/số lượng bỏ khi xóa/giảm KEEPING; audit chỉ giữ ref |
 
 orders có discount_amount≥0; tổng hàng/weight/paid/paymentStatus tính backend,
 không phải field client được sửa. Finalize lưu snapshot declaredValue/parcel.
@@ -314,8 +314,8 @@ Page={items,page,size,totalElements,totalPages}, không trả entity trực ti�
 | POST rỗng | customerId/fulfillmentType/requestId →201 DRAFT, mã server |
 | PUT /{id} | Field whitelist của trạng thái chỉnh được + version/requestId |
 | POST /{id}/items | CATALOG refs hoặc MANUAL fields, giá cụ thể + version/requestId |
-| PATCH /{id}/items/{itemId} | quantity/giá/weight cho phép + version/requestId |
-| DELETE /{id}/items/{itemId} | Expected version/requestId qua query/header đã quy định trong plan; UI confirm |
+| PATCH /{id}/items/{itemId} | quantity/giá/weight + version/requestId; giảm quantity khi KEEPING phải có reason |
+| DELETE /{id}/items/{itemId} | JSON {version,requestId,reason}; KEEPING bắt reason không trắng, tối đa1000; UI confirm |
 | POST /{id}/payments, /payments/{paymentId}/void | Ghi nhận tiền/điều chỉnh nếu duyệt; version/requestId/lý do |
 | POST /{id}/keep, /extend-keep | Kiểm cọc/reserve hoặc gia hạn có lý do |
 | POST /{id}/finalize, /reopen | Chốt giao hoặc mở sửa có audit, không PATCH status |

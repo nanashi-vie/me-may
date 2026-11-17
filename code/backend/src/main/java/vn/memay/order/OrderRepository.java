@@ -24,7 +24,9 @@ public class OrderRepository {
  public static long lng(Map<String,Object> r,String k){return r.get(k)==null?0:((Number)r.get(k)).longValue();}
  public static Long nullableLong(Map<String,Object> r,String k){return r.get(k)==null?null:((Number)r.get(k)).longValue();}
  public static Instant time(Map<String,Object> r,String k){return r.get(k)==null?null:((Timestamp)r.get(k)).toInstant();}
- public List<ActionNote> notes(long id){return jdbc.query("select * from order_action_notes where order_id=? order by id",(r,n)->new ActionNote(r.getString("id"),r.getString("operation"),r.getString("reason"),r.getLong("order_version"),r.getString("actor_id"),r.getTimestamp("created_at").toInstant()),id);}
+ public List<ActionNote> notes(long id){return jdbc.query("select * from order_action_notes where order_id=? order by id",(r,n)->new ActionNote(r.getString("id"),r.getString("operation"),r.getString("reason"),r.getLong("order_version"),r.getString("actor_id"),r.getTimestamp("created_at").toInstant(),r.getString("item_id"),r.getString("book_code_snapshot"),r.getString("title_snapshot"),r.getObject("quantity_removed",Long.class)),id);}
  public void note(long id,String operation,String reason,MutationMeta meta,vn.memay.auth.AdminUser actor){jdbc.update("insert into order_action_notes(order_id,operation,reason,order_version,request_id,actor_id,created_at) select id,?,?,version+1,?,?,? from orders where id=?",operation,reason,meta.requestId(),actor.getId(),Timestamp.from(clock.instant()),id);}
+
+ public void noteItem(long id,String operation,String reason,MutationMeta meta,vn.memay.auth.AdminUser actor,OrderItem item,long removed){jdbc.update("insert into order_action_notes(order_id,operation,reason,order_version,request_id,actor_id,created_at,item_id,book_code_snapshot,title_snapshot,quantity_removed) select id,?,?,version+1,?,?,?,?,?,?,? from orders where id=?",operation,reason,meta.requestId(),actor.getId(),Timestamp.from(clock.instant()),Long.parseLong(item.id()),item.bookCodeSnapshot(),item.titleSnapshot(),removed,id);}
 
 }

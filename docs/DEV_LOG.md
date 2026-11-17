@@ -4806,3 +4806,30 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Full task6 đang chạy; task7 sẽ triển khai handoff/fail/resend/return sau gate.
   Chưa controller/UI, chưa deploy/live migrate; không coi unit/integration là
   bằng chứng browser hoặc môi trường thật.
+
+### 2026-11-17 - KEEP-REMOVE-REASON-C01 - User bổ sung lý do bắt buộc
+
+- Trong lúc triển khai, user yêu cầu xóa sách khỏi đơn KEEPING phải nhập lý do.
+  Áp dụng cả giảm quantity vì cũng bỏ bớt sách; giá/weight sửa riêng không bị
+  yêu cầu lý do theo rule này. User scope được cập nhật SPEC/PLAN/PROGRESS.
+- Task6 full backend357/0failure/0error/3skip đạt trước bổ sung. Đang viết RED
+  xóa/giảm keep thiếu lý do, dự kiến trả400 và giữ item/stock/version nguyên.
+- Sẽ lưu private reason + snapshot mã/tên/itemId/quantityRemoved/actor/time,
+  liên kết version/requestId; audit chỉ ref, giữ nguyên khi item đã xóa.
+  DELETE dùng JSON ReasonRequest thay query meta để reason không vào URL.
+- Chưa có UI order; ghi requirement vào task8/10 để kiểm cả client/server.
+  Chưa sửa dữ liệu thật; task7 tiếp tục sau verification bổ sung này.
+
+### 2026-11-17 - KEEP-REMOVE-REASON-C02 - Backend RED→GREEN
+
+- RED2case thực tế: xóa/giảm quantity KEEPING không throw khi thiếu reason
+  (run-be-29). Sửa removeItem nhận ReasonRequest, ItemRequest thêm reason;
+  KEEPING xóa/giảm bắt nonblank≤1000, DRAFT không bị buộc lý do.
+- V36 thêm itemId/code/title/quantityRemoved snapshot vào private action notes,
+  không FK dòng item để history sống sau delete. Reason/history và hoàn tồn
+  trong một transaction; replay cùng request chỉ một lần restore.
+- Final focused OrderDraftTest/OrderMutationTest/OrderKeepTest22case đạt
+  run-be-30: missing/blank400 giữ dữ liệu/version, reason snapshot/actor/số bỏ,
+  xóa/retry restore một lần, giảm quantity có history, DRAFT vẫn xóa không lý do.
+- Full backend addendum đang chạy. UI tương ứng vẫn phải làm trong task10;
+  không coi backend focused là hoàn tất toàn module. Chưa deploy/migrate live.

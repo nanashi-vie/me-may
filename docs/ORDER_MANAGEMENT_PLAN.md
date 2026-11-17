@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–5 đạt, task6 đang làm.
+**Trạng thái:** thực thi tuần tự17/11; task1–6 đạt, bổ sung lý do xóa keep trước task7.
 
 ## Global constraints
 
@@ -156,7 +156,7 @@ BookTrashService; tests `T/order/OrderStockConcurrencyTest.java`, `OrderPurgeTes
 tests `T/order/OrderDraftTest.java`, `OrderCatalogMatchTest.java`.
 **Produces:** `create(CreateRequest,AdminUser):MutationResult`,
 `update(long,UpdateRequest,AdminUser)`, `addItem(long,ItemRequest,AdminUser)`,
-`updateItem(long,long,ItemRequest,AdminUser)`, `removeItem(long,long,MutationMeta,AdminUser)` →MutationResult;
+`updateItem(long,long,ItemRequest,AdminUser)`, `removeItem(long,long,ReasonRequest,AdminUser)` →MutationResult;
 `CatalogMatchService.find(String title):List<CatalogCandidate>`.
 - [x] RED `sameBookDifferentPricesStaySeparate`:
   `assertThat(detail.items()).hasSize(2); assertThat(detail.totalQuantity()).isEqualTo(2);`
@@ -172,6 +172,8 @@ tests `T/order/OrderDraftTest.java`, `OrderCatalogMatchTest.java`.
   Test `Hary Poter`→`Harry Potter`, không dấu/case, exact Ẩn/hết tồn; ghi ceiling
  200candidate, không hứa phát hiện mọi biến thể tên hoặc tải catalogue về browser.
 - [x] GREEN tests; commit `feat: add priced order items and manual match confirmation`.
+- [ ] Bổ sung user17/11: xóa/giảm quantity KEEPING bắt reason; snapshot item/số bỏ
+  trong private history, thiếu/trắng400 không đổi tồn; UI/API cũng phải kiểm.
 
 ## Task 5 — Keep, gia hạn, reopen và hủy trước gửi
 
@@ -246,7 +248,7 @@ tests `T/order/OrderApiTest.java`, `OrderPrivacyTest.java`, CustomerIntegrationT
   no-store, page20/max100, same filters stats/count toàn bộ kết quả không chỉ page.
 - [ ] Chạy RED; test mã/tên/phone/customerId/date range bao gồm ngày đến bằng
   exclusive next-day HCM; wildcard literal, unknown fields400, cross-order id404,
-  DELETE expected version/requestId query params (không cần đổi AdminHttp).
+  DELETE JSON ReasonRequest version/requestId/reason (AdminHttp hỗ trợ body).
 - [ ] Wire DTO/action whitelist; map lỗi spec, không PATCH status thường. GET
   catalog không lộ trash, lookup không dựa publication public; detail không live-join
   customer/book để dựng snapshot cũ. Catalog/match paging server, match tối đa5.
@@ -291,6 +293,7 @@ detail gọi OrderApi rồi reload, không dùng MutationResult cũ ghi đè det
   Không copy số dư/dates/nút disabled hoặc tên/SĐT trong ảnh làm logic/fixtures.
 - [ ] Item form theo ảnh MANUAL, dùng VndInput hiện có không làm tròn nghìn;
   CATALOG có tìm/mã/ảnh/giá tham khảo→nhập giá chốt, MANUAL confirm với backend.
+  Xóa/giảm KEEPING mở form reason bắt buộc, giữ form khi400 và hiển thị history.
 - [ ] Shipping form nhận recipient/fee/weight/COD PP_CASH; preview tổng có ship,
   khai giá không ship; xác nhận tracking và handoff. Hoàn tất vẫn hiện tiền còn thu;
   fail/resend/abort/return/refund có confirm/lý do, lượng thực nhập và lịch sử mã.

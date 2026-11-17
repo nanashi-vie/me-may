@@ -52,7 +52,34 @@ class OrderDraftTest extends OrderTestSupport {
   jdbc.update("insert into order_reservation(order_id,book_copy_id,quantity,state) values(?,?,1,'ACTIVE')",id,book);
   drafts.addItem(id,item(1,"CATALOG",b.id(),null,200L,1,300L,null),owner);
   assertThat(queries.detail(book,owner).totalStock()).isZero();
-  var last=orders.require(id,false).items().getLast();drafts.removeItem(id,Long.parseLong(last.id()),new MutationMeta(2L,UUID.randomUUID()),owner);
+  var last=orders.require(id,false).items().getLast();drafts.removeItem(id,Long.parseLong(last.id()),new ReasonRequest(2L,UUID.randomUUID(),"Book no longer wanted"),owner);
   assertThat(queries.detail(book,owner).totalStock()).isEqualTo(1);
  }
+ @Autowired OrderKeepService keeps;
+ private long removableKeep(){var b=ready();jdbc.update("update book_variant set stock=2 where book_copy_id=?",Long.parseLong(b.id()));var d=drafts.create(new CreateRequest(Long.toString(customer()),"KEEP",UUID.randomUUID()),owner);long id=Long.parseLong(d.id());drafts.addItem(id,item(0,"CATALOG",b.id(),null,100L,2,250L,null),owner);keeps.keep(id,new KeepRequest(1L,UUID.randomUUID(),true,"Owner keep exception"),owner);return id;}
+ @Test void removingKeepingItemRequiresReason(){
+  long id=removableKeep();var d=orders.require(id,false);var line=d.items().getFirst();
+  assertThatThrownBy(()->drafts.removeItem(id,Long.parseLong(line.id()),new ReasonRequest(2L,UUID.randomUUID(),null),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.status).isEqualTo(400));
+  assertThat(orders.require(id,false).items()).hasSize(1);assertThat(queries.detail(Long.parseLong(line.bookCopyId()),owner).totalStock()).isZero();assertThat(orders.require(id,false).version()).isEqualTo(2);
+ }
+ @Test void reducingKeepingQuantityAlsoRequiresReason(){
+  long id=removableKeep();var line=orders.require(id,false).items().getFirst();
+  assertThatThrownBy(()->drafts.updateItem(id,Long.parseLong(line.id()),item(2,"CATALOG",line.bookCopyId(),null,100L,1,250L,null),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.status).isEqualTo(400));
+  assertThat(queries.detail(Long.parseLong(line.bookCopyId()),owner).totalStock()).isZero();assertThat(orders.require(id,false).items().getFirst().quantity()).isEqualTo(2);
+ }
+
+ @Test void reasonHistorySurvivesDeletionAndRetryRestoresOnlyOnce(){
+  long id=removableKeep();var line=orders.require(id,false).items().getFirst();var r=new ReasonRequest(2L,UUID.randomUUID(),"Customer changed choice");
+  assertThatThrownBy(()->drafts.removeItem(id,Long.parseLong(line.id()),new ReasonRequest(2L,UUID.randomUUID(),"  "),owner)).isInstanceOf(AdminApiException.class);
+  var first=drafts.removeItem(id,Long.parseLong(line.id()),r,owner);assertThat(drafts.removeItem(id,Long.parseLong(line.id()),r,owner)).isEqualTo(first);
+  var d=orders.require(id,false);assertThat(d.items()).isEmpty();assertThat(queries.detail(Long.parseLong(line.bookCopyId()),owner).totalStock()).isEqualTo(2);
+  var note=d.notes().getLast();assertThat(note.reason()).isEqualTo("Customer changed choice");assertThat(note.itemId()).isEqualTo(line.id());assertThat(note.bookCodeSnapshot()).isEqualTo(line.bookCodeSnapshot());assertThat(note.titleSnapshot()).isEqualTo(line.titleSnapshot());assertThat(note.quantityRemoved()).isEqualTo(2);assertThat(note.actorId()).isEqualTo(owner.getId().toString());
+ }
+ @Test void quantityReductionStoresReasonAndRemovedQuantity(){
+  long id=removableKeep();var line=orders.require(id,false).items().getFirst();
+  drafts.updateItem(id,Long.parseLong(line.id()),new ItemRequest(2L,UUID.randomUUID(),"CATALOG",line.bookCopyId(),null,100L,1L,250L,null,"Customer reduced quantity"),owner);
+  var d=orders.require(id,false);assertThat(d.items().getFirst().quantity()).isEqualTo(1);assertThat(d.notes().getLast().quantityRemoved()).isEqualTo(1);assertThat(d.notes().getLast().reason()).isEqualTo("Customer reduced quantity");assertThat(queries.detail(Long.parseLong(line.bookCopyId()),owner).totalStock()).isEqualTo(1);
+ }
+ @Test void draftRemovalDoesNotRequireReason(){long id=draft();long item=manual(id,100L,1,250);drafts.removeItem(id,item,new ReasonRequest(0L,UUID.randomUUID(),null),owner);assertThat(orders.require(id,false).items()).isEmpty();}
+
 }

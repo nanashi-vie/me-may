@@ -30,8 +30,9 @@ public class OrderDraftService {
  });}
  public MutationResult addItem(long id,ItemRequest r,AdminUser actor){return mutations.run(actor,"ITEM_ADD",id,r.meta(),r,()->{writeItem(id,null,r,actor);return id;});}
  public MutationResult updateItem(long id,long itemId,ItemRequest r,AdminUser actor){return mutations.run(actor,"ITEM_UPDATE",id,r.meta(),Arrays.asList(itemId,r),()->{writeItem(id,itemId,r,actor);return id;});}
- public MutationResult removeItem(long id,long itemId,MutationMeta meta,AdminUser actor){return mutations.run(actor,"ITEM_REMOVE",id,meta,itemId,()->{
-  var d=db.require(id,false);editable(d);if(d.items().stream().noneMatch(i->i.id().equals(Long.toString(itemId))))throw new AdminApiException(404,"not_found");
+ public MutationResult removeItem(long id,long itemId,ReasonRequest r,AdminUser actor){return mutations.run(actor,"ITEM_REMOVE",id,r.meta(),Arrays.asList(itemId,r),()->{
+  var d=db.require(id,false);editable(d);var item=d.items().stream().filter(i->i.id().equals(Long.toString(itemId))).findFirst().orElseThrow(()->new AdminApiException(404,"not_found"));
+  String reason=text(r.reason(),"reason",1000,d.status()==Status.KEEPING);if(reason!=null)db.noteItem(id,"ITEM_REMOVE",reason,r.meta(),actor,item,item.quantity());
   db.jdbc.update("delete from order_items where id=? and order_id=?",itemId,id);if(d.status()==Status.KEEPING)inventory.sync(id,actor);else inventory.checkDraft(id);refresh(id,true,true);return id;
  });}
  private void writeItem(long id,Long itemId,ItemRequest r,AdminUser actor){
@@ -39,6 +40,8 @@ public class OrderDraftService {
   String source=text(r.sourceType()==null&&old!=null?old.sourceType():r.sourceType(),"sourceType",16,true);if(!Set.of("CATALOG","MANUAL").contains(source))throw AdminApiException.field("sourceType","Chọn nguồn sách");
   if(old!=null&&!source.equals(old.sourceType()))throw AdminApiException.field("sourceType","Không đổi nguồn của dòng đã thêm");
   long price=number(r.unitPriceVnd(),"unitPriceVnd",0,MAX_PRICE),quantity=number(r.quantity(),"quantity",1,999999);Long weight=r.unitWeightGrams();
+  boolean reduced=old!=null&&quantity<old.quantity();String reductionReason=text(r.reason(),"reason",1000,reduced&&d.status()==Status.KEEPING);
+  if(reduced&&reductionReason!=null)db.noteItem(id,"ITEM_QUANTITY_REDUCED",reductionReason,r.meta(),actor,old,old.quantity()-quantity);
   Long book=null,listing=null;String code=null,title,reason=null,evidence=null;
   if(source.equals("CATALOG")){
    book=id(r.bookCopyId()==null&&old!=null?old.bookCopyId():r.bookCopyId(),"bookCopyId");

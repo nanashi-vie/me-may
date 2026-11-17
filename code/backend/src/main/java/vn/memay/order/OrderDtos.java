@@ -32,9 +32,12 @@ public final class OrderDtos {
  public record MatchConfirmation(String normalizedTitle,String fingerprint,String reason){}
  public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}
  public record UpdateRequest(Long version,UUID requestId,String customerId,String fulfillmentType,Long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
- public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation,String reason){
+  public ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){this(version,requestId,sourceType,bookCopyId,title,unitPriceVnd,quantity,unitWeightGrams,matchConfirmation,null);}
+  public MutationMeta meta(){return new MutationMeta(version,requestId);}
+ }
 
- public record ActionNote(String id,String operation,String reason,long version,String actorId,Instant createdAt){}
+ public record ActionNote(String id,String operation,String reason,long version,String actorId,Instant createdAt,String itemId,String bookCodeSnapshot,String titleSnapshot,Long quantityRemoved){}
  public record KeepRequest(Long version,UUID requestId,Boolean allowInsufficientDeposit,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ExtendRequest(Long version,UUID requestId,String keepUntilDate,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ReasonRequest(Long version,UUID requestId,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
