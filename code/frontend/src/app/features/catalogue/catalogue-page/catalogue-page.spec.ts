@@ -8,6 +8,30 @@ import { CataloguePage } from './catalogue-page';
 import { BookCard } from '../book-card/book-card';
 import { PublicApi } from '../public-api';
 import { PublicBook, Page } from '../public.models';
+import { testBook } from '../../admin/books/book-test-fixture';
+describe('Catalogue numbered pagination', () => {
+  it.each(['/sach', '/bo-suu-tap/mua-he'])('keeps applied filters on %s when jumping to a numbered page', async (path) => {
+    const book: PublicBook = { ...testBook(), conditionGrade: null, conditionNote: null, title: 'Book', categoryCode: 'BOARD_BOOK', salePriceVnd: null, saleEndsAt: null, variants: [] };
+    const books = vi.fn((filter: { page: number }) => {
+      const page = { items: [book], page: filter.page - 1, size: 20, totalElements: 200, totalPages: 10 };
+      return of(path.startsWith('/bo-suu-tap') ? { collection: { slug: 'mua-he', name: 'Mùa hè' }, books: page } : page);
+    });
+    TestBed.configureTestingModule({ providers: [
+      provideRouter([{ path: 'sach', component: CataloguePage }, { path: 'bo-suu-tap/:slug', component: CataloguePage }]),
+      { provide: PublicApi, useValue: { books, taxonomy: () => of({ categories: [], ageGroups: [], bindings: [], readingLevels: [] }) } },
+    ] });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl(path + '?q=cat&category=PICTURE_BOOK&age=AGE_4_6&sort=price_asc', CataloguePage);
+    c.draft.age = ['AGE_0_3'];
+    h.detectChanges();
+    const button = h.routeNativeElement!.querySelector<HTMLButtonElement>('app-pagination button[aria-label="Trang 5"]');
+    expect(button).not.toBeNull();
+    button!.click();
+    await h.fixture.whenStable();
+    expect(books.mock.calls.at(-1)![0]).toEqual(expect.objectContaining({ page: 5, q: 'cat', age: ['AGE_4_6'], category: 'PICTURE_BOOK', sort: 'price_asc' }));
+    expect(TestBed.inject(Router).url).toContain('page=5');
+  });
+});
 describe('Catalogue route responses', () => {
   it('back/forward query changes cancel obsolete results', async () => {
     const first = new Subject<Page<PublicBook>>(),

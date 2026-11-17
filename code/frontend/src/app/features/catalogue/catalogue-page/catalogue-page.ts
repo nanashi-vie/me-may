@@ -1,3 +1,4 @@
+import { Pagination } from '../../../shared/pagination/pagination';
 import { PublicSkeleton } from '../public-skeleton/public-skeleton';
 import { Component, RESPONSE_INIT, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +23,7 @@ import { TaxonomyOption } from '../../admin/books/book.models';
 
 @Component({
   selector: 'app-catalogue-page',
-  imports: [PublicSkeleton, FormsModule, RouterLink, BookCard, PublicError],
+  imports: [Pagination, PublicSkeleton, FormsModule, RouterLink, BookCard, PublicError],
   templateUrl: './catalogue-page.html',
   styleUrl: './catalogue-page.scss',
 })
@@ -154,6 +155,13 @@ export class CataloguePage {
     const f = { ...this.draft, page };
     if (!f.category || f.category === 'BOARD_BOOK') f.binding = '';
     void this.router.navigate([], { relativeTo: this.route, queryParams: filterParams(f) });
+  }
+
+  changePage(page: number) {
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: filterParams({ ...this.applied(), page: page + 1 }),
+    });
   }
 
   reset() {

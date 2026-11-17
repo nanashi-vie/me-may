@@ -417,8 +417,7 @@
           </li>
         } @empty { <li>Không có sách phù hợp.</li> }
       </ul>
-      <button type="button" class="secondary" [disabled]="pending.page === 0" (click)="loadQueue(pending.page - 1)">Trước</button>
-      <button type="button" class="secondary" [disabled]="pending.page + 1 >= pending.totalPages" (click)="loadQueue(pending.page + 1)">Sau</button>
+      <app-pagination [page]="pending.page" [totalPages]="pending.totalPages" [disabled]="queueLoading() || formDisabled()" (pageChange)="loadQueue($event)" />
     }
   </ng-template>
 }

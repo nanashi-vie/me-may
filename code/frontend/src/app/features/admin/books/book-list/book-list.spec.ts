@@ -7,6 +7,19 @@ import { vi } from 'vitest';
 import { BookList } from './book-list';
 import { BookApi } from '../book-api';
 describe('BookList', () => {
+  it('jumps directly using applied admin filters and locks pagination during loading/mutation', () => {
+    const { f, root, open, textClick, navigate } = setupFilters(new Map([['q', 'cat'], ['publication', 'ARCHIVED']]));
+    f.componentInstance.result.set({ items: [], page: 0, size: 20, totalElements: 200, totalPages: 10 });
+    open(); textClick('Công khai'); f.detectChanges();
+    const button = root.querySelector<HTMLButtonElement>('app-pagination button[aria-label="Trang 5"]');
+    expect(button).not.toBeNull();
+    button!.click();
+    expect(navigate).toHaveBeenLastCalledWith([], expect.objectContaining({ queryParams: expect.objectContaining({ q: 'cat', publication: 'ARCHIVED', page: 4 }) }));
+    f.componentInstance.loading.set(true); f.detectChanges();
+    expect(root.querySelector<HTMLButtonElement>('app-pagination button[aria-label="Trang 5"]')?.disabled).toBe(true);
+    f.componentInstance.loading.set(false); f.componentInstance.mutationBusy.set(true); f.detectChanges();
+    expect(root.querySelector<HTMLButtonElement>('app-pagination button[aria-label="Trang 5"]')?.disabled).toBe(true);
+  });
   it('highlights the whole row with a source reason and clears it when verified', () => {
     const item = {id:'7',bookCode:'MM-000007',title:'Book',publication:'PUBLISHED',version:1,
       priceMinVnd:20000,priceMaxVnd:20000,totalStock:1,unverifiedSourceRoles:['FRONT','BACK']};

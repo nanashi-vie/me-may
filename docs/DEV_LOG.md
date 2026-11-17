@@ -5013,3 +5013,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   trong tối khi --red đổi sang hồng nhạt. Hover/focus vẫn theo --red/theme.
 - Chưa thay màn chủ, chưa build/browser/deploy. Tiếp theo test tích hợp rồi thay
   public, admin và các khung phụ tuần tự. Hai banner sẽ commit lúc bàn giao.
+
+### 2026-11-17 - PAGINATION-C05 - Tích hợp public/admin
+
+- Thay10cụm phân trang ở9component, gồm catalogue/collection, books/trash/audit/
+  queue, customers/orders/history và lookup khách/sách. Giữ handler/API/URL/pageSize.
+- RED2 có5assertion thất bại vì chưa có nút số; GREEN2 đạt34case. Full68files/
+  410tests đạt (suite2). Test public/collection giữ age đã apply, admin giữ publication
+  đã apply; audit không gửi click khi loading, lookup không submit form/khóa busy.
+- Bổ sung trashLoading/queueLoading theo request sequence để khóa nút số khi tải;
+  main book list khóa mutation, dialog lookup khóa searching/locked/refreshing.
+  Gỡ CSS nút pagination cũ, footer số kết quả giữ nguyên, mobile dùng chiều rộng thật.
+- Chưa build/browser/review/deploy. Tiếp theo task3 và commit cả hai banner theo user.

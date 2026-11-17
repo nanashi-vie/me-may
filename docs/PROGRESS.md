@@ -5,7 +5,7 @@ Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - PAGINATION-C03 (17/11): [thiết kế](PAGINATION_SPEC.md) đã duyệt; thực thi tuần tự
   theo [kế hoạch](PAGINATION_PLAN.md) trên codex/shared-pagination từ dev.
-  User yêu cầu commit cả hai banner đã xóa; đang kiểm baseline rồi làm component.
+  Component/tích hợp10vị trí đã qua410FE; tiếp theo SSR/Workers/browser/review.
 
 - ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.

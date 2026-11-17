@@ -158,26 +158,7 @@
       }
       <footer class="pagination">
         <span>{{ result.totalElements }} đơn hàng</span>
-        <div>
-          <button
-            type="button"
-            class="secondary"
-            [disabled]="filter().page === 0"
-            (click)="navigate({ page: filter().page - 1 })"
-            aria-label="Trang trước"
-          >
-            ‹</button
-          ><span>Trang {{ filter().page + 1 }} / {{ result.totalPages || 1 }}</span
-          ><button
-            type="button"
-            class="secondary"
-            [disabled]="filter().page + 1 >= result.totalPages"
-            (click)="navigate({ page: filter().page + 1 })"
-            aria-label="Trang sau"
-          >
-            ›
-          </button>
-        </div>
+        <app-pagination [page]="filter().page" [totalPages]="result.totalPages" [disabled]="loading()" (pageChange)="navigate({ page: $event })" />
       </footer>
     }
   }

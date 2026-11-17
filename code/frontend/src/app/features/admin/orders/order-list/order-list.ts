@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -26,7 +27,7 @@ import {
 import { keepEnd, vnd } from '../order-values';
 @Component({
   selector: 'app-order-list',
-  imports: [RouterLink, DatePipe],
+  imports: [Pagination, RouterLink, DatePipe],
   templateUrl: './order-list.html',
   styleUrls: ['../orders.scss', './order-list.scss'],
 })

@@ -66,10 +66,7 @@
           </li>
         } @empty { <li>Thùng rác trống.</li> }
       </ul>
-      <div class="pagination">
-        <button type="button" class="secondary" [disabled]="trash.page === 0 || mutationBusy()" (click)="showTrash(trash.page - 1)">Trang trước</button>
-        <button type="button" class="secondary" [disabled]="trash.page + 1 >= trash.totalPages || mutationBusy()" (click)="showTrash(trash.page + 1)">Trang sau</button>
-      </div>
+      <app-pagination [page]="trash.page" [totalPages]="trash.totalPages" [disabled]="mutationBusy() || trashLoading()" (pageChange)="showTrash($event)" />
     }
   </section>
 } @else {
@@ -336,22 +333,7 @@
       </tbody>
     </table>
   </div>
-  <nav class="pagination" aria-label="Phân trang">
-    <button
-      class="secondary"
-      [disabled]="data.page === 0 || loading()"
-      (click)="search(data.page - 1)"
-    >
-      Trang trước</button
-    ><span>Trang {{ data.page + 1 }} / {{ data.totalPages || 1 }}</span
-    ><button
-      class="secondary"
-      [disabled]="data.page + 1 >= data.totalPages || loading()"
-      (click)="search(data.page + 1)"
-    >
-      Trang sau
-    </button>
-  </nav>
+  <app-pagination class="pagination" [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
 }
 }
 <dialog #trashDialog aria-labelledby="trash-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">

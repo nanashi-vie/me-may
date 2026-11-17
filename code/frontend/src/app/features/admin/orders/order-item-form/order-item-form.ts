@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import {
   Component,
   DestroyRef,
@@ -24,7 +25,7 @@ import { integer, product, vnd } from '../order-values';
 type ItemDraft = Omit<ItemWrite, 'version' | 'requestId'>;
 @Component({
   selector: 'app-order-item-form',
-  imports: [FormsModule, VndInput],
+  imports: [Pagination, FormsModule, VndInput],
   templateUrl: './order-item-form.html',
   styleUrl: '../orders.scss',
 })
