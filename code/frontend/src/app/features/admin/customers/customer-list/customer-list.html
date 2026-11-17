@@ -86,24 +86,7 @@
     }
     <footer class="pagination">
       <span>{{ result.totalElements }} khách hàng</span>
-      <div>
-        <button
-          class="secondary"
-          [disabled]="filter().page === 0"
-          (click)="goPage(filter().page - 1)"
-          aria-label="Trang trước"
-        >
-          ‹</button
-        ><span>Trang {{ filter().page + 1 }} / {{ result.totalPages || 1 }}</span
-        ><button
-          class="secondary"
-          [disabled]="filter().page + 1 >= result.totalPages"
-          (click)="goPage(filter().page + 1)"
-          aria-label="Trang sau"
-        >
-          ›
-        </button>
-      </div>
+      <app-pagination [page]="filter().page" [totalPages]="result.totalPages" [disabled]="loading()" (pageChange)="goPage($event)" />
     </footer>
     @if (!result.items.length && filter().page > 0) {
       <button class="secondary" (click)="goPage(0)">Về trang đầu</button>

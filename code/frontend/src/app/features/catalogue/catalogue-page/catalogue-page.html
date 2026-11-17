@@ -115,19 +115,7 @@
             <app-book-card [book]="b" [now]="now()" />
           }
         </div>
-        <nav class="pagination" aria-label="Phân trang">
-          <button class="secondary" [disabled]="page()!.page === 0" (click)="apply(page()!.page)">
-            Trang trước
-          </button>
-          <span>Trang {{ page()!.page + 1 }} / {{ page()!.totalPages }}</span>
-          <button
-            class="secondary"
-            [disabled]="page()!.page + 1 >= page()!.totalPages"
-            (click)="apply(page()!.page + 2)"
-          >
-            Trang sau
-          </button>
-        </nav>
+        <app-pagination class="pagination" [page]="page()!.page" [totalPages]="page()!.totalPages" [disabled]="loading()" (pageChange)="changePage($event)" />
       } @else {
         <div class="empty">
           <h2>Chưa có cuốn phù hợp</h2>

@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import { DatePipe, JsonPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, OnChanges, inject, input, output, signal } from '@angular/core';
@@ -7,7 +8,7 @@ import { AuditSummary, Page } from '../book.models';
 
 @Component({
   selector: 'app-book-audit-panel',
-  imports: [DatePipe, JsonPipe],
+  imports: [Pagination, DatePipe, JsonPipe],
   templateUrl: './book-audit-panel.html',
   styleUrl: './book-audit-panel.scss',
 })

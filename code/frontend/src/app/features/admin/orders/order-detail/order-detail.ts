@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import {
   Component,
   DestroyRef,
@@ -54,7 +55,7 @@ type Panel =
   | 'edit';
 @Component({
   selector: 'app-order-detail',
-  imports: [
+  imports: [Pagination,
     DatePipe,
     KeyValuePipe,
     FormsModule,

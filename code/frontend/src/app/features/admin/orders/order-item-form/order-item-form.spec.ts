@@ -25,6 +25,26 @@ const item = {
   unitWeightGrams: 250,
 } as OrderItem;
 describe('OrderItemForm', () => {
+  it('pages the catalogue without submitting the form and blocks busy lookup clicks', async () => {
+    vi.useFakeTimers();
+    try {
+      const { c, f, api } = setup();
+      const response = {items: [], page: 0, size: 20, totalElements: 200, totalPages: 10};
+      api.catalog.mockReturnValue(of(response));
+      c.open(order); c.q = 'cat';
+      await vi.advanceTimersByTimeAsync(300); f.detectChanges();
+      const saved = vi.fn(); c.saved.subscribe(saved);
+      const button = f.nativeElement.querySelector('app-pagination button[aria-label="Trang 5"]') as HTMLButtonElement;
+      expect(button).not.toBeNull();
+      button.click(); f.detectChanges();
+      expect(button.disabled).toBe(true);
+      await vi.advanceTimersByTimeAsync(300);
+      expect(api.catalog).toHaveBeenLastCalledWith('cat', 4);
+      expect(saved).not.toHaveBeenCalled();
+      c.locked.set(true); f.detectChanges();
+      expect(f.nativeElement.querySelector('app-pagination button[aria-label="Trang 5"]').disabled).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
   it('computes exact manual totals and requires a reason for keep reduction', () => {
     const { c } = setup();
     c.open(order, item);

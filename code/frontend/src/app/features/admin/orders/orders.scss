@@ -180,6 +180,7 @@ input[type='checkbox'] {
   min-width: 0;
 }
 .table-scroll {
+  position: relative;
   overflow-x: auto;
   max-width: 100%;
 }
@@ -235,6 +236,8 @@ td:last-child {
 .success-text {
   color: #24723f;
 }
+.pagination app-pagination { flex: 1; min-width: 0; }
+.pagination > span { flex-shrink: 0; }
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -243,15 +246,6 @@ td:last-child {
   margin-top: 22px;
   color: var(--muted);
   font-size: 0.85rem;
-}
-.pagination > div {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.pagination button {
-  padding: 4px 15px;
-  font-size: 1.2rem;
 }
 .empty {
   padding: 42px 16px;
@@ -359,6 +353,7 @@ td:last-child {
   .heading {
     gap: 16px;
   }
+  .pagination app-pagination { width: 100%; }
   .pagination {
     align-items: flex-start;
     flex-direction: column;

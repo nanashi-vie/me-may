@@ -4966,3 +4966,119 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Việc tiếp theo là gate rollout riêng theo DEPLOYMENT: xác minh schema live,
   backup/restore, backend trước FE và smoke/security/cache/SEO trên live.
   Checkpoint này là commit tài liệu sau push candidate; không đổi application code.
+
+### 2026-11-17 - PAGINATION-C01 - Khảo sát pagination
+
+- User yêu cầu phân trang theo ảnh cho public/admin; dùng Superpowers brainstorming.
+  Đề xuất component Angular chung: mũi tên, số, dấu chấm lửng, trang hiện tại nền
+  than bo góc; phạm vi gồm cả các khung phụ đang có phân trang.
+- Đọc chỉ mục/PROGRESS/checkpoint mới nhất và mục liên quan MASTER/DESIGN.
+  Graph không thấy component pagination frontend; tìm literal template xác định
+  catalogue, book list/trash/audit/queue, customer/order list/history/lookup.
+- Git dev theo origin/dev; hai deletion hero-banner-1584.webp/800.webp có sẵn giữ
+  nguyên. Chỉ sửa tài liệu bàn giao; chưa sửa application code, chưa commit/push.
+- Chưa chạy test/build/browser vì chưa triển khai. Lệnh cập nhật log bằng Python
+  lỗi encoding trước khi ghi; chuyển apply_patch. Chờ user chọn hướng/phạm vi rồi
+  viết thiết kế ngắn để duyệt theo brainstorming, sau đó lập kế hoạch thực thi.
+- Không deploy, truy cập DB/live hoặc đổi công việc đã hoàn tất.
+
+### 2026-11-17 - PAGINATION-C02 - Chốt hướng và màu đỏ
+
+- User đồng ý component chung/phạm vi và yêu cầu đỏ đồng bộ web. Kiểm styles.scss:
+  token thương hiệu --red hiện #b32635; dùng token thay màu than trong ảnh.
+- Viết PAGINATION_SPEC.md ngắn, đăng ký README và cập nhật PROGRESS: phạm vi
+  danh sách/khung phụ, responsive7/5vị trí, keyboard, loading/empty/one-page,
+  bảo toàn filter/URL/API và nghiệm thu. Chi tiết này là đề xuất chờ user duyệt.
+- Chưa code/test/build/browser hoặc deploy; thay đổi còn local, chưa commit.
+  Tiếp theo duyệt spec rồi writing-plans, triển khai và kiểm chứng theo spec.
+
+### 2026-11-17 - PAGINATION-C03 - Bắt đầu thực thi tuần tự
+
+- User duyệt spec/yêu cầu tuần tự; sau đó yêu cầu commit cả hai banner đã xóa.
+  Tạo codex/shared-pagination từ dev3818ee1 (khớp origin/dev), làm tại checkout
+  hiện tại theo workflow AGENTS. Không tạo worktree mới hoặc làm song song.
+- Viết PAGINATION_PLAN, cập nhật trạng thái spec/chỉ mục/PROGRESS; triển khai native
+  theo executing-plans và TDD. Theo yêu cầu triển khai hiện tại, không xin duyệt
+  thêm kế hoạch lặp lại; scope/kiến trúc giữ đúng spec đã duyệt.
+- Baseline npm test đang chạy, output /tmp/memay-pagination-baseline.log.
+  Chưa sửa application code, chưa có kết quả test/build/browser mới.
+
+### 2026-11-17 - PAGINATION-C04 - Component chung
+
+- Tạo shared/pagination với token số có giới hạn7/5, nút44px, ARIA/keyboard,
+  container query thu gọn theo không gian thực (kể cả dialog), không dependency.
+- RED thiếu module (red1); focused14test đạt (green1), full68files/405tests đạt
+  qua task-done1. Baseline67files/391tests đạt. Log /tmp/memay-pagination-*.log.
+- Nền selected dùng --action: cùng #b32635 ở sáng/admin, giữ tương phản chữ trắng
+  trong tối khi --red đổi sang hồng nhạt. Hover/focus vẫn theo --red/theme.
+- Chưa thay màn chủ, chưa build/browser/deploy. Tiếp theo test tích hợp rồi thay
+  public, admin và các khung phụ tuần tự. Hai banner sẽ commit lúc bàn giao.
+
+### 2026-11-17 - PAGINATION-C05 - Tích hợp public/admin
+
+- Thay10cụm phân trang ở9component, gồm catalogue/collection, books/trash/audit/
+  queue, customers/orders/history và lookup khách/sách. Giữ handler/API/URL/pageSize.
+- RED2 có5assertion thất bại vì chưa có nút số; GREEN2 đạt34case. Full68files/
+  410tests đạt (suite2). Test public/collection giữ age đã apply, admin giữ publication
+  đã apply; audit không gửi click khi loading, lookup không submit form/khóa busy.
+- Bổ sung trashLoading/queueLoading theo request sequence để khóa nút số khi tải;
+  main book list khóa mutation, dialog lookup khóa searching/locked/refreshing.
+  Gỡ CSS nút pagination cũ, footer số kết quả giữ nguyên, mobile dùng chiều rộng thật.
+- Chưa build/browser/review/deploy. Tiếp theo task3 và commit cả hai banner theo user.
+
+### 2026-11-17 - PAGINATION-C06 - Browser QA và fix layout
+
+- Build SSR/Workers và proxy đạt sau khi chạy ngoài sandbox; lần đầu esbuild
+  sandbox abort và proxy/web EPERM listen, không sửa business code để né lỗi đó.
+- Browser Playwright dùng API giả, shell CSR và cổng4211 riêng, không DB/live.
+  Public9nhóm đạt: URL/Back/filter,1440/390/320, nút44px, một bộ điều khiển hiển thị,
+  nền đỏ/chữ trắng, theme tối, Enter, đầu/cuối,0/1trang, collection.
+- Admin14nhóm đạt: sách/trash, khách/đơn1440/390/320, lịch sử đơn, lookup khách/
+  sách, queue sidebar/dialog390 và audit. Ảnh output/playwright/pagination;
+  script/log .local/pagination, mock không thay nghiệm thu live.
+- Hai lỗi browser được tái hiện trước fix: nhãn absolute sr-only bảng đơn tràn
+  ngoài vùng cuộn (ẩn pager vẫn1002/390), position:relative vùng cuộn đưa về390;
+  container query trong fieldset làm nav mất sau đổi page (before68px/after0).
+  Tắt containment trong fieldset và fallback viewport720px giữ nav68px sau chuyển.
+  Wrapper riêng/đổi display:contents không giải quyết nên không giữ các thử đó.
+- Script ban đầu đợi text1 khớp10 hoặc chọn5 khi mobile đã ẩn; sửa điều kiện
+  đợi chính xác và chọn số đang hiển thị. Wrapper cần ngoài sandbox và callback
+  async page. Các lỗi harness này không là lỗi application.
+- Focused21case và full410tests đạt sau fix; build cuối/review đang thực hiện.
+  CSR shell có warning thiếu hydration và HMR WebSocket bị môi trường chặn;
+  không coi lượt CSR là bằng chứng hydration SSR. Chưa deploy.
+
+### 2026-11-17 - PAGINATION-C07 - Nghiệm thu và bàn giao
+
+- Candidate a4fb57b: full68files/410tests đạt (final-tests2); SSR final-build và
+  Workers final-workers exit0/không warning, proxy final-proxy PASS. Không nới
+  budget/thêm dependency; frontend-only nên không chạy lại backend không đổi.
+- Browser public9/admin14nhóm đạt tại C06; fieldset repro riêng sau fix giữ68px
+  trước/sau đổi trang (cli35), admin complete cli38. Đã xem ảnh mobile public,
+  desktop admin và dialog queue390; nút đỏ/bo góc/vùng chạm đúng mẫu đã duyệt.
+- Review độc lập3818ee1..a4fb57b:0Critical/Important/Minor, declined-to-judge=[];
+  không có phát hiện hoãn. Reviewer đọc diff/handlers/layout, không tự chạy lại
+  tests/browser; bằng chứng runtime do implementer chạy, không mô tả là2lần QA.
+- Gộp đủ contract/tiêu chí vào PAGINATION, trỏ DESIGN/README/VERIFICATION, gỡ
+  spec/plan hết vai trò. User đồng ý cả2banner đã xóa vào commit bàn giao;
+  không còn reference dùng2tên file này ngoài lịch sử log.
+- Quyết định kỹ thuật: nền selected dùng --action thay --red để giữ đỏ/chữ trắng
+  trong tối; khác nhẹ màu accent chữ dark. Không thay phạm vi/UI đã duyệt.
+- Chuẩn bị commit/tích hợp/pushdev theo AGENTS; main/deploy/DB live không đổi.
+  Gate còn mở tiếp tục theo DEPLOYMENT/PROGRESS, không tự đóng bằng QA pagination.
+
+### 2026-11-17 - PAGINATION-C08 - Tích hợp dev và dọn QA
+
+- Component f511bca, tích hợp af1f60e, fix layout a4fb57b, bàn giao88befad gồm
+  cả2deletion hero-banner-1584.webp/800.webp theo user. Fetch origin không có
+  thay đổi xen kẽ; fast-forward dev3818ee1→88befad và push origin/dev thành công.
+  HEAD/origin/dev khớp88befad20b9980d9a3c32050f9b1a72ca47fb374 sau push.
+- Public QA chạy lại với CSS cuối đạt9nhóm (cli39); admin14nhóm đạt (cli38).
+  Candidate ứng dụng không đổi sau410FE/SSR/Workers/proxy/review; không lặp suite
+  cho thay đổi chỉ tài liệu. Markdown tracked≤400 (DEV_LOG ngoại lệ), local links,
+  không còn link spec/plan thay thế và diff-check đạt; QA/env/scratch được ignore.
+- Browser pagination đã đóng, frontend QA4211/PID14349 đã dừng; không mở BE/DB
+  hoặc động dịch vụ khác. Bằng chứng/log và ledger riêng giữ .local/pagination;
+  dọn đúng workspace PAGINATION_PLAN do phiên này tạo. Không dọn worktree khác.
+- Checkpoint này là commit tài liệu sau candidate đã push; bước kế tiếp là gate
+  rollout theo DEPLOYMENT khi owner quyết định. Chưa merge/push main hoặc deploy.

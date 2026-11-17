@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import { Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -9,7 +10,7 @@ import { OrderSummary, Page, STATUS_LABELS, defaultOrderFilter } from '../order-
 import { vnd } from '../order-values';
 @Component({
   selector: 'app-customer-order-history',
-  imports: [RouterLink, DatePipe],
+  imports: [Pagination, RouterLink, DatePipe],
   template: ` @if (owner()) {
     <section class="section">
       <div class="section-heading">
@@ -49,18 +50,7 @@ import { vnd } from '../order-values';
         }
         <div class="pagination">
           <span>{{ p.totalElements }} đơn</span>
-          <div>
-            <button class="secondary" [disabled]="page() === 0" (click)="page.set(page() - 1)">
-              ‹</button
-            ><span>{{ page() + 1 }} / {{ p.totalPages || 1 }}</span
-            ><button
-              class="secondary"
-              [disabled]="page() + 1 >= p.totalPages"
-              (click)="page.set(page() + 1)"
-            >
-              ›
-            </button>
-          </div>
+          <app-pagination [page]="page()" [totalPages]="p.totalPages" [disabled]="loading()" (pageChange)="page.set($event)" />
         </div>
       }
     </section>

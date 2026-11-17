@@ -1,0 +1,28 @@
+@if (totalPages() > 0) {
+  <nav [attr.aria-label]="label()">
+    <button type="button" aria-label="Trang trước" [disabled]="disabled() || page() <= 0" (click)="select(page() - 1)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7" /></svg>
+    </button>
+    <span class="tokens wide">
+      @for (token of wide(); track $index) {
+        @if (token === 'gap') {
+          <span class="gap" aria-hidden="true">…</span>
+        } @else {
+          <button type="button" [attr.aria-label]="'Trang ' + (token + 1)" [attr.aria-current]="token === page() ? 'page' : null" [disabled]="disabled()" (click)="select(token)">{{ token + 1 }}</button>
+        }
+      }
+    </span>
+    <span class="tokens compact">
+      @for (token of compact(); track $index) {
+        @if (token === 'gap') {
+          <span class="gap" aria-hidden="true">…</span>
+        } @else {
+          <button type="button" [attr.aria-label]="'Trang ' + (token + 1)" [attr.aria-current]="token === page() ? 'page' : null" [disabled]="disabled()" (click)="select(token)">{{ token + 1 }}</button>
+        }
+      }
+    </span>
+    <button type="button" aria-label="Trang sau" [disabled]="disabled() || page() >= totalPages() - 1" (click)="select(page() + 1)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 5 7 7-7 7" /></svg>
+    </button>
+  </nav>
+}

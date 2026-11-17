@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -17,7 +18,7 @@ import { CustomerForm } from '../customer-form/customer-form';
 
 @Component({
   selector: 'app-customer-list',
-  imports: [RouterLink, CustomerForm],
+  imports: [Pagination, RouterLink, CustomerForm],
   templateUrl: './customer-list.html',
   styleUrls: ['../customer-pages.scss'],
 })

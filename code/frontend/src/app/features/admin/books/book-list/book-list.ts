@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import {AuthService} from '../../../../core/auth/auth.service';
 import { formatAdminPriceRange } from '../book-copy';
 import { Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
@@ -25,7 +26,7 @@ function createFilters() { return new FormGroup({
 
 @Component({
   selector: 'app-book-list',
-  imports: [RouterLink, ReactiveFormsModule, DatePipe],
+  imports: [Pagination, RouterLink, ReactiveFormsModule, DatePipe],
   templateUrl: './book-list.html',
   styleUrl: './book-list.scss',
 })
@@ -69,6 +70,7 @@ export class BookList {
   readonly labels = PUBLICATION_LABELS;
   readonly trashOpen = signal(false);
   readonly trashResult = signal<Page<TrashBook> | null>(null);
+  readonly trashLoading = signal(false);
   readonly mutationBusy = signal(false);
   readonly selected = signal<ReadonlySet<string>>(new Set());
   readonly photoDownloadBusy = signal(false);
@@ -193,15 +195,17 @@ export class BookList {
     if (this.mutationBusy()) return;
     this.selected.set(new Set());
     this.trashOpen.set(true);
+    this.trashLoading.set(true);
     this.error.set('');
     const sequence = ++this.trashSequence;
     this.api.trash(page).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: result => {
         if (sequence !== this.trashSequence) return;
+        this.trashLoading.set(false);
         if (page && !result.items.length) this.showTrash(page - 1);
         else this.trashResult.set(result);
       },
-      error: () => { if (sequence === this.trashSequence) this.error.set('Chưa tải được Thùng rác.'); },
+      error: () => { if (sequence === this.trashSequence) { this.trashLoading.set(false); this.error.set('Chưa tải được Thùng rác.'); } },
     });
   }
   closeTrash() {

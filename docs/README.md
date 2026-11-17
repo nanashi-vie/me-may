@@ -24,6 +24,7 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 | Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
 | CTA Quan tâm/Đã quan tâm và tim wiggle | [Contract](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [bằng chứng WISHLIST-CTA-C03](DEV_LOG.md) |
 | Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
+| Phân trang số/mũi tên public/admin, mobile, accessibility | [Contract](PAGINATION.md), [bằng chứng PAGINATION-C07](DEV_LOG.md) |
 | Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế](BOOK_COMPLETENESS_SPEC.md) |
 | Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
 | Tải ảnh sách thành ZIP | [CATALOGUE](CATALOGUE.md#tải-ảnh-sách-từ-trang-quản-trị), [bằng chứng](DEV_LOG.md#2026-11-08--s053-c04--nghiệm-thu-tải-zip-ảnh-sách) |
@@ -40,6 +41,9 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 | Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |
 
 ## Phần còn thực thi
+
+- Phân trang public/admin theo ảnh: [contract](PAGINATION.md) đã triển khai local17/11;
+  component chung/màu đỏ,410FE/SSR/Workers/proxy/browser/review đạt; chưa deploy.
 
 - Order Management: [contract](ORDERS.md) đã triển khai local17/11;
   [bằng chứng](ORDER_VERIFICATION.md) gồm kiểm thử/browser/review.

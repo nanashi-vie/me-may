@@ -61,24 +61,7 @@
           }
         </div>
         @if (customerPage(); as page) {
-          <div class="actions">
-            <button
-              type="button"
-              class="secondary"
-              [disabled]="customerPageNumber === 0"
-              (click)="searchCustomers(customerPageNumber - 1)"
-            >
-              ‹</button
-            ><span>Trang {{ customerPageNumber + 1 }} / {{ page.totalPages || 1 }}</span
-            ><button
-              type="button"
-              class="secondary"
-              [disabled]="customerPageNumber + 1 >= page.totalPages"
-              (click)="searchCustomers(customerPageNumber + 1)"
-            >
-              ›
-            </button>
-          </div>
+          <app-pagination [page]="customerPageNumber" [totalPages]="page.totalPages" [disabled]="customerLoading() || busy() || !!pending()" (pageChange)="searchCustomers($event)" />
         }
         @if (selectedCustomer(); as c) {
           <div class="section">

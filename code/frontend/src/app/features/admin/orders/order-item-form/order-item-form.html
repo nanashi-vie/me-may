@@ -79,24 +79,7 @@
               }
             </div>
             @if (catalog; as result) {
-              <div class="actions">
-                <button
-                  type="button"
-                  class="secondary"
-                  [disabled]="page === 0"
-                  (click)="search(page - 1)"
-                >
-                  ‹</button
-                ><span>Trang {{ page + 1 }} / {{ result.totalPages || 1 }}</span
-                ><button
-                  type="button"
-                  class="secondary"
-                  [disabled]="page + 1 >= result.totalPages"
-                  (click)="search(page + 1)"
-                >
-                  ›
-                </button>
-              </div>
+              <app-pagination [page]="page" [totalPages]="result.totalPages" [disabled]="searching() || locked() || refreshing()" (pageChange)="search($event)" />
             }
           }
           @if (model.bookCopyId) {

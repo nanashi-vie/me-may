@@ -4,6 +4,22 @@ import { vi } from 'vitest';
 import { BookAuditPanel } from './book-audit-panel';
 import { BookApi } from '../book-api';
 describe('Book audit', () => {
+  it('requests a numbered audit page once and blocks repeated clicks while loading', () => {
+    const next = new Subject<any>();
+    const audit = vi.fn().mockReturnValueOnce(of({items: [], page: 0, size: 20, totalElements: 200, totalPages: 10})).mockReturnValue(next);
+    TestBed.configureTestingModule({ providers: [{ provide: BookApi, useValue: { audit } }] });
+    const f = TestBed.createComponent(BookAuditPanel);
+    f.componentRef.setInput('bookId', '7'); f.detectChanges();
+    f.componentInstance.toggle(true); f.detectChanges();
+    const button = f.nativeElement.querySelector('app-pagination button[aria-label="Trang 5"]') as HTMLButtonElement;
+    expect(button).not.toBeNull();
+    button.click(); f.detectChanges(); button.click();
+    expect(audit).toHaveBeenCalledTimes(2);
+    expect(audit).toHaveBeenLastCalledWith('7', 4);
+    expect(button.disabled).toBe(true);
+    next.next({items: [], page: 4, size: 20, totalElements: 200, totalPages: 10}); f.detectChanges();
+    expect(f.nativeElement.querySelector('[aria-current="page"]').textContent.trim()).toBe('5');
+  });
   it('requests explicit audit page and renders business values as escaped text', () => {
     const audit = vi.fn(() =>
       of({

@@ -1,3 +1,4 @@
+import { Pagination } from '../../../../shared/pagination/pagination';
 import { NgTemplateOutlet } from '@angular/common';
 import type { BookSummary, Page } from '../book.models';
 import { BookDetailHandoff } from '../book-detail-handoff';
@@ -32,7 +33,7 @@ import { MEDIA_LABELS, PRICE_NOTE, READING_NOTE } from '../book-copy';
 @Component({
   selector: 'app-book-editor',
   providers: [BookUploadQueue],
-  imports: [NgTemplateOutlet, VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
+  imports: [Pagination, NgTemplateOutlet, VndInput, ReactiveFormsModule, RouterLink, BookMediaPanel, BookStatusActions, BookAuditPanel],
   templateUrl: './book-editor.html',
   styleUrl: './book-editor.scss',
 })
@@ -248,6 +249,7 @@ export class BookEditor {
   private readonly returnScroll = this.router.currentNavigation?.()?.extras.state?.['returnScroll'] ?? 0;
   readonly queue = signal<Page<BookSummary> | null>(null);
   readonly queueError = signal('');
+  readonly queueLoading = signal(false);
   readonly queueTotal = signal<number | null>(null);
   readonly queueSearch = new FormControl('', {nonNullable:true});
   private queueSequence = 0;
@@ -282,17 +284,19 @@ export class BookEditor {
     this.loadQueue();
   }
   loadQueue(page=0) {
+    this.queueLoading.set(true);
     const sequence=++this.queueSequence;
     const q=this.queueSearch.value.trim();
     this.queueError.set('');
     this.api.list({...(this.missingQueue() ? {missingOnly:true} : {unpublishedOnly:true}),q,page}).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: result => {
         if (sequence!==this.queueSequence) return;
+        this.queueLoading.set(false);
         this.queue.set(result);
         if (!q) this.queueTotal.set(result.totalElements);
       },
       error: () => {
-        if (sequence===this.queueSequence) this.queueError.set('Chưa tải được danh sách. Thử lại.');
+        if (sequence===this.queueSequence) { this.queueLoading.set(false); this.queueError.set('Chưa tải được danh sách. Thử lại.'); }
       },
     });
   }
