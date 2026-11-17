@@ -4698,3 +4698,36 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Commit/push docs+ảnh dev, không stage2hero deletions, không code/deploy/main.
   Bước tiếp: owner xem plan và chọn Native hoặc Subagent-driven trước code theo
   writing-plans, đề xuất Native do các task chia sẻ transaction/version/tồn.
+
+### 2026-11-17 - ORDER-EXEC-C01 - Dọn customers và bắt đầu thực thi tuần tự
+
+- User duyệt plan, chọn triển khai tuần tự và yêu cầu dọn customers/me-may trước.
+  Worktree sạch, branch codex/hero-banners45bc83d đã trong dev, không ahead.
+  Native list_artifacts không có attachment để archive; dùng git worktree remove
+  sau backup48file ignored, surefire reports và wrangler state tại
+  .local/worktree-cleanup/customers-20261117. Xóa checkout và branch đã gộp đạt;
+  giữ dev-ui, hai hero deletions tại local vẫn không stage.
+- Dùng executing-plans/TDD; branch codex/order-management từ3898e40. Không tạo
+  managed worktree mới sau cleanup; ledger ghi rủi ro isolation. Native tuần tự,
+  không delegate implementer; fresh reviewer cuối theo skill.
+- Khởi tạo PostgreSQL QA ephemeral memay-order-test,127.0.0.1:55447/me_may_test;
+  không dùng my-postgres hoặc dịch vụ memay-local-images đang chạy. Baseline
+  BE/FE đang chạy; task1 chưa có code. Ledger/brief/log riêng cho plan trong
+  .superpowers/sdd/ORDER_MANAGEMENT_PLAN, wrapper QA ignored .local/orders.
+- Sandbox chặn Git ref/Docker socket, rerun bằng escalation đúng phạm vi đạt.
+  Chưa triển khai/migrate môi trường thật, không main/deploy.
+
+### 2026-11-17 - ORDER-EXEC-C02 - Task1 schema và phép tính
+
+- Baseline BE320/0failure/0error/3live skips đạt; FE lần đầu366/367 do spy
+  ShippingPromoDialog giữ5calls, chạy riêng6/6 rồi toàn bộ367/367 đạt mà không
+  đổi code. Ghi nhận lỗi isolation không ổn định có sẵn, không che bằng skip.
+- Task1 thêm V34 bảy bảng order/ledger/reservation/shipment/return/receipt,
+  DTO/repository JDBC và checked math/keep clock; test fixtures synthetic và
+  cleanup FK trong PgTestData. Không chạy Flyway trên DB thật.
+- RED migration thiếuV34, validation thiếu implementation; GREEN final focused
+  OrderMigrationTest/OrderValidationTest7test đạt (run-be-8). Kiểm overflow,
+  ship chưa biết/weight chưa biết, cọc/refund/VOID, thời hạn HCM/leap day và
+  migrate33→34 giữ sách/khách/FK/constraint. Full backend regression đang chạy.
+- Code branch codex/order-management; task1 commit cùng docs bàn giao, task2
+  chỉ bắt đầu khi verification task1 đạt. Hai hero deletions chưa stage.
