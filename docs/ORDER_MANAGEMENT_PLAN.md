@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** thực thi tuần tự17/11; task1–6 đạt, bổ sung lý do xóa keep trước task7.
+**Trạng thái:** thực thi tuần tự17/11; task1–6 và lý do xóa keep đạt; task7 đang làm.
 
 ## Global constraints
 
@@ -199,15 +199,15 @@ tests `T/order/OrderDraftTest.java`, `OrderCatalogMatchTest.java`.
 **Files:** OrderPaymentService/OrderRepository; test `T/order/OrderPaymentTest.java`.
 **Produces:** `record(long,PaymentRequest,AdminUser):MutationResult`,
 `voidPayment(long,long paymentId,ReasonRequest,AdminUser):MutationResult`.
-- [ ] RED `depositPlusShippingBalance`/`refundRequiresActualConfirmation`:
+- [x] RED `depositPlusShippingBalance`/`refundRequiresActualConfirmation`:
   `assertThat(detail.totals().balance()).isEqualTo(430000);`
   với goods500000/ship30000/deposit100000; đổi status không tự tạo REFUND/PAYMENT.
-- [ ] Chạy RED; test multiple/partial/overpaid/0/overflow, refund>received400,
+- [x] Chạy RED; test multiple/partial/overpaid/0/overflow, refund>received400,
   VOID nhận tiền làm refund vượt nhận bị chặn, nhập sai giữ dấu vết, reason bắt buộc.
-- [ ] Implement ledger dương/actor/time/method và actualConfirmed cho REFUND;
+- [x] Implement ledger dương/actor/time/method và actualConfirmed cho REFUND;
   không tự quyết giữ cọc/hoàn hết. Order đã hủy chỉ refund/VOID hợp lệ, không nhận mới.
   Changes balance đặt codNeedsReview cho lần giao chưa bàn giao; replay chống thu hai lần.
-- [ ] Chạy GREEN + OrderMutationTest; commit `feat: record actual payments refunds and corrections`.
+- [x] Chạy GREEN + OrderMutationTest; commit `feat: record actual payments refunds and corrections`.
 
 ## Task 7 — Chốt giao, hoàn tất, gửi lại và hoàn đơn
 

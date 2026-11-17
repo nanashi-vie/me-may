@@ -4833,3 +4833,20 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   xóa/retry restore một lần, giảm quantity có history, DRAFT vẫn xóa không lý do.
 - Full backend addendum đang chạy. UI tương ứng vẫn phải làm trong task10;
   không coi backend focused là hoàn tất toàn module. Chưa deploy/migrate live.
+
+### 2026-11-17 - ORDER-EXEC-C08 - Task7 chốt giao/gửi lại/hoàn đơn
+
+- Bổ sung lý do keep full backend362/0failure/0error/3skip đạt run-be-31,
+  tiếp tục task7 tuần tự; không dừng task đơn hàng vì user bổ sung rule.
+- Task7 RED thiếu shipping/return service/DTO. Focused final25test shipping/
+  return/stock/mutations/payment đạt run-be-33: finalize validation/COD0,
+  weight override review, receipt/phí ship đổi bắt COD review, tracking required
+  và sửa mã có lý do/audit, keep→finalize→ship không trừ kho thêm.
+- Handoff→COMPLETED không tự PAYMENT. Fail không tự refund/restock; resend
+  snapshot mới/cod/phụ phí chỉ thu thêm, abort giữ lịch sử; hai lần gửi cùng
+  đơn giữ mã cũ, không cộng lại phí cũ hoặc trừ tồn lại.
+- Return xác nhận actual/đủ từng dòng/quantityReceived≥restocked, MANUAL không
+  nhập kho web, stock CATALOG chỉ phần thực nhập; đóng CANCELLED/retry không
+  nhập trùng, không resend sau đóng; audit fail rollback stock/return/receipt.
+- OrderDetail thêm return history riêng tư; audit chỉ số/ref, không recipient/
+  phone/address. Full task7 regression đang chạy, chưa controller/UI/browser.

@@ -57,7 +57,7 @@ public class AuditService {
         publicCache.changed();
     }
     public void recordOrder(AdminUser actor,long targetId,String action,Map<String,Object> before,Map<String,Object> after,long version) {
-        var fields=Set.of("status","fulfillmentType","customerId","keepUntil","discountAmount","shippingFee","parcelWeightGrams","codAmount","declaredValue","shippingPaymentType","orderItems","orderPayments","orderShipments","orderNotes","recipientNameChanged","recipientPhoneChanged","shippingAddressChanged");
+        var fields=Set.of("status","fulfillmentType","customerId","keepUntil","discountAmount","shippingFee","parcelWeightGrams","codAmount","declaredValue","shippingPaymentType","orderItems","orderPayments","orderShipments","orderNotes","orderReturns","recipientNameChanged","recipientPhoneChanged","shippingAddressChanged");
         var a=new LinkedHashMap<String,Object>();var b=new LinkedHashMap<String,Object>();
         for(String key:fields)if(!Objects.equals(before.get(key),after.get(key))){if(before.containsKey(key))a.put(key,before.get(key));if(after.containsKey(key))b.put(key,after.get(key));}
         jdbc.update("insert into audit_event(actor_id,target_type,target_id,action,before_data,after_data,aggregate_version,created_at) values (?,'ORDER',?,?,cast(? as jsonb),cast(? as jsonb),?,?)",actor.getId(),targetId,action,mapper.writeValueAsString(a),mapper.writeValueAsString(b),version,java.sql.Timestamp.from(clock.instant()));
