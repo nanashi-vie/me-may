@@ -5066,3 +5066,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   trong tối; khác nhẹ màu accent chữ dark. Không thay phạm vi/UI đã duyệt.
 - Chuẩn bị commit/tích hợp/pushdev theo AGENTS; main/deploy/DB live không đổi.
   Gate còn mở tiếp tục theo DEPLOYMENT/PROGRESS, không tự đóng bằng QA pagination.
+
+### 2026-11-17 - PAGINATION-C08 - Tích hợp dev và dọn QA
+
+- Component f511bca, tích hợp af1f60e, fix layout a4fb57b, bàn giao88befad gồm
+  cả2deletion hero-banner-1584.webp/800.webp theo user. Fetch origin không có
+  thay đổi xen kẽ; fast-forward dev3818ee1→88befad và push origin/dev thành công.
+  HEAD/origin/dev khớp88befad20b9980d9a3c32050f9b1a72ca47fb374 sau push.
+- Public QA chạy lại với CSS cuối đạt9nhóm (cli39); admin14nhóm đạt (cli38).
+  Candidate ứng dụng không đổi sau410FE/SSR/Workers/proxy/review; không lặp suite
+  cho thay đổi chỉ tài liệu. Markdown tracked≤400 (DEV_LOG ngoại lệ), local links,
+  không còn link spec/plan thay thế và diff-check đạt; QA/env/scratch được ignore.
+- Browser pagination đã đóng, frontend QA4211/PID14349 đã dừng; không mở BE/DB
+  hoặc động dịch vụ khác. Bằng chứng/log và ledger riêng giữ .local/pagination;
+  dọn đúng workspace PAGINATION_PLAN do phiên này tạo. Không dọn worktree khác.
+- Checkpoint này là commit tài liệu sau candidate đã push; bước kế tiếp là gate
+  rollout theo DEPLOYMENT khi owner quyết định. Chưa merge/push main hoặc deploy.
