@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1 đạt, task2 đang làm.
+**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–2 đạt, task3 đang làm.
 
 ## Global constraints
 
@@ -115,19 +115,19 @@ tests `T/order/OrderMutationTest.java`, `OrderAccessTest.java`.
 **Consumes:** DTO/repository task1; auth hiện có.
 **Produces:** `OrderMutations.run(AdminUser,String operation,Long orderId,MutationMeta,Object payload,LongSupplier write):MutationResult`;
 `AuditService.recordOrder(AdminUser,long id,String action,Map before,Map after,long version):void`.
-- [ ] RED `replayDoesNotRepeatWrite`: gọi cùng request2lần,
+- [x] RED `replayDoesNotRepeatWrite`: gọi cùng request2lần,
   `assertThat(second).isEqualTo(first); assertThat(writeCount.get()).isEqualTo(1);`.
   Thêm sameKeyDifferentPayload409, stale409, auditFailureRollsBack và replayAfterRoleRevoked403.
-- [ ] Chạy OrderMutationTest/OrderAccessTest để thấy RED.
-- [ ] Implement domain wrapper @Transactional: kiểm active OWNER trước replay;
+- [x] Chạy OrderMutationTest/OrderAccessTest để thấy RED.
+- [x] Implement domain wrapper @Transactional: kiểm active OWNER trước replay;
   lock unique receipt trước order, lock order/version rồi callback, version+1 (create0),
   ghi safe numeric/ref metadata/audit/MutationResult cùng commit. Key gồm actor/
   operation/requestId; fingerprint normalized payload chứa orderId/version; replay
   trả response cũ, không trả OrderDetail hiện tại hoặc lưu payload PII trong receipt.
-- [ ] Thêm matcher OWNER `/orders` và `/orders/**` trước generic GET admin.
+- [x] Thêm matcher OWNER `/orders` và `/orders/**` trước generic GET admin.
   Audit order không dùng catalogue FIELDS rồi mất dữ liệu, không mở allowlist PII;
   nested item diff chỉ refs/giá/qty/weight/status. Không public cache cho read order.
-- [ ] GREEN hai test; commit `feat: protect order mutations with receipts and audit`.
+- [x] GREEN hai test; commit `feat: protect order mutations with receipts and audit`.
 
 ## Task 3 — Stock chung, phiên bản và vòng đời sách
 
@@ -327,5 +327,5 @@ detail gọi OrderApi rồi reload, không dùng MutationResult cũ ghi đè det
 - Typed interfaces/service names/MutationResult dùng nhất quán; read detail sau
   mutation tránh response replay cũ đè UI; không cần workflow framework/extension.
 - Kiểm năm Review focus đều có test task tương ứng; chưa chạy runtime checks.
-- Chờ owner xem plan và chọn Native hoặc Subagent-driven trước implementation,
-  theo writing-plans; đề xuất Native vì các task dùng chung order/version/tồn.
+- Owner duyệt Native/tuần tự17/11; thực thi không check-in giữa task, ledger
+  riêng ở .superpowers/sdd/ORDER_MANAGEMENT_PLAN; fresh review cuối trước tích hợp.

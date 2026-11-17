@@ -4746,3 +4746,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   chỉ một lần ghi, canonical key order, payload khác409/version409, role bị
   thu hồi vẫn403, audit fail rollback và không PII. Full suite đang chạy trước
   task3; không deploy/migrate live, chưa tích hợp dev khi toàn feature chưa xong.
+
+### 2026-11-17 - ORDER-EXEC-C04 - Task3 tồn gộp và bảo vệ purge
+
+- Task2 full backend333test/0failure/0error/3live skips đạt, ledger complete.
+- Task3 RED thấy thiếu stock service; purge thực tế cho trash khi có ACTIVE
+  và FK làm rollback job purge cả lô. Thêm BookStockService dùng parent locks
+  cùng JPA editor/status, delta pooled giữ UUID/tên/thứ tự, version/audit/cache.
+- Trash chặn ACTIVE; purge thủ công có order ref409, job bỏ qua ref trước LIMIT
+  để không ngăn sách hết hạn khác. Hoàn tồn vượt capacity rollback, không clamp.
+- Focused OrderStockConcurrencyTest/OrderPurgeTest và ba regression sách đạt
+  (run-be-17); stock1 một winner, stale editor409, giữ metadata/dòng legacy,
+  overflow không đổi tồn, job purge giữ lịch sử. Full suite task3 đang chạy.
+- Ruling ledger: thêm OrderInventory domain helper tại task4 để draft KEEPING,
+  keep và shipping dùng chung reconciler, tránh vòng phụ thuộc service. Không
+  đổi nghiệp vụ/spec; không thêm framework. Task4 đợi gate task3 đạt.

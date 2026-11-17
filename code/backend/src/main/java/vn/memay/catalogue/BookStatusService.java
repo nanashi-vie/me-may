@@ -77,7 +77,7 @@ public class BookStatusService {
     }
 
     private BookCopy find(long id, long version) {
-        var b = books.findById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
+        var b = books.findLockedById(id).orElseThrow(() -> new AdminApiException(404, "not_found"));
         if (b.version != version)
             throw AdminApiException.conflict(b.version);
         return b;

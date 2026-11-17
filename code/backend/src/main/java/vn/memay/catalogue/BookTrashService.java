@@ -57,6 +57,8 @@ public class BookTrashService {
         var deleted = (Timestamp) row.get("deleted_at");
         var now = clock.instant();
         if (trashed == (deleted != null)) return;
+        if (trashed && Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from order_reservation where book_copy_id=? and state='ACTIVE')",Boolean.class,id)))
+            throw new AdminApiException(409,"book_reserved");
         if (!trashed && !now.isBefore(deleted.toInstant().plus(RETENTION)))
             throw new AdminApiException(409, "trash_expired");
         var timestamp = Timestamp.from(now);
@@ -71,7 +73,10 @@ public class BookTrashService {
     @Transactional
     public void purgeExpired(Instant now) {
         var ids = jdbc.queryForList("""
-                select id from book_copy where deleted_at<=? order by deleted_at,id
+                select id from book_copy b where deleted_at<=?
+                and not exists(select 1 from order_items i where i.book_copy_id=b.id)
+                and not exists(select 1 from order_reservation r where r.book_copy_id=b.id)
+                order by deleted_at,id
                 limit 100 for update skip locked
                 """, Long.class, Timestamp.from(now.minus(RETENTION)));
         purge(ids);
@@ -114,6 +119,8 @@ public class BookTrashService {
 
     private void purge(List<Long> ids) {
         for (long id : ids) {
+            if(Boolean.TRUE.equals(jdbc.queryForObject("select exists(select 1 from order_items where book_copy_id=?) or exists(select 1 from order_reservation where book_copy_id=?)",Boolean.class,id,id)))
+                throw new AdminApiException(409,"book_order_reference");
             jdbc.update("""
                     update book_media set book_copy_id=null,
                         state=case when state='ACTIVE' then 'DELETE_PENDING' else state end
