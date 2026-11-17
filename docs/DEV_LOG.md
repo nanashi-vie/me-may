@@ -4661,3 +4661,40 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Base dev/702ba86; commit/push docs dev, không code/migration/deploy/main;
   hai hero deletions có sẵn giữ nguyên ngoài stage. Bước tiếp: hoàn tất duyệt
   các đề xuất còn lại rồi mới lập implementation plan.
+
+### 2026-11-17 - ORDER-PLAN-C01 - Spec được duyệt, tham khảo UI và lập plan
+
+- User duyệt spec và gửi ba ảnh UI tham khảo: danh sách đơn, chi tiết keep,
+  form MANUAL. Ghi nhận duyệt cả các đề xuất còn lại trong spec hiện hành,
+  không mở thêm checkout/public order hoặc integration J&T/Excel.
+- Lưu nguyên ba ảnh trong docs/assets/order-management, không dùng tên/SĐT
+  trong ảnh làm dữ liệu thật/seed/test. Ảnh chỉ tham khảo bố cục, không thay
+  contract giá từng cuốn/ship/payment/trạng thái/thời hạn đã chốt.
+- Đọc Superpowers writing-plans; lập ORDER_MANAGEMENT_PLAN theo convention
+  docs root hiện có, chưa code. Graph transport closed hai lần; fallback đọc
+  source trực tiếp theo AGENTS. Đối chiếu JDBC customer, CatalogueTestSupport,
+  PgTestData, stock/trash/purge, auth OWNER/STAFF, AdminHttp, route/layout/customer.
+- Base dev/8cf380d, fetch origin dev đạt; hai hero deletions giữ nguyên.
+  Đang cập nhật trạng thái duyệt/master baseline, UI refs và task/test interfaces.
+  Chưa kiểm tài liệu/commit, chưa chạy runtime/test/build/browser.
+
+### 2026-11-17 - ORDER-PLAN-C02 - Plan tự rà và bàn giao
+
+- Thêm ORDER_MANAGEMENT_PLAN với11task RED→GREEN→commit, interface/file map,
+  migration/test DB cách ly, receipts/audit/OWNER, stock chung với editor/purge,
+  item/match không extension, keep/payment/shipping/return, API/UI/customer và QA.
+- Tự review theo writing-plans (không dispatch reviewer cho plan): phủ spec1–15
+  và năm Review focus có test gắn task. Chốt response MutationResult ổn định
+  cho replay rồi GET detail, query/header DELETE version/requestId để tái dùng
+  AdminHttp, fuzzy match bounded200candidate có ngưỡng0.8 và ceiling được nêu.
+- Spec trạng thái Approved, gồm VOID/tracking/mặc định phụ đã được user duyệt;
+  master ghi mở rộng admin thay baseline no-order, không đổi public/gate cũ.
+  UI3ảnh là tham khảo bố cục, không lấy dữ liệu ảnh làm seed hoặc logic thời gian.
+- Kiểm root: git diff --check PASS; Python docs≤400/local links/đủ11task,
+  spec Approved không còn pending approval và PNG copy byte-identical PASS.
+  Plan331/spec400/master400/README99/PROGRESS400; DEV_LOG ngoại lệ lịch sử.
+  Không chạy BE/FE build/test/browser vì chỉ soạn tài liệu, không tuyên bố đã
+  chạy feature hoặc migration; graph transport vẫn unavailable, đã dùng fallback.
+- Commit/push docs+ảnh dev, không stage2hero deletions, không code/deploy/main.
+  Bước tiếp: owner xem plan và chọn Native hoặc Subagent-driven trước code theo
+  writing-plans, đề xuất Native do các task chia sẻ transaction/version/tồn.

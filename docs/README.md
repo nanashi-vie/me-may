@@ -14,7 +14,7 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Quản lý đơn hàng nội bộ: spec chuẩn hóa theo code, chưa triển khai | [Spec](ORDER_MANAGEMENT_SPEC.md), [đã chốt và còn cần làm rõ](ORDER_MANAGEMENT_SPEC.md#15-quyết-định-đã-chốt-và-phần-còn-cần-làm-rõ) |
+| Quản lý đơn nội bộ: spec duyệt17/11, UI tham khảo và kế hoạch triển khai | [Spec](ORDER_MANAGEMENT_SPEC.md), [plan](ORDER_MANAGEMENT_PLAN.md), [UI](ORDER_MANAGEMENT_SPEC.md#14-ui-nghiệm-thu-và-rollout) |
 | Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
 | Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: upload máy/Drive, ghép nguồn, cảnh báo thiếu nguồn vẫn xuất bản12/11 | [Hệ thống ảnh](IMAGES.md) |
@@ -41,9 +41,9 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
-- Order Management: [spec](ORDER_MANAGEMENT_SPEC.md) chốt keep trừ tồn, admin,
-  thu cả ship nhập tay, keep≤30ngày; bàn giao là Hoàn tất, hoàn/gửi lại thủ công.
-  Chốt17/11 tiệm trả J&T từng đơn/PP_CASH; còn VOID/mã vận đơn, chưa triển khai.
+- Order Management: owner duyệt [spec](ORDER_MANAGEMENT_SPEC.md) và gửi3ảnh UI
+  tham khảo17/11; [plan](ORDER_MANAGEMENT_PLAN.md) chờ chọn cách thực thi.
+  Chưa code/migration/deploy; public/gate release cũ giữ nguyên.
 
 - Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 

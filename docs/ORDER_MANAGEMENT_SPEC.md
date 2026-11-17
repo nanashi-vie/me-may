@@ -1,12 +1,11 @@
 # SPEC — Quản lý đơn hàng nội bộ
 
 Chuẩn hóa16/11, cập nhật17/11/2026 từ Order Management v1.0 do owner cung cấp.
-**Trạng thái:** nghiệp vụ đã chốt từng phần; mục15 còn quyết định cần làm rõ.
-Chưa lập plan/triển khai code order.
-User bổ sung 16/11: **admin chỉnh giá bán cụ thể từng cuốn khi thêm vào đơn**.
+**Trạng thái:** owner duyệt toàn bộ17/11/2026, gồm các đề xuất còn lại ở mục15.
+Kế hoạch: [ORDER_MANAGEMENT_PLAN](ORDER_MANAGEMENT_PLAN.md); chưa triển khai code.
 Đây là mở rộng riêng sau catalogue MVP, không đổi wishlist thành giỏ hàng.
-Chỉ sau khi duyệt, spec này mới thay giới hạn không có đơn/giữ tồn/thanh toán
-trong MASTER_PLAN cho khu admin; public và các gate release hiện hành giữ nguyên.
+Spec này thay giới hạn không có đơn/giữ tồn/thanh toán trong MASTER_PLAN cho
+khu admin; public và các gate release hiện hành giữ nguyên.
 
 ## 1. Mục tiêu, phạm vi và hướng triển khai
 
@@ -73,7 +72,7 @@ hạn keep và thao tác phù hợp trạng thái/quyền. Sắp mới nhất cr
 Tìm mã đơn/tên/SĐT/mã KH; lọc status, khoảng ngày tạo và keep sắp/đến/quá hạn.
 Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
 Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Hoàn tất/Không thành công do backend tính,
-không cộng chỉ các dòng trong trang; đề xuất dùng cùng bộ lọc danh sách.
+không cộng chỉ các dòng trong trang; dùng cùng bộ lọc danh sách.
 
 Chọn khách ACTIVE bằng API customer hiện có, tìm cả ba username đã hỗ trợ.
 Tạo nhanh mở CustomerForm, giữ logic trùng SĐT và nhận saved để chọn ngay;
@@ -83,13 +82,13 @@ Sửa hồ sơ gốc không đổi đơn cũ; nút lấy lại thông tin phải
 Khách có nhiều KEEPING: hiển thị danh sách mã/hạn để chọn thêm hoặc tạo mới;
 không unique constraint một keep/khách. Khách ARCHIVED vẫn có lịch sử và đơn
 đang xử lý; không tự hủy đơn khi lưu trữ khách, không chọn cho đơn mới.
-Đề xuất khóa đổi customer_id sau khi đơn rời DRAFT hoặc đã có giao dịch tiền.
+Khóa đổi customer_id sau khi đơn rời DRAFT hoặc đã có giao dịch tiền.
 
 ## 5. Item CATALOG/MANUAL và giá chốt từng cuốn
 
 CATALOG: tìm tên/mã MM qua admin API phân trang, hiển thị bìa, mã, tên,
 khoảng giá tham khảo, weightG, tổng tồn/đã giữ/còn khả dụng và publication.
-Đề xuất cho chọn sách Ẩn còn tồn; không chọn sách trong Thùng rác. CATALOG
+Cho chọn sách Ẩn còn tồn; không chọn sách trong Thùng rác. CATALOG
 không đồng nghĩa đang public; không publish hay tạo listing mới khi thêm đơn.
 Thiếu giá/trọng lượng catalogue không tự điền0: admin bổ sung snapshot.
 
@@ -110,20 +109,20 @@ CATALOG lưu book_copy_id/listing_id khớp nhau và snapshot mã/tên/giá/tr�
 
 DRAFT/KEEPING được thêm/sửa/xóa có xác nhận. KEEPING cập nhật reservation cùng
 transaction; không có tình huống item đã lưu nhưng giữ tồn thất bại.
-Draft được thiếu weight CATALOG trong lúc bổ sung; đề xuất chỉ giữ/chốt khi
+Draft được thiếu weight CATALOG trong lúc bổ sung; chỉ giữ/chốt khi
 mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở draft.
 
 ## 6. Cảnh báo MANUAL giống danh mục
 
 Debounce300–500ms, backend tìm tối đa5 kết quả cả Ẩn/hết hàng, không chỉ public.
-Chuẩn hóa trim/khoảng trắng/chữ hoa-thường/không dấu; đề xuất so khớp chính
+Chuẩn hóa trim/khoảng trắng/chữ hoa-thường/không dấu; so khớp chính
 xác trước rồi gần giống bằng PostgreSQL, chưa tự cài extension/dependency.
-Builder phải mô tả thuật toán/ngưỡng và fixture gần giống trong plan được duyệt.
+Thuật toán/ngưỡng và fixture gần giống được quyết định trong plan triển khai.
 Không tải toàn bộ catalogue hoặc dùng AI để phân loại trùng.
 UI cảnh báo, cho chọn CATALOG hoặc vẫn MANUAL với lý do bản khác/kho livestream/
 lý do khác. Không đổi nguồn tự động, không chặn tuyệt đối vì cùng tên nhiều cuốn.
 Backend kiểm lại lúc lưu; trả409 `manual_match_confirmation_required` kèm
-kết quả mới cần xác nhận. Đề xuất xác nhận gắn normalizedTitle và fingerprint
+kết quả mới cần xác nhận. Xác nhận gắn normalizedTitle và fingerprint
 kết quả (id/version), lưu lý do; đổi tên/kết quả mới làm mất hiệu lực xác nhận.
 Không xác nhận vô điều kiện, không tìm sách đã purge; phạm vi Thùng rác ở mục15.
 
@@ -147,7 +146,7 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
   admin xác nhận lại trước finalize. Đổi riêng giá không làm sai trọng lượng.
 - Reset về tự tính có xác nhận; snapshot không thay theo weight sách gốc.
 
-Đề xuất giới hạn: tối đa1000dòng/đơn; quantity1..999999/dòng; title≤300;
+Giới hạn: tối đa1000dòng/đơn; quantity1..999999/dòng; title≤300;
 unitPrice≤999999999999; weight dương≤9007199254740991gram như catalogue.
 Mọi tích/tổng tiền/gram phải≤9007199254740991, kiểm overflow trước lưu;
 tiền ship/COD/discount/khai giá cũng nguyên trong miền cho phép, không clamp.
@@ -216,11 +215,11 @@ không clamp hoặc âm thầm bỏ lượng hoàn. Plan phải kiểm case tăn
 ## 10. Giao dịch tiền, retry và hủy đơn
 
 DEPOSIT/PAYMENT/REFUND lưu amount>0, method, occurredAt thực nhận/hoàn,
-note, createdBy/createdAt; phương thức đề xuất CASH/BANK_TRANSFER/OTHER.
+note, createdBy/createdAt; phương thức CASH/BANK_TRANSFER/OTHER.
 Không tạo PAYMENT giả cho COD khi COMPLETED. Khi thực nhận COD,
 OWNER ghi PAYMENT thủ công. Không sửa/xóa trực tiếp giao dịch đã xác nhận.
-Đề xuất điều chỉnh sai bằng VOID có lý do/actor/time, giữ bản gốc; tổng bỏ
-giao dịch VOID, kiểm lại tổng refund không vượt nhận hợp lệ. Cần duyệt mục15.
+Điều chỉnh sai bằng VOID có lý do/actor/time, giữ bản gốc; tổng bỏ giao dịch VOID,
+kiểm lại tổng refund không vượt nhận hợp lệ; VOID không phải hoàn tiền thực tế.
 
 Mọi mutation order gửi version; khóa order và tăng version một lần/command.
 Stale trả409 `version_conflict` + currentVersion, giữ form, không auto retry/merge.
@@ -260,11 +259,11 @@ nullable khi chưa biết ở draft/keep, phải có khi chốt (0 nếu miễn)
 mặc định0, admin nhập/xác nhận; tham khảo cả tiền hàng+ship trừ tiền đã nhận.
 Đổi hàng/giảm giá/phí ship (kể cả gửi lại)/tiền nhận hoặc hoàn → COD needsReview;
 không tự sửa COD. Finalize phải xác nhận COD theo version đang đọc.
-Sau READY có giao dịch làm đổi số dư: đề xuất chặn ship đến khi review COD
+Sau READY có giao dịch làm đổi số dư: chặn ship đến khi review COD
 qua command shipping; không tự reopen/chỉnh declaredValue vì nhận thêm cọc.
 READY nhập trackingCode do chủ nhập và xác nhận bàn giao → COMPLETED, lưu
 actor/time và consume reservation cùng transaction; không đợi giao thành công
-hoặc nhận đủ tiền. Đề xuất bắt mã vận đơn trước bàn giao; sửa mã có lý do/audit.
+hoặc nhận đủ tiền. Bắt mã vận đơn trước bàn giao; sửa mã có lý do/audit.
 COMPLETED → UNSUCCESSFUL khi chủ ghi hoàn về. Chủ chọn gửi lại: tạo lần giao
 mới READY, giữ item/giá/tồn đã trừ, nhập mã mới và kiểm người nhận/kiện/COD/ship
 rồi bàn giao → COMPLETED. Không ghi đè mất mã/lịch sử lần giao trước.
@@ -283,7 +282,7 @@ Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước tr�
 
 ## 12. Schema logic cần bổ sung
 
-| Bảng mới (đề xuất) | Trường/constraint chính |
+| Bảng mới | Trường/constraint chính |
 |---|---|
 | orders | BIGINT id; order_code UNIQUE DH-000001 theo identity/sequence, không MAX+1; customer_id FK; customer_code/name/phone_snapshot; status/fulfillment_type CHECK; version≥0; actor/time |
 | orders — keep | keep_started_at/keep_until TIMESTAMPTZ; keep_extension_count; required_deposit_vnd; deposit_override_reason/actor/time; không unique keep/customer |
@@ -325,8 +324,7 @@ Page={items,page,size,totalElements,totalPages}, không trả entity trực ti�
 | POST /{id}/resend, /abort-resend | Chuẩn bị gửi lại hoặc dừng gửi lại về UNSUCCESSFUL, giữ tồn/tiền; version/requestId |
 
 Customer search/create dùng `/api/v1/admin/customers`, không nhân đôi endpoint.
-Customer history dùng list với customerId, tổng aggregate không N+1;
-phạm vi trạng thái tính “Tổng số đơn” còn ở mục15.
+Customer history dùng list với customerId; tổng aggregate không N+1, loại nháp/hủy/thất bại.
 400 validation/query;401 anonymous;403 quyền/CSRF;404 không tồn tại/khác order;
 409 version/transition/stock/manual-match/idempotency; lỗi `{error,fieldErrors?,
 currentVersion?}` theo convention, không lộ SQL/stack. Item/payment id phải thuộc đơn.
@@ -345,10 +343,14 @@ text thuần không innerHTML. Không PII trong log/analytics/public SSR/Transfe
 
 ## 14. UI, nghiệm thu và rollout
 
-Admin desktop-first theo form/table/custom dropdown hiện có; g/tab/mobile không
+Admin desktop-first theo form/table/custom dropdown hiện có; tablet/mobile không
 tràn khung. Loading/error/empty, keyboard/focus, dirty guard và double-submit.
 Giữ form khi lỗi; stale response không đè mới. Xác nhận xóa/hủy/ship/ngoại lệ,
 không tải hết sách/khách. Hiển thị giá bán cụ thể/quantity/gram rõ từng dòng.
+UI owner17/11: [danh sách](assets/order-management/order-list.png),
+[keep](assets/order-management/keep-detail.png), [MANUAL](assets/order-management/manual-item.png).
+Giữ thống kê/search/bảng, thanh thời gian keep/cọc/item/CTA, tổng tiền/gram MANUAL.
+Dùng style admin Mẹ Mây; dữ liệu và trạng thái nút mẫu không là quy tắc nghiệp vụ.
 
 AC gốc01–20 được giữ qua nhóm kiểm tra sau và bổ sung các case tích hợp:
 - 01–04: chọn/tạo khách, CATALOG/MANUAL, duplicate confirm FE/BE; hai dòng
@@ -383,18 +385,16 @@ vào VERIFICATION/DEV_LOG, snapshot PROGRESS; chưa chạy các kiểm tra runti
 Trước rollout xác minh Flyway thực tế, backup DB/media/offhost và restore,
 schema additive/backend trước FE tương thích; không đánh đồng local với live.
 Rollback không drop đơn/receipt/payment hoặc xóa giao dịch phát sinh; user merge
-main/deploy theo workflow. Chưa lập implementation plan, không tự migrate live.
+main/deploy theo workflow. Thực thi theo plan hiện hành, không tự migrate live.
 
-## 15. Quyết định đã chốt và phần còn cần làm rõ
+## 15. Quyết định đã duyệt17/11
 
 Đã chốt16/11: giá cụ thể từng cuốn, keep trừ tồn ngay, chỉ admin, tiệm thu cả
 ship nhập tay; hoàn tiền chỉ xác nhận khi thực hoàn; bàn giao→Hoàn tất và nhập
 mã vận đơn; chủ ghi Không thành công rồi gửi lại/mã mới hoặc hoàn/nhập tồn.
 Reopen trước gửi theo đề xuất đã duyệt; trần keep30ngày gồm14ngày đầu.
-User đã thay tiêu chí hoàn tất/đối soát và mở xử lý hoàn thủ công của bản gốc.
 
 Chốt17/11: bill gồm hàng+ship; tiệm trả J&T từng đơn, mặc định PP_CASH.
-Còn đề xuất cần chốt: VOID giao dịch nhập sai; bắt mã vận đơn trước bàn giao.
-Các mặc định phụ ở mục4–7/13 vẫn là đề xuất: sáchẨn/Thùng rác, weight trước
-keep, khóa đổi khách, stats theo filter, giới hạn và đếm đơn mua bỏ nháp/hủy/
-không thành công. Không triển khai như đã duyệt khi còn quyết định nghiệp vụ chưa rõ.
+Owner duyệt spec17/11: VOID nhập sai, bắt mã vận đơn trước bàn giao và mặc định
+phụ mục4–7/13 (sáchẨn/Thùng rác, weight trước keep, khóa đổi khách, stats theo
+filter, giới hạn, đếm đơn mua bỏ nháp/hủy/không thành công) trở thành contract.
