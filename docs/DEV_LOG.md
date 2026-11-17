@@ -4792,3 +4792,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   đã chạy QA, không framework mới. Spec bổ sung logical row, không đổi nghiệp vụ.
 - Kiểm fixedClock16/11, hạn14ngày/hết30/11 và trần30ngày/hết16/12, lý do được
   lưu, stock shortage rollback cả đơn. Full task5 regression đang chạy.
+
+### 2026-11-17 - ORDER-EXEC-C07 - Task6 thanh toán thực nhận/refund/VOID
+
+- Task5 full backend352/0failure/0error/3live skips đạt. Task6 RED service/DTO
+  còn thiếu, focused final OrderPaymentTest/OrderMutationTest10test đạt run-be-27.
+- Ledger DEPOSIT/PAYMENT/REFUND dương, method/time/note/actor server, refund
+  bắt actualConfirmed; không coi hủy/hoàn tất là hoàn/thu tiền. VOID giữ bản gốc
+  và lý do, không cho VOID làm tổng refund vượt nhận; lỗi rollback cùng receipt.
+- Test hàng500000+ship30000−cọc100000=430000; partial/overpaid/0invalid,
+  refund thực tế/retry một lần, refund vượt nhận bị chặn; CANCELLED không nhận
+  tiền mới nhưng hoàn được; tiền thay đổi chỉ review COD của lần chưa gửi.
+- Full task6 đang chạy; task7 sẽ triển khai handoff/fail/resend/return sau gate.
+  Chưa controller/UI, chưa deploy/live migrate; không coi unit/integration là
+  bằng chứng browser hoặc môi trường thật.

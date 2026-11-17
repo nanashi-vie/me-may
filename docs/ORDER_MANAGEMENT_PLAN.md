@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–4 đạt, task5 đang làm.
+**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–5 đạt, task6 đang làm.
 
 ## Global constraints
 
@@ -179,18 +179,18 @@ tests `T/order/OrderDraftTest.java`, `OrderCatalogMatchTest.java`.
 **Consumes:** task2 wrapper, task3 stock, task4 items; ledger đọc từ task1.
 **Produces:** `keep(long,KeepRequest,AdminUser)`, `extend(long,ExtendRequest,AdminUser)`,
 `reopen(long,ReasonRequest,AdminUser)`, `cancel(long,ReasonRequest,AdminUser)` →MutationResult.
-- [ ] RED `keepDeductsOnceAndDoesNotExtendOnAdd`:
+- [x] RED `keepDeductsOnceAndDoesNotExtendOnAdd`:
   `assertThat(stockAfterKeep).isEqualTo(stockBefore-2);`
   `assertThat(afterAdd.keepUntil()).isEqualTo(first.keepUntil());`.
-- [ ] Chạy RED; Clock fixture16/11/2026: mặc định hết30/11, trần hết16/12;
+- [x] Chạy RED; Clock fixture16/11/2026: mặc định hết30/11, trần hết16/12;
   thêm leap/end-month, vượt trần400, shortage rollback toàn đơn, cọc100000/
   owner thiếu cọc có lý do, gia hạn quá hạn nhưng không vượt trần, hết hạn không auto-release.
-- [ ] Implement giữ/reservation cấp book và cộng các dòng cùng MM. Thêm/giảm/xóa
+- [x] Implement giữ/reservation cấp book và cộng các dòng cùng MM. Thêm/giảm/xóa
   item KEEPING điều chỉnh delta, không dùng toàn quantity trừ lại. Đủ giá/weight
   mới keep; lý do/time/actor do server; sửa item không đổi keepStartedAt.
-- [ ] Reopen KEEP giữ reserve/hạn; IMMEDIATE về draft hoàn phần ACTIVE và cảnh báo;
+- [x] Reopen KEEP giữ reserve/hạn; IMMEDIATE về draft hoàn phần ACTIVE và cảnh báo;
   chỉ trước lần giao đầu. Cancel hoàn phần ACTIVE một lần, không tự refund.
-- [ ] GREEN test + OrderStockConcurrencyTest; commit `feat: implement keep and pre-shipment cancellation`.
+- [x] GREEN test + OrderStockConcurrencyTest; commit `feat: implement keep and pre-shipment cancellation`.
 
 ## Task 6 — Sổ tiền, hoàn thực tế và VOID
 

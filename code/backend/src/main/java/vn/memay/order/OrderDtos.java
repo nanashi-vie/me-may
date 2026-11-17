@@ -39,4 +39,6 @@ public final class OrderDtos {
  public record ExtendRequest(Long version,UUID requestId,String keepUntilDate,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ReasonRequest(Long version,UUID requestId,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
+ public record PaymentRequest(Long version,UUID requestId,PaymentType transactionType,Long amount,String paymentMethod,Instant occurredAt,String note,Boolean actualConfirmed){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+
 }

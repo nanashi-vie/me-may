@@ -5,7 +5,7 @@ Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - ORDER-EXEC-C01 (17/11): owner duyệt thực thi tuần tự [plan](ORDER_MANAGEMENT_PLAN.md).
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
-  codex/order-management: task1–4/345BE đạt, task5 đang làm; chưa deploy/live migrate.
+  codex/order-management: task1–5/352BE đạt, task6 đang làm; chưa deploy/live migrate.
 
 - CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
   FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.

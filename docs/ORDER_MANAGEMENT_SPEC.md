@@ -2,7 +2,7 @@
 
 Chuẩn hóa16/11, cập nhật17/11/2026 từ Order Management v1.0 do owner cung cấp.
 **Trạng thái:** owner duyệt toàn bộ17/11/2026, gồm các đề xuất còn lại ở mục15.
-Kế hoạch: [ORDER_MANAGEMENT_PLAN](ORDER_MANAGEMENT_PLAN.md); chưa triển khai code.
+Đang thực thi [plan](ORDER_MANAGEMENT_PLAN.md); bằng chứng/gate theo PROGRESS.
 Đây là mở rộng riêng sau catalogue MVP, không đổi wishlist thành giỏ hàng.
 Spec này thay giới hạn không có đơn/giữ tồn/thanh toán trong MASTER_PLAN cho
 khu admin; public và các gate release hiện hành giữ nguyên.
