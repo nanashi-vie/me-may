@@ -30,4 +30,8 @@ public final class OrderDtos {
  public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl){}
  public record MatchResult(String normalizedTitle,String fingerprint,List<CatalogCandidate> items){}
  public record MatchConfirmation(String normalizedTitle,String fingerprint,String reason){}
+ public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}
+ public record UpdateRequest(Long version,UUID requestId,String customerId,String fulfillmentType,Long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+
 }

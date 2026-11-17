@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–2 đạt, task3 đang làm.
+**Trạng thái:** owner duyệt thực thi tuần tự17/11; task1–3 đạt, task4 đang làm.
 
 ## Global constraints
 
@@ -136,18 +136,18 @@ BookTrashService; tests `T/order/OrderStockConcurrencyTest.java`, `OrderPurgeTes
 **Produces:** `BookStockService.lockAll(List<Long> ids):void` theo id tăng dần;
 `adjust(long bookId,long delta,AdminUser actor):long` trả tổng còn bán;
 `BookCopyRepository.findLockedById(Long):Optional<BookCopy>` với JPA PESSIMISTIC_WRITE.
-- [ ] RED `stockOneHasOneWinner`, `staleEditorCannotResurrectStock`:
+- [x] RED `stockOneHasOneWinner`, `staleEditorCannotResurrectStock`:
   `assertThat(successCount).isEqualTo(1); assertThat(totalStock).isZero();`
   `assertThat(staleResponse.statusCode()).isEqualTo(409);` dùng barrier như CustomerConcurrencyTest.
-- [ ] Chạy test RED; thêm returnOverflowRollback, metadataOnlyPreservesRows,
+- [x] Chạy test RED; thêm returnOverflowRollback, metadataOnlyPreservesRows,
   activeReservationBlocksTrash và referencedBookPurgeDoesNotBlockOtherExpiredBooks.
-- [ ] Implement delta bằng pooledRows hiện có, không delete/recreate variant;
+- [x] Implement delta bằng pooledRows hiện có, không delete/recreate variant;
   update availability/version/time và invalidate PublicCacheInvalidation sau commit.
   Mọi đường edit/legacy variants lấy cùng khóa trước đọc version/stock;
   JDBC order không đi qua command publish buộc ảnh; JPA không flush bản cũ đè JDBC.
-- [ ] Trash chặn ACTIVE; purge thủ công409 khi có order ref; scheduled purge
+- [x] Trash chặn ACTIVE; purge thủ công409 khi có order ref; scheduled purge
   bỏ qua sách có ref để không rollback cả100sách hoặc lặp mãi chỉ các sách bị chặn.
-- [ ] GREEN tests + BookVariantIntegrationTest/BookEntryContractTest/BookTrashApiTest;
+- [x] GREEN tests + BookVariantIntegrationTest/BookEntryContractTest/BookTrashApiTest;
   commit `feat: serialize order stock with catalogue writers`.
 
 ## Task 4 — Draft, item và tra sách tương tự

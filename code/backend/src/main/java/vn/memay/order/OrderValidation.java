@@ -32,4 +32,6 @@ public final class OrderValidation {
  public static String text(String v,String field,int max,boolean required){var s=v==null?null:v.trim();if(s!=null&&s.isEmpty())s=null;if(required&&s==null||s!=null&&s.length()>max)throw AdminApiException.field(field,"Kiểm tra nội dung và độ dài");return s;}
  public static String normalizeTitle(String title){if(title==null)return "";return Normalizer.normalize(title.toLowerCase(Locale.ROOT),Normalizer.Form.NFD).replaceAll("\\p{M}","").replace('đ','d').trim().replaceAll("\\s+"," ");}
  public static void transition(boolean valid){if(!valid)throw new AdminApiException(409,"transition_conflict");}
+ public static long id(String value,String field){try{long n=Long.parseLong(value);if(n<1)throw new NumberFormatException();return n;}catch(RuntimeException e){throw AdminApiException.field(field,"Mã không hợp lệ");}}
+
 }

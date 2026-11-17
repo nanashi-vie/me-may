@@ -4761,3 +4761,19 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Ruling ledger: thêm OrderInventory domain helper tại task4 để draft KEEPING,
   keep và shipping dùng chung reconciler, tránh vòng phụ thuộc service. Không
   đổi nghiệp vụ/spec; không thêm framework. Task4 đợi gate task3 đạt.
+
+### 2026-11-17 - ORDER-EXEC-C05 - Task4 draft/item và match MANUAL
+
+- Task3 full backend338/0failure/0error/3live skips đạt. Task4 RED thiếu
+  service/request DTO; final focused12test draft/match/mutations đạt run-be-20.
+- Thêm create/update/item services, customer snapshot/ACTIVE và khóa đổi khách
+  sau tiền; giá cụ thể mandatory, không auto gộp; snapshot catalogue không đổi
+  theo dữ liệu gốc. DRAFT kiểm tổng theo mã nhưng không trừ, KEEPING sync delta.
+- OrderInventory là reconciler chung có transaction bắt buộc, parent lock trước
+  sorted book locks; giữ reservation RELEASED0 hợp lệ để tái dùng/audit. Không
+  tạo vòng phụ thuộc draft/keep/shipping. Draft/manual lỗi rollback toàn command.
+- Match SQL normalize NFD + bounded200candidate, Levenshtein≥0.8/max5, không
+  extension/dependency; test không dấu/near title/Ẩn/hết hàng/trash/top5. Xác
+  nhận ràng buộc title/fingerprint/lý do; match mới409, không auto đổi nguồn.
+- Audit item thêm digest tên, shipment mã để nhận ra sửa nội dung mà không
+  ghi tên khách/PII. Full task4 regression đang chạy; chưa API controller/UI.
