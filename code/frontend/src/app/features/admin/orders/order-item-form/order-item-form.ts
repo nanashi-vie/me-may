@@ -33,6 +33,9 @@ export class OrderItemForm {
   private readonly destroy = inject(DestroyRef);
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
   private opener: HTMLElement | null = null;
+  readonly refreshRequested = output<void>();
+  readonly conflict = signal(false);
+  readonly refreshing = signal(false);
   readonly retry = output<void>();
   readonly saved = output<ItemDraft>();
   readonly visible = signal(false);
@@ -101,6 +104,8 @@ export class OrderItemForm {
     this.order = order;
     this.item = item;
     this.error.set('');
+    this.conflict.set(false);
+    this.refreshing.set(false);
     this.match = null;
     this.model = {
       sourceType: item?.sourceType ?? 'CATALOG',
@@ -147,6 +152,21 @@ export class OrderItemForm {
     this.model.overrideReason = '';
     this.titles.next(title.trim());
   }
+  rebase(order: OrderDetail) {
+    this.order = order;
+    this.conflict.set(false);
+    this.error.set('');
+    if (this.item) {
+      const current = order.items.find((i) => i.id === this.item!.id);
+      if (current) this.item = current;
+      else
+        this.error.set(
+          'Dòng sách đã bị xóa. Nội dung nhập được giữ để bạn kiểm tra trước khi đóng.',
+        );
+    }
+    if (!['DRAFT', 'KEEPING'].includes(order.status))
+      this.error.set('Đơn đã khóa sửa sách. Nội dung nhập vẫn được giữ để kiểm tra.');
+  }
   totalPrice() {
     return product(this.model.unitPriceVnd, this.model.quantity);
   }
@@ -161,6 +181,12 @@ export class OrderItemForm {
     );
   }
   valid() {
+    if (
+      !this.order ||
+      !['DRAFT', 'KEEPING'].includes(this.order.status) ||
+      (this.item && !this.order.items.some((i) => i.id === this.item!.id))
+    )
+      return false;
     const m = this.model;
     return (
       integer(m.unitPriceVnd, 0, 999999999999) &&
@@ -212,7 +238,7 @@ export class OrderItemForm {
     return this.visible() && JSON.stringify(this.model) !== this.initial;
   }
   requestClose() {
-    if (this.locked()) return false;
+    if (this.locked() || this.refreshing()) return false;
     if (this.dirty() && !window.confirm('Bỏ thay đổi dòng sách chưa lưu?')) return false;
     this.close();
     return true;

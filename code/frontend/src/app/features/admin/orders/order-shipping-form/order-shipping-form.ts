@@ -29,6 +29,9 @@ export class OrderShippingForm {
   private opener: HTMLElement | null = null;
   private order: OrderDetail | null = null;
   private initial = '';
+  readonly refreshRequested = output<void>();
+  readonly conflict = signal(false);
+  readonly refreshing = signal(false);
   readonly retry = output<void>();
   readonly saved = output<ShippingDraft>();
   readonly visible = signal(false);
@@ -72,10 +75,33 @@ export class OrderShippingForm {
       reason: null,
     };
     this.error.set('');
+    this.conflict.set(false);
+    this.refreshing.set(false);
     this.initial = JSON.stringify(this.model);
     this.opener = document.activeElement as HTMLElement;
     this.visible.set(true);
     this.dialog()?.nativeElement.showModal?.();
+  }
+  rebase(order: OrderDetail) {
+    this.order = order;
+    this.conflict.set(false);
+    this.error.set('');
+    this.model.codConfirmed = false;
+    this.model.parcelWeightConfirmed = false;
+    if (!this.model.parcelWeightOverridden)
+      this.model.parcelWeightGrams = order.totals.totalBookWeightGrams;
+    if (!this.allowed())
+      this.error.set(
+        'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra trước khi đóng.',
+      );
+  }
+  private allowed() {
+    const s = this.order?.status;
+    return this.mode === 'resend'
+      ? s === 'UNSUCCESSFUL'
+      : this.mode === 'shipping'
+        ? s === 'READY_TO_SHIP'
+        : s === 'DRAFT' || s === 'KEEPING';
   }
   declaredValue() {
     return this.order?.totals.goodsTotal ?? 0;
@@ -105,6 +131,7 @@ export class OrderShippingForm {
       this.model.parcelWeightGrams = this.order?.totals.totalBookWeightGrams ?? null;
   }
   valid() {
+    if (!this.allowed()) return false;
     const m = this.model;
     return (
       !!m.recipientName.trim() &&
@@ -140,7 +167,7 @@ export class OrderShippingForm {
     return this.visible() && this.initial !== JSON.stringify(this.model);
   }
   requestClose() {
-    if (this.locked()) return false;
+    if (this.locked() || this.refreshing()) return false;
     if (this.dirty() && !window.confirm('Bỏ thông tin giao hàng chưa lưu?')) return false;
     this.close();
     return true;

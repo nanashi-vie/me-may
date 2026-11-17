@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, of, throwError } from 'rxjs';
+import { BehaviorSubject, Subject, of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { OrderDetailPage } from './order-detail';
 import { OrderApi } from '../order-api';
@@ -45,6 +45,7 @@ async function setup(id = '1') {
     catalog: vi.fn(() => of({ items: [], totalPages: 0 })),
     matches: vi.fn(() => of({ items: [] })),
   };
+  const params = new BehaviorSubject(convertToParamMap({ id }));
   const auth = { user: signal({ id: 1, role: 'OWNER' }), epoch: signal(0) };
   TestBed.configureTestingModule({
     providers: [
@@ -52,7 +53,7 @@ async function setup(id = '1') {
       {
         provide: ActivatedRoute,
         useValue: {
-          paramMap: new BehaviorSubject(convertToParamMap({ id })),
+          paramMap: params,
           snapshot: { queryParams: {} },
         },
       },
@@ -65,7 +66,7 @@ async function setup(id = '1') {
   f.detectChanges();
   await f.whenStable();
   f.detectChanges();
-  return { f, c: f.componentInstance, api, auth };
+  return { f, c: f.componentInstance, api, auth, params };
 }
 describe('OrderDetail', () => {
   it('requires reason before deleting keep item and retains form after validation rejection', async () => {
@@ -109,5 +110,78 @@ describe('OrderDetail', () => {
     expect(api.list).toHaveBeenCalled();
     c.customerSaved({ id: '8', status: 'ARCHIVED' } as any);
     expect(c.selectedCustomer()?.id).toBe('7');
+  });
+  it('ignores refresh for a previous routed order and stale overlapping versions', async () => {
+    const { c, f, api, params } = await setup();
+    const delayed = new Subject<any>();
+    api.detail.mockReturnValueOnce(delayed as any);
+    c.refresh();
+    api.detail.mockReturnValueOnce(of({ ...detail, id: '2', orderCode: 'DH-000002', version: 8 }));
+    params.next(convertToParamMap({ id: '2' }));
+    f.detectChanges();
+    await f.whenStable();
+    delayed.next({ ...detail, version: 4 });
+    delayed.complete();
+    expect(c.order()?.id).toBe('2');
+    const older = new Subject<any>(),
+      newer = new Subject<any>();
+    api.detail.mockReturnValueOnce(older as any).mockReturnValueOnce(newer as any);
+    c.refresh();
+    c.refresh();
+    newer.next({ ...detail, id: '2', version: 10 });
+    newer.complete();
+    older.next({ ...detail, id: '2', version: 9 });
+    older.complete();
+    expect(c.order()?.version).toBe(10);
+  });
+  for (const kind of ['item', 'shipping'] as const)
+    it('recovers ' + kind + ' version conflict inside dialog without losing draft', async () => {
+      const { c, f, api } = await setup();
+      const form = kind === 'item' ? c.itemForm()! : c.shippingForm()!;
+      if (kind === 'item') {
+        c.itemForm()!.open(c.order()!);
+        c.itemForm()!.model.unitPriceVnd = 123456;
+      } else {
+        c.shippingForm()!.open(c.order()!, 'finalize');
+        c.shippingForm()!.model.recipientName = 'Changed recipient';
+        c.shippingForm()!.model.codConfirmed = true;
+        c.shippingForm()!.model.parcelWeightConfirmed = true;
+      }
+      api.command.mockReturnValueOnce(
+        throwError(() => ({ status: 409, error: { error: 'version_conflict' } })) as any,
+      );
+      c.mutate('finalize', {});
+      f.detectChanges();
+      const button = Array.from(
+        f.nativeElement.querySelectorAll('dialog button'),
+      ) as HTMLButtonElement[];
+      const reload = button.find((b) => b.textContent?.trim() === 'Tải lại dữ liệu đơn');
+      expect(reload).toBeTruthy();
+      api.detail.mockReturnValueOnce(of({ ...detail, version: 4 }));
+      reload!.click();
+      f.detectChanges();
+      await f.whenStable();
+      expect(c.order()?.version).toBe(4);
+      expect(form.visible()).toBe(true);
+      if (kind === 'item') expect(c.itemForm()!.model.unitPriceVnd).toBe(123456);
+      else {
+        expect(c.shippingForm()!.model.recipientName).toBe('Changed recipient');
+        expect(c.shippingForm()!.model.codConfirmed).toBe(false);
+        expect(c.shippingForm()!.model.parcelWeightConfirmed).toBe(false);
+      }
+      c.mutate('finalize', {});
+      expect(api.command.mock.calls.at(-1)![2].version).toBe(4);
+    });
+  it('delegates dirty and pending quick-customer navigation protection', async () => {
+    const { c } = await setup('');
+    const child = c.customerForm()!;
+    child.open();
+    child.form.controls.fullName.setValue('Unsaved customer');
+    child.form.markAsDirty();
+    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    expect(c.canLeave()).toBe(false);
+    child.busy.set(true);
+    expect(c.canLeave()).toBe(false);
+    confirm.mockRestore();
   });
 });

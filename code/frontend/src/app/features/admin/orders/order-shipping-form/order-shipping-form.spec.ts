@@ -7,6 +7,7 @@ describe('OrderShippingForm', () => {
     const c = f.componentInstance;
     c.open(
       {
+        status: 'UNSUCCESSFUL',
         recipientName: 'Reader',
         recipientPhone: '0901234567',
         shippingAddress: 'Test address',

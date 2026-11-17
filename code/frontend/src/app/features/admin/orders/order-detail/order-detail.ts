@@ -97,6 +97,8 @@ export class OrderDetailPage {
   readonly customerLoading = signal(false);
   private readonly customerQueries = new Subject<{ q: string; page: number }>();
   private selectionGeneration = 0;
+  private readGeneration = 0;
+  private pageGeneration = 0;
   customerQ = '';
   customerPageNumber = 0;
   fulfillmentType: 'KEEP' | 'IMMEDIATE' = 'KEEP';
@@ -204,7 +206,11 @@ export class OrderDetailPage {
     return t && 'titleSnapshot' in t ? t.titleSnapshot : '';
   }
   private clear() {
+    this.readGeneration++;
+    this.pageGeneration++;
     this.lockForms(false);
+    this.itemForm()?.refreshing.set(false);
+    this.shippingForm()?.refreshing.set(false);
     this.selectionGeneration++;
     this.order.set(null);
     this.pending.set(null);
@@ -280,20 +286,40 @@ export class OrderDetailPage {
   refresh() {
     const d = this.order();
     if (!d || this.busy() || this.pending()) return;
-    const epoch = this.auth.epoch();
+    const epoch = this.auth.epoch(),
+      generation = ++this.readGeneration;
     this.loading.set(true);
+    this.itemForm()?.refreshing.set(true);
+    this.shippingForm()?.refreshing.set(true);
     this.api
       .detail(d.id)
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: (v) => {
-          if (epoch === this.auth.epoch()) {
-            this.order.set(v);
+          if (
+            epoch === this.auth.epoch() &&
+            generation === this.readGeneration &&
+            this.order()?.id === d.id
+          ) {
+            if (v.id === d.id && v.version >= this.order()!.version) {
+              this.order.set(v);
+              if (this.itemForm()?.visible()) this.itemForm()?.rebase(v);
+              if (this.shippingForm()?.visible()) this.shippingForm()?.rebase(v);
+              this.error.set('');
+            }
+            this.itemForm()?.refreshing.set(false);
+            this.shippingForm()?.refreshing.set(false);
             this.loading.set(false);
           }
         },
         error: () => {
-          if (epoch === this.auth.epoch()) {
+          if (
+            epoch === this.auth.epoch() &&
+            generation === this.readGeneration &&
+            this.order()?.id === d.id
+          ) {
+            this.itemForm()?.refreshing.set(false);
+            this.shippingForm()?.refreshing.set(false);
             this.loading.set(false);
             this.error.set('Chưa tải được bản mới của đơn. Các trường đang nhập được giữ lại.');
           }
@@ -311,14 +337,15 @@ export class OrderDetailPage {
     });
   }
   private sendNew(p: Pending) {
-    if (!this.owner() || this.busy() || this.pending()) return;
+    if (!this.owner() || this.busy() || this.pending() || this.loading()) return;
     this.pending.set(JSON.parse(JSON.stringify(p)));
     this.retry();
   }
   retry() {
     const p = this.pending();
     if (!p || this.busy() || !this.owner()) return;
-    const epoch = this.auth.epoch();
+    const epoch = this.auth.epoch(),
+      pageGeneration = this.pageGeneration;
     this.busy.set(true);
     this.error.set('');
     this.fieldErrors.set({});
@@ -340,7 +367,7 @@ export class OrderDetailPage {
                   : this.api.command(id, p.action!, p.body);
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (r) => {
-        if (epoch !== this.auth.epoch()) return;
+        if (epoch !== this.auth.epoch() || pageGeneration !== this.pageGeneration) return;
         this.pending.set(null);
         this.busy.set(false);
         this.lockForms(false);
@@ -357,7 +384,7 @@ export class OrderDetailPage {
         this.refresh();
       },
       error: (e) => {
-        if (epoch !== this.auth.epoch()) return;
+        if (epoch !== this.auth.epoch() || pageGeneration !== this.pageGeneration) return;
         this.busy.set(false);
         const unknown = e.status === 0 || e.status >= 500;
         if (!unknown) {
@@ -367,6 +394,9 @@ export class OrderDetailPage {
         this.error.set(orderError(e));
         this.fieldErrors.set(e.error?.fieldErrors ?? {});
         if (e.error?.matches) this.itemForm()?.setMatches(e.error.matches);
+        const conflict = e.status === 409 && e.error?.error === 'version_conflict';
+        this.itemForm()?.conflict.set(conflict);
+        this.shippingForm()?.conflict.set(conflict);
         this.itemForm()?.error.set(orderError(e));
         this.shippingForm()?.error.set(orderError(e));
       },
@@ -646,6 +676,7 @@ export class OrderDetailPage {
     );
   }
   canLeave() {
+    if (this.customerForm()?.canLeave() === false) return false;
     if (this.busy()) return false;
     if (
       this.pending() &&

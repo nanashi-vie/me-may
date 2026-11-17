@@ -15,7 +15,7 @@ function setup() {
   f.detectChanges();
   return { f, c: f.componentInstance, api };
 }
-const order = { status: 'KEEPING', version: 2 } as OrderDetail;
+const order = { status: 'KEEPING', version: 2, items: [{ id: '3' }] } as OrderDetail;
 const item = {
   id: '3',
   sourceType: 'MANUAL',

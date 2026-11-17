@@ -50,4 +50,15 @@ class OrderShippingTest extends OrderShippingTestSupport {
   keeps.keep(id,new KeepRequest(1L,UUID.randomUUID(),true,"Owner exception"),owner);shipping.finalizeOrder(id,shipping(2,0L,300L,0),owner);shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACK-KEEP"),owner);
   assertThat(queries.detail(Long.parseLong(b.id()),owner).totalStock()).isZero();assertThat(jdbc.queryForObject("select state from order_reservation where order_id=?",String.class,id)).isEqualTo("CONSUMED");
  }
+ @Test void directlyFinalizedKeepDraftReopensAsDraftUntilKeepIsExplicitlyStarted(){
+  var made=drafts.create(new CreateRequest(Long.toString(customer()),"KEEP",UUID.randomUUID()),owner);long id=Long.parseLong(made.id());
+  var b=ready();drafts.addItem(id,new ItemRequest(0L,UUID.randomUUID(),"CATALOG",b.id(),null,100000L,1L,250L,null),owner);
+  shipping.finalizeOrder(id,shipping(1,0L,300L,0),owner);
+  keeps.reopen(id,new ReasonRequest(2L,UUID.randomUUID(),"Reconsider order"),owner);
+  var d=orders.require(id,false);assertThat(d.status()).isEqualTo(Status.DRAFT);assertThat(d.keepStartedAt()).isNull();assertThat(d.keepUntil()).isNull();
+  assertThat(queries.detail(Long.parseLong(b.id()),owner).totalStock()).isEqualTo(1);
+  assertThatThrownBy(()->keeps.keep(id,new KeepRequest(3L,UUID.randomUUID(),false,null),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("deposit_required"));
+  keeps.keep(id,new KeepRequest(3L,UUID.randomUUID(),true,"Owner exception"),owner);d=orders.require(id,false);assertThat(d.keepStartedAt()).isNotNull();assertThat(d.keepUntil()).isAfter(d.keepStartedAt());
+ }
+
 }

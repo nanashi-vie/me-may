@@ -4902,3 +4902,28 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   RED(run-fe-60) rồi sửa stream switchMap nhận cả blank, GREEN6case(run-fe-61).
   Build62 exit0 nhưng CSS chung warning81bytes; chuyển style order-code chỉ dùng
   ở danh sách về file danh sách, giữ budget6/10kB; cần build xác minh lại task11.
+
+
+### 2026-11-17 - ORDER-EXEC-C12 - Phục hồi và review cuối
+
+- Tiếp tục task11 tại dc9b202; task1–10 đã có commit/ledger, không làm lại.
+  Full382BE/0fail/0error/3skip(run-be-59),387FE(run-fe-64), Workers65/proxy67 đạt;
+  proxy lần sandbox EPERM được chạy ngoài sandbox. Chưa deploy/live migration.
+- Browser QA: tạo nhanh khách/chọn ID, MANUAL2×75000/250g; cùng MM hai giá riêng,
+  keep ngoại lệ cọc trừ2tồn, xóa thiếu lý do chặn/không đổi tồn; có lý do trả1tồn,
+  history1 bản; handoff COMPLETED giữ stock7 và0payment. Ship=30000, bill290000,
+  khai giá260000; fail→resend thu thêm20000 đã chốt, còn kiểm abort/return.
+- Review độc lập bị ngắt quota rồi hoàn tất cùng reviewer khi user yêu cầu tiếp;
+  4 Important: reopen keep chưa bắt đầu thiếu hạn, refresh lệch route/version,
+  modal409 thiếu nút refresh giữ draft, parent bỏ sót CustomerForm dirty/busy.
+  Không Critical/Minor. Bắt đầu một lượt sửa RED→GREEN từng trường hợp, rồi full suite.
+
+- RED68 bốn UI assertion thất bại; RED69 reopen expectedDRAFT/actualKEEPING.
+  Sửa: reopen chỉ về KEEPING khi thực sự có start/until, còn lại DRAFT và nhả tồn;
+  page/read generation + monotonic version; modal refresh giữ draft/rebase xác nhận;
+  parent gọi CustomerForm.canLeave. Focused24FE70/15BE71 đạt; full391FE72 và
+  383BE73/0fail/0error/3skip đạt. SSR74/Workers75 exit0, không warning/budget tăng.
+- HTTP QA bổ sung: abort resend giữ tồn/tiền, lần gửi thứ3 handoff/fail/return,
+  replay return stock8 không trùng, đóng hoàn không gửi lại; actual cọc/max30,
+  partial/overpaid/refund chỉ actual/VOID, cancelMANUAL, STAFF403/countnull,
+  anonymous401 và owner thiếuCSRF403 đạt. Dữ liệu riêng me_may_orders_browser.

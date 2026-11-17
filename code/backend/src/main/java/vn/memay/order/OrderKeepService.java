@@ -26,7 +26,7 @@ public class OrderKeepService {
  });}
  public MutationResult reopen(long id,ReasonRequest r,AdminUser actor){return mutations.run(actor,"REOPEN",id,r.meta(),r,()->{
   var d=db.require(id,false);transition(d.status()==Status.READY_TO_SHIP&&!everShipped(d));String reason=text(r.reason(),"reason",1000,true);
-  if(d.fulfillmentType().equals("KEEP")){inventory.verify(id,"ACTIVE");db.jdbc.update("update orders set status='KEEPING',declared_value=null,cod_needs_review=true where id=?",id);}
+  if(d.fulfillmentType().equals("KEEP")&&d.keepStartedAt()!=null&&d.keepUntil()!=null){inventory.verify(id,"ACTIVE");db.jdbc.update("update orders set status='KEEPING',declared_value=null,cod_needs_review=true where id=?",id);}
   else{inventory.release(id,actor);db.jdbc.update("update orders set status='DRAFT',declared_value=null,cod_needs_review=true where id=?",id);}
   db.jdbc.update("update order_shipments set state='ABORTED' where order_id=? and state='PLANNED'",id);db.note(id,"REOPEN",reason,r.meta(),actor);return id;
  });}

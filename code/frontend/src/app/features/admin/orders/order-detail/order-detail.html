@@ -711,6 +711,14 @@
     </article>
   }
   <app-customer-form (saved)="customerSaved($event)" />
-  <app-order-item-form (retry)="retry()" (saved)="itemSaved($event)" />
-  <app-order-shipping-form (retry)="retry()" (saved)="shippingSaved($event)" />
+  <app-order-item-form
+    (retry)="retry()"
+    (refreshRequested)="refresh()"
+    (saved)="itemSaved($event)"
+  />
+  <app-order-shipping-form
+    (retry)="retry()"
+    (refreshRequested)="refresh()"
+    (saved)="shippingSaved($event)"
+  />
 }

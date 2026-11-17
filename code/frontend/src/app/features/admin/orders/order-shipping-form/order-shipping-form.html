@@ -1,13 +1,26 @@
 <dialog #dialog (cancel)="escape($event)" aria-labelledby="shipping-title">
   @if (visible()) {
-    <div class="notice" role="alert">
-      @if (locked() && error()) {
+    @if (locked() && error()) {
+      <div class="notice" role="alert">
         <p>{{ error() }}</p>
         <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
-      }
-    </div>
+      </div>
+    }
+    @if (conflict()) {
+      <div class="notice" role="alert">
+        <p>Dữ liệu đơn đã đổi. Tải lại bản mới để tiếp tục; nội dung đang nhập được giữ lại.</p>
+        <button
+          type="button"
+          class="secondary"
+          [disabled]="refreshing()"
+          (click)="refreshRequested.emit()"
+        >
+          Tải lại dữ liệu đơn
+        </button>
+      </div>
+    }
     <form (ngSubmit)="submit()" #form="ngForm">
-      <fieldset [disabled]="locked()">
+      <fieldset [disabled]="locked() || refreshing()">
         <header class="heading">
           <h2 id="shipping-title">
             {{
