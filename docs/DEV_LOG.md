@@ -4868,3 +4868,15 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   numeric coercion400, owner201/STAFF403/anonymous401/CSRF403, public không PII.
 - Full task8 đang chạy; tiếp theo client/list rồi chi tiết/form. Chưa browser
   hoặc deploy/live migrate, không xem module hoàn tất chỉ vì backend đã có API.
+
+
+### 2026-11-17 - ORDER-EXEC-C10 - Danh sách/admin client
+
+- Task8 full backend382/0failure/0error/3skip đạt run-be-41. Task9 HTTP/list
+  RED thiếu client/component; GREEN6case run-fe-43. Test sidebar OWNER RED
+  thiếu link(run-fe-44), thêm menu OWNER và list requireOwner.
+- List lấy stats từ backend, filter URL/paging/search debounce, hủy response cũ,
+  xóa dữ liệu khi auth epoch đổi; ship chưa nhập hiện tạm tính. API snapshot
+  payload trước CSRF; retry CSRF dùng lại requestId/amount; DELETE lý do trong body.
+- Route tạo/chi tiết sẽ nối ở task10 khi component thật tồn tại, không tạo stub.
+  Hai hero deletion ban đầu giữ ngoài stage. Chưa browser/build/module hoàn tất.

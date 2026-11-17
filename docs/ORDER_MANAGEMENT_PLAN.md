@@ -9,7 +9,7 @@ hiện có, khóa chung book_copy. Command transaction chứa version, receipt,
 item/tiền/tồn và audit; Angular giữ form, dùng AdminHttp/CustomerForm hiện có.
 **Tech Stack:** Angular21.2, Java21/Spring Boot4.1.1, PostgreSQL/Flyway, Vitest/JUnit.
 **Spec:** [ORDER_MANAGEMENT_SPEC](ORDER_MANAGEMENT_SPEC.md), đã duyệt17/11/2026.
-**Trạng thái:** thực thi tuần tự17/11; task1–7 và lý do xóa keep đạt; task8 đang làm.
+**Trạng thái:** thực thi tuần tự17/11; task1–8 và lý do xóa keep đạt; task9 frontend đang làm.
 
 ## Global constraints
 
@@ -244,18 +244,18 @@ tests `T/order/OrderShippingTest.java`, `OrderReturnTest.java`.
 tests `T/order/OrderApiTest.java`, `OrderPrivacyTest.java`, CustomerIntegrationTest.
 **Produces:** `list(OrderFilter,AdminUser):Page<OrderSummary>`, `stats(OrderFilter,AdminUser):OrderStats`,
 `detail(long,AdminUser):OrderDetail`; list/catalog/match/read và command endpoints theo spec13.
-- [ ] RED `ownerPagesStaffSeesNoOrderData`: assert OWNER200, STAFF403/anonymous401,
+- [x] RED `ownerPagesStaffSeesNoOrderData`: assert OWNER200, STAFF403/anonymous401,
   no-store, page20/max100, same filters stats/count toàn bộ kết quả không chỉ page.
-- [ ] Chạy RED; test mã/tên/phone/customerId/date range bao gồm ngày đến bằng
+- [x] Chạy RED; test mã/tên/phone/customerId/date range bao gồm ngày đến bằng
   exclusive next-day HCM; wildcard literal, unknown fields400, cross-order id404,
   DELETE JSON ReasonRequest version/requestId/reason (AdminHttp hỗ trợ body).
-- [ ] Wire DTO/action whitelist; map lỗi spec, không PATCH status thường. GET
+- [x] Wire DTO/action whitelist; map lỗi spec, không PATCH status thường. GET
   catalog không lộ trash, lookup không dựa publication public; detail không live-join
   customer/book để dựng snapshot cũ. Catalog/match paging server, match tối đa5.
-- [ ] customer orderCount nullable: OWNER count status KEEPING/READY/COMPLETED,
+- [x] customer orderCount nullable: OWNER count status KEEPING/READY/COMPLETED,
   STAFF null, một aggregate join không N+1; owner history dùng order list customerId,
   STAFF không query order hay trả count qua customer. Giữ API customer ghi hiện có.
-- [ ] GREEN tests + toàn bộ Customer*Test; commit `feat: expose owner-only order APIs and customer history`.
+- [x] GREEN tests + toàn bộ Customer*Test; commit `feat: expose owner-only order APIs and customer history`.
 
 ## Task 9 — Client contract, danh sách và chọn/tạo khách
 
@@ -263,17 +263,17 @@ tests `T/order/OrderApiTest.java`, `OrderPrivacyTest.java`, CustomerIntegrationT
 app.routes.ts, admin-layout.html; tests `F/order-api.spec.ts`, `order-list/order-list.spec.ts`.
 **Produces:** OrderApi `list/detail/stats/catalog/matches/create` và command methods
 mirror task8, Observable<MutationResult>; `OrderList.canLeave():boolean`.
-- [ ] RED HTTP specs assert /api/v1/admin/orders, version/requestId giữ nguyên
+- [x] RED HTTP specs assert /api/v1/admin/orders, version/requestId giữ nguyên
   khi retry; list spec assert query stale không đè kết quả mới, stats backend,
   OWNER menu/guard và STAFF không phát request; tiền ship chưa biết hiện tạm tính.
-- [ ] Chạy hai Vitest file RED. Implement AdminHttp (transferCache:false), ID string,
+- [x] Chạy hai Vitest file RED. Implement AdminHttp (transferCache:false), ID string,
   immutable mutation draft requestId cho retry; lỗi0/500 giữ payload/key đến khi rõ
   kết quả, không tự sinh key mới vì network timeout hoặc retry CSRF nội bộ.
-- [ ] UI theo ảnh order-list: heading/Tạo đơn, metrics, search/filter/table,
+- [x] UI theo ảnh order-list: heading/Tạo đơn, metrics, search/filter/table,
   pagination/back query; đủ cột spec có thể scroll ngang, không lược field theo ảnh.
   Dùng style admin hiện có; không tạo ảnh/font/library mới. Create mở route /orders/new.
   “Sắp hết hạn” trong ảnh là cảnh báo của KEEPING, không tạo status mới.
-- [ ] Route requireOwner trước load; list busy/empty/error, URL filter không PII
+- [x] Route requireOwner trước load; list busy/empty/error, URL filter không PII
   ngoài q được phép; epoch auth clear dữ liệu. GREEN; commit `feat: add owner order list and API client`.
 
 ## Task 10 — Chi tiết keep, item, tiền, giao/hoàn và lịch sử khách
