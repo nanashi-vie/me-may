@@ -20,6 +20,8 @@ export const routes: Routes = [
     canActivate: [requireAdmin],
     loadComponent: () => import('./layouts/admin-layout/admin-layout').then((m) => m.AdminLayout),
     children: [
+      { path: 'orders/new', title: 'Tạo đơn hàng | Mẹ Mây', canActivate: [requireOwner], canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/orders/order-detail/order-detail').then(m => m.OrderDetailPage) },
+      { path: 'orders/:id', title: 'Chi tiết đơn hàng | Mẹ Mây', canActivate: [requireOwner], canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/orders/order-detail/order-detail').then(m => m.OrderDetailPage) },
       { path: 'orders', title: 'Đơn hàng | Mẹ Mây', canActivate: [requireOwner], loadComponent: () => import('./features/admin/orders/order-list/order-list').then(m => m.OrderList) },
       { path: 'customers', runGuardsAndResolvers: 'paramsOrQueryParamsChange', title: 'Khách hàng | Mẹ Mây', canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/customers/customer-list/customer-list').then(m => m.CustomerList) },
       { path: 'customers/:id', runGuardsAndResolvers: 'paramsOrQueryParamsChange', title: 'Hồ sơ khách hàng | Mẹ Mây', canDeactivate: [pendingBookChanges], loadComponent: () => import('./features/admin/customers/customer-detail/customer-detail').then(m => m.CustomerDetailPage) },

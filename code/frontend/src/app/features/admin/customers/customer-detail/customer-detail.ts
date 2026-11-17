@@ -6,10 +6,11 @@ import { Subject, catchError, combineLatest, of, startWith, switchMap } from 'rx
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CustomerApi } from '../customer-api';
 import { CustomerDetail } from '../customer-models';
+import { CustomerOrderHistory } from '../../orders/customer-order-history/customer-order-history';
 import { CustomerForm } from '../customer-form/customer-form';
 @Component({
   selector: 'app-customer-detail',
-  imports: [DatePipe, RouterLink, CustomerForm],
+  imports: [DatePipe, RouterLink, CustomerForm, CustomerOrderHistory],
   templateUrl: './customer-detail.html',
   styleUrls: ['../customer-pages.scss'],
 })

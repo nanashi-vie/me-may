@@ -69,22 +69,7 @@
       <span>Ngày tạo: {{ c.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span
       ><span>Cập nhật: {{ c.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span>
     </div>
-    <section class="order-history">
-      <h2>Lịch sử đơn hàng</h2>
-      <div class="empty">
-        <svg
-          width="32"
-          height="32"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          aria-hidden="true"
-        >
-          <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z M4 7.5l8 4.5 8-4.5 M12 12v9" />
-        </svg>
-        <p>Khách hàng chưa có đơn hàng.</p>
-      </div>
-    </section>
+    @if(owner()){<app-customer-order-history [customerId]="c.id" />}
   </article>
 }
 <app-customer-form (saved)="onSaved($event)" />

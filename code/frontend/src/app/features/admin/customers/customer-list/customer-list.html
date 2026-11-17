@@ -46,7 +46,7 @@
               <th scope="col">TikTok</th>
               <th scope="col">Threads</th>
               <th scope="col">Số điện thoại</th>
-              <th scope="col">Tổng số đơn hàng</th>
+              @if(owner()){<th scope="col">Tổng số đơn hàng</th>}
             </tr>
           </thead>
           <tbody>
@@ -67,7 +67,7 @@
                 <td class="social-account">{{ customer.tiktokId || '—' }}</td>
                 <td class="social-account">{{ customer.threadsId || '—' }}</td>
                 <td class="phone">{{ customer.phone || '—' }}</td>
-                <td class="order-count"><span aria-label="Chưa có dữ liệu đơn hàng">—</span></td>
+                @if(owner()){<td class="order-count">{{customer.orderCount??'—'}}</td>}
               </tr>
             }
           </tbody>

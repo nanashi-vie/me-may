@@ -27,7 +27,7 @@ public final class OrderDtos {
  public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size){}
  public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long unsuccessful){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}
- public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl,Long salePriceVnd){}
+ public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl,Long salePriceVnd,long reservedQuantity,long totalStock){}
  public record MatchResult(String normalizedTitle,String fingerprint,List<CatalogCandidate> items){}
  public record MatchConfirmation(String normalizedTitle,String fingerprint,String reason){}
  public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}

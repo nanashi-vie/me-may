@@ -1,0 +1,194 @@
+<dialog #dialog (cancel)="escape($event)" aria-labelledby="item-form-title">
+  @if (visible()) {
+    <div class="notice" role="alert">
+      @if (locked() && error()) {
+        <p>{{ error() }}</p>
+        <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
+      }
+    </div>
+    <form (ngSubmit)="submit()" #form="ngForm">
+      <fieldset [disabled]="locked()">
+        <header class="heading">
+          <h2 id="item-form-title">{{ item ? 'Sửa sách trong đơn' : 'Thêm sách vào đơn' }}</h2>
+          <button type="button" class="secondary" (click)="requestClose()" aria-label="Đóng">
+            ×
+          </button>
+        </header>
+        @if (error()) {
+          <p class="error" role="alert">{{ error() }}</p>
+        }
+        <label
+          ><span>Nguồn sách</span
+          ><select
+            name="source"
+            [(ngModel)]="model.sourceType"
+            (ngModelChange)="sourceChanged()"
+            [disabled]="!!item"
+          >
+            <option value="CATALOG">Sách website</option>
+            <option value="MANUAL">Sách ngoài — nhập thủ công</option>
+          </select></label
+        >
+        @if (model.sourceType === 'CATALOG') {
+          @if (!item) {
+            <label
+              ><span>Tìm tên hoặc mã MM</span
+              ><input name="q" type="search" [(ngModel)]="q" (ngModelChange)="search()"
+            /></label>
+            @if (searching()) {
+              <p role="status">Đang tìm sách…</p>
+            }
+            <div class="catalog-results">
+              @for (book of catalog?.items; track book.id) {
+                <button
+                  type="button"
+                  class="catalog-result secondary"
+                  (click)="choose(book)"
+                  [class.selected]="model.bookCopyId === book.id"
+                >
+                  @if (book.coverUrl) {
+                    <img [src]="book.coverUrl" alt="" width="42" height="56" />
+                  }
+                  <span
+                    >{{ book.bookCode }} · {{ book.title
+                    }}<small
+                      >Tổng {{ book.totalStock }} · Đã giữ {{ book.reservedQuantity }} · Còn bán
+                      {{ book.stock }} · {{ book.weightG ?? 'Chưa có' }} g ·
+                      {{ book.publication }}</small
+                    ><small
+                      >Tham khảo {{ money(book.priceMinVnd) }}–{{ money(book.priceMaxVnd) }}
+                      @if (book.salePriceVnd !== null) {
+                        · Sale {{ money(book.salePriceVnd) }}
+                      }
+                    </small></span
+                  >
+                </button>
+              }
+            </div>
+            @if (catalog; as result) {
+              <div class="actions">
+                <button
+                  type="button"
+                  class="secondary"
+                  [disabled]="page === 0"
+                  (click)="search(page - 1)"
+                >
+                  ‹</button
+                ><span>Trang {{ page + 1 }} / {{ result.totalPages || 1 }}</span
+                ><button
+                  type="button"
+                  class="secondary"
+                  [disabled]="page + 1 >= result.totalPages"
+                  (click)="search(page + 1)"
+                >
+                  ›
+                </button>
+              </div>
+            }
+          }
+          @if (model.bookCopyId) {
+            <p class="notice">Đã chọn: {{ model.title }}. Nhập giá chốt cụ thể cho khách.</p>
+          }
+        } @else {
+          <label
+            ><span>Tên sách *</span
+            ><input
+              name="title"
+              maxlength="300"
+              required
+              [ngModel]="model.title"
+              (ngModelChange)="titleChanged($event)"
+              placeholder="Nhập tên sách…"
+          /></label>
+          @if (match?.items?.length) {
+            <div class="notice">
+              <p>Có sách tương tự trên website. Kiểm tra trước khi nhập sách ngoài.</p>
+              @for (book of match!.items; track book.id) {
+                <p>
+                  {{ book.bookCode }} · {{ book.title }} · Tồn {{ book.stock }}
+                  <button
+                    type="button"
+                    class="text-button"
+                    [disabled]="!!item"
+                    (click)="model.sourceType = 'CATALOG'; choose(book)"
+                  >
+                    Chọn sách này
+                  </button>
+                </p>
+              }
+              <label
+                ><span>Lý do vẫn dùng sách ngoài *</span
+                ><textarea
+                  name="overrideReason"
+                  maxlength="1000"
+                  [(ngModel)]="model.overrideReason"
+                ></textarea></label
+              ><label class="check"
+                ><input name="confirmed" type="checkbox" [(ngModel)]="model.confirmed" />Đã kiểm tra
+                và xác nhận đây là sách ngoài</label
+              >
+            </div>
+          }
+          @if (!match) {
+            <p class="muted">Đang chờ kiểm tra sách tương tự…</p>
+          }
+        }
+        <div class="grid">
+          <label
+            ><span>Đơn giá chốt (VNĐ) *</span
+            ><input
+              appVndInput
+              name="price"
+              inputmode="numeric"
+              required
+              [(ngModel)]="model.unitPriceVnd" /></label
+          ><label
+            ><span>Số lượng *</span
+            ><input
+              name="quantity"
+              type="number"
+              min="1"
+              max="999999"
+              step="1"
+              required
+              [(ngModel)]="model.quantity" /></label
+          ><label class="full"
+            ><span>Trọng lượng mỗi quyển (gram) {{ model.sourceType === 'MANUAL' ? '*' : '' }}</span
+            ><input
+              name="weight"
+              type="number"
+              min="1"
+              step="1"
+              [(ngModel)]="model.unitWeightGrams"
+            /><small
+              >Trọng lượng lưu riêng cho dòng sách. Khác giá hoặc gram: thêm dòng mới.</small
+            ></label
+          >
+        </div>
+        @if (requiresReason()) {
+          <label
+            ><span>Lý do giảm số lượng *</span
+            ><textarea
+              name="reason"
+              required
+              maxlength="1000"
+              [(ngModel)]="model.reason"
+            ></textarea>
+          </label>
+        }
+        <p class="split-line">
+          <span>Thành tiền</span><strong>{{ money(totalPrice()) }}</strong>
+        </p>
+        <p class="split-line">
+          <span>Tổng trọng lượng</span><strong>{{ totalWeight() ?? 'Chưa đủ' }} g</strong>
+        </p>
+        <footer class="form-footer">
+          <button type="button" class="secondary" (click)="requestClose()">Hủy</button
+          ><button class="primary" [disabled]="!valid() || form.invalid">
+            {{ item ? 'Lưu dòng sách' : 'Thêm vào đơn' }}
+          </button>
+        </footer>
+      </fieldset>
+    </form>
+  }
+</dialog>

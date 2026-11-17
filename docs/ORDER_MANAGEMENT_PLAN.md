@@ -282,24 +282,24 @@ mirror task8, Observable<MutationResult>; `OrderList.canLeave():boolean`.
 customer models/api/list/detail hiện có; tests trong từng thư mục component `.spec.ts`.
 **Produces:** `OrderDetailPage.canLeave():boolean`; form outputs typed request,
 detail gọi OrderApi rồi reload, không dùng MutationResult cũ ghi đè detail mới.
-- [ ] RED UI tests: hai dòng cùng MM khác giá, MANUAL qty2/unit75000/250g→
+- [x] RED UI tests: hai dòng cùng MM khác giá, MANUAL qty2/unit75000/250g→
   `expect(totalPrice()).toBe(150000); expect(totalWeight()).toBe(500);`;
   CustomerForm.saved chọn id ngay, archived bị chặn, có KEEPING cho chọn/thêm hoặc tạo.
-- [ ] Chạy test RED; test debounce350ms/confirmation title, snapshot grams,
+- [x] Chạy test RED; test debounce350ms/confirmation title, snapshot grams,
   mất weight, dirty/Escape/focus, version409 giữ draft, retry cùng requestId.
-- [ ] Implement ảnh keep-detail: code/customer/badge, progress hạn đang dùng
+- [x] Implement ảnh keep-detail: code/customer/badge, progress hạn đang dùng
   (không âm/vượt100%), text quá hạn, extend có lý do/trần; money/cọc/ledger,
   item list source/quantity/giá cụ thể/gram, CTA thêm/kết thúc keep/chốt giao.
   Không copy số dư/dates/nút disabled hoặc tên/SĐT trong ảnh làm logic/fixtures.
-- [ ] Item form theo ảnh MANUAL, dùng VndInput hiện có không làm tròn nghìn;
+- [x] Item form theo ảnh MANUAL, dùng VndInput hiện có không làm tròn nghìn;
   CATALOG có tìm/mã/ảnh/giá tham khảo→nhập giá chốt, MANUAL confirm với backend.
   Xóa/giảm KEEPING mở form reason bắt buộc, giữ form khi400 và hiển thị history.
-- [ ] Shipping form nhận recipient/fee/weight/COD PP_CASH; preview tổng có ship,
+- [x] Shipping form nhận recipient/fee/weight/COD PP_CASH; preview tổng có ship,
   khai giá không ship; xác nhận tracking và handoff. Hoàn tất vẫn hiện tiền còn thu;
   fail/resend/abort/return/refund có confirm/lý do, lượng thực nhập và lịch sử mã.
-- [ ] Owner customer count/history thật, STAFF ẩn order section/count, giữ quyền
+- [x] Owner customer count/history thật, STAFF ẩn order section/count, giữ quyền
   customer hiện có; empty history chỉ khi API0, không che lỗi thành không có đơn.
-- [ ] GREEN toàn bộ specs order/customer/layout/route; commit `feat: add complete order administration workflow`.
+- [x] GREEN toàn bộ specs order/customer/layout/route; commit `feat: add complete order administration workflow`.
 
 ## Task 11 — Kiểm hồi quy, browser và bàn giao
 

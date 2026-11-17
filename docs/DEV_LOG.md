@@ -4880,3 +4880,25 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   payload trước CSRF; retry CSRF dùng lại requestId/amount; DELETE lý do trong body.
 - Route tạo/chi tiết sẽ nối ở task10 khi component thật tồn tại, không tạo stub.
   Hai hero deletion ban đầu giữ ngoài stage. Chưa browser/build/module hoàn tất.
+
+
+### 2026-11-17 - ORDER-EXEC-C11 - Chi tiết/form và lịch sử khách
+
+- Task9 full373FE đạt. Task10 RED thiếu component; focused9 UI đạt run-fe-50,
+  thêm history RED thiếu component(run-fe-51) và GREEN40case run-fe-54 gồm
+  order/customer: MANUAL2×75000/250g, giảm keep lý do, match debounce350ms,
+  retry cùng key và reload detail, archived rejected, OWNER history/STAFF không gọi.
+- Thêm detail/create/item/shipping dialogs; CustomerForm reuse; CATALOG giá chốt
+  bắt buộc không tự lấy sale; KEEPING delete reason form/history, giảm quantity
+  có reason; thanh toán thực tế/VOID/refund checkbox, giao/fail/resend/return từng dòng.
+- Customer count thật chỉ OWNER; history phân trang và phân biệt lỗi/empty;
+  dirty/epoch guard và unknown result khóa form, retry cùng request trong dialog.
+- Rà spec thấy lookup thiếu held/total: API test RED expected1 got0(run-be-53),
+  bổ sung aggregate ACTIVE reservation, totalStock=available+ACTIVE; focused6đạt55.
+- Build đầu sandbox esbuild deadlock/exit-6; chưa coi là lỗi business đã sửa,
+  đang chạy lại CI/noninteractive ngoài sandbox và fullFE. Chưa browser QA.
+
+- Full387FE đạt run-fe-63. Title bị xóa không hủy match pending: thêm test
+  RED(run-fe-60) rồi sửa stream switchMap nhận cả blank, GREEN6case(run-fe-61).
+  Build62 exit0 nhưng CSS chung warning81bytes; chuyển style order-code chỉ dùng
+  ở danh sách về file danh sách, giữ budget6/10kB; cần build xác minh lại task11.
