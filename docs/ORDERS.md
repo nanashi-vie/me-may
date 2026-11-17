@@ -1,8 +1,8 @@
-# SPEC — Quản lý đơn hàng nội bộ
+# Quản lý đơn hàng nội bộ — contract hiện hành
 
 Chuẩn hóa16/11, cập nhật17/11/2026 từ Order Management v1.0 do owner cung cấp.
-**Trạng thái:** owner duyệt toàn bộ17/11/2026, gồm các đề xuất còn lại ở mục15.
-Đang thực thi [plan](ORDER_MANAGEMENT_PLAN.md); bằng chứng/gate theo PROGRESS.
+**Trạng thái:** duyệt và triển khai local17/11/2026, gồm các quyết định mục15.
+Bằng chứng và giới hạn: [ORDER_VERIFICATION](ORDER_VERIFICATION.md); gate ở PROGRESS.
 Đây là mở rộng riêng sau catalogue MVP, không đổi wishlist thành giỏ hàng.
 Spec này thay giới hạn không có đơn/giữ tồn/thanh toán trong MASTER_PLAN cho
 khu admin; public và các gate release hiện hành giữ nguyên.
@@ -17,27 +17,24 @@ thông báo tự động, đồng bộ kho livestream, tự đối soát COD/ng�
 chia kiện đồng thời hoặc xuất Excel/API J&T trong bản đầu.
 
 Hướng phù hợp code hiện có: Angular standalone, Spring Boot modular monolith,
-PostgreSQL/Flyway; module order dùng Spring JDBC và transaction theo customer.
+PostgreSQL/Flyway; module order dùng Spring JDBC, khóa đơn rồi book ID tăng dần.
 Tái sử dụng auth/session/CSRF, CustomerForm, page/errors/version và audit có
 điều chỉnh. Không thêm framework CRM, kho hoặc workflow engine.
 Order dùng tồn gộp mã MM đã duyệt06/11, giữ dòng legacy, không dựng kho từng vật thể.
 
-## 2. Đối chiếu code hiện tại
+## 2. Tích hợp code và dữ liệu
 
-| Hiện trạng xác minh từ source dev/035d7ab | Chuẩn hóa cần có |
-|---|---|
-| book_copy là mục sách mã MM; book_variant.stock lưu tồn gộp qua nhiều dòng | CATALOG tham chiếu mục sách, không hứa ID từng vật thể |
-| BookVariantStore.pooledRows tăng từ đầu/giảm từ cuối, giữ UUID/tên/thứ tự | Giữ thuật toán và giới hạn dòng; reservation cấp book_copy |
-| BookCommandService tính availability từ tổng stock | Keep trừ stock ngay, giữ cách tính khả dụng và bảo vệ mọi đường sửa tồn |
-| Listing có price_min_vnd/price_max_vnd; có Flash Sale | Giá đơn do admin chốt từng cuốn, không lấy khoảng/sale làm giá bán tự động |
-| customer V32: tên bắt buộc, phone/address optional; ACTIVE/ARCHIVED | Tạo đơn chưa bắt buộc đủ giao hàng; kiểm đủ khi finalize |
-| CustomerForm có saved(CustomerDetail), kiểm trùng phone và dirty guard | Tạo nhanh dùng form hiện có, nhận id rồi chọn ngay |
-| /api/v1/admin; BIGINT JSON string; page mặc định20/max100 | Thay /api/admin/orders trong bản gốc bằng prefix v1 |
-| SecurityConfiguration: OWNER ghi, STAFF GET admin | Order chỉ admin/OWNER; phải chặn thêm cả STAFF GET |
-| AuditService chỉ giữ field trong allowlist, customer ghi metadata rỗng | Không truyền payload order rồi cho rằng toàn bộ thay đổi đã được lưu |
-| Flyway source mới nhất V33__hero_banners.sql; chưa có order/reservation | Lấy số migration kế tiếp còn trống lúc triển khai; không sửa V1–V33 |
-
-Nguồn: [DATA](DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE](CATALOGUE.md),
+Module `vn.memay.order`, Angular standalone `features/admin/orders`; không thêm dependency.
+Flyway V34 tạo orders/items/reservation/payments/shipments/returns/mutation_receipt;
+V35 lưu private action notes, V36 snapshot dòng sách/số bỏ sống sau khi xóa item.
+OrderRepository JDBC `@Component`; transaction do mutation/services quản lý.
+BookStockService dùng chung khóa book với editor/status; pooledRows giữ UUID,
+tên/thứ tự legacy. Keep/return cập nhật version/availability/audit/cache sau commit.
+BookTrashService chặn trash khi ACTIVE, chặn purge mọi order reference;
+scheduled purge loại reference trước limit, không để một FK chặn cả batch.
+Auth/session/CSRF, CustomerForm, AdminHttp, VndInput và audit tái sử dụng.
+Admin lookup gồm sách Ẩn/hết hàng; giá/sale chỉ tham khảo, không tự gán đơn giá.
+Nguồn nền: [DATA](DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE](CATALOGUE.md),
 [ARCHITECTURE](ARCHITECTURE.md).
 
 ## 3. Trạng thái và thao tác
@@ -59,7 +56,8 @@ Nguồn: [DATA](DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE](CATALOGUE.md),
   đi qua luồng không thành công/hoàn đơn. Không giữ SHIPPED làm trạng thái riêng.
 - Không EXPIRED; quá hạn là thuộc tính tính từ thời gian, không tự hủy/nhả tồn.
 - READY trước lần gửi đầu được reopen có lý do: KEEP về KEEPING giữ hạn cũ;
-  IMMEDIATE về DRAFT và hoàn tồn, cảnh báo trước khi nhả; user đã duyệt.
+  IMMEDIATE về DRAFT và hoàn tồn; KEEP chưa từng bắt đầu giữ cũng về DRAFT/nhả tồn.
+  Chỉ keep đã có start/until mới về KEEPING; lần keep đầu vẫn kiểm cọc/khởi tạo hạn.
 - COMPLETED/UNSUCCESSFUL khóa item/giá; luồng gửi lại chỉ sửa snapshot giao mới.
   Thanh toán độc lập: vẫn ghi thực nhận/hoàn tiền, không sửa tổng đã nhận bằng tay.
 
@@ -87,7 +85,8 @@ Khóa đổi customer_id sau khi đơn rời DRAFT hoặc đã có giao dịch t
 ## 5. Item CATALOG/MANUAL và giá chốt từng cuốn
 
 CATALOG: tìm tên/mã MM qua admin API phân trang, hiển thị bìa, mã, tên,
-khoảng giá tham khảo, weightG, tổng tồn/đã giữ/còn khả dụng và publication.
+khoảng giá/sale tham khảo, weightG, totalStock/reservedQuantity/stock và publication.
+stock là còn bán; reservedQuantity là ACTIVE; tổng tại tiệm = stock + ACTIVE.
 Cho chọn sách Ẩn còn tồn; không chọn sách trong Thùng rác. CATALOG
 không đồng nghĩa đang public; không publish hay tạo listing mới khi thêm đơn.
 Thiếu giá/trọng lượng catalogue không tự điền0: admin bổ sung snapshot.
@@ -117,7 +116,8 @@ mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở 
 Debounce300–500ms, backend tìm tối đa5 kết quả cả Ẩn/hết hàng, không chỉ public.
 Chuẩn hóa trim/khoảng trắng/chữ hoa-thường/không dấu; so khớp chính
 xác trước rồi gần giống bằng PostgreSQL, chưa tự cài extension/dependency.
-Thuật toán/ngưỡng và fixture gần giống được quyết định trong plan triển khai.
+SQL lọc tối đa200ứng viên ưu tiên prefix/độ dài/id; Java Levenshtein≥0,8,
+trả tối đa5. Giới hạn200 là trần lookup hiện tại; tăng/search index khi dữ liệu cần.
 Không tải toàn bộ catalogue hoặc dùng AI để phân loại trùng.
 UI cảnh báo, cho chọn CATALOG hoặc vẫn MANUAL với lý do bản khác/kho livestream/
 lý do khác. Không đổi nguồn tự động, không chặn tuyệt đối vì cùng tên nhiều cuốn.
@@ -280,7 +280,7 @@ thành số Excel kg, ba kích thước trống, số kiện1, COD và declaredV
 giao một phần trống. Có lịch sử lô/cảnh báo xuất trùng; xuất không đổi trạng thái đơn.
 Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước trống; phải kiểm khi export.
 
-## 12. Schema logic cần bổ sung
+## 12. Schema hiện hành
 
 | Bảng mới | Trường/constraint chính |
 |---|---|
@@ -288,10 +288,10 @@ Chưa có template gốc để kiểm mapping/mã dịch vụ/kích thước tr�
 | orders — keep | keep_started_at/keep_until TIMESTAMPTZ; keep_extension_count; required_deposit_vnd; deposit_override_reason/actor/time; không unique keep/customer |
 | orders — giao | recipient_name/phone/shipping_address; shipping_provider/service/payment_type; shipping_fee nullable trước chốt; parcel_weight_grams/overridden/needs_review; parcel_count=1; cod_amount/cod_needs_review; declared_value; tracking_code hiện tại; completed/failed/cancelled actor/time/reason |
 | order_items | id/order_id; source_type; book_copy_id/listing_id nullable theo source; book_code/title_snapshot; unit_price_vnd NOT NULL≥0; quantity>0; unit_weight_grams nullable khi draft; manual_match_override_reason/evidence; created_by/added_at; không unique(order,book) |
-| order_reservation | id/order_id/book_copy_id; quantity>0; state ACTIVE/RELEASED/CONSUMED; timestamps; returned_quantity/restocked_quantity; UNIQUE(order_id,book_copy_id), không nhập lại quá phần đã trừ |
+| order_reservation | id/order_id/book_copy_id; quantity>0 khi ACTIVE, RELEASED cho0; state ACTIVE/RELEASED/CONSUMED; timestamps; returned_quantity/restocked_quantity; UNIQUE(order_id,book_copy_id), không nhập lại quá phần đã trừ |
 | order_shipments | id/order_id/attempt_no UNIQUE; state PLANNED/HANDED_OVER/FAILED/ABORTED; snapshot người nhận, fee/COD/weight/provider/service/payment_type/tracking; actor/time/reason; một lần giao hiện hành, một kiện/lần |
 | order_returns | order_id/item_id/quantity_received/quantity_restocked/reason/actor/time/request_id; giữ xác nhận thực nhập và chống nhập trùng, MANUAL không restock web |
-| order_payments | id/order_id; transaction_type; amount>0; payment_method; occurred_at/note; actor/time; void metadata nếu duyệt |
+| order_payments | id/order_id; transaction_type; amount>0; payment_method; occurred_at/note; actor/time; void metadata và lý do bắt buộc |
 | order_mutation_receipt | request_id/actor/operation/order_id/fingerprint/kết quả tối thiểu; unique scope; không log raw payload hoặc trả dữ liệu trước auth |
 | order_action_notes | reason riêng tư, order/version/requestId/operation/actor/time; snapshot item/mã/tên/số lượng bỏ khi xóa/giảm KEEPING; audit chỉ giữ ref |
 
@@ -382,11 +382,11 @@ frontend test tính tiền/weight/review/errors/permissions; build SSR/Workers;
 browser OWNER tạo nhanh/dirty/keep/cancel/ship/retry; STAFF bị chặn cả xem;
 hồi quy sách/khách theo quyền hiện có.
 Dùng dữ liệu synthetic, không test mutation trên khách/đơn thật. Ghi bằng chứng
-vào VERIFICATION/DEV_LOG, snapshot PROGRESS; chưa chạy các kiểm tra runtime này.
+vào ORDER_VERIFICATION/DEV_LOG, snapshot PROGRESS; local QA không thay gate live.
 Trước rollout xác minh Flyway thực tế, backup DB/media/offhost và restore,
 schema additive/backend trước FE tương thích; không đánh đồng local với live.
 Rollback không drop đơn/receipt/payment hoặc xóa giao dịch phát sinh; user merge
-main/deploy theo workflow. Thực thi theo plan hiện hành, không tự migrate live.
+main/deploy theo workflow. Schema additive/backend trước FE; không tự migrate live.
 
 ## 15. Quyết định đã duyệt17/11
 

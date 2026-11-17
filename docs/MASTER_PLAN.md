@@ -2,9 +2,9 @@
 
 **Bản hiện hành | Cập nhật17/11/2026 | Gate release ở PROGRESS**
 > Mở rộng12/11: quản lý khách hàng thủ công được duyệt tại [CUSTOMERS](CUSTOMERS.md).
-> Banner: [HERO_BANNERS](HERO_BANNERS.md); admin đơn hàng duyệt17/11: [spec](ORDER_MANAGEMENT_SPEC.md), [plan](ORDER_MANAGEMENT_PLAN.md).
+> Banner: [HERO_BANNERS](HERO_BANNERS.md); admin đơn hàng duyệt17/11: [contract](ORDERS.md), [bằng chứng local](ORDER_VERIFICATION.md).
 
-> **Mục tiêu:** Website sách giữ baseline MVP **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. User duyệt mở rộng quản lý đơn nội bộ17/11 theo ORDER_MANAGEMENT_SPEC, thay giới hạn không order/giữ tồn/thanh toán ở admin trong baseline bên dưới. Public vẫn không checkout/đặt hàng/giữ hàng; gate release cũ giữ. Không tự mở e-commerce hoặc pipeline AI ngoài phạm vi duyệt.
+> **Mục tiêu:** Website sách giữ baseline MVP **catalogue + danh sách quan tâm + liên hệ hỏi mua** và **quản trị sản phẩm**. User duyệt mở rộng quản lý đơn nội bộ17/11 theo ORDERS, thay giới hạn không order/giữ tồn/thanh toán ở admin trong baseline bên dưới. Public vẫn không checkout/đặt hàng/giữ hàng; gate release cũ giữ. Không tự mở e-commerce hoặc pipeline AI ngoài phạm vi duyệt.
 
 > **Cập nhật theo yêu cầu ngày 21/10/2026:** Giữ Angular trên Cloudflare. Backend và PostgreSQL tự quản trên VPS/Dokploy. Các proposal và phiên bản cũ đã được gộp/xóa; lịch sử xem trong Git.
 

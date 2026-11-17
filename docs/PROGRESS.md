@@ -3,9 +3,9 @@
 Cập nhật 17/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- ORDER-EXEC-C01 (17/11): owner duyệt thực thi tuần tự [plan](ORDER_MANAGEMENT_PLAN.md).
+- ORDER-EXEC-C13 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
-  codex/order-management: task1–9 đạt (382BE/373FE); task10 form/chi tiết đang kiểm, chưa browser.
+  383BE(3live skip)/391FE/SSR/Workers/browser/review đạt; [bằng chứng](ORDER_VERIFICATION.md).
 
 - CUSTOMER-COLUMNS-C03 (15/11): bảng khách6cột, sửa tại detail; navbar tăng gap ngang.
   FE367/BE320(3skip)/SSR/Workers/browser đạt; tổng đơn hiện —, chưa deploy.

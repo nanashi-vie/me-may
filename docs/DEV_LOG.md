@@ -4927,3 +4927,24 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   replay return stock8 không trùng, đóng hoàn không gửi lại; actual cọc/max30,
   partial/overpaid/refund chỉ actual/VOID, cancelMANUAL, STAFF403/countnull,
   anonymous401 và owner thiếuCSRF403 đạt. Dữ liệu riêng me_may_orders_browser.
+
+
+### 2026-11-17 - ORDER-EXEC-C13 - QA cuối và chuẩn hóa tài liệu
+
+- Một lượt fix review hoàn tất tại b0921ae. Final gate391FE đạt;383BE(3live skip),
+  SSR74/Workers75/proxy76 đạt, không nới budget/dependency. Không còn Important/Minor hoãn.
+- Browser409 item giữ giá123456đ; server đã commit rồi client mất response,
+  retry cùng key/payload chỉ một item/stock delta. Shipping409 giữ recipient/fee/
+  cân tay1500g và bỏ xác nhận COD/cân cũ; chốt bill503456/khai giá473456 đúng.
+- UI reopen giữ hạn/start; gia hạn đến đúng trần30, cancel hoàn ACTIVE. Keyboard
+  CustomerForm/Escape/dirty/focus, STAFF direct redirect/không query order/count/
+  history, public Home/catalogue/sale/wishlist và sáchẨn404 đạt. Không outer overflow
+ 1440/1024/390; đã xem screenshot keep desktop/mobile. Artefact QA chỉ dữ liệu giả.
+- Restart riêng backend rồi replay receipt ITEM_ADD cũ sau cancel: đúng result cũ,
+  không thêm item/đổi tồn. Suite DB và browser DB đều thuộc container QA riêng;
+  không đọc/ghi DB live hoặc đụng dịch vụ my-postgres/memay-local-images của user.
+- Chuyển đủ contract/AC từ spec sang ORDERS.md, bằng chứng ORDER_VERIFICATION.md;
+  cập nhật chỉ mục/MASTER/DATA/ARCHITECTURE/CUSTOMERS/VERIFICATION/PROGRESS.
+  Xóa spec/plan hết vai trò sau khi đủ gate; lịch sử giữ bằng Git, log QA giữ local.
+- Chuẩn bị commit bàn giao/tích hợp/push dev theo workflow; giữ hai hero deletion
+  ban đầu ngoài stage; main/deploy/live backup/restore vẫn do owner/gate riêng.

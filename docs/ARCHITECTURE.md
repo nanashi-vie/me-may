@@ -384,3 +384,13 @@ Contract/rollout ở [CUSTOMERS](CUSTOMERS.md),
   SSR vẫn có button/content/SEO, không khởi tạo WASM; không deploy chatbot.
 - Gzip local≈420KB tải sau (JS63KB/WASM353KB/RIV4.8KB); fallback WASM chỉ tải
   nếu runtime cần. Gate production/thiết bị thật ở [bằng chứng](THEME_VERIFICATION.md).
+
+
+## Đơn nội bộ — triển khai17/11
+
+`vn.memay.order` Spring JDBC dùng transaction command/receipt/version/audit,
+khóa order rồi book IDs tăng dần qua BookStockService; không gọi carrier/payment API.
+Angular owner-only routes và AdminHttp no-store/CSRF; form retry cùng payload/key,
+sau mutation đọc detail thật, refresh guard route/version và rebase form khi409.
+Schema/API/quyền/flow: [ORDERS](ORDERS.md); kiểm tra: [ORDER_VERIFICATION](ORDER_VERIFICATION.md).
+Không tự migrate/deploy live; rollout/backup/restore theo DEPLOYMENT.

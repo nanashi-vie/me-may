@@ -14,7 +14,7 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 | Đầu việc | Nguồn hiện hành |
 |---|---|
-| Quản lý đơn nội bộ: spec duyệt17/11, UI tham khảo và kế hoạch triển khai | [Spec](ORDER_MANAGEMENT_SPEC.md), [plan](ORDER_MANAGEMENT_PLAN.md), [UI](ORDER_MANAGEMENT_SPEC.md#14-ui-nghiệm-thu-và-rollout) |
+| Quản lý đơn nội bộ: keep/tồn, giá chốt, tiền/giao/hoàn và quyền OWNER | [Contract](ORDERS.md), [bằng chứng local](ORDER_VERIFICATION.md), [UI](ORDERS.md#14-ui-nghiệm-thu-và-rollout) |
 | Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
 | Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: upload máy/Drive, ghép nguồn, cảnh báo thiếu nguồn vẫn xuất bản12/11 | [Hệ thống ảnh](IMAGES.md) |
@@ -41,9 +41,9 @@ Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
-- Order Management: owner duyệt [spec](ORDER_MANAGEMENT_SPEC.md) và gửi3ảnh UI
-  tham khảo17/11; [plan](ORDER_MANAGEMENT_PLAN.md) chờ chọn cách thực thi.
-  Chưa code/migration/deploy; public/gate release cũ giữ nguyên.
+- Order Management: [contract](ORDERS.md) đã triển khai local17/11;
+  [bằng chứng](ORDER_VERIFICATION.md) gồm kiểm thử/browser/review.
+  Rollout migration/backup/restore/live smoke vẫn là gate riêng, chưa deploy.
 
 - Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 
