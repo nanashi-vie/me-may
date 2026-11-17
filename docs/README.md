@@ -1,6 +1,6 @@
 # Chỉ mục tài liệu Mẹ Mây
 
-Cập nhật16/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách hàng12/11
+Cập nhật17/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách hàng12/11
 đã triển khai local; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
 
 ## Bắt đầu hoặc tiếp tục phiên
@@ -43,7 +43,7 @@ Cập nhật16/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 - Order Management: [spec](ORDER_MANAGEMENT_SPEC.md) chốt keep trừ tồn, admin,
   thu cả ship nhập tay, keep≤30ngày; bàn giao là Hoàn tất, hoàn/gửi lại thủ công.
-  Còn đề xuất VOID/mã ship ở mục15; chưa lập plan/triển khai.
+  Chốt17/11 tiệm trả J&T từng đơn/PP_CASH; còn VOID/mã vận đơn, chưa triển khai.
 
 - Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
 

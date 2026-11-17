@@ -4647,3 +4647,17 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   không stage hai hero deletions, không sửa code/migrate/deploy/main.
   Bước tiếp: owner xác nhận mặc định J&T khi tiệm đã thu ship, quy tắc mã vận
   đơn và VOID nhập sai còn đề xuất ở mục15; sau duyệt spec mới lập plan.
+
+### 2026-11-17 - ORDER-SPEC-C06 - Chốt tiệm trả J&T từng đơn
+
+- User xác nhận bill khách đã gồm hàng+ship, tiệm thanh toán J&T từng đơn.
+  Cập nhật ORDER_MANAGEMENT_SPEC mục11/15: mặc định PP_CASH, thay đề xuất
+  CC_CASH gốc; không mặc định PP_PM cuối tháng. Bill/orderTotal vẫn gồm ship,
+  khai giá chỉ tiền hàng, COD vẫn admin xác nhận, không thu ship hai lần.
+- README/PROGRESS cập nhật quyết định và ngày. Còn VOID nhập sai/mã vận đơn
+  bắt buộc trước bàn giao là đề xuất; không diễn giải xác nhận ship là duyệt hết.
+- Kiểm root: Python line≤400/local links và contract PP_CASH PASS;
+  git diff --check PASS. Chỉ docs, chưa chạy BE/FE test/build/browser.
+- Base dev/702ba86; commit/push docs dev, không code/migration/deploy/main;
+  hai hero deletions có sẵn giữ nguyên ngoài stage. Bước tiếp: hoàn tất duyệt
+  các đề xuất còn lại rồi mới lập implementation plan.

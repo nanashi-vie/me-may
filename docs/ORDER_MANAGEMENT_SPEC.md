@@ -1,6 +1,6 @@
 # SPEC — Quản lý đơn hàng nội bộ
 
-Chuẩn hóa 16/11/2026 từ Order Management v1.0 do owner cung cấp.
+Chuẩn hóa16/11, cập nhật17/11/2026 từ Order Management v1.0 do owner cung cấp.
 **Trạng thái:** nghiệp vụ đã chốt từng phần; mục15 còn quyết định cần làm rõ.
 Chưa lập plan/triển khai code order.
 User bổ sung 16/11: **admin chỉnh giá bán cụ thể từng cuốn khi thêm vào đơn**.
@@ -253,8 +253,8 @@ Ví dụ hàng650.000−giảm50.000, ship35.000, cọc100.000 → khai giá600.
 Cấu hình theo bản user cung cấp: J&T Express, EXPRESS, sản phẩm Sách,
 HÀNG HÓA, không gửi tại bưu cục, parcelCount1, không dùng dài/rộng/cao.
 shippingPaymentType: CC_CASH (người nhận), PP_CASH (người gửi), PP_PM (cuối tháng);
-tách khỏi tiền khách trả tiệm. Tiệm thu ship nên đề xuất mặc định PP_CASH thay
-CC_CASH của bản gốc để tránh khách trả phí hai lần; cần owner chốt mã mặc định.
+tách khỏi tiền khách trả tiệm. User chốt17/11: bill khách gồm tiền hàng+ship,
+tiệm trả J&T từng đơn; mặc định PP_CASH, thay CC_CASH trong bản gốc.
 **User chốt:** shippingFee do admin nhập thủ công, không tự tra/tính phí J&T;
 nullable khi chưa biết ở draft/keep, phải có khi chốt (0 nếu miễn). COD nguyên≥0
 mặc định0, admin nhập/xác nhận; tham khảo cả tiền hàng+ship trừ tiền đã nhận.
@@ -393,8 +393,8 @@ mã vận đơn; chủ ghi Không thành công rồi gửi lại/mã mới hoặ
 Reopen trước gửi theo đề xuất đã duyệt; trần keep30ngày gồm14ngày đầu.
 User đã thay tiêu chí hoàn tất/đối soát và mở xử lý hoàn thủ công của bản gốc.
 
-Chưa coi là đã duyệt: VOID giao dịch nhập sai; mặc định J&T PP_CASH thay CC_CASH
-vì tiệm thu ship; bắt mã vận đơn trước bàn giao. Các chi tiết này cần owner chốt.
+Chốt17/11: bill gồm hàng+ship; tiệm trả J&T từng đơn, mặc định PP_CASH.
+Còn đề xuất cần chốt: VOID giao dịch nhập sai; bắt mã vận đơn trước bàn giao.
 Các mặc định phụ ở mục4–7/13 vẫn là đề xuất: sáchẨn/Thùng rác, weight trước
 keep, khóa đổi khách, stats theo filter, giới hạn và đếm đơn mua bỏ nháp/hủy/
 không thành công. Không triển khai như đã duyệt khi còn quyết định nghiệp vụ chưa rõ.
