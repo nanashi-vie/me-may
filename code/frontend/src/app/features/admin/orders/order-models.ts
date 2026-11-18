@@ -2,6 +2,7 @@ export type OrderStatus =
   'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'UNSUCCESSFUL' | 'CANCELLED';
 export type FulfillmentType = 'IMMEDIATE' | 'KEEP';
 export type PaymentType = 'DEPOSIT' | 'PAYMENT' | 'REFUND';
+export type CustomerPaymentMode = 'RECIPIENT' | 'MONTHLY';
 export type ShippingPaymentType = 'PP_CASH' | 'CC_CASH' | 'PP_PM';
 export interface Page<T> {
   items: T[];
@@ -89,6 +90,7 @@ export interface Shipment {
     shippingAddress: string;
     shippingProvider: string;
     shippingService: string;
+    customerPaymentMode?: CustomerPaymentMode | null;
     shippingPaymentType: ShippingPaymentType;
     shippingFee: number;
     additionalShippingFee: number;
@@ -139,6 +141,7 @@ export interface OrderDetail extends Omit<OrderSummary, 'keepWarning'> {
   codAmount: number;
   codNeedsReview: boolean;
   declaredValue: number | null;
+  customerPaymentMode?: CustomerPaymentMode | null;
   shippingPaymentType: ShippingPaymentType;
   trackingCode: string | null;
   items: OrderItem[];

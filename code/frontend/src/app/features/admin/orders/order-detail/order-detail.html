@@ -61,7 +61,12 @@
           }
         </div>
         @if (customerPage(); as page) {
-          <app-pagination [page]="customerPageNumber" [totalPages]="page.totalPages" [disabled]="customerLoading() || busy() || !!pending()" (pageChange)="searchCustomers($event)" />
+          <app-pagination
+            [page]="customerPageNumber"
+            [totalPages]="page.totalPages"
+            [disabled]="customerLoading() || busy() || !!pending()"
+            (pageChange)="searchCustomers($event)"
+          />
         }
         @if (selectedCustomer(); as c) {
           <div class="section">
@@ -152,545 +157,650 @@
           >
         </section>
       }
-      <dl class="summary-grid">
-        <div>
-          <dt>Tiền sách</dt>
-          <dd>{{ money(d.totals.subtotal) }}</dd>
-        </div>
-        <div>
-          <dt>Giảm giá</dt>
-          <dd>{{ money(d.discountAmount) }}</dd>
-        </div>
-        <div>
-          <dt>Phí ship khách trả</dt>
-          <dd>{{ d.shippingFee === null ? 'Chưa nhập' : money(d.shippingFee) }}</dd>
-        </div>
-        <div>
-          <dt>{{ d.totals.provisional ? 'Tạm tính tiền hàng' : 'Tổng bill (hàng + ship)' }}</dt>
-          <dd>{{ money(d.totals.orderTotal ?? d.totals.goodsTotal) }}</dd>
-        </div>
-        <div>
-          <dt>Đã cọc (trong tổng đã nhận)</dt>
-          <dd class="success-text">{{ money(deposit()) }}</dd>
-        </div>
-        <div>
-          <dt>Đã nhận ròng sau hoàn</dt>
-          <dd>{{ money(d.totals.paidAmount) }}</dd>
-        </div>
-        <div>
-          <dt>Còn thu (+) / cần hoàn (−)</dt>
-          <dd>{{ money(d.totals.balance) }}</dd>
-          <small>{{ d.totals.provisional ? 'Chưa gồm phí ship' : d.totals.paymentStatus }}</small>
-        </div>
-        <div>
-          <dt>Tổng trọng lượng sách</dt>
-          <dd>{{ d.totals.totalBookWeightGrams ?? 'Chưa đủ' }} g</dd>
-        </div>
-      </dl>
-      <fieldset [disabled]="busy() || !!pending()">
-        <div class="actions">
-          @if (editable()) {
-            <button class="secondary" (click)="openPanel('edit')">Sửa thông tin / giảm giá</button>
-          }
-          <button class="secondary" (click)="openPanel('payment')">Ghi nhận thu / hoàn tiền</button>
-          @if (d.status === 'DRAFT' && d.fulfillmentType === 'KEEP') {
-            <button class="primary" (click)="openPanel('keep')">Bắt đầu keep & trừ tồn</button>
-          }
-          @if (editable()) {
-            <button class="primary" (click)="shippingForm()?.open(d, 'finalize')">
-              {{ d.status === 'KEEPING' ? 'Kết thúc keep & chốt giao' : 'Chốt giao' }}
-            </button>
-          }
-          @if (d.status === 'READY_TO_SHIP') {
-            <button class="secondary" (click)="shippingForm()?.open(d, 'shipping')">
-              Thông tin giao / xem lại COD</button
-            ><button class="primary" (click)="openPanel('ship')">Đã bàn giao vận chuyển</button>
-            @if (everShipped()) {
-              <button class="secondary" (click)="openPanel('abort-resend')">Hủy lần gửi lại</button>
-            } @else {
-              <button class="secondary" (click)="openPanel('reopen')">Mở lại đơn đã chốt</button>
-            }
-          }
-          @if ((editable() || d.status === 'READY_TO_SHIP') && !everShipped()) {
-            <button class="text-button" (click)="openPanel('cancel')">Hủy đơn</button>
-          }
-          @if (d.status === 'COMPLETED') {
-            <button class="secondary" (click)="openPanel('tracking')">Sửa mã vận đơn</button
-            ><button class="secondary" (click)="openPanel('fail')">
-              Đơn không thành công / hoàn về
-            </button>
-          }
-          @if (d.status === 'UNSUCCESSFUL') {
-            <button class="primary" (click)="shippingForm()?.open(d, 'resend')">
-              Chuẩn bị gửi lại</button
-            ><button class="secondary" (click)="openPanel('return')">
-              Hoàn đơn & xử lý tồn thực tế
-            </button>
-          }
-        </div>
-      </fieldset>
-      @if (panel(); as action) {
-        <section class="inline-form" aria-labelledby="action-title">
-          <h2 id="action-title">
+      <div role="tablist" class="actions" aria-label="Nội dung đơn" (keydown)="tabKey($event)">
+        <button
+          role="tab"
+          id="order-detail-tab"
+          aria-controls="order-content"
+          [tabIndex]="totalTab() ? -1 : 0"
+          [class.primary]="totalTab()"
+          [attr.aria-selected]="!totalTab()"
+          (click)="selectTab(false)"
+        >
+          Chi tiết đơn
+        </button>
+        <button
+          role="tab"
+          id="order-total-tab"
+          aria-controls="order-content"
+          [tabIndex]="totalTab() ? 0 : -1"
+          [class.primary]="!totalTab()"
+          [attr.aria-selected]="totalTab()"
+          (click)="selectTab(true)"
+        >
+          Tổng đơn
+        </button>
+      </div>
+      <div
+        role="tabpanel"
+        id="order-content"
+        [attr.aria-labelledby]="totalTab() ? 'order-total-tab' : 'order-detail-tab'"
+      >
+        @if (!totalTab()) {
+          <dl class="summary-grid">
+            <div>
+              <dt>Tiền sách</dt>
+              <dd>{{ money(d.totals.goodsTotal) }}</dd>
+            </div>
+            <div>
+              <dt>Tiền cọc</dt>
+              <dd>{{ money(deposit()) }}</dd>
+            </div>
+            <div>
+              <dt>Tổng trọng lượng sách</dt>
+              <dd>{{ d.totals.totalBookWeightGrams ?? 'Chưa đủ' }} g</dd>
+            </div>
+          </dl>
+        } @else if (currentBill(); as bill) {
+          <dl class="summary-grid">
+            <div>
+              <dt>Tiền sách</dt>
+              <dd>{{ money(bill.shippingSnapshot.declaredValue) }}</dd>
+            </div>
+            <div>
+              <dt>Phí ship</dt>
+              <dd>{{ money(bill.shippingSnapshot.shippingFee) }}</dd>
+            </div>
+            <div>
+              <dt>Tổng bill</dt>
+              <dd>
+                {{ money(bill.shippingSnapshot.declaredValue + bill.shippingSnapshot.shippingFee) }}
+              </dd>
+            </div>
+            <div>
+              <dt>Đã nhận</dt>
+              <dd>{{ money(d.totals.paidAmount) }}</dd>
+            </div>
+            <div>
+              <dt>{{ (d.totals.balance ?? 0) < 0 ? 'Cần hoàn' : 'Còn thu' }}</dt>
+              <dd>
+                {{
+                  d.totals.balance === 0
+                    ? 'Đã thanh toán đủ'
+                    : money(
+                        (d.totals.balance ?? 0) < 0 ? -(d.totals.balance ?? 0) : d.totals.balance
+                      )
+                }}
+              </dd>
+            </div>
+          </dl>
+          <p>
+            {{ bill.shippingSnapshot.recipientName }} · {{ bill.shippingSnapshot.recipientPhone }} ·
+            {{ bill.shippingSnapshot.shippingAddress }}
+          </p>
+          <p>
+            {{ bill.shippingSnapshot.parcelWeightGrams }} g ·
             {{
-              action === 'remove'
-                ? 'Xóa sách khỏi đơn'
-                : action === 'payment'
-                  ? 'Ghi nhận tiền thực tế'
-                  : action === 'return'
-                    ? 'Hoàn đơn & nhập lại tồn'
-                    : action === 'ship'
-                      ? 'Xác nhận bàn giao'
-                      : action === 'tracking'
-                        ? 'Sửa mã vận đơn'
-                        : action === 'edit'
-                          ? 'Thông tin đơn'
-                          : action === 'keep'
-                            ? 'Bắt đầu keep'
-                            : action === 'extend-keep'
-                              ? 'Gia hạn keep'
-                              : action === 'void'
-                                ? 'Vô hiệu giao dịch nhập nhầm'
-                                : action === 'fail'
-                                  ? 'Đơn không thành công'
-                                  : action === 'cancel'
-                                    ? 'Hủy đơn'
-                                    : action === 'reopen'
-                                      ? 'Mở lại đơn đã chốt'
-                                      : 'Hủy lần gửi lại'
+              bill.shippingSnapshot.customerPaymentMode === 'MONTHLY'
+                ? 'Thanh toán cuối tháng'
+                : bill.shippingSnapshot.customerPaymentMode === 'RECIPIENT'
+                  ? 'Người nhận thanh toán'
+                  : 'Bill cũ'
             }}
-          </h2>
-          <form (ngSubmit)="submitAction()" #actionForm="ngForm">
-            <fieldset [disabled]="busy() || !!pending()">
-              @if (action === 'remove') {
-                <p>
-                  {{ targetTitle() }} · Xóa dòng sách và trả tồn đang giữ tương ứng. Lịch sử lý do
-                  được giữ lại.
-                </p>
+            · COD {{ money(bill.shippingSnapshot.codAmount) }}
+          </p>
+        } @else {
+          <p>{{ d.shipments.length ? 'Cần xuất lại bill cho đơn này.' : 'Đơn chưa xuất bill.' }}</p>
+        }
+        <fieldset [disabled]="busy() || !!pending()">
+          <div class="actions">
+            @if (editable()) {
+              <button class="secondary" (click)="openPanel('edit')">Sửa thông tin</button>
+            }
+            <button class="secondary" (click)="openPanel('payment')">Ghi nhận thu tiền</button>
+            @if (d.status === 'DRAFT' && d.fulfillmentType === 'KEEP') {
+              <button class="primary" (click)="openPanel('keep')">Bắt đầu keep & trừ tồn</button>
+            }
+            @if (editable()) {
+              <button class="primary" (click)="shippingForm()?.open(d, 'finalize')">
+                Xuất bill
+              </button>
+            }
+            @if (totalTab() && d.status === 'READY_TO_SHIP') {
+              <button class="secondary" (click)="shippingForm()?.open(d, 'shipping')">
+                Sửa thông tin bill</button
+              ><button class="primary" (click)="openPanel('ship')">Đã bàn giao vận chuyển</button>
+              @if (everShipped()) {
+                <button class="secondary" (click)="openPanel('abort-resend')">
+                  Hủy lần gửi lại
+                </button>
+              } @else {
+                <button class="secondary" (click)="openPanel('reopen')">Mở lại đơn đã chốt</button>
               }
-              @if (action === 'keep') {
-                <p>
-                  Cọc yêu cầu {{ money(d.requiredDepositVnd) }}; đã nhận
-                  {{ money(d.totals.paidAmount) }}. Keep 14 ngày và trừ tồn ngay.
-                </p>
-                <label class="check"
-                  ><input type="checkbox" name="allow" [(ngModel)]="allowInsufficientDeposit" />Cho
-                  keep khi chưa đủ cọc (phải có lý do)</label
-                >
+            }
+            @if ((editable() || d.status === 'READY_TO_SHIP') && !everShipped()) {
+              <button class="text-button" (click)="openPanel('cancel')">Hủy đơn</button>
+            }
+            @if (totalTab() && d.status === 'COMPLETED') {
+              <button class="secondary" (click)="openPanel('tracking')">Sửa mã vận đơn</button
+              ><button class="secondary" (click)="openPanel('fail')">
+                Đơn không thành công / hoàn về
+              </button>
+            }
+            @if (totalTab() && d.status === 'UNSUCCESSFUL') {
+              <button class="primary" (click)="shippingForm()?.open(d, 'resend')">
+                Chuẩn bị gửi lại</button
+              ><button class="secondary" (click)="openPanel('return')">
+                Hoàn đơn & xử lý tồn thực tế
+              </button>
+            }
+          </div>
+        </fieldset>
+        @if (panel(); as action) {
+          @if (action === 'payment') {
+            <dialog
+              id="payment-dialog"
+              aria-labelledby="action-title"
+              (cancel)="$event.preventDefault(); closePanel()"
+            >
+              @if (error()) {
+                <p role="alert">{{ error() }}</p>
               }
-              @if (action === 'extend-keep') {
-                <label
-                  ><span>Giữ đến hết ngày *</span
-                  ><input
-                    type="date"
-                    name="end"
-                    required
-                    [min]="minKeepDate()"
-                    [max]="maxKeepDate()"
-                    [(ngModel)]="keepUntilDate" /></label
-                ><small>Gia hạn không vượt {{ maxKeepDate() | date: 'dd/MM/yyyy' }}.</small>
+              @if (paymentConflict()) {
+                <button type="button" [disabled]="loading()" (click)="refresh()">
+                  Tải lại dữ liệu đơn
+                </button>
               }
-              @if (action === 'ship' || action === 'tracking') {
-                <label
-                  ><span>Mã vận đơn *</span
-                  ><input name="tracking" maxlength="100" required [(ngModel)]="trackingCode"
-                /></label>
-                <p>
-                  Bill {{ money(d.totals.orderTotal) }} · COD {{ money(d.codAmount) }} ·
-                  {{ d.parcelWeightGrams }} g
-                </p>
-                @if (d.codNeedsReview || d.parcelWeightNeedsReview) {
-                  <p class="error">
-                    Cần mở thông tin giao để xác nhận lại COD / trọng lượng trước bàn giao.
-                  </p>
-                }
+              @if (pending() && !busy()) {
+                <button (click)="retry()">Thử lại cùng yêu cầu</button>
               }
-              @if (action === 'payment') {
-                <div class="grid">
-                  <label
-                    ><span>Loại giao dịch</span
-                    ><select name="type" [(ngModel)]="payment.transactionType">
-                      <option value="DEPOSIT" [disabled]="d.status === 'CANCELLED'">
-                        Nhận cọc
-                      </option>
-                      <option value="PAYMENT" [disabled]="d.status === 'CANCELLED'">
-                        Nhận thanh toán
-                      </option>
-                      <option value="REFUND">Hoàn tiền đã thực hiện</option>
-                    </select></label
-                  ><label
-                    ><span>Số tiền (VNĐ) *</span
-                    ><input
-                      appVndInput
-                      name="amount"
-                      required
-                      [(ngModel)]="payment.amount" /></label
-                  ><label
-                    ><span>Phương thức</span
-                    ><select name="method" [(ngModel)]="payment.paymentMethod">
-                      <option value="BANK_TRANSFER">Chuyển khoản</option>
-                      <option value="CASH">Tiền mặt</option>
-                      <option value="OTHER">Khác</option>
-                    </select></label
-                  ><label
-                    ><span>Thời điểm thực tế</span
-                    ><input
-                      name="time"
-                      type="datetime-local"
-                      [(ngModel)]="payment.occurredAt"
-                    /><small>Để trống: thời điểm ghi nhận.</small></label
-                  ><label class="full"
-                    ><span>Ghi chú</span
-                    ><textarea name="note" maxlength="1000" [(ngModel)]="payment.note"></textarea>
-                  </label>
-                </div>
-                @if (payment.transactionType === 'REFUND') {
-                  <label class="check"
-                    ><input
-                      type="checkbox"
-                      name="actual"
-                      required
-                      [(ngModel)]="actualConfirmed"
-                    />Xác nhận tiệm đã hoàn tiền thực tế cho khách</label
-                  >
-                }
-              }
-              @if (action === 'return') {
-                <p>
-                  Chỉ nhập tồn website đúng lượng sách thực tế đã nhận và có thể bán lại. Hoàn tiền
-                  được ghi riêng sau khi đã hoàn thực tế.
-                </p>
-                @for (line of returns; track line.itemId) {
-                  <div class="section">
-                    <h3>{{ line.title }} · Đơn {{ line.max }} quyển</h3>
+              <ng-container [ngTemplateOutlet]="actionBody" />
+            </dialog>
+          } @else {
+            <ng-container [ngTemplateOutlet]="actionBody" />
+          }
+          <ng-template #actionBody
+            ><section class="inline-form" aria-labelledby="action-title">
+              <h2 id="action-title">
+                {{
+                  action === 'remove'
+                    ? 'Xóa sách khỏi đơn'
+                    : action === 'payment'
+                      ? 'Ghi nhận tiền thực tế'
+                      : action === 'return'
+                        ? 'Hoàn đơn & nhập lại tồn'
+                        : action === 'ship'
+                          ? 'Xác nhận bàn giao'
+                          : action === 'tracking'
+                            ? 'Sửa mã vận đơn'
+                            : action === 'edit'
+                              ? 'Thông tin đơn'
+                              : action === 'keep'
+                                ? 'Bắt đầu keep'
+                                : action === 'extend-keep'
+                                  ? 'Gia hạn keep'
+                                  : action === 'void'
+                                    ? 'Vô hiệu giao dịch nhập nhầm'
+                                    : action === 'fail'
+                                      ? 'Đơn không thành công'
+                                      : action === 'cancel'
+                                        ? 'Hủy đơn'
+                                        : action === 'reopen'
+                                          ? 'Mở lại đơn đã chốt'
+                                          : 'Hủy lần gửi lại'
+                }}
+              </h2>
+              <form (ngSubmit)="submitAction()" #actionForm="ngForm">
+                <fieldset [disabled]="busy() || !!pending()">
+                  @if (action === 'remove') {
+                    <p>
+                      {{ targetTitle() }} · Xóa dòng sách và trả tồn đang giữ tương ứng. Lịch sử lý
+                      do được giữ lại.
+                    </p>
+                  }
+                  @if (action === 'keep') {
+                    <p>
+                      Cọc yêu cầu {{ money(d.requiredDepositVnd) }}; đã nhận
+                      {{ money(d.totals.paidAmount) }}. Keep 14 ngày và trừ tồn ngay.
+                    </p>
+                    <label class="check"
+                      ><input
+                        type="checkbox"
+                        name="allow"
+                        [(ngModel)]="allowInsufficientDeposit"
+                      />Cho keep khi chưa đủ cọc (phải có lý do)</label
+                    >
+                  }
+                  @if (action === 'extend-keep') {
+                    <label
+                      ><span>Giữ đến hết ngày *</span
+                      ><input
+                        type="date"
+                        name="end"
+                        required
+                        [min]="minKeepDate()"
+                        [max]="maxKeepDate()"
+                        [(ngModel)]="keepUntilDate" /></label
+                    ><small>Gia hạn không vượt {{ maxKeepDate() | date: 'dd/MM/yyyy' }}.</small>
+                  }
+                  @if (action === 'ship' || action === 'tracking') {
+                    <label
+                      ><span>Mã vận đơn *</span
+                      ><input name="tracking" maxlength="100" required [(ngModel)]="trackingCode"
+                    /></label>
+                    <p>
+                      Bill {{ money(d.totals.orderTotal) }} · COD {{ money(d.codAmount) }} ·
+                      {{ d.parcelWeightGrams }} g
+                    </p>
+                    @if (d.codNeedsReview || d.parcelWeightNeedsReview) {
+                      <p class="error">
+                        Cần mở thông tin giao để xác nhận lại COD / trọng lượng trước bàn giao.
+                      </p>
+                    }
+                  }
+                  @if (action === 'payment') {
                     <div class="grid">
                       <label
-                        ><span>Thực nhận về</span
-                        ><input
-                          type="number"
-                          min="0"
-                          [max]="line.max"
-                          step="1"
-                          required
-                          [name]="'received' + line.itemId"
-                          [(ngModel)]="line.quantityReceived" /></label
+                        ><span>Loại giao dịch</span
+                        ><select name="type" [(ngModel)]="payment.transactionType">
+                          <option value="DEPOSIT" [disabled]="d.status === 'CANCELLED'">
+                            Nhận cọc
+                          </option>
+                          <option value="PAYMENT" [disabled]="d.status === 'CANCELLED'">
+                            Nhận thanh toán
+                          </option>
+                          <option value="REFUND">Hoàn tiền đã thực hiện</option>
+                        </select></label
                       ><label
-                        ><span>Nhập lại tồn website</span
+                        ><span>Số tiền (VNĐ) *</span
                         ><input
-                          type="number"
-                          min="0"
-                          [max]="line.quantityReceived"
-                          step="1"
+                          appVndInput
+                          name="amount"
                           required
-                          [disabled]="line.manual"
-                          [name]="'restock' + line.itemId"
-                          [(ngModel)]="line.quantityRestocked"
-                        />
-                        @if (line.manual) {
-                          <small>Sách ngoài không nhập tồn website.</small>
-                        }</label
+                          [(ngModel)]="payment.amount" /></label
+                      ><label
+                        ><span>Phương thức</span
+                        ><select name="method" [(ngModel)]="payment.paymentMethod">
+                          <option value="BANK_TRANSFER">Chuyển khoản</option>
+
+                          <option value="OTHER">Khác</option>
+                        </select></label
+                      ><label
+                        ><span>Thời điểm thực tế</span
+                        ><input
+                          name="time"
+                          type="datetime-local"
+                          [(ngModel)]="payment.occurredAt"
+                        /><small>Để trống: thời điểm ghi nhận.</small></label
                       ><label class="full"
-                        ><span>Ghi chú phần không nhập lại</span
+                        ><span>Ghi chú</span
                         ><textarea
+                          name="note"
                           maxlength="1000"
-                          [name]="'returnReason' + line.itemId"
-                          [(ngModel)]="line.reason"
+                          [(ngModel)]="payment.note"
                         ></textarea>
                       </label>
                     </div>
-                  </div>
-                }
-                <label class="check"
-                  ><input name="actual" type="checkbox" required [(ngModel)]="actualConfirmed" />Đã
-                  kiểm tra hàng hoàn thực tế và số lượng từng dòng</label
-                >
-              }
-              @if (action === 'edit') {
-                @if (d.status === 'DRAFT' && !d.payments.length) {
-                  <label
-                    ><span>Đổi khách của đơn nháp (tùy chọn)</span
-                    ><input
-                      type="search"
-                      name="customerQ"
-                      [(ngModel)]="customerQ"
-                      (ngModelChange)="searchCustomers()"
-                  /></label>
-                  @if (customerError()) {
-                    <p class="error">{{ customerError() }}</p>
-                  }
-                  <div class="catalog-results">
-                    @for (c of customerPage()?.items; track c.id) {
-                      <button type="button" class="secondary" (click)="customerSaved(c)">
-                        {{ c.customerCode }} · {{ c.fullName }}
-                      </button>
+                    @if (payment.transactionType === 'REFUND') {
+                      <label class="check"
+                        ><input
+                          type="checkbox"
+                          name="actual"
+                          required
+                          [(ngModel)]="actualConfirmed"
+                        />Xác nhận tiệm đã hoàn tiền thực tế cho khách</label
+                      >
                     }
-                  </div>
-                  @if (selectedCustomer(); as c) {
-                    <p>
-                      Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng bên
-                      dưới lưu riêng.
-                    </p>
                   }
-                  <label
-                    ><span>Loại đơn</span
-                    ><select name="fulfillment" [(ngModel)]="fulfillmentType">
-                      <option value="KEEP">Keep</option>
-                      <option value="IMMEDIATE">Giao ngay</option>
-                    </select></label
-                  >
-                }
-                <div class="grid">
-                  <label
-                    ><span>Giảm giá toàn đơn (VNĐ)</span
-                    ><input
-                      appVndInput
-                      name="discount"
-                      required
-                      [(ngModel)]="edit.discountAmount" /></label
-                  ><label
-                    ><span>Phí ship khách trả (VNĐ)</span
-                    ><input appVndInput name="fee" [(ngModel)]="edit.shippingFee" /></label
-                  ><label
-                    ><span>Người nhận</span
-                    ><input
-                      name="recipient"
-                      maxlength="150"
-                      [(ngModel)]="edit.recipientName" /></label
-                  ><label
-                    ><span>SĐT nhận hàng</span
-                    ><input name="phone" type="tel" [(ngModel)]="edit.recipientPhone" /></label
-                  ><label class="full"
-                    ><span>Địa chỉ nhận</span
-                    ><textarea
-                      name="address"
-                      maxlength="500"
-                      [(ngModel)]="edit.shippingAddress"
-                    ></textarea>
-                  </label>
-                </div>
-              }
-              @if (!['payment', 'ship', 'edit'].includes(action)) {
-                <label
-                  ><span
-                    >Lý do
-                    {{
-                      action === 'remove' && d.status === 'DRAFT'
-                        ? '(không bắt buộc)'
-                        : action === 'keep' && !allowInsufficientDeposit
-                          ? '(không bắt buộc)'
-                          : '*'
-                    }}</span
-                  ><textarea name="reason" maxlength="1000" [(ngModel)]="actionReason"></textarea>
-                </label>
-              }
-              <footer class="form-footer">
-                <button type="button" class="secondary" (click)="closePanel()">Hủy</button
-                ><button class="primary" [disabled]="actionForm.invalid">Xác nhận</button>
-              </footer>
-            </fieldset>
-          </form>
-        </section>
-      }
-      <section class="section">
-        <div class="section-heading">
-          <h2>Sách trong đơn</h2>
-          <span class="muted">{{ d.totalQuantity }} quyển</span>
-        </div>
-        <div class="table-scroll" role="region" aria-label="Sách trong đơn" tabindex="0">
-          <table class="item-table">
-            <thead>
-              <tr>
-                <th>Sách / nguồn</th>
-                <th class="number">Đơn giá chốt</th>
-                <th class="number">SL</th>
-                <th class="number">Gram/quyển</th>
-                <th class="number">Thành tiền</th>
-                <th>Thao tác</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of d.items; track item.id) {
+                  @if (action === 'return') {
+                    <p>
+                      Chỉ nhập tồn website đúng lượng sách thực tế đã nhận và có thể bán lại. Hoàn
+                      tiền được ghi riêng sau khi đã hoàn thực tế.
+                    </p>
+                    @for (line of returns; track line.itemId) {
+                      <div class="section">
+                        <h3>{{ line.title }} · Đơn {{ line.max }} quyển</h3>
+                        <div class="grid">
+                          <label
+                            ><span>Thực nhận về</span
+                            ><input
+                              type="number"
+                              min="0"
+                              [max]="line.max"
+                              step="1"
+                              required
+                              [name]="'received' + line.itemId"
+                              [(ngModel)]="line.quantityReceived" /></label
+                          ><label
+                            ><span>Nhập lại tồn website</span
+                            ><input
+                              type="number"
+                              min="0"
+                              [max]="line.quantityReceived"
+                              step="1"
+                              required
+                              [disabled]="line.manual"
+                              [name]="'restock' + line.itemId"
+                              [(ngModel)]="line.quantityRestocked"
+                            />
+                            @if (line.manual) {
+                              <small>Sách ngoài không nhập tồn website.</small>
+                            }</label
+                          ><label class="full"
+                            ><span>Ghi chú phần không nhập lại</span
+                            ><textarea
+                              maxlength="1000"
+                              [name]="'returnReason' + line.itemId"
+                              [(ngModel)]="line.reason"
+                            ></textarea>
+                          </label>
+                        </div>
+                      </div>
+                    }
+                    <label class="check"
+                      ><input
+                        name="actual"
+                        type="checkbox"
+                        required
+                        [(ngModel)]="actualConfirmed"
+                      />Đã kiểm tra hàng hoàn thực tế và số lượng từng dòng</label
+                    >
+                  }
+                  @if (action === 'edit') {
+                    @if (d.status === 'DRAFT' && !d.payments.length) {
+                      <label
+                        ><span>Đổi khách của đơn nháp (tùy chọn)</span
+                        ><input
+                          type="search"
+                          name="customerQ"
+                          [(ngModel)]="customerQ"
+                          (ngModelChange)="searchCustomers()"
+                      /></label>
+                      @if (customerError()) {
+                        <p class="error">{{ customerError() }}</p>
+                      }
+                      <div class="catalog-results">
+                        @for (c of customerPage()?.items; track c.id) {
+                          <button type="button" class="secondary" (click)="customerSaved(c)">
+                            {{ c.customerCode }} · {{ c.fullName }}
+                          </button>
+                        }
+                      </div>
+                      @if (selectedCustomer(); as c) {
+                        <p>
+                          Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng bên
+                          dưới lưu riêng.
+                        </p>
+                      }
+                      <label
+                        ><span>Loại đơn</span
+                        ><select name="fulfillment" [(ngModel)]="fulfillmentType">
+                          <option value="KEEP">Keep</option>
+                          <option value="IMMEDIATE">Giao ngay</option>
+                        </select></label
+                      >
+                    }
+                    <div class="grid">
+                      <label
+                        ><span>Người nhận</span
+                        ><input
+                          name="recipient"
+                          maxlength="150"
+                          [(ngModel)]="edit.recipientName" /></label
+                      ><label
+                        ><span>SĐT nhận hàng</span
+                        ><input name="phone" type="tel" [(ngModel)]="edit.recipientPhone" /></label
+                      ><label class="full"
+                        ><span>Địa chỉ nhận</span
+                        ><textarea
+                          name="address"
+                          maxlength="500"
+                          [(ngModel)]="edit.shippingAddress"
+                        ></textarea>
+                      </label>
+                    </div>
+                  }
+                  @if (!['payment', 'ship', 'edit'].includes(action)) {
+                    <label
+                      ><span
+                        >Lý do
+                        {{
+                          action === 'remove' && d.status === 'DRAFT'
+                            ? '(không bắt buộc)'
+                            : action === 'keep' && !allowInsufficientDeposit
+                              ? '(không bắt buộc)'
+                              : '*'
+                        }}</span
+                      ><textarea
+                        name="reason"
+                        maxlength="1000"
+                        [(ngModel)]="actionReason"
+                      ></textarea>
+                    </label>
+                  }
+                  <footer class="form-footer">
+                    <button type="button" class="secondary" (click)="closePanel()">Hủy</button
+                    ><button
+                      class="primary"
+                      [disabled]="
+                        actionForm.invalid ||
+                        (action === 'payment' && (paymentConflict() || loading()))
+                      "
+                    >
+                      Xác nhận
+                    </button>
+                  </footer>
+                </fieldset>
+              </form>
+            </section></ng-template
+          >
+        }
+        @if (!totalTab()) {
+          <section class="section">
+            <div class="section-heading">
+              <h2>Sách trong đơn</h2>
+              <span class="muted">{{ d.totalQuantity }} quyển</span>
+            </div>
+            <div class="table-scroll" role="region" aria-label="Sách trong đơn" tabindex="0">
+              <table class="item-table">
+                <thead>
+                  <tr>
+                    <th>Sách / nguồn</th>
+                    <th class="number">Đơn giá chốt</th>
+                    <th class="number">SL</th>
+                    <th class="number">Gram/quyển</th>
+                    <th class="number">Thành tiền</th>
+                    <th>Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of d.items; track item.id) {
+                    <tr>
+                      <td>
+                        <strong>{{ item.titleSnapshot }}</strong
+                        ><small>{{
+                          item.sourceType === 'CATALOG'
+                            ? 'Website · ' + item.bookCodeSnapshot
+                            : 'Sách ngoài'
+                        }}</small>
+                      </td>
+                      <td class="number">{{ money(item.unitPriceVnd) }}</td>
+                      <td class="number">{{ item.quantity }}</td>
+                      <td class="number">{{ item.unitWeightGrams ?? 'Chưa có' }}</td>
+                      <td class="number">{{ money(item.unitPriceVnd * item.quantity) }}</td>
+                      <td>
+                        @if (editable()) {
+                          <div class="actions">
+                            <button
+                              class="text-button"
+                              [disabled]="busy() || !!pending()"
+                              (click)="itemForm()?.open(d, item)"
+                            >
+                              Sửa</button
+                            ><button
+                              class="text-button"
+                              [disabled]="busy() || !!pending()"
+                              (click)="remove(item)"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="empty">Chưa có sách trong đơn.</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            @if (editable()) {
+              <button
+                class="primary wide"
+                style="margin-top: 20px"
+                [disabled]="busy() || !!pending()"
+                (click)="itemForm()?.open(d)"
+              >
+                ＋ Thêm sách vào đơn
+              </button>
+            }
+          </section>
+        }
+        <details class="section">
+          <summary>Lịch sử thu / hoàn tiền</summary>
+          <small
+            >Cọc nằm trong tổng tiền đã nhận; COD và trạng thái hoàn tất không tự ghi nhận
+            tiền.</small
+          >
+          <div class="table-scroll" role="region" aria-label="Sổ thu hoàn" tabindex="0">
+            <table class="ledger">
+              <thead>
                 <tr>
-                  <td>
-                    <strong>{{ item.titleSnapshot }}</strong
-                    ><small>{{
-                      item.sourceType === 'CATALOG'
-                        ? 'Website · ' + item.bookCodeSnapshot
-                        : 'Sách ngoài'
-                    }}</small>
-                  </td>
-                  <td class="number">{{ money(item.unitPriceVnd) }}</td>
-                  <td class="number">{{ item.quantity }}</td>
-                  <td class="number">{{ item.unitWeightGrams ?? 'Chưa có' }}</td>
-                  <td class="number">{{ money(item.unitPriceVnd * item.quantity) }}</td>
-                  <td>
-                    @if (editable()) {
-                      <div class="actions">
+                  <th>Thời điểm</th>
+                  <th>Loại / phương thức</th>
+                  <th class="number">Số tiền</th>
+                  <th>Ghi chú / xử lý</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (p of d.payments; track p.id) {
+                  <tr>
+                    <td>
+                      {{ p.occurredAt | date: 'dd/MM/yyyy HH:mm' : '+0700'
+                      }}<small>Người ghi #{{ p.createdBy }}</small>
+                    </td>
+                    <td>
+                      {{
+                        p.transactionType === 'DEPOSIT'
+                          ? 'Nhận cọc'
+                          : p.transactionType === 'PAYMENT'
+                            ? 'Nhận tiền'
+                            : 'Đã hoàn tiền'
+                      }}
+                      · {{ p.paymentMethod }}
+                      @if (p.voidedAt) {
+                        <small class="danger-text"
+                          >Vô hiệu {{ p.voidedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</small
+                        >
+                      }
+                    </td>
+                    <td class="number">{{ money(p.amount) }}</td>
+                    <td>
+                      <p class="note">{{ p.note || '—' }}</p>
+                      @if (p.voidedAt) {
+                        <p class="note">Lý do: {{ p.voidReason }}</p>
+                      } @else {
                         <button
                           class="text-button"
                           [disabled]="busy() || !!pending()"
-                          (click)="itemForm()?.open(d, item)"
+                          (click)="voidPayment(p)"
                         >
-                          Sửa</button
-                        ><button
-                          class="text-button"
-                          [disabled]="busy() || !!pending()"
-                          (click)="remove(item)"
-                        >
-                          Xóa
+                          Vô hiệu nhập nhầm
                         </button>
-                      </div>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="6" class="empty">Chưa có sách trong đơn.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        @if (editable()) {
-          <button
-            class="primary wide"
-            style="margin-top: 20px"
-            [disabled]="busy() || !!pending()"
-            (click)="itemForm()?.open(d)"
-          >
-            ＋ Thêm sách vào đơn
-          </button>
-        }
-      </section>
-      <section class="section">
-        <h2>Thu / hoàn tiền thực tế</h2>
-        <small
-          >Cọc nằm trong tổng tiền đã nhận; COD và trạng thái hoàn tất không tự ghi nhận
-          tiền.</small
-        >
-        <div class="table-scroll" role="region" aria-label="Sổ thu hoàn" tabindex="0">
-          <table class="ledger">
-            <thead>
-              <tr>
-                <th>Thời điểm</th>
-                <th>Loại / phương thức</th>
-                <th class="number">Số tiền</th>
-                <th>Ghi chú / xử lý</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (p of d.payments; track p.id) {
-                <tr>
-                  <td>
-                    {{ p.occurredAt | date: 'dd/MM/yyyy HH:mm' : '+0700'
-                    }}<small>Người ghi #{{ p.createdBy }}</small>
-                  </td>
-                  <td>
-                    {{
-                      p.transactionType === 'DEPOSIT'
-                        ? 'Nhận cọc'
-                        : p.transactionType === 'PAYMENT'
-                          ? 'Nhận tiền'
-                          : 'Đã hoàn tiền'
-                    }}
-                    · {{ p.paymentMethod }}
-                    @if (p.voidedAt) {
-                      <small class="danger-text"
-                        >Vô hiệu {{ p.voidedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</small
-                      >
-                    }
-                  </td>
-                  <td class="number">{{ money(p.amount) }}</td>
-                  <td>
-                    <p class="note">{{ p.note || '—' }}</p>
-                    @if (p.voidedAt) {
-                      <p class="note">Lý do: {{ p.voidReason }}</p>
-                    } @else {
-                      <button
-                        class="text-button"
-                        [disabled]="busy() || !!pending()"
-                        (click)="voidPayment(p)"
-                      >
-                        Vô hiệu nhập nhầm
-                      </button>
-                    }
-                  </td>
-                </tr>
-              } @empty {
-                <tr>
-                  <td colspan="4" class="empty">Chưa ghi nhận giao dịch.</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-      </section>
-      <section class="section">
-        <h2>Lịch sử giao hàng</h2>
-        @for (s of d.shipments; track s.id) {
-          <details class="history-entry">
-            <summary>
-              Lần {{ s.attemptNo }} · {{ s.trackingCode || 'Chưa có vận đơn' }} · {{ s.state }}
-            </summary>
-            <p>
-              Người nhận: {{ s.shippingSnapshot.recipientName }} ·
-              {{ s.shippingSnapshot.recipientPhone }}
-            </p>
-            <p>{{ s.shippingSnapshot.shippingAddress }}</p>
-            <p>
-              J&T EXPRESS · {{ s.shippingSnapshot.parcelWeightGrams }} g ·
-              {{ s.shippingSnapshot.shippingPaymentType }} · COD
-              {{ money(s.shippingSnapshot.codAmount) }} · Khai giá
-              {{ money(s.shippingSnapshot.declaredValue) }}
-            </p>
-            <p>
-              Ship khách trả lũy kế {{ money(s.shippingSnapshot.shippingFee) }} · Thu thêm lần này
-              {{ money(s.shippingSnapshot.additionalShippingFee) }}
-            </p>
-            @if (s.handedOverAt) {
-              <p>Bàn giao: {{ s.handedOverAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+                      }
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="4" class="empty">Chưa ghi nhận giao dịch.</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </details>
+        @if (totalTab()) {
+          <section class="section">
+            <h2>Lịch sử giao hàng</h2>
+            @for (s of d.shipments; track s.id) {
+              <details class="history-entry">
+                <summary>
+                  Lần {{ s.attemptNo }} · {{ s.trackingCode || 'Chưa có vận đơn' }} · {{ s.state }}
+                </summary>
+                <p>
+                  Người nhận: {{ s.shippingSnapshot.recipientName }} ·
+                  {{ s.shippingSnapshot.recipientPhone }}
+                </p>
+                <p>{{ s.shippingSnapshot.shippingAddress }}</p>
+                <p>
+                  J&T EXPRESS · {{ s.shippingSnapshot.parcelWeightGrams }} g ·
+                  {{ s.shippingSnapshot.shippingPaymentType }} · COD
+                  {{ money(s.shippingSnapshot.codAmount) }} · Khai giá
+                  {{ money(s.shippingSnapshot.declaredValue) }}
+                </p>
+                <p>
+                  Ship khách trả lũy kế {{ money(s.shippingSnapshot.shippingFee) }} · Thu thêm lần
+                  này
+                  {{ money(s.shippingSnapshot.additionalShippingFee) }}
+                </p>
+                @if (s.handedOverAt) {
+                  <p>Bàn giao: {{ s.handedOverAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+                }
+                @if (s.failureReason) {
+                  <p class="note">Không thành công: {{ s.failureReason }}</p>
+                }
+              </details>
+            } @empty {
+              <p class="muted">Chưa chốt giao.</p>
             }
-            @if (s.failureReason) {
-              <p class="note">Không thành công: {{ s.failureReason }}</p>
+          </section>
+          @if (d.returns.length) {
+            <section class="section">
+              <h2>Hàng hoàn thực tế</h2>
+              @for (r of d.returns; track r.id) {
+                <p class="note">
+                  Dòng #{{ r.itemId }} · Nhận {{ r.quantityReceived }} · Nhập tồn
+                  {{ r.quantityRestocked }} · {{ r.reason }}
+                </p>
+              }
+            </section>
+          }
+          <details class="section">
+            <summary>Lịch sử xử lý & lý do</summary>
+            @for (n of d.notes; track n.id) {
+              <div class="history-entry">
+                <small
+                  >{{ n.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }} · Người xử lý #{{
+                    n.actorId
+                  }}
+                  · {{ n.operation }}</small
+                >
+                @if (n.titleSnapshot) {
+                  <p>
+                    {{ n.bookCodeSnapshot || 'Sách ngoài' }} · {{ n.titleSnapshot }} · Bỏ
+                    {{ n.quantityRemoved }} quyển
+                  </p>
+                }
+                <p class="note">{{ n.reason }}</p>
+              </div>
+            } @empty {
+              <p class="muted">Chưa có ghi chú xử lý.</p>
             }
           </details>
-        } @empty {
-          <p class="muted">Chưa chốt giao.</p>
         }
-      </section>
-      @if (d.returns.length) {
-        <section class="section">
-          <h2>Hàng hoàn thực tế</h2>
-          @for (r of d.returns; track r.id) {
-            <p class="note">
-              Dòng #{{ r.itemId }} · Nhận {{ r.quantityReceived }} · Nhập tồn
-              {{ r.quantityRestocked }} · {{ r.reason }}
-            </p>
-          }
-        </section>
-      }
-      <section class="section">
-        <h2>Lịch sử xử lý & lý do</h2>
-        @for (n of d.notes; track n.id) {
-          <div class="history-entry">
-            <small
-              >{{ n.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }} · Người xử lý #{{
-                n.actorId
-              }}
-              · {{ n.operation }}</small
-            >
-            @if (n.titleSnapshot) {
-              <p>
-                {{ n.bookCodeSnapshot || 'Sách ngoài' }} · {{ n.titleSnapshot }} · Bỏ
-                {{ n.quantityRemoved }} quyển
-              </p>
-            }
-            <p class="note">{{ n.reason }}</p>
-          </div>
-        } @empty {
-          <p class="muted">Chưa có ghi chú xử lý.</p>
-        }
-      </section>
+      </div>
     </article>
   }
   <app-customer-form (saved)="customerSaved($event)" />
@@ -700,6 +810,7 @@
     (saved)="itemSaved($event)"
   />
   <app-order-shipping-form
+    (paymentRequested)="openPanel('payment')"
     (retry)="retry()"
     (refreshRequested)="refresh()"
     (saved)="shippingSaved($event)"

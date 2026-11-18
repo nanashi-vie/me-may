@@ -21,22 +21,11 @@
         </button>
       </header>
       <fieldset [disabled]="busy()">
-        <label for="customer-name">Tên khách hàng <span aria-hidden="true">*</span></label>
-        <input
-          id="customer-name"
-          formControlName="fullName"
-          required
-          maxlength="150"
-          placeholder="Ví dụ: Nguyễn Thị Lan"
-          autofocus
-          [attr.aria-invalid]="!!errors()['fullName']"
-          aria-describedby="customer-name-error"
-        />
-        <p id="customer-name-error" class="field-error">{{ errors()['fullName']?.[0] }}</p>
         <label for="customer-phone">Số điện thoại</label
         ><input
           id="customer-phone"
           formControlName="phone"
+          [attr.autofocus]="customer() ? null : ''"
           inputmode="tel"
           autocomplete="tel"
           placeholder="Ví dụ: 0987123456"
@@ -45,6 +34,13 @@
         />
         <p id="customer-phone-error" class="field-error">{{ errors()['phone']?.[0] }}</p>
         <section id="customer-duplicates" aria-live="polite">
+          @if (lookupState() === 'checking') {
+            <small>Đang kiểm tra số điện thoại…</small>
+          }
+          @if (lookupState() === 'error') {
+            <small>Chưa kiểm tra được số điện thoại.</small>
+            <button type="button" class="secondary" (click)="retryLookup()">Thử lại</button>
+          }
           @if (duplicates(); as matches) {
             @if (matches.totalElements) {
               <div class="duplicate-warning">
@@ -73,6 +69,18 @@
             }
           }
         </section>
+        <label for="customer-name">Tên khách hàng <span aria-hidden="true">*</span></label>
+        <input
+          id="customer-name"
+          formControlName="fullName"
+          required
+          maxlength="150"
+          placeholder="Ví dụ: Nguyễn Thị Lan"
+          [attr.autofocus]="customer() ? '' : null"
+          [attr.aria-invalid]="!!errors()['fullName']"
+          aria-describedby="customer-name-error"
+        />
+        <p id="customer-name-error" class="field-error">{{ errors()['fullName']?.[0] }}</p>
         <label for="customer-address">Địa chỉ nhận hàng</label
         ><textarea
           id="customer-address"

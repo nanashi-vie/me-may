@@ -134,3 +134,5 @@ production code chỉ để bù cache dev. Screenshot owner cuối đã lưu loc
 - Duplicate-link regrade và xử lý trong pass Important: từ chối phải ngăn
   navigation; nếu bỏ qua có nguy cơ discard trái quyết định vừa chọn.
 
+
+18/11: browser QA thấy cảnh báo hồ sơ trùng dưới ô SĐT của form tạo khách, suite FE đạt.

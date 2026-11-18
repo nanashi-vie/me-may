@@ -1,9 +1,10 @@
 import { Component, ElementRef, output, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VndInput } from '../../books/vnd-input';
-import { OrderDetail, ShippingPaymentType } from '../order-models';
+import { CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
 import { integer, vnd } from '../order-values';
 export interface ShippingDraft {
+  customerPaymentMode: CustomerPaymentMode | null;
   recipientName: string;
   recipientPhone: string;
   shippingAddress: string;
@@ -40,6 +41,7 @@ export class OrderShippingForm {
   readonly money = vnd;
   mode: 'finalize' | 'shipping' | 'resend' = 'finalize';
   model: ShippingDraft = {
+    customerPaymentMode: 'RECIPIENT',
     recipientName: '',
     recipientPhone: '',
     shippingAddress: '',
@@ -58,14 +60,13 @@ export class OrderShippingForm {
     this.order = order;
     this.mode = mode;
     this.model = {
+      customerPaymentMode: order.customerPaymentMode ?? (mode === 'finalize' ? 'RECIPIENT' : null),
       recipientName: order.recipientName ?? '',
       recipientPhone: order.recipientPhone ?? '',
       shippingAddress: order.shippingAddress ?? '',
       shippingFee: order.shippingFee,
-      parcelWeightGrams: order.parcelWeightOverridden
-        ? order.parcelWeightGrams
-        : order.totals.totalBookWeightGrams,
-      parcelWeightOverridden: order.parcelWeightOverridden,
+      parcelWeightGrams: mode === 'shipping' ? order.parcelWeightGrams : null,
+      parcelWeightOverridden: true,
       parcelWeightConfirmed: false,
       codAmount: order.codAmount,
       codConfirmed: false,
@@ -77,12 +78,16 @@ export class OrderShippingForm {
     this.error.set('');
     this.conflict.set(false);
     this.refreshing.set(false);
+    this.reviewRequired = false;
+    this.manualCod = mode !== 'finalize';
+    this.suggestCod();
     this.initial = JSON.stringify(this.model);
     this.opener = document.activeElement as HTMLElement;
     this.visible.set(true);
     this.dialog()?.nativeElement.showModal?.();
   }
   rebase(order: OrderDetail) {
+    this.reviewRequired = true;
     this.order = order;
     this.conflict.set(false);
     this.error.set('');
@@ -90,6 +95,7 @@ export class OrderShippingForm {
     this.model.parcelWeightConfirmed = false;
     if (!this.model.parcelWeightOverridden)
       this.model.parcelWeightGrams = order.totals.totalBookWeightGrams;
+    this.suggestCod();
     if (!this.allowed())
       this.error.set(
         'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra trước khi đóng.',
@@ -114,35 +120,33 @@ export class OrderShippingForm {
     const n = fee === null ? NaN : this.declaredValue() + fee;
     return Number.isSafeInteger(n) ? n : null;
   }
+  received() {
+    return this.order?.totals.paidAmount ?? 0;
+  }
   balance() {
     const total = this.billTotal();
     return total === null ? null : total - (this.order?.totals.paidAmount ?? 0);
   }
-  weightChanged() {
-    if (
-      !this.model.parcelWeightOverridden &&
-      !window.confirm('Bỏ trọng lượng nhập tay và dùng lại tổng trọng lượng sách?')
-    ) {
-      this.model.parcelWeightOverridden = true;
-      return;
-    }
-    this.model.parcelWeightConfirmed = false;
-    if (!this.model.parcelWeightOverridden)
-      this.model.parcelWeightGrams = this.order?.totals.totalBookWeightGrams ?? null;
+  readonly paymentRequested = output<void>();
+  reviewRequired = false;
+  manualCod = false;
+  suggestCod() {
+    if (this.model.customerPaymentMode === 'MONTHLY') this.model.codAmount = 0;
+    else if (!this.manualCod) this.model.codAmount = Math.max(0, this.balance() ?? 0);
   }
   valid() {
     if (!this.allowed()) return false;
     const m = this.model;
     return (
+      !!m.customerPaymentMode &&
+      !this.reviewRequired &&
       !!m.recipientName.trim() &&
       !!m.recipientPhone.trim() &&
       !!m.shippingAddress.trim() &&
       integer(this.mode === 'resend' ? m.additionalShippingFee : m.shippingFee) &&
       integer(m.parcelWeightGrams, 1) &&
       integer(m.codAmount) &&
-      m.codConfirmed &&
-      (!m.parcelWeightOverridden || m.parcelWeightConfirmed) &&
-      (!this.order?.parcelWeightNeedsReview || m.parcelWeightConfirmed) &&
+      (m.customerPaymentMode !== 'MONTHLY' || (this.balance() ?? 1) <= 0) &&
       (this.mode !== 'resend' || !!m.reason?.trim()) &&
       this.billTotal() !== null
     );
@@ -151,6 +155,8 @@ export class OrderShippingForm {
     if (!this.valid() || this.locked()) return;
     this.saved.emit({
       ...this.model,
+      codConfirmed: true,
+      parcelWeightConfirmed: true,
       recipientName: this.model.recipientName.trim(),
       recipientPhone: this.model.recipientPhone.trim(),
       shippingAddress: this.model.shippingAddress.trim(),

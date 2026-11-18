@@ -20,7 +20,7 @@ public final class OrderDtos {
  public record OrderDetail(String id,String orderCode,String customerId,String customerCodeSnapshot,String customerNameSnapshot,String customerPhoneSnapshot,
   Status status,String fulfillmentType,long version,Instant createdAt,Instant updatedAt,Instant keepStartedAt,Instant keepUntil,int keepExtensionCount,
   long requiredDepositVnd,long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,
-  boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String trackingCode,
+  boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
   List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
   Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning){}
@@ -44,7 +44,7 @@ public final class OrderDtos {
 
  public record PaymentRequest(Long version,UUID requestId,PaymentType transactionType,Long amount,String paymentMethod,Instant occurredAt,String note,Boolean actualConfirmed){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
- public record ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String trackingCode,Long additionalShippingFee,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String customerPaymentMode,String trackingCode,Long additionalShippingFee,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ShipRequest(Long version,UUID requestId,String trackingCode){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ReturnItem(String itemId,Long quantityReceived,Long quantityRestocked,String reason){}
  public record ReturnRequest(Long version,UUID requestId,String reason,Boolean actualConfirmed,List<ReturnItem> items){public MutationMeta meta(){return new MutationMeta(version,requestId);}}

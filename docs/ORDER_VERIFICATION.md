@@ -116,3 +116,12 @@ Chưa backup/restore/offhost rehearsal, xác minh Flyway/schema live, rollout
 backend trước FE, smoke/security/cache/SEO trên hostname production hoặc deploy.
 User tự merge dev→main theo workflow; không drop order/payment/receipt để rollback.
 Gate và cách chạy theo [PROGRESS](PROGRESS.md), [DEPLOYMENT](DEPLOYMENT.md).
+
+## Hai tab và bill — 18/11/2026
+
+- Migration V37, backend full 384 test với 3 live skip; sau review chạy lại
+  22 test shipping/payment/mutation/privacy và 20 shipping/return/API đạt.
+- 409 frontend test đạt, build SSR/Workers và proxy đạt.
+- Browser với QA DB riêng: bill thu hộ gợi ý theo số dư, chuyển monthly, ghi thu
+  trong popup, xác nhận lại, lưu, refresh tab Tổng đơn, mobile390 không tràn.
+- Chưa migrate/deploy production.

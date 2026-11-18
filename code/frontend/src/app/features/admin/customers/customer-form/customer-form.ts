@@ -14,7 +14,18 @@ import {
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subscription, catchError, distinctUntilChanged, map, of, switchMap, timer } from 'rxjs';
+import {
+  Subject,
+  merge,
+  tap,
+  Subscription,
+  catchError,
+  distinctUntilChanged,
+  map,
+  of,
+  switchMap,
+  timer,
+} from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CustomerApi } from '../customer-api';
 import {
@@ -51,6 +62,11 @@ export class CustomerForm {
   readonly conflict = signal(false);
   readonly errors = signal<Record<string, string[]>>({});
   readonly duplicates = signal<Page<DuplicateSummary> | null>(null);
+  readonly lookupState = signal<'idle' | 'checking' | 'error'>('idle');
+  private readonly lookupRetry = new Subject<string>();
+  retryLookup() {
+    this.lookupRetry.next(this.form.controls.phone.value);
+  }
   readonly confirmedPhone = signal<string | null>(null);
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
   readonly form = inject(FormBuilder).nonNullable.group({
@@ -78,11 +94,13 @@ export class CustomerForm {
         }
       });
     });
-    this.form.controls.phone.valueChanges
+    merge(
+      this.form.controls.phone.valueChanges.pipe(map(normalizePhone), distinctUntilChanged()),
+      this.lookupRetry.pipe(map(normalizePhone)),
+    )
       .pipe(
-        map((v) => normalizePhone(v)),
-        distinctUntilChanged(),
         switchMap((phone) => {
+          this.lookupState.set('idle');
           this.confirmedPhone.set(null);
           this.duplicates.set(null);
           if (
@@ -92,9 +110,14 @@ export class CustomerForm {
             phone === this.customer()?.phone
           )
             return of(null);
+          this.lookupState.set('checking');
           return timer(300).pipe(
             switchMap(() => this.api.duplicates(phone, this.customer()?.id)),
-            catchError(() => of(null)),
+            tap(() => this.lookupState.set('idle')),
+            catchError(() => {
+              this.lookupState.set('error');
+              return of(null);
+            }),
           );
         }),
         takeUntilDestroyed(this.destroy),
@@ -114,6 +137,7 @@ export class CustomerForm {
     if (el && !el.open) {
       if (typeof el.showModal === 'function') el.showModal();
       else el.setAttribute('open', '');
+      el.querySelector<HTMLInputElement>(customer ? '#customer-name' : '#customer-phone')?.focus();
     }
   }
   private fill(customer: CustomerDetail | null) {

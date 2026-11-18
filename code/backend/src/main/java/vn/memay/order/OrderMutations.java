@@ -21,7 +21,10 @@ public class OrderMutations {
  public MutationResult run(AdminUser actor,String operation,Long orderId,MutationMeta meta,Object payload,LongSupplier write){
   requireOwner(actor);
   if(meta==null||meta.requestId()==null||orderId!=null&&(meta.version()==null||meta.version()<0))throw new AdminApiException(400,"invalid_request");
-  String fingerprint=hash(Arrays.asList(orderId,meta.version(),canonical(db.json.convertValue(payload,Object.class))));
+  Object fields=db.json.convertValue(payload,Object.class);
+  if (payload instanceof OrderDtos.ShippingRequest request && request.customerPaymentMode()==null && fields instanceof Map<?,?> map)
+   map.remove("customerPaymentMode"); // Retain fingerprints of pre-V37 requests.
+  String fingerprint=hash(Arrays.asList(orderId,meta.version(),canonical(fields)));
   db.jdbc.update("insert into order_mutation_receipt(actor_id,operation,request_id,fingerprint) values(?,?,?,?) on conflict do nothing",actor.getId(),operation,meta.requestId(),fingerprint);
   var receipt=db.jdbc.queryForMap("select fingerprint,result_json::text as result from order_mutation_receipt where actor_id=? and operation=? and request_id=? for update",actor.getId(),operation,meta.requestId());
   if(!fingerprint.equals(receipt.get("fingerprint")))throw new AdminApiException(409,"idempotency_conflict");
@@ -53,7 +56,7 @@ public class OrderMutations {
  private Map<String,Object> snapshot(OrderDetail d){
   var m=new LinkedHashMap<String,Object>();if(d==null)return m;
   m.put("status",d.status());m.put("fulfillmentType",d.fulfillmentType());m.put("customerId",d.customerId());m.put("keepUntil",d.keepUntil());
-  m.put("discountAmount",d.discountAmount());m.put("shippingFee",d.shippingFee());m.put("parcelWeightGrams",d.parcelWeightGrams());m.put("codAmount",d.codAmount());m.put("declaredValue",d.declaredValue());m.put("shippingPaymentType",d.shippingPaymentType());
+  m.put("discountAmount",d.discountAmount());m.put("shippingFee",d.shippingFee());m.put("parcelWeightGrams",d.parcelWeightGrams());m.put("codAmount",d.codAmount());m.put("declaredValue",d.declaredValue());m.put("customerPaymentMode",d.customerPaymentMode());m.put("shippingPaymentType",d.shippingPaymentType());
   m.put("orderItems",d.items().stream().map(i->Arrays.asList(i.id(),i.bookCopyId(),i.listingId(),i.unitPriceVnd(),i.quantity(),i.unitWeightGrams(),hash(i.titleSnapshot()))).toList());
   m.put("orderPayments",d.payments().stream().map(p->Arrays.asList(p.id(),p.transactionType(),p.amount(),p.voidedAt())).toList());
   m.put("orderReturns",d.returns().stream().map(r->List.of(r.id(),r.itemId(),r.quantityReceived(),r.quantityRestocked())).toList());

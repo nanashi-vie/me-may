@@ -5136,3 +5136,67 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   mới cho sửa yêu cầu rõ/rà lỗi. Checkpoint bàn giao này chỉ cập nhật tài liệu.
 - Gate tiếp theo vẫn là rollout theo DEPLOYMENT khi owner quyết định; chưa
   merge/push main hoặc deploy. Các hạn chế CSR/mock/device thật tại C06/C10 còn giữ.
+
+
+### 2026-11-18 - ORDER-BILL-BRAINSTORM-C01 - Hai tab và popup bill
+
+- User yêu cầu đơn giản hóa chi tiết, tách Tổng đơn sau xuất bill, bỏ Giảm giá;
+  popup kiểu Thêm khách mới có người nhận/cân kiện/ship nhập tay/phương thức/COD.
+  User xác nhận Cuối tháng nghĩa khách đã trả đủ trước, vẫn ghi qua Ghi nhận thu
+  tiền riêng; bỏ lựa chọn Tiền mặt mới; chỉ lưu dữ liệu bill, không ảnh/PDF.
+- Bản mẫu A/B chỉ HTML local, dùng font/style hiện có và dữ liệu giả, không gọi
+  backend/DB/API J&T. User đã nhìn và chọn A hai tab trong cùng đơn.
+- Thiết kế đầy đủ ORDER_BILL_DESIGN.md còn chờ duyệt; đăng ký README/PROGRESS,
+  ORDERS.md vẫn là contract đang chạy. Chưa viết plan hoặc sửa application code.
+- Builder check độc lập chỉ hỏi Tiền cọc sau REFUND; trả lời từ contract/code:
+  DEPOSIT chưa VOID, refund chung không phân bổ cọc; số dư ròng ở Tổng đơn.
+- Browser prototype QA đạt:3metric/no discount/no new cash, COD trừ cọc,
+  Cuối tháng ẩnCOD/chặn khi thiếu tiền, ghi nhận riêng đủ rồi lưu sang Tổng đơn;
+  A/B navigation,390px không outer overflow, không JS runtime error. Đã xem ảnh
+  detail/popup; favicon404 đầu mẫu đã sửa trong screen mới. Không chạy suite/build
+  application vì không đổi product code; prototype không phải bằng chứng production.
+- Mẫu ở .superpowers/brainstorm/33079-1794987424 (ignore), ảnh output/playwright/
+  order-bill-review, log .local/order-bill-review; không ghi session key vào docs.
+  Server companion giữ mở để owner duyệt, không dừng như QA app. Không deploy/live.
+- Quy tắc COD gợi ý/gate đủ tiền/form thu modal/legacy bảo toàn là đề xuất trong
+  thiết kế, không tự coi user đã duyệt toàn bộ vì chỉ chọn bố cục A.
+
+
+### 2026-11-18 - ORDER-BILL-PLAN-C01 - Duyệt thiết kế và kế hoạch tuần tự
+
+- Owner duyệt toàn bộ ORDER_BILL_DESIGN, yêu cầu dọn phần cũ bị thay thế;
+  bổ sung SĐT trước tên và cảnh báo trùng trong Thêm khách hàng sau phần order.
+- Đọc code qua graph/snippet: CustomerForm đã debounce300ms/normalize/switchMap,
+  cảnh báo/confirm và BE409; reuse, không tạo endpoint hoặc unique SĐT mới.
+  Cần đưa field/cảnh báo lên đầu và hiện checking/error thay vì nuốt lỗi lookup.
+- Cập nhật thiết kế đã duyệt, tạo ORDER_BILL_PLAN gồm5task tuần tự và đăng ký
+  README/PROGRESS. Mode khách trả bill tách shippingPaymentType; giữ CASH/discount
+  lịch sử, xóa chỉ UI/write mới và code không còn dùng sau chuyển đổi.
+- Self-review plan đối chiếu spec: gồm legacy/null, ledger/retry/version/tồn,
+  bill draft khi thu tiền, route race, phone lookup lifecycle và dọn tài liệu cuối.
+- Chưa sửa application/migration, chưa chạy suite/build/browser ứng dụng.
+  Diff-check và kiểm giới hạn dòng/liên kết plan chạy trước commit; log cũ QA
+  prototype không được dùng như chứng cứ app. Không deploy hoặc chạm dữ liệu thật.
+- Kế hoạch chờ review theo writing-plans; giữ phương thức tuần tự đã chọn,
+  không yêu cầu chọn lại A hoặc phương thức triển khai. Bước sau: executing-plans,
+  task1 RED với DB QA cách ly. Tài liệu đưa dev; không merge/push main.
+
+### 2026-11-18 — ORDER-BILL-EXEC
+
+Owner duyệt kế hoạch. Bắt đầu backend bill, hai tab, sau đó form khách và kiểm tra local.
+
+- Triển khai V37 tách mode khách trả bill khỏi cước hãng; kiểm monthly/COD/thu thực
+  ở backend, giữ lịch sử discount/CASH và fingerprint cũ. Angular hai tab trên một đơn,
+  popup bill/thu và form khách chung với cảnh báo, trạng thái kiểm tra và retry.
+- Review đã sửa legacy mode, bắt nhập cân, xác nhận sau rebase, refresh ngay trong
+  popup tiền, bàn phím hai tab và preview đã nhận. Tái sử dụng template thu tiền
+  trong native dialog để giữ nguyên luồng submit/retry.
+- Kiểm tra 384 backend (3 live skip), 22 và 20 focused sau sửa, 409 FE, SSR/Workers/
+  proxy PASS. Browser QA thật xác nhận COD, monthly, thu tiền từ bill, refresh total,
+  mobile390 và duplicate lookup. Chưa kiểm toàn bộ luồng gửi lại/hoàn đơn trên browser
+  ở phiên này; có test backend. Gộp spec/plan vào ORDERS/CUSTOMERS; rollout còn mở.
+
+### 2026-11-18 — Màu tab chi tiết đơn
+
+Owner yêu cầu tab đang mở màu đỏ, tab kia màu tối. Sửa binding màu của hai nút.
+Kiểm tra: 8/8 test order-detail đạt, git diff --check đạt. Chưa deploy.

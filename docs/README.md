@@ -15,6 +15,7 @@ Cập nhật18/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 | Đầu việc | Nguồn hiện hành |
 |---|---|
 | Quản lý đơn nội bộ: keep/tồn, giá chốt, tiền/giao/hoàn và quyền OWNER | [Contract](ORDERS.md), [bằng chứng local](ORDER_VERIFICATION.md), [UI](ORDERS.md#14-ui-nghiệm-thu-và-rollout) |
+| Hai tab Chi tiết/Tổng đơn, bill và SĐT trước tên khi thêm khách | [Đơn và bill](ORDERS.md#11-chốt-giao-jt-và-snapshot), [form khách](CUSTOMERS.md) |
 | Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
 | Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
 | Ảnh self-host: upload máy/Drive, ghép nguồn, cảnh báo thiếu nguồn vẫn xuất bản12/11 | [Hệ thống ảnh](IMAGES.md) |

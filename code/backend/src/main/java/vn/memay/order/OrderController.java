@@ -41,7 +41,7 @@ public class OrderController {
  private <T>T decode(JsonNode body,Class<T> type){strict(body);try{return db.json.readerFor(type).with(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(body.toString());}catch(tools.jackson.core.JacksonException e){throw new AdminApiException(400,"invalid_request");}}
  private static final Set<String> INTEGERS=Set.of("version","discountAmount","unitPriceVnd","quantity","unitWeightGrams","shippingFee","parcelWeightGrams","codAmount","amount","additionalShippingFee","quantityReceived","quantityRestocked");
  private static final Set<String> FLAGS=Set.of("actualConfirmed","codConfirmed","parcelWeightConfirmed","parcelWeightOverridden","allowInsufficientDeposit");
- private static final Set<String> TEXTS=Set.of("customerId","bookCopyId","itemId","requestId","transactionType","fulfillmentType","sourceType","paymentMethod","shippingPaymentType","trackingCode","reason","recipientName","recipientPhone","shippingAddress","title","note","occurredAt","keepUntilDate","normalizedTitle","fingerprint");
+ private static final Set<String> TEXTS=Set.of("customerId","bookCopyId","itemId","requestId","transactionType","fulfillmentType","sourceType","paymentMethod","shippingPaymentType","customerPaymentMode","trackingCode","reason","recipientName","recipientPhone","shippingAddress","title","note","occurredAt","keepUntilDate","normalizedTitle","fingerprint");
  private static void strict(JsonNode n){
   if(n==null||!n.isObject())throw AdminApiException.field("body","Nội dung phải là object");
   for(String field:INTEGERS){var v=n.get(field);if(v!=null&&!v.isNull()&&(!v.isIntegralNumber()||!v.canConvertToLong()))throw AdminApiException.field(field,"Nhập số nguyên hợp lệ");}
