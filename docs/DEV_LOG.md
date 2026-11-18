@@ -5082,3 +5082,57 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   dọn đúng workspace PAGINATION_PLAN do phiên này tạo. Không dọn worktree khác.
 - Checkpoint này là commit tài liệu sau candidate đã push; bước kế tiếp là gate
   rollout theo DEPLOYMENT khi owner quyết định. Chưa merge/push main hoặc deploy.
+
+### 2026-11-18 - PAGINATION-C09 - Hai trang lân cận và dropdown admin
+
+- User yêu cầu2trang trước/sau trang hiện tại, giữ kiểu/màu đã duyệt; rà lỗi CSS
+  dropdown admin, ảnh payment/source select có mũi tên bị lặp kín ô khi focus.
+- Bắt đầu từ dev88b5c4b sạch, branch codex/pagination-dropdown-fixes. Đọc chỉ mục,
+  checkpoint, PAGINATION và CSS global/module qua graph rồi source liên quan.
+- Giả thuyết từ cascade: background shorthand ở form reset repeat/size/position,
+  focus global chỉ gắn lại background-image nên bị lặp; cần reproduce browser.
+- Thực thi tuần tự: test2neighbors RED→GREEN, browser dropdown trước/sau sửa và
+  rà các select/custom dropdown admin; fullFE/build/QA rồi cập nhật contract/log.
+  Chưa chạy test/build/browser mới; không DB/live/deploy.
+
+### 2026-11-18 - PAGINATION-C10 - Fix và kiểm chứng
+
+- RED pagination4case fail do thiếu2neighbors; GREEN13case đạt. Component giữ
+  cửa sổ5trang+đầu/cuối, tối đa9token, O(1); bỏ2biến thể/CQ vì mobile cũng cần
+  đủ2neighbors. Màn hẹp wrap giữ44px. Không thêm First/Last hoặc nhảy chục từ ảnh,
+  user chỉ yêu cầu số lân cận; giữ màu/hành vi/URL và handler chung đã duyệt.
+- Repro dropdown browser cli3: focus type=repeat/auto/0%0%/padding16px đúng ảnh.
+  Đổi background→background-color ở orders/customers/attendance và field disabled;
+  padding select40px, bỏ focus SVG indigo riêng để giữ mũi tên trung tính.
+- Rà tất cả native select/custom-dropdown CSS admin. Audit browser9select ở
+  orders/customers/report/editor (gồm2nativeẩn đi kèm custom) đủ4state (DOM mô phỏng
+  hai trạng thái cuối, không business mutation), custom dropdown open/Escape đạt
+  cli17. Source dialog4state đạt, ảnh sau sửa rõ1chevron; payment focus cũng đạt.
+- Browser phát hiện thêm form button global width100%/margin24px kéo pagination
+  thành8hàng702px (cli15). Sửa width:auto/margin0/flex-shrink0 tại component;
+  cli18 xác nhận nút44px/không margin, public/admin/lookup1440/390/320 đủ2neighbors,
+  không outer overflow, selected đỏ; fieldset chuyển trang vẫn hiện.
+- Full68files/409tests đạt (final-tests), SSR final-build exit0/không warning;
+  Workers/proxy/review cuối đang thực hiện. Test giảm410→409 do bỏ2case trùng
+  biến thể responsive và thêm1case DOM lân cận, không bỏ test nghiệp vụ.
+- QA API giả/cổng4211, không BE/DB/live. Log .local/paging2 và ảnh
+  output/playwright/paging2; HMR không nối websocket nên cần navigation mới sau
+  rebuild, một lượt QA đầu vẫn đọc CSS cũ. Confirm/beforeunload QA đã xử lý qua
+  UI; không coi script dừng ở dialog là đã hoàn tất bước sau. Chưa deploy.
+
+### 2026-11-18 - PAGINATION-C11 - Review, push dev và bàn giao
+
+- Full68files/409FE đạt; SSR/Workers final-build/final-workers exit0 không warning,
+  proxy PASS. Review độc lập88b5c4b..62655ff:0Critical/Important/Minor, declined=[];
+  reviewer đọc diff/cascade/contract/log/ảnh, không tự chạy lại runtime. Không hoãn lỗi.
+- Đã xem screenshot payment/source sau sửa và pager mobile320; mũi tên đơn bên
+  phải, cửa sổ2neighbors đủ số, wrap thay vì giảm số/tràn, font/màu44px giữ đúng.
+  Không thay mẫu sang nút First/Last hoặc nhảy chục; không thay API/handler/quyền.
+- Code62655ff đã fast-forward dev từ88b5c4b và push thành công; HEAD/origin/dev
+  khớp62655ff43016b8632f92dce6ed06afeefd0a0473. Không đổi code sau candidate đã QA.
+- Browser pagination đã đóng, frontend QA4211/PID4714 đã dừng; không BE/DB/live.
+  Log/scripts giữ .local/paging2, ảnh output/playwright/paging2. Full Markdown
+  tracked≤400 (DEV_LOG ngoại lệ), local links và diff-check đạt; không tạo spec/plan
+  mới cho sửa yêu cầu rõ/rà lỗi. Checkpoint bàn giao này chỉ cập nhật tài liệu.
+- Gate tiếp theo vẫn là rollout theo DEPLOYMENT khi owner quyết định; chưa
+  merge/push main hoặc deploy. Các hạn chế CSR/mock/device thật tại C06/C10 còn giữ.

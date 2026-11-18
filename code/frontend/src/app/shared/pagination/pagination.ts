@@ -1,19 +1,11 @@
 import { Component, computed, input, output } from '@angular/core';
 
 /** Zero-based page indices; work stays bounded even for very large catalogues. */
-export function pageTokens(page: number, totalPages: number, slots: 5 | 7): (number | 'gap')[] {
+export function pageTokens(page: number, totalPages: number): (number | 'gap')[] {
   if (totalPages <= 0) return [];
-  if (totalPages <= slots) return Array.from({ length: totalPages }, (_, i) => i);
-  const count = slots - 2;
-  let pages: number[];
-  if (page < slots - 3) {
-    pages = [...Array.from({ length: count }, (_, i) => i), totalPages - 1];
-  } else if (page >= totalPages - (slots - 3)) {
-    pages = [0, ...Array.from({ length: count }, (_, i) => totalPages - count + i)];
-  } else {
-    const radius = (slots - 5) / 2;
-    pages = [0, ...Array.from({ length: slots - 4 }, (_, i) => page - radius + i), totalPages - 1];
-  }
+  const start = Math.max(0, Math.min(page - 2, totalPages - 5));
+  const nearby = Array.from({ length: Math.min(5, totalPages) }, (_, i) => start + i);
+  const pages = [...new Set([0, ...nearby, totalPages - 1])];
   const tokens: (number | 'gap')[] = [];
   for (const current of pages) {
     const previous = tokens.at(-1);
@@ -36,11 +28,17 @@ export class Pagination {
   readonly disabled = input(false);
   readonly label = input('Phân trang');
   readonly pageChange = output<number>();
-  readonly wide = computed(() => pageTokens(this.page(), this.totalPages(), 7));
-  readonly compact = computed(() => pageTokens(this.page(), this.totalPages(), 5));
+  readonly tokens = computed(() => pageTokens(this.page(), this.totalPages()));
 
   select(page: number) {
-    if (this.disabled() || !Number.isInteger(page) || page < 0 || page >= this.totalPages() || page === this.page()) return;
+    if (
+      this.disabled() ||
+      !Number.isInteger(page) ||
+      page < 0 ||
+      page >= this.totalPages() ||
+      page === this.page()
+    )
+      return;
     this.pageChange.emit(page);
   }
 }

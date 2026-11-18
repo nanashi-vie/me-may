@@ -1,7 +1,7 @@
 # Phân trang public và admin
 
-Contract duyệt và triển khai local17/11/2026, theo ảnh user; màu đỏ đồng bộ web.
-Bằng chứng, giới hạn và commit ở [DEV_LOG PAGINATION-C04–C07](DEV_LOG.md).
+Contract17/11, cập nhật18/11/2026: user yêu cầu2trang liền trước/sau trang hiện tại.
+Bằng chứng, giới hạn và commit ở [DEV_LOG PAGINATION-C04–C10](DEV_LOG.md).
 
 ## Phạm vi và cấu trúc
 
@@ -22,13 +22,14 @@ Bằng chứng, giới hạn và commit ở [DEV_LOG PAGINATION-C04–C07](DEV_L
   --red đổi hồng nhạt trong theme tối. Hover đỏ nhạt/focus rõ theo --red/theme.
 - Dùng Nunito hiện có, nền trang; mỗi nút tối thiểu44×44px. Không sao chép nền xám
   ảnh mẫu. Khi quá hẹp có thể xuống dòng trong thanh, không tràn ngang.
-- Desktop tối đa7vị trí số/dấu chấm, không tính2mũi tên:
-  `1 [2] 3 4 5 … 10`, `1 … 4 [5] 6 … 10`, `1 … 6 7 8 [9] 10`.
-- Container≤440px hoặc viewport≤720px dùng tối đa5vị trí:
-  `1 [2] 3 … 10`, `1 … [5] … 10`, `1 … 8 [9] 10`.
-- Trong fieldset, tắt container containment để tránh Chromium mất layout flex
-  sau đổi trang; vẫn thu gọn theo viewport. Context khác giữ container query.
-- Chỉ một bộ nút hiện/nhận focus/được đọc bởi screen reader; bộ còn lại display:none.
+- Luôn giữ2trang liền trước và2trang liền sau khi tồn tại, cộng đầu/cuối và dấu
+  chấm; tối đa9vị trí số/dấu chấm, không tính2mũi tên. Ví dụ:
+  `1 2 3 4 [5] 6 7 … 32`, `1 … 14 15 [16] 17 18 … 32`.
+- Gần đầu/cuối, cửa sổ5trang dịch trong biên; ít hơn5trang thì hiện tất cả.
+- Mobile/sidebar/dialog giữ đủ các trang lân cận và vùng chạm44px; giảm gap,
+  xuống dòng khi cần. Không ẩn bớt2trang lân cận để ép thanh thành một dòng.
+- Chỉ còn một bộ nút DOM; không còn container query/hai biến thể riêng. Nút có
+  width:auto/margin:0 để không bị CSS form chung kéo toàn chiều ngang.
 
 ## Hành vi và accessibility
 
@@ -42,5 +43,5 @@ Bằng chứng, giới hạn và commit ở [DEV_LOG PAGINATION-C04–C07](DEV_L
   và tổng kết quả của màn chủ, không giả loading thành0kết quả.
 - Navigation có nhãn tiếng Việt, số có tên truy cập và `aria-current="page"`;
   tất cả nút type=button, dùng được bằng bàn phím, không submit form đang sửa.
-- Đã kiểm local:410FE, SSR/Workers build, proxy và browser dữ liệu giả.
+- Kiểm chứng bản cập nhật18/11 xem checkpoint PAGINATION-C10 trong DEV_LOG.
   Browser CSR không thay bằng chứng hydration/thiết bị thật/live; xem DEV_LOG.

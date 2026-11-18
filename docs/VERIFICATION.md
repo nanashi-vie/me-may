@@ -3,7 +3,7 @@ Drive batch 11/11: backend/FE/recovery fixture và giới hạn QA xem [checkpoi
 
 Kiểm chứng tối ưu nhập sách/biến thể30/10 ở [BOOK_ENTRY_VERIFICATION](BOOK_ENTRY_VERIFICATION.md).
 Ảnh: [IMAGE_VERIFICATION](IMAGE_VERIFICATION.md); khách: [CUSTOMER_VERIFICATION](CUSTOMER_VERIFICATION.md);
-đơn17/11: [ORDER_VERIFICATION](ORDER_VERIFICATION.md); phân trang17/11: [DEV_LOG PAGINATION-C07](DEV_LOG.md).
+đơn17/11: [ORDER_VERIFICATION](ORDER_VERIFICATION.md); phân trang/dropdown18/11: [DEV_LOG PAGINATION-C10/C11](DEV_LOG.md).
 Bằng chứng22–29/10/2026 dưới đây theo revision/ngày từng mục; không là kiểm tra
 live01/11. Backlog duy nhất ở [PROGRESS](PROGRESS.md); cách đo/rollout ở
 [DEPLOYMENT](DEPLOYMENT.md). Không suy checkbox/câu “chưa” lịch sử thành task mới.

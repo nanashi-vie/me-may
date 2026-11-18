@@ -7,7 +7,8 @@ p { margin: .5rem 0 1rem; }
 .controls { display: flex; flex-wrap: wrap; align-items: end; gap: .75rem; margin-block: .75rem; }
 .field { display: grid; gap: .35rem; max-width: 100%; }
 .field span { font-weight: 600; }
-input:not([type='checkbox']), select, textarea { width: 100%; min-width: 0; padding: .55rem .65rem; border: 1px solid #b8ada6; border-radius: .4rem; background: #fff; color: #28201b; font: inherit; }
+input:not([type='checkbox']), select, textarea { width: 100%; min-width: 0; padding: .55rem .65rem; border: 1px solid #b8ada6; border-radius: .4rem; background-color: #fff; color: #28201b; font: inherit; }
+select { padding-right: 40px; }
 input[type='checkbox'] { width: 1.2rem; height: 1.2rem; accent-color: #9b1c28; vertical-align: middle; }
 button {
   width: auto;
