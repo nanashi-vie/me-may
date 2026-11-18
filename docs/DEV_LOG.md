@@ -5136,3 +5136,27 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   mới cho sửa yêu cầu rõ/rà lỗi. Checkpoint bàn giao này chỉ cập nhật tài liệu.
 - Gate tiếp theo vẫn là rollout theo DEPLOYMENT khi owner quyết định; chưa
   merge/push main hoặc deploy. Các hạn chế CSR/mock/device thật tại C06/C10 còn giữ.
+
+
+### 2026-11-18 - ORDER-BILL-BRAINSTORM-C01 - Hai tab và popup bill
+
+- User yêu cầu đơn giản hóa chi tiết, tách Tổng đơn sau xuất bill, bỏ Giảm giá;
+  popup kiểu Thêm khách mới có người nhận/cân kiện/ship nhập tay/phương thức/COD.
+  User xác nhận Cuối tháng nghĩa khách đã trả đủ trước, vẫn ghi qua Ghi nhận thu
+  tiền riêng; bỏ lựa chọn Tiền mặt mới; chỉ lưu dữ liệu bill, không ảnh/PDF.
+- Bản mẫu A/B chỉ HTML local, dùng font/style hiện có và dữ liệu giả, không gọi
+  backend/DB/API J&T. User đã nhìn và chọn A hai tab trong cùng đơn.
+- Thiết kế đầy đủ ORDER_BILL_DESIGN.md còn chờ duyệt; đăng ký README/PROGRESS,
+  ORDERS.md vẫn là contract đang chạy. Chưa viết plan hoặc sửa application code.
+- Builder check độc lập chỉ hỏi Tiền cọc sau REFUND; trả lời từ contract/code:
+  DEPOSIT chưa VOID, refund chung không phân bổ cọc; số dư ròng ở Tổng đơn.
+- Browser prototype QA đạt:3metric/no discount/no new cash, COD trừ cọc,
+  Cuối tháng ẩnCOD/chặn khi thiếu tiền, ghi nhận riêng đủ rồi lưu sang Tổng đơn;
+  A/B navigation,390px không outer overflow, không JS runtime error. Đã xem ảnh
+  detail/popup; favicon404 đầu mẫu đã sửa trong screen mới. Không chạy suite/build
+  application vì không đổi product code; prototype không phải bằng chứng production.
+- Mẫu ở .superpowers/brainstorm/33079-1794987424 (ignore), ảnh output/playwright/
+  order-bill-review, log .local/order-bill-review; không ghi session key vào docs.
+  Server companion giữ mở để owner duyệt, không dừng như QA app. Không deploy/live.
+- Quy tắc COD gợi ý/gate đủ tiền/form thu modal/legacy bảo toàn là đề xuất trong
+  thiết kế, không tự coi user đã duyệt toàn bộ vì chỉ chọn bố cục A.

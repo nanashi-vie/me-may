@@ -7,9 +7,9 @@ Cập nhật 18/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
   dropdown lặp mũi tên và nút phân trang trong form. Đã push dev/62655ff.
   409FE/SSR/Workers/proxy/browser/review0issue đạt; QA riêng đã dừng, chưa deploy.
 
-- ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
-  Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
-  Đã push dev/f4fffb1; 383BE(3skip)/391FE/SSR/Workers/browser/review đạt; [bằng chứng](ORDER_VERIFICATION.md).
+- ORDER-BILL-BRAINSTORM-C01 (18/11): owner đã chọn A hai tab trong cùng đơn.
+  [Thiết kế](ORDER_BILL_DESIGN.md) chờ duyệt đầy đủ; mẫu tương tác local, chưa đổi application.
+  [Contract đang chạy](ORDERS.md), [bằng chứng nền](ORDER_VERIFICATION.md); chưa làm bulk/deploy.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).
