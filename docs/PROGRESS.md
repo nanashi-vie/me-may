@@ -3,9 +3,9 @@
 Cập nhật 18/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
-- PAGINATION-C09 (18/11): đang sửa phân trang hiện2trang lân cận mỗi bên và rà
-  CSS dropdown admin theo ảnh user; branch codex/pagination-dropdown-fixes.
-  Baseline88b5c4b sạch; dùng debugging/TDD, chưa có kiểm chứng bản sửa mới.
+- PAGINATION-C11 (18/11): đủ2trang liền trước/sau trên public/admin; sửa CSS
+  dropdown lặp mũi tên và nút phân trang trong form. Đã push dev/62655ff.
+  409FE/SSR/Workers/proxy/browser/review0issue đạt; QA riêng đã dừng, chưa deploy.
 
 - ORDER-EXEC-C14 (17/11): [đơn nội bộ](ORDERS.md) đã triển khai local theo duyệt.
   Đã dọn customers/me-may và nhánh hero đã gộp, backup QA local; dev-ui giữ nguyên.
