@@ -3,10 +3,10 @@
 Cập nhật 18/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và checkpoint mới nhất
 [DEV_LOG](DEV_LOG.md); đây là snapshot theo bằng chứng đã ghi, không là kiểm tra live mới.
 
+- KB-C01 (18/11): chọn B, đã kiểm kê 31 tài liệu; [ánh xạ](specs/KNOWLEDGE_BASE.md) chờ duyệt.
 - PAGINATION-C11 (18/11): đủ2trang liền trước/sau trên public/admin; sửa CSS
   dropdown lặp mũi tên và nút phân trang trong form. Đã push dev/62655ff.
   409FE/SSR/Workers/proxy/browser/review0issue đạt; QA riêng đã dừng, chưa deploy.
-
 - ORDER-BILL-EXEC (18/11): hai tab, popup xuất bill, thu tiền và cảnh báo SĐT đầu form
   đã kiểm tra local. [Contract](ORDERS.md), [bằng chứng](ORDER_VERIFICATION.md).
   Tab đang mở dùng nền đỏ, tab kia nền tối. Rollout V37 còn chờ owner.

@@ -5200,3 +5200,14 @@ Owner duyệt kế hoạch. Bắt đầu backend bill, hai tab, sau đó form kh
 
 Owner yêu cầu tab đang mở màu đỏ, tab kia màu tối. Sửa binding màu của hai nút.
 Kiểm tra: 8/8 test order-detail đạt, git diff --check đạt. Chưa deploy.
+
+### 2026-11-18 — KB-C01 — Kiểm kê tài liệu cho knowledge base
+
+- Owner chọn B, yêu cầu rà tất cả verification/spec/plan. Trên dev/6eadf95,
+  kiểm git ls-files, wc, các mốc S051, S056, S063, hotfix ảnh và ORDER-BILL-EXEC.
+  Lập ánh xạ 31 file ở specs/KNOWLEDGE_BASE.md, đăng ký README và PROGRESS.
+- Cần chuyển tiêu chí còn mở trước khi gỡ spec/plan cũ. Có mâu thuẫn tại
+  ma trận ảnh và ghi chú khách hàng trước quản lý đơn. Bằng chứng chỉ theo repo.
+- Chờ duyệt thiết kế trước khi chuyển file. Chưa chạy app/test hoặc kiểm live.
+- Kiểm kê độc lập đối chiếu cây Git 6eadf95: đủ 31 nguồn, gồm 9 verification,
+  3 spec, plan kho và master plan. Kiểm diff whitespace đạt, PROGRESS 400 dòng.

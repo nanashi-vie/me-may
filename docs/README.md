@@ -43,6 +43,8 @@ Cập nhật18/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách
 
 ## Phần còn thực thi
 
+- [Thiết kế knowledge base và kiểm kê 31 tài liệu](specs/KNOWLEDGE_BASE.md) — phương án B đã chọn, chờ duyệt ánh xạ.
+
 - Phân trang public/admin: [contract](PAGINATION.md) cập nhật18/11 đủ2trang mỗi bên;
   CSS dropdown admin đã sửa,409FE/SSR/Workers/proxy/browser/review đạt; chưa deploy.
 
