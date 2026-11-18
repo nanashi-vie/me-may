@@ -1,106 +1,45 @@
-# Chỉ mục tài liệu Mẹ Mây
+# Knowledge base Mẹ Mây
 
-Cập nhật18/11/2026. Đây là chỉ mục duy nhất. Phạm vi mới khách hàng12/11
-đã triển khai local; các gate release chưa đạt vẫn giữ. Quy tắc ở [AGENTS](../AGENTS.md).
-
-## Bắt đầu hoặc tiếp tục phiên
-
-1. Đọc [PROGRESS](PROGRESS.md) để biết hướng hiện tại và gate còn mở.
-2. Đọc checkpoint cuối [DEV_LOG](DEV_LOG.md); chỉ đọc lịch sử khi liên quan.
-3. Chọn tài liệu theo bảng dưới, kiểm Git/môi trường trước khi làm. Bằng chứng
-   local hoặc release cũ không thay kiểm tra live của candidate mới.
+Bắt đầu bằng [tổng quan dự án](context/PROJECT.md), [việc đang mở](PROGRESS.md)
+và checkpoint cuối [nhật ký](DEV_LOG.md). Từ repo root, dùng
+`tail -40 docs/DEV_LOG.md` để đọc bàn giao gần nhất. [AGENTS.md](../AGENTS.md)
+quy định cách xác minh, ghi log và bàn giao qua dev.
 
 ## Đọc theo đầu việc
 
-| Đầu việc | Nguồn hiện hành |
+| Khi cần | Nguồn chính |
 |---|---|
-| Quản lý đơn nội bộ: keep/tồn, giá chốt, tiền/giao/hoàn và quyền OWNER | [Contract](ORDERS.md), [bằng chứng local](ORDER_VERIFICATION.md), [UI](ORDERS.md#14-ui-nghiệm-thu-và-rollout) |
-| Hai tab Chi tiết/Tổng đơn, bill và SĐT trước tên khi thêm khách | [Đơn và bill](ORDERS.md#11-chốt-giao-jt-và-snapshot), [form khách](CUSTOMERS.md) |
-| Thay banner hero, tối đa10banner và tự chuyển5giây | [Contract, vận hành và bằng chứng](HERO_BANNERS.md) |
-| Quản lý khách hàng: hồ sơ, username, trùng SĐT, quyền và lưu trữ | [Contract](CUSTOMERS.md), [bằng chứng local](CUSTOMER_VERIFICATION.md) |
-| Ảnh self-host: upload máy/Drive, ghép nguồn, cảnh báo thiếu nguồn vẫn xuất bản12/11 | [Hệ thống ảnh](IMAGES.md) |
-| Hồ sơ nhân viên, lịch, chấm công và Excel | [Chấm công](ATTENDANCE_SPEC.md) |
-| Nơi lưu trữ sách: contract, tiêu chí và kiểm tra còn mở | [Contract](CATALOGUE.md#nơi-lưu-trữ-sách), [Thiết kế](BOOK_STORAGE_SPEC.md), [Kế hoạch](BOOK_STORAGE_PLAN.md) |
-| Vận hành ảnh, migration, backup/restore, rebuild và benchmark | [Runbook](IMAGE_OPERATIONS.md), [bằng chứng và tiêu chí](IMAGE_VERIFICATION.md), [gate hiện hành](PROGRESS.md) |
-| Phạm vi MVP, giới hạn, DoD | [MASTER_PLAN](MASTER_PLAN.md), [PROGRESS — gate](PROGRESS.md#gate-tồn-đọng--tổng-hợp0111) |
-| CTA Quan tâm/Đã quan tâm và tim wiggle | [Contract](DESIGN.md#danh-sách-quan-tâm--khách-mobile), [bằng chứng WISHLIST-CTA-C03](DEV_LOG.md) |
-| Tối ưu giao diện public/admin | [DESIGN](DESIGN.md), [DATA](DATA.md), [CATALOGUE — hành vi cần giữ](CATALOGUE.md#11-hành-vi-cần-bảo-toàn-khi-tối-ưu-ui) |
-| Phân trang2trang lân cận mỗi bên; dropdown admin | [Contract](PAGINATION.md), [CSS](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), [bằng chứng PAGINATION-C10/C11](DEV_LOG.md) |
-| Rà sách thiếu thông tin, kiểu bìa và quay lại sau lưu | [Thiết kế](BOOK_COMPLETENESS_SPEC.md) |
-| Nhập/sửa/publish, quyền, API và media | [CATALOGUE](CATALOGUE.md), [DATA — field](DATA.md#field-nhập-liệu-hiện-hành-sau-m5) |
-| Tải ảnh sách thành ZIP | [CATALOGUE](CATALOGUE.md#tải-ảnh-sách-từ-trang-quản-trị), [bằng chứng](DEV_LOG.md#2026-11-08--s053-c04--nghiệm-thu-tải-zip-ảnh-sách) |
-| Nhập giá/kg, tồn gộp, ghi chú nội bộ06/11 | [DATA](DATA.md#nhập-giá-theo-kg-và-sửa-tay-06112026), [CATALOGUE](CATALOGUE.md#payload-nhập-sách-và-field-optional-0611), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
-| Tồn kho/biến thể | [DATA](DATA.md#tồn-gộp-và-tương-thích-biến-thể--quyết-định06112026), [ARCHITECTURE](ARCHITECTURE.md#tồn-gộp-và-tương-thích-biến-thể--contract06112026), [bằng chứng](BOOK_ENTRY_VERIFICATION.md) |
-| Sao chép hỏi sách trên Safari/mobile | [Contract](DESIGN.md#chi-tiết-cuốn--khách-mobile), [bằng chứng](CONTACT_VERIFICATION.md) |
-| Public catalogue, Flash Sale, wishlist, SSR/runtime | [ARCHITECTURE](ARCHITECTURE.md), [DESIGN](DESIGN.md) |
-| Import CSV/XLSX | [BOOK_IMPORT](BOOK_IMPORT.md), [DATA — V4/8cột, đơn giá optional và V1–V3compat](DATA.md#format-file-import--contract-duyệt31102026), [bằng chứng](BOOK_IMPORT_VERIFICATION.md), [đối chiếu form06/11](BOOK_IMPORT_VERIFICATION.md#đối-chiếu-form-mới-và-workbook-user--06112026) |
-| Chạy local, auth, lệnh test/build | [ARCHITECTURE — chạy local và Auth M1](ARCHITECTURE.md#chạy-local-kiểm-tra-và-auth-m1), [CATALOGUE](CATALOGUE.md) |
-| GitHub Actions, chênh lệch dev/main | [DEPLOYMENT — Git workflow](DEPLOYMENT.md#git-workflow), [DEV_LOG — rà soát](DEV_LOG.md#s040-c02--05112026--kết-quả-rà-soát-project-và-workflow) |
-| Rollout nhập sách06/11/V14 và privacy ghi chú | [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md), [bằng chứng](BOOK_ENTRY_VERIFICATION.md#nhập-sách-tồn-gộp-và-ghi-chú-nội-bộ--06112026) |
-| Rollout migration/backfill, recovery/rollback | [DEPLOYMENT](DEPLOYMENT.md), [PROGRESS](PROGRESS.md) |
-| Đo hiệu năng và smoke sau UI | [DEPLOYMENT — đo QA](DEPLOYMENT.md#quy-trình-đo-qa-còn-phải-thực-hiện), [smoke](DEPLOYMENT.md#smoke-còn-mở-sau-rollout-và-sau-ui-cuối), [bằng chứng nhập/publish](BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md) |
-| Đối chiếu kiểm chứng nền tảng/pilot/online/Lighthouse | [VERIFICATION](VERIFICATION.md), [DEV_LOG](DEV_LOG.md) khi cần lịch sử cụ thể |
+| Hiểu cách bán qua Page, livestream, website; tồn hoặc combo | [Nghiệp vụ tiệm](context/BUSINESS.md) |
+| Hiểu phạm vi đã duyệt, lý do chọn và roadmap | [Quyết định](context/DECISIONS.md), [master plan và DoD](context/MASTER_PLAN.md), [tiến độ](PROGRESS.md) |
+| Tìm module, luồng SSR, cache, PostgreSQL, schema | [Kiến trúc](context/ARCHITECTURE.md), [dữ liệu](context/DATA.md) |
+| Phân biệt cấu hình repo và tình trạng máy chủ, kiểm quyền hoặc truy cập | [Hạ tầng](context/INFRASTRUCTURE.md), [bảo mật](context/SECURITY.md) |
+| Chạy backend/frontend, auth hoặc test trên máy mới | [Chạy local](runbooks/LOCAL.md) |
+| Sửa giao diện public/admin, wishlist, CTA, phân trang, banner | [Thiết kế](product/DESIGN.md), [phân trang](product/PAGINATION.md), [banner](product/HERO_BANNERS.md) |
+| Nhập, sửa, xuất bản, rà sách thiếu, lọc thùng | [Catalogue](product/CATALOGUE.md), [import CSV/XLSX](product/BOOK_IMPORT.md), [rollout nhập sách](runbooks/BOOK_ENTRY_ROLLOUT.md) |
+| Kiểm tra tạo thùng → lưu → mở lại → lọc trên candidate | [Nơi lưu trữ](product/CATALOGUE.md#nơi-lưu-trữ-sách), [smoke V20](runbooks/ROLLOUT_CHECKS.md#nơi-lưu-trữ-v20) |
+| Điều tra cảnh báo nguồn ảnh, upload máy/Drive và phục hồi | [Quy tắc xuất bản](product/IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè), [vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [bằng chứng](verification/IMAGE_VERIFICATION.md) |
+| Sửa hồ sơ khách, đơn keep, giao nhận, tiền và bill | [Khách hàng](product/CUSTOMERS.md), [đơn nội bộ](product/ORDERS.md) |
+| Chuẩn bị rollout V37 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
+| Kiểm quyền chấm công, lịch, ca và xuất Excel | [Hồ sơ, quyền và PIN](product/ATTENDANCE.md), [bảo mật](context/SECURITY.md) |
+| Deploy, backup/restore, rollback, điều tra Cloudflare bỏ lỡ merge | [Runbook triển khai](runbooks/DEPLOYMENT.md), [trigger Builds](runbooks/CLOUDFLARE_BUILDS.md), [phục hồi ảnh](runbooks/IMAGE_OPERATIONS.md) |
 
-## Phần còn thực thi
+## Bằng chứng theo phạm vi
 
-- [Thiết kế knowledge base và kiểm kê 31 tài liệu](specs/KNOWLEDGE_BASE.md) — phương án B đã chọn, chờ duyệt ánh xạ.
+| Cần biết đã kiểm đến đâu | Biên bản |
+|---|---|
+| Nền tảng M1–M5, pilot, SEO và Lighthouse | [Nền tảng](verification/VERIFICATION.md) |
+| Giá, tồn kho, ghi chú nội bộ và nhập sách | [Nhập sách](verification/BOOK_ENTRY_VERIFICATION.md), [import](verification/BOOK_IMPORT_VERIFICATION.md), [hiệu năng publish](verification/BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md) |
+| Ảnh, worker, migration, phục hồi | [Hệ ảnh](verification/IMAGE_VERIFICATION.md) |
+| Sao chép hỏi mua và switch sáng/tối | [Clipboard](verification/CONTACT_VERIFICATION.md), [theme](verification/THEME_VERIFICATION.md) |
+| Khách, đơn hàng và bill | [Khách hàng](verification/CUSTOMER_VERIFICATION.md), [đơn](verification/ORDER_VERIFICATION.md) |
 
-- Phân trang public/admin: [contract](PAGINATION.md) cập nhật18/11 đủ2trang mỗi bên;
-  CSS dropdown admin đã sửa,409FE/SSR/Workers/proxy/browser/review đạt; chưa deploy.
+## Duy trì tài liệu
 
-- Order Management: [contract](ORDERS.md) đã triển khai local17/11;
-  [bằng chứng](ORDER_VERIFICATION.md) gồm kiểm thử/browser/review.
-  Rollout migration/backup/restore/live smoke vẫn là gate riêng, chưa deploy.
+Đăng ký spec/plan đang thực thi dưới `docs/specs/` tại chỉ mục này.
+Hiện các contract đã bàn giao nằm trong `product/`; việc kiểm chứng còn mở
+nằm tại [PROGRESS](PROGRESS.md). Khi kết thúc một plan, chuyển quyết định,
+tiêu chí còn mở và bằng chứng về đúng nguồn. Git lưu phiên bản trước.
 
-- Bộ lọc chung admin: [contract](DESIGN.md#hệ-thống-input-field--custom-dropdown-popover-quản-trị-admin-duyệt-0511), duyệt14/11; bằng chứng ADMIN-FILTER-C03 trong DEV_LOG.
-
-- Switch sáng/tối Rive public: [contract](DESIGN.md#sángtối-public--duyệt14112026),
-  [bằng chứng](THEME_VERIFICATION.md), đã kiểm local14/11, chưa deploy.
-
-- Ảnh bổ sung, đặc điểm, Thùng rác và hàng chờ tại [CATALOGUE](CATALOGUE.md)
-  và [DESIGN](DESIGN.md). Rà soát import tại [BOOK_IMPORT](BOOK_IMPORT.md).
-  Rollout V17–V19 tại [BOOK_ENTRY_ROLLOUT](BOOK_ENTRY_ROLLOUT.md).
-
-- 8ảnh/lưu/features06/11 đã gộp vào [CATALOGUE](CATALOGUE.md), [DATA](DATA.md),
-  [DESIGN](DESIGN.md); [bằng chứng](BOOK_ENTRY_VERIFICATION.md),
-  [rolloutV15](BOOK_ENTRY_ROLLOUT.md). Chưa deployproduction.
-
-
-- ImportV4/8cột/đơn giá optional đã triển khai/kiểm local; [contract](BOOK_IMPORT.md),
-  [schema](DATA.md#format-file-import--contract-duyệt31102026),
-  [bằng chứng](BOOK_IMPORT_VERIFICATION.md). Spec/plan đã gộp và gỡ;
-  giữ fileV1–V3/receipt cũ, chưa deployV4 online.
-
-- Cache public và trạng thái tải đã gộp contract vào [ARCHITECTURE](ARCHITECTURE.md#cache-public-và-giảm-request--04112026),
-  thao tác bật/smoke ở [DEPLOYMENT](DEPLOYMENT.md#cache-public--cấu-hình-và-smoke-04112026),
-  bằng chứng local ở [VERIFICATION](VERIFICATION.md#cache-public-và-trạng-thái-tải--04112026).
-
-- Format importV2/16cột và2thểloại01/11 đã triển khai/kiểm local;
-  [contract](BOOK_IMPORT.md#format-v2--chốt0111), [bằng chứng](BOOK_IMPORT_VERIFICATION.md#importv2-và-thể-loại-chung-01112026).
-  Chưa migrate/deployonlineV12; gate nằmPROGRESS/DEPLOYMENT, không mở lại feature khác.
-
-- Gate còn mở và điều kiện đóng chỉ theo [PROGRESS](PROGRESS.md); thao tác/tiêu chí
-  chi tiết ở DEPLOYMENT. Nhập sách06/11 đã triển khai/kiểm local, gộp contract
-  vào DATA/CATALOGUE/DESIGN/ARCHITECTURE/BOOK_IMPORT; spec/plan đã hết vai trò
-  được gỡ, rollout riêng ở BOOK_ENTRY_ROLLOUT. Chưa nghiệm thu production.
-- Spec/plan M2, M5 completion và hiệu năng nhập/publish đã gộp thành contract,
-  quy trình đo và bằng chứng rồi gỡ01/11; không tạo archive hoặc plan trùng.
-- Tối ưu UI: đợt 1 (navbar desktop dropdown 8 thể loại, mobile header + sidebar `<dialog>`,
-  trang `/sach` và `/bo-suu-tap/:slug` cột DANH MỤC/chip) đã gộp vào [DESIGN](DESIGN.md) và
-  [VERIFICATION](VERIFICATION.md#tối-ưu-ui-navbar-và-trang-danh-sách-sách--02112026). Không
-  tự triển khai thiết kế ngoài phạm vi duyệt hoặc bỏ gate bảo mật/khôi phục/SEO.
-- Commit/pushdev; user merge main/deploy. Không tự migrate/backfill dữ liệu bán thật.
-
-Contract/spec và ba plan ảnh 08–11/11 đã hợp nhất vào IMAGES, runbook và
-bằng chứng nêu trên ngày12/11; tiêu chí chưa đạt được chuyển, không tự đóng.
-
-## Giữ tài liệu gọn
-
-Tài liệu hiện hành giữ contract hoặc bằng chứng có giá trị; chỉ PROGRESS là backlog.
-DEV_LOG giữ lịch sử nối tiếp, không xóa/rút gọn lịch sử; Git giữ bản spec/plan cũ.
-Markdown tối đa400dòng trừ DEV_LOG; không tạo INDEX.md hoặc thư mục archive trùng.
-Asset nguồn `code/frontend/public/` tiếp tục tracked; `.env`, skill local, dump,
-cookie và QA workspace ignored. `docs/assets/`/`fixtures/` là tham khảo M0 có nhãn,
-không là ảnh bán thật hoặc file importer hiện hành.
-
-- Cloudflare bỏ lỡ merge main → [trigger Builds](CLOUDFLARE_BUILDS.md): bằng chứng, giới hạn và bước owner kiểm ở lần merge sau.
+Tài liệu Markdown dự án tối đa 400 dòng, ngoại lệ là nhật ký nối tiếp.
+Wireframe và fixture M0 trong `assets/` và `fixtures/` là mẫu tham khảo.
+Hình trong `assets/order-management/` minh họa thiết kế quản lý đơn.

@@ -5211,3 +5211,21 @@ Kiểm tra: 8/8 test order-detail đạt, git diff --check đạt. Chưa deploy.
 - Chờ duyệt thiết kế trước khi chuyển file. Chưa chạy app/test hoặc kiểm live.
 - Kiểm kê độc lập đối chiếu cây Git 6eadf95: đủ 31 nguồn, gồm 9 verification,
   3 spec, plan kho và master plan. Kiểm diff whitespace đạt, PROGRESS 400 dòng.
+
+### 2026-11-18 — KB-C02 — Thực thi phương án B
+
+Owner duyệt ánh xạ. Bắt đầu từ da5cb0d trên dev, chuyển nguồn chính,
+giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển.
+- Bàn giao context/product/runbooks/verification, thư mục specs dành cho việc
+  đang triển khai, adapter CLAUDE và hướng dẫn chạy local. Gộp hai spec sách
+  và checklist kho; chấm công là contract. Bỏ thiết kế KB sau chuyển đủ nguồn.
+- Review đối chiếu ba lần đổi nghiệp vụ (ảnh, khách/đơn, import), điều kiện
+  trả tồn khi nhận hàng và hai luồng backfill preview/migration provider.
+  V30 do owner xác nhận trước đây; kiểm Flyway lại trên đúng candidate.
+- Tại root, kiểm 39 Markdown: đủ 9 báo cáo, 308 link local (43 anchor),
+  mọi trang docs đến được từ chỉ mục, 4 đường tiếp quản đạt. DEV_LOG cũ
+  còn nguyên. PROGRESS còn 33 dòng, các file khác đúng trần 400 dòng.
+  Kiểm bash -n run-local.sh, diff whitespace, ignore .env/.agents/.local
+  và 15 asset public tracked. Chỉ đổi thông báo đường dẫn của script backend.
+- Bàn giao dev. Chưa chạy test app hoặc xác minh production trong đợt tài liệu.
+  Bước sau theo PROGRESS: owner chọn candidate để kiểm rollout và phục hồi.

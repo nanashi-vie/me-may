@@ -4,7 +4,7 @@
 
 1. Bắt đầu từ [chỉ mục duy nhất](docs/README.md), chọn luồng đọc theo đầu việc; không nạp toàn bộ bộ tài liệu mỗi phiên.
 2. Theo chỉ mục, đọc `docs/PROGRESS.md` và checkpoint mới nhất của `docs/DEV_LOG.md` để biết trạng thái/bàn giao; chỉ đọc checkpoint cũ khi liên quan.
-3. Chỉ đọc các file/mục mà đầu việc cần theo chỉ mục, gồm baseline `docs/MASTER_PLAN.md` và spec đang thực thi nếu có. Master plan chưa thay cho technical spec được duyệt.
+3. Chỉ đọc các file/mục mà đầu việc cần theo chỉ mục, gồm baseline `docs/context/MASTER_PLAN.md` và spec đang thực thi nếu có. Master plan chưa thay cho technical spec được duyệt.
 4. Chọn skill phù hợp từ danh mục runtime hoặc `.agents/skills/`, đọc đầy đủ `SKILL.md` trước khi áp dụng. Bộ skill local được bỏ qua bởi Git; không nạp toàn bộ mỗi phiên.
 5. Kiểm tra trạng thái file/Git và xác minh lại môi trường thực tế. Log là bản bàn giao, không phải bằng chứng rằng code hoặc dịch vụ hiện tại vẫn hoạt động.
 
@@ -13,9 +13,9 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Nguồn quyết định và giới hạn
 
 - Yêu cầu mới nhất của người dùng là nguồn chỉ đạo hiện tại; system/developer instructions vẫn có độ ưu tiên cao hơn file này.
-- `docs/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/DESIGN.md`, dữ liệu ở `docs/DATA.md`, kiến trúc/chi tiết hạ tầng và khảo sát nguồn cũ ở `docs/ARCHITECTURE.md`. Lịch sử phiên bản tra bằng Git.
+- `docs/context/MASTER_PLAN.md` là bản kế hoạch duy nhất hiện hành. Thiết kế ở `docs/product/DESIGN.md`, dữ liệu ở `docs/context/DATA.md`, kiến trúc và khảo sát nguồn cũ ở `docs/context/ARCHITECTURE.md`, topology và nguồn xác nhận ở [hạ tầng](docs/context/INFRASTRUCTURE.md). Lịch sử phiên bản tra bằng Git.
 - Bản spec/ADR được duyệt sau này ghi rõ quyết định nào thay thế master plan. Không âm thầm sửa phạm vi thông qua code hoặc skill.
-- Người dùng đã duyệt M0 và M1 local, yêu cầu thực thi ngày 22/10/2026. M1 dùng PostgreSQL Docker hiện có; hoãn Docker hóa ứng dụng, CI/CD và deploy. Phạm vi M1 local đã gộp vào master plan; kết quả ở `docs/VERIFICATION.md`, contract/cách chạy ở `docs/ARCHITECTURE.md`.
+- Phạm vi các mốc đã duyệt và các quyết định thay thế ở [quyết định](docs/context/DECISIONS.md). Tình trạng môi trường ở [hạ tầng](docs/context/INFRASTRUCTURE.md); lệnh chạy local ở runbook theo chỉ mục.
 
 ## Git workflow — user chốt 27/10/2026
 
@@ -29,12 +29,12 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Các ràng buộc chính từ master plan
 
 - Angular + Spring Boot modular monolith. Không đổi sang React/Next.js theo mặc định của skill.
-- Frontend Cloudflare; backend VPS/Dokploy; PostgreSQL tự quản trên VPS/Dokploy qua Spring JDBC; ảnh LOCAL self-host cho upload mới và Cloudinary legacy theo `docs/IMAGES.md`. Resend sau MVP.
+- Frontend Cloudflare; backend Dell/Dokploy; PostgreSQL tự quản qua Spring JDBC; ảnh LOCAL self-host cho upload mới và Cloudinary legacy theo `docs/product/IMAGES.md`. Resend sau MVP.
 - Public mobile-first; admin desktop-first; quyền OWNER/STAFF kiểm tra ở backend.
-- MVP: catalogue + wishlist trên thiết bị + liên hệ Facebook/Zalo + quản trị. Không tạo order, checkout, payment, reservation, hold timer, đồng bộ đa kênh hay pipeline AI.
-- Mỗi cuốn vật lý có mã duy nhất; `BookCopy` tách `Listing`; xuất bản khác khả dụng; giá nguyên VND; audit và chống ghi đè dữ liệu cũ.
-- Nháp/ẩn không lộ public. Wishlist không giữ sách và không hứa đồng bộ khác thiết bị.
-- Cloudflare render/SEO/OG là spike chưa được xác minh. Không coi Workers Assets là bằng chứng đã chạy Angular SSR; không tự chuyển SSR lên VPS hoặc bỏ tiêu chí SEO.
+- Public cho duyệt catalogue, wishlist trên thiết bị và hỏi mua qua Zalo. Quản lý khách, đơn, keep, tiền và vận đơn trong admin theo [đơn nội bộ](docs/product/ORDERS.md).
+- Tồn gộp theo mã MM; dữ liệu biến thể legacy còn tương thích. Xuất bản và khả dụng là hai trạng thái riêng. Giá nguyên VND, có audit và kiểm version.
+- Sách Ẩn và dữ liệu nội bộ chỉ dành cho quản trị. Wishlist chỉ lưu mã trên trình duyệt của khách.
+- Frontend dùng Angular SSR trên Workers. Trước nghiệm thu release, kiểm HTML/SEO/OG trên đúng revision và môi trường theo [tiến độ](docs/PROGRESS.md).
 - Backup/restore database và media, bảo mật, accessibility và kiểm tra hành vi thực tế là yêu cầu của milestone, không cắt bỏ vì skill yêu cầu tối giản.
 
 ## Skill tái sử dụng và Superpowers
@@ -96,6 +96,7 @@ ALWAYS prefer MCP graph tools over grep/glob/file-search for code discovery.
 4. `query_graph` — run Cypher queries for complex patterns
 5. `get_architecture` — high-level project summary
 
+When the MCP is unavailable, use Git and local source search.
 Run `index_repository` first when the repository is not indexed.
 
 ## When to fall back to grep/glob
