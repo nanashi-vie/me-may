@@ -5160,3 +5160,23 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   Server companion giữ mở để owner duyệt, không dừng như QA app. Không deploy/live.
 - Quy tắc COD gợi ý/gate đủ tiền/form thu modal/legacy bảo toàn là đề xuất trong
   thiết kế, không tự coi user đã duyệt toàn bộ vì chỉ chọn bố cục A.
+
+
+### 2026-11-18 - ORDER-BILL-PLAN-C01 - Duyệt thiết kế và kế hoạch tuần tự
+
+- Owner duyệt toàn bộ ORDER_BILL_DESIGN, yêu cầu dọn phần cũ bị thay thế;
+  bổ sung SĐT trước tên và cảnh báo trùng trong Thêm khách hàng sau phần order.
+- Đọc code qua graph/snippet: CustomerForm đã debounce300ms/normalize/switchMap,
+  cảnh báo/confirm và BE409; reuse, không tạo endpoint hoặc unique SĐT mới.
+  Cần đưa field/cảnh báo lên đầu và hiện checking/error thay vì nuốt lỗi lookup.
+- Cập nhật thiết kế đã duyệt, tạo ORDER_BILL_PLAN gồm5task tuần tự và đăng ký
+  README/PROGRESS. Mode khách trả bill tách shippingPaymentType; giữ CASH/discount
+  lịch sử, xóa chỉ UI/write mới và code không còn dùng sau chuyển đổi.
+- Self-review plan đối chiếu spec: gồm legacy/null, ledger/retry/version/tồn,
+  bill draft khi thu tiền, route race, phone lookup lifecycle và dọn tài liệu cuối.
+- Chưa sửa application/migration, chưa chạy suite/build/browser ứng dụng.
+  Diff-check và kiểm giới hạn dòng/liên kết plan chạy trước commit; log cũ QA
+  prototype không được dùng như chứng cứ app. Không deploy hoặc chạm dữ liệu thật.
+- Kế hoạch chờ review theo writing-plans; giữ phương thức tuần tự đã chọn,
+  không yêu cầu chọn lại A hoặc phương thức triển khai. Bước sau: executing-plans,
+  task1 RED với DB QA cách ly. Tài liệu đưa dev; không merge/push main.

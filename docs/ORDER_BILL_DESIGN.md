@@ -1,7 +1,7 @@
 # Tách Chi tiết đơn / Tổng đơn và popup xuất bill
 
 Ngày18/11/2026. **Hướng A hai tab đã được owner chọn qua bản mẫu.**
-Tài liệu này còn chờ duyệt nội dung đầy đủ; chưa sửa application code.
+Owner duyệt toàn bộ thiết kế18/11/2026; chưa sửa application code.
 Contract đang chạy: [ORDERS](ORDERS.md); tài liệu này chỉ thay các mục được
 nêu dưới đây sau khi được duyệt. Không mở public checkout hoặc tự deploy.
 
@@ -189,12 +189,19 @@ keep14/trần30, xóa sách có lý do, actual refund và hoàn tất khi bàn g
 - Modal focus/Escape/dirty/mobile; STAFF không gọi/xem order và không ghi tiền.
 - Hồi quy order/customer/catalogue, build SSR/Workers; kiểm dữ liệu synthetic.
 
-## 11. Các lựa chọn do agent đề xuất để duyệt
+## 11. Quyết định duyệt và bổ sung18/11
 
 COD gợi ý theo số còn thu; gate Cuối tháng theo số tiền thực nhận; form thu tiền
 dạng modal; lịch sử thu gọn; tab lưu trong URL; snapshot legacy/mode mới nullable.
-Đây chưa phải các quyết định owner đã xác nhận riêng. Sau duyệt thiết kế này
-mới viết kế hoạch thực thi và sửa application code.
+Owner đã duyệt thiết kế đầy đủ18/11, gồm các quy tắc trên.
+Kế hoạch triển khai tại [ORDER_BILL_PLAN](ORDER_BILL_PLAN.md).
+
+Bổ sung cùng lần duyệt: dọn UI/luồng cũ bị thay thế, giữ dữ liệu lịch sử.
+Sau phần đơn hàng, sửa CustomerForm dùng chung: đưa SĐT và cảnh báo trùng lên
+trước tên, autofocus SĐT khi thêm mới. Tái sử dụng tra trùng hiện có (300ms,
+chuẩn hóa +84/0, ACTIVE/ARCHIVED, xác nhận vẫn tạo); không bắt buộc nhập SĐT
+hay chặn trùng tuyệt đối. Hiện đang kiểm tra/lỗi tra cứu, bỏ kết quả lỗi thời.
+Áp dụng cả tạo khách từ danh sách và từ đơn hàng; không tạo wizard mới.
 
 Builder check18/11 đã đọc độc lập: chỉ hỏi nghĩa Tiền cọc sau REFUND;
 đã giải bằng contract hiện có ở mục3, không đổi cách phân bổ ledger.
