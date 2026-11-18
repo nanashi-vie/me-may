@@ -163,7 +163,7 @@
           id="order-detail-tab"
           aria-controls="order-content"
           [tabIndex]="totalTab() ? -1 : 0"
-          [class.primary]="!totalTab()"
+          [class.primary]="totalTab()"
           [attr.aria-selected]="!totalTab()"
           (click)="selectTab(false)"
         >
@@ -174,7 +174,7 @@
           id="order-total-tab"
           aria-controls="order-content"
           [tabIndex]="totalTab() ? 0 : -1"
-          [class.primary]="totalTab()"
+          [class.primary]="!totalTab()"
           [attr.aria-selected]="totalTab()"
           (click)="selectTab(true)"
         >

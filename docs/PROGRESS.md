@@ -9,7 +9,7 @@ Cập nhật 18/11/2026 (Asia/Ho_Chi_Minh). Đọc [chỉ mục](README.md) và 
 
 - ORDER-BILL-EXEC (18/11): hai tab, popup xuất bill, thu tiền và cảnh báo SĐT đầu form
   đã kiểm tra local. [Contract](ORDERS.md), [bằng chứng](ORDER_VERIFICATION.md).
-  Rollout V37 cùng backend và frontend còn chờ owner.
+  Tab đang mở dùng nền đỏ, tab kia nền tối. Rollout V37 còn chờ owner.
 
 - THEME-LOCK-C02 (14/11): khóa click/Enter/Space khi Rive chuyển; kẹt6s về SVG.
   FE360, SSR/Workers, browser3đợt100clickđạt; chưa deploy. [Contract](DESIGN.md#sángtối-public--duyệt14112026), [bằng chứng](THEME_VERIFICATION.md).

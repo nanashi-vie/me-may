@@ -5195,3 +5195,8 @@ Owner duyệt kế hoạch. Bắt đầu backend bill, hai tab, sau đó form kh
   proxy PASS. Browser QA thật xác nhận COD, monthly, thu tiền từ bill, refresh total,
   mobile390 và duplicate lookup. Chưa kiểm toàn bộ luồng gửi lại/hoàn đơn trên browser
   ở phiên này; có test backend. Gộp spec/plan vào ORDERS/CUSTOMERS; rollout còn mở.
+
+### 2026-11-18 — Màu tab chi tiết đơn
+
+Owner yêu cầu tab đang mở màu đỏ, tab kia màu tối. Sửa binding màu của hai nút.
+Kiểm tra: 8/8 test order-detail đạt, git diff --check đạt. Chưa deploy.
