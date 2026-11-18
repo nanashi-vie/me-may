@@ -1,11 +1,7 @@
 :host {
   display: block;
   min-width: 0;
-  container-type: inline-size;
 }
-// Chromium can drop the contained flex layout when a fieldset's buttons update.
-// Forms use the viewport fallback below; other contexts retain container sizing.
-:host-context(fieldset) { container-type: normal; }
 nav {
   display: flex;
   align-items: center;
@@ -14,14 +10,15 @@ nav {
   gap: 4px;
   padding-block: 12px;
 }
-.tokens { display: contents; }
-.compact { display: none; }
 button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   min-width: 44px;
   min-height: 44px;
+  width: auto;
+  margin: 0;
+  flex-shrink: 0;
   padding: 6px 10px;
   border: 0;
   border-radius: 11px;
@@ -39,17 +36,30 @@ button[aria-current] {
   background: var(--action, #b32635);
   color: #fff;
 }
-button:focus-visible { outline: 2px solid var(--red, #b32635); outline-offset: 2px; }
-button:disabled { opacity: .4; cursor: default; }
-svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; }
-.gap { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; color: var(--muted, #68615a); }
-@container (max-width: 440px) {
-  .wide { display: none; }
-  .compact { display: contents; }
-  nav { gap: 0; }
+button:focus-visible {
+  outline: 2px solid var(--red, #b32635);
+  outline-offset: 2px;
+}
+button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.gap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  color: var(--muted, #68615a);
 }
 @media (max-width: 720px) {
-  .wide { display: none; }
-  .compact { display: contents; }
-  nav { gap: 0; }
+  nav {
+    gap: 0;
+  }
 }

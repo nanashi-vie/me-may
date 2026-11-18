@@ -144,10 +144,11 @@ textarea {
   border: 1px solid var(--line);
   border-radius: 24px;
   padding: 11px 16px;
-  background: #fff;
+  background-color: #fff;
   color: var(--ink);
   font: inherit;
 }
+select { padding-right: 40px; }
 textarea {
   border-radius: 16px;
   resize: vertical;

@@ -3,19 +3,25 @@ import { Pagination, pageTokens } from './pagination';
 
 describe('Pagination', () => {
   it.each([
-    [1, 10, 7, [0, 1, 2, 3, 4, 'gap', 9]],
-    [4, 10, 7, [0, 'gap', 3, 4, 5, 'gap', 9]],
-    [8, 10, 7, [0, 'gap', 5, 6, 7, 8, 9]],
-    [1, 10, 5, [0, 1, 2, 'gap', 9]],
-    [4, 10, 5, [0, 'gap', 4, 'gap', 9]],
-    [8, 10, 5, [0, 'gap', 7, 8, 9]],
-    [3, 7, 7, [0, 1, 2, 3, 4, 5, 6]],
-    [2, 5, 5, [0, 1, 2, 3, 4]],
-    [0, 1, 7, [0]],
-    [0, 0, 7, []],
-    [500_000, 1_000_000, 7, [0, 'gap', 499_999, 500_000, 500_001, 'gap', 999_999]],
-  ])('renders bounded page tokens (%i/%i, %i slots)', (page, total, slots, want) => {
-    expect(pageTokens(page as number, total as number, slots as 5 | 7)).toEqual(want);
+    [1, 10, [0, 1, 2, 3, 4, 'gap', 9]],
+    [4, 32, [0, 1, 2, 3, 4, 5, 6, 'gap', 31]],
+    [15, 32, [0, 'gap', 13, 14, 15, 16, 17, 'gap', 31]],
+    [8, 10, [0, 'gap', 5, 6, 7, 8, 9]],
+    [3, 7, [0, 1, 2, 3, 4, 5, 6]],
+    [2, 5, [0, 1, 2, 3, 4]],
+    [0, 1, [0]],
+    [0, 0, []],
+    [500_000, 1_000_000, [0, 'gap', 499_998, 499_999, 500_000, 500_001, 500_002, 'gap', 999_999]],
+  ])('keeps two neighbours each side (%i/%i)', (page, total, want) => {
+    expect(pageTokens(page as number, total as number)).toEqual(want);
+  });
+
+  it('keeps both nearby pages available as real numbered buttons', () => {
+    const { f } = setup(15, 32);
+    const labels = Array.from(f.nativeElement.querySelectorAll('button')).map((b) =>
+      (b as HTMLButtonElement).getAttribute('aria-label'),
+    );
+    for (const n of [14, 15, 16, 17, 18]) expect(labels).toContain('Trang ' + n);
   });
 
   function setup(page: number, totalPages: number) {
@@ -25,8 +31,10 @@ describe('Pagination', () => {
     f.detectChanges();
     const emitted: number[] = [];
     f.componentInstance.pageChange.subscribe((p) => emitted.push(p));
-    const buttons = () => Array.from(f.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
-    const button = (label: string) => buttons().find((b) => b.getAttribute('aria-label') === label)!;
+    const buttons = () =>
+      Array.from(f.nativeElement.querySelectorAll('button')) as HTMLButtonElement[];
+    const button = (label: string) =>
+      buttons().find((b) => b.getAttribute('aria-label') === label)!;
     return { f, emitted, buttons, button };
   }
 

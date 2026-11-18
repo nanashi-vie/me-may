@@ -5082,3 +5082,40 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
   dọn đúng workspace PAGINATION_PLAN do phiên này tạo. Không dọn worktree khác.
 - Checkpoint này là commit tài liệu sau candidate đã push; bước kế tiếp là gate
   rollout theo DEPLOYMENT khi owner quyết định. Chưa merge/push main hoặc deploy.
+
+### 2026-11-18 - PAGINATION-C09 - Hai trang lân cận và dropdown admin
+
+- User yêu cầu2trang trước/sau trang hiện tại, giữ kiểu/màu đã duyệt; rà lỗi CSS
+  dropdown admin, ảnh payment/source select có mũi tên bị lặp kín ô khi focus.
+- Bắt đầu từ dev88b5c4b sạch, branch codex/pagination-dropdown-fixes. Đọc chỉ mục,
+  checkpoint, PAGINATION và CSS global/module qua graph rồi source liên quan.
+- Giả thuyết từ cascade: background shorthand ở form reset repeat/size/position,
+  focus global chỉ gắn lại background-image nên bị lặp; cần reproduce browser.
+- Thực thi tuần tự: test2neighbors RED→GREEN, browser dropdown trước/sau sửa và
+  rà các select/custom dropdown admin; fullFE/build/QA rồi cập nhật contract/log.
+  Chưa chạy test/build/browser mới; không DB/live/deploy.
+
+### 2026-11-18 - PAGINATION-C10 - Fix và kiểm chứng
+
+- RED pagination4case fail do thiếu2neighbors; GREEN13case đạt. Component giữ
+  cửa sổ5trang+đầu/cuối, tối đa9token, O(1); bỏ2biến thể/CQ vì mobile cũng cần
+  đủ2neighbors. Màn hẹp wrap giữ44px. Không thêm First/Last hoặc nhảy chục từ ảnh,
+  user chỉ yêu cầu số lân cận; giữ màu/hành vi/URL và handler chung đã duyệt.
+- Repro dropdown browser cli3: focus type=repeat/auto/0%0%/padding16px đúng ảnh.
+  Đổi background→background-color ở orders/customers/attendance và field disabled;
+  padding select40px, bỏ focus SVG indigo riêng để giữ mũi tên trung tính.
+- Rà tất cả native select/custom-dropdown CSS admin. Audit browser9select ở
+  orders/customers/report/editor đủ normal/focus/disabled/invalid (DOM mô phỏng
+  hai trạng thái cuối, không business mutation), custom dropdown open/Escape đạt
+  cli17. Source dialog4state đạt, ảnh sau sửa rõ1chevron; payment focus cũng đạt.
+- Browser phát hiện thêm form button global width100%/margin24px kéo pagination
+  thành8hàng702px (cli15). Sửa width:auto/margin0/flex-shrink0 tại component;
+  cli18 xác nhận nút44px/không margin, public/admin/lookup1440/390/320 đủ2neighbors,
+  không outer overflow, selected đỏ; fieldset chuyển trang vẫn hiện.
+- Full68files/409tests đạt (final-tests), SSR final-build exit0/không warning;
+  Workers/proxy/review cuối đang thực hiện. Test giảm410→409 do bỏ2case trùng
+  biến thể responsive và thêm1case DOM lân cận, không bỏ test nghiệp vụ.
+- QA API giả/cổng4211, không BE/DB/live. Log .local/paging2 và ảnh
+  output/playwright/paging2; HMR không nối websocket nên cần navigation mới sau
+  rebuild, một lượt QA đầu vẫn đọc CSS cũ. Confirm/beforeunload QA đã xử lý qua
+  UI; không coi script dừng ở dialog là đã hoàn tất bước sau. Chưa deploy.

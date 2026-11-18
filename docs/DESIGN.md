@@ -239,6 +239,7 @@ Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có
   - Chọn nhiều nhóm rồi Áp dụng mới cập nhật URL/tải và về trang1. Đặt lại chỉ xóa bản chọn tạm; đóng/click ngoài/Escape hủy bản tạm. Search/phân trang giữ điều kiện đã áp dụng; Back/reload khôi phục URL.
   - Nhãn điều kiện bên ngoài có nút ×; bỏ từng nhãn/Xóa tất cả áp dụng ngay, giữ tìm kiếm. Board book bỏ kiểu bìa; thùng0 là chưa phân thùng. Escape/đóng/áp dụng trả focus về nút Bộ lọc.
 - Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
+- Native select giữ một chevron16px bên phải/không lặp và đủ padding; module chỉ đổi background-color, không reset ảnh bằng shorthand background (sửa18/11).
 - Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
 
 ## Thanh điều hướng Admin Sidebar — 06/11/2026
