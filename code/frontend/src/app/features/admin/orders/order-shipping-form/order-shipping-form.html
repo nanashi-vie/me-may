@@ -27,8 +27,8 @@
               mode === 'resend'
                 ? 'Chuẩn bị gửi lại'
                 : mode === 'shipping'
-                  ? 'Sửa thông tin giao'
-                  : 'Kết thúc keep & chốt giao'
+                  ? 'Sửa thông tin bill'
+                  : 'Xuất bill'
             }}
           </h2>
           <button type="button" class="secondary" (click)="requestClose()" aria-label="Đóng">
@@ -67,7 +67,7 @@
                 name="extra"
                 required
                 [(ngModel)]="model.additionalShippingFee"
-                (ngModelChange)="model.codConfirmed = false"
+                (ngModelChange)="suggestCod()"
               /><small>Chỉ cộng phần thu thêm vào bill cũ.</small></label
             >
           } @else {
@@ -78,61 +78,51 @@
                 name="fee"
                 required
                 [(ngModel)]="model.shippingFee"
-                (ngModelChange)="model.codConfirmed = false"
+                (ngModelChange)="suggestCod()"
             /></label>
           }
           <label
-            ><span>Trả phí hãng vận chuyển</span
-            ><select name="payment" [(ngModel)]="model.shippingPaymentType">
-              <option value="PP_CASH">Tiệm trả từng đơn (PP_CASH)</option>
-              <option value="CC_CASH">Người nhận trả (CC_CASH)</option>
-              <option value="PP_PM">Tiệm trả theo hợp đồng (PP_PM)</option>
-            </select></label
-          >
-          <label class="check full"
-            ><input
-              type="checkbox"
-              name="override"
-              [(ngModel)]="model.parcelWeightOverridden"
-              (ngModelChange)="weightChanged()"
-            />Nhập trọng lượng kiện cân thực tế</label
-          >
+            >Phương thức thanh toán
+            <select
+              name="mode"
+              [(ngModel)]="model.customerPaymentMode"
+              (ngModelChange)="manualCod = false; suggestCod()"
+            >
+              <option [ngValue]="null" disabled>Chọn phương thức</option>
+              <option value="RECIPIENT">Người nhận thanh toán</option>
+              <option value="MONTHLY">Thanh toán cuối tháng</option>
+            </select>
+          </label>
           <label
-            ><span>Trọng lượng kiện (gram) *</span
+            ><span>Trọng lượng sau đóng gói (gram) *</span
             ><input
               type="number"
               min="1"
               step="1"
               name="weight"
               required
-              [readonly]="!model.parcelWeightOverridden"
               [(ngModel)]="model.parcelWeightGrams"
               (ngModelChange)="model.parcelWeightConfirmed = false"
           /></label>
-          <label
-            ><span>COD cần hãng thu (VNĐ) *</span
-            ><input
-              appVndInput
-              name="cod"
-              required
-              [(ngModel)]="model.codAmount"
-              (ngModelChange)="model.codConfirmed = false"
-          /></label>
-          <label class="check full"
-            ><input
-              type="checkbox"
-              name="weightConfirmed"
-              [(ngModel)]="model.parcelWeightConfirmed"
-            />Đã kiểm tra trọng lượng kiện</label
-          >
-          <label class="check full"
-            ><input type="checkbox" name="codConfirmed" [(ngModel)]="model.codConfirmed" />Đã kiểm
-            tra số COD (có thể là 0). COD không tự ghi nhận là đã thu.</label
-          >
-          <label class="full"
-            ><span>Mã vận đơn (bắt buộc khi bàn giao)</span
-            ><input name="tracking" maxlength="100" [(ngModel)]="model.trackingCode"
-          /></label>
+          @if (model.customerPaymentMode === 'RECIPIENT') {
+            <label
+              >Tiền thu hộ COD (VNĐ) *
+              <input
+                appVndInput
+                name="cod"
+                required
+                [(ngModel)]="model.codAmount"
+                (ngModelChange)="manualCod = true"
+              />
+            </label>
+          } @else if ((balance() ?? 0) > 0) {
+            <p>
+              Còn thiếu {{ money(balance()) }}.
+              <button type="button" class="secondary" (click)="paymentRequested.emit()">
+                Ghi nhận thu tiền
+              </button>
+            </p>
+          }
           @if (mode === 'resend') {
             <label class="full"
               ><span>Lý do gửi lại *</span
@@ -150,18 +140,21 @@
             <span>Tổng bill gồm tiền hàng + ship</span><strong>{{ money(billTotal()) }}</strong>
           </p>
           <p class="split-line">
-            <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
+            <span>Đã nhận</span><strong>{{ money(received()) }}</strong>
           </p>
           <p class="split-line">
-            <span>Khai giá (tiền hàng sau giảm giá)</span
-            ><strong>{{ money(declaredValue()) }}</strong>
+            <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
           </p>
-          <small>J&T · EXPRESS · 1 kiện. Tiệm nhập vận đơn thủ công.</small>
         </div>
+        @if (reviewRequired) {
+          <button type="button" class="secondary" (click)="reviewRequired = false">
+            Đã kiểm tra lại COD và cân nặng
+          </button>
+        }
         <footer class="form-footer">
           <button type="button" class="secondary" (click)="requestClose()">Hủy</button
           ><button class="primary" [disabled]="!valid() || form.invalid">
-            {{ mode === 'resend' ? 'Chốt gửi lại' : 'Lưu & chốt giao' }}
+            {{ mode === 'resend' ? 'Chốt gửi lại' : 'Lưu bill' }}
           </button>
         </footer>
       </fieldset>

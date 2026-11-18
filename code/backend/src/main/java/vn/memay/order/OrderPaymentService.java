@@ -14,7 +14,7 @@ public class OrderPaymentService {
   var d=db.require(id,false);if(r.transactionType()==null)throw AdminApiException.field("transactionType","Chọn loại giao dịch");
   transition(d.status()!=Status.CANCELLED||r.transactionType()==PaymentType.REFUND);
   long amount=number(r.amount(),"amount",1,MAX);String method=text(r.paymentMethod(),"paymentMethod",24,true);
-  if(!Set.of("CASH","BANK_TRANSFER","OTHER").contains(method))throw AdminApiException.field("paymentMethod","Chọn phương thức thanh toán");
+  if(!Set.of("BANK_TRANSFER","OTHER").contains(method))throw AdminApiException.field("paymentMethod","Chọn phương thức thanh toán");
   if(r.transactionType()==PaymentType.REFUND&&!Boolean.TRUE.equals(r.actualConfirmed()))throw AdminApiException.field("actualConfirmed","Xác nhận đã hoàn tiền thực tế");
   var when=r.occurredAt()==null?db.clock.instant():r.occurredAt();
   db.jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,note,created_by,created_at) values(?,?,?,?,?,?,?,?)",id,r.transactionType().name(),amount,method,Timestamp.from(when),text(r.note(),"note",1000,false),actor.getId(),Timestamp.from(db.clock.instant()));

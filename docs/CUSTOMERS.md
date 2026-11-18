@@ -194,6 +194,8 @@ Chỉ hiện chưa có đơn khi API trả rỗng; lỗi có Retry. STAFF ẩn s
 
 ## 7. Trùng SĐT, lưu trữ và cập nhật đồng thời
 
+Form thêm khách đặt SĐT trước tên và focus vào SĐT. Kiểm tra sau 300ms khi số hợp lệ,
+hiện cảnh báo ngay dưới ô nhập; lỗi mạng có Thử lại. SĐT vẫn tùy chọn.
 Tra trùng cả ACTIVE/ARCHIVED, bỏ qua chính id khi sửa; UI hiện trạng thái
 và link hồ sơ. Nhiều kết quả phải xem được danh sách, không lấy duy nhất một.
 GET duplicates hỗ trợ phân trang20/max100 nếu số trùng lớn.

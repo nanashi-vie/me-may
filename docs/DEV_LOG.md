@@ -5180,3 +5180,18 @@ Pre-commit: check whitespace scoped code/tài liệu M1 pass. Full-repo check b�
 - Kế hoạch chờ review theo writing-plans; giữ phương thức tuần tự đã chọn,
   không yêu cầu chọn lại A hoặc phương thức triển khai. Bước sau: executing-plans,
   task1 RED với DB QA cách ly. Tài liệu đưa dev; không merge/push main.
+
+### 2026-11-18 — ORDER-BILL-EXEC
+
+Owner duyệt kế hoạch. Bắt đầu backend bill, hai tab, sau đó form khách và kiểm tra local.
+
+- Triển khai V37 tách mode khách trả bill khỏi cước hãng; kiểm monthly/COD/thu thực
+  ở backend, giữ lịch sử discount/CASH và fingerprint cũ. Angular hai tab trên một đơn,
+  popup bill/thu và form khách chung với cảnh báo, trạng thái kiểm tra và retry.
+- Review đã sửa legacy mode, bắt nhập cân, xác nhận sau rebase, refresh ngay trong
+  popup tiền, bàn phím hai tab và preview đã nhận. Tái sử dụng template thu tiền
+  trong native dialog để giữ nguyên luồng submit/retry.
+- Kiểm tra 384 backend (3 live skip), 22 và 20 focused sau sửa, 409 FE, SSR/Workers/
+  proxy PASS. Browser QA thật xác nhận COD, monthly, thu tiền từ bill, refresh total,
+  mobile390 và duplicate lookup. Chưa kiểm toàn bộ luồng gửi lại/hoàn đơn trên browser
+  ở phiên này; có test backend. Gộp spec/plan vào ORDERS/CUSTOMERS; rollout còn mở.

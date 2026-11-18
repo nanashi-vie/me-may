@@ -23,7 +23,9 @@ public class OrderDraftService {
    db.jdbc.update("update orders set customer_id=?,customer_code_snapshot=?,customer_name_snapshot=?,customer_phone_snapshot=? where id=?",customerId,c.get("customer_code"),c.get("full_name"),c.get("phone"),id);
   }
   String type=type(r.fulfillmentType(),old.fulfillmentType());if(old.status()!=Status.DRAFT&&!type.equals(old.fulfillmentType()))throw new AdminApiException(409,"transition_conflict");
-  long discount=number(r.discountAmount()==null?0L:r.discountAmount(),"discountAmount",0,MAX);if(r.shippingFee()!=null)number(r.shippingFee(),"shippingFee",0,MAX);
+  long discount=old.discountAmount();
+  if(r.discountAmount()!=null && r.discountAmount()!=discount)throw AdminApiException.field("discountAmount","Điều chỉnh giá trên từng cuốn sách");
+  if(r.shippingFee()!=null)number(r.shippingFee(),"shippingFee",0,MAX);
   boolean overridden=Boolean.TRUE.equals(r.parcelWeightOverridden());Long weight=overridden?number(r.parcelWeightGrams(),"parcelWeightGrams",1,MAX):null;
   db.jdbc.update("update orders set fulfillment_type=?,discount_amount=?,recipient_name=?,recipient_phone=?,shipping_address=?,shipping_fee=?,parcel_weight_grams=?,parcel_weight_overridden=?,parcel_weight_needs_review=false where id=?",type,discount,text(r.recipientName(),"recipientName",150,false),CustomerValidation.normalizePhone(r.recipientPhone()),text(r.shippingAddress(),"shippingAddress",500,false),r.shippingFee(),weight,overridden,id);
   refresh(id,false,discount!=old.discountAmount()||!Objects.equals(r.shippingFee(),old.shippingFee()));return id;

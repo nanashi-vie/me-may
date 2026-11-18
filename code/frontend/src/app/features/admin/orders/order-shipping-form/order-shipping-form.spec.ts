@@ -27,6 +27,8 @@ describe('OrderShippingForm', () => {
     const sent = vi.fn();
     c.saved.subscribe(sent);
     c.model.codConfirmed = true;
+    c.model.customerPaymentMode = 'RECIPIENT';
+    c.model.parcelWeightGrams = 750;
     c.model.reason = 'Gửi lại';
     c.submit();
     expect(sent.mock.calls[0][0].shippingFee).toBeNull();

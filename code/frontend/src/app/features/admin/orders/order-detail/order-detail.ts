@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { DatePipe, KeyValuePipe } from '@angular/common';
+import { DatePipe, KeyValuePipe, NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -55,7 +55,9 @@ type Panel =
   | 'edit';
 @Component({
   selector: 'app-order-detail',
-  imports: [Pagination,
+  imports: [
+    Pagination,
+    NgTemplateOutlet,
     DatePipe,
     KeyValuePipe,
     FormsModule,
@@ -86,11 +88,33 @@ export class OrderDetailPage {
   readonly fieldErrors = signal<Record<string, string[]>>({});
   readonly toast = signal('');
   readonly pending = signal<Pending | null>(null);
+  readonly paymentConflict = signal(false);
   readonly panel = signal<Panel>('');
   readonly money = vnd;
   readonly labels = STATUS_LABELS;
   readonly keepEnd = keepEnd;
-  readonly backQuery = this.route.snapshot.queryParams;
+  readonly backQuery = { ...this.route.snapshot.queryParams };
+  readonly totalTab = signal(this.backQuery['tab'] === 'total');
+  selectTab(total: boolean) {
+    this.totalTab.set(total);
+    void this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { tab: total ? 'total' : null },
+      queryParamsHandling: 'merge',
+    });
+  }
+  tabKey(event: KeyboardEvent) {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    const total = event.key === 'End' || (event.key !== 'Home' && !this.totalTab());
+    this.selectTab(total);
+    document.getElementById(total ? 'order-total-tab' : 'order-detail-tab')?.focus();
+  }
+  readonly currentBill = computed(() => {
+    const d = this.order();
+    if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;
+    return d.shipments.filter((s) => s.state !== 'ABORTED').at(-1) ?? null;
+  });
   readonly selectedCustomer = signal<CustomerSummary | null>(null);
   readonly customerPage = signal<Page<CustomerSummary> | null>(null);
   readonly existingKeeps = signal<Page<OrderSummary> | null>(null);
@@ -127,7 +151,6 @@ export class OrderDetailPage {
     reason: string;
   }[] = [];
   edit = {
-    discountAmount: 0 as number | null,
     requiredDepositVnd: 100000,
     recipientName: '',
     recipientPhone: '',
@@ -135,6 +158,10 @@ export class OrderDetailPage {
     shippingFee: null as number | null,
   };
   constructor() {
+    delete this.backQuery['tab'];
+    this.route.queryParamMap
+      ?.pipe(takeUntilDestroyed(this.destroy))
+      .subscribe((q) => this.totalTab.set(q.get('tab') === 'total'));
     combineLatest([this.route.paramMap, toObservable(this.auth.epoch)])
       .pipe(
         switchMap(([params]) => {
@@ -304,6 +331,7 @@ export class OrderDetailPage {
           ) {
             if (v.id === d.id && v.version >= this.order()!.version) {
               this.order.set(v);
+              this.paymentConflict.set(false);
               if (this.itemForm()?.visible()) this.itemForm()?.rebase(v);
               if (this.shippingForm()?.visible()) this.shippingForm()?.rebase(v);
               this.error.set('');
@@ -375,7 +403,8 @@ export class OrderDetailPage {
         this.panel.set('');
         this.selectedCustomer.set(null);
         this.itemForm()?.close();
-        this.shippingForm()?.close();
+        if (p.action !== 'payments') this.shippingForm()?.close();
+        if (p.action === 'finalize') this.selectTab(true);
         this.toast.set('Đã lưu thao tác.');
         if (p.kind === 'create') {
           this.selectedCustomer.set(null);
@@ -396,6 +425,7 @@ export class OrderDetailPage {
         this.fieldErrors.set(e.error?.fieldErrors ?? {});
         if (e.error?.matches) this.itemForm()?.setMatches(e.error.matches);
         const conflict = e.status === 409 && e.error?.error === 'version_conflict';
+        this.paymentConflict.set(p.action === 'payments' && conflict);
         this.itemForm()?.conflict.set(conflict);
         this.shippingForm()?.conflict.set(conflict);
         this.itemForm()?.error.set(orderError(e));
@@ -436,6 +466,7 @@ export class OrderDetailPage {
     this.actualConfirmed = false;
     this.allowInsufficientDeposit = false;
     this.trackingCode = this.order()?.trackingCode ?? '';
+    this.paymentConflict.set(false);
     this.panel.set(panel);
     if (panel === 'payment')
       this.payment = {
@@ -449,7 +480,6 @@ export class OrderDetailPage {
     if (d) {
       this.fulfillmentType = d.fulfillmentType;
       this.edit = {
-        discountAmount: d.discountAmount,
         requiredDepositVnd: d.requiredDepositVnd,
         recipientName: d.recipientName ?? '',
         recipientPhone: d.recipientPhone ?? '',
@@ -466,15 +496,15 @@ export class OrderDetailPage {
         reason: '',
       }));
     }
-    setTimeout(
-      () =>
-        document
-          .querySelector<HTMLElement>(
-            '.inline-form input, .inline-form textarea, .inline-form select',
-          )
-          ?.focus(),
-      0,
-    );
+    setTimeout(() => {
+      if (this.panel() === 'payment')
+        document.querySelector<HTMLDialogElement>('#payment-dialog')?.showModal?.();
+      document
+        .querySelector<HTMLElement>(
+          '.inline-form input, .inline-form textarea, .inline-form select',
+        )
+        ?.focus();
+    }, 0);
   }
   closePanel() {
     if (this.pending() || this.busy()) return;
@@ -553,7 +583,6 @@ export class OrderDetailPage {
           ...meta,
           customerId: this.selectedCustomer()?.id ?? d.customerId,
           fulfillmentType: this.fulfillmentType,
-          discountAmount: this.edit.discountAmount,
           recipientName: this.edit.recipientName,
           recipientPhone: this.edit.recipientPhone,
           shippingAddress: this.edit.shippingAddress,

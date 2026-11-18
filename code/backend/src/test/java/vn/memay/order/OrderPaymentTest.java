@@ -9,7 +9,12 @@ import static org.assertj.core.api.Assertions.*;
 class OrderPaymentTest extends OrderTestSupport {
  @Autowired OrderPaymentService payments;@Autowired OrderKeepService keep;
  private long invoice(){long id=draft();manual(id,500000,1,250);jdbc.update("update orders set shipping_fee=30000 where id=?",id);return id;}
- private PaymentRequest pay(long v,PaymentType type,long amount,boolean actual){return new PaymentRequest(v,UUID.randomUUID(),type,amount,"CASH",null,null,actual);}
+ private PaymentRequest pay(long v,PaymentType type,long amount,boolean actual){return new PaymentRequest(v,UUID.randomUUID(),type,amount,"BANK_TRANSFER",null,null,actual);}
+ @Test void rejectsNewCashReceipt(){
+  long id=invoice();
+  var request=new PaymentRequest(0L,UUID.randomUUID(),PaymentType.PAYMENT,1000L,"CASH",null,null,false);
+  assertThatThrownBy(()->payments.record(id,request,owner)).isInstanceOf(AdminApiException.class);
+ }
  @Test void depositPlusShippingBalance(){
   long id=invoice();payments.record(id,pay(0,PaymentType.DEPOSIT,100000,false),owner);
   var d=orders.require(id,false);assertThat(d.totals().balance()).isEqualTo(430000);assertThat(d.totals().paidAmount()).isEqualTo(100000);assertThat(d.totals().paymentStatus()).isEqualTo("PARTIALLY_PAID");

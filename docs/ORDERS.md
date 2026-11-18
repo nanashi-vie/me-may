@@ -130,7 +130,7 @@ Không xác nhận vô điều kiện, không tìm sách đã purge; phạm vi T
 
 Backend tính; không tin tổng frontend, không dùng float cho tiền.
 - subtotal = SUM(unitPriceVnd × quantity); goodsTotal = subtotal − discountAmount.
-- 0 ≤ discountAmount ≤ subtotal; tiền VND nguyên không âm, không cộng cọc vào hàng.
+- discountAmount chỉ đọc cho đơn cũ; đơn mới chốt giá từng dòng, tiền VND nguyên.
 - paidAmount = SUM(DEPOSIT + PAYMENT) − SUM(REFUND) của giao dịch hợp lệ.
 - **Tiệm thu cả ship:** orderTotal = goodsTotal + shippingFee (phí thu khách nhập tay).
   balance = orderTotal − paidAmount; còn thu = max(0,balance), dư âm là tiền thừa.
@@ -141,10 +141,9 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
   thái thanh toán tạm tính. Refund không vượt tiền nhận, không tự xóa khoản phải thu.
 - itemWeight = unitWeightGrams × quantity; totalBookWeightGrams = SUM(itemWeight).
   Thiếu bất kỳ weight hiển thị “Chưa đủ dữ liệu”, không coi thiếu là0.
-- parcelWeightGrams mặc định bằng tổng khi đầy đủ; chưa override thì theo item.
-  Đã override thì giữ giá trị, đổi danh sách/quantity/weight đặt needsReview;
-  admin xác nhận lại trước finalize. Đổi riêng giá không làm sai trọng lượng.
-- Reset về tự tính có xác nhận; snapshot không thay theo weight sách gốc.
+- Popup Xuất bill yêu cầu cân kiện sau đóng gói, gram nguyên dương.
+  Sau refresh do version thay đổi, admin kiểm lại cân/COD rồi lưu.
+  Thay đổi weight sách gốc không sửa snapshot đã bàn giao.
 
 Giới hạn: tối đa1000dòng/đơn; quantity1..999999/dòng; title≤300;
 unitPrice≤999999999999; weight dương≤9007199254740991gram như catalogue.
@@ -215,7 +214,7 @@ không clamp hoặc âm thầm bỏ lượng hoàn. Plan phải kiểm case tăn
 ## 10. Giao dịch tiền, retry và hủy đơn
 
 DEPOSIT/PAYMENT/REFUND lưu amount>0, method, occurredAt thực nhận/hoàn,
-note, createdBy/createdAt; phương thức CASH/BANK_TRANSFER/OTHER.
+note, createdBy/createdAt; ghi mới BANK_TRANSFER/OTHER. CASH lịch sử vẫn đọc được.
 Không tạo PAYMENT giả cho COD khi COMPLETED. Khi thực nhận COD,
 OWNER ghi PAYMENT thủ công. Không sửa/xóa trực tiếp giao dịch đã xác nhận.
 Điều chỉnh sai bằng VOID có lý do/actor/time, giữ bản gốc; tổng bỏ giao dịch VOID,
@@ -247,7 +246,8 @@ Không ghi đè hồ sơ customer khi sửa địa chỉ giao. Không bắt có 
 Finalize lần đầu: ≥1item, giá/quantity/weight hợp lệ, đủ reservation (DRAFT tạo mới,
 KEEPING tái dùng), parcelWeight>0 hết needsReview, đủ người nhận và shipping.
 Backend tính/chốt declaredValue=goodsTotal; không gồm phí ship, không trừ cọc.
-Ví dụ hàng650.000−giảm50.000, ship35.000, cọc100.000 → khai giá600.000đ.
+Mode RECIPIENT cho nhập COD; MONTHLY lưu COD0, kiểm đã thu đủ bill lúc lưu và bàn giao.
+Mode nullable cho bill cũ, ghi riêng trên order và snapshot V37; không suy ra từ mã trả cước.
 
 Cấu hình theo bản user cung cấp: J&T Express, EXPRESS, sản phẩm Sách,
 HÀNG HÓA, không gửi tại bưu cục, parcelCount1, không dùng dài/rộng/cao.
@@ -256,8 +256,8 @@ tách khỏi tiền khách trả tiệm. User chốt17/11: bill khách gồm ti�
 tiệm trả J&T từng đơn; mặc định PP_CASH, thay CC_CASH trong bản gốc.
 **User chốt:** shippingFee do admin nhập thủ công, không tự tra/tính phí J&T;
 nullable khi chưa biết ở draft/keep, phải có khi chốt (0 nếu miễn). COD nguyên≥0
-mặc định0, admin nhập/xác nhận; tham khảo cả tiền hàng+ship trừ tiền đã nhận.
-Đổi hàng/giảm giá/phí ship (kể cả gửi lại)/tiền nhận hoặc hoàn → COD needsReview;
+gợi ý max(0, tiền hàng + ship − đã nhận ròng), admin được sửa.
+Đổi hàng/phí ship (kể cả gửi lại)/tiền nhận hoặc hoàn → COD needsReview;
 không tự sửa COD. Finalize phải xác nhận COD theo version đang đọc.
 Sau READY có giao dịch làm đổi số dư: chặn ship đến khi review COD
 qua command shipping; không tự reopen/chỉnh declaredValue vì nhận thêm cọc.
@@ -348,10 +348,10 @@ Admin desktop-first theo form/table/custom dropdown hiện có; tablet/mobile kh
 tràn khung. Loading/error/empty, keyboard/focus, dirty guard và double-submit.
 Giữ form khi lỗi; stale response không đè mới. Xác nhận xóa/hủy/ship/ngoại lệ,
 không tải hết sách/khách. Hiển thị giá bán cụ thể/quantity/gram rõ từng dòng.
-UI owner17/11: [danh sách](assets/order-management/order-list.png),
-[keep](assets/order-management/keep-detail.png), [MANUAL](assets/order-management/manual-item.png).
-Giữ thống kê/search/bảng, thanh thời gian keep/cọc/item/CTA, tổng tiền/gram MANUAL.
-Dùng style admin Mẹ Mây; dữ liệu và trạng thái nút mẫu không là quy tắc nghiệp vụ.
+Chi tiết đơn hiển thị tiền sách, cọc và trọng lượng sách cùng danh sách sách.
+Tổng đơn (tab=total) hiển thị bill sau lưu. Mở lại đơn phải xuất bill mới.
+Ghi nhận thu/hoàn thực tế qua popup riêng, giữ draft bill khi ghi chuyển khoản.
+Lưu bill chốt READY, mở Tổng đơn; khi bàn giao mới bắt mã vận đơn và hoàn tất.
 
 AC gốc01–20 được giữ qua nhóm kiểm tra sau và bổ sung các case tích hợp:
 - 01–04: chọn/tạo khách, CATALOG/MANUAL, duplicate confirm FE/BE; hai dòng
