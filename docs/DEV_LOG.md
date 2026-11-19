@@ -5260,3 +5260,8 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Mục tiêu & phạm vi**: Tạo component `app-breadcrumb` dùng chung (`Trang chủ / ... / [Trang hiện tại]`, link chữ tối `var(--ink)`, hover đỏ `var(--red)`, `/` và mục cuối xám `var(--muted)`) áp dụng đồng bộ cho 5 trang public con (`book-detail`, `catalogue-page`, `flash-sale-page`, `wishlist-page`, `contact-page`). Trên `book-detail`, đổi breadcrumb thành `Trang chủ / [Thể loại] / [Tên sách]`, bố cục 2 cột dưới tiêu đề (trái: Mã sách + tình trạng; phải: Thể loại + Định dạng Bìa mềm/Bìa cứng) và bỏ dòng `Kiểu bìa` trùng trong `<dl>`.
 - **File thay đổi**: thêm `shared/breadcrumb/breadcrumb.ts`, `breadcrumb.spec.ts`; cập nhật `book-detail.*`, `catalogue-page.*`, `flash-sale-page.*`, `wishlist-page.*`, `contact-page.*`.
 - **Kiểm tra**: chạy full `npm test -- --watch=false` và `npm run build` tại `code/frontend`, `git diff --check`, commit và push lên `dev`.
+
+### 2026-11-19 — HERO-HEIGHT-01 — Tăng chiều cao banner trang chủ thêm 10% (`30:11`) kèm trần `max-height`
+
+- **Thay đổi**: Đổi tỉ lệ khung banner từ `3/1` sang `30/11` (+10% chiều cao) kèm `max-height: min(680px, 72svh)` trên `hero-carousel.scss` (bỏ `aspect-ratio` trùng trên `.viewport` để giữ căn giữa khi chạm trần); đồng bộ `.preview` trong `hero-banner-editor.scss`, metadata `3200×1173` trong `HeroBannerService.java` và contract `docs/product/HERO_BANNERS.md`.
+- **Kiểm tra**: chạy test `hero-carousel` / `home-page` / `hero-banner-editor`, `npm run build`, `test-compile` backend và `git diff --check`.

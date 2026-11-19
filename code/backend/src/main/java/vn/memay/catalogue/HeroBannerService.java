@@ -36,7 +36,7 @@ public class HeroBannerService {
     return new Config(version,List.copyOf(items));
    });
  }
- private Banner banner(UUID id,String alt){String path="/api/v1/hero-banners/"+id+"/content";return new Banner(id.toString(),alt,path+"?size=1600&format=webp",path+"?size=800&format=webp 800w, "+path+"?size=1600&format=webp 1600w, "+path+"?size=3200&format=webp 3200w",3200,1067);}
+ private Banner banner(UUID id,String alt){String path="/api/v1/hero-banners/"+id+"/content";return new Banner(id.toString(),alt,path+"?size=1600&format=webp",path+"?size=800&format=webp 800w, "+path+"?size=1600&format=webp 1600w, "+path+"?size=3200&format=webp 3200w",3200,1173);}
  @Transactional public Config save(AdminUser actor,Update request){
   owner(actor,true);
   long version=jdbc.queryForObject("select version from hero_banner_config where id=1 for update",Long.class);
