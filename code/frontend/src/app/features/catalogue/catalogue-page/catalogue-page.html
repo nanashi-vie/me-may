@@ -1,13 +1,4 @@
-<p class="breadcrumb">
-  <a routerLink="/">Trang chủ</a>
-  @if (isCollection()) {
-    / Bộ sưu tập / {{ title() }}
-  } @else if (applied().category) {
-    / <a routerLink="/sach">Tất cả sách</a> / {{ title() }}
-  } @else {
-    / Tất cả sách
-  }
-</p>
+<app-breadcrumb [items]="breadcrumbs()" />
 <div class="catalogue-layout">
   <aside class="catalogue-sidebar" aria-label="Danh mục và bộ lọc">
     <div class="sidebar-section">

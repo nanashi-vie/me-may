@@ -20,10 +20,11 @@ import { PublicError } from '../public-error';
 import { PublicClock } from '../public-clock';
 import { PageMetadata } from '../../../core/page-metadata';
 import { TaxonomyOption } from '../../admin/books/book.models';
+import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 
 @Component({
   selector: 'app-catalogue-page',
-  imports: [Pagination, PublicSkeleton, FormsModule, RouterLink, BookCard, PublicError],
+  imports: [Pagination, PublicSkeleton, FormsModule, RouterLink, BookCard, PublicError, Breadcrumb],
   templateUrl: './catalogue-page.html',
   styleUrl: './catalogue-page.scss',
 })
@@ -49,6 +50,26 @@ export class CataloguePage {
     return list?.length ? list : DEFAULT_AGE_GROUPS;
   });
   readonly applied = signal<CatalogueFilter>(readFilters(this.route.snapshot.queryParamMap));
+  readonly breadcrumbs = computed<BreadcrumbItem[]>(() => {
+    if (this.isCollection()) {
+      return [
+        { label: 'Trang chủ', link: '/' },
+        { label: 'Bộ sưu tập' },
+        { label: this.title() },
+      ];
+    }
+    if (this.applied().category) {
+      return [
+        { label: 'Trang chủ', link: '/' },
+        { label: 'Tất cả sách', link: '/sach' },
+        { label: this.title() },
+      ];
+    }
+    return [
+      { label: 'Trang chủ', link: '/' },
+      { label: 'Tất cả sách' },
+    ];
+  });
   readonly now = inject(PublicClock).now;
   private expired = '';
   draft: CatalogueFilter = readFilters(this.route.snapshot.queryParamMap);

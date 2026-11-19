@@ -5254,3 +5254,9 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 
 - **Thay đổi**: Cập nhật `search-bar.ts/.html/.scss/.spec.ts` bọc ảnh bìa sách gợi ý bằng `<picture>` với `<source type="image/webp" sizes="38px">` trước fallback JPEG để trình duyệt hiện đại tải WebP nhẹ hơn.
 - **Kiểm tra**: 22/22 test `public-layout` + `search-bar` đạt; `npm run build` đạt 0 cảnh báo. Commit & push lên `dev`.
+
+### 2026-11-19 — BREADCRUMB-UI-01 — Thanh chỉ dẫn dùng chung & Thể loại/Định dạng trên chi tiết sách
+
+- **Mục tiêu & phạm vi**: Tạo component `app-breadcrumb` dùng chung (`Trang chủ / ... / [Trang hiện tại]`, link chữ tối `var(--ink)`, hover đỏ `var(--red)`, `/` và mục cuối xám `var(--muted)`) áp dụng đồng bộ cho 5 trang public con (`book-detail`, `catalogue-page`, `flash-sale-page`, `wishlist-page`, `contact-page`). Trên `book-detail`, đổi breadcrumb thành `Trang chủ / [Thể loại] / [Tên sách]`, bố cục 2 cột dưới tiêu đề (trái: Mã sách + tình trạng; phải: Thể loại + Định dạng Bìa mềm/Bìa cứng) và bỏ dòng `Kiểu bìa` trùng trong `<dl>`.
+- **File thay đổi**: thêm `shared/breadcrumb/breadcrumb.ts`, `breadcrumb.spec.ts`; cập nhật `book-detail.*`, `catalogue-page.*`, `flash-sale-page.*`, `wishlist-page.*`, `contact-page.*`.
+- **Kiểm tra**: chạy full `npm test -- --watch=false` và `npm run build` tại `code/frontend`, `git diff --check`, commit và push lên `dev`.

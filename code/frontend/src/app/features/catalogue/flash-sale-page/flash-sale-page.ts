@@ -10,14 +10,19 @@ import { PublicApi } from '../public-api';
 import { PublicClock } from '../public-clock';
 import { PublicError } from '../public-error';
 import { FlashSale } from '../public.models';
+import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 
 @Component({
   selector: 'app-flash-sale-page',
-  imports: [PublicSkeleton, RouterLink, BookCard, PublicError],
+  imports: [PublicSkeleton, RouterLink, BookCard, PublicError, Breadcrumb],
   templateUrl: './flash-sale-page.html',
   styleUrl: './flash-sale-page.scss',
 })
 export class FlashSalePage {
+  readonly breadcrumbs: readonly BreadcrumbItem[] = [
+    { label: 'Trang chủ', link: '/' },
+    { label: 'Flash Sale' },
+  ];
   private readonly response = inject(RESPONSE_INIT, { optional: true });
   private readonly meta = inject(PageMetadata);
   private readonly api = inject(PublicApi);

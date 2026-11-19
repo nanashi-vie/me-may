@@ -1,13 +1,4 @@
-.breadcrumb {
-  font-size: 0.85rem;
-  margin: 1.4rem 0;
-  color: var(--muted);
-}
-.breadcrumb a {
-  color: inherit;
-  text-decoration: none;
-}
-:is(.breadcrumb, .category-links) a:is(:hover, .active) {
+.category-links a:is(:hover, .active) {
   color: var(--red);
 }
 .catalogue-layout {

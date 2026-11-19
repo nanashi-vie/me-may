@@ -3,9 +3,7 @@
 } @else if (error()) {
   <app-public-error [status]="error()" (retry)="refresh()" />
 } @else if (book(); as b) {
-  <p class="breadcrumb">
-    <a routerLink="/">Trang chủ</a> / <a routerLink="/sach">Sách</a> / {{ b.bookCode }}
-  </p>
+  <app-breadcrumb [items]="breadcrumbs(b)" />
   <div class="detail-layout">
     <div class="media-col">
       <section class="gallery" aria-label="Bộ ảnh chung của sách">
@@ -82,12 +80,33 @@
           @for(feature of b.features;track feature.code) {<li>{{feature.label}}</li>}
         </ul>
       }
-      <p class="code">
-        Mã sách <strong>{{ b.bookCode }}</strong>
-      </p>
-      <span class="stock" [class.sold]="b.availability === 'SOLD'">{{
-        b.availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
-      }}</span>
+      <div class="detail-meta-grid">
+        <div class="meta-col">
+          <p class="code">
+            Mã sách: <strong>{{ b.bookCode }}</strong>
+          </p>
+          <span class="stock" [class.sold]="b.availability === 'SOLD'">{{
+            b.availability === 'SOLD' ? 'Hết hàng' : 'Còn hàng'
+          }}</span>
+        </div>
+        @if (categoryName(b.categoryCode) || bindingLabel(b.binding)) {
+          <div class="meta-col">
+            @if (categoryName(b.categoryCode); as cat) {
+              <p class="meta-item">
+                Thể loại:
+                <a class="meta-link" routerLink="/sach" [queryParams]="{ category: b.categoryCode }">{{
+                  cat
+                }}</a>
+              </p>
+            }
+            @if (bindingLabel(b.binding); as fmt) {
+              <p class="meta-item">
+                Định dạng: <strong>{{ fmt }}</strong>
+              </p>
+            }
+          </div>
+        }
+      </div>
       <div class="pricing">
         @if (display()!.salePriceVnd) {
           <div class="detail-flash-bar">
@@ -113,7 +132,7 @@
         }
         <small>{{ priceNote }}</small>
       </div>
-      @if (b.publisher || b.author || b.binding || b.ageGroups.length || b.readingLevel || b.readingVideoUrl) {
+      @if (b.publisher || b.author || b.ageGroups.length || b.readingLevel || b.readingVideoUrl) {
         <dl>
           @if (b.publisher) {
             <dt>Nhà xuất bản</dt>
@@ -122,10 +141,6 @@
           @if (b.author) {
             <dt>Tác giả</dt>
             <dd>{{ b.author }}</dd>
-          }
-          @if (b.binding) {
-            <dt>Kiểu bìa</dt>
-            <dd>{{ b.binding === 'PAPERBACK' ? 'Paperback' : 'Hardcover' }}</dd>
           }
           @if (b.ageGroups.length) {
             <dt>Độ tuổi</dt>

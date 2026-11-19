@@ -27,6 +27,7 @@ import { BookCard } from '../book-card/book-card';
 import { RelatedBooks } from '../public.models';
 import {
   AGE_LABELS,
+  CATEGORY_LABELS,
   READING_LABELS,
   PRICE_NOTE,
   READING_NOTE,
@@ -34,9 +35,10 @@ import {
   formatPriceRange,
   MEDIA_LABELS,
 } from '../../admin/books/book-copy';
+import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 @Component({
   selector: 'app-book-detail',
-  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCard],
+  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCard, Breadcrumb],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
 })
@@ -98,6 +100,27 @@ export class BookDetail {
   readonly ages = AGE_LABELS;
   readonly levels = READING_LABELS;
   readonly priceNote = PRICE_NOTE;
+
+  categoryName(code: string | null | undefined): string {
+    return code ? (CATEGORY_LABELS[code as keyof typeof CATEGORY_LABELS] ?? '') : '';
+  }
+
+  bindingLabel(binding: string | null | undefined): string {
+    if (binding === 'PAPERBACK') return 'Bìa mềm';
+    if (binding === 'HARDCOVER') return 'Bìa cứng';
+    return '';
+  }
+
+  breadcrumbs(b: PublicBook): BreadcrumbItem[] {
+    const cat = this.categoryName(b.categoryCode);
+    return [
+      { label: 'Trang chủ', link: '/' },
+      cat
+        ? { label: cat, link: '/sach', queryParams: { category: b.categoryCode } }
+        : { label: 'Tất cả sách', link: '/sach' },
+      { label: b.title },
+    ];
+  }
   readonly readingNote = READING_NOTE;
   constructor() {
     const initial = this.state.get(this.stateKey, null);
