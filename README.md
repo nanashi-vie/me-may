@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://memaybooks.com">
-    <img src="code/frontend/public/favicon/web-app-manifest-192x192.png" alt="Mẹ Mây Logo" width="110" height="110" />
+    <img src="code/frontend/public/favicon/favicon.svg" alt="Mẹ Mây Logo" width="110" height="110" />
   </a>
 
   <h1>Mẹ Mây — Sách ngoại văn cho bé</h1>

@@ -5269,4 +5269,4 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 ### 2026-11-19 — ROOT-README-01 — Thêm `README.md` tối giản kiểu thương hiệu ở root
 
 - **Mục tiêu**: Tạo `README.md` ở root (40 dòng) dạng Brand Card căn giữa (logo Mẹ Mây, giới thiệu ngắn, kênh chính thức và tech stack badges, không dẫn link vào `docs/` nội bộ) để GitHub hiển thị trang giới thiệu thương hiệu thay vì tự lấy `docs/README.md`.
-- **Kiểm tra**: kiểm link ảnh local (`code/frontend/public/favicon/web-app-manifest-192x192.png`), trần 400 dòng và `git diff --check` đạt. Commit & push lên `dev`.
+- **Kiểm tra**: dùng `code/frontend/public/favicon/favicon.svg` (đã có `clipPath` bo tròn `rx=500 ry=500` hiển thị tròn trên GitHub không phụ thuộc CSS bị lọc), trần 400 dòng và `git diff --check` đạt. Commit & push lên `dev`.
