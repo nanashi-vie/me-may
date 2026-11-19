@@ -150,6 +150,7 @@ describe('SearchBar', () => {
     const bookRows = el.querySelectorAll('.book-row');
     expect(bookRows.length).toBe(1);
     expect(bookRows[0].textContent).toContain('MM-000123');
+    expect(bookRows[0].querySelector('picture source[type="image/webp"]')).toBeTruthy();
 
     (bookRows[0] as HTMLElement).click();
     fixture.detectChanges();

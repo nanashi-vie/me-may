@@ -5249,3 +5249,8 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Nguyên nhân**: Trong `PublicCatalogueService.suggest()`, truy vấn dùng nhầm `c.label` thay vì `c.name` (theo `V2__catalogue.sql`), gây lỗi 500 trên `PublicCatalogueApiTest.suggestReturnsKeywordsAndPublishedBooksOnly` khi chạy CI.
 - **Sửa đổi**: Đổi `c.label` thành `c.name` trong `PublicCatalogueService.java`.
 - **Kiểm tra**: `bash code/backend/run-local.sh -B -ntp test-compile` đạt; `git diff --check` đạt. Chạy lại CI trên `dev` sau push.
+
+### 2026-11-19 — SEARCH-UI-03 — Ưu tiên WebP (`<picture>`) cho thumbnail gợi ý tìm kiếm
+
+- **Thay đổi**: Cập nhật `search-bar.ts/.html/.scss/.spec.ts` bọc ảnh bìa sách gợi ý bằng `<picture>` với `<source type="image/webp" sizes="38px">` trước fallback JPEG để trình duyệt hiện đại tải WebP nhẹ hơn.
+- **Kiểm tra**: 22/22 test `public-layout` + `search-bar` đạt; `npm run build` đạt 0 cảnh báo. Commit & push lên `dev`.

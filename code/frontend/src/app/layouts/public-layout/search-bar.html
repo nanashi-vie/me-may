@@ -246,15 +246,22 @@
                   (click)="selectBook(book)"
                 >
                   <div class="book-thumb">
-                    @if (coverSrc(book); as src) {
-                      <img
-                        [src]="src"
-                        [alt]="book.title"
-                        width="38"
-                        height="50"
-                        loading="lazy"
-                        (error)="onCoverError(book.slug)"
-                      />
+                    @if (coverPicture(book); as picture) {
+                      <picture>
+                        @if (picture.webp) {
+                          <source type="image/webp" [attr.srcset]="picture.webp" sizes="38px" />
+                        }
+                        <img
+                          [src]="picture.src"
+                          [attr.srcset]="picture.jpeg"
+                          sizes="38px"
+                          [alt]="book.title"
+                          width="38"
+                          height="50"
+                          loading="lazy"
+                          (error)="onCoverError(book.slug)"
+                        />
+                      </picture>
                     } @else {
                       <span class="book-thumb-fallback" aria-hidden="true">M</span>
                     }
