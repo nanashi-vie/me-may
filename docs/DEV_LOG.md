@@ -5243,3 +5243,9 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - `code/frontend`: `npm run build` đạt (browser + server SSR, 0 cảnh báo budget).
   - `git diff --check` đạt.
 - **Bước tiếp theo**: Owner kiểm tra trực quan trên trình duyệt (light/dark + mobile) và chạy lại `PublicCatalogueApiTest` sau khi đồng bộ/reset DB `me_may_test` local; commit & push lên `dev` khi ưng ý.
+
+### 2026-11-19 — SEARCH-UI-02 — Sửa tên cột `category.name` trong `/api/v1/books/suggest`
+
+- **Nguyên nhân**: Trong `PublicCatalogueService.suggest()`, truy vấn dùng nhầm `c.label` thay vì `c.name` (theo `V2__catalogue.sql`), gây lỗi 500 trên `PublicCatalogueApiTest.suggestReturnsKeywordsAndPublishedBooksOnly` khi chạy CI.
+- **Sửa đổi**: Đổi `c.label` thành `c.name` trong `PublicCatalogueService.java`.
+- **Kiểm tra**: `bash code/backend/run-local.sh -B -ntp test-compile` đạt; `git diff --check` đạt. Chạy lại CI trên `dev` sau push.
