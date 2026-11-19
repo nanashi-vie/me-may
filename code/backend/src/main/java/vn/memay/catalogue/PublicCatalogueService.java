@@ -186,7 +186,7 @@ public class PublicCatalogueService {
         String prefixPattern = escapedCore + "%";
         String lowerQ = q.toLowerCase(Locale.ROOT);
 
-        String sql = "select b.id, b.book_code, l.slug, b.title, b.publisher, b.author, c.label category_label, "
+        String sql = "select b.id, b.book_code, l.slug, b.title, b.publisher, b.author, c.name category_label, "
                 + "l.price_min_vnd, l.price_max_vnd, "
                 + "case when " + SALE + " then fi.sale_price_vnd end sale_price_vnd, "
                 + "case when " + SALE + " then fs.ends_at end sale_ends_at, "
@@ -197,7 +197,7 @@ public class PublicCatalogueService {
                 + " or lower(b.title) like lower(?) escape '\\'"
                 + " or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\')"
                 + " or (b.author is not null and lower(b.author) like lower(?) escape '\\')"
-                + " or (c.label is not null and lower(c.label) like lower(?) escape '\\'))"
+                + " or (c.name is not null and lower(c.name) like lower(?) escape '\\'))"
                 + " order by (lower(b.book_code)=lower(?)) desc,"
                 + " (lower(b.title) like lower(?) escape '\\') desc,"
                 + " (b.availability='AVAILABLE') desc,"
