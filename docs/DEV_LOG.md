@@ -5249,3 +5249,19 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Nguyên nhân**: Trong `PublicCatalogueService.suggest()`, truy vấn dùng nhầm `c.label` thay vì `c.name` (theo `V2__catalogue.sql`), gây lỗi 500 trên `PublicCatalogueApiTest.suggestReturnsKeywordsAndPublishedBooksOnly` khi chạy CI.
 - **Sửa đổi**: Đổi `c.label` thành `c.name` trong `PublicCatalogueService.java`.
 - **Kiểm tra**: `bash code/backend/run-local.sh -B -ntp test-compile` đạt; `git diff --check` đạt. Chạy lại CI trên `dev` sau push.
+
+### 2026-11-19 — SEARCH-UI-03 — Ưu tiên WebP (`<picture>`) cho thumbnail gợi ý tìm kiếm
+
+- **Thay đổi**: Cập nhật `search-bar.ts/.html/.scss/.spec.ts` bọc ảnh bìa sách gợi ý bằng `<picture>` với `<source type="image/webp" sizes="38px">` trước fallback JPEG để trình duyệt hiện đại tải WebP nhẹ hơn.
+- **Kiểm tra**: 22/22 test `public-layout` + `search-bar` đạt; `npm run build` đạt 0 cảnh báo. Commit & push lên `dev`.
+
+### 2026-11-19 — BREADCRUMB-UI-01 — Thanh chỉ dẫn dùng chung & Thể loại/Định dạng trên chi tiết sách
+
+- **Mục tiêu & phạm vi**: Tạo component `app-breadcrumb` dùng chung (`Trang chủ / ... / [Trang hiện tại]`, link chữ tối `var(--ink)`, hover đỏ `var(--red)`, `/` và mục cuối xám `var(--muted)`) áp dụng đồng bộ cho 5 trang public con (`book-detail`, `catalogue-page`, `flash-sale-page`, `wishlist-page`, `contact-page`). Trên `book-detail`, đổi breadcrumb thành `Trang chủ / [Thể loại] / [Tên sách]`, bố cục 2 cột dưới tiêu đề (trái: Mã sách + tình trạng; phải: Thể loại + Định dạng Bìa mềm/Bìa cứng) và bỏ dòng `Kiểu bìa` trùng trong `<dl>`.
+- **File thay đổi**: thêm `shared/breadcrumb/breadcrumb.ts`, `breadcrumb.spec.ts`; cập nhật `book-detail.*`, `catalogue-page.*`, `flash-sale-page.*`, `wishlist-page.*`, `contact-page.*`.
+- **Kiểm tra**: chạy full `npm test -- --watch=false` và `npm run build` tại `code/frontend`, `git diff --check`, commit và push lên `dev`.
+
+### 2026-11-19 — HERO-HEIGHT-01 — Tăng chiều cao banner trang chủ thêm 10% (`30:11`) kèm trần `max-height`
+
+- **Thay đổi**: Đổi tỉ lệ khung banner từ `3/1` sang `30/11` (+10% chiều cao) kèm `max-height: min(680px, 72svh)` trên `hero-carousel.scss` (bỏ `aspect-ratio` trùng trên `.viewport` để giữ căn giữa khi chạm trần); đồng bộ `.preview` trong `hero-banner-editor.scss`, metadata `3200×1173` trong `HeroBannerService.java` và contract `docs/product/HERO_BANNERS.md`.
+- **Kiểm tra**: chạy test `hero-carousel` / `home-page` / `hero-banner-editor`, `npm run build`, `test-compile` backend và `git diff --check`.

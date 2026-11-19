@@ -22,6 +22,7 @@ import { effectiveBook } from '../../catalogue/catalogue-state';
 import { ContactDialog } from '../../catalogue/contact-dialog/contact-dialog';
 import { PageMetadata } from '../../../core/page-metadata';
 import { formatPrice } from '../../admin/books/book-copy';
+import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 
 interface LookupRequest {
   codes: string[];
@@ -30,11 +31,15 @@ interface LookupRequest {
 
 @Component({
   selector: 'app-wishlist-page',
-  imports: [RouterLink, ContactDialog],
+  imports: [RouterLink, ContactDialog, Breadcrumb],
   templateUrl: './wishlist-page.html',
   styleUrl: './wishlist-page.scss',
 })
 export class WishlistPage {
+  readonly breadcrumbs: readonly BreadcrumbItem[] = [
+    { label: 'Trang chủ', link: '/' },
+    { label: 'Danh sách quan tâm' },
+  ];
   @ViewChild(ContactDialog) dialog!: ContactDialog;
   readonly store = inject(WishlistStore);
   private readonly api = inject(PublicApi);

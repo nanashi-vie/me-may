@@ -243,9 +243,10 @@ export class SearchBar {
     event.preventDefault();
   }
 
-  coverSrc(book: BookSuggestion): string | null {
+  coverPicture(book: BookSuggestion) {
     if (!book.cover || this.failedCovers()[book.slug]) return null;
-    return publicPicture(book.cover).src ?? null;
+    const picture = publicPicture(book.cover);
+    return picture.src ? picture : null;
   }
 
   onCoverError(slug: string) {

@@ -324,7 +324,7 @@ describe('Detail refresh and public origin', () => {
     await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
     const dts = Array.from(el.querySelectorAll('dl dt')).map((dt) => dt.textContent?.trim());
-    expect(dts).toEqual(['Nhà xuất bản', 'Tác giả', 'Kiểu bìa', 'Độ tuổi', 'Trình độ đọc', 'Đọc tham khảo']);
+    expect(dts).toEqual(['Nhà xuất bản', 'Tác giả', 'Độ tuổi', 'Trình độ đọc', 'Đọc tham khảo']);
     expect(el.querySelector('dl')?.textContent).not.toContain('Trọng lượng sách');
     expect(el.querySelector('dl')?.textContent).not.toContain('212 g');
     expect(el.querySelector('dl')?.textContent).toContain(
@@ -364,5 +364,51 @@ describe('Detail refresh and public origin', () => {
     expect(dl).not.toBeNull();
     expect(desc).not.toBeNull();
     expect(dl!.compareDocumentPosition(desc!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('shows category breadcrumb and right-side category/binding metadata without duplicating binding in dl', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({
+              ...a,
+              title: 'Peppa Pig Goes Swimming',
+              categoryCode: 'PICTURE_BOOK',
+              binding: 'PAPERBACK',
+              publisher: 'Ladybird',
+            }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+
+    const crumbLinks = Array.from(el.querySelectorAll('app-breadcrumb a')).map((n) => ({
+      text: n.textContent?.trim(),
+      href: n.getAttribute('href'),
+    }));
+    expect(crumbLinks).toEqual([
+      { text: 'Trang chủ', href: '/' },
+      { text: 'Picture book', href: '/sach?category=PICTURE_BOOK' },
+    ]);
+    expect(el.querySelector('app-breadcrumb li.current span')?.textContent?.trim()).toBe('Peppa Pig Goes Swimming');
+
+    const metaGrid = el.querySelector('.detail-meta-grid')!;
+    expect(metaGrid.textContent).toContain('Mã sách:');
+    expect(metaGrid.textContent).toContain('Thể loại:');
+    expect(metaGrid.textContent).toContain('Picture book');
+    expect(metaGrid.textContent).toContain('Định dạng:');
+    expect(metaGrid.textContent).toContain('Bìa mềm');
+    expect(el.querySelector('dl')?.textContent).not.toContain('Kiểu bìa');
+
+    c.accept({ ...a, categoryCode: 'BOARD_BOOK', binding: null });
+    h.detectChanges();
+    expect(el.querySelector('.detail-meta-grid')?.textContent).not.toContain('Định dạng:');
   });
 });
