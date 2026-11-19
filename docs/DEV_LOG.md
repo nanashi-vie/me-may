@@ -5200,3 +5200,46 @@ Owner duyệt kế hoạch. Bắt đầu backend bill, hai tab, sau đó form kh
 
 Owner yêu cầu tab đang mở màu đỏ, tab kia màu tối. Sửa binding màu của hai nút.
 Kiểm tra: 8/8 test order-detail đạt, git diff --check đạt. Chưa deploy.
+
+### 2026-11-18 — KB-C01 — Kiểm kê tài liệu cho knowledge base
+
+- Owner chọn B, yêu cầu rà tất cả verification/spec/plan. Trên dev/6eadf95,
+  kiểm git ls-files, wc, các mốc S051, S056, S063, hotfix ảnh và ORDER-BILL-EXEC.
+  Lập ánh xạ 31 file ở specs/KNOWLEDGE_BASE.md, đăng ký README và PROGRESS.
+- Cần chuyển tiêu chí còn mở trước khi gỡ spec/plan cũ. Có mâu thuẫn tại
+  ma trận ảnh và ghi chú khách hàng trước quản lý đơn. Bằng chứng chỉ theo repo.
+- Chờ duyệt thiết kế trước khi chuyển file. Chưa chạy app/test hoặc kiểm live.
+- Kiểm kê độc lập đối chiếu cây Git 6eadf95: đủ 31 nguồn, gồm 9 verification,
+  3 spec, plan kho và master plan. Kiểm diff whitespace đạt, PROGRESS 400 dòng.
+
+### 2026-11-18 — KB-C02 — Thực thi phương án B
+
+Owner duyệt ánh xạ. Bắt đầu từ da5cb0d trên dev, chuyển nguồn chính,
+giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển.
+- Bàn giao context/product/runbooks/verification, thư mục specs dành cho việc
+  đang triển khai, adapter CLAUDE và hướng dẫn chạy local. Gộp hai spec sách
+  và checklist kho; chấm công là contract. Bỏ thiết kế KB sau chuyển đủ nguồn.
+- Review đối chiếu ba lần đổi nghiệp vụ (ảnh, khách/đơn, import), điều kiện
+  trả tồn khi nhận hàng và hai luồng backfill preview/migration provider.
+  V30 do owner xác nhận trước đây; kiểm Flyway lại trên đúng candidate.
+- Tại root, kiểm 39 Markdown: đủ 9 báo cáo, 308 link local (43 anchor),
+  mọi trang docs đến được từ chỉ mục, 4 đường tiếp quản đạt. DEV_LOG cũ
+  còn nguyên. PROGRESS còn 33 dòng, các file khác đúng trần 400 dòng.
+  Kiểm bash -n run-local.sh, diff whitespace, ignore .env/.agents/.local
+  và 15 asset public tracked. Chỉ đổi thông báo đường dẫn của script backend.
+- Bàn giao dev. Chưa chạy test app hoặc xác minh production trong đợt tài liệu.
+  Bước sau theo PROGRESS: owner chọn candidate để kiểm rollout và phục hồi.
+
+### 2026-11-19 — SEARCH-UI-01 — Thanh tìm kiếm pill, lịch sử và gợi ý
+
+- **Mục tiêu & phạm vi**: Điều chỉnh thanh search bar public sang dạng pill bo tròn, kính lúp màu đỏ chủ đạo (`var(--red)`), đường kẻ dọc mảnh ngăn cách trước icon tìm bằng hình ảnh bên phải (SVG do owner cung cấp, hiện là no-op), khung gợi ý mở rộng liền khối (desktop + mobile), lịch sử tìm kiếm trên `localStorage` và gợi ý từ khóa + sách khớp (debounce 300ms). Triển khai và push trực tiếp lên `dev`.
+- **File thay đổi**:
+  - Backend: `PublicCatalogueDtos.java`, `PublicCatalogueController.java`, `PublicCatalogueService.java` (thêm `GET /api/v1/books/suggest?q=...` trả tối đa 5 từ khóa + 6 sách công khai kèm ảnh bìa FRONT; mở rộng `list()` khớp thêm `author`), `PublicCatalogueApiTest.java` (thêm ca `suggestReturnsKeywordsAndPublishedBooksOnly`).
+  - Frontend: thêm `search-bar.ts/.html/.scss/.spec.ts`; cập nhật `public-layout.ts/.html/.scss`, `public-api.ts`, `public.models.ts`.
+- **Kiểm tra đã chạy**:
+  - `code/backend`: `bash code/backend/run-local.sh -B -ntp test-compile` đạt.
+  - `code/backend`: `bash code/backend/run-local.sh -B -ntp test -Dtest=PublicCatalogueApiTest` chưa chạy được do DB `me_may_test` local lệch checksum Flyway V21 (`-516753905` vs `-1154691950`) và thiếu bảng ở V22; không tự xóa/sửa DB test.
+  - `code/frontend`: `npm test -- --watch=false` đạt 69/69 file, 415/415 test (gồm 6 test mới `search-bar.spec.ts` và 4 test `public-layout.spec.ts`).
+  - `code/frontend`: `npm run build` đạt (browser + server SSR, 0 cảnh báo budget).
+  - `git diff --check` đạt.
+- **Bước tiếp theo**: Owner kiểm tra trực quan trên trình duyệt (light/dark + mobile) và chạy lại `PublicCatalogueApiTest` sau khi đồng bộ/reset DB `me_may_test` local; commit & push lên `dev` khi ưng ý.

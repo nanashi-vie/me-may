@@ -73,6 +73,11 @@ public class PublicCatalogueController {
         return catalogue.lookup(codes);
     }
 
+    @GetMapping("/books/suggest")
+    public SearchSuggestions suggest(@RequestParam(required = false) String q) {
+        return catalogue.suggest(q);
+    }
+
     @GetMapping("/collections")
     public List<Collection> collections() {
         return catalogue.collections();

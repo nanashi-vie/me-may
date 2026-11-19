@@ -1,0 +1,400 @@
+# Catalogue quản trị
+
+Quy tắc dữ liệu tại [DATA](../context/DATA.md), UI tại [DESIGN](DESIGN.md), ảnh tại [IMAGES](IMAGES.md).
+
+## 1. Phạm vi
+
+OWNER tạo/sửa/ẩn/hiện sách, tồn và collection; STAFF chỉ đọc quản trị. Nhập thủ công
+upload vào phiên tạm trước rồi final tạoARCHIVED/PUBLISHED nguyên tử; import tạoARCHIVED có
+receipt theo [BOOK_IMPORT](BOOK_IMPORT.md). Quản lý đơn nội bộ theo [ORDERS](ORDERS.md).
+Mã MM là một mục sách với tồn gộp, dùng chung ảnh và khoảng giá.
+Từ06/11 bỏ tình trạng public, ghi chú nội bộ optional; DATA giữ công thức giá/kg. Không lưu hoặc import dữ liệu khách/ngày bán.
+ImportV4/8cột tạo sáchẨn, don_gia_kg optional: có thì tính/lưu giá; trống vẫn null.
+V3/7cột tiếp tục không cần giá; editor bổ sung/sửa giá khi thêm ảnh, publish kiểm
+đủ cặp giá hợp lệ/ảnh. V1–V3 giữ giá/receipt cũ; không migration hỗ trợ unit/null giá.
+
+## 2. Kiến trúc và giao dịch
+
+- Kế thừa session/CSRF/OWNER/STAFF của M1. Angular dùng standalone, Reactive Forms và HttpClient; không thêm state framework/UI kit.
+- Backend giữ modular monolith: catalogue điều phối aggregate, listing quản lý xuất bản, taxonomy cung cấp nhãn/collection, media quản lý provider, audit lưu lịch sử.
+- Controller chỉ bind/validate DTO; service kiểm quyền và điều phối transaction; Spring JDBC truy cập PostgreSQL/Flyway hiện có.
+- BookCopy là gốc aggregate: mọi thay đổi nội dung, Listing, age/collection mapping, ảnh hoặc trạng thái đều phải kiểm và tăng version của BookCopy.
+- Một transaction DB gồm thay đổi dữ liệu và AuditEvent; lỗi audit thì rollback dữ liệu. Không giữ transaction/row lock trong lúc gọi Cloudinary.
+- Listing không có version độc lập trong M2 để tránh hai cơ chế chống ghi đè. Đây là cụ thể hóa mô hình version minh họa trong master.
+- API aggregate thay ví dụ tạo BookCopy/Listing hai bước; auth hiện hành không đổi.
+
+## 3. Mã cuốn, định danh và trạng thái
+
+- `book_code_seq` PostgreSQL tăng từ 1, NO CYCLE; service lấy nextval, định dạng `MM-` + tối thiểu sáu chữ số (MM-000001).
+- Sau 999999 phải thành MM-1000000, không cắt số. Không dùng COUNT/MAX+1, không reset theo năm hoặc tái sử dụng số rollback.
+- Sequence có thể khuyết và các request đồng thời có thể commit khác thứ tự cấp số; không hứa đánh số liên tục theo thời điểm commit.
+- `book_code` do server cấp, unique, bất biến; client gửi mã khi create/update bị từ chối. ID nội bộ khác mã nghiệp vụ.
+- Slug sinh cùng lúc: mã chuyển lowercase, ví dụ `mm-000001`; unique, bất biến dù tên thay đổi. Đường dẫn public `/sach/mm-000001`.
+- Create final tạo BookCopy + Listing theo mục tiêu + media ACTIVE cùng transaction, availability dẫn xuất từ tổng tồn; bắt buộc OWNER xác nhận.
+- Publication chỉ PUBLISHED↔ARCHIVED trực tiếp; hiện lại phải qua validation và xác nhận.
+- Không còn DRAFT; không có hard delete sách/listing trong M2. “Ẩn” không xóa mã, ảnh hoặc audit.
+- Availability chỉ AVAILABLE/SOLD, độc lập publication; SOLD không tự archive. OWNER sửa tổng tồn để chuyển AVAILABLE/SOLD.
+
+## 4. Schema và bất biến
+
+Các bảng/constraint hiện hành; FK không cascade-delete bằng chứng/audit. Timestamp dùng TIMESTAMPTZ UTC, UI hiển thị giờ Việt Nam.
+
+| Bảng | Dữ liệu và constraint chính |
+|---|---|
+| book_copy | bigint identity PK; book_code varchar(32) UNIQUE NOT NULL; title varchar(300) nullable; isbn varchar(32), publisher/author varchar(200), language varchar(50) nullable; binding varchar(16) nullable; condition_grade varchar(16) nullable; condition_note varchar(4000) nullable nội bộ; unit_price_per_kg_vnd bigint nullable CHECK 1..999999999999; weight_g bigint nullable CHECK 1..9007199254740991; availability NOT NULL CHECK; version bigint NOT NULL >=0; created_at/updated_at NOT NULL |
+| listing | bigint identity PK; book_copy_id UNIQUE NOT NULL FK; slug varchar(80) UNIQUE NOT NULL; price_min_vnd/price_max_vnd bigint nullable theo cặp CHECK 1..999999999999 và min≤max; description varchar(10000) nullable; category_id nullable FK; reading_level varchar(8),  reading_video_url varchar(2048) nullable; publication_status NOT NULL CHECK; published_at nullable; updated_at NOT NULL |
+| category | Chín bản ghi seed có code UNIQUE cố định, name, slug UNIQUE, sort_order; một FK category/listing, không có many-to-many category |
+| listing_age_group | listing_id FK + age_group CHECK, composite PK chống trùng |
+| collection | bigint identity PK; name varchar(100) NOT NULL; slug varchar(120) UNIQUE NOT NULL; sort_order integer >=0; active boolean; version bigint; timestamps |
+| listing_collection | listing_id FK + collection_id FK, composite PK |
+| book_media | UUID PK; book_copy_id FK, có thể rỗng khi chờ dọn; role CHECK FRONT/BACK/SPINE/INSIDE_1/INSIDE_2/INSIDE_3/INSIDE_4/INSIDE_5; state CHECK UPLOADING/ACTIVE/DELETE_PENDING; storage_public_id UNIQUE NOT NULL; cloud asset ID/format/bytes/dimensions nullable trước upload; alt varchar(300), source_ref varchar(500) nullable; created_at/updated_at |
+| book_variant | UUID PK; book_copy_id FK; name tối đa100; stock0..999999; thứ tự và unique tên trong sách; chi tiết ở ARCHITECTURE/DATA |
+| audit_event | bigint identity PK; actor_id FK admin_user; target_type/target_id; action; before/after JSONB chỉ chứa field cho phép; aggregate_version; created_at |
+
+- upload_session/temporary_media giữ intent/owner/expiry/state/fingerprint; V7/V9 và lifecycle ở mục7. Importreceipt V11 ở BOOK_IMPORT.
+- book_media có unique partial index `(book_copy_id, role)` khi state ACTIVE: tối đa một ảnh hoạt động mỗi vai trò.
+- Thêm index listing(publication_status, published_at), book_copy(availability), updated_at/id và FK/mapping phục vụ bảng quản trị.
+- Seed category codes: BOARD_BOOK, PICTURE_BOOK, ENCYCLOPEDIA_SCIENCE, HISTORY, CHAPTER, STORY_COLLECTION, READING_PRACTICE, COOKING_CRAFT_ACTIVITY, BIBLE; nhãn theo DATA.
+- age_group codes: AGE_0_3, AGE_4_6, AGE_7_9, AGE_10_PLUS; một cuốn chọn nhiều, có thể để trống nếu chưa xác định.
+- binding: PAPERBACK/HARDCOVER khi xuất bản cho mọi thể loại ngoài Board book. Sách ẩn có thể thiếu. Sách cũ đang đăng và thiếu kiểu bìa được lưu khi giữ nguyên thể loại.
+- Đổi category phải gửi binding tương thích ngay trong cùng request. Không lưu ALL/Tất cả; đó chỉ là thao tác bộ lọc M3.
+- condition_grade chỉ là legacy; form mới không nhập. condition_note là ghi chú riêng optional; public/preview không nhận nội dung.
+- reading_level: PRE_A1/A1/A2/B1/B2/C1/C2 hoặc null; không yêu cầu căn cứ khi gán mức.
+- Nhãn và thứ tự đọc theo DATA, Flyers/Key chung A2. Không suy ra level/tuổi từ nhau hoặc từ category.
+- Các enum cố định được seed/định nghĩa trong code, không làm trình chỉnh sửa danh sách mức/tuổi/thể loại trong M2.
+- Owner quản lý collection; collection inactive không được gán mới, mapping cũ giữ nguyên và hiện rõ là ngừng dùng. Không tự ẩn sách thành viên.
+- Không migrate bảng bán hàng trong ảnh; không chép tên khách hoặc coi giá bán lịch sử là giá tham khảo mới.
+
+## 5. Validation, xuất bản và preview
+
+- Chuỗi trim đầu/cuối; chuỗi trắng thành null; không tự sửa tên sách, dịch nội dung hoặc đoán ISBN/author/language.
+- Không có enum DRAFT; form mới và import tạo ARCHIVED. Mọi ARCHIVED kể cả từng đăng có thể thiếu title/category/weight/condition/ảnh và giá nếu có phải đủ cặp; binding/mức đọc phải hợp lệ.
+- Khoảng giá nếu có: hai số nguyên 1..999999999999 VND, min≤max; không nhận float, âm, zero hoặc chuỗi có dấu phân cách. UI hiển thị theo vi-VN.
+- Nội dung là plain text, Angular escape; không nhận HTML editor hoặc render nội dung bằng innerHTML.
+- Link video tùy chọn, absolute HTTPS, không userinfo/control characters; backend không fetch URL hoặc oEmbed (tránh SSRF).
+- Publish cần title, category, priceMinVnd/priceMaxVnd, weightG nguyên dương, binding cho mọi thể loại ngoài Board book và 2–8 media ACTIVE có FRONT/BACK, không trùng role.
+- Owner phải xác nhận đã đối chiếu bộ ảnh bắt buộc với mục sách (`confirmedActualCopy=true` trong request publish); ghi xác nhận vào audit.
+- Checkbox xác nhận không phải thuật toán chứng minh ảnh thật; pilot vẫn cần người đối chiếu vật thể. Không tự publish dữ liệu demo M0.
+- Publish không bắt tuổi, author/publisher, ISBN, description, level hoặc video. Có level không yêu cầu căn cứ nội bộ.
+- Lần publish đầu set published_at; hide/restore không xóa mốc này, publish lại không biến cuốn cũ thành mới đăng.
+- Mọi cập nhật lên listing PUBLISHED phải giữ điều kiện publish; không được xóa ảnh bắt buộc hoặc làm rỗng giá/title/category.
+- Muốn sửa thành dữ liệu chưa hoàn chỉnh: Owner ẩn để chỉnh lại; hiện lại kiểm đầy đủ. Thay một ảnh khi published dùng swap nguyên tử ở mục 8.
+- Preview là route admin được bảo vệ, có noindex/no-store; chiếu DTO public, không hiển thị source_ref/audit.
+- Preview thiếu dữ liệu được ghi rõ “Chưa đủ điều kiện xuất bản”; không biến thành URL public chia sẻ được.
+- Giá luôn có note về tình trạng; level chưa xác định ẩn trường; title ghép bỏ thành phần thiếu/dấu phân cách thừa theo DATA.
+
+## 6. Quyền và lỗi
+
+| Thao tác | STAFF | OWNER |
+|---|---|---|
+| List/detail/audit/preview quản trị | Có, mọi trạng thái | Có |
+| Tạo sách; sửa nội dung/ảnh/collection mapping mọi trạng thái | Không | Có |
+| Sửa PUBLISHED hoặc ARCHIVED, kể cả ảnh | Không | Có |
+| Đổi publication hoặc availability | Không | Có |
+| Tạo/sửa/ẩn collection | Không | Có |
+
+- Check role và trạng thái hiện tại trong service/transaction; frontend guard/nút ẩn không thay backend enforcement.
+- Dùng principal/session để lấy actor, không tin actor/version/timestamps do client giả làm metadata server.
+- Không có session trả 401, vượt quyền/CSRF trả 403; request trái quyền không sinh ảnh cloud hoặc audit thành công.
+- Entity không có trả 404 ở admin đã xác thực. Không có endpoint public cho sách ẩn hoặc ảnh tạm.
+- Tất cả JSON admin, preview và ảnh admin có `Cache-Control: no-store`; HttpClient không đưa admin data vào SSR transfer cache.
+- Lỗi nghiệp vụ JSON `{error, message, fieldErrors?, currentVersion?}`; fieldErrors là map đường dẫn field→mảng thông báo tiếng Việt.
+- 400: validation/enum/query; 409: version_conflict/transition_conflict/slug_conflict; 413: upload quá lớn; 415: format không hỗ trợ.
+- 502: provider trả lỗi; 503: media chưa cấu hình/không truy cập được; không trả secret, signed cloud URL hoặc stack trace.
+- Version thiếu/sai kiểu là 400, version cũ là 409; auth/CSRF M1 giữ `{error}` hiện có, không đổi contract login để ép cùng error envelope.
+
+## 7. API quản trị catalogue
+
+Các path dưới đây có prefix `/api/v1/admin`. ID bigint trả qua JSON dưới dạng chuỗi; version là số nguyên không âm. Không trả entity lưu trữ trực tiếp.
+
+| Method/path | Input / kết quả |
+|---|---|
+| GET /books | q?, publication?, availability?, unpublishedOnly?, page=0, size=20 (1..100); 200 Page<BookSummary> |
+| POST /books | {write:BookWrite,uploadSessionId,media:[{mediaId,role}],confirmedActualCopy,publication?}; 201 BookDetail; cùng payload retry trả cùng sách |
+| GET /books/{id} | 200 BookDetail hoặc 404 |
+| PUT /books/{id} | BookWrite + version + media? [{mediaId,role}]; publishAfterSave?, confirmedActualCopy?, mediaMetadata?; thay nội dung/ảnh/tags và xuất bản nguyên tử, 200 BookDetail mới |
+| PATCH /books/{id}/publication | {version, status, confirmedActualCopy?}; 200 BookDetail |
+| PATCH /books/{id}/availability | API legacy: OWNER409 stock_managed_availability, STAFF403; cập nhật variants qua PUT |
+| GET /books/{id}/preview | 200 PreviewBook (chỉ field public) |
+| POST /books/{id}/media/{role} | multipart file, alt?, sourceRef?, version; 201 BookDetail; tạo mới hoặc thay slot |
+| PATCH /books/{id}/media/{role} | {version,alt,sourceRef}; sửa metadata ACTIVE theo quyền, 200 BookDetail |
+| DELETE /books/{id}/media/{role}?version=n | 200 BookDetail mới; PUBLISHED chỉ gỡ ảnh tùy chọn, giữ FRONT/BACK |
+| GET /books/{id}/media/{role}/content | Stream bytes của media ACTIVE, kiểm session; không redirect sang cloud |
+| GET /books/{id}/audit | page/size như list, 200 Page<AuditSummary>, mới nhất trước |
+| GET /taxonomy | category/ageGroups/bindings/readingLevels kèm code, label, sortOrder |
+| GET /collections | Danh sách collection active và inactive cho admin |
+| POST /collections | {name,slug,sortOrder,active}; Owner, 201 Collection |
+| PUT /collections/{id} | {version,name,sortOrder,active}; Owner, 200 Collection; slug bất biến |
+
+- BookWrite canonical legacy giữ shape để hash import/final retry không đổi; gồm title,isbn,publisher,author,language,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,categoryCode,ageGroups,readingLevel,readingVideoUrl,collectionIds,variants.
+- Field BookWrite nullable theo quy tắc sửa ARCHIVED; create/hiện lại kiểm đầy đủ, ageGroups/collectionIds là mảng không trùng (tối đa 4/100); PUT gửi đủ field, không chứa code/slug/publication/availability.
+- Field unknown/server-managed bị trả 400; không mass assignment. Tạo không nhận availability; publication optional chỉ nhận ARCHIVED/PUBLISHED.
+- BookDetail gồm id,bookCode,slug,version, các field BookWrite,publication,availability,publishedAt,createdAt,updatedAt và media[{id,role,alt,sourceRef,contentPath}],variants,totalStock.
+- BookSummary là id,bookCode,title,priceMinVnd,priceMaxVnd,publication,availability,version,updatedAt,frontContentPath?,totalStock,publishedAt; không có cloud URL hoặc dữ liệu nội bộ.
+- PreviewBook gồm bookCode,slug,title,publisher,author,ageGroups,categoryCode,binding,conditionGrade,conditionNote,weightG,priceMinVnd,priceMaxVnd,description,readingLevel,readingVideoUrl,availability,media,variants,totalStock; không có source_ref. Grade/note null, variants rỗng và totalStock0; preview không hiện tồn nội bộ.
+- Page<T> = {items,page,size,totalElements,totalPages}; sort list updated_at DESC,id DESC, audit created_at DESC,id DESC.
+- q trim, tối đa 200 ký tự; mã so khớp không phân biệt hoa/thường, tên tìm substring không phân biệt hoa/thường, escape wildcard và bind SQL parameters.
+- Không hứa tìm admin tiếng Việt không dấu; publicsearch ở ARCHITECTURE. Filter admin không tự thêm filter public.
+- Metadata taxonomy giữ thứ tự DATA. Collection slug do Owner nhập, lowercase ASCII [a-z0-9]+(-[a-z0-9]+)*, tối đa 120; duplicate trả 409.
+- Collection response gồm id,name,slug,sortOrder,active,version,createdAt,updatedAt; GET /collections sắp sortOrder ASC,id ASC. AuditSummary gồm id,actorId,action,before,after,aggregateVersion,createdAt.
+- Mọi mutation gửi CSRF token mới theo cơ chế M1, credentials và version hiện tại; GET không thay dữ liệu.
+- Public/wishlist có contract riêng tại ARCHITECTURE; import tại BOOK_IMPORT.
+
+### Payload nhập sách và field optional —06/11
+
+- HTTP mới nhận stock tổng, internalNote, unitPricePerKgVnd; admin detail trả
+  stock/totalStock/stockLimit và aliases legacy. Không trả field này public.
+- Adapter HTTP giữ presence riêng trước canonical BookWrite; thiếu note/grade/U
+  khi update giữ dữ liệu đã lưu, null explicit xóa field optional. Alias note
+  khác nội dung trả400. Stock null, mixed stock+variants hoặc vượt limit trả400.
+- Thiếu stock/variants khi update giữ tồn; create phải có một nguồn tồn.
+  Legacy variants vẫn nhận và giữ validation cũ; không tự delete/recreate ID.
+- Các optional field mới tham gia audit/no-op/final fingerprint; giữ serialization
+  canonical legacy và retry consumed session cũ. Server không tính lại giá cuối.
+- GET /books/title-duplicate?title=&excludeId= trả {duplicate:boolean}, admin
+  no-store, title≤300; exact trim/case-insensitive, gồm ẩn/hết, loại chính ID.
+  Chỉ cảnh báo, không unique constraint hoặc chặn create/update/publish.
+
+### Phiên upload ảnh
+
+- POST `/upload-sessions` tạo phiên OWNER24giờ; GET/DELETE `/{id}` đọc/hủy.
+- POST `/{id}/media`: multipart file/alt/sourceRef, replaceId? và requestKey?; cùng key+hash trả cùng READY, khác payload409. PATCH `/{id}/media/{mediaId}` sửa alt/sourceRef; GET `/{id}/media/{mediaId}` stream và DELETE cùng path có boundary owner/session.
+- Chưa có BookCopy/Listing/mã/audit CREATE trước final. Cleanup khóa session cùng final, ảnh UPLOADING có grace1giờ; ACTIVE không bị dọn.
+- Final khóa phiên, recheck OWNER/expiry, fingerprint normalizedpayload; cùng request trả cùng book, khác409. Audit lỗi rollback cả aggregate và giữ ảnh READY để retry.
+- PUT reorder nhận đủ activeID/role, expectedversion; đổi mapping/audit nguyên tử, không upload lại.
+- UI normalize trước upload: nguồn JPEG/PNG ≤10MB/25MP, cảnh báo>5MB; EXIF, không upscale, cạnh dài≤2560, alpha trắng, JPEG0,85. Chọn/thả file giữ clientID khi async; đổi vai trò bằng dropdown, không có nút lên/xuống.
+
+## 8. Vòng đời tối đa8ảnh
+
+Contract đầy đủ cho LOCAL/Drive và so sánh cloud ở [IMAGES](IMAGES.md).
+LOCAL nhận JPEG/PNG/WebP tĩnh nguyên bytes, xử lý bất đồng bộ; ảnh sách cũ
+còn provider CLOUDINARY giữ đường legacy dưới đây. Không áp giới hạn định
+dạng hoặc cách attach đồng bộ của Cloudinary cho LOCAL.
+
+### Nhánh Cloudinary legacy
+
+Chọn **upload qua backend**, tránh hai bước client tự attach URL. File nhỏ và tối đa tám ảnh/cuốn cho phép kiểm quyền/validation tại một boundary; direct signed upload chưa thuộc contract hiện hành.
+
+- Chỉ JPEG/PNG, tối đa 10 MiB/file và 25 megapixel; kiểm magic/decode/kích thước bằng ImageIO, không tin extension/content-type do trình duyệt gửi.
+- UI báo rõ định dạng; HEIC/WebP/PDF/SVG/video bị từ chối có hướng dẫn đổi JPEG/PNG. Không cài bộ chuyển HEIC trong M2.
+- Upload giới hạn 300 lần/10 phút/admin và tối đa tám upload provider đồng thời/instance, vượt trả 429 trước gọi cloud; limiter in-memory có dọn entry hết hạn cho bản local một instance. Rate limit login triển khai ở hardening, không coi cơ chế upload đã bảo vệ login.
+- Backend tạo public_id ngẫu nhiên trong namespace môi trường `memay/dev/<UUID>`; không dùng tên khách hoặc tên file làm key, không overwrite cloud asset cũ.
+- Upload Cloudinary với resource_type=image và delivery type=authenticated; eager tạo admin JPEG1280 và public JPEG/WebP320/640, giữ tỉ lệ, tự xoay theo EXIF và bỏ metadata vị trí.
+- Chỉ chỉnh hướng/kích thước/nén, không retouch che lỗi. Lưu Cloudinary asset ID/public_id và metadata response trong DB; không tin URL client gửi.
+- URL có chữ private không đủ bảo vệ mọi ảnh dẫn xuất; authenticated bảo vệ cả bản gốc và derived. Không đưa signed cloud URL tới browser hoặc log.
+- Admin content endpoint kiểm session/quyền đọc, lấy ACTIVE asset, backend ký/lấy preview từ Cloudinary rồi stream; Content-Type image/jpeg, nosniff, no-store, không redirect.
+- URL cloud chỉ dùng phía server; host/resource/path lấy từ config/DB đáng tin, không nhận remote file URL từ client. Không lưu API secret trong frontend.
+- Nếu alt rỗng, dùng nhãn vai trò + mã cuốn làm alt; sửa alt/sourceRef qua PATCH không cần tải lại ảnh, vẫn tăng version và audit. Không lấy tên file khách làm alt mặc định.
+
+Quy trình upload/thay slot:
+
+1. Transaction ngắn kiểm quyền/version, tạo book_media UPLOADING với public_id đã định trước; chưa đổi slot ACTIVE hoặc version aggregate.
+2. Đóng transaction, upload qua Cloudinary với timeout tổng tối đa 60 giây; provider error/timeout không thay ảnh cũ.
+3. Transaction mới kiểm lại quyền, trạng thái sách, version và media vẫn UPLOADING; cập nhật metadata, chuyển ảnh cũ sang DELETE_PENDING, ảnh mới ACTIVE, tăng aggregate version và ghi audit.
+4. Nếu bước 3 thất bại/xung đột, ảnh mới chuyển DELETE_PENDING; response không báo lưu ảnh thành công. Khi transaction rollback, job vẫn tìm được UPLOADING đã ghi ở bước 1.
+5. Worker trong cùng Spring app chạy mỗi 10 phút: UPLOADING quá 1 giờ→DELETE_PENDING; hủy từng asset bằng public_id/resource_type/type chính xác, invalidate=true.
+6. Chỉ xóa record cleanup khi provider xác nhận deleted/not found; lỗi giữ DELETE_PENDING, retry lượt sau, log operation ID và bộ đếm tồn đọng, không log file/secret.
+
+- Chuyển UPLOADING→DELETE_PENDING dùng update có điều kiện state; attach cũng kiểm state để cleanup không xóa ảnh vừa ACTIVE. Worker xử lý tối đa 100 record/lượt.
+- Stream/upload timeout phía provider phải có giới hạn, không dùng thread chờ vô hạn. UI tuần tự upload các slot, nhận version mới sau mỗi lần; tab khác có thể gây 409.
+- Xóa ảnh tùy chọn atomically đánh dấu DELETE_PENDING + tăng version + audit; published không được thiếu FRONT/BACK; gỡ ảnh bắt buộc trả409.
+- Hide/restore giữ ảnh authenticated, không xóa cloud asset; không hứa thu hồi ảnh đã tải về. Publicdelivery/no-store ở ARCHITECTURE.
+- Asset ACTIVE không bị cleanup; retry delete ảnh cũ không tác động ảnh mới vì public_id không tái sử dụng.
+- Publish không chuyển Cloudinary asset thành public. Adminstream không thay kiểm chứng publicdelivery.
+
+## 9. Optimistic locking và audit
+
+- Mỗi mutation có expected version; update BookCopy có điều kiện version hiện tại rồi tăng một lần trong transaction, cả khi chỉ đổi field Listing/media.
+- Hai request cùng version: tối đa một request thành công; request còn lại rollback toàn bộ và trả 409 currentVersion, không tự merge hoặc retry mutation.
+- Kiểm quyền theo trạng thái hiện tại và kiểm version trong cùng transaction; mọi ghi kiểm OWNER đang active tại transaction.
+- No-op trả snapshot hiện tại, không tăng version hoặc tạo audit; vẫn phải qua quyền/version/validation. Request publication cùng trạng thái không tạo mốc publish mới.
+- Audit ghi CREATE, UPDATE, PUBLICATION_CHANGED, MEDIA_ATTACHED/REPLACED/UPDATED/REMOVED; collection có CREATE/UPDATE riêng.
+- Before/after chỉ field nghiệp vụ thay đổi; media ghi ID/role thay vì signed URL, source_ref nội bộ không public. Actor/time/version lấy server; không audit cookie/password/token/file bytes.
+- Audit API chỉ đọc, không có sửa/xóa. Lỗi cloud upload hoặc request bị từ chối không sinh event thành công; dùng technical log không có secret để điều tra.
+
+## 10. Migration và vận hành
+
+- Flyway migrations hiện hành là nguồn schema duy nhất; ảnh dùng V24–V31 theo IMAGES, không sửa checksum migration đã chạy. Rollout/backup/restore/V10–V11 tại DEPLOYMENT.
+- Test dùng me_may_test với guard tên DB như M1; chỉ xóa fixture test, không truncate bảng/dev/database dùng chung của Docker.
+- Chỉ seed taxonomy/reference; không seed sách bán thật hoặc fixture SYNTHETIC dưới trạng thái published.
+- Thêm biến mẫu CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_NAMESPACE (memay/dev, memay/test hoặc memay/online-test) vào .env.example bằng giá trị mẫu; credential thật chỉ trong .env ignored, không gửi qua chat/log.
+- Thiếu config media vẫn chạy auth/đọc sách; upload/đọc ảnh trả 503 có hướng dẫn. Publish vẫn phải có2–8 ảnh ACTIVE gồmFRONT/BACK đã upload/xác minh, không dùng ảnh giả hoặc local-only URL để vượt gate.
+- Cloudinary SDK qua backend, version khóa ở pom.xml; frontend không có providersecret hoặc SDKcloud.
+- Unit/integration tự động dùng media gateway giả có lỗi chủ động; live Cloudinary dùng namespace riêng/test image, cleanup kiểm chứng trước khi dùng ảnh pilot.
+- Backup/restore DB local trước khi thử migration trên dữ liệu pilot; ghi cách khôi phục và bảo toàn sequence/code/media references. Không tự làm migration down hoặc reset code.
+- Nếu DB restore không có đủ lịch sử số đã cấp, đối chiếu high-water mark và mã trên nhãn trước mở lại ghi; không reset sequence từ MAX của tập sách còn lại một cách mù quáng.
+- Media cleanup là job trong app, không thêm broker/Redis/outbox framework. Bản local một instance; retry an toàn theo key asset, không hứa vận hành nhiều instance khi chưa thử.
+
+
+## 11. Hành vi cần bảo toàn khi tối ưu UI
+
+- Luồng tạo ảnh trên cùng form→metadata/variants→xác nhận→final; không sinh mã trước
+  final thủ công. File/form ở memorytab, không hứa khôi phục sau reload/đóngtab.
+- Giữ đúng clientID/serverID/role khi async; thêm nhiều đợt không quá8ảnh, đợt vượt
+  slot bị từ chối cảđợt; retry từngảnh, không tự ghiđè ảnhREADY hoặc uploadlại khi đổi role.
+- Hai ảnhFRONT/BACK hoặc sáuảnh hợp lệ; thiếu/trùngrole/ID, foreign/expired/nonREADY
+  bị chặn. Sáchpublished không tạm thiếu ảnh; thay/gỡ/đổi role nguyên tử/version/audit.
+- 400giữform/focuslỗi;409giữform để đốichiếu, không tựmerge;401giữfile/form đểreauth.
+  Mất finalresponse giữ đúng payload/session để retrycùngID, không tạo sách mới.
+- Nếu session410, khôi phục bằng luồng phiênảnh mới hiện có, giữform và file còn giữ;
+  không tái dùng IDREADY hết hạn. Uploadmấtresponse phải đốichiếu snapshot mới trước
+  adoptversion; không đè cập nhật khác của tab2.
+- Dropdown vai trò dùng được bằng bànphím; chọn/thả1–6file và progress/lỗi/thay/gỡ;
+  viewerEscape/returnfocus, khungcontain đúng ngang/dọc/EXIF, không đổi ảnh che lỗi.
+- Publicẩn/temp404, STAFFwrite403/anonymous401/CSRF403; auditrollback nguyên tử;
+  stock0→SOLD, hide/restore giữpublishedAt; wishlist/copy/FlashSale không dùng giá cũ.
+- Quyền/version/validation nằm backend; không nới để làm UI nhanh hoặc ít bước hơn.
+
+Bằng chứng: [VERIFICATION](../verification/VERIFICATION.md), [nhập sách/biến thể](../verification/BOOK_ENTRY_VERIFICATION.md),
+[hiệu năng nhập/publish](../verification/BOOK_PUBLISH_PERFORMANCE_VERIFICATION.md),
+[import](../verification/BOOK_IMPORT_VERIFICATION.md). Lịch sử task/RED→GREEN ở DEV_LOG/Git;
+không đọc checkbox cũ như backlog mới.
+
+## 12. Lưu,8ảnh và đặc điểm sách —06/11/2026
+
+Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến trúc/bán hàng/import.
+
+### Contract ghi và validation
+
+- POST /books nhận publication ở ngoài write; bỏ field giữ mặc định PUBLISHED cũ.
+  ARCHIVED cho thiếu giá/trọng lượng/thể loại/ảnh, nhưng cần tên hoặc ít nhất1ảnh.
+  Giá trị có nhập vẫn hợp lệ; stock/legacyvariants, kiểu bìa áp dụng theo mục 5.
+- PUT /books/{id} nhận publishAfterSave:boolean (mặc địnhfalse),
+  confirmedActualCopy:boolean (mặc địnhfalse); chỉ OWNER, optimistic version hiện tại.
+  Content/mapping ảnh/metadata/tags/stock/publication/audit cùng transaction; lỗi rollback.
+  mediaMetadata:[{mediaId,alt,sourceRef}] tối đa8, ID ACTIVE thuộc sách, không trùng;
+  alt≤300/sourceRef≤500, null/blank xóa. Không flush metadata persisted bằng request riêng.
+- Mọi ARCHIVED, kể cả từng xuất bản, có thể lưu thiếu trọng lượng. Không nới PUBLISHED
+  hoặc importXLSX; publish luôn kiểm title/category/weight/cặpgiá/binding và FRONT/BACK.
+- Create/ARCHIVED→PUBLISHED cần confirmedActualCopy=true; PUBLISHED lưu thẳng bản public,
+  không versioned draft/approval. PATCH /publication giữ để đổi trạng thái độc lập.
+- publishedAt null khi chưa từng đăng; set lần đầu, giữ khi ẩn và đăng lại.
+  Lưu ARCHIVED không tự publish; PUBLISHED không bị archive bởi save-only.
+- Dùng upload session kể cả0ảnh; final consume/hash idempotent và cleanup nguyên tử.
+  Legacy request giữ canonical/hash cũ; publication explicit và featureCodes explicit
+  tham gia hash mới (giữ thứ tự tags). Retry cùngpayload trả cùngbook, khác409.
+- GET /admin/upload-sessions/{id} có thể trả CONSUMED + bookId cho đúngOWNER,
+  không trả storage identifiers; OPEN/expired/cancelled vẫn theo boundary cũ.
+  Client kiểm session/book trước retry; PUT không rõ kết quả khóa ghi, GET đối chiếu
+  nội dung/ảnh/tag/publication; khác dữ liệu giữ edits và yêu cầu đối chiếu.
+
+### Roles, upload và bảo mật
+
+- Tám role theo thứ tự FRONT/BACK/SPINE/INSIDE_1..INSIDE_5, mỗi role tối đa một ACTIVE.
+- Phiên upload tối đa tám ảnh; hỗ trợ một ảnh thay thế tạm khi đủ tám vị trí.
+  Giữ requestKey, fingerprint, cleanup và hạn phiên 24 giờ.
+- Detail và preview lấy tất cả ảnh ACTIVE. Public delivery kiểm trạng thái xuất bản
+  và ảnh hiện hành. Gallery không trả storage ID, sourceRef hoặc ghi chú nội bộ.
+- V24 giữ ID và storage reference khi đổi hai role cũ sang INSIDE_4/INSIDE_5.
+  Alias request cũ giữ tương thích và không xuất hiện trong DTO mới.
+
+### Feature catalogue và thứ tự
+
+- V15 thêm book_feature(codePK,label,active,sort_order), listing_feature(listing_idFK,
+  feature_codeFK,position1–3); unique(listing_id,feature_code)/(listing_id,position).
+- Seed SOUND=Âm thanh, FLAP=Lật mở, SLIDE=Kéo đẩy, POP_UP=Pop-up,
+  V17 đổi TOUCH thành Sờ chạm/Đục lỗ, thêm SEARCH=Tìm kiếm và
+  OTHER_INTERACTION=Tương tác khác. SPIN=Xoay chuyển chỉ giữ trên sách đã gắn.
+- HTTP write.featureCodes trên create, featureCodes trên PUT:0–3code hợp lệ,
+  không trùng/free text, giữ thứ tự; bỏ fieldPUT giữ tags, []xóa. Existing inactive
+  tag có thể giữ/gỡ; không gán mới inactive. Taxonomy.features chỉ catalogue active.
+- Admin detail/preview/publicBook trả features:[{code,label}] theo position;
+  canonical BookWrite/import receiptsV1–V4 giữ bytecompat, features nằm HTTP extras.
+- Public projection dùng JSON aggregation trong query catalogue, không thêm JDBC
+  query mỗi book. Bao phủ list/detail/home/related/collection/lookup/flashsale.
+- Tag không thay category/binding/grade/flashsale; không filter/search/AI tự gán.
+  UI và tiêu chí accessibility ở DESIGN; migration/rollout ở BOOK_ENTRY_ROLLOUT.
+
+## 13. Kệ sách Trang chủ 10 cuốn & Cấu hình sách nổi bật (`V16`) — 07/11/2026
+
+- `GET /api/v1/home`: mỗi kệ trả tối đa **10 cuốn**. Hệ thống lấy các sách đã ghim trong `home_featured_item` theo `position ASC` đang thỏa `PUBLISHED` + `AVAILABLE` và đúng phạm vi thể loại/bộ sưu tập của kệ trước; nếu chưa đủ 10 cuốn thì tự động lấy bù sách mới nhất (`preferAvailable = true`, không trùng lặp) cho đủ tối đa 10 cuốn.
+- `GET /api/v1/admin/home-featured`: trả `version` và danh sách các kệ trên Home kèm các cuốn đang ghim và cờ `activeOnHome`.
+- `GET /api/v1/admin/home-featured/candidates?shelfKey=...&q=...`: gợi ý tối đa 20 sách `PUBLISHED` + `AVAILABLE` thuộc phạm vi kệ khớp từ khóa `q` (mã sách, tên sách, NXB).
+- `PUT /api/v1/admin/home-featured`: chỉ `OWNER`, kiểm tra `version` (409 nếu lệch), tối đa 10 mã sách/kệ, không trùng mã trong cùng kệ, đúng phạm vi thể loại/bộ sưu tập; ghi audit `HOME_FEATURED` và kích hoạt `PublicCacheInvalidation`.
+
+## Thùng rác sách
+
+- OWNER chuyển vào Thùng rác và khôi phục tại `/admin/sach`. API
+  `GET /api/v1/admin/books/trash` phân trang. `PATCH /api/v1/admin/books/{id}/trash`
+  nhận `{version, trashed}`. Cập nhật version, audit và cache cùng luồng ghi.
+- Xóa mềm chuyển listing sang Ẩn và loại khỏi danh sách thường. Khôi phục
+  trước hạn đưa về Ẩn, giữ ngày xuất bản đầu tiên, ghim và Flash Sale.
+- Hạn là bảy ngày kể từ lúc xóa. Job mặc định chạy mỗi mười phút, khóa dòng
+  và dọn theo lô. Ảnh giữ trạng thái dọn để có thể thử lại khi Cloudinary lỗi.
+  Audit và receipt giữ dấu vết lịch sử. Tên sách được dùng lại sau khi dọn.
+
+- OWNER có thể chọn từng sách hoặc toàn bộ trang hiện tại để chuyển vào
+  Thùng rác. Trong Thùng rác, **Dọn** áp dụng cho sách đã chọn. **Dọn tất
+  cả** tải danh sách mọi trang qua `GET /api/v1/admin/books/trash/selection`.
+  Hộp thoại xác nhận số cuốn, phạm vi và xóa ảnh vĩnh viễn, kể cả trước hạn.
+- `POST /api/v1/admin/books/trash/bulk` nhận `{items: [{id, version}], permanent}`.
+  Ghi theo lô trong một giao dịch. Dọn vĩnh viễn chỉ nhận sách còn trong
+  Thùng rác với đúng version. Sách vào Thùng rác sau khi mở hộp thoại
+  không thuộc lần dọn đó. DB xóa sách khi xác nhận thành công và tác vụ
+  ảnh thử lại Cloudinary nếu nhà cung cấp chưa xác nhận đã xóa.
+
+## Tải ảnh sách từ trang quản trị
+
+- OWNER chọn tối đa 20 cuốn trên trang hiện tại ở `/admin/sach`, rồi bấm
+  **Tải ảnh**. Một cuốn nhận `<mã sách>.zip`, nhiều cuốn nhận
+  `me-may-anh-sach.zip`. Ảnh trong ZIP có đường dẫn `<mã sách>/<vai trò>.jpg`.
+- `GET /api/v1/admin/books/photo-download?ids=1&ids=2` lấy JPEG 1280 px
+  của tất cả ảnh ACTIVE, gồm ảnh bổ sung đang ẩn. Sách Ẩn được tải, sách
+  trong Thùng rác bị từ chối. ZIP chỉ trả sau khi tạo xong, có `no-store`.
+- Giới hạn 32 MiB dữ liệu ảnh và một lượt tạo ZIP đồng thời mỗi instance.
+  Sách thiếu ảnh được ghi trong `X-Missing-Book-Codes` để UI báo mã sách.
+  Nếu cả lượt thiếu ảnh, vượt giới hạn hoặc đọc ảnh lỗi, UI hiện thông báo.
+
+## Nơi lưu trữ sách
+
+- Form nhập/sửa có trường tùy chọn **Nơi lưu trữ**. Mỗi mã có một thùng.
+  OWNER nhập số dương qua **Thêm thùng**. Hệ thống dùng nhãn `Thùng N`, chọn
+  ngay thùng vừa tạo, giữ thùng nếu hủy form và không cho trùng số.
+- OWNER và STAFF xem cột và lọc ở `/admin/sach`. Bộ lọc dùng URL, phối hợp các
+  bộ lọc khác và áp dụng trước phân trang. Vị trí trống là **Chưa phân thùng**.
+- `GET/POST /api/v1/admin/books/storage-boxes` đọc danh mục theo thứ tự số
+  và tạo số mới. POST nhận `{storageBoxNumber}`, chỉ OWNER, trùng trả 409.
+- Admin list/detail trả `storageBoxNumber`. List nhận tham số cùng tên, bỏ qua
+  để lấy tất cả, 0 để lấy sách chưa phân thùng, số dương để lọc đúng thùng.
+- Create nhận trường trong `write`, PUT nhận ở cấp ngoài. PUT thiếu trường
+  giữ vị trí hiện có, null xóa vị trí. Vị trí khác null tham gia fingerprint
+  tạo sách, giữ khả năng retry payload cũ. Lưu theo version/audit của sách.
+- Migration V20 thêm danh mục và FK tùy chọn trên `book_copy`. Sách cũ và sách
+  mới import chưa phân thùng. Vị trí và danh mục chỉ xuất hiện trong quản trị.
+
+- Khi tạo trùng đồng thời hoặc sai số nguyên dương PostgreSQL, giữ form và lựa
+  chọn hiện tại. Nhiều bản cùng mã do chủ gom về một thùng. Đổi vị trí giữ tồn
+  và trạng thái xuất bản. Chưa hỗ trợ đổi số/xóa thùng hoặc chuyển hàng loạt.
+- S056-C02 đã kiểm V20 local. Smoke tạo–chọn–lưu–mở lại–lọc trên candidate,
+  gồm Thùng 2 đứng trước Thùng 10, sách chưa phân thùng, stale version và
+  quyền đọc/lọc của STAFF. Xem [smoke V20](../runbooks/ROLLOUT_CHECKS.md#nơi-lưu-trữ-v20).
+
+## Rà sách thiếu thông tin và quay về danh sách
+
+Ở danh sách và hàng chờ, bộ lọc, số đếm và lý do thiếu dùng cùng điều kiện
+trước phân trang. Sách đã bán, đang công khai, ẩn hoặc chưa từng đăng đều
+có thể vào nhóm Thiếu thông tin. Thùng rác nằm ngoài cả hai hàng chờ.
+Trong bảng Bộ lọc, thay đổi chỉ có hiệu lực khi bấm Áp dụng. Nhóm Xuất bản
+phân biệt tất cả, công khai, ẩn từng đăng và chưa xuất bản.
+- Xét tên, thể loại, kiểu bìa khi áp dụng, NXB, tác giả, ngôn ngữ, hai đầu
+  khoảng giá, gram, đơn giá/kg, mô tả, tuổi, mức đọc, video, đặc điểm, FRONT/BACK
+  đang gắn và có hiệu lực. Null, chuỗi trắng, danh sách rỗng, Chưa xác định
+  được tính là thiếu. ISBN, ghi chú nội bộ, bộ sưu tập, trường hệ thống,
+  tình trạng legacy và metadata/ảnh tùy chọn nằm ngoài bộ rà. Tồn 0 hợp lệ.
+- Trường tùy chọn thiếu vẫn có thể xuất bản. Khi đổi sang thể loại cần kiểu
+  bìa hoặc xóa kiểu bìa của sách công khai, phải chọn Paperback/Hardcover.
+  Áp dụng cùng quy tắc cho bộ lọc khách và [import](BOOK_IMPORT.md).
+- Hàng chờ giữ tìm tên/mã, phân trang và lý do thiếu. Một cuốn có thể nằm
+  cả hai nhóm. Nhóm Chưa xuất bản dùng Xuất bản và mở cuốn tiếp theo;
+  nhóm Thiếu thông tin cho lưu rồi mở cuốn kế tiếp còn khớp.
+- Lưu và quay lại giữ từ khóa, bộ lọc, sắp xếp và ngữ cảnh gốc khi đổi cuốn
+  qua hàng chờ. Mở trực tiếp dùng danh sách mặc định. Lưu lỗi giữ nguyên form.
+  Khi lưu thành công, tìm trang của dòng vừa lưu, cuộn và làm nổi dòng. Nếu
+  dòng rời bộ lọc, về trang cũ hoặc trang cuối còn kết quả, phục hồi vị trí
+  và báo đã lưu. Smoke browser cần kiểm đủ các trường hợp trên [ở PROGRESS](../PROGRESS.md).
+
+## Banner trang chủ
+
+OWNER quản lý tối đa10banner tại `/admin/sach-noi-bat`, cấu hình/version
+riêng với ghim sách. Contract/recipe/backup/rollout và bằng chứng ở
+[HERO_BANNERS](HERO_BANNERS.md); khung3:1,5giây, mọi ảnh dẫn `/sach`.

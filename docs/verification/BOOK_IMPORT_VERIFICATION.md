@@ -1,0 +1,303 @@
+# Kiểm chứng import CSV/XLSX
+
+Báo cáo ghi nhận parser, API và trình duyệt trên dữ liệu QA riêng theo từng phiên bản.
+Format và quy tắc nhập lô đang áp dụng ở [BOOK_IMPORT](../product/BOOK_IMPORT.md).
+
+## ImportV4 — don_gia_kg optional06/11/2026
+
+- User yêu cầu bổ sung đơn giá optional vào format rút gọn; source `3d5894a`,
+  thực thi tuần tự trên dev. Không tạo file hướng dẫn/workbook giao riêng.
+- Nhận8cột gồm don_gia_kg; bỏ cột này vẫn nhận V3/7cột. Ô trống giữ null, có số
+  nguyên hợp lệ thì lưu đơn giá và tính hai giá bằng BigInteger đúng công thức TS.
+  V1–V3 BookWrite canonical/hash giữ byte-compatible, V4 hash gồm đơn giá riêng.
+
+| Kiểm tra | Lệnh/nơi chạy | Kết quả |
+|---|---|---|
+| Parser/pricing/legacy/template | root run-local với `-Dtest=BookImportUnitPriceTest,BookImportV3Test,BookImportV2Test,BookImportTemplateTest,BookLegacyFingerprintTest test` |35PASS; unit RED5headers, template RED2 rồi GREEN |
+| Tích hợp đơn giá | BookImportUnitPriceIntegrationTest qua HTTP trên me_may_test |3PASS; RED3failure422 rồi GREEN trong full verify |
+| UI import | frontend `npm test -- --include='**/book-import.spec.ts'` |18PASS; RED2preview/header rồi GREEN |
+| Backend toàn bộ | root `bash code/backend/run-local.sh -B -ntp clean verify` |219run/0failure/0error/3live-provider skip |
+| Frontend toàn bộ | code/frontend `npm test` |201PASS/39files |
+| SSR/Workers/proxy | code/frontend `npm run build`, `npm run build:workers`, `npm run check:workers:proxy` |PASS0warning, proxyPASS |
+
+- Kiểm80000×450g→36000/42000;81000×450g→37000/42000 theo base chưa làm tròn
+  của form. Đơn giá1/1g, maxunit/1g; blankCSV/XLSX, numericExcel/formula,
+  số0/âm/lẻ/dấu nhóm/exponent/ngoài range và computedoverflow đều kiểm đúng.
+- Hai đơn giá80000/81000 cùng1g cho cùng1000/1000 vẫn khácfingerprint;
+  đổi thứ tự cột/dòng/CSV-XLSX không đổi digest. Golden V2/V3 chụp trước sửa giữ
+  `5d40b9e7429576a3591a9f4cc194c6d728a7482334eb7305e9888be44a5cfcf6` và
+  `79c643c0ddc33676fc3a547582075c2012fc4261bd1d96b921bfbe9d9517cac2`.
+- API xác nhận unit80000 và giá36000/42000, dòng unit trống/null giá, sáchẨn/
+  khôngảnh; sửa unit81000/giá40000–48000/tồn4/note rồi retry giữ nguyên. Unit
+  khác nhau không bị mất qua sort/resolve; một dòng lỗi chặn cảfile/no receipt.
+- Reviewer độc lập `review_import_unit` trên2f8b89b..3d5894a:0Critical/0Important/
+  0Minor; không rerun tests/build. Docs cuối tác giả kiểm. Không chạy lại manual
+  browser/device choV4; DOM component tests và realHTTP integration là bằng chứng
+  mới, browserV3 bên dưới là bằng chứng phiên trước, không thay cho kiểmV4.
+- Chưa deploy/provider thật; không migration/dependency. Rollout backendV4
+  trước frontend; đổi7→8cột hoặc đổi đơn giá là lô mới, không cập nhật sách cũ.
+  WorkbookV2 gốc giữ nguyên SHA256 đã ghi ở phầnV3 bên dưới.
+
+## ImportV3/7cột và hoàn thiện giá khi thêm ảnh — 06/11/2026
+
+- User duyệt thiết kế/plan, thực thi tuần tự trên dev; không tạo file hướng dẫn
+  hoặc workbook giao riêng. Contract chuyển vào DATA/BOOK_IMPORT/CATALOGUE/DESIGN.
+-7cột tên/NXB/tác giả/thể loại/kiểu bìa/gram/mô tả; NXB/tác giả/mô tả optional.
+  V3 hai giá null/tồn1/Tiếng Anh/Ẩn; editor hiện có nhận đơn giá và tính giá.
+  V1/V2 parser/giá/canonical/digest/receipt giữ nguyên. Không migration/dependency.
+
+| Kiểm tra | Lệnh/nơi chạy | Kết quả |
+|---|---|---|
+| ParserV3 + V2/legacy | root run-local với `-Dtest=BookImportV3Test,BookImportV2Test,BookImportParserTest,BookLegacyFingerprintTest test` |21PASS;6caV3 RED do chưa nhận header rồi GREEN |
+| Transaction/API | root run-local với `-Dtest=BookImportV3IntegrationTest,BookImportV2IntegrationTest,BookImportTransactionTest,BookImportApiTest test` |22PASS; RED3ca thiếu giá400 rồi GREEN |
+| Template/roundtrip | root run-local với `-Dtest=BookImportTemplateTest,BookImportV2Test,BookImportV3Test test` |28PASS, CSV/XLSX7header/dropdown/wrap/roundtrip; không file mẫu riêng |
+| UI import/editor/list | frontend `npm test` với3include tương ứng |37PASS; RED2ca source-row/nhãn rồi GREEN; editor null-price đã hoạt động sẵn |
+| Backend toàn bộ | root `bash code/backend/run-local.sh -B -ntp clean verify` |210run/0failure/0error/3live-provider skip |
+| Frontend toàn bộ | code/frontend `npm test` |200PASS/39files |
+| SSR/Workers | code/frontend `npm run build`, `npm run build:workers` |PASS,0warning; native process lỗi134/139 trong sandbox, chạy ngoài sandbox đạt |
+| Proxy | code/frontend `npm run check:workers:proxy` |PASS POST/query/cookie/CSRF/multipart/server-time/no-store/context/backend-down |
+
+Parser kiểm optional trống/multiline, labels/code, reorder dòng/cột, duplicate
+rows không gộp, sparseXLSX row7, thiếu/trùng/lạ header,101dòng, formula/extra cell.
+DB integration dùng guard me_may_test; confirm không ảnh/null giá, thiếu giá dù
+đủ FRONT/BACK publish400/public404; thêm giá publish200, rollback sách cuối,
+stale category/STAFF403; receipt1/2/3 và retry sau edit giữ giá/tồn/note/version.
+
+Browser Chrome dùng API8089 + NodeSSR4011, schema import_v3_browser_qa trên
+me_may_test, FakeMediaGateway/in-memory assets và OWNER/STAFF giả. Không gọi
+Cloudinary thật hoặc dùng sách/ảnh bán thật. Tạo schema mới, ảnhPNG640×800 giả.
+
+- OWNER import CSV7cột → preview Dòng2/Chưa nhập giá/tồn1 → receipt MM-000001.
+  Editor giữ NXB/tác giả/mô tả/trọng lượng450, hai giá trống khi load và sau upload.
+- Upload FRONT/BACK xong vẫn publish400 khi thiếu giá. Nhập80000/kg cho
+ 36000/42000; sửa giá đến44000, lưu200. SáchẨn public404, sau publish200
+  public nhận36000/44000 và mô tả đúng. Screenshot ignored
+  `output/playwright/import-v3-published.png`; không là ảnh sản phẩm thật.
+- Chọn lại CSV sau edit/publish: nhận cùng MM-000001, giữ2ảnh, đơn giá80000
+  và giá36000/44000, không tạo thêm sách. STAFF bị route guard chuyển về
+  /admin/sach, không có link import; options API403. Probe đầu chờ thông báo
+  trong trang import bị timeout vì đã redirect đúng, sửa kỳ vọng probe, không sửa app.
+- Browser QA ban đầu mở nhầm /admin/login nên404; dùng /admin/dang-nhap đúng.
+  Console có404 đó và400 publish chủ động thử, không coi là lỗi mới của feature.
+
+Browser đã đóng, schema QA đã xóa và2cổng4011/8089 đã đóng, JDBC/socketcheckPASS.
+
+Review độc lập toàn source b393763..e21d644:0Critical/0Important/0Minor;
+reviewer kiểm5Review Focus, không rerun suite hoặc sửa checkout. Docs/browser
+cuối do tác giả kiểm, không gọi đó là review độc lập. Live deploy/provider và
+gate release chưa kiểm; rollout backendV3 trước frontend. Rollback backend về
+V2 sẽ không nhận file7cột, dữ liệuẨn/null giá vẫn giữ được trong schema hiện có.
+Workbook gốcV2 giữ SHA256 a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd.
+
+## Đối chiếu form mới và workbook user — 06/11/2026
+
+Audit trên dev `892f0e9`, không thay app hoặc contract. Mục tiêu user: giảm thời
+gian nhập metadata vì ảnh vẫn thêm từng cuốn. File `input/me-may-sach-v2.xlsx`
+chỉ có sheet Sach, A1:P1/16 header, chưa có dòng sách hoặc công thức.
+
+Bảng ghi kết quả đối chiếu ngày 06/11. Từ 07/11, lúc xem trước và xác nhận,
+backend chặn tên trùng trong lô mới và trùng với sách hiện có. Xem [quy tắc nhập lô](../product/BOOK_IMPORT.md#4-nguyên-tử-thử-lại-và-dữ-liệu-đã-import).
+
+| Nội dung | Form tại ngày 06/11 | Import V2/file được cung cấp |
+|---|---|---|
+| Giá | Đơn giá/kg optional × gram; +15%, làm tròn lên1.000đ; sửa tay | Chưa có đơn giá/kg; phải nhập hai giá, giữ nguyên giá file |
+| Tồn | Tổng tồn nhập/sửa được, không tự gộp theo tên | Mỗi dòng tồn1, trùng tên vẫn tạo sách riêng; chủ sửa sau |
+| Ghi chú | Ghi chú nội bộ optional | mo_ta_tinh_trang optional, map note riêng; header cũ vẫn bắt buộc |
+| Tình trạng | Đã bỏ khỏi form/public | tinh_trang vẫn bắt buộc header; giá trị để trống được |
+| Trùng tên | Cảnh báo không chặn | Chưa cảnh báo trùng tên trong lô hoặc với sách có sẵn |
+| Ngôn ngữ | Mặc định Tiếng Anh, sửa được | Mặc định Tiếng Anh, V2 không có cột đổi |
+| Độ tuổi | Chọn nhiều | Dropdown một mục; parser nhận nhiều mục ngăn bằng dấu chấm phẩy |
+| Thể loại |9mục, gồm Kinh Thánh | Dropdown file này8mục, thiếu Kinh Thánh; parser vẫn nhận tên đó |
+| Ảnh/xuất bản | Nhập cùng ảnh rồi xuất bản | Tạo sáchẨn, thêm ảnh từng sách rồi xuất bản |
+
+- Không dùng công thức Excel để thay tính giá của form: parser chặn formula,
+  kể cả cached result. Không thể tự thêm/đổi tên cột vì schema16header nghiêm ngặt.
+- Khác biệt giá/headers/duplicate là tương thích có chủ ý của lần triển khai
+  trước, chưa phải lỗi regression. Chưa duyệt format mới hoặc tự gộp tồn.
+- Kiểm từ root: `bash code/backend/run-local.sh -B -ntp -Dtest=BookImportParserTest,BookImportV2Test,BookLegacyFingerprintTest test`
+  PASS15test/0failure/0error/0skip. Không kết nối DB hoặc chạy import thật.
+- Probe Java riêng tại `.local/import-parity-audit/ImportParityAudit.java` chạy
+  parser/validator hiện hành với bytes gốc và bản sao POI trong bộ nhớ:12ca PASS.
+  Xác nhận header gốc nhận được nhưng file rỗng không import; condition trống,
+  multi-age, note, English/tồn1, hai dòng giống nhau, Kinh Thánh, giữ giá
+  36.000–41.400; chặn thêm đơn giá, đổi note header, bỏ header và công thức.
+- SHA256 trước/sau của file gốc không đổi:
+  `a6993dac2e6c424d41a3af3af4bb961b5ab6dd29d64a9476c0385046fb97f3dd`.
+- Chưa đo thời gian thao tác chủ tiệm hoặc upload ảnh, chưa test UI mới vì
+  không đổi UI. User chốt sau audit: import Excel tạm thời chưa cần nhập đơn giá;
+  code hiện vẫn nhận hai giá trực tiếp, khác biệt này đã được xác định so với form.
+  Kết quả audit không tự cấp quyền thay headers, cảnh báo hoặc triển khai format mới.
+- User làm rõ: khi thêm ảnh từng sách sẽ nhập đơn giá/kg để tính hai giá.
+  Hiện Excel vẫn bắt buộc hai giá trước import, nên có thao tác giá trùng bước.
+  Chưa chốt có cho phép trống hai giá trong Excel; chưa thay contract/validation.
+
+## Bằng chứng triển khai trước đây
+
+Ngày31/10–01/11/2026, code candidate dev7aa8679; kiểm local, không deploy/migrate online.
+[Contract](../product/BOOK_IMPORT.md), [schema file](../context/DATA.md#format-file-import--contract-duyệt31102026),
+[rolloutV11/gate](../runbooks/DEPLOYMENT.md#import-csvxlsx--v11). Không nghiệm thu toàn bộ MVP.
+
+## Kiểm tự động đã chạy
+
+| Kiểm tra | Lệnh/nơi chạy | Kết quả |
+|---|---|---|
+| Backend sau reviewfix | root: `bash code/backend/run-local.sh -B -ntp clean verify` |160run,0failure,0error,3live-provider skips |
+| Frontend sau reviewfix | code/frontend: `npm test` |165/165,37files |
+| Node SSR | code/frontend: `npm run build` |PASS |
+| Workers | code/frontend: `npm run build:workers` |PASS |
+| Proxy | code/frontend: `npm run check:workers:proxy` |PASS POST/query/cookie/CSRF/multipart/separate Set-Cookie/server-time/no-store/context/backend-down |
+| SSR checker | code/frontend: `node scripts/check-ssr.mjs` với origin4009 và QA config |PASS HTML/OG/private routes/4media variants/MIME/magic/no-store/2–6photos |
+
+Parser/validation: CSV quote/comma/multiline/BOM/ISBN0 đầu; reorder headers/rows,
+XLSX semantic parity, missing/duplicate/unknown columns, required blank/optional blank,
+nhóm lệch/biến thể trùng/tồn0, enums/số/collection inactive, limits và malformed workbook.
+Formula/date/boolean/error/macro/external links/ZIP inflate/shared-string budgets bị chặn;
+không evaluate/fetch URL. CSV các ô toàn rỗng được bỏ như Excel.
+
+API/domain: preview không ghi DB;1000issue cap; OWNER/STAFF/CSRF/no-store;
+413/409/422/429 và permitrelease; fingerprint/idempotency concurrent haiOWNER;
+retryreceipt không ghi đè sách sửa/tồn hoặc lỗi vì collection về sau inactive;
+import0ảnh ARCHIVED/publishedAtnull→thiếuBACK chặnpublish→đủảnh publish;
+public hidden/media404, timestamp đầu giữ khi ẩn/hiện, version409/STAFF403.
+
+Frontend: route import đứng trước:id, retainedFile, stale file/auth/response/destroy,
+exactretry pair, auxiliary errors không mở khóa commit, fileHTML chỉ plain text;
+realAuthService/HttpTestingController xác nhận loginBusy và supersededcallback.
+Đổi file giữa request và các race lifecycle được kiểm ở unit; không gọi đó là browserproof.
+
+## Browser QA thật — scratch riêng
+
+Docker PostgreSQL18.4 `me_may_import_qa`, copied candidate API8088/NodeSSR4009;
+account OWNER/STAFF giả, ảnhPNG640×800 giả; Cloudinary `memay/test` authenticated.
+Không dùng sách/ảnh bán thật hoặc dữ liệu khách.
+
+| Ca | Kết quả thực tế |
+|---|---|
+| Thiếu ngon_ngu |1issue, không cho xác nhận; chọn file đúng rồi kiểm lại được |
+| CSV100nhóm/500biến thể |Preview hợp lệ, confirm201 tạo100sách Ẩn |
+| CSV1sách/2biến thể |MM-000101, stock2+1=3; refresh/chọn lại trả cùng receipt |
+| XLSX mẫu website |Tải `me-may-sach.xlsx`, điền cùng dữ liệu CSV; preview trả cùng sách101 |
+| Mất phản hồi import |Fetch thật commit303 rồi giả lập lỗi mạng; nút retry trả200/cùngID303 |
+| Hết phiên/reauth |401→đăng nhập lại→kiểm mà không chọn lại file→cùng receipt303 |
+| Ảnh và xuất bản sách101 |Thêm2ảnh/save/publish; media404 trước,200 sau; ẩn/hiện giữ publishedAt |
+| Tồn/variants |Hai biến thể về0→SOLD, phục hồi1+2→tổng3 |
+| Admin preview |Thumbnail decode320×400, viewer640×800 theo nguồn640, Escape đóng |
+| Mobile |390×844 không overflow ngang |
+| Manual2/6ảnh |Sách304 có2ảnh,305 có6ảnh; PUBLISHED/stock1; mất phản hồi final6ảnh retry cùngID305 |
+| STAFF |Không linkimport, directroute redirectlist, directmultipartAPI403 |
+
+Ca lostresponse đầu dùng Playwright route.fetch khiến multipart mất bytes, backend422
+empty_file đúng; đổi giả lập tại fetchresponse sau realcommit. Lần XHR không phù hợp
+vì Angular dùng withFetch; không coi đó là sản phẩm fail. Nhiều lần thử quota429 đúng;
+restart riêngQA để tiếp tục, không đổi limit/source. Reauth thành công nhưng notice
+bị auth-epoch effect đổi sang “Phiên đăng nhập đã đổi…”; kiểm receipt/file xác nhận
+hành vi thay vì phụ thuộc đúng một câu notice. Một số selector QA dùng nhãn quá chặt
+đã sửa theo DOM; không thay productcode để chiều harness.
+Các lỗi401/ERR_FAILED từ fault injection là dự kiến; không tuyên bố console sạch.
+
+## Workload và giới hạn kết luận
+
+Một mẫu local100sách/500variants, không Cloudinary trong import:
+
+| Chỉ số | Giá trị |
+|---|---|
+| Chọnfile→preview |120ms |
+| Confirm request |1559,496ms |
+| Clickconfirm→receipt |1686ms |
+| Tổng thao tác |1835ms |
+| Backend request |1550,921ms |
+| SQL executions/connections |2106/3 |
+| JVM usedheap trước/sau snapshot |101366KiB→106226KiB; heapcommitted122880KiB |
+
+Heap là snapshot, không peak/RSS, không đại diện ngân sách Render. Startup API local
+3,268s là thời gian khởi động ứng dụng, không baseline cold Render/Neon.
+Không đủ mẫu median/p95, không kết luận nút thắt hoặc tốc độ trên targethost.
+
+Rollback fullsize: QA constraint chặn sách cuối của lô100/500; confirm500, trước/sau
+book_copy101/listing101/book_variant502/audit_event101/book_import_batch2/book_import_item101
+không đổi. Gỡ constraint scratch rồi retry201 tạo100sách; replay200 cùngreceipt.
+Preview57,51ms, rollback1365,03ms, retry737,85ms, replay11,69ms (mỗi ca một mẫu).
+Sequence bỏ số102–201 sau rollback đúng contract, không hứa mã liền nhau.
+
+## Review và cleanup
+
+Một fresh-context review toànbranch81f1c09..4cf13de:0Critical/2Important/0Minor.
+Một fixpass7aa8679, RED→GREEN cho CSVblankrows và login epoch/pendinglock/recovery;
+fullbackend/frontend/builds đều chạy saufix. Không rereview, không deferredminor.
+
+Đã ẩn3listing QA đangpublic, đóng browserbook-import, dừng ownAPI8088/SSR4009;
+destroy đúng10publicID `memay/test/<UUID>` từ scratch hiện tại, provider DELETED10/10.
+User yêu cầu dọn DB tạm các phiên trước; ownership đối chiếu DEV_LOG S010/S022/S023/
+M5/entry/performance và marker scratch. Đã DROP đúng7DB:
+
+- me_may_entry_qa
+- me_may_import_qa
+- me_may_m5_qa
+- me_may_m5_s022_restore
+- me_may_m5_s023_restore
+- me_may_performance_qa
+- me_may_restore_test
+
+Chỉ còn me_may_dev/me_may_test/postgres. Bản S023 có2kết nối DBeaver idle được đóng
+khi drop theo yêu cầu cleanup; không có request ứng dụng đang chạy trên DB đó.
+Không destroy media tham chiếu trong restoreDB vì chứa ảnh production; không xóa
+backupdump hoặc DB Neon. Bằng chứng restore lịch sử vẫn hợp lệ, DBscratch đã bỏ.
+SafeJSON/cleanupIDs/executionledger/rulings được giữ ignored `.local/book-import/`;
+không giữ file/tokens/ảnh/customerdata trong log ứng dụng hoặc commit.
+
+## Gate chưa chạy
+
+RenderQA/Neon warm/cold5vòng, peakheap/RSS/quota/timeouts/locks, V11 migrate/restore
+và browser online chưa chạy; cần user rollout QA cách ly theo DEPLOYMENT.
+Không mở lại test chốtMVP đã tạm gác, không tự merge main hoặc deploy.
+
+## ImportV2 và thể loại chung —01/11/2026
+
+Candidatecode9852a55..b0d23a8, triển khai local; user yêu cầu bắt đầu V2 và bổ sung
+hai thểloại trong cùng phiên. Không migrate/deployonline. Dùng PostgreSQLtest cóguard
+hiện có, không tạo DBscratch hoặc assetCloudinary mới. Workbookuser giữ nguyên
+SHA256d5568d738df71ab5727131b7b5c476c7ed8622dc30a403e481e473c964d5a590.
+Fixturetest là copy header-only/dropdowns hàng2 đã chỉnh, không là sách bán thật.
+
+| Kiểm đã chạy | Kết quả |
+|---|---|
+| Backend root `bash code/backend/run-local.sh -B -ntp clean verify` |178run,0failure,0error,3live-provider skips |
+| Frontend root `npm --prefix code/frontend test` |169/169,37files |
+| NodeSSR và Workersbuild |PASS |
+| `npm --prefix code/frontend run check:workers:proxy` |PASS workerd POST/query/cookie/CSRF/multipart/separateSetCookie/server-time/no-store/context/backend-down |
+| Browser Angular thật, API mô phỏng |XLSXinput/guide16field/defaults/source-rowpreview/receipt-editorlink/mobile390×844 khôngoverflow PASS |
+| V2 end-to-end domain với fakeprovider |ImportẨn→2ảnh→thêm biếnthể/tổng3→publish/media404trước200sau→receipt retry giữ edits PASS |
+
+RED→GREEN mới: V2header/template20→16; fingerprintversionconfirm409→201 và
+referencepreview schema1→2; taxonomy6→8/migrationgiữdata; URLfilterbỏcode mới→giữ;
+V2previewR001→số dòng thật; taxonomyageen-dash bị từchối→knownaliases.
+
+V1goldendigest7eeb28ad04e84becf333f10f1960783d696d9eb76fbe63417e340d3699f992fc
+không đổi, V1commit/replay vẫnschema1/cùngreceipt cùng vớiV2schema2.
+Hai dòngV2giống nhau tạo2sách/2variants mặcđịnh1, khônggộp; đổi header/roworder,
+CSV/XLSX hoặc label/code trongcùngschema trả cùngfingerprint. Replay sau sửa tồn9
+không overwrite; referenceerror/STAFF403/rollbacklỗi sáchcuối không ghi mộtphần.
+Workbookuser/aliasF1,8categorylabels,2bindinglabels,2grades,4ages/7levels,
+optionalblank/missingrequired/unknownlabels/dupealiases/extraXLSXdata/formula và
+100/101CSVrows được kiểm. Reader budgets và V1security regressions giữ PASS.
+
+V12: Tập đọc/READING_PRACTICE và Nấu ăn - thủ công - activity book/
+COOKING_CRAFT_ACTIVITY append sort6/7. TestV11→12 giữ6categorycũ và existingbook/listing,
+taxonomy public/admin đúngnhãn; manualsave/publish/publicfilter2code PASS.
+Không sửaV3, sáchcũ, IDs, userworkbook hoặc API quyền. Dropdownfilegốc vẫn6mục
+chủ đãthiếtlập; API/app nhận8thểloại, danh sáchExcel phải chỉnh trong file nếu cần.
+
+Một freshreview read-only:0Critical/0Important/1Minor, không rereview. Minor defer:
+fixtureV2 chưa trực tiếp bỏcellXMLoptional hoặc dùng dòng thưa/noncontiguous để
+kiểm errorrow. Reader đượcreviewđúng nhưng thiếu regression riêng cho input này;
+không ghi coverageđó làPASS. Thêmtest trước khi refactor indexing tiếp theo.
+Header-onlyV2 báoschema1 nhưng bị chặnemptyfile trước tạo; không ảnh hưởng đường
+import dữ liệu, để metadata polishing sau. Samebatchreturnsreceipt là chủđích,
+không dùng reimport để cộng tồn hoặc update sách.
+
+Browsermock chỉ chứng minh UI/fileinput/transition, không giả là browser→realAPI
+end-to-end. Luồng dữ liệu thật được kiểm qua APIintegration/PostgreSQL vàfakeprovider;
+không chạy lại realCloudinary/labLighthouse/publicSSRchecker trong phiên này vì
+không đổi publicdelivery/runtime. OnlineV12/V2 smoke và targetperf vẫn là gate.
+Browser/SSR4009 riêng đãdừng trước bàn giao; safeledger/results giữ ignored tại
+`.local/book-import-v2/`, owned planworkspace dọn sau khi Task4 hoàn tất.

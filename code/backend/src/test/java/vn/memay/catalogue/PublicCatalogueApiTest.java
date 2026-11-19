@@ -108,4 +108,34 @@ class PublicCatalogueApiTest extends CatalogueTestSupport {
   assertThat(tree(res).path("totalElements").asInt()).isEqualTo(1);
   assertThat(tree(res).path("items").get(0).path("bookCode").asString()).isEqualTo(b.bookCode());
  }
+
+ @Test void suggestReturnsKeywordsAndPublishedBooksOnly() throws Exception {
+  var prefix = published();
+  var contains = published();
+  var draft = ready();
+  jdbc.update("update book_copy set title='Peppa Pig Goes Swimming', publisher='Ladybird', author='Neville Astley' where id=?", Long.parseLong(prefix.id()));
+  jdbc.update("update book_copy set title='My First Peppa Book', publisher='Usborne' where id=?", Long.parseLong(contains.id()));
+  jdbc.update("update book_copy set title='Peppa Secret Draft' where id=?", Long.parseLong(draft.id()));
+
+  var empty = anon.send("GET", "/api/v1/books/suggest?q=", null, false);
+  assertThat(empty.statusCode()).isEqualTo(200);
+  assertThat(tree(empty).path("keywords").size()).isZero();
+  assertThat(tree(empty).path("books").size()).isZero();
+
+  var res = anon.send("GET", "/api/v1/books/suggest?q=peppa", null, false);
+  assertThat(res.statusCode()).isEqualTo(200);
+  var body = tree(res);
+  assertThat(body.path("books").size()).isEqualTo(2);
+  assertThat(body.path("books").get(0).path("bookCode").asString()).isEqualTo(prefix.bookCode());
+  assertThat(body.path("books").get(0).path("cover").path("role").asString()).isEqualTo("FRONT");
+  assertThat(body.path("keywords").get(0).asString()).isEqualTo("Peppa Pig Goes Swimming");
+  assertThat(res.body()).doesNotContain(draft.bookCode(), "Peppa Secret Draft");
+
+  var byAuthor = anon.send("GET", "/api/v1/books/suggest?q=Neville", null, false);
+  assertThat(byAuthor.statusCode()).isEqualTo(200);
+  assertThat(tree(byAuthor).path("books").size()).isEqualTo(1);
+  assertThat(tree(byAuthor).path("keywords").get(0).asString()).isEqualTo("Neville Astley");
+
+  assertThat(anon.send("GET", "/api/v1/books/suggest?q=" + "x".repeat(201), null, false).statusCode()).isEqualTo(400);
+ }
 }

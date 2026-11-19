@@ -124,17 +124,7 @@
     <img src="/favicon/web-app-manifest-192x192.png" alt="" width="72" height="72" />
     <span class="brand-name">Mẹ Mây<small>Sách ngoại văn cho bé</small></span>
   </a>
-  <form class="header-search" (ngSubmit)="search()" role="search">
-    <label class="sr-only" for="site-search">Tìm tên hoặc mã sách</label>
-    <input
-      id="site-search"
-      name="q"
-      [(ngModel)]="q"
-      placeholder="Bạn đang tìm…"
-      maxlength="200"
-    />
-    <button type="submit">Tìm sách</button>
-  </form>
+  <app-search-bar [initialQuery]="q()" />
   <div class="header-links">
     <a
       class="wishlist-link"

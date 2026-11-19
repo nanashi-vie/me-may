@@ -21,6 +21,13 @@ export interface PublicVariant {
   name: string | null;
   available: boolean;
 }
+export interface PublicBookMedia {
+  role: string;
+  alt: string | null;
+  contentPath: string;
+  cacheKey?: string;
+  imageVariants?: PublicImageVariant[];
+}
 export interface PublicBook {
   features?: { code: string; label: string }[];
   variants: PublicVariant[];
@@ -44,13 +51,23 @@ export interface PublicBook {
   readingLevel: ReadingLevel | null;
   readingVideoUrl: string | null;
   availability: Availability;
-  media: {
-    role: string;
-    alt: string | null;
-    contentPath: string;
-    cacheKey?: string;
-    imageVariants?: PublicImageVariant[];
-  }[];
+  media: PublicBookMedia[];
+}
+export interface BookSuggestion {
+  bookCode: string;
+  slug: string;
+  title: string;
+  publisher: string | null;
+  priceMinVnd: number | null;
+  priceMaxVnd: number | null;
+  salePriceVnd: number | null;
+  saleEndsAt: string | null;
+  availability: Availability;
+  cover: PublicBookMedia | null;
+}
+export interface SearchSuggestions {
+  keywords: string[];
+  books: BookSuggestion[];
 }
 export interface RelatedBooks {
   samePublisherBooks: PublicBook[];

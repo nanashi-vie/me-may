@@ -12,6 +12,7 @@ import {
   Page,
   PublicBook,
   RelatedBooks,
+  SearchSuggestions,
   Taxonomy,
 } from './public.models';
 export const PUBLIC_API_ORIGIN = new InjectionToken<string>('Public backend origin', {
@@ -117,6 +118,11 @@ export class PublicApi {
     let params = new HttpParams();
     for (const code of codes) params = params.append('code', code);
     return this.get<PublicBook[]>('/books/lookup', params);
+  }
+  suggest(q: string): Observable<SearchSuggestions> {
+    const trimmed = q.trim();
+    if (!trimmed) return of({ keywords: [], books: [] });
+    return this.get<SearchSuggestions>('/books/suggest', new HttpParams().set('q', trimmed));
   }
   home() {
     return this.get<HomeData>('/home', undefined, true);

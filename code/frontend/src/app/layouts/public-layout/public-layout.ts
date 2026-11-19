@@ -9,7 +9,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs';
 import { PublicApi } from '../../features/catalogue/public-api';
@@ -18,6 +17,7 @@ import { CategoryCode, Collection, Taxonomy } from '../../features/catalogue/pub
 import { WishlistStore } from '../../features/wishlist/wishlist-store';
 import { TaxonomyOption } from '../../features/admin/books/book.models';
 import { ThemeSwitch } from './theme-switch';
+import { SearchBar } from './search-bar';
 import { AuthService } from '../../core/auth/auth.service';
 
 export type UiLang = 'vi' | 'en-US';
@@ -36,7 +36,7 @@ const UI_LANGS: ReadonlyArray<UiLangOption> = [
 
 @Component({
   selector: 'app-public-layout',
-  imports: [RouterLink, RouterOutlet, FormsModule, ThemeSwitch],
+  imports: [RouterLink, RouterOutlet, ThemeSwitch, SearchBar],
   templateUrl: './public-layout.html',
   styleUrl: './public-layout.scss',
   host: {
@@ -51,7 +51,7 @@ export class PublicLayout {
   readonly isLoggedInAdmin = computed(() => !!this.auth.user());
   readonly adminLink = computed(() => (this.isLoggedInAdmin() ? '/admin' : '/admin/dang-nhap'));
   readonly dark = signal(false);
-  q = '';
+  readonly q = signal('');
   readonly collections = signal<Collection[]>([]);
   readonly taxonomy = signal<Taxonomy | null>(null);
   readonly categories = computed<TaxonomyOption<CategoryCode>[]>(() => {
@@ -151,7 +151,7 @@ export class PublicLayout {
     const segments = tree.root.children['primary']?.segments.map((s) => s.path) ?? [];
     this.currentPath.set('/' + segments.join('/'));
     this.currentCategory.set((tree.queryParams['category'] as string) || '');
-    this.q = (tree.queryParams['q'] as string) || '';
+    this.q.set((tree.queryParams['q'] as string) || '');
   }
 
   isActive(section: 'home' | 'books' | 'sale' | 'collection' | 'contact' | 'wishlist'): boolean {
@@ -233,11 +233,5 @@ export class PublicLayout {
 
   onSidebarBackdropClick(event: MouseEvent) {
     if (event.target === this.sidebarDialog()?.nativeElement) this.closeSidebar();
-  }
-
-  search() {
-    void this.router.navigate(['/sach'], {
-      queryParams: this.q.trim() ? { q: this.q.trim() } : {},
-    });
   }
 }
