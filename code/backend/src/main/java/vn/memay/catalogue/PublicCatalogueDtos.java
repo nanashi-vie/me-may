@@ -38,4 +38,12 @@ public final class PublicCatalogueDtos {
 
     public record RelatedBooks(List<Book> samePublisherBooks, List<Book> sameCategoryBooks) {
     }
+
+    public record BookSuggestion(String bookCode, String slug, String title, String publisher,
+            Long priceMinVnd, Long priceMaxVnd, Long salePriceVnd, Instant saleEndsAt,
+            String availability, Media cover) {
+    }
+
+    public record SearchSuggestions(List<String> keywords, List<BookSuggestion> books) {
+    }
 }

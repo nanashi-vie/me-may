@@ -1,0 +1,341 @@
+<div class="search-shell">
+  <form
+    class="search-card"
+    [class.open]="panelOpen()"
+    [class.focused]="focused()"
+    (submit)="onSubmit($event)"
+    role="search"
+  >
+    <div class="search-input-row">
+      <button type="submit" class="search-submit" aria-label="Tìm sách">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle
+            cx="10.75"
+            cy="10.75"
+            r="6.75"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          />
+          <path
+            d="m15.75 15.75 4.25 4.25"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </button>
+
+      <label class="sr-only" for="site-search">Tìm tên hoặc mã sách</label>
+      <input
+        #searchInput
+        id="site-search"
+        name="q"
+        type="text"
+        autocomplete="off"
+        spellcheck="false"
+        maxlength="200"
+        placeholder="Bạn đang tìm…"
+        role="combobox"
+        aria-autocomplete="list"
+        [attr.aria-expanded]="panelOpen()"
+        aria-controls="search-suggestions-panel"
+        [value]="query()"
+        (focus)="onFocus()"
+        (input)="onInput($any($event.target).value)"
+        (keydown)="onKeydown($event)"
+      />
+
+      @if (query().length > 0) {
+        <button
+          type="button"
+          class="search-icon-btn search-clear"
+          aria-label="Xóa từ khóa"
+          (mousedown)="$event.preventDefault()"
+          (click)="clearInput()"
+        >
+          <svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true">
+            <path
+              d="M5 5l10 10M15 5 5 15"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+        </button>
+      }
+
+      <span class="search-divider" aria-hidden="true"></span>
+
+      <button
+        type="button"
+        class="search-icon-btn search-visual-btn"
+        aria-label="Tìm kiếm bằng hình ảnh"
+        (mousedown)="$event.preventDefault()"
+        (click)="onVisualSearchClick($event)"
+      >
+        <svg
+          fill="currentColor"
+          viewBox="0 0 485 485"
+          width="18"
+          height="18"
+          aria-hidden="true"
+        >
+          <g>
+            <polygon points="30,30 106,30 106,0 0,0 0,106 30,106" />
+            <polygon points="379,0 379,30 455,30 455,106 485,106 485,0" />
+            <polygon points="455,455 379,455 379,485 485,485 485,379 455,379" />
+            <polygon points="30,379 0,379 0,485 106,485 106,455 30,455" />
+            <path
+              d="M274.405,175c26.191,0,47.5-21.309,47.5-47.5S300.597,80,274.405,80s-47.5,21.309-47.5,47.5S248.214,175,274.405,175z"
+            />
+            <polygon
+              points="80,405 405,405 405,308.18 346.358,246.304 275.241,287.672 176.238,216.922 80,318.465"
+            />
+          </g>
+        </svg>
+      </button>
+    </div>
+
+    @if (panelOpen()) {
+      <div
+        id="search-suggestions-panel"
+        class="search-panel"
+        role="listbox"
+        aria-label="Gợi ý tìm kiếm"
+      >
+        @if (showHistory()) {
+          <div class="panel-header">
+            <span class="panel-label">TÌM KIẾM GẦN ĐÂY</span>
+            <button
+              type="button"
+              class="panel-clear-all"
+              (mousedown)="$event.preventDefault()"
+              (click)="clearHistory($event)"
+            >
+              Xóa tất cả
+            </button>
+          </div>
+          <ul class="panel-list">
+            @for (item of history(); track item; let i = $index) {
+              <li
+                class="panel-row history-row"
+                role="option"
+                [class.active]="activeIndex() === i"
+                [attr.aria-selected]="activeIndex() === i"
+                (mousedown)="$event.preventDefault()"
+                (click)="submitQuery(item)"
+              >
+                <svg
+                  class="row-icon history-icon"
+                  viewBox="0 0 24 24"
+                  width="17"
+                  height="17"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M3.5 12a8.5 8.5 0 1 0 2.5-6.02L3.5 8.5m0-4.5v4.5H8"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <path
+                    d="M12 7.5v4.75l3 1.75"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+                <span class="row-text">{{ item }}</span>
+                <button
+                  type="button"
+                  class="history-remove"
+                  [attr.aria-label]="'Xóa ' + item + ' khỏi lịch sử'"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="removeHistoryItem(item, $event)"
+                >
+                  <svg viewBox="0 0 20 20" width="14" height="14" aria-hidden="true">
+                    <path
+                      d="M5.5 5.5l9 9M14.5 5.5l-9 9"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.75"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </button>
+                <svg
+                  class="row-arrow"
+                  viewBox="0 0 20 20"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M6 14 14 6m0 0H7.5M14 6v6.5"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </li>
+            }
+          </ul>
+        }
+
+        @if (showSuggestions()) {
+          @if (suggestions().keywords.length > 0) {
+            <ul class="panel-list keyword-list">
+              @for (kw of suggestions().keywords; track kw; let i = $index) {
+                <li
+                  class="panel-row keyword-row"
+                  role="option"
+                  [class.active]="activeIndex() === keywordNavIndex(i)"
+                  [attr.aria-selected]="activeIndex() === keywordNavIndex(i)"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="submitQuery(kw)"
+                >
+                  <span class="row-text">
+                    @for (part of highlight(kw, trimmedQuery()); track $index) {
+                      @if (part.match) {
+                        <strong class="match-bold">{{ part.text }}</strong>
+                      } @else {
+                        <span>{{ part.text }}</span>
+                      }
+                    }
+                  </span>
+                  <svg
+                    class="row-arrow"
+                    viewBox="0 0 20 20"
+                    width="16"
+                    height="16"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M6 14 14 6m0 0H7.5M14 6v6.5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (suggestions().books.length > 0) {
+            <div class="panel-section-label">Sách phù hợp</div>
+            <ul class="panel-list book-list">
+              @for (book of suggestions().books; track book.slug; let i = $index) {
+                <li
+                  class="panel-row book-row"
+                  role="option"
+                  [class.active]="activeIndex() === bookNavIndex(i)"
+                  [attr.aria-selected]="activeIndex() === bookNavIndex(i)"
+                  (mousedown)="$event.preventDefault()"
+                  (click)="selectBook(book)"
+                >
+                  <div class="book-thumb">
+                    @if (coverSrc(book); as src) {
+                      <img
+                        [src]="src"
+                        [alt]="book.title"
+                        width="38"
+                        height="50"
+                        loading="lazy"
+                        (error)="onCoverError(book.slug)"
+                      />
+                    } @else {
+                      <span class="book-thumb-fallback" aria-hidden="true">M</span>
+                    }
+                  </div>
+                  <div class="book-info">
+                    <div class="book-title">
+                      @for (part of highlight(book.title, trimmedQuery()); track $index) {
+                        @if (part.match) {
+                          <mark class="match-accent">{{ part.text }}</mark>
+                        } @else {
+                          <span>{{ part.text }}</span>
+                        }
+                      }
+                    </div>
+                    <div class="book-meta">
+                      <span class="book-code">{{ book.bookCode }}</span>
+                      @if (book.publisher) {
+                        <span class="meta-dot" aria-hidden="true">·</span>
+                        <span class="book-publisher">{{ book.publisher }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="book-price-col">
+                    @if (hasActiveSale(book)) {
+                      <span class="price-sale">{{ formatPrice(book.salePriceVnd) }}</span>
+                      @if (book.priceMinVnd !== null) {
+                        <span class="price-old">
+                          {{ formatPriceRange(book.priceMinVnd, book.priceMaxVnd) }}
+                        </span>
+                      }
+                    } @else {
+                      <span class="price-regular">
+                        {{ formatPriceRange(book.priceMinVnd, book.priceMaxVnd) }}
+                      </span>
+                    }
+                    @if (book.availability === 'SOLD') {
+                      <span class="sold-tag">Hết hàng</span>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (loading() && !hasAnySuggestion()) {
+            <div class="panel-status">Đang tìm gợi ý…</div>
+          } @else if (!loading() && !hasAnySuggestion()) {
+            <div class="panel-status">Không có gợi ý trực tiếp cho “{{ trimmedQuery() }}”</div>
+          }
+
+          <button
+            type="button"
+            class="panel-all-btn"
+            role="option"
+            [class.active]="activeIndex() === allNavIndex()"
+            [attr.aria-selected]="activeIndex() === allNavIndex()"
+            (mousedown)="$event.preventDefault()"
+            (click)="submitQuery(trimmedQuery())"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+              <circle
+                cx="10.75"
+                cy="10.75"
+                r="6.75"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+              <path
+                d="m15.75 15.75 4.25 4.25"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+            </svg>
+            <span>Xem tất cả kết quả cho “<strong>{{ trimmedQuery() }}</strong>”</span>
+          </button>
+        }
+      </div>
+    }
+  </form>
+</div>
+

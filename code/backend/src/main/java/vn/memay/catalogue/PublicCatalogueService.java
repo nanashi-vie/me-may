@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.*;
+import java.time.Instant;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import vn.memay.common.AdminApiException;
@@ -65,9 +66,10 @@ public class PublicCatalogueService {
         List<Object> args = new ArrayList<>();
         if (q != null) {
             where.append(
-                    " and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\'))");
+                    " and (lower(b.book_code)=lower(?) or lower(b.title) like lower(?) escape '\\' or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\') or (b.author is not null and lower(b.author) like lower(?) escape '\\'))");
             args.add(q);
             var escaped = "%" + q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_") + "%";
+            args.add(escaped);
             args.add(escaped);
             args.add(escaped);
         }
@@ -170,6 +172,108 @@ public class PublicCatalogueService {
         for (Book book : books)
             byCode.put(book.bookCode(), book);
         return ordered.stream().filter(byCode::containsKey).map(byCode::get).toList();
+    }
+
+    public SearchSuggestions suggest(String q) {
+        q = BookValidation.trim(q);
+        if (q == null || q.isEmpty())
+            return new SearchSuggestions(List.of(), List.of());
+        if (q.length() > 200)
+            throw AdminApiException.field("q", "Tối đa 200 ký tự");
+
+        String escapedCore = q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+        String containsPattern = "%" + escapedCore + "%";
+        String prefixPattern = escapedCore + "%";
+        String lowerQ = q.toLowerCase(Locale.ROOT);
+
+        String sql = "select b.id, b.book_code, l.slug, b.title, b.publisher, b.author, c.label category_label, "
+                + "l.price_min_vnd, l.price_max_vnd, "
+                + "case when " + SALE + " then fi.sale_price_vnd end sale_price_vnd, "
+                + "case when " + SALE + " then fs.ends_at end sale_ends_at, "
+                + "b.availability "
+                + FROM
+                + " where l.publication_status='PUBLISHED' and b.deleted_at is null"
+                + " and (lower(b.book_code) like lower(?) escape '\\'"
+                + " or lower(b.title) like lower(?) escape '\\'"
+                + " or (b.publisher is not null and lower(b.publisher) like lower(?) escape '\\')"
+                + " or (b.author is not null and lower(b.author) like lower(?) escape '\\')"
+                + " or (c.label is not null and lower(c.label) like lower(?) escape '\\'))"
+                + " order by (lower(b.book_code)=lower(?)) desc,"
+                + " (lower(b.title) like lower(?) escape '\\') desc,"
+                + " (b.availability='AVAILABLE') desc,"
+                + " l.published_at desc nulls last, b.book_code desc limit 6";
+
+        record Row(long id, String bookCode, String slug, String title, String publisher, String author,
+                String categoryLabel, Long priceMinVnd, Long priceMaxVnd, Long salePriceVnd, Instant saleEndsAt,
+                String availability) {
+        }
+
+        List<Row> rows = jdbc.query(sql, (r, n) -> new Row(
+                r.getLong("id"),
+                r.getString("book_code"),
+                r.getString("slug"),
+                r.getString("title"),
+                r.getString("publisher"),
+                r.getString("author"),
+                r.getString("category_label"),
+                r.getObject("price_min_vnd", Long.class),
+                r.getObject("price_max_vnd", Long.class),
+                r.getObject("sale_price_vnd", Long.class),
+                r.getTimestamp("sale_ends_at") == null ? null : r.getTimestamp("sale_ends_at").toInstant(),
+                r.getString("availability")),
+                containsPattern, containsPattern, containsPattern, containsPattern, containsPattern,
+                q, prefixPattern);
+
+        List<BookSuggestion> books = new ArrayList<>(rows.size());
+        for (Row row : rows) {
+            List<MediaRow> frontRows = jdbc.query(
+                    "select id,role,alt,serving_generation from book_media where book_copy_id=? and state='ACTIVE' and role='FRONT' limit 1",
+                    (m, i) -> new MediaRow(m.getObject("id", UUID.class), m.getString("role"),
+                            m.getString("alt"), m.getObject("serving_generation", UUID.class)),
+                    row.id());
+            Media cover = null;
+            if (!frontRows.isEmpty()) {
+                MediaRow front = frontRows.getFirst();
+                Map<UUID, List<MediaReadService.Variant>> available = front.generation() != null
+                        ? mediaReader.publicVariants(row.id())
+                        : Map.of();
+                cover = front.describe(row.slug(), available);
+            }
+            books.add(new BookSuggestion(row.bookCode(), row.slug(), row.title(), row.publisher(),
+                    row.priceMinVnd(), row.priceMaxVnd(), row.salePriceVnd(), row.saleEndsAt(),
+                    row.availability(), cover));
+        }
+
+        List<String> prefixKeywords = new ArrayList<>();
+        List<String> containsKeywords = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        java.util.function.Consumer<String> addCandidate = raw -> {
+            if (raw == null) return;
+            String trimmed = raw.trim();
+            if (trimmed.isEmpty()) return;
+            String lower = trimmed.toLowerCase(Locale.ROOT);
+            if (!lower.contains(lowerQ) || !seen.add(lower)) return;
+            if (lower.startsWith(lowerQ)) prefixKeywords.add(trimmed);
+            else containsKeywords.add(trimmed);
+        };
+
+        for (Row row : rows) {
+            addCandidate.accept(row.title());
+            addCandidate.accept(row.publisher());
+            addCandidate.accept(row.author());
+            addCandidate.accept(row.categoryLabel());
+        }
+        List<String> keywords = new ArrayList<>(5);
+        for (String kw : prefixKeywords) {
+            if (keywords.size() >= 5) break;
+            keywords.add(kw);
+        }
+        for (String kw : containsKeywords) {
+            if (keywords.size() >= 5) break;
+            keywords.add(kw);
+        }
+
+        return new SearchSuggestions(List.copyOf(keywords), List.copyOf(books));
     }
 
     private record MediaRow(UUID id, String role, String alt, UUID generation) {

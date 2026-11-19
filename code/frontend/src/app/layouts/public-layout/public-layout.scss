@@ -1,7 +1,5 @@
 .menu-toggle, .dropdown-panel[hidden] { display: none; }
-.header-search { display: flex; align-items: center; flex: 1; max-width: 560px; }
-.header-search input { margin: 0; border-radius: 4px 0 0 4px; min-width: 0; }
-.header-search button { width: auto; margin: 0; white-space: nowrap; border-radius: 0 4px 4px 0; padding: .65rem 1rem; }
+.header-search { flex: 1; max-width: 560px; min-width: 0; }
 .header-links { display: flex; flex-wrap: nowrap; flex-shrink: 0; gap: .6rem 1rem; align-items: center; }
 .wishlist-link {
   display: inline-flex;

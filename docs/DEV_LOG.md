@@ -5229,3 +5229,17 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   và 15 asset public tracked. Chỉ đổi thông báo đường dẫn của script backend.
 - Bàn giao dev. Chưa chạy test app hoặc xác minh production trong đợt tài liệu.
   Bước sau theo PROGRESS: owner chọn candidate để kiểm rollout và phục hồi.
+
+### 2026-11-19 — SEARCH-UI-01 — Thanh tìm kiếm pill, lịch sử và gợi ý
+
+- **Mục tiêu & phạm vi**: Điều chỉnh thanh search bar public sang dạng pill bo tròn, kính lúp màu đỏ chủ đạo (`var(--red)`), đường kẻ dọc mảnh ngăn cách trước icon tìm bằng hình ảnh bên phải (SVG do owner cung cấp, hiện là no-op), khung gợi ý mở rộng liền khối (desktop + mobile), lịch sử tìm kiếm trên `localStorage` và gợi ý từ khóa + sách khớp (debounce 300ms). Triển khai và push trực tiếp lên `dev`.
+- **File thay đổi**:
+  - Backend: `PublicCatalogueDtos.java`, `PublicCatalogueController.java`, `PublicCatalogueService.java` (thêm `GET /api/v1/books/suggest?q=...` trả tối đa 5 từ khóa + 6 sách công khai kèm ảnh bìa FRONT; mở rộng `list()` khớp thêm `author`), `PublicCatalogueApiTest.java` (thêm ca `suggestReturnsKeywordsAndPublishedBooksOnly`).
+  - Frontend: thêm `search-bar.ts/.html/.scss/.spec.ts`; cập nhật `public-layout.ts/.html/.scss`, `public-api.ts`, `public.models.ts`.
+- **Kiểm tra đã chạy**:
+  - `code/backend`: `bash code/backend/run-local.sh -B -ntp test-compile` đạt.
+  - `code/backend`: `bash code/backend/run-local.sh -B -ntp test -Dtest=PublicCatalogueApiTest` chưa chạy được do DB `me_may_test` local lệch checksum Flyway V21 (`-516753905` vs `-1154691950`) và thiếu bảng ở V22; không tự xóa/sửa DB test.
+  - `code/frontend`: `npm test -- --watch=false` đạt 69/69 file, 415/415 test (gồm 6 test mới `search-bar.spec.ts` và 4 test `public-layout.spec.ts`).
+  - `code/frontend`: `npm run build` đạt (browser + server SSR, 0 cảnh báo budget).
+  - `git diff --check` đạt.
+- **Bước tiếp theo**: Owner kiểm tra trực quan trên trình duyệt (light/dark + mobile) và chạy lại `PublicCatalogueApiTest` sau khi đồng bộ/reset DB `me_may_test` local; commit & push lên `dev` khi ưng ý.
