@@ -5265,3 +5265,8 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 
 - **Thay đổi**: Đổi tỉ lệ khung banner từ `3/1` sang `30/11` (+10% chiều cao) kèm `max-height: min(680px, 72svh)` trên `hero-carousel.scss` (bỏ `aspect-ratio` trùng trên `.viewport` để giữ căn giữa khi chạm trần); đồng bộ `.preview` trong `hero-banner-editor.scss`, metadata `3200×1173` trong `HeroBannerService.java` và contract `docs/product/HERO_BANNERS.md`.
 - **Kiểm tra**: chạy test `hero-carousel` / `home-page` / `hero-banner-editor`, `npm run build`, `test-compile` backend và `git diff --check`.
+
+### 2026-11-19 — ROOT-README-01 — Thêm `README.md` tối giản kiểu thương hiệu ở root
+
+- **Mục tiêu**: Tạo `README.md` ở root (40 dòng) dạng Brand Card căn giữa (logo Mẹ Mây, giới thiệu ngắn, kênh chính thức và tech stack badges, không dẫn link vào `docs/` nội bộ) để GitHub hiển thị trang giới thiệu thương hiệu thay vì tự lấy `docs/README.md`.
+- **Kiểm tra**: dùng `code/frontend/public/favicon/favicon.svg` (đã có `clipPath` bo tròn `rx=500 ry=500` hiển thị tròn trên GitHub không phụ thuộc CSS bị lọc), trần 400 dòng và `git diff --check` đạt. Commit & push lên `dev`.
