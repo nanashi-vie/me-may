@@ -272,8 +272,8 @@
 }
 .shelf h2 {
   margin: 0 0 -1px;
-  padding: 0.9rem 0.2rem 0.7rem;
-  font: 700 1.08rem/1.3 var(--font-sans);
+  padding: 0.9rem 0.2rem 0.65rem;
+  font: 700 1.8rem/1.25 var(--font-display);
   color: var(--red);
   border-bottom: 3px solid var(--red);
 }
@@ -357,6 +357,6 @@
     width: 100%;
   }
   .shelf h2 {
-    font-size: 1rem;
+    font-size: 1.45rem;
   }
 }
