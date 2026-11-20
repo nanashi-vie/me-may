@@ -5270,3 +5270,11 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 
 - **Mục tiêu**: Tạo `README.md` ở root (40 dòng) dạng Brand Card căn giữa (logo Mẹ Mây, giới thiệu ngắn, kênh chính thức và tech stack badges, không dẫn link vào `docs/` nội bộ) để GitHub hiển thị trang giới thiệu thương hiệu thay vì tự lấy `docs/README.md`.
 - **Kiểm tra**: dùng `code/frontend/public/favicon/favicon.svg` (đã có `clipPath` bo tròn `rx=500 ry=500` hiển thị tròn trên GitHub không phụ thuộc CSS bị lọc), trần 400 dòng và `git diff --check` đạt. Commit & push lên `dev`.
+
+### 2026-11-20 — HOME-SHELF-UI-01 — Sửa chiều ngang banner, nền trang chủ và khung kệ sách kiểu tab đỏ
+
+- **Mục tiêu & thay đổi**:
+  - `hero-carousel.scss` & `HERO_BANNERS.md`: bỏ `max-height` gây co chiều ngang do `aspect-ratio`, đặt tường minh `width: 100%; aspect-ratio: 30/11;` trên cả `.carousel` và `.viewport`.
+  - `home-page.scss`: thêm nền xám ấm `#f4f3ef` cho vùng trang chủ (light mode), mỗi kệ `.shelf` là khung trắng bo góc `10px`; tiêu đề `h2` màu đỏ `var(--red)` kèm gạch chân đỏ `3px` trên đường kẻ ngang mảnh; các sản phẩm trong `.shelf` bỏ `gap`, chỉ giữ 1 đường kẻ dọc mảnh ngăn cách giữa các cuốn (riêng Flash Sale vẫn giữ lưới thẻ riêng).
+  - `book-card.scss`: bỏ viền 4 cạnh khi nằm trong `.shelf` (`:host-context(.shelf)`) và thêm hiệu ứng đổ bóng nổi (`box-shadow`, `z-index: 2`) khi hover/focus-within.
+- **Kiểm tra**: chạy test `home` + `book-card`, `npm run build` (kiểm budget SCSS), `git diff --check`, commit & push lên `dev`.

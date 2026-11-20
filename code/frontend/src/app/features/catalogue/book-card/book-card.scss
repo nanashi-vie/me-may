@@ -11,6 +11,20 @@
   border: 1px solid #ddd7ce;
   border-color: var(--line, #ddd7ce);
   border-radius: 7px;
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.book-card:hover,
+.book-card:focus-within {
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 18px rgba(41, 39, 36, 0.14);
+}
+:host-context(.shelf) .book-card {
+  border: 0;
+  border-radius: 6px;
+}
+:host-context([data-theme='dark']) .book-card:is(:hover, :focus-within) {
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
 }
 .cover-link {
   display: grid;
