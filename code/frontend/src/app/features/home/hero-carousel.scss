@@ -4,8 +4,8 @@
 .carousel {
   container-type: inline-size;
   position: relative;
+  width: 100%;
   aspect-ratio: 30/11;
-  max-height: min(680px, 72svh);
   background: var(--cream);
   overflow: hidden;
 }
@@ -13,6 +13,7 @@
   position: relative;
   width: 100%;
   height: 100%;
+  aspect-ratio: 30/11;
   overflow: hidden;
 }
 .image-link,

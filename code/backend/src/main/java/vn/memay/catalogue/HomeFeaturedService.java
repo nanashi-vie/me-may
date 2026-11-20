@@ -255,7 +255,7 @@ public class HomeFeaturedService {
     private List<ShelfDef> activeShelfDefs() {
         List<ShelfDef> defs = new ArrayList<>();
         defs.add(new ShelfDef("NEWEST", "Sách mới đăng", "/sach", null, null));
-        defs.add(new ShelfDef("CATEGORY:BOARD_BOOK", "Board books cho bé nhỏ", "/sach?category=BOARD_BOOK",
+        defs.add(new ShelfDef("CATEGORY:BOARD_BOOK", "Board books", "/sach?category=BOARD_BOOK",
                 "BOARD_BOOK", null));
         defs.add(new ShelfDef("CATEGORY:PICTURE_BOOK", "Picture books", "/sach?category=PICTURE_BOOK", "PICTURE_BOOK",
                 null));
@@ -288,4 +288,3 @@ public class HomeFeaturedService {
         throw AdminApiException.field("shelfKey", "Kệ sách không hợp lệ");
     }
 }
-

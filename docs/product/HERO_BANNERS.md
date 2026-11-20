@@ -20,7 +20,7 @@ Contract hiện hành14/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 
 | Hạng mục | Contract/khuyến nghị |
 |---|---|
-| Khung | Tràn ngang `30:11` (+10% chiều cao so với `3:1`), trần `max-height: min(680px, 72svh)`, cover căn giữa; cắt phần dư trên/dưới |
+| Khung | Tràn ngang `30:11` (+10% chiều cao so với `3:1`), cover căn giữa; cắt phần dư trên/dưới |
 | File thiết kế gốc |3240×1080 hoặc3840×1280, chữ lớn/ít chữ, cách mép khoảng5% |
 | Input | JPEG/PNG/WebP tĩnh; tối đa10MiB và25MP; kiểm bytes/giải mã ở worker |
 | Output | recipe `hero-v1`,800/1600/3200px, JPEG90 và WebP88, sRGB/strip metadata |
@@ -34,7 +34,7 @@ Contract hiện hành14/11/2026, thay spec/plan đã triển khai. OWNER duyệt
 
 - `GET /api/v1/home` thêm `banners`, theo thứ tự đã lưu. Rỗng không hiển thị banner, không chừa khung ảnh.
 - Mỗi banner `{id,alt,src,srcset,width,height}`; srcset800/1600/3200, sizes100vw.
-  Khung do CSS giữ `30:11` (`max-height: min(680px, 72svh)`) và cover, metadata width 3200 / height 1173. Mọi ảnh link `/sach`, cùng tab.
+  Khung do CSS giữ `30:11` và cover, metadata width 3200 / height 1173. Mọi ảnh link `/sach`, cùng tab.
 - Một ảnh không controls/timer. Hai đến10ảnh tự chuyển5000ms, quay vòng;
   chỉ hai nút trước/sau, hỗ trợ keyboard và target44px.
   Vòng tròn hiển thị28px/SVG12px, hover nềntrắng/mũi tênđỏ; không thanh dots/pause.
