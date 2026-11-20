@@ -48,6 +48,19 @@ picture {
   height: 100%;
   min-height: 0;
   object-fit: contain;
+  transition: transform 0.24s ease;
+}
+.book-card:hover .cover-link img {
+  transform: scale(1.045);
+}
+@media (prefers-reduced-motion: reduce) {
+  .book-card,
+  .cover-link img {
+    transition: none;
+  }
+  .book-card:hover .cover-link img {
+    transform: none;
+  }
 }
 h3 {
   font-size: 1rem;

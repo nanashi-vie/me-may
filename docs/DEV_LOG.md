@@ -5276,5 +5276,5 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Mục tiêu & thay đổi**:
   - `hero-carousel.scss` & `HERO_BANNERS.md`: bỏ `max-height` gây co chiều ngang do `aspect-ratio`, đặt tường minh `width: 100%; aspect-ratio: 30/11;` trên cả `.carousel` và `.viewport`.
   - `home-page.scss`: thêm nền xám ấm `#f4f3ef` cho vùng trang chủ (light mode), mỗi kệ `.shelf` là khung trắng bo góc `10px`; tiêu đề `h2` giữ cỡ lớn như cũ (`1.8rem` desktop / `1.45rem` mobile, `var(--font-display)`) màu đỏ `var(--red)` kèm gạch chân đỏ `3px` trên đường kẻ ngang mảnh; các sản phẩm trong `.shelf` bỏ `gap`, chỉ giữ 1 đường kẻ dọc mảnh ngăn cách giữa các cuốn (riêng Flash Sale vẫn giữ lưới thẻ riêng).
-  - `book-card.scss`: bỏ viền 4 cạnh khi nằm trong `.shelf` (`:host-context(.shelf)`) và thêm hiệu ứng đổ bóng nổi (`box-shadow`, `z-index: 2`) khi hover/focus-within.
+  - `book-card.scss`: bỏ viền 4 cạnh khi nằm trong `.shelf` (`:host-context(.shelf)`), thêm hiệu ứng đổ bóng nổi (`box-shadow`, `z-index: 2`) và phóng to nhẹ ảnh bìa (`scale(1.045)`, tôn trọng `prefers-reduced-motion`) khi hover/focus-within.
 - **Kiểm tra**: chạy test `home` + `book-card`, `npm run build` (kiểm budget SCSS), `git diff --check`, commit & push lên `dev`.
