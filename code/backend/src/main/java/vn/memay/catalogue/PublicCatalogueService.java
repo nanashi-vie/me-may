@@ -15,9 +15,11 @@ import vn.memay.catalogue.PublicCatalogueDtos.Collection;
 @Service
 @Transactional(readOnly = true)
 public class PublicCatalogueService {
-    @org.springframework.beans.factory.annotation.Autowired private tools.jackson.databind.ObjectMapper json;
+    @org.springframework.beans.factory.annotation.Autowired
+    private tools.jackson.databind.ObjectMapper json;
     private final JdbcTemplate jdbc;
-    @org.springframework.beans.factory.annotation.Autowired private HeroBannerService heroBanners;
+    @org.springframework.beans.factory.annotation.Autowired
+    private HeroBannerService heroBanners;
 
     private final MediaReadService mediaReader;
 
@@ -109,7 +111,8 @@ public class PublicCatalogueService {
     }
 
     public Book detail(String slug) {
-        List<Book> found = jdbc.query(SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED' and b.deleted_at is null",
+        List<Book> found = jdbc.query(
+                SELECT + FROM + " where l.slug=? and l.publication_status='PUBLISHED' and b.deleted_at is null",
                 this::book,
                 slug);
         if (found.isEmpty())
@@ -248,13 +251,18 @@ public class PublicCatalogueService {
         List<String> containsKeywords = new ArrayList<>();
         Set<String> seen = new HashSet<>();
         java.util.function.Consumer<String> addCandidate = raw -> {
-            if (raw == null) return;
+            if (raw == null)
+                return;
             String trimmed = raw.trim();
-            if (trimmed.isEmpty()) return;
+            if (trimmed.isEmpty())
+                return;
             String lower = trimmed.toLowerCase(Locale.ROOT);
-            if (!lower.contains(lowerQ) || !seen.add(lower)) return;
-            if (lower.startsWith(lowerQ)) prefixKeywords.add(trimmed);
-            else containsKeywords.add(trimmed);
+            if (!lower.contains(lowerQ) || !seen.add(lower))
+                return;
+            if (lower.startsWith(lowerQ))
+                prefixKeywords.add(trimmed);
+            else
+                containsKeywords.add(trimmed);
         };
 
         for (Row row : rows) {
@@ -265,11 +273,13 @@ public class PublicCatalogueService {
         }
         List<String> keywords = new ArrayList<>(5);
         for (String kw : prefixKeywords) {
-            if (keywords.size() >= 5) break;
+            if (keywords.size() >= 5)
+                break;
             keywords.add(kw);
         }
         for (String kw : containsKeywords) {
-            if (keywords.size() >= 5) break;
+            if (keywords.size() >= 5)
+                break;
             keywords.add(kw);
         }
 
@@ -279,11 +289,15 @@ public class PublicCatalogueService {
     private record MediaRow(UUID id, String role, String alt, UUID generation) {
         Media describe(String slug, Map<UUID, List<MediaReadService.Variant>> available) {
             String path = "/api/v1/books/" + slug + "/media/" + role;
-            if (generation == null) return new Media(role, alt, path, id.toString(), null);
+            if (generation == null)
+                return new Media(role, alt, path, id.toString(), null);
             var variants = available.getOrDefault(generation, List.of()).stream()
-                    .map(v -> new ImageVariant(path + "?size=" + v.size() + "&format=" + v.format() + "&v=" + generation,
-                            v.size(), v.format(), v.width(), v.height())).toList();
-            if (variants.isEmpty()) return null;
+                    .map(v -> new ImageVariant(
+                            path + "?size=" + v.size() + "&format=" + v.format() + "&v=" + generation,
+                            v.size(), v.format(), v.width(), v.height()))
+                    .toList();
+            if (variants.isEmpty())
+                return null;
             var thumbnail = variants.stream().filter(v -> v.size() == 480 && v.format().equals("jpg"))
                     .findFirst().orElse(variants.getFirst());
             return new Media(role, alt, thumbnail.url(), generation.toString(), variants);
@@ -299,9 +313,11 @@ public class PublicCatalogueService {
         var rows = jdbc.query(
                 "select id,role,alt,serving_generation from book_media where book_copy_id=? and state='ACTIVE' order by case role when 'FRONT' then 0 when 'BACK' then 1 when 'SPINE' then 2 when 'INSIDE_1' then 3 when 'INSIDE_2' then 4 when 'INSIDE_3' then 5 when 'INSIDE_4' then 6 else 7 end",
                 (m, i) -> new MediaRow(m.getObject("id", UUID.class), m.getString("role"),
-                        m.getString("alt"), m.getObject("serving_generation", UUID.class)), id);
+                        m.getString("alt"), m.getObject("serving_generation", UUID.class)),
+                id);
         var available = rows.stream().anyMatch(row -> row.generation() != null)
-                ? mediaReader.publicVariants(id) : Map.<UUID, List<MediaReadService.Variant>>of();
+                ? mediaReader.publicVariants(id)
+                : Map.<UUID, List<MediaReadService.Variant>>of();
         var media = rows.stream().map(row -> row.describe(slug, available)).filter(Objects::nonNull).toList();
         return new Book(Long.toString(id), r.getString("book_code"), slug, r.getString("title"),
                 r.getString("publisher"), r.getString("author"), ages, r.getString("category_code"),
@@ -311,7 +327,8 @@ public class PublicCatalogueService {
                 r.getTimestamp("sale_ends_at") == null ? null : r.getTimestamp("sale_ends_at").toInstant(),
                 r.getObject("weight_g", Long.class), r.getString("description"), r.getString("reading_level"),
                 r.getString("reading_video_url"),
-                r.getString("availability"), media, List.of(), json.readValue(r.getString("features"),json.getTypeFactory().constructCollectionType(List.class,BookDtos.Feature.class)));
+                r.getString("availability"), media, List.of(), json.readValue(r.getString("features"),
+                        json.getTypeFactory().constructCollectionType(List.class, BookDtos.Feature.class)));
     }
 
     public List<Collection> collections() {
@@ -327,14 +344,15 @@ public class PublicCatalogueService {
     public Home home() {
         List<Shelf> shelves = new ArrayList<>();
         shelf(shelves, "NEWEST", "Sách mới đăng", "/sach", null, null);
-        shelf(shelves, "CATEGORY:BOARD_BOOK", "Board books cho bé nhỏ", "/sach?category=BOARD_BOOK", "BOARD_BOOK", null);
+        shelf(shelves, "CATEGORY:BOARD_BOOK", "Board books", "/sach?category=BOARD_BOOK", "BOARD_BOOK", null);
         shelf(shelves, "CATEGORY:PICTURE_BOOK", "Picture books", "/sach?category=PICTURE_BOOK", "PICTURE_BOOK", null);
         for (Collection c : collections().stream().limit(2).toList())
             shelf(shelves, "COLLECTION:" + c.slug(), c.name(), "/bo-suu-tap/" + c.slug(), null, c.slug());
-        return new Home(shelves,heroBanners.published());
+        return new Home(shelves, heroBanners.published());
     }
 
-    private void shelf(List<Shelf> rows, String shelfKey, String title, String href, String category, String collection) {
+    private void shelf(List<Shelf> rows, String shelfKey, String title, String href, String category,
+            String collection) {
         StringBuilder pinnedWhere = new StringBuilder(
                 " join home_featured_item hfi on hfi.listing_id=l.id where hfi.shelf_key=? and l.publication_status='PUBLISHED' and b.deleted_at is null and b.availability='AVAILABLE'");
         List<Object> args = new ArrayList<>();
