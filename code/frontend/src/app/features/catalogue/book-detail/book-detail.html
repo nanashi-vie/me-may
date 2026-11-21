@@ -6,19 +6,60 @@
   <app-breadcrumb [items]="breadcrumbs(b)" />
   <div class="detail-layout">
     <div class="media-col">
-      <section class="gallery" aria-label="Bộ ảnh chung của sách">
+      <section class="gallery" [class.has-thumbs]="b.media.length > 1" aria-label="Bộ ảnh chung của sách">
         <figure>
           @if (mainMedia(); as m) {
             @let main = picture(m, true);
             @if (main.src && !failedImages().has(main.src)) {
-              <picture>
-                @if (main.webp) {
-                  <source type="image/webp" [attr.srcset]="main.webp" sizes="(max-width: 720px) 90vw, 576px" />
+              <div
+                #stage
+                class="main-media-stage"
+                role="button"
+                tabindex="0"
+                [attr.aria-label]="'Phóng to ảnh ' + mediaLabels[$any(m.role)]"
+                (pointermove)="onStagePointerMove($event, stage, mainImg)"
+                (pointerleave)="hideLoupe()"
+                (click)="openLightbox(lightboxDialog, stage)"
+                (keydown.enter)="$event.preventDefault(); openLightbox(lightboxDialog, stage)"
+                (keydown.space)="$event.preventDefault(); openLightbox(lightboxDialog, stage)"
+              >
+                <picture>
+                  @if (main.webp) {
+                    <source type="image/webp" [attr.srcset]="main.webp" sizes="(max-width: 720px) 90vw, 576px" />
+                  }
+                  <img
+                    #mainImg
+                    [src]="main.src"
+                    [attr.srcset]="main.jpeg"
+                    sizes="(max-width: 720px) 90vw, 576px"
+                    [alt]="m.alt || b.title"
+                    loading="eager"
+                    fetchpriority="high"
+                    width="600"
+                    height="800"
+                    (error)="imageFailed(main.src)"
+                  />
+                </picture>
+                <span class="zoom-badge" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
+                  </svg>
+                </span>
+                @if (loupe(); as l) {
+                  <span
+                    class="magnifier-loupe"
+                    aria-hidden="true"
+                    [style.width.px]="loupeSize"
+                    [style.height.px]="loupeSize"
+                    [style.left.px]="l.x"
+                    [style.top.px]="l.y"
+                    [style.background-image]="'url(' + main.src + ')'"
+                    [style.background-size]="l.bgW + 'px ' + l.bgH + 'px'"
+                    [style.background-position]="l.bgX + 'px ' + l.bgY + 'px'"
+                  ></span>
                 }
-                <img [src]="main.src" [attr.srcset]="main.jpeg" sizes="(max-width: 720px) 90vw, 576px"
-                  [alt]="m.alt || b.title" loading="eager" fetchpriority="high" width="600" height="800"
-                  (error)="imageFailed(main.src)" />
-              </picture>
+              </div>
             } @else {
               <span class="media-placeholder" role="status">Ảnh hiện không có sẵn</span>
             }
@@ -28,24 +69,57 @@
           }
         </figure>
         @if (b.media.length > 1) {
-          <ul class="thumbs">
-            @for (m of b.media; track m.role; let i = $index) {
-              <li>
-                <button type="button" class="thumb" [attr.aria-pressed]="mainMedia() === m"
-                  [attr.aria-label]="'Xem ảnh ' + mediaLabels[$any(m.role)]" (click)="selectMedia(i)">
-                  @let thumb = picture(m);
-                  @if (thumb.src && !failedImages().has(thumb.src)) {
-                    <picture>
-                      @if (thumb.webp) { <source type="image/webp" [srcset]="thumb.webp" sizes="72px" /> }
-                      <img [src]="thumb.src" alt="" width="72" height="96" loading="lazy" (error)="imageFailed(thumb.src)" />
-                    </picture>
-                  } @else {
-                    <span class="thumb-placeholder" aria-hidden="true">—</span>
-                  }
-                </button>
-              </li>
+          <div class="thumbs-col">
+            @if (b.media.length > 4) {
+              <button
+                type="button"
+                class="thumb-nav up"
+                [disabled]="!thumbCanScrollUp()"
+                aria-label="Cuộn danh sách ảnh lên"
+                (click)="scrollThumbs(thumbList, -1)"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m18 15-6-6-6 6" />
+                </svg>
+              </button>
             }
-          </ul>
+            <ul #thumbList class="thumbs" (scroll)="updateThumbScrollState(thumbList)">
+              @for (m of b.media; track m.role; let i = $index) {
+                <li>
+                  <button
+                    type="button"
+                    class="thumb"
+                    [attr.aria-pressed]="mainMedia() === m"
+                    [attr.aria-label]="'Xem ảnh ' + mediaLabels[$any(m.role)]"
+                    (click)="selectMedia(i)"
+                  >
+                    @let thumb = picture(m);
+                    @if (thumb.src && !failedImages().has(thumb.src)) {
+                      <picture>
+                        @if (thumb.webp) { <source type="image/webp" [srcset]="thumb.webp" sizes="72px" /> }
+                        <img [src]="thumb.src" alt="" width="72" height="96" loading="lazy" (error)="imageFailed(thumb.src)" />
+                      </picture>
+                    } @else {
+                      <span class="thumb-placeholder" aria-hidden="true">—</span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+            @if (b.media.length > 4) {
+              <button
+                type="button"
+                class="thumb-nav down"
+                [disabled]="!thumbCanScrollDown()"
+                aria-label="Cuộn danh sách ảnh xuống"
+                (click)="scrollThumbs(thumbList, 1)"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="m6 9 6 6 6-6" />
+                </svg>
+              </button>
+            }
+          </div>
         }
       </section>
       <div class="contact-actions">
@@ -256,4 +330,80 @@
       <p class="shelf-empty">Chưa có sách khác cùng thể loại.</p>
     }
   </section>
+  <dialog
+    #lightboxDialog
+    class="lightbox-dialog"
+    aria-label="Xem và phóng to ảnh sách"
+    (close)="onLightboxNativeClose()"
+    (keydown)="onLightboxKeydown($event)"
+    (click)="onLightboxBackdropClick($event, lightboxDialog)"
+  >
+    @if (mainMedia(); as m) {
+      <div class="lightbox-shell">
+        <div class="lightbox-top">
+          <span class="lightbox-count">{{ selectedMedia() + 1 }} / {{ b.media.length }} · {{ mediaLabels[$any(m.role)] }}</span>
+          <div class="lightbox-tools">
+            <button type="button" aria-label="Thu nhỏ ảnh" [disabled]="zoomScale() <= 1" (click)="stepZoom(-0.5)">−</button>
+            <button type="button" class="lightbox-pct" aria-label="Đặt lại tỉ lệ 100%" (click)="resetZoom()">{{ zoomPercent() }}%</button>
+            <button type="button" aria-label="Phóng to ảnh" [disabled]="zoomScale() >= 3" (click)="stepZoom(0.5)">+</button>
+            <button type="button" class="lightbox-close" aria-label="Đóng xem ảnh" (click)="closeLightbox(lightboxDialog)">✕</button>
+          </div>
+        </div>
+        <div class="lightbox-stage">
+          @if (b.media.length > 1) {
+            <button type="button" class="lightbox-nav prev" aria-label="Ảnh trước" (click)="stepLightboxMedia(-1)">‹</button>
+          }
+          <div
+            #lbViewport
+            class="lightbox-viewport"
+            [class.is-zoomed]="zoomScale() > 1"
+            (dblclick)="toggleZoom($event, lbViewport)"
+            (wheel)="onLightboxWheel($event, lbViewport)"
+            (pointerdown)="onLightboxPointerDown($event, lbViewport)"
+            (pointermove)="onLightboxPointerMove($event, lbViewport)"
+            (pointerup)="onLightboxPointerUp($event, lbViewport)"
+            (pointercancel)="onLightboxPointerUp($event, lbViewport)"
+            (lostpointercapture)="onLightboxPointerUp($event, lbViewport)"
+          >
+            <div
+              class="lightbox-track"
+              [class.is-dragging]="lightboxDragging()"
+              [style.transform]="lightboxTrackTransform()"
+            >
+              @for (item of b.media; track item.role; let i = $index) {
+                @let slideMedia = picture(item, true);
+                <div class="lightbox-slide" [attr.data-index]="i" [attr.aria-hidden]="selectedMedia() !== i">
+                  @if (slideMedia.src && !failedImages().has(slideMedia.src)) {
+                    <picture class="lightbox-picture">
+                      @if (slideMedia.webp) {
+                        <source type="image/webp" [attr.srcset]="slideMedia.webp" sizes="100vw" />
+                      }
+                      <img
+                        class="lightbox-img"
+                        [class.is-dragging]="lightboxDragging()"
+                        [src]="slideMedia.src"
+                        [attr.srcset]="slideMedia.jpeg"
+                        sizes="100vw"
+                        [alt]="item.alt || b.title"
+                        [attr.loading]="selectedMedia() === i ? 'eager' : 'lazy'"
+                        draggable="false"
+                        [style.transform]="
+                          selectedMedia() === i
+                            ? 'translate3d(' + zoomPan().x + 'px, ' + zoomPan().y + 'px, 0) scale(' + zoomScale() + ')'
+                            : 'none'
+                        "
+                      />
+                    </picture>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+          @if (b.media.length > 1) {
+            <button type="button" class="lightbox-nav next" aria-label="Ảnh tiếp theo" (click)="stepLightboxMedia(1)">›</button>
+          }
+        </div>
+      </div>
+    }
+  </dialog>
 }

@@ -411,4 +411,235 @@ describe('Detail refresh and public origin', () => {
     h.detectChanges();
     expect(el.querySelector('.detail-meta-grid')?.textContent).not.toContain('Định dạng:');
   });
+
+  it('shows a circular 2.5x loupe only inside rendered image bounds for mouse pointers', async () => {
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({ ...a, media: [{ role: 'FRONT', contentPath: '/cover.jpg', alt: 'Bìa' }] }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+    const stage = el.querySelector('.main-media-stage') as HTMLElement;
+    const img = stage.querySelector('img') as HTMLImageElement;
+
+    vi.spyOn(stage, 'getBoundingClientRect').mockReturnValue({
+      left: 100, top: 50, width: 300, height: 400, right: 400, bottom: 450, x: 100, y: 50, toJSON: () => ({}),
+    });
+    vi.spyOn(img, 'getBoundingClientRect').mockReturnValue({
+      left: 100, top: 50, width: 300, height: 400, right: 400, bottom: 450, x: 100, y: 50, toJSON: () => ({}),
+    });
+    Object.defineProperty(img, 'naturalWidth', { value: 400, configurable: true });
+    Object.defineProperty(img, 'naturalHeight', { value: 800, configurable: true });
+
+    const pointer = (type: string, clientX: number, clientY: number, pointerType = 'mouse') =>
+      typeof PointerEvent !== 'undefined'
+        ? new PointerEvent(type, { clientX, clientY, pointerType, pointerId: 1 })
+        : Object.assign(new MouseEvent(type, { clientX, clientY }), { pointerType, pointerId: 1 });
+
+    stage.dispatchEvent(pointer('pointermove', 120, 200, 'mouse'));
+    h.detectChanges();
+    expect(el.querySelector('.magnifier-loupe')).toBeNull();
+
+    stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
+    h.detectChanges();
+    const loupe = el.querySelector('.magnifier-loupe') as HTMLElement;
+    expect(loupe).not.toBeNull();
+    expect(loupe.style.width).toBe('170px');
+    expect(loupe.style.height).toBe('170px');
+    expect(loupe.style.backgroundSize).toBe('500px 1000px');
+
+    stage.dispatchEvent(pointer('pointermove', 250, 250, 'touch'));
+    h.detectChanges();
+    expect(el.querySelector('.magnifier-loupe')).toBeNull();
+
+    stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
+    h.detectChanges();
+    expect(el.querySelector('.magnifier-loupe')).not.toBeNull();
+
+    stage.dispatchEvent(pointer('pointerleave', 0, 0, 'mouse'));
+    h.detectChanges();
+    expect(el.querySelector('.magnifier-loupe')).toBeNull();
+  });
+
+  it('renders vertical scroll buttons when over 4 images and scrolls thumbs without changing main image', async () => {
+    const roles = ['FRONT', 'BACK', 'SPINE', 'INSIDE_1', 'INSIDE_2'];
+    const media = roles.map((role) => ({ role, contentPath: '/' + role + '.jpg', alt: role }));
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({ ...a, media }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+
+    const up = el.querySelector<HTMLButtonElement>('.thumb-nav.up');
+    const down = el.querySelector<HTMLButtonElement>('.thumb-nav.down');
+    const list = el.querySelector<HTMLElement>('.thumbs')!;
+    expect(up).not.toBeNull();
+    expect(down).not.toBeNull();
+    expect(up!.disabled).toBe(true);
+    expect(down!.disabled).toBe(false);
+
+    const scrollBySpy = vi.fn();
+    list.scrollBy = scrollBySpy;
+    down!.click();
+    h.detectChanges();
+    expect(scrollBySpy).toHaveBeenCalledWith({ top: 108, behavior: 'smooth' });
+    expect(c.selectedMedia()).toBe(0);
+  });
+
+  it('opens fullscreen lightbox with zoom badge/controls, switches images, and resets zoom', async () => {
+    const media = ['FRONT', 'BACK'].map((role) => ({ role, contentPath: '/' + role + '.jpg', alt: role }));
+    TestBed.configureTestingModule({
+      providers: [
+        provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
+        {
+          provide: PublicApi,
+          useValue: {
+            detail: () => of({ ...a, media }),
+            contact: () => of({ hotlineUrl: null, groupUrl: null }),
+          },
+        },
+      ],
+    });
+    const h = await RouterTestingHarness.create();
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const el = h.routeNativeElement!;
+
+    expect(el.querySelector('.zoom-badge')).not.toBeNull();
+    const stage = el.querySelector<HTMLElement>('.main-media-stage')!;
+    const dialog = el.querySelector<HTMLDialogElement>('dialog.lightbox-dialog')!;
+    dialog.showModal = vi.fn(() => dialog.setAttribute('open', ''));
+    dialog.close = vi.fn(() => {
+      dialog.removeAttribute('open');
+      dialog.dispatchEvent(new Event('close'));
+    });
+
+    stage.click();
+    h.detectChanges();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(c.lightboxOpen()).toBe(true);
+    expect(el.querySelector('.lightbox-count')?.textContent).toContain('1 / 2');
+
+    el.querySelector<HTMLButtonElement>('.lightbox-tools button[aria-label="Phóng to ảnh"]')!.click();
+    h.detectChanges();
+    expect(c.zoomScale()).toBe(1.5);
+    expect(el.querySelector('.lightbox-pct')?.textContent?.trim()).toBe('150%');
+
+    const viewport = el.querySelector<HTMLElement>('.lightbox-viewport')!;
+    el.querySelector<HTMLImageElement>('.lightbox-slide[data-index="0"] .lightbox-img')!.dispatchEvent(
+      new MouseEvent('dblclick', { bubbles: true }),
+    );
+    h.detectChanges();
+    expect(c.zoomScale()).toBe(1);
+
+    el.querySelector<HTMLButtonElement>('.lightbox-tools button[aria-label="Phóng to ảnh"]')!.click();
+    h.detectChanges();
+    expect(c.zoomScale()).toBe(1.5);
+
+    el.querySelector<HTMLButtonElement>('.lightbox-nav.next')!.click();
+    h.detectChanges();
+    expect(c.selectedMedia()).toBe(1);
+    expect(c.zoomScale()).toBe(1);
+    expect(el.querySelector('.lightbox-count')?.textContent).toContain('2 / 2');
+
+    el.querySelector<HTMLButtonElement>('.lightbox-nav.prev')!.click();
+    h.detectChanges();
+    expect(c.selectedMedia()).toBe(0);
+
+    const track = el.querySelector<HTMLElement>('.lightbox-track')!;
+    const pointer = (type: string, clientX: number, clientY: number, pointerType = 'touch', buttons = 1) =>
+      typeof PointerEvent !== 'undefined'
+        ? new PointerEvent(type, { clientX, clientY, pointerType, pointerId: 1, button: 0, buttons, bubbles: true })
+        : Object.assign(new MouseEvent(type, { clientX, clientY, button: 0, buttons, bubbles: true }), {
+            pointerType,
+            pointerId: 1,
+          });
+
+    viewport.dispatchEvent(pointer('pointerdown', 200, 200));
+    viewport.dispatchEvent(pointer('pointermove', 300, 200));
+    h.detectChanges();
+    expect(track.classList.contains('is-dragging')).toBe(true);
+    expect(c.swipeOffsetX()).toBe(28);
+    viewport.dispatchEvent(pointer('pointerup', 300, 200));
+    h.detectChanges();
+    expect(c.selectedMedia()).toBe(0);
+    expect(c.swipeOffsetX()).toBe(0);
+
+    const setCap = vi.fn();
+    const relCap = vi.fn();
+    let captured = false;
+    viewport.setPointerCapture = (id: number) => {
+      captured = true;
+      setCap(id);
+    };
+    viewport.hasPointerCapture = () => captured;
+    viewport.releasePointerCapture = (id: number) => {
+      captured = false;
+      relCap(id);
+    };
+
+    viewport.dispatchEvent(pointer('pointerdown', 250, 200, 'mouse', 1));
+    viewport.dispatchEvent(pointer('pointermove', 160, 200, 'mouse', 1));
+    h.detectChanges();
+    expect(setCap).toHaveBeenCalledWith(1);
+    expect(c.swipeOffsetX()).toBe(-90);
+    expect(track.style.transform).toContain('-90px');
+    viewport.dispatchEvent(pointer('pointermove', 140, 200, 'mouse', 0));
+    h.detectChanges();
+    expect(relCap).toHaveBeenCalledWith(1);
+    expect(c.selectedMedia()).toBe(1);
+    expect(c.swipeOffsetX()).toBe(0);
+    expect(track.classList.contains('is-dragging')).toBe(false);
+
+    viewport.click();
+    h.detectChanges();
+    expect(c.lightboxOpen()).toBe(true);
+
+    viewport.dispatchEvent(pointer('pointerdown', 180, 200, 'mouse', 1));
+    viewport.dispatchEvent(pointer('pointermove', 210, 200, 'mouse', 1));
+    h.detectChanges();
+    expect(c.lightboxDragging()).toBe(true);
+    window.dispatchEvent(new Event('blur'));
+    h.detectChanges();
+    expect(c.lightboxDragging()).toBe(false);
+    expect(c.swipeOffsetX()).toBe(0);
+
+    el.querySelector<HTMLImageElement>('.lightbox-slide[data-index="1"] .lightbox-img')!.click();
+    h.detectChanges();
+    expect(c.lightboxOpen()).toBe(true);
+
+    el.querySelector<HTMLButtonElement>('.lightbox-tools button[aria-label="Phóng to ảnh"]')!.click();
+    h.detectChanges();
+    expect(c.zoomScale()).toBe(1.5);
+    el.querySelector<HTMLElement>('.lightbox-slide[data-index="1"]')!.click();
+    h.detectChanges();
+    expect(c.lightboxOpen()).toBe(false);
+    expect(dialog.close).toHaveBeenCalledOnce();
+
+    stage.click();
+    h.detectChanges();
+    expect(c.lightboxOpen()).toBe(true);
+    el.querySelector<HTMLButtonElement>('.lightbox-close')!.click();
+    h.detectChanges();
+    expect(c.lightboxOpen()).toBe(false);
+    expect(dialog.close).toHaveBeenCalledTimes(2);
+  });
 });
