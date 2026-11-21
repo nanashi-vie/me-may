@@ -5278,3 +5278,31 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - `home-page.scss`: thêm nền xám ấm `#f4f3ef` cho vùng trang chủ (light mode), mỗi kệ `.shelf` là khung trắng bo góc `10px`; tiêu đề `h2` giữ cỡ lớn như cũ (`1.8rem` desktop / `1.45rem` mobile, `var(--font-display)`) màu đỏ `var(--red)` kèm gạch chân đỏ `3px` trên đường kẻ ngang mảnh; các sản phẩm trong `.shelf` bỏ `gap`, chỉ giữ 1 đường kẻ dọc mảnh ngăn cách giữa các cuốn (riêng Flash Sale vẫn giữ lưới thẻ riêng).
   - `book-card.scss`: bỏ viền 4 cạnh khi nằm trong `.shelf` (`:host-context(.shelf)`), thêm hiệu ứng đổ bóng nổi (`box-shadow`, `z-index: 2`) và phóng to nhẹ ảnh bìa (`scale(1.045)`, tôn trọng `prefers-reduced-motion`) khi hover/focus-within.
 - **Kiểm tra**: chạy test `home` + `book-card`, `npm run build` (kiểm budget SCSS), `git diff --check`, commit & push lên `dev`.
+
+### 2026-11-21 — DETAIL-ZOOM-GALLERY-01 — Kính lúp tròn 2.5x, dải thumbnail dọc và Lightbox phóng to ảnh ở chi tiết sách
+
+- **Mục tiêu & phạm vi**: Nâng cấp gallery trang `/sach/:slug` theo mẫu người dùng chọn: (1) kính lúp tròn đường kính `170px` phóng đại `2.5x` đi theo con trỏ chuột desktop chỉ trong vùng ảnh `contain` thực tế; (2) trên desktop (`>720px`) đổi tab thumbnail sang cột dọc bên trái khung ảnh (tối đa 4 ảnh hiển thị, có 2 nút tròn đỏ `^`/`v` khi `>4` ảnh chỉ để cuộn danh sách không tự đổi ảnh chính; bỏ viền đỏ ở ảnh đang chọn và làm mờ nhẹ `opacity: 0.45` các ảnh chưa chọn); trên mobile (`<=720px`) giữ hàng ngang bên dưới; (3) thêm icon kính lúp nhỏ góc dưới phải ảnh chính và bấm/chạm mở Lightbox `<dialog>` toàn màn hình hỗ trợ zoom `1x–3x` (double-click/tap, pinch 2 ngón, wheel, nút `−`/`+`/`100%`), pan khi zoom, vuốt ngang hoặc nút `‹`/`›`/phím mũi tên chuyển ảnh và `✕`/Escape đóng.
+- **File thay đổi**:
+  - `code/frontend/src/app/features/catalogue/book-detail/book-detail.ts` / `.html` / `.scss` / `.spec.ts`
+  - `code/frontend/src/styles.scss` (chuyển style `.main-media-stage`, `.zoom-badge`, `.magnifier-loupe`, `.thumb-nav`, `.lightbox-*` và `.related-section`/`.carousel-*` vào `app-book-detail { ... }` để giữ `book-detail.scss` dưới ngưỡng cảnh báo budget `6.00 kB` của Angular sau khi build thử báo `9.26 kB`)
+  - `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (gồm 20 test trong `book-detail.spec.ts`, trong đó có 3 test mới cho kính lúp tròn trong vùng `contain`, cuộn thumbnail dọc không đổi ảnh chính và Lightbox phóng to/chuyển ảnh).
+  - `code/frontend`: `npm run build` (browser + server SSR) đạt, 0 cảnh báo budget.
+  - Repo root: kiểm `wc -l docs/product/DESIGN.md docs/PROGRESS.md` và `git diff --check`.
+  - Chưa chạy: kiểm tra trực quan và thao tác pinch/double-tap/swipe thực tế trên trình duyệt desktop và điện thoại iOS/Android.
+- **Việc dang dở / lưu ý**:
+  - Thay đổi hiện còn local trên nhánh `dev` (chưa commit, chưa push theo quy trình chờ nghiệm thu).
+- **Bước tiếp theo**: Owner kiểm tra trực quan kính lúp tròn desktop, dải thumbnail dọc và Lightbox phóng to trên mobile/desktop thực tế; nếu đạt thì commit & push lên `dev`.
+
+### 2026-11-21 — DETAIL-ZOOM-GALLERY-02 — Bấm ngoài ảnh đóng Lightbox, trượt song song kiểu iOS Photos và chống dính chuột
+
+- **Mục tiêu & phạm vi**: Cập nhật Lightbox ở `/sach/:slug`: (1) bấm/chạm vào vùng nền đen bên ngoài `.lightbox-img` (cả ở `100%` lẫn khi đang zoom, trừ thanh công cụ `.lightbox-top`, nút `.lightbox-nav` và khi vừa kết thúc kéo/pan) sẽ đóng Lightbox và trả focus về khung ảnh chính; (2) kéo ngang ở `1x` trượt song song dải `.lightbox-track` với khoảng đen ngăn cách `24px` giữa các ảnh (theo thời gian thực khi kéo, có lực cản đàn hồi `0.28x` ở biên đầu/cuối, thả tay lướt mượt sang ảnh mới hoặc đàn hồi về ảnh hiện tại; vẫn giữ nút `‹`/`›` xoay vòng và bố cục gọn không thêm dải thumbnail đáy); (3) chống dính chuột khi kéo ra ngoài cửa sổ trình duyệt bằng lazy `setPointerCapture` khi bắt đầu kéo (`> 4px`), kiểm tra `event.pointerType === 'mouse' && event.buttons === 0`, lắng nghe `lostpointercapture` và `window:blur` (`cancelLightboxDrag`).
+- **File thay đổi**: `book-detail.ts`, `book-detail.html`, `book-detail.spec.ts`, `code/frontend/src/styles.scss`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (bao gồm kiểm thử `setPointerCapture`/`releasePointerCapture`, tự kết thúc kéo khi `buttons === 0` hoặc `window:blur`, kéo trượt song song `swipeOffsetX`, lực cản biên `0.28x`, chặn click giả sau drag, bấm vùng nền đen ngoài ảnh để đóng kể cả khi đang zoom và click vào `.lightbox-img` không đóng).
+  - `code/frontend`: `npm run build` (browser + server SSR) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md docs/PROGRESS.md` và `git diff --check` đạt.
+  - Chưa chạy: kiểm tra trực quan và thao tác kéo ra ngoài cửa sổ trên trình duyệt desktop thật và chạm/pinch trên điện thoại iOS/Android thật.
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 21/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra thêm trên thiết bị mobile thật ở lượt QA tổng trước rollout.

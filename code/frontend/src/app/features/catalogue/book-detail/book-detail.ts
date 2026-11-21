@@ -41,13 +41,45 @@ import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrum
   imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCard, Breadcrumb],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
+  host: { '(window:blur)': 'cancelLightboxDrag()' },
 })
 export class BookDetail {
   readonly picture = publicPicture;
   readonly failedImages = signal<ReadonlySet<string>>(new Set());
+  readonly loupeSize = 170;
+  readonly loupeZoom = 2.5;
+  readonly loupe = signal<{
+    visible: boolean;
+    x: number;
+    y: number;
+    bgX: number;
+    bgY: number;
+    bgW: number;
+    bgH: number;
+  } | null>(null);
+  readonly thumbCanScrollUp = signal(false);
+  readonly thumbCanScrollDown = signal(false);
+  readonly lightboxOpen = signal(false);
+  readonly zoomScale = signal(1);
+  readonly zoomPan = signal({ x: 0, y: 0 });
+  readonly swipeOffsetX = signal(0);
+  readonly lightboxDragging = signal(false);
+  private stageTriggerEl: HTMLElement | null = null;
+  private viewportBounds = { w: 480, h: 640 };
+  private readonly activePointers = new Map<number, { x: number; y: number }>();
+  private swipeStart: { id: number; x: number; y: number } | null = null;
+  private movedDuringPointer = false;
+  private suppressNextBackdropClick = false;
+  private suppressTimer: ReturnType<typeof setTimeout> | null = null;
+  private pinchStartDist = 0;
+  private pinchStartScale = 1;
+  private lastTapTime = 0;
 
   imageFailed(src: string | undefined) {
-    if (src) this.failedImages.update(failed => new Set(failed).add(src));
+    if (src) {
+      this.failedImages.update((failed) => new Set(failed).add(src));
+      this.hideLoupe();
+    }
   }
   readonly api = inject(PublicApi);
   readonly selectedMedia = signal(0);
@@ -58,6 +90,350 @@ export class BookDetail {
   }
   selectMedia(i: number) {
     this.selectedMedia.set(i);
+    this.hideLoupe();
+    this.resetZoom();
+  }
+  scrollThumbs(listEl: HTMLElement, dir: -1 | 1) {
+    if (typeof listEl.scrollBy === 'function') {
+      listEl.scrollBy({ top: dir * 108, behavior: 'smooth' });
+    } else {
+      listEl.scrollTop = Math.max(0, listEl.scrollTop + dir * 108);
+    }
+    this.updateThumbScrollState(listEl);
+  }
+  updateThumbScrollState(listEl: HTMLElement) {
+    if (!listEl.clientHeight) {
+      this.thumbCanScrollUp.set(listEl.scrollTop > 2);
+      this.thumbCanScrollDown.set((this.book()?.media.length ?? 0) > 4);
+      return;
+    }
+    this.thumbCanScrollUp.set(listEl.scrollTop > 2);
+    this.thumbCanScrollDown.set(listEl.scrollTop + listEl.clientHeight < listEl.scrollHeight - 2);
+  }
+  onStagePointerMove(event: PointerEvent, stageEl: HTMLElement, imgEl: HTMLImageElement) {
+    if ((event.pointerType && event.pointerType !== 'mouse') || this.lightboxOpen()) {
+      this.loupe.set(null);
+      return;
+    }
+    const rect = imgEl.getBoundingClientRect();
+    const stageRect = stageEl.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) {
+      this.loupe.set(null);
+      return;
+    }
+    let renderW = rect.width;
+    let renderH = rect.height;
+    let offsetX = 0;
+    let offsetY = 0;
+    if (imgEl.naturalWidth > 0 && imgEl.naturalHeight > 0) {
+      const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
+      const boxRatio = rect.width / rect.height;
+      if (imgRatio > boxRatio) {
+        renderW = rect.width;
+        renderH = rect.width / imgRatio;
+        offsetY = (rect.height - renderH) / 2;
+      } else {
+        renderH = rect.height;
+        renderW = rect.height * imgRatio;
+        offsetX = (rect.width - renderW) / 2;
+      }
+    }
+    const left = rect.left + offsetX;
+    const top = rect.top + offsetY;
+    if (
+      event.clientX < left ||
+      event.clientX > left + renderW ||
+      event.clientY < top ||
+      event.clientY > top + renderH
+    ) {
+      this.loupe.set(null);
+      return;
+    }
+    const relX = event.clientX - left;
+    const relY = event.clientY - top;
+    this.loupe.set({
+      visible: true,
+      x: event.clientX - stageRect.left,
+      y: event.clientY - stageRect.top,
+      bgX: this.loupeSize / 2 - relX * this.loupeZoom,
+      bgY: this.loupeSize / 2 - relY * this.loupeZoom,
+      bgW: renderW * this.loupeZoom,
+      bgH: renderH * this.loupeZoom,
+    });
+  }
+  hideLoupe() {
+    if (this.loupe()) this.loupe.set(null);
+  }
+  zoomPercent() {
+    return Math.round(this.zoomScale() * 100);
+  }
+  lightboxTrackTransform() {
+    return `translate3d(calc(${-this.selectedMedia()} * (100% + 24px) + ${this.swipeOffsetX()}px), 0, 0)`;
+  }
+  openLightbox(dialog: HTMLDialogElement, trigger?: HTMLElement) {
+    const m = this.mainMedia();
+    const src = m ? this.picture(m, true).src : undefined;
+    if (!m || !src || this.failedImages().has(src)) return;
+    this.stageTriggerEl = trigger ?? null;
+    this.hideLoupe();
+    this.clearSuppressClick();
+    this.resetZoom();
+    this.activePointers.clear();
+    this.swipeStart = null;
+    this.lightboxOpen.set(true);
+    if (typeof dialog.showModal === 'function' && !dialog.open) {
+      dialog.showModal();
+    } else {
+      dialog.setAttribute('open', '');
+    }
+  }
+  closeLightbox(dialog: HTMLDialogElement) {
+    this.lightboxOpen.set(false);
+    this.clearSuppressClick();
+    this.resetZoom();
+    this.activePointers.clear();
+    this.swipeStart = null;
+    if (typeof dialog.close === 'function' && dialog.open) {
+      dialog.close();
+    } else {
+      dialog.removeAttribute('open');
+      this.stageTriggerEl?.focus();
+      this.stageTriggerEl = null;
+    }
+  }
+  onLightboxNativeClose() {
+    this.lightboxOpen.set(false);
+    this.clearSuppressClick();
+    this.resetZoom();
+    this.activePointers.clear();
+    this.swipeStart = null;
+    this.stageTriggerEl?.focus();
+    this.stageTriggerEl = null;
+  }
+  onLightboxBackdropClick(event: MouseEvent, dialog: HTMLDialogElement) {
+    if (this.suppressNextBackdropClick) {
+      this.clearSuppressClick();
+      return;
+    }
+    const target = event.target as HTMLElement | null;
+    if (!target || target.closest('.lightbox-img, .lightbox-nav, .lightbox-top')) return;
+    this.closeLightbox(dialog);
+  }
+  onLightboxKeydown(event: KeyboardEvent) {
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      this.stepLightboxMedia(-1);
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      this.stepLightboxMedia(1);
+    } else if (event.key === '+' || event.key === '=') {
+      event.preventDefault();
+      this.stepZoom(0.5);
+    } else if (event.key === '-') {
+      event.preventDefault();
+      this.stepZoom(-0.5);
+    } else if (event.key === '0') {
+      event.preventDefault();
+      this.resetZoom();
+    }
+  }
+  stepLightboxMedia(dir: -1 | 1) {
+    const len = this.book()?.media.length ?? 0;
+    if (len < 2) return;
+    this.selectedMedia.update((i) => (i + dir + len) % len);
+    this.resetZoom();
+  }
+  setZoom(nextScale: number) {
+    const clamped = Math.min(3, Math.max(1, Math.round(nextScale * 100) / 100));
+    this.zoomScale.set(clamped);
+    if (clamped <= 1) {
+      this.zoomPan.set({ x: 0, y: 0 });
+    } else {
+      this.zoomPan.update((p) => this.clampPan(p.x, p.y, clamped));
+    }
+  }
+  stepZoom(delta: number) {
+    this.setZoom(this.zoomScale() + delta);
+  }
+  resetZoom() {
+    this.zoomScale.set(1);
+    this.zoomPan.set({ x: 0, y: 0 });
+    this.swipeOffsetX.set(0);
+    this.lightboxDragging.set(false);
+  }
+  toggleZoom(event?: MouseEvent, viewportEl?: HTMLElement) {
+    if (event && !(event.target as HTMLElement | null)?.closest('.lightbox-img')) return;
+    if (this.zoomScale() > 1) {
+      this.resetZoom();
+      return;
+    }
+    const next = 2.5;
+    if (event && viewportEl) {
+      const rect = viewportEl.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        this.viewportBounds = { w: rect.width, h: rect.height };
+        const dx = event.clientX - (rect.left + rect.width / 2);
+        const dy = event.clientY - (rect.top + rect.height / 2);
+        this.zoomScale.set(next);
+        this.zoomPan.set(this.clampPan(-dx * (next - 1), -dy * (next - 1), next));
+        return;
+      }
+    }
+    this.zoomScale.set(next);
+    this.zoomPan.set({ x: 0, y: 0 });
+  }
+  onLightboxWheel(event: WheelEvent, viewportEl: HTMLElement) {
+    event.preventDefault();
+    const rect = viewportEl.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) this.viewportBounds = { w: rect.width, h: rect.height };
+    this.stepZoom(event.deltaY < 0 ? 0.25 : -0.25);
+  }
+  onLightboxPointerDown(event: PointerEvent, viewportEl: HTMLElement) {
+    if ((event.target as HTMLElement | null)?.closest('button')) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    const rect = viewportEl.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) this.viewportBounds = { w: rect.width, h: rect.height };
+    this.clearSuppressClick();
+    this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.activePointers.size === 1) {
+      this.swipeStart = { id: event.pointerId, x: event.clientX, y: event.clientY };
+      this.movedDuringPointer = false;
+      this.lightboxDragging.set(false);
+    } else if (this.activePointers.size === 2) {
+      this.swipeStart = null;
+      this.swipeOffsetX.set(0);
+      this.lightboxDragging.set(false);
+      this.pinchStartDist = this.pointerDistance();
+      this.pinchStartScale = this.zoomScale();
+    }
+  }
+  onLightboxPointerMove(event: PointerEvent, viewportEl?: HTMLElement) {
+    const prev = this.activePointers.get(event.pointerId);
+    if (!prev) return;
+    if (event.pointerType === 'mouse' && event.buttons === 0) {
+      this.onLightboxPointerUp(event, viewportEl);
+      return;
+    }
+    this.activePointers.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (this.activePointers.size === 2) {
+      this.movedDuringPointer = true;
+      this.suppressNextBackdropClick = true;
+      const dist = this.pointerDistance();
+      if (this.pinchStartDist > 0) this.setZoom(this.pinchStartScale * (dist / this.pinchStartDist));
+      return;
+    }
+    if (this.activePointers.size === 1) {
+      const dx = event.clientX - prev.x;
+      const dy = event.clientY - prev.y;
+      const totalDx = this.swipeStart ? event.clientX - this.swipeStart.x : 0;
+      const totalDy = this.swipeStart ? event.clientY - this.swipeStart.y : 0;
+      if (Math.hypot(totalDx, totalDy) > 5) {
+        this.movedDuringPointer = true;
+        this.suppressNextBackdropClick = true;
+      }
+      if (this.zoomScale() > 1 || (this.swipeStart && Math.abs(totalDx) > 4)) {
+        if (
+          viewportEl &&
+          typeof viewportEl.setPointerCapture === 'function' &&
+          !viewportEl.hasPointerCapture?.(event.pointerId)
+        ) {
+          try {
+            viewportEl.setPointerCapture(event.pointerId);
+          } catch {}
+        }
+      }
+      if (this.zoomScale() > 1) {
+        this.lightboxDragging.set(true);
+        this.zoomPan.update((p) => this.clampPan(p.x + dx, p.y + dy, this.zoomScale()));
+      } else if (this.swipeStart && Math.abs(totalDx) > 4) {
+        this.lightboxDragging.set(true);
+        const idx = this.selectedMedia();
+        const len = this.book()?.media.length ?? 0;
+        const atEdge = len <= 1 || (idx === 0 && totalDx > 0) || (idx === len - 1 && totalDx < 0);
+        this.swipeOffsetX.set(atEdge ? Math.round(totalDx * 0.28) : Math.round(totalDx));
+      }
+    }
+  }
+  onLightboxPointerUp(event: PointerEvent, viewportEl?: HTMLElement) {
+    if (
+      viewportEl &&
+      typeof viewportEl.releasePointerCapture === 'function' &&
+      viewportEl.hasPointerCapture?.(event.pointerId)
+    ) {
+      try {
+        viewportEl.releasePointerCapture(event.pointerId);
+      } catch {}
+    }
+    if (this.activePointers.size === 1 && this.swipeStart?.id === event.pointerId) {
+      const totalDx = event.clientX - this.swipeStart.x;
+      const totalDy = event.clientY - this.swipeStart.y;
+      this.lightboxDragging.set(false);
+      this.swipeOffsetX.set(0);
+      if (this.zoomScale() === 1 && Math.abs(totalDx) > 48 && Math.abs(totalDx) > Math.abs(totalDy) * 1.2) {
+        const idx = this.selectedMedia();
+        const len = this.book()?.media.length ?? 0;
+        if (totalDx < 0 && idx < len - 1) {
+          this.selectedMedia.set(idx + 1);
+          this.resetZoom();
+        } else if (totalDx > 0 && idx > 0) {
+          this.selectedMedia.set(idx - 1);
+          this.resetZoom();
+        }
+      } else if (
+        viewportEl &&
+        event.pointerType === 'touch' &&
+        !this.movedDuringPointer &&
+        Math.hypot(totalDx, totalDy) < 12 &&
+        (event.target as HTMLElement | null)?.closest('.lightbox-img')
+      ) {
+        const now = Date.now();
+        if (now - this.lastTapTime < 300) {
+          this.toggleZoom(event, viewportEl);
+          this.lastTapTime = 0;
+        } else {
+          this.lastTapTime = now;
+        }
+      }
+    }
+    this.activePointers.delete(event.pointerId);
+    if (this.activePointers.size < 2) this.pinchStartDist = 0;
+    if (this.activePointers.size === 0) {
+      this.lightboxDragging.set(false);
+      this.swipeOffsetX.set(0);
+      this.swipeStart = null;
+      if (this.suppressNextBackdropClick) {
+        this.suppressTimer = setTimeout(() => this.clearSuppressClick(), 60);
+      }
+    }
+  }
+  cancelLightboxDrag() {
+    if (!this.activePointers.size && !this.lightboxDragging()) return;
+    this.activePointers.clear();
+    this.pinchStartDist = 0;
+    this.swipeStart = null;
+    this.lightboxDragging.set(false);
+    this.swipeOffsetX.set(0);
+    this.clearSuppressClick();
+  }
+  private clearSuppressClick() {
+    this.suppressNextBackdropClick = false;
+    if (this.suppressTimer) {
+      clearTimeout(this.suppressTimer);
+      this.suppressTimer = null;
+    }
+  }
+  private pointerDistance() {
+    const pts = [...this.activePointers.values()];
+    if (pts.length < 2) return 0;
+    return Math.hypot(pts[1].x - pts[0].x, pts[1].y - pts[0].y);
+  }
+  private clampPan(x: number, y: number, scale: number) {
+    const maxX = Math.max(0, ((scale - 1) * this.viewportBounds.w) / 2);
+    const maxY = Math.max(0, ((scale - 1) * this.viewportBounds.h) / 2);
+    return {
+      x: Math.min(maxX, Math.max(-maxX, x)),
+      y: Math.min(maxY, Math.max(-maxY, y)),
+    };
   }
   scrollShelf(el: HTMLElement, dir: number) {
     el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: 'smooth' });
@@ -190,6 +566,10 @@ export class BookDetail {
     if (!b || b.id !== previous?.id) {
       this.selectedMedia.set(0);
       this.failedImages.set(new Set());
+      this.hideLoupe();
+      this.resetZoom();
+      this.thumbCanScrollUp.set(false);
+      this.thumbCanScrollDown.set((b?.media.length ?? 0) > 4);
     }
     if (error) {
       this.related.set(null);
