@@ -519,9 +519,11 @@ describe('Detail refresh and public origin', () => {
     const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
 
+    const gallery = el.querySelector<HTMLElement>('.gallery')!;
     const up = el.querySelector<HTMLButtonElement>('.thumb-nav.up');
     const down = el.querySelector<HTMLButtonElement>('.thumb-nav.down');
     const list = el.querySelector<HTMLElement>('.thumbs')!;
+    expect(getComputedStyle(gallery).minWidth).toBe('0px');
     expect(up).not.toBeNull();
     expect(down).not.toBeNull();
     expect(up!.disabled).toBe(true);

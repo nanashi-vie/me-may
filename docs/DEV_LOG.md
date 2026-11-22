@@ -5350,3 +5350,14 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
 - **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — DETAIL-MOBILE-THUMBS-01 — Sửa lỗi dải thumbnail tràn ngang màn hình trên mobile ở `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Khắc phục lỗi CSS Grid `1fr` (tương đương `minmax(auto, 1fr)`) thiếu `min-width: 0` khiến dải thumbnail 6–8 ảnh kéo giãn toàn bộ `.gallery`/`.detail-layout` vượt chiều rộng màn hình mobile và đẩy lệch footer. Cập nhật `grid-template-columns: minmax(0, 1fr)`, thêm `min-width: 0` cho `.gallery`/`.thumbs-col`/`.detail-layout > article`, giữ thumbnail mobile một hàng `54×72px` (`overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity`), dùng `margin-inline: auto` ở đầu/cuối để căn giữa an toàn trên iOS Safari thay `safe center`, và thêm `html { overflow-x: clip; }`.
+- **File thay đổi**: `book-detail.scss`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (bao gồm kiểm tra `getComputedStyle(gallery).minWidth === '0px'`); `npm run build` (browser + server SSR trong 7.015s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (37 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên iPhone thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.

@@ -1,6 +1,7 @@
-.detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin: 2rem 0 4rem; align-items: start; }
+.detail-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 3rem; margin: 2rem 0 4rem; align-items: start; }
+.detail-layout > article { min-width: 0; }
 .media-col { position: sticky; top: 1rem; min-width: 0; z-index: 4; }
-.gallery { display: grid; gap: .75rem; }
+.gallery { display: grid; gap: .75rem; min-width: 0; }
 .gallery.has-thumbs { grid-template-columns: 76px minmax(0, 1fr); align-items: start; gap: .85rem; }
 .gallery.has-thumbs .thumbs-col { grid-column: 1; grid-row: 1; }
 .gallery.has-thumbs figure { grid-column: 2; grid-row: 1; }
@@ -57,14 +58,20 @@ dd { margin: 0; }
 .community { font-size: .9rem; }
 .loading { min-height: 60vh; padding-top: 3rem; }
 @media (max-width: 720px) {
-  .detail-layout { grid-template-columns: 1fr; gap: 1.5rem; padding-bottom: 4.5rem; }
+  .detail-layout { grid-template-columns: minmax(0, 1fr); gap: 1.5rem; padding-bottom: 4.5rem; }
   .media-col { position: static; }
-  .gallery.has-thumbs { grid-template-columns: 1fr; }
+  .gallery.has-thumbs { grid-template-columns: minmax(0, 1fr); }
   .gallery.has-thumbs .thumbs-col, .gallery.has-thumbs figure { grid-column: auto; grid-row: auto; }
   figure { width: min(100%, calc(55vh * 3 / 4)); }
-  .thumbs-col { width: 100%; }
-  .thumbs { flex-direction: row; max-height: none; overflow-y: visible; overflow-x: auto; justify-content: safe center; padding-bottom: .25rem; }
-  .thumb { width: auto; img { width: 57px; height: 76px; } }
+  .thumbs-col { width: 100%; min-width: 0; max-width: 100%; }
+  .thumbs {
+    flex-direction: row; width: 100%; max-width: 100%; min-width: 0; max-height: none;
+    overflow-y: hidden; overflow-x: auto; justify-content: flex-start;
+    scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; padding-bottom: .25rem;
+    li { flex: 0 0 auto; scroll-snap-align: start; &:first-child { margin-inline-start: auto; } &:last-child { margin-inline-end: auto; } }
+  }
+  .thumb { width: 54px; img { width: 54px; height: 72px; } }
+  .thumb-placeholder { width: 54px; height: 72px; }
   .contact-actions { position: fixed; inset: auto 0 0; z-index: 5; margin: 0; padding: .6rem 1rem; background: var(--surface); border-top: 1px solid var(--line); box-shadow: 0 -2px 8px rgb(0 0 0 / 8%); }
   h1 { font-size: 1.8rem; }
   .price { font-size: 1.65rem; }
