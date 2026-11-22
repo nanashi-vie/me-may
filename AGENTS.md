@@ -5,7 +5,7 @@
 1. Bắt đầu từ [chỉ mục duy nhất](docs/README.md), chọn luồng đọc theo đầu việc; không nạp toàn bộ bộ tài liệu mỗi phiên.
 2. Theo chỉ mục, đọc `docs/PROGRESS.md` và checkpoint mới nhất của `docs/DEV_LOG.md` để biết trạng thái/bàn giao; chỉ đọc checkpoint cũ khi liên quan.
 3. Chỉ đọc các file/mục mà đầu việc cần theo chỉ mục, gồm baseline `docs/context/MASTER_PLAN.md` và spec đang thực thi nếu có. Master plan chưa thay cho technical spec được duyệt.
-4. Chọn skill phù hợp từ danh mục runtime hoặc `.agents/skills/`, đọc đầy đủ `SKILL.md` trước khi áp dụng. Bộ skill local được bỏ qua bởi Git; không nạp toàn bộ mỗi phiên.
+4. Chọn skill phù hợp từ danh mục runtime, `.claude/skills/` (Claude Code) hoặc `.agents/skills/` (Codex), đọc đầy đủ `SKILL.md` trước khi áp dụng. Bộ skill local được bỏ qua bởi Git; không nạp toàn bộ mỗi phiên.
 5. Kiểm tra trạng thái file/Git và xác minh lại môi trường thực tế. Log là bản bàn giao, không phải bằng chứng rằng code hoặc dịch vụ hiện tại vẫn hoạt động.
 
 Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat mới. Dùng log để tìm bằng chứng và tiếp tục từ bước chưa xong. Nếu yêu cầu mới thay đổi phạm vi, ghi quyết định đó vào log và cập nhật tiến độ.
@@ -40,6 +40,8 @@ Không khởi động lại công việc đã hoàn tất chỉ vì phiên chat 
 ## Skill tái sử dụng và Superpowers
 
 - Skill project-local nằm ở `.agents/skills/`, sao chép từ `/Users/daoquanghung/Documents/FBT/7/exe/ellora/.agents/` ngày 21/10/2026. Giữ local, không commit `.agents/`, `.agent/`, cấu hình IDE hoặc cache agent. Khi cần trên máy mới, sao chép từ nguồn hoặc cài skill phù hợp; không giả định Git clone có skill. Nếu runtime không liệt kê, đọc trực tiếp `SKILL.md` trong thư mục local. Khi cập nhật skill phải đối chiếu diff với bản đã chỉnh trước đó; ghi nguồn/đổi khác vào DEV_LOG.
+- Claude Code chỉ tự nạp skill dự án từ `.claude/skills/`; ngày 22/11/2026 đã sao chép nguyên 19 skill từ `.agents/skills/` sang đó ở checkout chính. `.agents/skills/` vẫn là bản nguồn: sửa ở đó rồi chép lại và kiểm bằng `diff -rq .agents/skills .claude/skills`. `.claude/` bị Git bỏ qua nên worktree mới không tự có skill; dùng checkout chính hoặc đọc `SKILL.md` theo đường dẫn tuyệt đối. Skill tạo ảnh (`image-to-code`, `imagegen-*`, `brandkit`) chỉ dùng đầy đủ khi runtime có công cụ tạo ảnh.
+- codebase-memory-mcp đăng ký ở cấp user cho Codex (`~/.codex/config.toml`) và Claude Code (`~/.claude.json`), binary `~/.local/bin/codebase-memory-mcp`. Project tên `Users-daoquanghung-Projects-me-may`; chạy lại `index_repository` khi code đổi nhiều.
 - Khi tác vụ phù hợp Superpowers, dùng quy trình tương ứng: brainstorming cho thiết kế mới, writing-plans sau khi spec được duyệt; debugging cho lỗi; verification trước khi tuyên bố hoàn thành.
 - Hướng dẫn project-local bổ sung cho Superpowers, không bỏ qua giai đoạn thiết kế/duyệt hiện hành và không tự cấp quyền deploy/publish.
 - Áp dụng nguyên tắc gọn, tái sử dụng, ít dependency từ `.agents/rules/ponytail.md`, trong phạm vi đã hiểu và cần thiết.

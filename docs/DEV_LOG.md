@@ -5361,3 +5361,15 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra tự động E2E trên iPhone thật (owner đã kiểm tra trực quan và duyệt).
 - **Việc dang dở / lưu ý**: Owner đã duyệt ngày 22/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — TOOLING-CLAUDE-01 — Chuyển bộ skill và codebase-memory-mcp sang dùng được với Claude Code
+
+- **Mục tiêu & phạm vi**: Owner chuyển từ Codex sang Claude Code. Rà skill/MCP hiện có, cài skill dự án để Claude Code tự nạp và đăng ký codebase-memory-mcp. Không đổi code ứng dụng.
+- **Quyết định & lý do**: Claude Code chỉ tự nạp skill dự án từ `.claude/skills/`, không đọc `.agents/skills/`. Đã sao chép nguyên 19 skill sang `.claude/skills/` ở checkout chính, giữ `.agents/skills/` làm bản nguồn cho Codex. Chọn sao chép thay symlink để chắc chắn runtime nạp được; vì vậy khi sửa skill phải chép lại. `.claude/` bị Git bỏ qua nên skill không vào repo và worktree mới không tự có. codebase-memory-mcp đăng ký ở cấp user trong `~/.claude.json` (máy không có lệnh `claude` trong PATH nên sửa file trực tiếp, có backup), cùng binary mà Codex đang dùng.
+- **File thay đổi**: `AGENTS.md` (nơi đặt skill cho Claude Code/Codex, cách đồng bộ và MCP), `docs/DEV_LOG.md`. Ngoài Git: `.claude/skills/` của checkout chính, `~/.claude.json`.
+- **Kiểm tra đã chạy**:
+  - Repo root checkout chính: `diff -rq .agents/skills .claude/skills` không khác biệt; cả 19 `SKILL.md` có frontmatter `name`; `git check-ignore` xác nhận `.claude/` bị bỏ qua. Runtime Claude Code liệt kê đủ 19 skill trong phiên.
+  - `codebase-memory-mcp cli index_repository` cho `/Users/daoquanghung/Projects/me-may`: indexed, 7.273 node, 28.368 edge (trước đó chỉ có index của worktree Codex `image-system`). `search_graph` tìm `OrderController` trả đúng `code/backend/.../order/OrderController.java`.
+  - Chưa chạy: gọi tool MCP từ trong một phiên Claude Code mới (server mới nạp khi mở phiên).
+- **Giới hạn**: Skill tạo ảnh (`image-to-code`, `imagegen-*`, `brandkit`) cần công cụ tạo ảnh mà Claude Code hiện không có; skill Codex-only `imagegen`, `openai-docs`, `review-agent`, `playwright` thay bằng built-in browser, `/code-review` và skill Superpowers tương ứng.
+- **Bước tiếp theo**: Mở phiên Claude Code mới tại checkout chính, xác nhận tool `search_graph`/`trace_path` xuất hiện. Thay đổi tài liệu nằm trên branch `claude/personal-computer-project-ff24a3` tạo từ `dev`; chưa commit/push.
