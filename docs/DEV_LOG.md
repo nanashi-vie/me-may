@@ -5339,3 +5339,14 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
 - **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trực quan thêm trên nhiều kích thước màn hình trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — DETAIL-ZOOM-GALLERY-05 — Bỏ nhãn pill/icon kính lúp góc và thêm `title="Click để xem"` trên `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Bỏ lớp chữ pill `.loupe-hint` bên trong `.magnifier-loupe`, thêm thuộc tính native `title="Click để xem"` trên `.main-media-stage` (tooltip hệ thống của trình duyệt khi dừng chuột, không che ảnh khi di chuyển) và bỏ hẳn icon kính lúp góc dưới phải (`.zoom-badge`) trên cả desktop và mobile. Vẫn giữ vòng tròn chấm caro mờ, popup phóng đại bên phải và click/chạm mở Lightbox.
+- **File thay đổi**: `book-detail.html`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận `.magnifier-loupe` không chứa `.loupe-hint`, `.zoom-badge` trả `null`, `.main-media-stage` có `title="Click để xem"`); `npm run build` (browser + server SSR trong 4.796s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (36 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.

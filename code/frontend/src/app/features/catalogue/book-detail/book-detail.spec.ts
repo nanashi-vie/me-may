@@ -458,7 +458,7 @@ describe('Detail refresh and public origin', () => {
     expect(loupe).not.toBeNull();
     expect(loupe.style.width).toBe('150px');
     expect(loupe.style.height).toBe('150px');
-    expect(loupe.textContent).toContain('Click để xem');
+    expect(loupe.querySelector('.loupe-hint')).toBeNull();
     expect(flyout).not.toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
     expect(flyout.style.width).toBe('400px');
@@ -553,8 +553,9 @@ describe('Detail refresh and public origin', () => {
     const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
 
-    expect(el.querySelector('.zoom-badge')).not.toBeNull();
+    expect(el.querySelector('.zoom-badge')).toBeNull();
     const stage = el.querySelector<HTMLElement>('.main-media-stage')!;
+    expect(stage.getAttribute('title')).toBe('Click để xem');
     const dialog = el.querySelector<HTMLDialogElement>('dialog.lightbox-dialog')!;
     dialog.showModal = vi.fn(() => dialog.setAttribute('open', ''));
     dialog.close = vi.fn(() => {

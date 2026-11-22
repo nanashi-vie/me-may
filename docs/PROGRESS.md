@@ -4,7 +4,8 @@ Cập nhật 22/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
-- Đã hoàn tất `PUBLIC-MEDIA-FRAME-01` trên `dev`: đồng bộ khung ảnh sách public (`/sach/:slug` ảnh chính + thumbnail, `app-book-card` trên Home/Catalogue/Bộ sưu tập/Sách liên quan, và `/quan-tam`) sang tỉ lệ `3:4` `object-fit: cover` bỏ khoảng đệm thừa (riêng Lightbox vẫn giữ `contain` đủ 100% ảnh gốc).
+- Đã hoàn tất `DETAIL-ZOOM-GALLERY-05` trên `dev` cho `/sach/:slug`: gỡ nhãn pill `"Click để xem"` trong vòng tròn kính lúp, thay bằng thuộc tính native `title="Click để xem"` trên ảnh chính và bỏ hẳn icon kính lúp ở góc ảnh (`.zoom-badge`).
+- Đã hoàn tất `PUBLIC-MEDIA-FRAME-01` trên `dev` (`02f3135`): đồng bộ khung ảnh sách public (`/sach/:slug`, `app-book-card`, `/quan-tam`) sang `3:4` `object-fit: cover` không đệm thừa.
 - Đã hoàn tất `DETAIL-ZOOM-GALLERY-03` & `DETAIL-ZOOM-GALLERY-04` trên `dev` (`21d3359`) cho `/sach/:slug`: kính lúp chấm caro tròn mờ (`Click để xem`), popup vuông phóng đại bên phải hiện nhẹ (`scale 0.96 -> 1`, `180ms`) và thu nhỏ về tâm khi mất (`scale 1 -> 0.5`, `240ms`), cột thumbnail dọc và Lightbox iOS Photos.
 - Đã tổ chức knowledge base theo [chỉ mục](README.md). Quyết định gần nhất
   và cách tái lập kiểm tra nằm ở checkpoint cuối [DEV_LOG](DEV_LOG.md).

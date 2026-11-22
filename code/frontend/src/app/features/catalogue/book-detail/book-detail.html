@@ -16,6 +16,7 @@
                 class="main-media-stage"
                 role="button"
                 tabindex="0"
+                title="Click để xem"
                 [attr.aria-label]="'Phóng to ảnh ' + mediaLabels[$any(m.role)]"
                 (pointermove)="onStagePointerMove($event, stage, mainImg)"
                 (pointerleave)="hideLoupe()"
@@ -40,12 +41,6 @@
                     (error)="imageFailed(main.src)"
                   />
                 </picture>
-                <span class="zoom-badge" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
-                  </svg>
-                </span>
                 @if (loupe(); as l) {
                   @if (l.visible) {
                     <span
@@ -55,9 +50,7 @@
                       [style.height.px]="l.lensSize"
                       [style.left.px]="l.x"
                       [style.top.px]="l.y"
-                    >
-                      <span class="loupe-hint">Click để xem</span>
-                    </span>
+                    ></span>
                   }
                 }
                 <div
