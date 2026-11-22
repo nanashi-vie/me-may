@@ -449,6 +449,7 @@ describe('Detail refresh and public origin', () => {
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
@@ -459,6 +460,7 @@ describe('Detail refresh and public origin', () => {
     expect(loupe.style.height).toBe('150px');
     expect(loupe.textContent).toContain('Click để xem');
     expect(flyout).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
     expect(flyout.style.width).toBe('400px');
     expect(flyout.style.height).toBe('400px');
     expect(flyout.style.backgroundSize).toBe('533px 1067px');
@@ -475,22 +477,27 @@ describe('Detail refresh and public origin', () => {
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).not.toBeNull();
     expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).not.toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-visible')).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
 
     stage.dispatchEvent(pointer('pointerleave', 0, 0, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).not.toBeNull();
     expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
 
     c.hideLoupe(true);
     h.detectChanges();
     expect(c.loupe()).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
   });
 
   it('renders vertical scroll buttons when over 4 images and scrolls thumbs without changing main image', async () => {

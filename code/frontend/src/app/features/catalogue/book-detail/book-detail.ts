@@ -174,11 +174,12 @@ export class BookDetail {
     });
   }
   hideLoupe(immediate = false) {
-    if (!this.loupe()) return;
+    const cur = this.loupe();
+    if (!cur) return;
     if (immediate) {
       this.loupe.set(null);
-    } else {
-      this.loupe.update((l) => (l ? { ...l, visible: false } : null));
+    } else if (cur.visible) {
+      this.loupe.set({ ...cur, visible: false });
     }
   }
   zoomPercent() {

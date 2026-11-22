@@ -5317,3 +5317,14 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra trực quan và thao tác hover trên trình duyệt desktop thật.
 - **Việc dang dở / lưu ý**: Đã chốt theo yêu cầu của owner; commit và push lên nhánh `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trực quan thêm khi rollout lên môi trường thử nghiệm.
+
+### 2026-11-22 — DETAIL-ZOOM-GALLERY-04 — Hiệu ứng hiện nhẹ và mất thu nhỏ về giữa cho popup phóng đại trên `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Chỉnh hiệu ứng đóng/mở của popup phóng đại `.magnifier-flyout` theo yêu cầu: lúc hiện nở nhẹ (`scale(.96) -> scale(1)`, `opacity: 0 -> 1` trong `180ms`), còn lúc mất thu nhỏ mạnh về tâm khung popup (`transform-origin: center`, `scale(1) -> scale(.5)`, `opacity: 1 -> 0` trong `240ms`, tôn trọng `prefers-reduced-motion`). Giữ nguyên lens tròn `.magnifier-loupe` hiện/ẩn tức thì và tránh chạy animation mất khi chưa hover lần đầu hoặc khi đổi ảnh/mở Lightbox (`hideLoupe(true)`).
+- **File thay đổi**: `book-detail.ts`, `book-detail.html`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận `.is-leaving` không kích hoạt khi chưa hover, bật khi rời chuột/`touch`, tắt sau `hideLoupe(true)`); `npm run build` (browser + server SSR trong 4.290s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (<= 400 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và tiếp tục khảo sát tỉ lệ ảnh thực tế của shop để thiết kế phương án lấp khoảng trống khung ảnh (`/grill-me`).

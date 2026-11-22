@@ -4,7 +4,7 @@ Cập nhật 22/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
-- Đã hoàn tất `DETAIL-ZOOM-GALLERY-03` trên `dev` cho `/sach/:slug`: kính lúp chấm caro tròn mờ (`Click để xem`) giới hạn trong mép ảnh thật + popup vuông phóng đại (~2.6x–2.8x) mở rộng bên phải đè lên cột thông tin sách với hiệu ứng thu phóng/mờ `180ms` riêng cho popup (tôn trọng reduced-motion), giữ nguyên cột thumbnail dọc và Lightbox iOS Photos.
+- Đã hoàn tất `DETAIL-ZOOM-GALLERY-03` & `DETAIL-ZOOM-GALLERY-04` trên `dev` cho `/sach/:slug`: kính lúp chấm caro tròn mờ (`Click để xem`) giới hạn trong mép ảnh thật, popup vuông phóng đại bên phải hiện nhẹ (`scale 0.96 -> 1`, `180ms`) và thu nhỏ về tâm khi mất (`scale 1 -> 0.5`, `240ms`), giữ nguyên cột thumbnail dọc và Lightbox iOS Photos.
 - Đã tổ chức knowledge base theo [chỉ mục](README.md). Quyết định gần nhất
   và cách tái lập kiểm tra nằm ở checkpoint cuối [DEV_LOG](DEV_LOG.md).
 - Đơn nội bộ, popup bill, hai tab và tra cứu trùng SĐT đã kiểm local đến V37.

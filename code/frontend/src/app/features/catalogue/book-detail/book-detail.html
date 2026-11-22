@@ -63,6 +63,7 @@
                 <div
                   class="magnifier-flyout"
                   [class.is-visible]="!!loupe()?.visible"
+                  [class.is-leaving]="!!loupe() && !loupe()!.visible"
                   aria-hidden="true"
                   [style.width.px]="loupe()?.popupSize ?? null"
                   [style.height.px]="loupe()?.popupSize ?? null"
