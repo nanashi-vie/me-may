@@ -85,10 +85,10 @@ describe('Detail refresh and public origin', () => {
     });
     const h = await RouterTestingHarness.create();
     await h.navigateByUrl('/sach/mm-000001', BookDetail);
-    const frame = h.routeNativeElement!.querySelector('figure') as HTMLElement;
+    const frame = h.routeNativeElement!.querySelector('.main-media-stage') as HTMLElement;
     const image = frame.querySelector('img') as HTMLImageElement;
     expect(getComputedStyle(frame).aspectRatio).toBe('3/4');
-    expect(getComputedStyle(image).objectFit).toBe('contain');
+    expect(getComputedStyle(image).objectFit).toBe('cover');
   });
   it('keeps the SSR book visible while verifying fresh data, then removes a hidden book', async () => {
     const fresh = new Subject<PublicBook>();
@@ -445,7 +445,7 @@ describe('Detail refresh and public origin', () => {
         ? new PointerEvent(type, { clientX, clientY, pointerType, pointerId: 1 })
         : Object.assign(new MouseEvent(type, { clientX, clientY }), { pointerType, pointerId: 1 });
 
-    stage.dispatchEvent(pointer('pointermove', 120, 200, 'mouse'));
+    stage.dispatchEvent(pointer('pointermove', 80, 200, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
     expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
@@ -463,15 +463,15 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
     expect(flyout.style.width).toBe('400px');
     expect(flyout.style.height).toBe('400px');
-    expect(flyout.style.backgroundSize).toBe('533px 1067px');
+    expect(flyout.style.backgroundSize).toBe('800px 1600px');
 
-    stage.dispatchEvent(pointer('pointermove', 160, 60, 'mouse'));
+    stage.dispatchEvent(pointer('pointermove', 110, 60, 'mouse'));
     h.detectChanges();
     const clampedLoupe = el.querySelector('.magnifier-loupe') as HTMLElement;
     const clampedFlyout = el.querySelector('.magnifier-flyout.is-visible') as HTMLElement;
-    expect(clampedLoupe.style.left).toBe('125px');
+    expect(clampedLoupe.style.left).toBe('75px');
     expect(clampedLoupe.style.top).toBe('75px');
-    expect(clampedFlyout.style.backgroundPosition).toBe('0px 0px');
+    expect(clampedFlyout.style.backgroundPosition).toBe('0px -267px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'touch'));
     h.detectChanges();

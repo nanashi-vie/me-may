@@ -5328,3 +5328,14 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
 - **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và tiếp tục khảo sát tỉ lệ ảnh thực tế của shop để thiết kế phương án lấp khoảng trống khung ảnh (`/grill-me`).
+
+### 2026-11-22 — PUBLIC-MEDIA-FRAME-01 — Đồng bộ khung ảnh `3:4` `object-fit: cover` không padding thừa trên toàn bộ trang public
+
+- **Mục tiêu & phạm vi**: Sau khi rà 4 ảnh thực tế chụp bằng camera iPhone (`3:4`), bỏ khoảng đệm kem thừa quanh ảnh và đồng bộ toàn bộ khung bìa public sang tỉ lệ `3:4` kèm `object-fit: cover` để ảnh lấp kín khung 100% mà không bị hở viền: (1) trang chi tiết `/sach/:slug` (`.main-media-stage` 3:4 không overflow-hidden để giữ `.magnifier-flyout`, thumbnail `72×96` desktop / `57×76` mobile, cập nhật phép tính kính lúp theo `object-fit: cover`, giữ Lightbox `object-fit: contain` xem đủ 100% ảnh gốc); (2) `app-book-card` (Home, Catalogue, Bộ sưu tập, Sách liên quan) chuyển `.cover-link` từ `4:5 contain` sang `3:4 cover`; (3) `/quan-tam` chuyển `.cover` sang `3:4 cover`.
+- **File thay đổi**: `book-detail.scss`, `book-detail.ts`, `code/frontend/src/styles.scss`, `book-card.scss`, `book-card.html`, `wishlist-page.scss`, `wishlist-page.html`, `book-detail.spec.ts`, `catalogue-page.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận khung `.main-media-stage` và `BookCard` `.cover-link` có `aspectRatio: '3/4'`, `objectFit: 'cover'` và phép tính kính lúp/popup `object-fit: cover`); `npm run build` (browser + server SSR trong 4.837s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (<= 400 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trực quan thêm trên nhiều kích thước màn hình trong lượt QA tổng trước rollout.

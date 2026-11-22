@@ -131,44 +131,42 @@ export class BookDetail {
       const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
       const boxRatio = rect.width / rect.height;
       if (imgRatio > boxRatio) {
-        renderW = rect.width;
-        renderH = rect.width / imgRatio;
-        offsetY = (rect.height - renderH) / 2;
-      } else {
         renderH = rect.height;
         renderW = rect.height * imgRatio;
         offsetX = (rect.width - renderW) / 2;
+      } else {
+        renderW = rect.width;
+        renderH = rect.width / imgRatio;
+        offsetY = (rect.height - renderH) / 2;
       }
     }
-    const left = rect.left + offsetX;
-    const top = rect.top + offsetY;
     if (
-      event.clientX < left ||
-      event.clientX > left + renderW ||
-      event.clientY < top ||
-      event.clientY > top + renderH
+      event.clientX < rect.left ||
+      event.clientX > rect.left + rect.width ||
+      event.clientY < rect.top ||
+      event.clientY > rect.top + rect.height
     ) {
       this.hideLoupe();
       return;
     }
-    const relX = event.clientX - left;
-    const relY = event.clientY - top;
-    const lensSize = Math.min(this.loupeSize, renderW, renderH);
+    const visX = event.clientX - rect.left;
+    const visY = event.clientY - rect.top;
+    const lensSize = Math.min(this.loupeSize, rect.width, rect.height);
     const half = lensSize / 2;
-    const clampedX = Math.min(Math.max(relX, half), Math.max(half, renderW - half));
-    const clampedY = Math.min(Math.max(relY, half), Math.max(half, renderH - half));
-    const lensLeft = clampedX - half;
-    const lensTop = clampedY - half;
+    const clampedX = Math.min(Math.max(visX, half), Math.max(half, rect.width - half));
+    const clampedY = Math.min(Math.max(visY, half), Math.max(half, rect.height - half));
+    const imgLeft = clampedX - half - offsetX;
+    const imgTop = clampedY - half - offsetY;
     const popupSize = Math.round(stageRect.height > 0 ? stageRect.height : lensSize * this.loupeZoom);
     const zoom = lensSize > 0 ? popupSize / lensSize : this.loupeZoom;
     this.loupe.set({
       visible: true,
-      x: Math.round(left - stageRect.left + clampedX) || 0,
-      y: Math.round(top - stageRect.top + clampedY) || 0,
+      x: Math.round(rect.left - stageRect.left + clampedX) || 0,
+      y: Math.round(rect.top - stageRect.top + clampedY) || 0,
       lensSize: Math.round(lensSize),
       popupSize,
-      bgX: Math.round(-lensLeft * zoom) || 0,
-      bgY: Math.round(-lensTop * zoom) || 0,
+      bgX: Math.round(-imgLeft * zoom) || 0,
+      bgY: Math.round(-imgTop * zoom) || 0,
       bgW: Math.round(renderW * zoom),
       bgH: Math.round(renderH * zoom),
     });
