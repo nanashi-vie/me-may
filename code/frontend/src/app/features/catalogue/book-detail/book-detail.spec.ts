@@ -412,7 +412,7 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.detail-meta-grid')?.textContent).not.toContain('Định dạng:');
   });
 
-  it('shows a circular 2.5x loupe only inside rendered image bounds for mouse pointers', async () => {
+  it('shows a clamped circular dotted lens and right-side zoom flyout only inside rendered image bounds for mouse pointers', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
@@ -426,7 +426,7 @@ describe('Detail refresh and public origin', () => {
       ],
     });
     const h = await RouterTestingHarness.create();
-    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
     const stage = el.querySelector('.main-media-stage') as HTMLElement;
     const img = stage.querySelector('img') as HTMLImageElement;
@@ -448,26 +448,49 @@ describe('Detail refresh and public origin', () => {
     stage.dispatchEvent(pointer('pointermove', 120, 200, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
     const loupe = el.querySelector('.magnifier-loupe') as HTMLElement;
+    const flyout = el.querySelector('.magnifier-flyout.is-visible') as HTMLElement;
     expect(loupe).not.toBeNull();
-    expect(loupe.style.width).toBe('170px');
-    expect(loupe.style.height).toBe('170px');
-    expect(loupe.style.backgroundSize).toBe('500px 1000px');
+    expect(loupe.style.width).toBe('150px');
+    expect(loupe.style.height).toBe('150px');
+    expect(loupe.textContent).toContain('Click để xem');
+    expect(flyout).not.toBeNull();
+    expect(flyout.style.width).toBe('400px');
+    expect(flyout.style.height).toBe('400px');
+    expect(flyout.style.backgroundSize).toBe('533px 1067px');
+
+    stage.dispatchEvent(pointer('pointermove', 160, 60, 'mouse'));
+    h.detectChanges();
+    const clampedLoupe = el.querySelector('.magnifier-loupe') as HTMLElement;
+    const clampedFlyout = el.querySelector('.magnifier-flyout.is-visible') as HTMLElement;
+    expect(clampedLoupe.style.left).toBe('125px');
+    expect(clampedLoupe.style.top).toBe('75px');
+    expect(clampedFlyout.style.backgroundPosition).toBe('0px 0px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'touch'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).not.toBeNull();
 
     stage.dispatchEvent(pointer('pointerleave', 0, 0, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
+
+    c.hideLoupe(true);
+    h.detectChanges();
+    expect(c.loupe()).toBeNull();
   });
 
   it('renders vertical scroll buttons when over 4 images and scrolls thumbs without changing main image', async () => {

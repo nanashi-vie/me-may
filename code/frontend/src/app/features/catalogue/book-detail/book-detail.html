@@ -47,18 +47,29 @@
                   </svg>
                 </span>
                 @if (loupe(); as l) {
-                  <span
-                    class="magnifier-loupe"
-                    aria-hidden="true"
-                    [style.width.px]="loupeSize"
-                    [style.height.px]="loupeSize"
-                    [style.left.px]="l.x"
-                    [style.top.px]="l.y"
-                    [style.background-image]="'url(' + main.src + ')'"
-                    [style.background-size]="l.bgW + 'px ' + l.bgH + 'px'"
-                    [style.background-position]="l.bgX + 'px ' + l.bgY + 'px'"
-                  ></span>
+                  @if (l.visible) {
+                    <span
+                      class="magnifier-loupe"
+                      aria-hidden="true"
+                      [style.width.px]="l.lensSize"
+                      [style.height.px]="l.lensSize"
+                      [style.left.px]="l.x"
+                      [style.top.px]="l.y"
+                    >
+                      <span class="loupe-hint">Click để xem</span>
+                    </span>
+                  }
                 }
+                <div
+                  class="magnifier-flyout"
+                  [class.is-visible]="!!loupe()?.visible"
+                  aria-hidden="true"
+                  [style.width.px]="loupe()?.popupSize ?? null"
+                  [style.height.px]="loupe()?.popupSize ?? null"
+                  [style.background-image]="loupe() ? 'url(' + main.src + ')' : null"
+                  [style.background-size]="loupe() ? loupe()!.bgW + 'px ' + loupe()!.bgH + 'px' : null"
+                  [style.background-position]="loupe() ? loupe()!.bgX + 'px ' + loupe()!.bgY + 'px' : null"
+                ></div>
               </div>
             } @else {
               <span class="media-placeholder" role="status">Ảnh hiện không có sẵn</span>

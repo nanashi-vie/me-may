@@ -1,5 +1,5 @@
 .detail-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; margin: 2rem 0 4rem; align-items: start; }
-.media-col { position: sticky; top: 1rem; min-width: 0; }
+.media-col { position: sticky; top: 1rem; min-width: 0; z-index: 4; }
 .gallery { display: grid; gap: .75rem; }
 .gallery.has-thumbs { grid-template-columns: 76px minmax(0, 1fr); align-items: start; gap: .85rem; }
 .gallery.has-thumbs .thumbs-col { grid-column: 1; grid-row: 1; }

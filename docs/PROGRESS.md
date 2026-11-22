@@ -1,10 +1,10 @@
 # Tiến độ và bàn giao
 
-Cập nhật 21/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 22/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
-- Đã hoàn tất và owner duyệt `DETAIL-ZOOM-GALLERY-01` & `DETAIL-ZOOM-GALLERY-02` trên `dev` cho `/sach/:slug`: kính lúp tròn 2.5x khi hover trên desktop, cột thumbnail dọc bên trái trên desktop (nút cuộn `^`/`v` khi >4 ảnh, mờ ảnh chưa chọn) và Lightbox toàn màn hình hỗ trợ kéo trượt song song kiểu iOS Photos (khoảng đen 24px, lực cản biên, chống dính chuột khi kéo ra ngoài trình duyệt), zoom/pan và bấm nền đen ngoài ảnh để thoát.
+- Đã hoàn tất `DETAIL-ZOOM-GALLERY-03` trên `dev` cho `/sach/:slug`: kính lúp chấm caro tròn mờ (`Click để xem`) giới hạn trong mép ảnh thật + popup vuông phóng đại (~2.6x–2.8x) mở rộng bên phải đè lên cột thông tin sách với hiệu ứng thu phóng/mờ `180ms` riêng cho popup (tôn trọng reduced-motion), giữ nguyên cột thumbnail dọc và Lightbox iOS Photos.
 - Đã tổ chức knowledge base theo [chỉ mục](README.md). Quyết định gần nhất
   và cách tái lập kiểm tra nằm ở checkpoint cuối [DEV_LOG](DEV_LOG.md).
 - Đơn nội bộ, popup bill, hai tab và tra cứu trùng SĐT đã kiểm local đến V37.
