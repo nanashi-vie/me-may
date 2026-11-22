@@ -43,14 +43,22 @@ input[type='checkbox'] {
   accent-color: var(--red);
 }
 .cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  background: var(--surface-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.cover.placeholder {
   display: grid;
   place-items: center;
-  background: var(--surface-soft);
-  min-height: 100px;
 }
 .cover img {
-  max-width: 100%;
-  object-fit: contain;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .wishlist-row h2 {
   font-family: var(--font-sans);

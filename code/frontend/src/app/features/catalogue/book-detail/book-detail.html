@@ -16,6 +16,7 @@
                 class="main-media-stage"
                 role="button"
                 tabindex="0"
+                title="Click để xem"
                 [attr.aria-label]="'Phóng to ảnh ' + mediaLabels[$any(m.role)]"
                 (pointermove)="onStagePointerMove($event, stage, mainImg)"
                 (pointerleave)="hideLoupe()"
@@ -40,25 +41,29 @@
                     (error)="imageFailed(main.src)"
                   />
                 </picture>
-                <span class="zoom-badge" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m21 21-4.35-4.35M11 8v6M8 11h6" />
-                  </svg>
-                </span>
                 @if (loupe(); as l) {
-                  <span
-                    class="magnifier-loupe"
-                    aria-hidden="true"
-                    [style.width.px]="loupeSize"
-                    [style.height.px]="loupeSize"
-                    [style.left.px]="l.x"
-                    [style.top.px]="l.y"
-                    [style.background-image]="'url(' + main.src + ')'"
-                    [style.background-size]="l.bgW + 'px ' + l.bgH + 'px'"
-                    [style.background-position]="l.bgX + 'px ' + l.bgY + 'px'"
-                  ></span>
+                  @if (l.visible) {
+                    <span
+                      class="magnifier-loupe"
+                      aria-hidden="true"
+                      [style.width.px]="l.lensSize"
+                      [style.height.px]="l.lensSize"
+                      [style.left.px]="l.x"
+                      [style.top.px]="l.y"
+                    ></span>
+                  }
                 }
+                <div
+                  class="magnifier-flyout"
+                  [class.is-visible]="!!loupe()?.visible"
+                  [class.is-leaving]="!!loupe() && !loupe()!.visible"
+                  aria-hidden="true"
+                  [style.width.px]="loupe()?.popupSize ?? null"
+                  [style.height.px]="loupe()?.popupSize ?? null"
+                  [style.background-image]="loupe() ? 'url(' + main.src + ')' : null"
+                  [style.background-size]="loupe() ? loupe()!.bgW + 'px ' + loupe()!.bgH + 'px' : null"
+                  [style.background-position]="loupe() ? loupe()!.bgX + 'px ' + loupe()!.bgY + 'px' : null"
+                ></div>
               </div>
             } @else {
               <span class="media-placeholder" role="status">Ảnh hiện không có sẵn</span>

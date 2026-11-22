@@ -5306,3 +5306,47 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra trực quan và thao tác kéo ra ngoài cửa sổ trên trình duyệt desktop thật và chạm/pinch trên điện thoại iOS/Android thật.
 - **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 21/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra thêm trên thiết bị mobile thật ở lượt QA tổng trước rollout.
+
+### 2026-11-22 — DETAIL-ZOOM-GALLERY-03 — Lens tròn chấm caro mờ kèm popup phóng đại bên phải trên `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Cập nhật cơ chế phóng đại khi hover trên desktop tại `/sach/:slug` theo mẫu NXB Kim Đồng: giữ hình tròn (`loupeSize = 150px`) có họa tiết chấm caro mờ kèm nhãn `"Click để xem"` đi theo con trỏ chuột (được kẹp tọa độ không tràn khỏi mép ảnh `contain` thực tế, ẩn/hiện tức thì), đồng thời mở popup vuông (`.magnifier-flyout`) cao bằng khung ảnh chính nằm sát bên phải (`left: calc(100% + 16px)`) đè nổi lên cột thông tin sách để hiển thị vùng ảnh phóng đại tương ứng (`popupSize / lensSize`, ~`2.67x–2.8x`) với hiệu ứng thu phóng + mờ `180ms` (`scale(0.94) <-> scale(1)`, `transform-origin: left center`, tôn trọng `prefers-reduced-motion`) áp dụng riêng cho popup. Vẫn giữ click mở Lightbox iOS Photos trên cả desktop và mobile.
+- **File thay đổi**: `book-detail.ts`, `book-detail.html`, `book-detail.scss`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (bao gồm kiểm thử lens tròn, flyout giữ mount cho transition `.is-visible`, kẹp mép ảnh và xóa ngay khi chuyển ảnh/mở Lightbox); `npm run build` (browser + server SSR) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md docs/PROGRESS.md` (400 và 34 dòng) và `git diff --check` đạt.
+  - Chưa chạy: kiểm tra trực quan và thao tác hover trên trình duyệt desktop thật.
+- **Việc dang dở / lưu ý**: Đã chốt theo yêu cầu của owner; commit và push lên nhánh `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trực quan thêm khi rollout lên môi trường thử nghiệm.
+
+### 2026-11-22 — DETAIL-ZOOM-GALLERY-04 — Hiệu ứng hiện nhẹ và mất thu nhỏ về giữa cho popup phóng đại trên `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Chỉnh hiệu ứng đóng/mở của popup phóng đại `.magnifier-flyout` theo yêu cầu: lúc hiện nở nhẹ (`scale(.96) -> scale(1)`, `opacity: 0 -> 1` trong `180ms`), còn lúc mất thu nhỏ mạnh về tâm khung popup (`transform-origin: center`, `scale(1) -> scale(.5)`, `opacity: 1 -> 0` trong `240ms`, tôn trọng `prefers-reduced-motion`). Giữ nguyên lens tròn `.magnifier-loupe` hiện/ẩn tức thì và tránh chạy animation mất khi chưa hover lần đầu hoặc khi đổi ảnh/mở Lightbox (`hideLoupe(true)`).
+- **File thay đổi**: `book-detail.ts`, `book-detail.html`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận `.is-leaving` không kích hoạt khi chưa hover, bật khi rời chuột/`touch`, tắt sau `hideLoupe(true)`); `npm run build` (browser + server SSR trong 4.290s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (<= 400 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và tiếp tục khảo sát tỉ lệ ảnh thực tế của shop để thiết kế phương án lấp khoảng trống khung ảnh (`/grill-me`).
+
+### 2026-11-22 — PUBLIC-MEDIA-FRAME-01 — Đồng bộ khung ảnh `3:4` `object-fit: cover` không padding thừa trên toàn bộ trang public
+
+- **Mục tiêu & phạm vi**: Sau khi rà 4 ảnh thực tế chụp bằng camera iPhone (`3:4`), bỏ khoảng đệm kem thừa quanh ảnh và đồng bộ toàn bộ khung bìa public sang tỉ lệ `3:4` kèm `object-fit: cover` để ảnh lấp kín khung 100% mà không bị hở viền: (1) trang chi tiết `/sach/:slug` (`.main-media-stage` 3:4 không overflow-hidden để giữ `.magnifier-flyout`, thumbnail `72×96` desktop / `57×76` mobile, cập nhật phép tính kính lúp theo `object-fit: cover`, giữ Lightbox `object-fit: contain` xem đủ 100% ảnh gốc); (2) `app-book-card` (Home, Catalogue, Bộ sưu tập, Sách liên quan) chuyển `.cover-link` từ `4:5 contain` sang `3:4 cover`; (3) `/quan-tam` chuyển `.cover` sang `3:4 cover`.
+- **File thay đổi**: `book-detail.scss`, `book-detail.ts`, `code/frontend/src/styles.scss`, `book-card.scss`, `book-card.html`, `wishlist-page.scss`, `wishlist-page.html`, `book-detail.spec.ts`, `catalogue-page.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận khung `.main-media-stage` và `BookCard` `.cover-link` có `aspectRatio: '3/4'`, `objectFit: 'cover'` và phép tính kính lúp/popup `object-fit: cover`); `npm run build` (browser + server SSR trong 4.837s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (<= 400 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trực quan thêm trên nhiều kích thước màn hình trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — DETAIL-ZOOM-GALLERY-05 — Bỏ nhãn pill/icon kính lúp góc và thêm `title="Click để xem"` trên `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Bỏ lớp chữ pill `.loupe-hint` bên trong `.magnifier-loupe`, thêm thuộc tính native `title="Click để xem"` trên `.main-media-stage` (tooltip hệ thống của trình duyệt khi dừng chuột, không che ảnh khi di chuyển) và bỏ hẳn icon kính lúp góc dưới phải (`.zoom-badge`) trên cả desktop và mobile. Vẫn giữ vòng tròn chấm caro mờ, popup phóng đại bên phải và click/chạm mở Lightbox.
+- **File thay đổi**: `book-detail.html`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (xác nhận `.magnifier-loupe` không chứa `.loupe-hint`, `.zoom-badge` trả `null`, `.main-media-stage` có `title="Click để xem"`); `npm run build` (browser + server SSR trong 4.796s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (36 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.

@@ -85,10 +85,10 @@ describe('Detail refresh and public origin', () => {
     });
     const h = await RouterTestingHarness.create();
     await h.navigateByUrl('/sach/mm-000001', BookDetail);
-    const frame = h.routeNativeElement!.querySelector('figure') as HTMLElement;
+    const frame = h.routeNativeElement!.querySelector('.main-media-stage') as HTMLElement;
     const image = frame.querySelector('img') as HTMLImageElement;
     expect(getComputedStyle(frame).aspectRatio).toBe('3/4');
-    expect(getComputedStyle(image).objectFit).toBe('contain');
+    expect(getComputedStyle(image).objectFit).toBe('cover');
   });
   it('keeps the SSR book visible while verifying fresh data, then removes a hidden book', async () => {
     const fresh = new Subject<PublicBook>();
@@ -412,7 +412,7 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.detail-meta-grid')?.textContent).not.toContain('Định dạng:');
   });
 
-  it('shows a circular 2.5x loupe only inside rendered image bounds for mouse pointers', async () => {
+  it('shows a clamped circular dotted lens and right-side zoom flyout only inside rendered image bounds for mouse pointers', async () => {
     TestBed.configureTestingModule({
       providers: [
         provideRouter([{ path: 'sach/:slug', component: BookDetail }]),
@@ -426,7 +426,7 @@ describe('Detail refresh and public origin', () => {
       ],
     });
     const h = await RouterTestingHarness.create();
-    await h.navigateByUrl('/sach/mm-000001', BookDetail);
+    const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
     const stage = el.querySelector('.main-media-stage') as HTMLElement;
     const img = stage.querySelector('img') as HTMLImageElement;
@@ -445,29 +445,59 @@ describe('Detail refresh and public origin', () => {
         ? new PointerEvent(type, { clientX, clientY, pointerType, pointerId: 1 })
         : Object.assign(new MouseEvent(type, { clientX, clientY }), { pointerType, pointerId: 1 });
 
-    stage.dispatchEvent(pointer('pointermove', 120, 200, 'mouse'));
+    stage.dispatchEvent(pointer('pointermove', 80, 200, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
     const loupe = el.querySelector('.magnifier-loupe') as HTMLElement;
+    const flyout = el.querySelector('.magnifier-flyout.is-visible') as HTMLElement;
     expect(loupe).not.toBeNull();
-    expect(loupe.style.width).toBe('170px');
-    expect(loupe.style.height).toBe('170px');
-    expect(loupe.style.backgroundSize).toBe('500px 1000px');
+    expect(loupe.style.width).toBe('150px');
+    expect(loupe.style.height).toBe('150px');
+    expect(loupe.querySelector('.loupe-hint')).toBeNull();
+    expect(flyout).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
+    expect(flyout.style.width).toBe('400px');
+    expect(flyout.style.height).toBe('400px');
+    expect(flyout.style.backgroundSize).toBe('800px 1600px');
+
+    stage.dispatchEvent(pointer('pointermove', 110, 60, 'mouse'));
+    h.detectChanges();
+    const clampedLoupe = el.querySelector('.magnifier-loupe') as HTMLElement;
+    const clampedFlyout = el.querySelector('.magnifier-flyout.is-visible') as HTMLElement;
+    expect(clampedLoupe.style.left).toBe('75px');
+    expect(clampedLoupe.style.top).toBe('75px');
+    expect(clampedFlyout.style.backgroundPosition).toBe('0px -267px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'touch'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).not.toBeNull();
+    expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
 
     stage.dispatchEvent(pointer('pointermove', 250, 250, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).not.toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
 
     stage.dispatchEvent(pointer('pointerleave', 0, 0, 'mouse'));
     h.detectChanges();
     expect(el.querySelector('.magnifier-loupe')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).not.toBeNull();
+    expect((el.querySelector('.magnifier-flyout') as HTMLElement).style.width).toBe('400px');
+
+    c.hideLoupe(true);
+    h.detectChanges();
+    expect(c.loupe()).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-visible')).toBeNull();
+    expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
   });
 
   it('renders vertical scroll buttons when over 4 images and scrolls thumbs without changing main image', async () => {
@@ -523,8 +553,9 @@ describe('Detail refresh and public origin', () => {
     const c = await h.navigateByUrl('/sach/mm-000001', BookDetail);
     const el = h.routeNativeElement!;
 
-    expect(el.querySelector('.zoom-badge')).not.toBeNull();
+    expect(el.querySelector('.zoom-badge')).toBeNull();
     const stage = el.querySelector<HTMLElement>('.main-media-stage')!;
+    expect(stage.getAttribute('title')).toBe('Click để xem');
     const dialog = el.querySelector<HTMLDialogElement>('dialog.lightbox-dialog')!;
     dialog.showModal = vi.fn(() => dialog.setAttribute('open', ''));
     dialog.close = vi.fn(() => {

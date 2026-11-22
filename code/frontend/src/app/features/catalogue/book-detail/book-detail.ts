@@ -46,12 +46,14 @@ import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrum
 export class BookDetail {
   readonly picture = publicPicture;
   readonly failedImages = signal<ReadonlySet<string>>(new Set());
-  readonly loupeSize = 170;
-  readonly loupeZoom = 2.5;
+  readonly loupeSize = 150;
+  readonly loupeZoom = 2.8;
   readonly loupe = signal<{
     visible: boolean;
     x: number;
     y: number;
+    lensSize: number;
+    popupSize: number;
     bgX: number;
     bgY: number;
     bgW: number;
@@ -78,7 +80,7 @@ export class BookDetail {
   imageFailed(src: string | undefined) {
     if (src) {
       this.failedImages.update((failed) => new Set(failed).add(src));
-      this.hideLoupe();
+      this.hideLoupe(true);
     }
   }
   readonly api = inject(PublicApi);
@@ -90,7 +92,7 @@ export class BookDetail {
   }
   selectMedia(i: number) {
     this.selectedMedia.set(i);
-    this.hideLoupe();
+    this.hideLoupe(true);
     this.resetZoom();
   }
   scrollThumbs(listEl: HTMLElement, dir: -1 | 1) {
@@ -112,13 +114,13 @@ export class BookDetail {
   }
   onStagePointerMove(event: PointerEvent, stageEl: HTMLElement, imgEl: HTMLImageElement) {
     if ((event.pointerType && event.pointerType !== 'mouse') || this.lightboxOpen()) {
-      this.loupe.set(null);
+      this.hideLoupe(this.lightboxOpen());
       return;
     }
     const rect = imgEl.getBoundingClientRect();
     const stageRect = stageEl.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
-      this.loupe.set(null);
+      this.hideLoupe();
       return;
     }
     let renderW = rect.width;
@@ -129,40 +131,54 @@ export class BookDetail {
       const imgRatio = imgEl.naturalWidth / imgEl.naturalHeight;
       const boxRatio = rect.width / rect.height;
       if (imgRatio > boxRatio) {
-        renderW = rect.width;
-        renderH = rect.width / imgRatio;
-        offsetY = (rect.height - renderH) / 2;
-      } else {
         renderH = rect.height;
         renderW = rect.height * imgRatio;
         offsetX = (rect.width - renderW) / 2;
+      } else {
+        renderW = rect.width;
+        renderH = rect.width / imgRatio;
+        offsetY = (rect.height - renderH) / 2;
       }
     }
-    const left = rect.left + offsetX;
-    const top = rect.top + offsetY;
     if (
-      event.clientX < left ||
-      event.clientX > left + renderW ||
-      event.clientY < top ||
-      event.clientY > top + renderH
+      event.clientX < rect.left ||
+      event.clientX > rect.left + rect.width ||
+      event.clientY < rect.top ||
+      event.clientY > rect.top + rect.height
     ) {
-      this.loupe.set(null);
+      this.hideLoupe();
       return;
     }
-    const relX = event.clientX - left;
-    const relY = event.clientY - top;
+    const visX = event.clientX - rect.left;
+    const visY = event.clientY - rect.top;
+    const lensSize = Math.min(this.loupeSize, rect.width, rect.height);
+    const half = lensSize / 2;
+    const clampedX = Math.min(Math.max(visX, half), Math.max(half, rect.width - half));
+    const clampedY = Math.min(Math.max(visY, half), Math.max(half, rect.height - half));
+    const imgLeft = clampedX - half - offsetX;
+    const imgTop = clampedY - half - offsetY;
+    const popupSize = Math.round(stageRect.height > 0 ? stageRect.height : lensSize * this.loupeZoom);
+    const zoom = lensSize > 0 ? popupSize / lensSize : this.loupeZoom;
     this.loupe.set({
       visible: true,
-      x: event.clientX - stageRect.left,
-      y: event.clientY - stageRect.top,
-      bgX: this.loupeSize / 2 - relX * this.loupeZoom,
-      bgY: this.loupeSize / 2 - relY * this.loupeZoom,
-      bgW: renderW * this.loupeZoom,
-      bgH: renderH * this.loupeZoom,
+      x: Math.round(rect.left - stageRect.left + clampedX) || 0,
+      y: Math.round(rect.top - stageRect.top + clampedY) || 0,
+      lensSize: Math.round(lensSize),
+      popupSize,
+      bgX: Math.round(-imgLeft * zoom) || 0,
+      bgY: Math.round(-imgTop * zoom) || 0,
+      bgW: Math.round(renderW * zoom),
+      bgH: Math.round(renderH * zoom),
     });
   }
-  hideLoupe() {
-    if (this.loupe()) this.loupe.set(null);
+  hideLoupe(immediate = false) {
+    const cur = this.loupe();
+    if (!cur) return;
+    if (immediate) {
+      this.loupe.set(null);
+    } else if (cur.visible) {
+      this.loupe.set({ ...cur, visible: false });
+    }
   }
   zoomPercent() {
     return Math.round(this.zoomScale() * 100);
@@ -175,7 +191,7 @@ export class BookDetail {
     const src = m ? this.picture(m, true).src : undefined;
     if (!m || !src || this.failedImages().has(src)) return;
     this.stageTriggerEl = trigger ?? null;
-    this.hideLoupe();
+    this.hideLoupe(true);
     this.clearSuppressClick();
     this.resetZoom();
     this.activePointers.clear();

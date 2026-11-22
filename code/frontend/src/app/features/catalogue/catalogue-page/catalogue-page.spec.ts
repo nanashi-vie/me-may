@@ -225,7 +225,7 @@ describe('Catalogue category sidebar, binding chips, age apply, and collection l
     expect(c.categoryParams('HISTORY')).toEqual({ category: 'HISTORY' });
     expect(el.querySelector('.category-links a.active')).toBeNull();
   });
-  it('locks book-card cover frame to 4:5 aspect ratio with overflow hidden and card border', () => {
+  it('locks book-card cover frame to 3:4 aspect ratio with cover object-fit, overflow hidden and card border', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
     const f = TestBed.createComponent(BookCard);
     f.componentRef.setInput('book', {
@@ -256,7 +256,8 @@ describe('Catalogue category sidebar, binding chips, age apply, and collection l
     const card = f.nativeElement.querySelector('.book-card') as HTMLElement;
     const cover = card.querySelector('.cover-link') as HTMLElement;
     expect(getComputedStyle(card).borderTopStyle).toBe('solid');
-    expect(getComputedStyle(cover).aspectRatio).toBe('4/5');
+    expect(getComputedStyle(cover).aspectRatio).toBe('3/4');
+    expect(getComputedStyle(cover.querySelector('img')!).objectFit).toBe('cover');
     expect(getComputedStyle(cover).overflow).toBe('hidden');
   });
 });
