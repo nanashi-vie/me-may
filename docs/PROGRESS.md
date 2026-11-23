@@ -1,9 +1,10 @@
 # Tiến độ và bàn giao
 
-Cập nhật 22/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 23/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `THEME-SWITCH-CSS-01` (23/11, chưa commit): gỡ Rive (runtime/WASM/.riv), thay switch sáng/tối bằng CSS/SVG thuần theo mẫu Uiverse owner chọn. [Bằng chứng](verification/THEME_VERIFICATION.md#thay-rive-bằng-switch-css--2311)
 - Đã hoàn tất `DETAIL-MOBILE-THUMBS-01` trên `dev` cho `/sach/:slug`: sửa lỗi CSS Grid `1fr` thiếu `min-width: 0` khiến hàng thumbnail tràn chiều ngang màn hình mobile; đổi kích thước thumbnail mobile sang `54×72px` (`scroll-snap`, căn giữa tương thích mọi iOS Safari) và khóa `overflow-x: clip` trên `html`.
 - Đã hoàn tất `DETAIL-ZOOM-GALLERY-05` trên `dev` (`ffb7c5c`) cho `/sach/:slug`: gỡ nhãn pill `"Click để xem"`, thay bằng native `title="Click để xem"` và bỏ icon `.zoom-badge`.
 - Đã hoàn tất `PUBLIC-MEDIA-FRAME-01` trên `dev` (`02f3135`): đồng bộ khung ảnh sách public (`/sach/:slug`, `app-book-card`, `/quan-tam`) sang `3:4` `object-fit: cover` không đệm thừa.

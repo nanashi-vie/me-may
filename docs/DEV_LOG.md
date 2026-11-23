@@ -5373,3 +5373,22 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: gọi tool MCP từ trong một phiên Claude Code mới (server mới nạp khi mở phiên).
 - **Giới hạn**: Skill tạo ảnh (`image-to-code`, `imagegen-*`, `brandkit`) cần công cụ tạo ảnh mà Claude Code hiện không có; skill Codex-only `imagegen`, `openai-docs`, `review-agent`, `playwright` thay bằng built-in browser, `/code-review` và skill Superpowers tương ứng.
 - **Bước tiếp theo**: Mở phiên Claude Code mới tại checkout chính, xác nhận tool `search_graph`/`trace_path` xuất hiện. Thay đổi tài liệu nằm trên branch `claude/personal-computer-project-ff24a3` tạo từ `dev`; chưa commit/push.
+
+### 2026-11-23 — DOCS-REVIEW-01 — Rà knowledge base sau chuyển từ Codex sang Claude Code
+
+- **Mục tiêu & phạm vi**: Rà `/docs`, đối chiếu `CLAUDE.md`/`AGENTS.md` với thực tế sau khi owner chuyển sang Claude Code; cân nhắc cài ECC (`affaan-m/ECC`). Không đổi code ứng dụng.
+- **Kết quả rà**: Không có link nội bộ hỏng; mọi Markdown ≤ 400 dòng trừ DEV_LOG (ngoại lệ). `.agents/skills` và `.claude/skills` đồng nhất (19 skill).
+- **Đóng checkpoint TOOLING-CLAUDE-01**: thay đổi tài liệu đã nằm trên `dev` (`4b15747`), không còn "chưa commit"; tool codebase-memory-mcp đã xuất hiện trong phiên Claude Code mới nên mục "chưa chạy" đó đã được xác nhận. Branch `claude/personal-computer-project-ff24a3` không còn cần cho việc này.
+- **Quyết định**: Không cài ECC. Lý do: trùng Superpowers và skill local, rule/hook là ngữ cảnh/mã luôn chạy, một số lệnh gửi diff ra dịch vụ ngoài, chưa xác minh rule Java/Spring. Nếu thử sau này: `--profile minimal --no-hooks --dry-run` rồi chọn từng skill.
+- **File thay đổi**: `AGENTS.md` (branch phụ `claude/`+`codex/`, nguồn skill, ràng buộc plugin ngoài), `docs/PROGRESS.md` (ngày), `docs/DEV_LOG.md`.
+- **Kiểm tra**: chạy quét link và đếm dòng bằng script; kết quả ở lượt này. Chưa commit.
+- **Bước tiếp theo**: Owner xem diff rồi commit lên `dev`.
+
+### 2026-11-23 — THEME-SWITCH-CSS-01 — Thay switch Rive bằng CSS thuần
+
+- **Mục tiêu & phạm vi**: Owner muốn bỏ `rive.wasm` vì tải chậm, ảnh hưởng tốc độ/SEO; thay bằng switch Uiverse `RiccardoRapelli/jolly-chicken-91` (MIT, giữ credit ở đầu file).
+- **Ghi chú đánh giá**: Rive đã tải sau `load` + idle nên không chặn LCP/FCP; lợi ích thật là bỏ ≈420KB gzip, CPU WASM/canvas trên máy yếu và hiệu ứng đổi hình fallback→canvas.
+- **Thay đổi**: viết lại `theme-switch.ts` (button `role=switch`, id → class, reduced motion tắt animation, bỏ khóa busy/timeout vì CSS không lệch trạng thái), spec mới; xóa `theme-rive.ts`, `theme-rive.spec.ts`, `public/rive/day-night.riv`; gỡ `@rive-app/canvas-lite` (package/lock) và asset WASM/allowedCommonJsDependencies trong `angular.json`. Bỏ keyframe `rotate-center` của mẫu vì mẫu gốc không định nghĩa (giữ hành vi trượt). Docs: DESIGN, ARCHITECTURE, THEME_VERIFICATION.
+- **Kiểm tra** (`code/frontend`): `npm test` 69 files/409 tests PASS; `npm run build` và `npm run build:workers` PASS, không còn `rive` trong dist. Chrome qua Playwright trên SSR 4399 (không API) 320/390/1440: 60×44, không tràn, click/Space đổi `aria-checked`, 0 request rive/wasm, 0 pageerror. Chưa chạy Lighthouse, thiết bị thật.
+- **Bước tiếp theo**: Owner xem giao diện, commit lên `dev`. Còn local, chưa commit (cùng các thay đổi DOCS-REVIEW-01 chưa commit).
+

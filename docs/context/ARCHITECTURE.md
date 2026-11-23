@@ -233,23 +233,17 @@ hoặc mở form mới; dirty guard đóng editor khi chấp nhận rời route 
 Contract/rollout ở [CUSTOMERS](../product/CUSTOMERS.md),
 [bằng chứng](../verification/CUSTOMER_VERIFICATION.md). Không có customer login hoặc order.
 
-## Rive switch và theme public —14/11/2026
+## Theme public và switch sáng/tối — cập nhật23/11/2026
 
 - PublicLayout sở hữu data-theme/light/dark; token ở _public-theme.scss,
   không ghi theme lên html/body nên admin không kế thừa. Storage đọc sau render.
-- ThemeSwitch dùng HTML button role=switch/aria-checked; theme độc lập canvas.
-  Import theme-rive chỉ sau browser hydration, window load và idle (fallback1.5s).
-- @rive-app/canvas-lite2.50.0 exact; Angular copy WASM/fallback từ node_modules
-  sang /rive/canvas-lite-2.50.0; .riv self-host /rive/day-night.riv.
-- File legacy cần input/event API của2.50; không bật pointer listeners, Hover=false,
-  Click điều khiển state machine Button_Animation; UI khóa ngay lần bấm đầu,
-  callback busy mở khóa sau settling;6s không xong thì destroy/về SVG.
-  Pause khi idle; pause/stop
-  ngoài viewport/tab ẩn; destroy cleanup. Không âm thầm nâng runtime major.
-- Reduced motion không import runtime, lỗi tải giữ SVG/native button.
-  SSR vẫn có button/content/SEO, không khởi tạo WASM; không deploy chatbot.
-- Gzip local≈420KB tải sau (JS63KB/WASM353KB/RIV4.8KB); fallback WASM chỉ tải
-  nếu runtime cần. Gate production/thiết bị thật ở [bằng chứng](../verification/THEME_VERIFICATION.md).
+- ThemeSwitch là button role=switch/aria-checked, hình vẽ CSS + SVG inline
+  (Uiverse jolly-chicken-91, MIT, credit ở đầu file). Không dependency, không
+  lazy chunk/WASM/canvas; có ngay trong HTML SSR.
+- 23/11 gỡ @rive-app/canvas-lite, theme-rive.ts, /rive/day-night.riv và bước
+  copy WASM trong angular.json (trước đó ≈420KB gzip tải sau window load/idle).
+- Reduced motion tắt animation/transition. Bằng chứng ở
+  [THEME_VERIFICATION](../verification/THEME_VERIFICATION.md).
 
 
 ## Đơn nội bộ — triển khai17/11
