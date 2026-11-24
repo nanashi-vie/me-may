@@ -101,9 +101,9 @@
       } @else if (error()) {
         <app-public-error [status]="error()" (retry)="retry()" />
       } @else if (page()?.items?.length) {
-        <div class="book-grid">
+        <div class="book-grid flat-cards">
           @for (b of page()!.items; track b.id) {
-            <app-book-card [book]="b" [now]="now()" />
+            <app-book-card [book]="b" [now]="now()" [showCode]="false" />
           }
         </div>
         <app-pagination class="pagination" [page]="page()!.page" [totalPages]="page()!.totalPages" [disabled]="loading()" (pageChange)="changePage($event)" />

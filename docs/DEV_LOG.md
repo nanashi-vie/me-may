@@ -5350,3 +5350,65 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Chưa chạy: kiểm tra tự động E2E trên trình duyệt thật (owner đã kiểm tra trực quan và duyệt).
 - **Việc dang dở / lưu ý**: Owner đã duyệt kiểm tra trực quan ngày 22/11/2026; commit và push lên `dev`.
 - **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — DETAIL-MOBILE-THUMBS-01 — Sửa lỗi dải thumbnail tràn ngang màn hình trên mobile ở `/sach/:slug`
+
+- **Mục tiêu & phạm vi**: Khắc phục lỗi CSS Grid `1fr` (tương đương `minmax(auto, 1fr)`) thiếu `min-width: 0` khiến dải thumbnail 6–8 ảnh kéo giãn toàn bộ `.gallery`/`.detail-layout` vượt chiều rộng màn hình mobile và đẩy lệch footer. Cập nhật `grid-template-columns: minmax(0, 1fr)`, thêm `min-width: 0` cho `.gallery`/`.thumbs-col`/`.detail-layout > article`, giữ thumbnail mobile một hàng `54×72px` (`overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity`), dùng `margin-inline: auto` ở đầu/cuối để căn giữa an toàn trên iOS Safari thay `safe center`, và thêm `html { overflow-x: clip; }`.
+- **File thay đổi**: `book-detail.scss`, `code/frontend/src/styles.scss`, `book-detail.spec.ts`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 70/70 file, 420/420 test (bao gồm kiểm tra `getComputedStyle(gallery).minWidth === '0px'`); `npm run build` (browser + server SSR trong 7.015s) đạt, 0 cảnh báo budget.
+  - Repo root: `wc -l docs/product/DESIGN.md` (400 dòng) và `docs/PROGRESS.md` (37 dòng), `git diff --check` đạt.
+  - Chưa chạy: kiểm tra tự động E2E trên iPhone thật (owner đã kiểm tra trực quan và duyệt).
+- **Việc dang dở / lưu ý**: Owner đã duyệt ngày 22/11/2026; commit và push lên `dev`.
+- **Bước tiếp theo**: Theo dõi CI trên `dev` và kiểm tra trong lượt QA tổng trước rollout.
+
+### 2026-11-22 — TOOLING-CLAUDE-01 — Chuyển bộ skill và codebase-memory-mcp sang dùng được với Claude Code
+
+- **Mục tiêu & phạm vi**: Owner chuyển từ Codex sang Claude Code. Rà skill/MCP hiện có, cài skill dự án để Claude Code tự nạp và đăng ký codebase-memory-mcp. Không đổi code ứng dụng.
+- **Quyết định & lý do**: Claude Code chỉ tự nạp skill dự án từ `.claude/skills/`, không đọc `.agents/skills/`. Đã sao chép nguyên 19 skill sang `.claude/skills/` ở checkout chính, giữ `.agents/skills/` làm bản nguồn cho Codex. Chọn sao chép thay symlink để chắc chắn runtime nạp được; vì vậy khi sửa skill phải chép lại. `.claude/` bị Git bỏ qua nên skill không vào repo và worktree mới không tự có. codebase-memory-mcp đăng ký ở cấp user trong `~/.claude.json` (máy không có lệnh `claude` trong PATH nên sửa file trực tiếp, có backup), cùng binary mà Codex đang dùng.
+- **File thay đổi**: `AGENTS.md` (nơi đặt skill cho Claude Code/Codex, cách đồng bộ và MCP), `docs/DEV_LOG.md`. Ngoài Git: `.claude/skills/` của checkout chính, `~/.claude.json`.
+- **Kiểm tra đã chạy**:
+  - Repo root checkout chính: `diff -rq .agents/skills .claude/skills` không khác biệt; cả 19 `SKILL.md` có frontmatter `name`; `git check-ignore` xác nhận `.claude/` bị bỏ qua. Runtime Claude Code liệt kê đủ 19 skill trong phiên.
+  - `codebase-memory-mcp cli index_repository` cho `/Users/daoquanghung/Projects/me-may`: indexed, 7.273 node, 28.368 edge (trước đó chỉ có index của worktree Codex `image-system`). `search_graph` tìm `OrderController` trả đúng `code/backend/.../order/OrderController.java`.
+  - Chưa chạy: gọi tool MCP từ trong một phiên Claude Code mới (server mới nạp khi mở phiên).
+- **Giới hạn**: Skill tạo ảnh (`image-to-code`, `imagegen-*`, `brandkit`) cần công cụ tạo ảnh mà Claude Code hiện không có; skill Codex-only `imagegen`, `openai-docs`, `review-agent`, `playwright` thay bằng built-in browser, `/code-review` và skill Superpowers tương ứng.
+- **Bước tiếp theo**: Mở phiên Claude Code mới tại checkout chính, xác nhận tool `search_graph`/`trace_path` xuất hiện. Thay đổi tài liệu nằm trên branch `claude/personal-computer-project-ff24a3` tạo từ `dev`; chưa commit/push.
+
+### 2026-11-23 — DOCS-REVIEW-01 — Rà knowledge base sau chuyển từ Codex sang Claude Code
+
+- **Mục tiêu & phạm vi**: Rà `/docs`, đối chiếu `CLAUDE.md`/`AGENTS.md` với thực tế sau khi owner chuyển sang Claude Code; cân nhắc cài ECC (`affaan-m/ECC`). Không đổi code ứng dụng.
+- **Kết quả rà**: Không có link nội bộ hỏng; mọi Markdown ≤ 400 dòng trừ DEV_LOG (ngoại lệ). `.agents/skills` và `.claude/skills` đồng nhất (19 skill).
+- **Đóng checkpoint TOOLING-CLAUDE-01**: thay đổi tài liệu đã nằm trên `dev` (`4b15747`), không còn "chưa commit"; tool codebase-memory-mcp đã xuất hiện trong phiên Claude Code mới nên mục "chưa chạy" đó đã được xác nhận. Branch `claude/personal-computer-project-ff24a3` không còn cần cho việc này.
+- **Quyết định**: Không cài ECC. Lý do: trùng Superpowers và skill local, rule/hook là ngữ cảnh/mã luôn chạy, một số lệnh gửi diff ra dịch vụ ngoài, chưa xác minh rule Java/Spring. Nếu thử sau này: `--profile minimal --no-hooks --dry-run` rồi chọn từng skill.
+- **File thay đổi**: `AGENTS.md` (branch phụ `claude/`+`codex/`, nguồn skill, ràng buộc plugin ngoài), `docs/PROGRESS.md` (ngày), `docs/DEV_LOG.md`.
+- **Kiểm tra**: chạy quét link và đếm dòng bằng script; kết quả ở lượt này. Chưa commit.
+- **Bước tiếp theo**: Owner xem diff rồi commit lên `dev`.
+
+### 2026-11-23 — THEME-SWITCH-CSS-01 — Thay switch Rive bằng CSS thuần
+
+- **Mục tiêu & phạm vi**: Owner muốn bỏ `rive.wasm` vì tải chậm, ảnh hưởng tốc độ/SEO; thay bằng switch Uiverse `RiccardoRapelli/jolly-chicken-91` (MIT, giữ credit ở đầu file).
+- **Ghi chú đánh giá**: Rive đã tải sau `load` + idle nên không chặn LCP/FCP; lợi ích thật là bỏ ≈420KB gzip, CPU WASM/canvas trên máy yếu và hiệu ứng đổi hình fallback→canvas.
+- **Thay đổi**: viết lại `theme-switch.ts` (button `role=switch`, id → class, reduced motion tắt animation, bỏ khóa busy/timeout vì CSS không lệch trạng thái), spec mới; xóa `theme-rive.ts`, `theme-rive.spec.ts`, `public/rive/day-night.riv`; gỡ `@rive-app/canvas-lite` (package/lock) và asset WASM/allowedCommonJsDependencies trong `angular.json`. Bỏ keyframe `rotate-center` của mẫu vì mẫu gốc không định nghĩa (giữ hành vi trượt). Docs: DESIGN, ARCHITECTURE, THEME_VERIFICATION.
+- **Kiểm tra** (`code/frontend`): `npm test` 69 files/409 tests PASS; `npm run build` và `npm run build:workers` PASS, không còn `rive` trong dist. Chrome qua Playwright trên SSR 4399 (không API) 320/390/1440: 60×44, không tràn, click/Space đổi `aria-checked`, 0 request rive/wasm, 0 pageerror. Chưa chạy Lighthouse, thiết bị thật.
+- **Bước tiếp theo**: Owner xem giao diện, commit lên `dev`. Còn local, chưa commit (cùng các thay đổi DOCS-REVIEW-01 chưa commit).
+
+
+### 2026-11-24 — PUBLIC-CAROUSEL-SYNC-01 — Đồng bộ thẻ/carousel public, 5 thumbnail và ẩn mã trên Home
+
+- **Mục tiêu & phạm vi (đang làm)**: owner chốt qua hỏi đáp: carousel book-detail và lưới `/sach` dùng thẻ không viền + vạch ngăn như Home, giữ nền trắng và tiêu đề căn giữa; hover nổi viền/bóng; desktop 5 thumbnail khớp mép ảnh chính; hai nút bằng cụm thumbnail + ảnh; ẩn mã sách ở Home và carousel book-detail.
+- **Quyết định**: tách `app-book-carousel` (HTML/SCSS/logic trượt chuyển từ Home) dùng cho Home, Flash Sale Home và hai kệ book-detail; `app-book-card` thêm input `showCode` (mặc định `true`); class `flat-cards` thay `:host-context(.shelf)`. `/sach` và bộ sưu tập giữ lưới + phân trang, giữ mã sách. `/flash-sale` và khối Flash Sale Home giữ thẻ có viền. Mobile book-detail giữ hàng thumbnail 54×72 và nút dính đáy. Sửa kèm: bước trượt kệ Home cộng thừa 12.8px do `parseFloat('0px') || 12.8`; bìa đầu kệ rộng hơn 1px vì vạch ngăn.
+- **File thay đổi**: `book-carousel/` (mới), `book-card.*`, `book-detail.*`, `catalogue-page.{html,scss}`, `home-page.*`, `code/frontend/src/styles.scss`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 69 file/410 test; `npm run build` (browser + SSR) đạt, 0 cảnh báo.
+  - Chrome qua Playwright trên `localhost:4200`, giả lập API ảnh/related (1/3/5/8 ảnh; 1440×900, 1920×1080, 800×1100, 390×844): mép thumbnail thứ 5 trùng đáy ảnh chính (lệch ≤ 0,1px), hai nút trùng mép trái thumbnail và mép phải ảnh; 5 lượt `›` trượt đúng 5 cuốn rồi khóa; Home 0 mã sách; bìa cùng cỡ và `/sach` không tràn ngang ở 1440/900/390; hover sáng/tối, focus có bóng; 0 pageerror.
+  - Chưa chạy: thiết bị thật, Safari/WebKit (dùng CSS subgrid), Lighthouse, `build:workers`, Flash Sale Home có dữ liệu thật.
+- **Bước tiếp theo**: owner xem giao diện trên local rồi commit lên `dev`. Thay đổi còn local, chưa commit.
+
+### 2026-11-24 — PUBLIC-CAROUSEL-SYNC-02 — Bỏ vạch ngăn dọc và ẩn mã sách ở `/sach`
+
+- **Phạm vi**: theo owner, thay quyết định vạch ngăn/mã sách của SYNC-01. Bỏ vạch dọc ở mọi carousel (Home, book-detail) và lưới `/sach`/bộ sưu tập; lưới còn kẻ ngang giữa các hàng. Ẩn mã ở lưới; tìm theo mã giữ nguyên. Thẻ `flat-cards` nền trong suốt khi không hover/focus.
+- **File thay đổi**: `book-carousel.scss`, `catalogue-page.{html,scss}`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra**: `code/frontend` `npm test -- --watch=false` 69 file/410 test đạt; `npm run build` đạt. Playwright Chrome 1440/900/390 trên `/`, `/sach`, detail: 0 mã trên thẻ, 0 vạch dọc, bìa cùng cỡ, không tràn ngang; hover sáng/tối ở `/sach` kiểm computed style. Chưa chạy: Safari, thiết bị thật.
+- **Bước tiếp theo**: owner duyệt rồi commit lên `dev`; còn local, chưa commit.
+- **Bổ sung (owner chốt cùng ngày)**: bỏ luôn vạch ngang ở lưới `/sach`/bộ sưu tập, thay bằng `row-gap: 0.75rem`. Test 410/410 và build chạy lại đạt; còn local, chưa commit.
+- **Bàn giao**: owner đổi khe thumbnail–ảnh thành 32px; chỉnh lại công thức cỡ cụm (`7.2px` → `27.2px`) để 5 thumbnail vẫn khớp mép. Test 410/410, build đạt; Playwright 1440/1920/800 lệch ≤ 0,1px, sách một ảnh và mobile 390 không tràn. Owner duyệt giao diện, yêu cầu commit và push `dev`. Chưa chạy: Safari, thiết bị thật, Lighthouse, `build:workers`. Bước tiếp: theo dõi CI trên `dev`.

@@ -29,3 +29,14 @@ it('shows a fixed cover placeholder when FRONT is missing or fails to load', () 
   expect(fixture.nativeElement.querySelector('.cover-placeholder')).not.toBeNull();
   expect(fixture.nativeElement.querySelector('img')).toBeNull();
 });
+
+it('shows the book code by default and hides it when showCode is off', () => {
+  TestBed.configureTestingModule({ providers: [provideRouter([])] });
+  const fixture = TestBed.createComponent(BookCard);
+  fixture.componentRef.setInput('book', book);
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.book-code')?.textContent).toBe(book.bookCode);
+  fixture.componentRef.setInput('showCode', false);
+  fixture.detectChanges();
+  expect(fixture.nativeElement.querySelector('.book-code')).toBeNull();
+});

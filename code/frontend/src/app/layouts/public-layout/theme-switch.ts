@@ -1,149 +1,75 @@
-import { DOCUMENT } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, effect, ElementRef, inject,
-  InjectionToken, input, output, signal, viewChild } from '@angular/core';
-import type { ThemeAnimation } from './theme-rive';
+/*
+ * From Uiverse.io by RiccardoRapelli - https://uiverse.io/RiccardoRapelli/jolly-chicken-91
+ * MIT License, Copyright (c) RiccardoRapelli (Riccardo Rapelli)
+ *
+ * Adapted: native button role=switch thay checkbox, id → class, tôn trọng reduced motion.
+ */
+import { Component, input, output } from '@angular/core';
 
-export const THEME_ANIMATION_LOADER = new InjectionToken<() => Promise<typeof import('./theme-rive')>>(
-  'Deferred theme animation', { providedIn: 'root', factory: () => () => import('./theme-rive') },
-);
+const STAR = 'M0 10C10 10 10 10 0 10C10 10 10 10 10 20C10 10 10 10 20 10C10 10 10 10 10 0C10 10 10 10 0 10Z';
 
 @Component({
   selector: 'app-theme-switch',
-  template: `<button type="button" role="switch" class="theme-switch"
-    aria-label="Chế độ tối" [attr.aria-checked]="dark()" [attr.aria-disabled]="busy()"
-    [title]="busy() ? 'Đang chuyển giao diện…' : dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
-    (click)="toggle()">
-    <canvas #canvas width="88" height="88" aria-hidden="true" [style.opacity]="ready() ? 1 : 0"></canvas>
-    <svg [style.visibility]="ready() ? 'hidden' : null" viewBox="0 0 44 44" width="44" height="44" aria-hidden="true">
-      <circle cx="22" cy="22" r="20" [attr.fill]="dark() ? '#24364b' : '#c6e3e4'" />
-      @if (dark()) {
-        <path d="M29 30a13 13 0 0 1-10-23 13 13 0 1 0 10 23" fill="#fff3b3" />
-        <path d="m31 10 1 3 3 1-3 1-1 3-1-3-3-1 3-1z" fill="#fff3b3" />
-      } @else {
-        <circle cx="22" cy="20" r="11" fill="#ffe66c" />
-        <path d="M5 31q15-10 34 0v4q-17 12-34 0z" fill="#778653" />
-      }
-    </svg>
+  template: `<button type="button" role="switch" class="theme-switch" aria-label="Chế độ tối"
+    [class.dark]="dark()" [attr.aria-checked]="dark()"
+    [title]="dark() ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'"
+    (click)="darkChange.emit(!dark())">
+    <span class="slider" aria-hidden="true">
+      <span class="sun-moon">
+        @for (c of moonDots; track c) { <svg [class]="'moon-dot ' + c" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg> }
+        @for (c of rays; track c) { <svg [class]="'ray ' + c" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg> }
+        @for (c of clouds; track c) { <svg [class]="'cloud ' + c" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg> }
+      </span>
+      <span class="stars">
+        @for (c of stars; track c) { <svg [class]="'star ' + c" viewBox="0 0 20 20"><path [attr.d]="star"/></svg> }
+      </span>
+    </span>
   </button>`,
-  styles: `:host { display:inline-flex; flex:0 0 44px; width:44px; height:44px; }
-    .theme-switch { position:relative; display:grid; place-items:center; width:44px; height:44px;
-      padding:0; border:0; border-radius:50%; background:transparent; color:inherit; }
-    .theme-switch[aria-disabled="true"] { cursor: progress; }
-    svg { display:block; }
-    canvas { position:absolute; inset:0; width:44px; height:44px;
-      border-radius:50%; pointer-events:none; }`,
+  styles: `:host { display:inline-flex; flex:0 0 60px; width:60px; height:44px; }
+    .theme-switch { display:grid; place-items:center; width:60px; height:44px; padding:0;
+      border:0; background:transparent; cursor:pointer; }
+    .theme-switch:focus-visible { outline:2px solid currentColor; outline-offset:2px; border-radius:34px; }
+    .slider { position:relative; display:block; width:60px; height:34px; overflow:hidden;
+      border-radius:34px; background:#2196f3; transition:background-color .4s; isolation:isolate; }
+    svg { position:absolute; display:block; }
+    .sun-moon { position:absolute; left:4px; bottom:4px; width:26px; height:26px; border-radius:50%;
+      background:#ffeb3b; transition:transform .4s, background-color .4s; }
+    .dark .slider { background:#000; }
+    .dark .sun-moon { transform:translateX(26px); background:#fff; }
+    .moon-dot { opacity:0; fill:gray; z-index:4; transition:opacity .4s; }
+    .dark .moon-dot { opacity:1; }
+    .d1 { left:10px; top:3px; width:6px; height:6px; }
+    .d2 { left:2px; top:10px; width:10px; height:10px; }
+    .d3 { left:16px; top:18px; width:3px; height:3px; }
+    .ray { z-index:-1; fill:#fff; opacity:.1; }
+    .r1 { left:-8px; top:-8px; width:43px; height:43px; }
+    .r2 { left:-13px; top:-13px; width:55px; height:55px; }
+    .r3 { left:-18px; top:-18px; width:60px; height:60px; }
+    .cloud { fill:#eee; animation:cloud 6s infinite; }
+    .c1, .c2, .c3 { fill:#ccc; animation-delay:1s; }
+    .c1 { left:30px; top:15px; width:40px; } .c2 { left:44px; top:10px; width:20px; }
+    .c3 { left:18px; top:24px; width:30px; } .c4 { left:36px; top:18px; width:40px; }
+    .c5 { left:48px; top:14px; width:20px; } .c6 { left:22px; top:26px; width:30px; }
+    .stars { position:absolute; inset:0; transform:translateY(-32px); opacity:0;
+      transition:transform .4s, opacity .4s; }
+    .dark .stars { transform:none; opacity:1; }
+    .star { fill:#fff; animation:twinkle 2s infinite; }
+    .s1 { width:20px; top:2px; left:3px; animation-delay:.3s; }
+    .s2 { width:6px; top:16px; left:3px; }
+    .s3 { width:12px; top:20px; left:10px; animation-delay:.6s; }
+    .s4 { width:18px; top:0; left:18px; animation-delay:1.3s; }
+    @keyframes cloud { 40% { transform:translateX(4px); } 80% { transform:translateX(-4px); } }
+    @keyframes twinkle { 40% { transform:scale(1.2); } 80% { transform:scale(.8); } }
+    @media (prefers-reduced-motion: reduce) {
+      * { animation:none !important; transition:none !important; }
+    }`,
 })
 export class ThemeSwitch {
   readonly dark = input(false);
   readonly darkChange = output<boolean>();
-  readonly ready = signal(false);
-  readonly busy = signal(false);
-  private unlockTimer?: ReturnType<typeof setTimeout>;
-  private readonly canvas = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
-  private readonly doc = inject(DOCUMENT);
-  private readonly loader = inject(THEME_ANIMATION_LOADER);
-  private readonly destroyRef = inject(DestroyRef);
-  private animation?: ThemeAnimation;
-  private schedule?: () => void;
-
-  constructor() {
-    effect(() => { const dark = this.dark(); this.animation?.setDark(dark); });
-    afterNextRender(() => this.initialize());
-    this.destroyRef.onDestroy(() => clearTimeout(this.unlockTimer));
-  }
-
-  toggle() {
-    if (this.busy()) return;
-    // Lock synchronously: a second activation must not race Angular rendering.
-    if (this.animation) this.setBusy(true);
-    this.darkChange.emit(!this.dark());
-  }
-
-  private setBusy(busy: boolean) {
-    clearTimeout(this.unlockTimer);
-    this.busy.set(busy);
-    if (busy) {
-      // A stalled/hidden renderer must never leave the control permanently locked.
-      this.unlockTimer = setTimeout(() => {
-        this.animation?.destroy();
-        this.animation = undefined;
-        this.ready.set(false);
-        this.busy.set(false);
-      }, 6000);
-    }
-  }
-
-  private initialize() {
-    const win = this.doc.defaultView;
-    if (!win) return;
-    let dead = false;
-    let idle: number | undefined;
-    let timer: number | undefined;
-    let loading = false;
-    let attempted = false;
-    let inView = true;
-    const motion = win.matchMedia?.('(prefers-reduced-motion: reduce)');
-    const visible = () => inView && this.doc.visibilityState !== 'hidden';
-    const cancel = () => {
-      if (idle !== undefined) win.cancelIdleCallback(idle);
-      if (timer !== undefined) win.clearTimeout(timer);
-      idle = timer = undefined;
-    };
-    const load = async () => {
-      idle = timer = undefined;
-      if (dead || motion?.matches || !visible() || loading || attempted) return;
-      loading = true;
-      attempted = true;
-      try {
-        const module = await this.loader();
-        if (dead || motion?.matches) { attempted = false; return; }
-        this.animation = module.mountThemeAnimation(this.canvas().nativeElement, this.dark(),
-          (ready) => {
-            if (!dead) {
-              this.ready.set(ready);
-              if (!ready) { this.animation = undefined; this.setBusy(false); }
-            }
-          },
-          (busy) => { if (!dead) this.setBusy(busy); });
-        this.animation.setVisible(visible());
-      } catch { this.ready.set(false); this.setBusy(false); }
-      finally { loading = false; }
-    };
-    this.schedule = () => {
-      cancel();
-      if (dead || motion?.matches || !visible() || attempted || loading || this.doc.readyState !== 'complete') return;
-      if (win.requestIdleCallback) idle = win.requestIdleCallback(() => void load(), { timeout: 5000 });
-      else timer = win.setTimeout(() => void load(), 1500);
-    };
-    const visibility = () => {
-      this.animation?.setVisible(visible());
-      if (visible()) this.schedule?.();
-    };
-    const changeMotion = () => {
-      cancel();
-      this.animation?.destroy();
-      this.animation = undefined;
-      attempted = false;
-      this.ready.set(false);
-      this.setBusy(false);
-      this.schedule?.();
-    };
-    const observer = typeof IntersectionObserver === 'undefined' ? undefined :
-      new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; visibility(); });
-    observer?.observe(this.canvas().nativeElement);
-    motion?.addEventListener('change', changeMotion);
-    this.doc.addEventListener('visibilitychange', visibility);
-    win.addEventListener('load', this.schedule);
-    this.schedule();
-    this.destroyRef.onDestroy(() => {
-      dead = true;
-      cancel();
-      observer?.disconnect();
-      motion?.removeEventListener('change', changeMotion);
-      this.doc.removeEventListener('visibilitychange', visibility);
-      win.removeEventListener('load', this.schedule!);
-      this.schedule = undefined;
-      this.animation?.destroy();
-    });
-  }
+  protected readonly moonDots = ['d1', 'd2', 'd3'];
+  protected readonly rays = ['r1', 'r2', 'r3'];
+  protected readonly clouds = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
+  protected readonly stars = ['s1', 's2', 's3', 's4'];
+  protected readonly star = STAR;
 }

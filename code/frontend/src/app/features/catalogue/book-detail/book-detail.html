@@ -75,7 +75,7 @@
         </figure>
         @if (b.media.length > 1) {
           <div class="thumbs-col">
-            @if (b.media.length > 4) {
+            @if (b.media.length > 5) {
               <button
                 type="button"
                 class="thumb-nav up"
@@ -111,7 +111,7 @@
                 </li>
               }
             </ul>
-            @if (b.media.length > 4) {
+            @if (b.media.length > 5) {
               <button
                 type="button"
                 class="thumb-nav down"
@@ -255,35 +255,12 @@
       <span>Sách cùng nhà xuất bản</span>
     </div>
     @if (related()?.samePublisherBooks?.length) {
-      <div class="carousel-container">
-        @if (related()!.samePublisherBooks.length > 5) {
-          <button
-            type="button"
-            class="carousel-nav prev"
-            aria-label="Xem sách trước"
-            (click)="scrollShelf(pubShelf, -1)"
-          >
-            ‹
-          </button>
-        }
-        <div #pubShelf class="shelf-carousel">
-          @for (item of related()!.samePublisherBooks; track item.id) {
-            <div class="carousel-item">
-              <app-book-card [book]="item" [now]="clock.now()" />
-            </div>
-          }
-        </div>
-        @if (related()!.samePublisherBooks.length > 5) {
-          <button
-            type="button"
-            class="carousel-nav next"
-            aria-label="Xem sách tiếp theo"
-            (click)="scrollShelf(pubShelf, 1)"
-          >
-            ›
-          </button>
-        }
-      </div>
+      <app-book-carousel
+        class="flat-cards"
+        label="Sách cùng nhà xuất bản"
+        [books]="related()!.samePublisherBooks"
+        [now]="clock.now()"
+      />
       @if (b.publisher) {
         <div class="see-more-wrap">
           <a [routerLink]="['/sach']" [queryParams]="{ q: b.publisher }">Xem thêm &gt;&gt;</a>
@@ -299,35 +276,12 @@
       <span>Sách cùng thể loại</span>
     </div>
     @if (related()?.sameCategoryBooks?.length) {
-      <div class="carousel-container">
-        @if (related()!.sameCategoryBooks.length > 5) {
-          <button
-            type="button"
-            class="carousel-nav prev"
-            aria-label="Xem sách trước"
-            (click)="scrollShelf(catShelf, -1)"
-          >
-            ‹
-          </button>
-        }
-        <div #catShelf class="shelf-carousel">
-          @for (item of related()!.sameCategoryBooks; track item.id) {
-            <div class="carousel-item">
-              <app-book-card [book]="item" [now]="clock.now()" />
-            </div>
-          }
-        </div>
-        @if (related()!.sameCategoryBooks.length > 5) {
-          <button
-            type="button"
-            class="carousel-nav next"
-            aria-label="Xem sách tiếp theo"
-            (click)="scrollShelf(catShelf, 1)"
-          >
-            ›
-          </button>
-        }
-      </div>
+      <app-book-carousel
+        class="flat-cards"
+        label="Sách cùng thể loại"
+        [books]="related()!.sameCategoryBooks"
+        [now]="clock.now()"
+      />
       <div class="see-more-wrap">
         <a [routerLink]="['/sach']" [queryParams]="{ category: b.categoryCode }">Xem thêm &gt;&gt;</a>
       </div>

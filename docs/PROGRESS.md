@@ -1,10 +1,13 @@
 # Tiến độ và bàn giao
 
-Cập nhật 22/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 24/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
-- Đã hoàn tất `DETAIL-ZOOM-GALLERY-05` trên `dev` cho `/sach/:slug`: gỡ nhãn pill `"Click để xem"` trong vòng tròn kính lúp, thay bằng thuộc tính native `title="Click để xem"` trên ảnh chính và bỏ hẳn icon kính lúp ở góc ảnh (`.zoom-badge`).
+- `PUBLIC-CAROUSEL-SYNC-01` (24/11, trên `dev`): carousel book-detail và lưới `/sach` đồng bộ thẻ với Home; desktop 5 thumbnail khớp ảnh chính, hai nút bằng cụm ảnh; ẩn mã sách ở Home/carousel detail/lưới `/sach`; bỏ vạch ngăn. [Thiết kế](product/DESIGN.md)
+- `THEME-SWITCH-CSS-01` (23/11, đã commit `8c35861`): gỡ Rive (runtime/WASM/.riv), thay switch sáng/tối bằng CSS/SVG thuần theo mẫu Uiverse owner chọn. [Bằng chứng](verification/THEME_VERIFICATION.md#thay-rive-bằng-switch-css--2311)
+- Đã hoàn tất `DETAIL-MOBILE-THUMBS-01` trên `dev` cho `/sach/:slug`: sửa lỗi CSS Grid `1fr` thiếu `min-width: 0` khiến hàng thumbnail tràn chiều ngang màn hình mobile; đổi kích thước thumbnail mobile sang `54×72px` (`scroll-snap`, căn giữa tương thích mọi iOS Safari) và khóa `overflow-x: clip` trên `html`.
+- Đã hoàn tất `DETAIL-ZOOM-GALLERY-05` trên `dev` (`ffb7c5c`) cho `/sach/:slug`: gỡ nhãn pill `"Click để xem"`, thay bằng native `title="Click để xem"` và bỏ icon `.zoom-badge`.
 - Đã hoàn tất `PUBLIC-MEDIA-FRAME-01` trên `dev` (`02f3135`): đồng bộ khung ảnh sách public (`/sach/:slug`, `app-book-card`, `/quan-tam`) sang `3:4` `object-fit: cover` không đệm thừa.
 - Đã hoàn tất `DETAIL-ZOOM-GALLERY-03` & `DETAIL-ZOOM-GALLERY-04` trên `dev` (`21d3359`) cho `/sach/:slug`: kính lúp chấm caro tròn mờ (`Click để xem`), popup vuông phóng đại bên phải hiện nhẹ (`scale 0.96 -> 1`, `180ms`) và thu nhỏ về tâm khi mất (`scale 1 -> 0.5`, `240ms`), cột thumbnail dọc và Lightbox iOS Photos.
 - Đã tổ chức knowledge base theo [chỉ mục](README.md). Quyết định gần nhất

@@ -217,6 +217,7 @@ describe('HomePage banner info boxes', () => {
 
     const cards = el.querySelectorAll('.shelf .carousel-item');
     expect(cards.length).toBe(10);
+    expect(el.querySelector('.book-code')).toBeNull();
 
     const prevBtn = el.querySelector('.shelf .carousel-nav.prev') as HTMLButtonElement;
     const nextBtn = el.querySelector('.shelf .carousel-nav.next') as HTMLButtonElement;

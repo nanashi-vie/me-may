@@ -6,7 +6,8 @@
 và khóa input trong lúc chuyển ở 884b3aa. Phạm vi là giao diện khách, Rive tải sau HTML fallback.
 File user cung cấp 14375-27096-d-to-n.riv, copy nguyên bản day-night.riv.
 Contract ở [DESIGN](../product/DESIGN.md#sángtối-public--duyệt14112026),
-kiến trúc ở [ARCHITECTURE](../context/ARCHITECTURE.md#rive-switch-và-theme-public-14112026).
+kiến trúc ở [ARCHITECTURE](../context/ARCHITECTURE.md#theme-public-và-switch-sángtối--cập-nhật23112026).
+Từ23/11 Rive đã gỡ; các mục Rive bên dưới là lịch sử, xem mục cuối.
 
 ## Kiểm tra tự động
 
@@ -77,3 +78,16 @@ không lấy503 đó làm bằng chứng SEO. Nghiệm thu trang dùng API giả
   Hover giữ frame; reload giữ dark. So hash tuyệt đối giữa hai lần cùng theme
   không dùng làm oracle vì frame trang trí có thể khác; đã xem ảnh thật hai trạng thái.
 - Mobile390 chặn /rive/**: đổi dark/light vẫn được, aria-disabled=false sau lỗi tải.
+
+## Thay Rive bằng switch CSS — 23/11
+
+- Lý do owner: Rive tải chậm hơn trang. Rive vốn tải sau load/idle nên không
+  chặn LCP/FCP; lợi ích chính là bỏ ≈420KB gzip, CPU decode WASM/canvas trên máy
+  yếu và hình fallback→canvas đổi sau khi tải. Không có số Lighthouse trước/sau.
+- npm test tại code/frontend: 69 files/409 tests PASS (gỡ theme-rive.spec, spec
+  switch mới: role=switch, aria-checked, mỗi click đổi một lần, không canvas).
+- npm run build: PASS, initial 363.43kB raw/100.77kB transfer; dist không còn rive.
+- SSR Node 4399 không API, Chrome desktop qua Playwright 320/390/1440: switch
+  60×44, không tràn ngang, click + Space đổi aria-checked, 0 request rive/wasm,
+  0 pageerror; ảnh light/dark đã xem. npm run build:workers PASS. Chưa chạy Lighthouse, iOS/Android thật.
+

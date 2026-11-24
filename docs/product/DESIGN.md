@@ -62,7 +62,7 @@ Mẫu có nền trắng, màu đỏ làm điểm nhấn, header thấp, ô tìm 
 ## Desktop — thứ tự từ trên xuống
 
 1. **Utility bar:** dải đỏ trên cùng (`.utility`) trên desktop (>720px; ẩn ở ≤720px) chia 3 vùng trong khung `.wrap`: bên trái là 3 icon trắng mạng xã hội (`Facebook`: `sachngoaivanmemay`, `Threads`: `@sachngoaivanmemay`, `TikTok`: `@andamdaily`); ở giữa là thông điệp “Sách ngoại văn đã qua sử dụng cho bé · Ảnh thật từng cuốn” chạy ngang (`marquee`, tự dừng khi hover hoặc bật `prefers-reduced-motion`); bên phải là icon phong bì kèm email CSKH `support@memaybooks.com` (`mailto:`). Không tự nhận freeship/giảm giá.
-2. **Header (cập nhật 13/11):** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), nút `Danh sách quan tâm` (icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` bên dưới, màu `--ink` đổi `--red` khi hover/focus/active; badge số cuốn đỏ chỉ hiện ở góc trên-phải icon khi `> 0`), nút chuyển ngôn ngữ UI `.lang-switcher` bên phải switch sáng/tối (đổi vị trí14/11) (nút pill bên ngoài chỉ hiện cờ + chevron `⌄`; menu thả xuống click-to-open gồm cờ + tên `Tiếng Việt` / `English (US)`, lưu lựa chọn ở `localStorage` `memay.uiLang.v1`, chưa dịch toàn trang), và switch sáng/tối Rive44px thay nút `Quản trị` (14/11, đã gỡ `Nhắn tiệm ↗` khỏi header). Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · icon trái tim + sáng/tối + switcher cờ bên phải; hàng 2 là search full-width. Không sticky header để giữ ổn định CLS.
+2. **Header (cập nhật 13/11):** desktop giữ logo Mẹ Mây (`code/frontend/public/favicon/web-app-manifest-192x192.png`), search (`placeholder="Bạn đang tìm…"`, đồng bộ `q` từ URL), nút `Danh sách quan tâm` (icon trái tim SVG `#icon-wishlist-heart` ở trên, chữ `Danh sách quan tâm` bên dưới, màu `--ink` đổi `--red` khi hover/focus/active; badge số cuốn đỏ chỉ hiện ở góc trên-phải icon khi `> 0`), nút chuyển ngôn ngữ UI `.lang-switcher` bên phải switch sáng/tối (đổi vị trí14/11) (nút pill bên ngoài chỉ hiện cờ + chevron `⌄`; menu thả xuống click-to-open gồm cờ + tên `Tiếng Việt` / `English (US)`, lưu lựa chọn ở `localStorage` `memay.uiLang.v1`, chưa dịch toàn trang), và switch sáng/tối CSS 60×44px thay nút `Quản trị` (14/11, đã gỡ `Nhắn tiệm ↗` khỏi header). Mobile (≤720px) hàng 1 gồm nút ☰ bên trái · logo giữa · icon trái tim + sáng/tối + switcher cờ bên phải; hàng 2 là search full-width. Không sticky header để giữ ổn định CLS.
 3. **Navigation & Sidebar (chốt 02/11):**
    - Desktop (>720px): hàng nav căn giữa, gap ngang `clamp(3rem, 5vw, 4.5rem)` (15/11), CHỮ IN HOA đậm, thứ tự `Trang chủ · Tất cả sách ▾ · Flash Sale · Bộ sưu tập ▾ · Liên hệ` (tablet 721–960px thu gọn khoảng cách/cỡ chữ; gỡ mục `Cách mua` vì đã tích hợp popup trực tiếp từ box tiện ích Home). Mục đang active tô `--red` (`Tất cả sách` active trên mọi `/sach`; `Bộ sưu tập` active trên `/bo-suu-tap/*`; `Trang chủ` chỉ ở `/`).
    - Dropdown `Tất cả sách` (gồm `Tất cả thể loại` + 9 thể loại từ `/taxonomy`) và `Bộ sưu tập` mở khi hover, focus bàn phím hoặc bấm nút `▾` trên thiết bị chạm; nền xám nhạt, vạch chấm phân cách, gạch `--red` dưới đáy; `aria-expanded`/`aria-controls`, Escape đóng và trả focus về nút/link cha; bấm chữ `Tất cả sách` đi `/sach`, bấm `Bộ sưu tập` chỉ mở/đóng.
@@ -84,7 +84,7 @@ Số hàng sách ban đầu đề xuất 4–5, có thể tăng khi có dữ li�
 ## Book card và phân bố responsive
 
 - Bìa dùng `object-fit: cover` trong khung `.cover-link` tỉ lệ `3:4` cố định không padding thừa (`grid-template-rows: minmax(0, 1fr); overflow: hidden; flex-shrink: 0`) để ảnh chụp lấp kín khung đồng bộ và giữ mọi card thẳng hàng trên cùng hàng (cập nhật 22/11). Thẻ `.book-card` có viền mảnh `1px solid var(--line, #ddd7ce)`. Không chỉnh ảnh thật theo tone làm che tình trạng cuốn.
-- Tên tối đa 2 dòng; mã dễ đọc; giá tham khảo VND nổi bật; nhãn tình trạng vật lý tách khỏi khả dụng; nút trái tim quan tâm có tên truy cập rõ và thể hiện trạng thái đã thêm/xóa.
+- Tên tối đa 2 dòng; mã dễ đọc (ẩn trên Home kể cả Flash Sale, carousel detail và lưới `/sach`/bộ sưu tập, 24/11); thẻ `flat-cards` (kệ Home, carousel detail, lưới `/sach`/bộ sưu tập) không viền, không vạch ngăn, hover/focus nổi viền `--line` và bóng; giá tham khảo VND nổi bật; nhãn tình trạng vật lý tách khỏi khả dụng; nút trái tim quan tâm có tên truy cập rõ và thể hiện trạng thái đã thêm/xóa.
 - Chỉ hiện sale badge/giá gạch ngang khi API xác nhận Flash Sale còn hiệu lực; không có số đã bán, “bán chạy”, rating hoặc preorder giả.
 - Desktop khoảng 1200–1280 px nội dung, 5 cột; tablet 3 cột; mobile 360–390 px: 2 cột, search một hàng riêng, menu cuộn ngang hoặc menu mở bằng nút có nhãn.
 - Mobile cho mỗi nhóm tối đa 4 cuốn + Xem tất cả; tránh hàng ngang chỉ có thể kéo mà không có chỉ dẫn. Hero có asset/tỉ lệ riêng cho mobile, không thu nhỏ chữ trên banner desktop.
@@ -125,7 +125,7 @@ Trang khách `/sach` không hiện tổng số sách (duyệt14/11); vẫn giữ
 
 ## Chi tiết cuốn — khách mobile
 
-Breadcrumb → cột ảnh/CTA (cập nhật 22/11): ảnh lớn và thumbnail dùng khung `3:4` `object-fit: cover` không padding thừa (FRONT eager/high priority, gắn native `title="Click để xem"`, bỏ icon kính lúp góc) và cột thumbnail 2–8 ảnh bên trái trên desktop (tối đa 4 ô, >4 ảnh có nút cuộn `^`/`v` không tự đổi ảnh chính; ảnh đang chọn sáng rõ bỏ viền đỏ, ảnh khác mờ nhẹ; mobile giữ hàng ngang bên dưới) → kính lúp chấm caro tròn mờ giới hạn trong mép khung ảnh mở popup vuông phóng đại (~2.6x–2.8x, hiện nhẹ scale `0.96 → 1` và mất thu nhỏ về giữa `1 → 0.5` trong `240ms`, tôn trọng reduced-motion) bên phải ngang chiều cao khung ảnh trên desktop → bấm/chạm ảnh mở Lightbox `<dialog>` toàn màn hình hiển thị đủ 100% ảnh gốc `contain` (zoom 1x–3x, double-tap/pinch/wheel/nút `±`, pan khi zoom, kéo trượt song song có khoảng đen ngăn cách 24px và đàn hồi biên đầu/cuối kiểu iOS Photos, nút `‹`/`›`, bấm vùng đen ngoài ảnh/`✕`/Escape đóng). Bên dưới là hai nút `Quan tâm`/`Đã quan tâm` và `Liên hệ` → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: `<h1>` chỉ hiển thị `Tên sách` (SEO `<title>` giữ đủ NXB/Tác giả) → mã/khả dụng/thể loại/định dạng → Flash Sale/giá → khối `<dl>` thông số cơ bản → mô tả sách. Desktop: cột ảnh sticky; mobile: một cột, nút `Quan tâm`/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được trừ lúc xác minh; không chọn bản.
+Breadcrumb → cột ảnh/CTA (cập nhật 24/11): ảnh lớn và thumbnail dùng khung `3:4` `object-fit: cover` không padding thừa (FRONT eager/high priority, gắn native `title="Click để xem"`, bỏ icon kính lúp góc) và cột thumbnail 2–8 ảnh bên trái trên desktop (5 ô co giãn khớp mép trên/dưới ảnh chính, cách ảnh 32px, >5 ảnh có nút cuộn `^`/`v` không tự đổi ảnh chính; cả cụm căn giữa cột; ảnh đang chọn sáng rõ bỏ viền đỏ, ảnh khác mờ nhẹ; mobile giữ hàng ngang cuộn gọn 54×72px không tràn trang) → kính lúp chấm caro tròn mờ giới hạn trong mép khung ảnh mở popup vuông phóng đại (~2.6x–2.8x, hiện nhẹ scale `0.96 → 1` và mất thu nhỏ về giữa `1 → 0.5` trong `240ms`, tôn trọng reduced-motion) bên phải ngang chiều cao khung ảnh trên desktop → bấm/chạm ảnh mở Lightbox `<dialog>` toàn màn hình hiển thị đủ 100% ảnh gốc `contain` (zoom 1x–3x, double-tap/pinch/wheel/nút `±`, pan khi zoom, kéo trượt song song có khoảng đen ngăn cách 24px và đàn hồi biên đầu/cuối kiểu iOS Photos, nút `‹`/`›`, bấm vùng đen ngoài ảnh/`✕`/Escape đóng). Bên dưới là hai nút `Quan tâm`/`Đã quan tâm` và `Liên hệ` (desktop rộng đúng bằng cụm thumbnail + ảnh; sách một ảnh bằng ảnh) → link cộng đồng và ghi chú “Liên hệ không giữ sách”. Cột phải: `<h1>` chỉ hiển thị `Tên sách` (SEO `<title>` giữ đủ NXB/Tác giả) → mã/khả dụng/thể loại/định dạng → Flash Sale/giá → khối `<dl>` thông số cơ bản → mô tả sách. Desktop: cột ảnh sticky; mobile: một cột, nút `Quan tâm`/`Liên hệ` dính thanh dưới màn hình. `Liên hệ` luôn bấm được trừ lúc xác minh; không chọn bản.
 
 Giá tham khảo kèm “Giá sẽ thay đổi dựa vào tình trạng sách cụ thể.” Khối `<dl>` thông số nằm ngay trên mô tả, hiển thị theo thứ tự: `Nhà xuất bản` → `Tác giả` → `Kiểu bìa` → `Độ tuổi` → `Trình độ đọc` → `Đọc tham khảo` (không hiển thị trọng lượng sách phía người dùng). Mức đọc theo bảy nhãn tại [DATA](../context/DATA.md), từ Starters · Pre A1 đến Proficiency · C2; Flyers / Key cùng A2. Có mức thì kèm chú thích “Độ tuổi & trình độ đọc là gợi ý tham khảo từ tiệm. Khách hàng tự kiểm tra mức độ phù hợp trước khi mua hàng.” Chưa xác định thì ẩn trường; không tự gán từ tuổi/thể loại. Link đọc tham khảo mở video đọc sách bên ngoài, không yêu cầu upload/player video.
 
@@ -147,7 +147,7 @@ Dưới phần thông tin chi tiết cuốn, hiển thị 2 section kệ sách l
 2. `SÁCH CÙNG THỂ LOẠI`
 
 - **Tiêu đề section:** In hoa, căn giữa với hai đường kẻ ngang mảnh phân cách (`.section-divider`).
-- **Bố cục kệ:** Dùng carousel ngang với thẻ `app-book-card` chuẩn Mẹ Mây. Desktop hiển thị 5 thẻ/khung kèm hai nút tròn điều hướng `<` và `>` ở hai mép ngoài; tablet 3 thẻ; mobile 2 thẻ (hoặc vuốt ngang cảm ứng mượt mà).
+- **Bố cục kệ (cập nhật 24/11):** Dùng `app-book-carousel` chung với Home: `flat-cards` không viền, không vạch dọc, ẩn thanh cuộn, nút trượt từng cuốn và mờ khi hết, không hiện mã sách; nền trang giữ nguyên. Desktop hiển thị 5 thẻ/khung kèm hai nút tròn điều hướng `<` và `>` ở hai mép ngoài; tablet 3 thẻ; mobile 2 thẻ (hoặc vuốt ngang cảm ứng mượt mà).
 - **Link "Xem thêm >>":** Nằm ở góc dưới bên phải mỗi kệ. Kệ NXB dẫn tới `/sach?q={publisher}` (backend mở rộng match `q` với publisher); Kệ thể loại dẫn tới `/sach?category={categoryCode}`.
 - **Trạng thái rỗng:** Nếu cuốn sách không có NXB hoặc không có cuốn khác cùng NXB/thể loại, hiển thị thông báo "Chưa có sách khác cùng nhà xuất bản." / "Chưa có sách khác cùng thể loại." và ẩn link "Xem thêm >>".
 - **Dữ liệu:** Endpoint `GET /api/v1/books/{slug}/related`, tối đa 10 cuốn mỗi mục, chỉ lấy sách `PUBLISHED`, loại trừ chính cuốn đang xem (`id != currentId`), ưu tiên `AVAILABLE` trước và sắp xếp `published_at DESC`.
@@ -385,16 +385,16 @@ Contract UI/dirty/modal/search/role tại [CUSTOMERS](CUSTOMERS.md);
 
 ## Sáng/tối public — duyệt14/11/2026
 
-- Switch44px bên trái ngôn ngữ (đổi vị trí14/11), cả desktop/mobile; ≤420px header chỉ logo
+- Switch60×44px bên trái ngôn ngữ (đổi vị trí14/11), cả desktop/mobile; ≤420px header chỉ logo
   (ẩn chữ thương hiệu) để giữ đủ chỗ. Chỉ phần khách, admin/login giữ sáng.
 - Sáng mặc định; nhớ light/dark qua localStorage memay.theme.v1. Không tự theo
   hệ điều hành, không lưu tài khoản/backend; storage lỗi vẫn chuyển trong phiên.
-- Rive day-night do user cung cấp: click/Enter/Space, không hover; dừng khi idle.
-  Theme là nguồn trạng thái; khi chuyển cảnh bỏ qua bấm thêm, không xếp hàng.
-- Runtime tải sau; SVG dự phòng luôn thao tác được. Reduced motion dùng SVG
-  tĩnh, không tải Rive. Canvas44px cố định, không đổi kích thước khi tải xong.
+- Thay đổi23/11: bỏ Rive, dùng switch CSS/SVG thuần (Uiverse jolly-chicken-91,
+  MIT) có sẵn trong HTML SSR; click/Enter/Space, theme là nguồn trạng thái.
+- Không tải runtime/WASM/canvas; reduced motion tắt mọi animation/transition.
+  Kích thước cố định60×44px (track60×34), không đổi khi hydrate.
 - Nền than ấm/chữ sáng/đỏ hồng cho dark; nền nút vẫn đỏ sẫm dưới chữ trắng.
   Ảnh sách/logo/banner giữ nguyên màu. Không triển khai nhân vật/chatbot ở đây.
-- Bổ sung14/11: khóa click/Enter/Space đến khi Rive ổn định; giữ focus và báo
-  aria-disabled. Nếu kẹt quá6s, về hình tĩnh và mở khóa để tiếp tục đổi theme.
+- Khóa bấm/timeout6s của Rive (14/11) đã gỡ cùng Rive: chuyển CSS0.4s không
+  lệch trạng thái nên mỗi lần bấm đổi theme ngay, không cần aria-disabled.
 - [Bằng chứng và giới hạn](../verification/THEME_VERIFICATION.md).
