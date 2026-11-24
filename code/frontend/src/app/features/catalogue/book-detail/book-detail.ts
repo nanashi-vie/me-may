@@ -23,7 +23,7 @@ import { PublicError } from '../public-error';
 import { ContactDialog } from '../contact-dialog/contact-dialog';
 import { PublicClock } from '../public-clock';
 import { WishlistButton } from '../../wishlist/wishlist-button';
-import { BookCard } from '../book-card/book-card';
+import { BookCarousel } from '../book-carousel/book-carousel';
 import { RelatedBooks } from '../public.models';
 import {
   AGE_LABELS,
@@ -38,7 +38,7 @@ import {
 import { Breadcrumb, BreadcrumbItem } from '../../../shared/breadcrumb/breadcrumb';
 @Component({
   selector: 'app-book-detail',
-  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCard, Breadcrumb],
+  imports: [PublicSkeleton, RouterLink, PublicError, ContactDialog, WishlistButton, BookCarousel, Breadcrumb],
   templateUrl: './book-detail.html',
   styleUrl: './book-detail.scss',
   host: { '(window:blur)': 'cancelLightboxDrag()' },
@@ -96,17 +96,19 @@ export class BookDetail {
     this.resetZoom();
   }
   scrollThumbs(listEl: HTMLElement, dir: -1 | 1) {
+    const [first, second] = Array.from(listEl.children) as HTMLElement[];
+    const step = second?.offsetTop - first?.offsetTop || 104;
     if (typeof listEl.scrollBy === 'function') {
-      listEl.scrollBy({ top: dir * 108, behavior: 'smooth' });
+      listEl.scrollBy({ top: dir * step, behavior: 'smooth' });
     } else {
-      listEl.scrollTop = Math.max(0, listEl.scrollTop + dir * 108);
+      listEl.scrollTop = Math.max(0, listEl.scrollTop + dir * step);
     }
     this.updateThumbScrollState(listEl);
   }
   updateThumbScrollState(listEl: HTMLElement) {
     if (!listEl.clientHeight) {
       this.thumbCanScrollUp.set(listEl.scrollTop > 2);
-      this.thumbCanScrollDown.set((this.book()?.media.length ?? 0) > 4);
+      this.thumbCanScrollDown.set((this.book()?.media.length ?? 0) > 5);
       return;
     }
     this.thumbCanScrollUp.set(listEl.scrollTop > 2);
@@ -451,9 +453,6 @@ export class BookDetail {
       y: Math.min(maxY, Math.max(-maxY, y)),
     };
   }
-  scrollShelf(el: HTMLElement, dir: number) {
-    el.scrollBy({ left: dir * (el.clientWidth * 0.8), behavior: 'smooth' });
-  }
   onContact(contact: ContactDialog) {
     if(this.canContact()) contact.open();
   }
@@ -585,7 +584,7 @@ export class BookDetail {
       this.hideLoupe();
       this.resetZoom();
       this.thumbCanScrollUp.set(false);
-      this.thumbCanScrollDown.set((b?.media.length ?? 0) > 4);
+      this.thumbCanScrollDown.set((b?.media.length ?? 0) > 5);
     }
     if (error) {
       this.related.set(null);

@@ -22,7 +22,7 @@
   </a>
   @if(book().features?.[0];as feature) {<span class="feature-tag" [title]="feature.label">{{feature.label}}</span>}
   </div>
-  <p class="book-code">{{ book().bookCode }}</p>
+  @if (showCode()) {<p class="book-code">{{ book().bookCode }}</p>}
   <h3>
     <a [routerLink]="['/sach', book().slug]">{{ book().title }}</a>
   </h3>

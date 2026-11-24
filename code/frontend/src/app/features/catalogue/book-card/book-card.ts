@@ -22,6 +22,7 @@ export class BookCard {
   });
   readonly book = input.required<PublicBook>();
   readonly now = input(0);
+  readonly showCode = input(true);
   readonly current = computed(() => effectiveBook(this.book(), this.now()));
   readonly front = computed(() => this.book().media.find((m) => m.role === 'FRONT'));
   readonly range = formatPriceRange;

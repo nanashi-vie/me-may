@@ -1,0 +1,29 @@
+@if (hasNav()) {
+  <button
+    type="button"
+    class="carousel-nav prev"
+    [attr.aria-label]="'Trượt sang trái ' + label()"
+    [disabled]="atStart()"
+    (click)="scroll(-1)"
+  >
+    ‹
+  </button>
+}
+<div class="shelf-carousel" #track (scroll)="onScroll()">
+  @for (b of books(); track b.id) {
+    <div class="carousel-item">
+      <app-book-card [book]="b" [now]="now()" [showCode]="false" />
+    </div>
+  }
+</div>
+@if (hasNav()) {
+  <button
+    type="button"
+    class="carousel-nav next"
+    [attr.aria-label]="'Trượt sang phải ' + label()"
+    [disabled]="atEnd()"
+    (click)="scroll(1)"
+  >
+    ›
+  </button>
+}

@@ -5392,3 +5392,23 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Kiểm tra** (`code/frontend`): `npm test` 69 files/409 tests PASS; `npm run build` và `npm run build:workers` PASS, không còn `rive` trong dist. Chrome qua Playwright trên SSR 4399 (không API) 320/390/1440: 60×44, không tràn, click/Space đổi `aria-checked`, 0 request rive/wasm, 0 pageerror. Chưa chạy Lighthouse, thiết bị thật.
 - **Bước tiếp theo**: Owner xem giao diện, commit lên `dev`. Còn local, chưa commit (cùng các thay đổi DOCS-REVIEW-01 chưa commit).
 
+
+### 2026-11-24 — PUBLIC-CAROUSEL-SYNC-01 — Đồng bộ thẻ/carousel public, 5 thumbnail và ẩn mã trên Home
+
+- **Mục tiêu & phạm vi (đang làm)**: owner chốt qua hỏi đáp: carousel book-detail và lưới `/sach` dùng thẻ không viền + vạch ngăn như Home, giữ nền trắng và tiêu đề căn giữa; hover nổi viền/bóng; desktop 5 thumbnail khớp mép ảnh chính; hai nút bằng cụm thumbnail + ảnh; ẩn mã sách ở Home và carousel book-detail.
+- **Quyết định**: tách `app-book-carousel` (HTML/SCSS/logic trượt chuyển từ Home) dùng cho Home, Flash Sale Home và hai kệ book-detail; `app-book-card` thêm input `showCode` (mặc định `true`); class `flat-cards` thay `:host-context(.shelf)`. `/sach` và bộ sưu tập giữ lưới + phân trang, giữ mã sách. `/flash-sale` và khối Flash Sale Home giữ thẻ có viền. Mobile book-detail giữ hàng thumbnail 54×72 và nút dính đáy. Sửa kèm: bước trượt kệ Home cộng thừa 12.8px do `parseFloat('0px') || 12.8`; bìa đầu kệ rộng hơn 1px vì vạch ngăn.
+- **File thay đổi**: `book-carousel/` (mới), `book-card.*`, `book-detail.*`, `catalogue-page.{html,scss}`, `home-page.*`, `code/frontend/src/styles.scss`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra đã chạy**:
+  - `code/frontend`: `npm test -- --watch=false` đạt 69 file/410 test; `npm run build` (browser + SSR) đạt, 0 cảnh báo.
+  - Chrome qua Playwright trên `localhost:4200`, giả lập API ảnh/related (1/3/5/8 ảnh; 1440×900, 1920×1080, 800×1100, 390×844): mép thumbnail thứ 5 trùng đáy ảnh chính (lệch ≤ 0,1px), hai nút trùng mép trái thumbnail và mép phải ảnh; 5 lượt `›` trượt đúng 5 cuốn rồi khóa; Home 0 mã sách; bìa cùng cỡ và `/sach` không tràn ngang ở 1440/900/390; hover sáng/tối, focus có bóng; 0 pageerror.
+  - Chưa chạy: thiết bị thật, Safari/WebKit (dùng CSS subgrid), Lighthouse, `build:workers`, Flash Sale Home có dữ liệu thật.
+- **Bước tiếp theo**: owner xem giao diện trên local rồi commit lên `dev`. Thay đổi còn local, chưa commit.
+
+### 2026-11-24 — PUBLIC-CAROUSEL-SYNC-02 — Bỏ vạch ngăn dọc và ẩn mã sách ở `/sach`
+
+- **Phạm vi**: theo owner, thay quyết định vạch ngăn/mã sách của SYNC-01. Bỏ vạch dọc ở mọi carousel (Home, book-detail) và lưới `/sach`/bộ sưu tập; lưới còn kẻ ngang giữa các hàng. Ẩn mã ở lưới; tìm theo mã giữ nguyên. Thẻ `flat-cards` nền trong suốt khi không hover/focus.
+- **File thay đổi**: `book-carousel.scss`, `catalogue-page.{html,scss}`, `docs/product/DESIGN.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra**: `code/frontend` `npm test -- --watch=false` 69 file/410 test đạt; `npm run build` đạt. Playwright Chrome 1440/900/390 trên `/`, `/sach`, detail: 0 mã trên thẻ, 0 vạch dọc, bìa cùng cỡ, không tràn ngang; hover sáng/tối ở `/sach` kiểm computed style. Chưa chạy: Safari, thiết bị thật.
+- **Bước tiếp theo**: owner duyệt rồi commit lên `dev`; còn local, chưa commit.
+- **Bổ sung (owner chốt cùng ngày)**: bỏ luôn vạch ngang ở lưới `/sach`/bộ sưu tập, thay bằng `row-gap: 0.75rem`. Test 410/410 và build chạy lại đạt; còn local, chưa commit.
+- **Bàn giao**: owner đổi khe thumbnail–ảnh thành 32px; chỉnh lại công thức cỡ cụm (`7.2px` → `27.2px`) để 5 thumbnail vẫn khớp mép. Test 410/410, build đạt; Playwright 1440/1920/800 lệch ≤ 0,1px, sách một ảnh và mobile 390 không tràn. Owner duyệt giao diện, yêu cầu commit và push `dev`. Chưa chạy: Safari, thiết bị thật, Lighthouse, `build:workers`. Bước tiếp: theo dõi CI trên `dev`.

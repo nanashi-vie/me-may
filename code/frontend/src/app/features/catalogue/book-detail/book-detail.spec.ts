@@ -271,6 +271,11 @@ describe('Detail refresh and public origin', () => {
     expect(dividers[0].textContent?.toUpperCase()).toContain('SÁCH CÙNG NHÀ XUẤT BẢN');
     expect(dividers[1].textContent?.toUpperCase()).toContain('SÁCH CÙNG THỂ LOẠI');
 
+    const shelves = el.querySelectorAll('.related-section app-book-carousel.flat-cards');
+    expect(shelves.length).toBe(2);
+    expect(el.querySelector('.related-section .book-code')).toBeNull();
+    expect(el.querySelector('.detail-layout')?.textContent).toContain('MM-000001');
+
     const seeMoreLinks = el.querySelectorAll<HTMLAnchorElement>('.see-more-wrap a');
     expect(seeMoreLinks.length).toBe(2);
     expect(seeMoreLinks[0].getAttribute('href')).toContain('q=Kim%20%C4%90%E1%BB%93ng');
@@ -500,8 +505,8 @@ describe('Detail refresh and public origin', () => {
     expect(el.querySelector('.magnifier-flyout.is-leaving')).toBeNull();
   });
 
-  it('renders vertical scroll buttons when over 4 images and scrolls thumbs without changing main image', async () => {
-    const roles = ['FRONT', 'BACK', 'SPINE', 'INSIDE_1', 'INSIDE_2'];
+  it('renders vertical scroll buttons when over 5 images and scrolls thumbs without changing main image', async () => {
+    const roles = ['FRONT', 'BACK', 'SPINE', 'INSIDE_1', 'INSIDE_2', 'INSIDE_3'];
     const media = roles.map((role) => ({ role, contentPath: '/' + role + '.jpg', alt: role }));
     TestBed.configureTestingModule({
       providers: [
@@ -533,7 +538,7 @@ describe('Detail refresh and public origin', () => {
     list.scrollBy = scrollBySpy;
     down!.click();
     h.detectChanges();
-    expect(scrollBySpy).toHaveBeenCalledWith({ top: 108, behavior: 'smooth' });
+    expect(scrollBySpy).toHaveBeenCalledWith({ top: 104, behavior: 'smooth' });
     expect(c.selectedMedia()).toBe(0);
   });
 
