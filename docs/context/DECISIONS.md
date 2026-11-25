@@ -12,4 +12,4 @@
 | 12/11 | Tiếp tục phục vụ ảnh Cloudinary cũ, dùng LOCAL cho upload mới. Thiếu nguồn đã xác minh được cảnh báo trong admin để chủ có thể tiếp tục xuất bản. | [Ảnh](../product/IMAGES.md) |
 | 12–18/11 | Thêm hồ sơ khách và đơn riêng trong admin để thay dần sổ Excel. Giá chốt, keep, thu tiền, giao và hoàn theo đơn nội bộ. Public vẫn hỏi mua qua tin nhắn. | [Khách](../product/CUSTOMERS.md), [đơn](../product/ORDERS.md) |
 | 18/11 | Dùng một chỉ mục theo đầu việc. Contract, runbook, bằng chứng và snapshot có nơi cập nhật riêng để agent khác có thể tiếp quản. | [Chỉ mục](../README.md) |
-| 25/11 | Thùng rác chung cho sách, khách, đơn. Xóa khách Đã lưu trữ không có đơn và đơn Nháp/Đã hủy chưa có tiền, để dọn dữ liệu nhập nhầm; giữ đơn có tiền và khách có đơn cho đối soát. | [Thùng rác](../product/TRASH.md) |
+| 25/11 | Thùng rác chung cho sách, khách, đơn. Xóa khách Đã lưu trữ không có đơn và đơn Nháp chưa có tiền hoặc Đã hủy/Đã hoàn đơn không còn giữ tiền (đã hoàn hết hoặc vô hiệu); dọn đơn xóa luôn lịch sử giao dịch. Giữ đơn còn tiền và khách có đơn. Nhãn Đã hủy và Đã hoàn đơn tách riêng. | [Thùng rác](../product/TRASH.md) |

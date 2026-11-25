@@ -128,7 +128,7 @@
             {{ d.customerPhoneSnapshot || 'Chưa có SĐT' }} · {{ d.customerCodeSnapshot }}
           </p>
         </div>
-        <span class="badge" [class.keeping]="d.status === 'KEEPING'">{{ labels[d.status] }}</span>
+        <span class="badge" [class.keeping]="d.status === 'KEEPING'">{{ statusLabel(d) }}</span>
       </header>
       @if (d.status === 'KEEPING') {
         <section aria-label="Thời gian giữ sách">

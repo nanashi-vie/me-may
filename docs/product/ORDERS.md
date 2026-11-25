@@ -46,7 +46,7 @@ Nguồn nền: [DATA](../context/DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE
 | READY_TO_SHIP — Chờ giao | Đã chốt item, người nhận, kiện/COD/khai giá; còn giữ tồn |
 | COMPLETED — Hoàn tất | Admin xác nhận đã bàn giao vận chuyển; khóa item, không trừ tồn nữa |
 | UNSUCCESSFUL — Đơn không thành công | Chủ ghi nhận thủ công đơn hoàn về; chờ gửi lại hoặc hoàn đơn/nhập tồn |
-| CANCELLED — Đã hủy/hoàn đơn | Hủy trước gửi hoặc đóng hoàn đơn sau thất bại; giữ lịch sử tiền/tồn |
+| CANCELLED — Đã hủy hoặc Đã hoàn đơn | Nhãn Đã hoàn đơn khi có `order_returns`, còn lại Đã hủy; lọc riêng (RETURNED); xóa theo [TRASH](TRASH.md) |
 
 - Giao ngay: DRAFT → READY_TO_SHIP → COMPLETED; keep thêm KEEPING sau DRAFT.
 - COMPLETED → UNSUCCESSFUL do chủ xác nhận hoàn về, lưu lý do/thời điểm.

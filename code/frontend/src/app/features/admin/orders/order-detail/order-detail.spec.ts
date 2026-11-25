@@ -69,6 +69,26 @@ async function setup(id = '1') {
   return { f, c: f.componentInstance, api, auth, params };
 }
 describe('OrderDetail', () => {
+  it('offers the unsuccessful-return action only for completed orders', async () => {
+    const { f, c } = await setup();
+    c.totalTab.set(true);
+    for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+      c.order.set({ ...detail, status });
+      f.detectChanges();
+      expect(f.nativeElement.textContent.includes('Đơn không thành công / hoàn về'), status).toBe(status === 'COMPLETED');
+      expect(f.nativeElement.textContent.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
+    }
+  });
+  it('labels a cancelled order apart from a closed return', async () => {
+    const { f, c } = await setup();
+    const badge = () => f.nativeElement.querySelector('.heading .badge').textContent.trim();
+    c.order.set({ ...detail, status: 'CANCELLED' });
+    f.detectChanges();
+    expect(badge()).toBe('Đã hủy');
+    c.order.set({ ...detail, status: 'CANCELLED', returns: [{ id: '1' }] });
+    f.detectChanges();
+    expect(badge()).toBe('Đã hoàn đơn');
+  });
   it('requires reason before deleting keep item and retains form after validation rejection', async () => {
     const { c, api } = await setup();
     c.remove({ id: '9', titleSnapshot: 'Book', quantity: 2 } as any);

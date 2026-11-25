@@ -46,7 +46,7 @@
   @if (purgeTarget(); as target) {
     <h2 id="purge-heading">Dọn vĩnh viễn {{ target.items.length }} {{ tab().unit }}?</h2>
     <p>{{ target.all ? 'Thao tác áp dụng cho toàn bộ tab ' + tab().label + ', kể cả các trang khác.' : 'Thao tác áp dụng cho các mục đã chọn.' }}
-      Dữ liệu{{ tab().kind === 'books' ? ' và ảnh (nếu có)' : '' }} bị xóa vĩnh viễn, kể cả khi chưa đủ 7 ngày.</p>
+      Dữ liệu{{ tab().kind === 'books' ? ' và ảnh (nếu có)' : tab().kind === 'orders' ? ' và lịch sử giao dịch' : '' }} bị xóa vĩnh viễn, kể cả khi chưa đủ 7 ngày.</p>
     <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="purgeDialog.close()">Hủy</button>
     <button type="button" [disabled]="busy()" (click)="confirmPurge(purgeDialog)">Dọn vĩnh viễn</button>
   }

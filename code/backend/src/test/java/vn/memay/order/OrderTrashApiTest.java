@@ -36,28 +36,85 @@ class OrderTrashApiTest extends OrderTestSupport {
     }
 
     private void payment(long id, boolean voided) {
-        jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,created_by,voided_at,voided_by,void_reason) values(?,'DEPOSIT',1000,'OTHER',current_timestamp,?,?,?,?)",
-                id, owner.getId(), voided ? Timestamp.from(Instant.now()) : null, voided ? owner.getId() : null, voided ? "Synthetic" : null);
+        payment(id, "DEPOSIT", 1000, voided);
     }
 
-    @Test void onlyDraftOrCancelledOrdersWithoutAnyPaymentCanBeTrashed() throws Exception {
+    private void payment(long id, String type, long amount, boolean voided) {
+        jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,created_by,voided_at,voided_by,void_reason) values(?,?,?,'OTHER',current_timestamp,?,?,?,?)",
+                id, type, amount, owner.getId(), voided ? Timestamp.from(Instant.now()) : null, voided ? owner.getId() : null, voided ? "Synthetic" : null);
+    }
+
+    private long cancelled() {
+        long id = draft();
+        jdbc.update("update orders set status='CANCELLED' where id=?", id);
+        return id;
+    }
+
+    private long returned() {
+        long id = cancelled();
+        jdbc.update("insert into order_returns(order_id,item_id,quantity_received,quantity_restocked,reason,created_by,created_at,request_id) values(?,?,0,0,'Synthetic',?,current_timestamp,?)",
+                id, manual(id, 10000, 1, 100), owner.getId(), UUID.randomUUID());
+        return id;
+    }
+
+    private List<Long> listed(String query) throws Exception {
+        var ids = new java.util.ArrayList<Long>();
+        for (var item : tree(api.send("GET", BASE + query, null, false)).path("items")) ids.add(Long.parseLong(item.path("id").asString()));
+        return ids;
+    }
+
+    @Test void onlyUnpaidDraftsAndCancelledOrdersHoldingNoMoneyCanBeTrashed() throws Exception {
         for (String status : List.of("KEEPING", "READY_TO_SHIP", "COMPLETED", "UNSUCCESSFUL")) {
             long id = draft();
             jdbc.update("update orders set status=? where id=?", status, id);
             assertThat(error(id)).as(status).isEqualTo("order_not_trashable");
         }
-        long paid = draft(), voided = draft(), cancelled = draft(), draft = draft();
-        payment(paid, false);
+        long paidDraft = draft(), voidedDraft = draft(), held = cancelled(), partlyRefunded = cancelled();
+        payment(paidDraft, false);
+        payment(voidedDraft, true);
+        payment(held, false);
+        payment(partlyRefunded, false);
+        payment(partlyRefunded, "REFUND", 400, false);
+        payment(partlyRefunded, "REFUND", 600, true);
+        for (long id : List.of(paidDraft, voidedDraft)) assertThat(error(id)).isEqualTo("order_has_payments");
+        for (long id : List.of(held, partlyRefunded)) assertThat(error(id)).isEqualTo("order_holds_money");
+
+        long draft = draft(), unpaid = cancelled(), voided = cancelled(), refunded = cancelled(), returned = returned();
         payment(voided, true);
-        jdbc.update("update orders set status='CANCELLED' where id in (?,?)", voided, cancelled);
-        assertThat(error(paid)).isEqualTo("order_has_payments");
-        assertThat(error(voided)).isEqualTo("order_has_payments");
+        for (long id : List.of(refunded, returned)) {
+            payment(id, false);
+            payment(id, "REFUND", 1000, false);
+        }
+        var allowed = List.of(draft, unpaid, voided, refunded, returned);
         var items = tree(api.send("GET", BASE, null, false)).path("items");
-        assertThat(items.size()).isEqualTo(8);
+        assertThat(items.size()).isEqualTo(13);
         for (var item : items)
-            assertThat(item.path("trashable").asBoolean()).isEqualTo(List.of(cancelled, draft).contains(Long.parseLong(item.path("id").asString())));
-        assertThat(change(draft, 0, true).statusCode()).isEqualTo(204);
-        assertThat(change(cancelled, 0, true).statusCode()).isEqualTo(204);
+            assertThat(item.path("trashable").asBoolean()).isEqualTo(allowed.contains(Long.parseLong(item.path("id").asString())));
+        for (long id : allowed) assertThat(change(id, 0, true).statusCode()).isEqualTo(204);
+    }
+
+    @Test void separatesCancelledOrdersFromClosedReturns() throws Exception {
+        long cancelled = cancelled(), returned = returned(), draft = draft();
+        for (var item : tree(api.send("GET", BASE, null, false)).path("items"))
+            assertThat(item.path("returned").asBoolean()).isEqualTo(Long.parseLong(item.path("id").asString()) == returned);
+        assertThat(listed("?status=CANCELLED")).containsExactly(cancelled);
+        assertThat(listed("?status=RETURNED")).containsExactly(returned);
+        assertThat(listed("")).containsExactlyInAnyOrder(cancelled, returned, draft);
+        assertThat(api.send("GET", BASE + "/stats?status=RETURNED", null, false).statusCode()).isEqualTo(200);
+        assertThat(api.send("GET", BASE + "?status=UNKNOWN", null, false).statusCode()).isEqualTo(400);
+    }
+
+    @Test void purgeDeletesSettledPaymentHistoryOfReturnedOrder() throws Exception {
+        long id = returned(), other = draft();
+        payment(id, false);
+        payment(id, "REFUND", 1000, false);
+        payment(other, false);
+        assertThat(change(id, 0, true).statusCode()).isEqualTo(204);
+        var items = json(Map.of("items", List.of(Map.of("id", Long.toString(id), "version", 1))));
+        assertThat(api.send("POST", BASE + "/trash/purge", items, true).statusCode()).isEqualTo(204);
+        assertThat(jdbc.queryForList("select id from orders", Long.class)).containsExactly(other);
+        assertThat(jdbc.queryForList("select order_id from order_payments", Long.class)).containsExactly(other);
+        assertThat(jdbc.queryForObject("select count(*) from order_returns", Long.class)).isZero();
     }
 
     @Test void hidesFromEveryReadAndWriteThenRestoresSameStatus() throws Exception {
@@ -113,19 +170,23 @@ class OrderTrashApiTest extends OrderTestSupport {
         assertThat(jdbc.update("delete from customer where id=?", buyer)).isEqualTo(1);
     }
 
-    @Test void expiredOrdersArePurgedButNeverOnesWithPayments() throws Exception {
-        long free = draft(), paid = draft();
+    @Test void expiredOrdersArePurgedButNeverOnesWithOpenMoney() throws Exception {
+        long free = draft(), paid = draft(), held = cancelled(), settled = cancelled();
+        payment(held, false);
+        payment(settled, true);
         var deleted = Instant.parse("2020-01-01T00:00:00Z");
         payment(paid, false);
         jdbc.update("update orders set deleted_at=?", Timestamp.from(deleted));
         assertThat(change(free, 0, false).statusCode()).isEqualTo(409);
         trash.purgeExpired(deleted.plusSeconds(604799));
-        assertThat(jdbc.queryForObject("select count(*) from orders", Long.class)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("select count(*) from orders", Long.class)).isEqualTo(4);
         trash.purgeExpired(deleted.plusSeconds(604800));
-        assertThat(jdbc.queryForList("select id from orders", Long.class)).containsExactly(paid);
-        var items = json(Map.of("items", List.of(Map.of("id", Long.toString(paid), "version", 0))));
-        assertThat(api.send("POST", BASE + "/trash/purge", items, true).statusCode()).isEqualTo(409);
-        assertThat(jdbc.queryForObject("select count(*) from order_payments", Long.class)).isEqualTo(1);
+        assertThat(jdbc.queryForList("select id from orders", Long.class)).containsExactlyInAnyOrder(paid, held);
+        for (long id : List.of(paid, held)) {
+            var items = json(Map.of("items", List.of(Map.of("id", Long.toString(id), "version", 0))));
+            assertThat(api.send("POST", BASE + "/trash/purge", items, true).statusCode()).isEqualTo(409);
+        }
+        assertThat(jdbc.queryForList("select order_id from order_payments", Long.class)).containsExactlyInAnyOrder(paid, held);
     }
 
     @Test void staffIsForbidden() throws Exception {
