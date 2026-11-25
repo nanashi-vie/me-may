@@ -19,6 +19,9 @@ export interface ShippingDraft {
   additionalShippingFee: number | null;
   reason: string | null;
 }
+/** Packaging allowance on top of the books; the owner can still type the real weight. */
+const PACKAGING_GRAMS = 1000;
+const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
 @Component({
   selector: 'app-order-shipping-form',
   imports: [FormsModule, VndInput],
@@ -65,7 +68,7 @@ export class OrderShippingForm {
       recipientPhone: order.recipientPhone ?? '',
       shippingAddress: order.shippingAddress ?? '',
       shippingFee: order.shippingFee,
-      parcelWeightGrams: mode === 'shipping' ? order.parcelWeightGrams : null,
+      parcelWeightGrams: mode === 'shipping' ? order.parcelWeightGrams : this.suggestedWeight(),
       parcelWeightOverridden: true,
       parcelWeightConfirmed: false,
       codAmount: order.codAmount,
@@ -79,6 +82,7 @@ export class OrderShippingForm {
     this.conflict.set(false);
     this.refreshing.set(false);
     this.reviewRequired = false;
+    this.manualWeight = mode === 'shipping';
     this.manualCod = mode !== 'finalize';
     this.suggestCod();
     this.initial = JSON.stringify(this.model);
@@ -93,8 +97,7 @@ export class OrderShippingForm {
     this.error.set('');
     this.model.codConfirmed = false;
     this.model.parcelWeightConfirmed = false;
-    if (!this.model.parcelWeightOverridden)
-      this.model.parcelWeightGrams = order.totals.totalBookWeightGrams;
+    if (!this.manualWeight) this.model.parcelWeightGrams = this.suggestedWeight();
     this.suggestCod();
     if (!this.allowed())
       this.error.set(
@@ -130,6 +133,18 @@ export class OrderShippingForm {
   readonly paymentRequested = output<void>();
   reviewRequired = false;
   manualCod = false;
+  manualWeight = false;
+  private suggestedWeight() {
+    const books = this.order?.totals.totalBookWeightGrams;
+    return integer(books, 1) && integer(books + PACKAGING_GRAMS, 1) ? books + PACKAGING_GRAMS : null;
+  }
+  weightHint() {
+    const suggested = this.suggestedWeight();
+    if (this.mode === 'shipping') return '';
+    return suggested === null
+      ? 'Chưa đủ trọng lượng sách, nhập số cân thật'
+      : `Sách ${grams(suggested - PACKAGING_GRAMS)} + ${grams(PACKAGING_GRAMS)} đóng gói`;
+  }
   suggestCod() {
     if (this.model.customerPaymentMode === 'MONTHLY') this.model.codAmount = 0;
     else if (!this.manualCod) this.model.codAmount = Math.max(0, this.balance() ?? 0);

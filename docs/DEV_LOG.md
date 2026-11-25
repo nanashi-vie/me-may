@@ -5456,3 +5456,45 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **File thay đổi**: `orders/order-list`, `orders/order-detail` và spec; `docs/product/ORDERS.md`, `docs/PROGRESS.md`.
 - **Kiểm tra**: test đỏ trước; `code/frontend` `npm test` 459/459, `npm run build` đạt. Trình duyệt trong app, OWNER, DH-000001: danh sách "—", chi tiết có dòng tóm tắt, 390px không tràn. Chưa chạy: backend (không đổi), `build:workers`, Safari.
 - **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.
+
+### 2026-11-25 — ORDER-PICKER-01 — Thiết kế chọn khách gọn và gợi ý sách gần giống
+
+- **Mục tiêu & phạm vi (thiết kế, chưa code)**: owner muốn ẩn danh sách khách sau khi chọn và gợi ý sách có tên trùng đa số ký tự khi nhập thủ công ở `/admin/orders`.
+- **Quyết định**: owner đồng ý cả 8 câu vòng 1 và chọn hướng A (SQL lọc sơ bộ 200, Java chấm điểm), ưu tiên nhanh, nhẹ. Chỉ tên trùng hẳn mới bắt xác nhận, thay quy định ORDERS mục 6 khi hoàn tất. Chi tiết ở `docs/specs/ORDER_PICKER.md`.
+- **Phát hiện**: `OrderItemForm.match` không phải signal trong app không có zone.js nên cảnh báo trùng không tự vẽ lại. Test tạm (đã xóa) trong `code/frontend`: API đã trả 1 kết quả mà DOM vẫn "Đang chờ kiểm tra", gõ sang ô khác mới hiện. Đọc code thấy hộp Sửa đơn nháp không xóa khách đã chọn khi đóng; chưa chạy thử. Ngưỡng hiện tại là Levenshtein cả chuỗi ≥ 0,8, không phải trùng 100%.
+- **File thay đổi**: `docs/specs/ORDER_PICKER.md` (mới), `docs/README.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`. Không sửa code.
+- **Kiểm tra**: ngoài test tạm, chấm thử 21 cặp tên bằng script Python rời. Chưa chạy bộ test, build hay đo hiệu năng.
+- **Bổ sung**: owner duyệt spec. Đối chiếu Git: `dev` = `origin/dev` = `84fbbdd` (ORDER-CANCEL-01, ORDER-KEEP-END-01 của phiên khác, đã push); không conflict, hai commit không chạm luồng chọn khách/so tên. Dời mục này xuống cuối nhật ký.
+- **Plan**: viết `docs/specs/ORDER_PICKER_PLAN.md` (5 task, TDD), đăng ký chỉ mục. Chưa code.
+- **Thực thi (owner duyệt plan, Native)**: backend `TitleMatch` mới, `CatalogMatchService`, `OrderDtos`, `OrderDraftService`; frontend `order-item-form/*`, `order-detail/*`, `order-models.ts`, `order-picker.scss` mới (tách vì `orders.scss` vượt budget 6 kB) và test; docs tách `ORDERS` mục 5–6 sang `ORDER_ITEMS`, xóa spec/plan đã hết vai trò.
+- **Quyết định khi làm**: làm ngay trên checkout `dev`, không commit theo task; bỏ dấu bằng dải U+0300–036F và liệt kê khoảng trắng để SQL trùng Java; sửa dòng thủ công cũng khóa Lưu khi đang kiểm; RED đầu của hộp thêm sách không chạy được (lỗi lệnh zsh) nên bù bằng 7 mutation đều đỏ.
+- **Kiểm tra**: backend 430 test (3 skip), frontend 484, build đạt; p95 198–202ms → 68–83ms; Playwright 1440/390. Chi tiết, giới hạn: [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#chọn-khách-và-gợi-ý-sách-gần-giống--25112026). Đã gỡ container, worktree và server tạm; DB dev không bị đụng.
+- **Góp ý reviewer hoãn**: lookup hồ sơ chậm có thể đè khách vừa chọn (có từ trước); focus sau 409/"Thử lại"; câu "Chọn…" ở dòng đã lưu; phạm vi `aria-live` và nhãn nút trùng; lượt tìm khách cũ chưa bị hủy khi đóng hộp; tên chỉ có dấu câu; "Tottochan 2" không gợi ý; vài test còn thiếu.
+- **Bàn giao**: owner yêu cầu bỏ class `.selected` thừa của `.catalog-result` (HTML + SCSS), commit và push `dev`. Chạy lại `npm test` 484/484 và `npm run build` đạt; backend không đổi từ lần `verify` 430 test. Chưa mở lại trình duyệt sau góp ý reviewer.
+- **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.
+
+### 2026-11-25 — ORDER-LIST-TABS-01 — Thiết kế tab cho danh sách đơn hàng
+
+- **Mục tiêu & phạm vi (thiết kế, chưa code)**: owner thấy `/admin/orders` có quá nhiều mục và số, muốn chia nhỏ danh sách; yêu cầu viết spec.
+- **Quyết định**: owner đồng ý Q1–Q14 qua ba vòng. Năm tab Tất cả/Chờ xử lý/Đang keep/Hoàn tất/Hủy-Hoàn; bỏ dãy 7 số; số theo từ khóa, ngày và khách nhưng không theo tab; nút phụ thay ô Trạng thái và Hạn keep; mỗi tab có thứ tự và cột riêng. Q11 rút gọn vì admin desktop-first: chỉ cuộn ngang bằng CSS.
+- **Phát hiện (đọc code, chưa chạy thử)**: `stats` dùng cùng bộ lọc trạng thái nên số nhóm khác về 0; `customerId` lọc ngầm không hiện trên màn hình; chi tiết đơn đã dùng `tab` nên danh sách dùng `nhom`.
+- **File thay đổi**: `docs/specs/ORDER_LIST_TABS.md` (mới), `docs/README.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra**: đối chiếu `dev` = `origin/dev` = `b1501ba`. Không chạy test, build hay trình duyệt vì chưa có code.
+- **Plan (owner duyệt spec)**: viết `docs/specs/ORDER_LIST_TABS_PLAN.md` (5 task, TDD), đăng ký chỉ mục. Bổ sung từ lúc rà: trang vượt quá số trang phải tự về trang cuối, số đếm tải riêng để không chặn danh sách. Chưa code.
+- **Thực thi (owner duyệt plan, Native)**: bắt đầu 25/11 trên checkout `dev`, nền `b1501ba`, không commit theo task. Hoàn tất 5 task, gộp spec vào ORDERS mục 4.1, xóa spec/plan.
+- **File code**: backend `OrderDtos`, `OrderController`, `OrderQueryService`, `OrderListApiTest` (mới); frontend `orders/order-models.ts`, `order-list/*`, `order-list/order-groups.ts` và spec (mới).
+- **Quyết định khi làm**: test backend chạy từ bản sao ở scratchpad với PostgreSQL tạm vì `8080` của owner đang chạy từ `target/classes`; từ khóa "ALL" phải giữ trong link; số và danh sách tải riêng.
+- **Kiểm tra**: backend 440 (3 skip), frontend 519, build đạt; mutation, trình duyệt, giới hạn ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#tab-danh-sách-đơn--25112026). Lần chạy backend đầu đỏ 4 ca `HeroBannerMediaTest` vì bản sao thiếu `image-worker`; nối lại thì đạt. Đã dọn container, server tạm, mật khẩu thử; `me_may_dev` không bị đụng.
+- **Góp ý reviewer hoãn**: bấm ✕/Xóa lọc làm mất focus; lỗi ngày ngược chỉ báo chung; gõ khoảng trắng rồi dừng 300 ms bị cắt khoảng trắng trong ô tìm (có từ trước).
+- **Bàn giao**: theo owner, đã khởi động lại `8080` bằng `run-local.sh` trên `me_may_dev` (V38, không migration, health UP); chưa kiểm màn hình bằng phiên owner. Commit + push `dev` theo yêu cầu owner.
+- **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.
+
+### 2026-11-25 — ORDER-BILL-VIEW-01 — Bill gửi khách, cân kiện gợi ý và 3 góp ý danh sách đơn
+
+- **Mục tiêu & phạm vi**: owner yêu cầu sửa 3 góp ý hoãn của ORDER-LIST-TABS-01, tự điền cân kiện = sách + 1.000 g, thêm hộp bill để chụp màn hình gửi khách. Đã chốt Q1–Q11 qua hai vòng; bill không có mã đơn và dòng giảm giá, dùng chữ "Cần thanh toán". Chỉ frontend, không migration/dependency; không viết spec/plan riêng.
+- **Trạng thái**: bắt đầu trên checkout `dev`, nền `5368373`. `dev` không có CI khi push (workflow chỉ chạy ở PR/push `main` hoặc chạy tay), thay ghi chú "theo dõi CI `dev`" của mục trước.
+- **File thay đổi**: frontend `orders/order-bill/*` (mới), `order-detail/*`, `order-shipping-form/*`, `order-list/*` và spec; `docs/product/ORDER_BILL.md` (mới, tách vì ORDERS gần trần 400 dòng), `docs/product/ORDERS.md`, `docs/README.md`, `docs/PROGRESS.md`, `docs/verification/ORDER_VERIFICATION.md`.
+- **Quyết định khi làm**: bill lấy `totals`/`shippingFee` hiện tại thay vì snapshot lần giao, để các dòng luôn cộng khớp cả sau khi hủy lần gửi lại; bỏ điều kiện `parcelWeightOverridden` trong `rebase` (luôn đúng nên không bao giờ chạy), thay bằng cờ ô đã sửa tay.
+- **Kiểm tra**: frontend 541 test, build đạt; chi tiết và giới hạn ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#bill-gửi-khách-và-cân-kiện-gợi-ý--25112026). Đã dọn container, server tạm, mật khẩu thử; `me_may_dev` không bị đụng.
+- **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.
+- **Bước tiếp theo**: owner xem trên đơn thật và quyết định: dòng "Đã thanh toán đủ" ở bill tạm tính khi cọc đủ tiền sách; giảm giá đơn cũ chỉ bỏ trên bill, chưa bỏ trong hệ thống.

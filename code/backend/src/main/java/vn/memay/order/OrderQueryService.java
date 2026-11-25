@@ -21,21 +21,24 @@ public class OrderQueryService {
  private static final String AGGREGATES=" from orders o left join lateral (select coalesce(sum(quantity),0) qty,coalesce(sum(unit_price_vnd::numeric*quantity),0) subtotal,case when count(*) filter(where unit_weight_grams is null)>0 then null else coalesce(sum(unit_weight_grams::numeric*quantity),0) end weight from order_items where order_id=o.id) i on true left join lateral(select coalesce(sum(case when transaction_type='REFUND' then -amount else amount end),0) paid from order_payments where order_id=o.id and voided_at is null) p on true";
  public Page<OrderSummary> list(OrderFilter f,AdminUser actor){access.requireOwner(actor,false);Instant now=db.clock.instant();var w=where(f,now);var args=new ArrayList<>(w.args());
   long count=db.jdbc.queryForObject("select count(*) from orders o"+w.sql(),Long.class,args.toArray());args.add(f.size());args.add((long)f.page()*f.size());
-  var rows=db.jdbc.query("select o.*,i.qty item_qty,i.subtotal item_subtotal,i.weight book_weight,p.paid paid_amount,"+OrderTrashService.trashable("o")+" trashable,"+RETURNED+" returned"+AGGREGATES+w.sql()+" order by o.created_at desc,o.id desc limit ? offset ?",(r,n)->{
+  var rows=db.jdbc.query("select o.*,i.qty item_qty,i.subtotal item_subtotal,i.weight book_weight,p.paid paid_amount,"+OrderTrashService.trashable("o")+" trashable,"+RETURNED+" returned"+AGGREGATES+w.sql()+" order by "+group(f).order+" limit ? offset ?",(r,n)->{
    long subtotal=checked(r.getBigDecimal("item_subtotal").toBigIntegerExact(),"subtotal"),paid=checked(r.getBigDecimal("paid_amount").toBigIntegerExact(),"paidAmount");var weight=r.getBigDecimal("book_weight");
    var total=aggregate(subtotal,r.getLong("discount_amount"),r.getObject("shipping_fee",Long.class),paid,weight==null?null:checked(weight.toBigIntegerExact(),"totalBookWeightGrams"));
-   Status status=Status.valueOf(r.getString("status"));Instant until=r.getTimestamp("keep_until")==null?null:r.getTimestamp("keep_until").toInstant();
-   return new OrderSummary(r.getString("id"),r.getString("order_code"),r.getString("customer_id"),r.getString("customer_name_snapshot"),r.getString("customer_phone_snapshot"),status,r.getString("fulfillment_type"),r.getTimestamp("created_at").toInstant(),until,r.getLong("item_qty"),total,r.getLong("version"),warning(status,until,now),r.getBoolean("trashable"),r.getBoolean("returned"));
+   Status status=Status.valueOf(r.getString("status"));Instant until=instant(r,"keep_until");
+   return new OrderSummary(r.getString("id"),r.getString("order_code"),r.getString("customer_id"),r.getString("customer_name_snapshot"),r.getString("customer_phone_snapshot"),status,r.getString("fulfillment_type"),r.getTimestamp("created_at").toInstant(),until,r.getLong("item_qty"),total,r.getLong("version"),warning(status,until,now),r.getBoolean("trashable"),r.getBoolean("returned"),instant(r,"completed_at"),instant(r,"cancelled_at"));
   },args.toArray());return new Page<>(rows,f.page(),f.size(),count,(count+f.size()-1)/f.size());
  }
- public OrderStats stats(OrderFilter f,AdminUser actor){access.requireOwner(actor,false);Instant now=db.clock.instant();var w=where(f,now);var args=new ArrayList<Object>();args.add(Timestamp.from(now));args.add(java.sql.Date.valueOf(now.atZone(ZONE).toLocalDate()));args.addAll(w.args());
-  String sql="with t as(select cast(? as timestamptz) moment,cast(? as date) today) select count(*) filter(where status='KEEPING'),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+" between t.today+1 and t.today+3),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+"=t.today),count(*) filter(where status='KEEPING' and keep_until<=t.moment),count(*) filter(where status='READY_TO_SHIP'),count(*) filter(where status='COMPLETED'),count(*) filter(where status='UNSUCCESSFUL') from orders o cross join t"+w.sql();
-  return db.jdbc.queryForObject(sql,(r,n)->new OrderStats(r.getLong(1),r.getLong(2),r.getLong(3),r.getLong(4),r.getLong(5),r.getLong(6),r.getLong(7)),args.toArray());
+ /** Tab counts: validated like the list, but the open tab, its sub-filter and the page must not change them. */
+ public OrderStats stats(OrderFilter f,AdminUser actor){access.requireOwner(actor,false);Instant now=db.clock.instant();where(f,now);
+  var w=where(new OrderFilter(f.q(),"ALL",f.customerId(),f.createdFrom(),f.createdTo(),"ALL",0,1,"ALL"),now);var args=new ArrayList<Object>();args.add(Timestamp.from(now));args.add(java.sql.Date.valueOf(now.atZone(ZONE).toLocalDate()));args.addAll(w.args());
+  String sql="with t as(select cast(? as timestamptz) moment,cast(? as date) today) select count(*) filter(where status='KEEPING'),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+" between t.today+1 and t.today+3),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+"=t.today),count(*) filter(where status='KEEPING' and keep_until<=t.moment),count(*) filter(where status='READY_TO_SHIP'),count(*) filter(where status='COMPLETED'),count(*) filter(where status='UNSUCCESSFUL'),count(*) filter(where status='DRAFT'),count(*) filter(where status='CANCELLED' and not "+RETURNED+"),count(*) filter(where "+RETURNED+") from orders o cross join t"+w.sql();
+  return db.jdbc.queryForObject(sql,(r,n)->new OrderStats(r.getLong(1),r.getLong(2),r.getLong(3),r.getLong(4),r.getLong(5),r.getLong(6),r.getLong(7),r.getLong(8),r.getLong(9),r.getLong(10)),args.toArray());
  }
  public OrderDetail detail(long id,AdminUser actor){access.requireOwner(actor,false);return db.require(id,false);}
  public Page<CatalogCandidate> catalog(String q,int page,int size,AdminUser actor){access.requireOwner(actor,false);paging(page,size);return catalog.catalogList(q,page,size);}
  public MatchResult matches(String title,AdminUser actor){access.requireOwner(actor,false);return catalog.match(title);}
  private Where where(OrderFilter f,Instant now){paging(f.page(),f.size());var sql=new StringBuilder(" where o.deleted_at is null");var args=new ArrayList<Object>();String q=text(f.q(),"q",200,false);
+  var group=group(f);if(!group.condition.isEmpty())sql.append(" and ").append(group.condition);
   if(f.status()!=null&&!f.status().isBlank()&&!f.status().equals("ALL")){
    if(f.status().equals("RETURNED"))sql.append(" and ").append(RETURNED);
    else{try{Status.valueOf(f.status());}catch(IllegalArgumentException e){throw new AdminApiException(400,"invalid_request");}sql.append(" and o.status=?");args.add(f.status());
@@ -53,6 +56,8 @@ public class OrderQueryService {
    else if(warning.equals("DUE")){sql.append(" and ").append(END_DATE).append("=?");args.add(java.sql.Date.valueOf(today));}
   }return new Where(sql.toString(),args);
  }
+ private static Group group(OrderFilter f){if(f.group()==null||f.group().isBlank())return Group.ALL;try{return Group.valueOf(f.group());}catch(IllegalArgumentException e){throw new AdminApiException(400,"invalid_request");}}
+ private static Instant instant(ResultSet r,String column)throws SQLException{var at=r.getTimestamp(column);return at==null?null:at.toInstant();}
  static void paging(int page,int size){if(page<0||size<1||size>100)throw new AdminApiException(400,"invalid_request");}
  private static LocalDate date(String value,String field){if(value==null||value.isBlank())return null;try{if(!value.matches("[0-9]{4}-[0-9]{2}-[0-9]{2}"))throw new IllegalArgumentException();return LocalDate.parse(value);}catch(RuntimeException e){throw AdminApiException.field(field,"Ngày không hợp lệ");}}
  private static String literal(String s){return s.replace("!","!!").replace("%","!%").replace("_","!_");}

@@ -1,0 +1,120 @@
+/* Fixed colours: the screenshot must look the same for every customer. */
+dialog {
+  box-sizing: border-box;
+  width: min(560px, calc(100vw - 24px));
+  max-height: calc(100vh - 16px);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: #e9e4dc;
+  overscroll-behavior: contain;
+}
+dialog::backdrop {
+  background: #25221f99;
+}
+.bill {
+  padding: 22px 28px;
+  background: #fff;
+  color: #292724;
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+p {
+  margin: 0;
+}
+.shop {
+  color: #b32635;
+  font: 700 1.9rem/1.1 var(--font-display);
+  text-align: center;
+}
+.tagline {
+  margin-bottom: 12px;
+  color: #68615a;
+  font-size: 0.82rem;
+  text-align: center;
+}
+.split {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+.split > :first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.split > :last-child:not(:first-child) {
+  flex: none;
+}
+.provisional {
+  margin-top: 8px;
+  color: #b32635;
+  font-weight: 700;
+}
+table {
+  width: 100%;
+  margin: 12px 0;
+  border-block: 1px solid #ddd7ce;
+  border-collapse: collapse;
+}
+th {
+  color: #68615a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+}
+th,
+td {
+  padding: 5px 0 5px 14px;
+  vertical-align: top;
+}
+th:first-child,
+td:first-child {
+  padding-left: 0;
+  overflow-wrap: anywhere;
+}
+.number {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.bill-totals {
+  display: grid;
+  gap: 5px;
+  font-variant-numeric: tabular-nums;
+}
+.due {
+  margin-top: 4px;
+  padding-top: 9px;
+  border-top: 1px solid #ddd7ce;
+  color: #b32635;
+  font-size: 1.08rem;
+}
+.page-number {
+  margin-top: 10px;
+  color: #68615a;
+  font-size: 0.8rem;
+  text-align: center;
+}
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+}
+footer button {
+  width: auto;
+  min-height: 40px;
+  margin: 0;
+  padding: 6px 18px;
+  border: 1px solid #292724;
+  border-radius: 20px;
+  background: #fff;
+  color: #292724;
+  font: 600 0.88rem var(--font-sans);
+  cursor: pointer;
+}
+footer button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}

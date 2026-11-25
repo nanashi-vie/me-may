@@ -43,7 +43,7 @@
           </select></label
         >
         @if (model.sourceType === 'CATALOG') {
-          @if (!item) {
+          @if (!item && !chosen()) {
             <label
               ><span>Tìm tên hoặc mã MM</span
               ><input name="q" type="search" [(ngModel)]="q" (ngModelChange)="search()"
@@ -57,7 +57,6 @@
                   type="button"
                   class="catalog-result secondary"
                   (click)="choose(book)"
-                  [class.selected]="model.bookCopyId === book.id"
                 >
                   @if (book.coverUrl) {
                     <img [src]="book.coverUrl" alt="" width="42" height="56" />
@@ -82,7 +81,13 @@
               <app-pagination [page]="page" [totalPages]="result.totalPages" [disabled]="searching() || locked() || refreshing()" (pageChange)="search($event)" />
             }
           }
-          @if (model.bookCopyId) {
+          @if (chosen(); as book) {
+            <div class="notice picked">
+              <ng-container [ngTemplateOutlet]="summary" [ngTemplateOutletContext]="{ $implicit: book }" />
+              <button type="button" class="secondary" (click)="changeBook()">Đổi sách</button>
+            </div>
+            <p class="muted">Nhập giá chốt cụ thể cho khách.</p>
+          } @else if (model.bookCopyId) {
             <p class="notice">Đã chọn: {{ model.title }}. Nhập giá chốt cụ thể cho khách.</p>
           }
         } @else {
@@ -96,38 +101,46 @@
               (ngModelChange)="titleChanged($event)"
               placeholder="Nhập tên sách…"
           /></label>
-          @if (match?.items?.length) {
-            <div class="notice">
-              <p>Có sách tương tự trên website. Kiểm tra trước khi nhập sách ngoài.</p>
-              @for (book of match!.items; track book.id) {
-                <p>
-                  {{ book.bookCode }} · {{ book.title }} · Tồn {{ book.stock }}
-                  <button
-                    type="button"
-                    class="text-button"
-                    [disabled]="!!item"
-                    (click)="model.sourceType = 'CATALOG'; choose(book)"
-                  >
-                    Chọn sách này
-                  </button>
+          <div aria-live="polite">
+            @if (matchState() === 'checking') {
+              <p class="muted">Đang kiểm tra sách tương tự…</p>
+            }
+            @if (matchState() === 'failed') {
+              <p class="notice">
+                Chưa kiểm tra được sách tương tự. Vẫn có thể thêm, hệ thống kiểm lại khi lưu.
+                <button type="button" class="text-button" (click)="retryMatch()">Thử lại</button>
+              </p>
+            }
+            @if (exactMatches().length) {
+              <div class="notice">
+                <p>Tên trùng với sách trên website. Chọn sách có sẵn hoặc xác nhận đây là sách khác.</p>
+                @for (book of exactMatches(); track book.id) {
+                  <ng-container [ngTemplateOutlet]="suggestion" [ngTemplateOutletContext]="{ $implicit: book }" />
+                }
+                <label
+                  ><span>Lý do vẫn dùng sách ngoài *</span
+                  ><textarea
+                    name="overrideReason"
+                    maxlength="1000"
+                    [(ngModel)]="model.overrideReason"
+                  ></textarea></label
+                ><label class="check"
+                  ><input name="confirmed" type="checkbox" [(ngModel)]="model.confirmed" />Đã kiểm
+                  tra và xác nhận đây là sách ngoài</label
+                >
+              </div>
+            }
+            @if (nearMatches().length) {
+              <div class="near-matches">
+                <p class="muted">
+                  Có sách tên gần giống. Chọn nếu đúng cuốn, hoặc bỏ qua để nhập thủ công.
                 </p>
-              }
-              <label
-                ><span>Lý do vẫn dùng sách ngoài *</span
-                ><textarea
-                  name="overrideReason"
-                  maxlength="1000"
-                  [(ngModel)]="model.overrideReason"
-                ></textarea></label
-              ><label class="check"
-                ><input name="confirmed" type="checkbox" [(ngModel)]="model.confirmed" />Đã kiểm tra
-                và xác nhận đây là sách ngoài</label
-              >
-            </div>
-          }
-          @if (!match) {
-            <p class="muted">Đang chờ kiểm tra sách tương tự…</p>
-          }
+                @for (book of nearMatches(); track book.id) {
+                  <ng-container [ngTemplateOutlet]="suggestion" [ngTemplateOutletContext]="{ $implicit: book }" />
+                }
+              </div>
+            }
+          </div>
         }
         <div class="grid">
           <label
@@ -188,3 +201,32 @@
     </form>
   }
 </dialog>
+<ng-template #summary let-book>
+  @if (book.coverUrl) {
+    <img [src]="book.coverUrl" alt="" width="42" height="56" loading="lazy" />
+  }
+  <span class="book-summary"
+    >{{ book.bookCode }} · {{ book.title }}
+    <small
+      >Tham khảo {{ money(book.priceMinVnd) }}–{{ money(book.priceMaxVnd) }}
+      @if (book.salePriceVnd !== null) {
+        · Sale {{ money(book.salePriceVnd) }}
+      }
+      · Còn bán {{ book.stock }}
+      @if (book.publication !== 'PUBLISHED') {
+        <span class="badge">Ẩn</span>
+      }
+      @if (book.stock === 0) {
+        <span class="badge danger">Hết hàng</span>
+      }
+    </small></span
+  >
+</ng-template>
+<ng-template #suggestion let-book>
+  <div class="suggestion">
+    <ng-container [ngTemplateOutlet]="summary" [ngTemplateOutletContext]="{ $implicit: book }" />
+    @if (!item) {
+      <button type="button" class="secondary" (click)="pickSuggestion(book)">Chọn sách này</button>
+    }
+  </div>
+</ng-template>

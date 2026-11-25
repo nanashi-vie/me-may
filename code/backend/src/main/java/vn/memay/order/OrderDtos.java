@@ -5,6 +5,16 @@ public final class OrderDtos {
  private OrderDtos(){}
  public enum Status {DRAFT,KEEPING,READY_TO_SHIP,COMPLETED,UNSUCCESSFUL,CANCELLED}
  public enum PaymentType {DEPOSIT,PAYMENT,REFUND}
+ /** Admin list tabs: which orders they hold and what comes first. The id tie-break keeps paging stable. */
+ public enum Group {
+  ALL("","o.created_at desc,o.id desc"),
+  ACTION("o.status in ('DRAFT','READY_TO_SHIP','UNSUCCESSFUL')","o.created_at,o.id"),
+  KEEPING("o.status='KEEPING'","o.keep_until nulls last,o.id"),
+  COMPLETED("o.status='COMPLETED'","o.completed_at desc nulls last,o.id desc"),
+  CLOSED("o.status='CANCELLED'","o.cancelled_at desc nulls last,o.id desc");
+  final String condition,order;
+  Group(String condition,String order){this.condition=condition;this.order=order;}
+ }
  public record MutationMeta(Long version,UUID requestId){}
  public record MutationResult(String id,String orderCode,long version,Status status){}
  public record ItemValue(Long unitPriceVnd,long quantity,Long unitWeightGrams){}
@@ -23,11 +33,13 @@ public final class OrderDtos {
   boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
   List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
-  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned){}
- public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size){}
- public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long unsuccessful){}
+  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt){}
+ public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size,String group){}
+ public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long unsuccessful,long draft,long cancelled,long returned){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}
- public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl,Long salePriceVnd,long reservedQuantity,long totalStock){}
+ public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl,Long salePriceVnd,long reservedQuantity,long totalStock,boolean exact){
+  public CatalogCandidate asExact(){return new CatalogCandidate(id,listingId,bookCode,title,weightG,priceMinVnd,priceMaxVnd,stock,publication,version,coverUrl,salePriceVnd,reservedQuantity,totalStock,true);}
+ }
  public record MatchResult(String normalizedTitle,String fingerprint,List<CatalogCandidate> items){}
  public record MatchConfirmation(String normalizedTitle,String fingerprint,String reason){}
  public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}

@@ -127,3 +127,39 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
 - Phiên 18/11 chưa kiểm toàn bộ luồng gửi lại và hoàn đơn trên trình duyệt. Các ca backend shipping/return/API đã chạy.
 - Commit 6eadf95 đổi màu tab đang mở sang đỏ, tab còn lại màu tối. 8/8 test order-detail đạt.
 - Chưa migrate/deploy production. [Checkpoint 18/11](../DEV_LOG.md#2026-11-18--order-bill-exec).
+
+## Chọn khách và gợi ý sách gần giống — 25/11/2026
+
+- `ORDER-PICKER-01`, nền `84fbbdd`. Backend `./mvnw -B -ntp verify` trên PostgreSQL 17 tạm: 430 test, 0 lỗi, 3 live skip.
+  Frontend 72 file/484 test, `npm run build` đạt, 0 cảnh báo.
+- Đo HTTP `catalog-match`, 5.001 sách giả, 200 lượt/20 tên, cùng máy và container: bản cũ p95 198,4/201,5ms;
+  bản mới 71,0/67,7ms, đo lại sau khi sửa chuẩn hóa 82,8ms (ngưỡng 100ms). Dữ liệu giả không có ảnh/tồn.
+- Playwright OWNER, 1440×900 và 390px, backend/DB tạm riêng: đơn mới, đổi khách giữ trang, thêm khách mới, sửa nháp,
+  gợi ý (Ẩn/Hết hàng), giữ giá, trùng hẳn, lỗi mạng → 409 → xác nhận → lưu, đổi sách, không tràn ngang.
+- Reviewer độc lập: 0 Critical; đã sửa lệch chuẩn hóa SQL/Java (test đỏ trước), lỗi danh sách khách chặn nhầm và giá sách
+  khác dính dòng thủ công. Ba điểm sửa này chỉ kiểm bằng test, chưa mở lại trình duyệt.
+- Chưa kiểm: Safari, thiết bị thật, ảnh bìa thật, STAFF trên trình duyệt, `build:workers`, locale DB đích.
+
+## Tab danh sách đơn — 25/11/2026
+
+- `ORDER-LIST-TABS-01`, nền `b1501ba`. Backend `./mvnw -B -ntp verify` trên PostgreSQL tạm, từ bản sao source: 440 test, 0 lỗi, 3 live skip.
+  Frontend 73 file/519 test; `ng build` đạt, 0 cảnh báo. Test viết và thấy đỏ trước code.
+- 14 lần làm hỏng có chủ đích đều đỏ rồi trả lại: khóa phụ `id`, thứ tự Tất cả, số theo tab, bỏ kiểm tham số, nhóm thiếu trạng thái,
+  giữ nút phụ khi đổi tab, số lỗi, đổi phiên (cả OWNER khác), trang vượt quá, tab đang mở, cảnh báo quá hạn.
+- Trình duyệt trong app, OWNER thử, backend/DB tạm riêng, 38 đơn giả, 1440×900: 5 tab, nút phụ, thứ tự/cột, tìm, ngày, khách,
+  link cũ `customerId&status`, trang vượt quá, mở đơn rồi quay lại, Back/Forward, xóa đơn cập nhật số, Tab/Enter/Space, focus.
+  390px: trang không tràn, tab và nút phụ cuộn ngang.
+- Reviewer độc lập: 0 Critical, 1 Important (thiếu test thứ tự Tất cả). Đã bổ sung, kèm test đổi phiên, làm mờ nút "Tất cả" số 0,
+  focus nút phụ đang chọn.
+- Chưa kiểm: Safari, thiết bị thật, STAFF trên trình duyệt, trình đọc màn hình, `build:workers`, dữ liệu `me_may_dev`, hiệu năng nhiều đơn.
+
+## Bill gửi khách và cân kiện gợi ý — 25/11/2026
+
+- `ORDER-BILL-VIEW-01`, nền `5368373`. Frontend 74 file/541 test, `ng build` đạt, 0 cảnh báo; test viết và thấy đỏ trước code.
+  18 lần làm hỏng có chủ đích: 16 đỏ ngay, 2 sống sót (focus về nút mở, ghi đè ô tìm khi đang gõ) đã siết test và đỏ lại.
+  Backend không đổi từ lần 440 test của ORDER-LIST-TABS-01.
+- Trình duyệt trong app, OWNER thử, backend/DB tạm riêng, 1440×800: bill 3/12/25 dòng (12 dòng có 2 tên dài cao 782px, không cuộn),
+  Esc trả focus, sách thiếu trọng lượng, 611 g → 1.611 g, lưu bill rồi số khớp Tổng đơn, sửa bill giữ 1.611 g;
+  ✕/Xóa lọc giữ focus, ngày ngược, gõ "Khách " dừng rồi "thử". 390px: bill và trang không tràn ngang.
+- Chưa kiểm: đơn thật, gửi lại và tải lại do xung đột trên trình duyệt (chỉ có test), Safari, thiết bị thật,
+  trình đọc màn hình, `build:workers`; chưa có reviewer độc lập cho lượt này.

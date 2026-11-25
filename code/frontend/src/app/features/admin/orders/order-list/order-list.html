@@ -12,71 +12,112 @@
   @if (!owner()) {
     <p class="error" role="alert">Chỉ chủ tiệm được quản lý đơn hàng.</p>
   } @else {
-    <div class="metrics" aria-label="Thống kê đơn hàng">
-      <div>
-        <span>Đang keep</span><strong>{{ stats()?.keeping ?? '—' }}</strong>
+    <nav class="order-tabs" aria-label="Nhóm đơn hàng">
+      @for (t of tabs; track t.group) {
+        <a
+          routerLink="/admin/orders"
+          [queryParams]="tabQuery(t)"
+          [class.active]="t === tab()"
+          [attr.aria-current]="t === tab() ? 'page' : null"
+          >{{ t.label }}
+          @if (stats(); as s) {
+            <span class="count">{{ t.count(s) }}</span>
+            @if (t.group === 'KEEPING' && s.overdue) {
+              <span class="overdue"> · {{ s.overdue }} quá hạn</span>
+            }
+          }</a
+        >
+      }
+    </nav>
+    @if (tab().subs.length) {
+      <div class="order-subs" role="group" [attr.aria-label]="'Lọc trong ' + tab().label">
+        <button
+          type="button"
+          [class.zero]="stats() && !tab().count(stats()!)"
+          [attr.aria-pressed]="!subActive()"
+          (click)="selectSub(null)"
+        >
+          Tất cả
+          @if (stats(); as s) {
+            <span class="count">{{ tab().count(s) }}</span>
+          }
+        </button>
+        @for (sub of tab().subs; track sub.value) {
+          <button
+            type="button"
+            [class.zero]="stats() && !sub.count(stats()!)"
+            [attr.aria-pressed]="filter()[sub.key] === sub.value"
+            (click)="selectSub(sub)"
+          >
+            {{ sub.label }}
+            @if (stats(); as s) {
+              <span class="count">{{ sub.count(s) }}</span>
+            }
+          </button>
+        }
       </div>
-      <div>
-        <span>Sắp đến hạn</span><strong>{{ stats()?.soon ?? '—' }}</strong>
-      </div>
-      <div>
-        <span>Đến hạn hôm nay</span><strong>{{ stats()?.due ?? '—' }}</strong>
-      </div>
-      <div>
-        <span>Quá hạn</span><strong>{{ stats()?.overdue ?? '—' }}</strong>
-      </div>
-      <div>
-        <span>Chờ giao</span><strong>{{ stats()?.readyToShip ?? '—' }}</strong>
-      </div>
-      <div>
-        <span>Hoàn tất</span><strong>{{ stats()?.completed ?? '—' }}</strong>
-      </div>
-      <div>
-        <span>Không thành công</span><strong>{{ stats()?.unsuccessful ?? '—' }}</strong>
-      </div>
-    </div>
+    }
     <div class="toolbar">
       <label class="search"
         ><span class="sr-only">Tìm đơn hàng</span
         ><input
           type="search"
           maxlength="200"
-          [value]="filter().q"
+          [value]="searchText()"
           (input)="search($any($event.target).value)"
-          placeholder="Tìm mã đơn, tên khách, số điện thoại, mã KH…" /></label
-      ><label
-        ><span>Trạng thái</span
-        ><select [value]="filter().status" (change)="change('status', $any($event.target).value)">
-          <option value="ALL">Tất cả</option>
-          @for (s of statuses; track s) {
-            <option [value]="s">{{ statusLabels[s] }}</option>
-          }
-        </select></label
-      ><label
-        ><span>Hạn keep</span
-        ><select
-          [value]="filter().keepWarning"
-          (change)="change('keepWarning', $any($event.target).value)"
-        >
-          <option value="ALL">Tất cả</option>
-          <option value="SOON">Sắp hết hạn</option>
-          <option value="DUE">Đến hạn hôm nay</option>
-          <option value="OVERDUE">Quá hạn</option>
-        </select></label
-      ><label
-        ><span>Từ ngày tạo</span
-        ><input
-          type="date"
-          [value]="filter().createdFrom"
-          (change)="change('createdFrom', $any($event.target).value)" /></label
-      ><label
-        ><span>Đến ngày</span
-        ><input
-          type="date"
-          [value]="filter().createdTo"
-          (change)="change('createdTo', $any($event.target).value)"
+          placeholder="Tìm mã đơn, tên khách, số điện thoại, mã KH…"
       /></label>
+      <button
+        #filterToggle
+        type="button"
+        class="secondary"
+        aria-controls="order-filters"
+        [attr.aria-expanded]="filterOpen()"
+        (click)="filterOpen.set(!filterOpen())"
+      >
+        Bộ lọc{{ dated() ? ' (1)' : '' }}
+      </button>
+      @if (dated() || filter().customerId) {
+        <button type="button" class="secondary" (click)="clearFilters()">Xóa lọc</button>
+      }
     </div>
+    <div class="toolbar dates" id="order-filters" [hidden]="!filterOpen()">
+      @if (filterOpen()) {
+        <label
+          ><span>Từ ngày tạo</span
+          ><input
+            type="date"
+            [value]="filter().createdFrom"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
+            (change)="change('createdFrom', $any($event.target).value)" /></label
+        ><label
+          ><span>Đến ngày</span
+          ><input
+            type="date"
+            [value]="filter().createdTo"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
+            (change)="change('createdTo', $any($event.target).value)"
+        /></label>
+      }
+    </div>
+    @if (datesReversed()) {
+      <p class="error" role="alert" id="order-date-error">Từ ngày phải trước hoặc bằng Đến ngày.</p>
+    }
+    @if (filter().customerId) {
+      <p class="customer-filter">
+        <span>Đang xem đơn của {{ customerName() }}</span>
+        <button
+          type="button"
+          class="secondary"
+          aria-label="Bỏ lọc theo khách"
+          (click)="clearCustomer()"
+        >
+          ✕
+        </button>
+      </p>
+    }
     @if (notice()) {
       <p role="status">{{ notice() }}</p>
     }
@@ -99,8 +140,20 @@
                 <th class="number">Số sách</th>
                 <th class="number">Tổng bill</th>
                 <th class="number">Đã thanh toán</th>
-                <th>Trạng thái</th>
-                <th>Hạn keep</th>
+                @if (tab().showStatus) {
+                  <th>Trạng thái</th>
+                }
+                @switch (tab().dateColumn) {
+                  @case ('keep') {
+                    <th>Hạn keep</th>
+                  }
+                  @case ('completed') {
+                    <th>Ngày bàn giao</th>
+                  }
+                  @case ('closed') {
+                    <th>Ngày hủy/hoàn</th>
+                  }
+                }
                 <th class="actions-cell">Thao tác</th>
               </tr>
             </thead>
@@ -111,7 +164,7 @@
                     <a
                       class="order-code"
                       [routerLink]="['/admin/orders', o.id]"
-                      [queryParams]="filter()"
+                      [queryParams]="query()"
                       >{{ o.orderCode }}</a
                     >
                   </td>
@@ -128,26 +181,39 @@
                     }
                   </td>
                   <td class="number nowrap">{{ money(o.totals.paidAmount) }}</td>
-                  <td>
-                    <span
-                      class="badge"
-                      [class.keeping]="o.status === 'KEEPING'"
-                      [class.danger]="o.status === 'UNSUCCESSFUL'"
-                      >{{ statusLabel(o) }}</span
-                    >
-                    @if (o.keepWarning) {
-                      <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{
-                        warningLabels[o.keepWarning]
-                      }}</small>
+                  @if (tab().showStatus) {
+                    <td>
+                      <span
+                        class="badge"
+                        [class.keeping]="o.status === 'KEEPING'"
+                        [class.danger]="o.status === 'UNSUCCESSFUL'"
+                        >{{ statusLabel(o) }}</span
+                      >
+                      @if (o.keepWarning) {
+                        <ng-container [ngTemplateOutlet]="warning" [ngTemplateOutletContext]="{ $implicit: o }" />
+                      }
+                    </td>
+                  }
+                  @switch (tab().dateColumn) {
+                    @case ('keep') {
+                      <td class="nowrap">
+                        @if (o.status === 'KEEPING' && o.keepUntil) {
+                          Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
+                        } @else {
+                          —
+                        }
+                        @if (!tab().showStatus && o.keepWarning) {
+                          <ng-container [ngTemplateOutlet]="warning" [ngTemplateOutletContext]="{ $implicit: o }" />
+                        }
+                      </td>
                     }
-                  </td>
-                  <td class="nowrap">
-                    @if (o.status === 'KEEPING' && o.keepUntil) {
-                      Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
-                    } @else {
-                      —
+                    @case ('completed') {
+                      <td class="nowrap">{{ (o.completedAt | date: 'dd/MM/yyyy' : '+0700') || '—' }}</td>
                     }
-                  </td>
+                    @case ('closed') {
+                      <td class="nowrap">{{ (o.cancelledAt | date: 'dd/MM/yyyy' : '+0700') || '—' }}</td>
+                    }
+                  }
                   <td class="actions-cell">
                     @if (o.trashable) {
                       <button type="button" class="secondary trash-btn" [attr.aria-label]="'Xóa ' + o.orderCode"
@@ -172,4 +238,7 @@
     }
   }
 </section>
+<ng-template #warning let-o>
+  <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{ warningLabels[o.keepWarning] }}</small>
+</ng-template>
 <app-trash-dialog kind="orders" (trashed)="onTrashed($event)" (settled)="refresh()" />

@@ -35,7 +35,9 @@ export const detail: any = {
   keepUntil: '2026-11-15T17:00:00Z',
   requiredDepositVnd: 100000,
 };
-async function setup(id = '1') {
+const reader: any = { id: '7', customerCode: 'KH-000007', fullName: 'Yến Nhi', phone: '0985642424', status: 'ACTIVE' };
+const readers = { items: [reader], page: 0, size: 20, totalElements: 41, totalPages: 3 };
+async function setup(id = '1', queryParams: Record<string, string> = {}, page: any = { items: [], totalPages: 0 }) {
   const api = {
     detail: vi.fn(() => of(detail)),
     command: vi.fn((..._args: any[]) => of({ id: '1', version: 4, status: 'KEEPING' })),
@@ -54,11 +56,11 @@ async function setup(id = '1') {
         provide: ActivatedRoute,
         useValue: {
           paramMap: params,
-          snapshot: { queryParams: {} },
+          snapshot: { queryParams },
         },
       },
       { provide: OrderApi, useValue: api },
-      { provide: CustomerApi, useValue: { list: vi.fn(() => of({ items: [], totalPages: 0 })) } },
+      { provide: CustomerApi, useValue: { list: vi.fn(() => of(page)), detail: vi.fn(() => of(reader)) } },
       { provide: AuthService, useValue: auth },
     ],
   });
@@ -102,6 +104,36 @@ describe('OrderDetail', () => {
       f.detectChanges();
       expect(line(), JSON.stringify(patch)).toBeUndefined();
     }
+  });
+  it('offers the customer bill on both tabs once there is a book and the order is open', async () => {
+    const { f, c } = await setup();
+    const item = { id: '1', sourceType: 'MANUAL', titleSnapshot: 'Sách thử', unitPriceVnd: 75000, quantity: 2 };
+    const button = () => Array.from(f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Xem bill gửi khách');
+    for (const total of [false, true]) {
+      c.totalTab.set(total);
+      for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+        c.order.set({ ...detail, status, items: [item] });
+        f.detectChanges();
+        expect(!!button(), status).toBe(status !== 'CANCELLED');
+      }
+      c.order.set(detail);
+      f.detectChanges();
+      expect(button()).toBeUndefined();
+    }
+    const shipment = { state: 'PLANNED', shippingSnapshot: { declaredValue: 150000, shippingFee: 30000 } };
+    const totals = { ...detail.totals, goodsTotal: 150000, orderTotal: 180000, balance: 180000 };
+    for (const [status, provisional] of [['KEEPING', true], ['READY_TO_SHIP', false]] as const) {
+      c.order.set({ ...detail, status, items: [item], shipments: [shipment], shippingFee: 30000, totalQuantity: 2, totals });
+      f.detectChanges();
+      button()!.click();
+      f.detectChanges();
+      const bill = f.nativeElement.querySelector('.bill');
+      expect(bill.textContent, status).toContain('Sách thử');
+      expect(bill.textContent.includes('chưa gồm phí ship'), status).toBe(provisional);
+    }
+    c.order.set(null);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.bill')).toBeNull();
   });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
@@ -227,5 +259,156 @@ describe('OrderDetail', () => {
     child.busy.set(true);
     expect(c.canLeave()).toBe(false);
     confirm.mockRestore();
+  });
+  describe('customer picker', () => {
+    const wait = (ms = 0) => new Promise((r) => setTimeout(r, ms));
+    async function picker(id = '', queryParams = {}) {
+      const r = await setup(id, queryParams, readers);
+      r.f.autoDetectChanges();
+      await wait(400);
+      const el = r.f.nativeElement as HTMLElement;
+      const button = (label: string) =>
+        [...el.querySelectorAll('button')].find((b) => b.textContent!.includes(label));
+      return { ...r, el, button, settle: () => wait(20) };
+    }
+    const expectCollapsed = (el: HTMLElement) => {
+      expect(el.querySelector('.order-panel input[type=search]')).toBeNull();
+      expect(el.querySelector('.catalog-results')).toBeNull();
+      expect(el.querySelector('app-pagination')).toBeNull();
+      expect(el.querySelector('.order-panel')!.textContent).not.toContain('Thêm khách mới');
+      expect(el.querySelector('.picked-customer')!.textContent).toContain('Yến Nhi');
+      expect(el.querySelector('.picked-customer')!.textContent).toContain('0985642424');
+    };
+    it('collapses after choosing in a new order and focuses the change button', async () => {
+      const { el, button, settle } = await picker();
+      button('KH-000007')!.click();
+      await settle();
+      expectCollapsed(el);
+      expect(document.activeElement).toBe(button('Đổi khách'));
+    });
+    it('collapses for a quick-created customer', async () => {
+      const { c, el, settle } = await picker();
+      c.customerForm()!.saved.emit(reader);
+      await settle();
+      expectCollapsed(el);
+    });
+    it('collapses for a customer preselected by the link without stealing focus', async () => {
+      const { el } = await picker('', { customerId: '7' });
+      expectCollapsed(el);
+      expect(document.activeElement).toBe(document.body);
+    });
+    it('reopens with the same query, page and order type but no customer', async () => {
+      const { c, el, button, settle } = await picker();
+      c.customerQ = 'nhi';
+      c.searchCustomers(2);
+      await wait(400);
+      c.fulfillmentType = 'IMMEDIATE';
+      button('KH-000007')!.click();
+      await settle();
+      button('Đổi khách')!.click();
+      await settle();
+      expect([c.selectedCustomer(), c.customerQ, c.customerPageNumber, c.fulfillmentType]).toEqual([null, 'nhi', 2, 'IMMEDIATE']);
+      expect(el.querySelector('.catalog-results')!.textContent).toContain('KH-000007');
+      expect(document.activeElement?.getAttribute('type')).toBe('search');
+      expect(el.textContent).not.toContain('Tạo đơn nháp cho khách');
+    });
+    it('stays open when the chosen customer is archived', async () => {
+      const { c, el, settle } = await picker();
+      c.customerSaved({ ...reader, status: 'ARCHIVED' });
+      await settle();
+      expect(el.querySelector('.picked-customer')).toBeNull();
+      expect(el.querySelector('.catalog-results')).not.toBeNull();
+    });
+    it('drops a late keep lookup after changing customer', async () => {
+      const { c, api, settle } = await picker();
+      const late = new Subject<any>();
+      api.list.mockReturnValueOnce(late as any);
+      c.customerSaved(reader);
+      c.changeCustomer();
+      late.next({ items: [], totalElements: 2, totalPages: 1 });
+      await settle();
+      expect(c.existingKeeps()).toBeNull();
+      late.error(new Error('late'));
+      expect(c.keepError()).toBe('');
+    });
+    it('retries a failed keep lookup beside the collapsed customer', async () => {
+      const { c, api, el, button, settle } = await picker();
+      api.list.mockReturnValueOnce(throwError(() => new Error('offline')));
+      c.customerSaved(reader);
+      await settle();
+      expect(el.querySelector('[role=alert]')!.textContent).toContain('Chưa kiểm tra được đơn đang keep');
+      button('Thử lại')!.click();
+      await settle();
+      expect(c.keepError()).toBe('');
+      expect(c.existingKeeps()).not.toBeNull();
+    });
+    it('a failed customer list neither blocks nor mislabels the chosen customer', async () => {
+      const { c, f, el, button, settle } = await picker();
+      c.customerSaved(reader);
+      vi.spyOn(TestBed.inject(CustomerApi), 'list').mockReturnValue(throwError(() => new Error('offline')));
+      c.searchCustomers();
+      await wait(400);
+      await settle();
+      expect(el.textContent).not.toContain('Chưa tải được khách hàng');
+      expect(button('Tạo đơn nháp cho khách')!.disabled).toBe(false);
+      button('Đổi khách')!.click();
+      await settle();
+      expect(el.textContent).toContain('Chưa tải được khách hàng');
+      expect(f.componentInstance.selectedCustomer()).toBeNull();
+    });
+    it('a failed keep lookup still blocks creating the order', async () => {
+      const { c, api, button, settle } = await picker();
+      api.list.mockReturnValueOnce(throwError(() => new Error('offline')));
+      c.customerSaved(reader);
+      await settle();
+      expect(button('Tạo đơn nháp cho khách')!.disabled).toBe(true);
+      c.create();
+      expect(api.create).not.toHaveBeenCalled();
+    });
+    async function editing() {
+      const r = await picker('1');
+      r.c.order.set({ ...detail, status: 'DRAFT' });
+      r.c.openPanel('edit');
+      await r.settle();
+      const type = async () => {
+        const input = r.el.querySelector('input[name=customerQ]') as HTMLInputElement;
+        input.value = 'nhi';
+        input.dispatchEvent(new Event('input'));
+        await wait(400);
+      };
+      return { ...r, type };
+    }
+    it('collapses the draft edit picker and can keep the current customer', async () => {
+      const { c, el, button, settle, type } = await editing();
+      expect(el.querySelector('.catalog-results')).toBeNull();
+      await type();
+      button('KH-000007')!.click();
+      await settle();
+      expect(el.querySelector('input[name=customerQ]')).toBeNull();
+      expect(el.querySelector('.catalog-results')).toBeNull();
+      expect(el.querySelector('.picked-customer')!.textContent).toContain('Yến Nhi');
+      button('Đổi khách')!.click();
+      await settle();
+      expect((el.querySelector('input[name=customerQ]') as HTMLInputElement).value).toBe('nhi');
+      button('KH-000007')!.click();
+      await settle();
+      button('Giữ khách hiện tại')!.click();
+      await settle();
+      expect([c.selectedCustomer(), c.customerQ]).toEqual([null, '']);
+      expect(el.querySelector('.catalog-results')).toBeNull();
+    });
+    it('forgets an unsaved customer when the edit panel closes or reopens', async () => {
+      const { c, button, settle, type } = await editing();
+      const confirm = vi.spyOn(window, 'confirm').mockReturnValue(true);
+      await type();
+      button('KH-000007')!.click();
+      await settle();
+      c.closePanel();
+      expect([c.selectedCustomer(), c.customerQ]).toEqual([null, '']);
+      c.selectedCustomer.set(reader);
+      c.openPanel('edit');
+      expect(c.selectedCustomer()).toBeNull();
+      confirm.mockRestore();
+    });
   });
 });
