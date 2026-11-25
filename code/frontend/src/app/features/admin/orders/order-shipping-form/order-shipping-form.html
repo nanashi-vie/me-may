@@ -102,8 +102,12 @@
               name="weight"
               required
               [(ngModel)]="model.parcelWeightGrams"
-              (ngModelChange)="model.parcelWeightConfirmed = false"
-          /></label>
+              (ngModelChange)="manualWeight = true; model.parcelWeightConfirmed = false"
+            />
+            @if (weightHint(); as hint) {
+              <small>{{ hint }}</small>
+            }
+          </label>
           @if (model.customerPaymentMode === 'RECIPIENT') {
             <label
               >Tiền thu hộ COD (VNĐ) *

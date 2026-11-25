@@ -31,6 +31,7 @@ import {
   Page,
   statusLabel,
 } from '../order-models';
+import { OrderBill } from '../order-bill/order-bill';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
@@ -67,6 +68,7 @@ type Panel =
     RouterLink,
     VndInput,
     CustomerForm,
+    OrderBill,
     OrderItemForm,
     OrderShippingForm,
   ],
@@ -82,6 +84,7 @@ export class OrderDetailPage {
   private readonly destroy = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
+  readonly bill = viewChild(OrderBill);
   readonly itemForm = viewChild(OrderItemForm);
   readonly shippingForm = viewChild(OrderShippingForm);
   readonly customerForm = viewChild(CustomerForm);

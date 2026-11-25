@@ -139,6 +139,7 @@
     </section>
   }
   @if (order(); as d) {
+    <app-order-bill [order]="d" [billed]="!!currentBill()" />
     <article class="order-panel">
       <header class="heading">
         <div>
@@ -286,6 +287,11 @@
               <button class="secondary" (click)="openPanel('edit')">Sửa thông tin</button>
             }
             <button class="secondary" (click)="openPanel('payment')">Ghi nhận thu tiền</button>
+            @if (d.items.length && d.status !== 'CANCELLED') {
+              <button type="button" class="secondary" (click)="bill()?.open()">
+                Xem bill gửi khách
+              </button>
+            }
             @if (d.status === 'DRAFT' && d.fulfillmentType === 'KEEP') {
               <button class="primary" (click)="openPanel('keep')">Bắt đầu keep & trừ tồn</button>
             }

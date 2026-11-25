@@ -1,5 +1,13 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
-import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  computed,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
@@ -29,6 +37,7 @@ import {
 } from '../order-models';
 import { keepEnd, vnd } from '../order-values';
 import { ORDER_TABS, OrderSub, OrderTab, orderQuery, parseOrderQuery, tabOf } from './order-groups';
+const normalize = (q: string) => q.trim().replace(/\s+/g, ' ');
 @Component({
   selector: 'app-order-list',
   imports: [Pagination, RouterLink, DatePipe, NgTemplateOutlet, TrashDialog, TrashIcon],
@@ -43,8 +52,10 @@ export class OrderList {
   private readonly destroy = inject(DestroyRef);
   private readonly view = inject(DOCUMENT).defaultView;
   private readonly trash = viewChild.required(TrashDialog);
+  private readonly filterToggle = viewChild<ElementRef<HTMLButtonElement>>('filterToggle');
   private readonly reloads = new Subject<void>();
   private readonly searches = new Subject<string>();
+  private typing = false;
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
   readonly page = signal<Page<OrderSummary> | null>(null);
   readonly stats = signal<OrderStats | null>(null);
@@ -57,6 +68,12 @@ export class OrderList {
   readonly customerName = computed(
     () => this.page()?.items[0]?.customerNameSnapshot || 'một khách',
   );
+  /** What the box shows; kept apart from the query so typing is never trimmed under the cursor. */
+  readonly searchText = signal('');
+  readonly datesReversed = computed(() => {
+    const { createdFrom, createdTo } = this.filter();
+    return !!createdFrom && !!createdTo && createdFrom > createdTo;
+  });
   readonly filterOpen = signal(false);
   readonly loading = signal(true);
   readonly error = signal('');
@@ -83,12 +100,19 @@ export class OrderList {
           const before = this.filter(),
             f = parseOrderQuery(params);
           this.filter.set(f);
+          if (f.q !== before.q && !this.typing && normalize(this.searchText()) !== f.q)
+            this.searchText.set(f.q);
           if (
             (f.createdFrom && f.createdFrom !== before.createdFrom) ||
             (f.createdTo && f.createdTo !== before.createdTo)
           )
             this.filterOpen.set(true);
           if (!this.owner()) {
+            this.loading.set(false);
+            return of(null);
+          }
+          if (this.datesReversed()) {
+            this.stats.set(null);
             this.loading.set(false);
             return of(null);
           }
@@ -111,9 +135,14 @@ export class OrderList {
       .subscribe();
     this.searches
       .pipe(debounceTime(300), takeUntilDestroyed(this.destroy))
-      .subscribe((q) => this.navigate({ q: q.trim().replace(/\s+/g, ' '), page: 0 }));
+      .subscribe((q) => {
+        this.typing = false;
+        this.navigate({ q: normalize(q), page: 0 });
+      });
   }
   search(q: string) {
+    this.typing = true;
+    this.searchText.set(q);
     this.searches.next(q);
   }
   change(key: 'createdFrom' | 'createdTo', value: string) {
@@ -137,10 +166,16 @@ export class OrderList {
     });
   }
   clearCustomer() {
+    this.focusFilters();
     this.navigate({ customerId: undefined, page: 0 });
   }
   clearFilters() {
+    this.focusFilters();
     this.navigate({ customerId: undefined, createdFrom: '', createdTo: '', page: 0 });
+  }
+  /** The clear buttons remove themselves, which would drop keyboard focus to the page. */
+  private focusFilters() {
+    this.filterToggle()?.nativeElement.focus();
   }
   navigate(patch: Partial<OrderFilter>, replaceUrl = false) {
     void this.router.navigate([], {

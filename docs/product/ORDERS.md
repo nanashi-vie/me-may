@@ -83,7 +83,8 @@ Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0
 - Số cạnh tab và nút phụ theo từ khóa, khoảng ngày tạo, khách; không theo nhóm, nút phụ, trang. Số 0 mờ nhưng bấm được.
   Tab Đang keep thêm "· N quá hạn" đỏ khi N > 0.
 - Bộ lọc thu gọn chỉ có Từ/Đến ngày tạo, tính là một bộ lọc, tự mở khi ngày vừa có giá trị. Lọc khách hiện
-  "Đang xem đơn của [tên] ✕" (chưa có dòng thì "một khách"). Xóa lọc bỏ ngày và khách, giữ tab, nút phụ, từ khóa.
+  "Đang xem đơn của [tên] ✕" (chưa có dòng thì "một khách"). Xóa lọc bỏ ngày và khách, giữ tab, nút phụ, từ khóa;
+  bấm ✕/Xóa lọc đưa focus về Bộ lọc. Từ ngày sau Đến ngày: báo lỗi cạnh ô, không gọi API, ẩn số. Ô tìm không bị viết đè khi đang gõ.
 - Đổi tab giữ từ khóa, ngày, khách, size; bỏ nút phụ và trang. Chi tiết đơn dùng `tab` nên danh sách dùng `nhom`.
   Link cũ không có `nhom`: `keepWarning` → Đang keep, rồi `status` → nhóm chứa nó; giá trị lạ → Tất cả.
   Trang vượt quá số trang tự về trang cuối còn dữ liệu.
@@ -121,7 +122,7 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
   thái thanh toán tạm tính. Refund không vượt tiền nhận, không tự xóa khoản phải thu.
 - itemWeight = unitWeightGrams × quantity; totalBookWeightGrams = SUM(itemWeight).
   Thiếu bất kỳ weight hiển thị “Chưa đủ dữ liệu”, không coi thiếu là0.
-- Popup Xuất bill yêu cầu cân kiện sau đóng gói, gram nguyên dương.
+- Popup Xuất bill: cân kiện gram nguyên dương, gợi ý và bill gửi khách theo [ORDER_BILL](ORDER_BILL.md).
   Sau refresh do version thay đổi, admin kiểm lại cân/COD rồi lưu.
   Thay đổi weight sách gốc không sửa snapshot đã bàn giao.
 

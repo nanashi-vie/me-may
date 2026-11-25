@@ -426,13 +426,78 @@ describe('OrderList', () => {
     await t.go({ nhom: 'dang-keep', keepWarning: 'OVERDUE' });
     expect(t.subs().map((b) => b.classList.contains('zero'))).toEqual([true, true, true, true]);
   });
-  it('leaves invalid dates on screen to correct', async () => {
+  it('explains reversed dates beside them without asking the server', async () => {
     const t = await setup();
-    t.api.list.mockReturnValue(throwError(() => new Error('400')));
-    t.api.stats.mockReturnValue(throwError(() => new Error('400')));
+    const calls = [t.api.list.mock.calls.length, t.api.stats.mock.calls.length];
     await t.go({ createdFrom: '2026-11-20', createdTo: '2026-11-01' });
+    expect([t.api.list.mock.calls.length, t.api.stats.mock.calls.length]).toEqual(calls);
+    expect(Array.from(t.el.querySelectorAll('[role="alert"]'), t.text)).toEqual(['Từ ngày phải trước hoặc bằng Đến ngày.']);
+    const dates = Array.from(t.el.querySelectorAll<HTMLInputElement>('input[type=date]'));
+    expect(dates.map((i) => i.value)).toEqual(['2026-11-20', '2026-11-01']);
+    const message = t.el.querySelector('[role="alert"]')!.id;
+    expect(dates.map((i) => [i.getAttribute('aria-invalid'), i.getAttribute('aria-describedby')])).toEqual([['true', message], ['true', message]]);
+    expect(t.button('Thử lại')).toBeUndefined();
+    expect(t.el.textContent).not.toContain('Đang tải đơn hàng');
+    expect(t.el.textContent).not.toContain('DH-000001');
+    expect(t.tabs()[0]).toBe('Tất cả');
+    t.button('Bộ lọc').click();
+    t.f.detectChanges();
     expect(t.el.querySelector('[role="alert"]')).toBeTruthy();
-    expect(Array.from(t.el.querySelectorAll<HTMLInputElement>('input[type=date]'), (i) => i.value)).toEqual(['2026-11-20', '2026-11-01']);
+    await t.go({ createdFrom: '2026-11-20', createdTo: '2026-11-20' });
+    expect(t.el.querySelector('[role="alert"]')).toBeNull();
+    expect(t.el.textContent).toContain('DH-000001');
+    expect(t.tabs()[0]).toBe('Tất cả 39');
+  });
+  it('moves focus to the filter button when a clear button disappears', async () => {
+    const t = await setup('OWNER', { customerId: '3' });
+    document.body.append(t.el);
+    vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    for (const clear of [t.el.querySelector('.customer-filter button') as HTMLButtonElement, t.button('Xóa lọc')]) {
+      clear.focus();
+      clear.click();
+      expect(t.text(document.activeElement)).toBe('Bộ lọc');
+    }
+  });
+  it('never rewrites the search box while it is being typed in', async () => {
+    const t = await setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const input = t.el.querySelector('input[type=search]') as HTMLInputElement;
+    const type = (value: string) => {
+      input.value = value;
+      input.dispatchEvent(new Event('input'));
+    };
+    vi.useFakeTimers();
+    try {
+      type('Chị ');
+      vi.advanceTimersByTime(300);
+      expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ q: 'Chị' });
+      t.params.next(convertToParamMap({ q: 'Chị' }));
+      t.f.detectChanges();
+      expect(input.value).toBe('Chị ');
+      type('Chị Lan');
+      t.params.next(convertToParamMap({ q: 'Chị', nhom: 'dang-keep' }));
+      t.f.detectChanges();
+      expect(input.value).toBe('Chị Lan');
+      vi.advanceTimersByTime(300);
+      expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ q: 'Chị Lan', nhom: 'dang-keep' });
+      t.params.next(convertToParamMap({ q: 'Chị Lan', nhom: 'dang-keep' }));
+      t.f.detectChanges();
+      expect(input.value).toBe('Chị Lan');
+      type('Chị Lan A');
+      vi.advanceTimersByTime(300);
+      type('Chị Lan Anh');
+      t.params.next(convertToParamMap({ q: 'Chị Lan A', nhom: 'dang-keep' }));
+      t.f.detectChanges();
+      expect(input.value).toBe('Chị Lan Anh');
+      vi.advanceTimersByTime(300);
+      t.params.next(convertToParamMap({ q: 'Chị Lan Anh', nhom: 'dang-keep' }));
+    } finally {
+      vi.useRealTimers();
+    }
+    await t.go({ q: 'Hoa' });
+    expect(input.value).toBe('Hoa');
+    await t.go({});
+    expect(input.value).toBe('');
   });
   it('lets an unusable customer link be cleared', async () => {
     const t = await setup();

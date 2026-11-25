@@ -152,3 +152,14 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
 - Reviewer độc lập: 0 Critical, 1 Important (thiếu test thứ tự Tất cả). Đã bổ sung, kèm test đổi phiên, làm mờ nút "Tất cả" số 0,
   focus nút phụ đang chọn.
 - Chưa kiểm: Safari, thiết bị thật, STAFF trên trình duyệt, trình đọc màn hình, `build:workers`, dữ liệu `me_may_dev`, hiệu năng nhiều đơn.
+
+## Bill gửi khách và cân kiện gợi ý — 25/11/2026
+
+- `ORDER-BILL-VIEW-01`, nền `5368373`. Frontend 74 file/541 test, `ng build` đạt, 0 cảnh báo; test viết và thấy đỏ trước code.
+  18 lần làm hỏng có chủ đích: 16 đỏ ngay, 2 sống sót (focus về nút mở, ghi đè ô tìm khi đang gõ) đã siết test và đỏ lại.
+  Backend không đổi từ lần 440 test của ORDER-LIST-TABS-01.
+- Trình duyệt trong app, OWNER thử, backend/DB tạm riêng, 1440×800: bill 3/12/25 dòng (12 dòng có 2 tên dài cao 782px, không cuộn),
+  Esc trả focus, sách thiếu trọng lượng, 611 g → 1.611 g, lưu bill rồi số khớp Tổng đơn, sửa bill giữ 1.611 g;
+  ✕/Xóa lọc giữ focus, ngày ngược, gõ "Khách " dừng rồi "thử". 390px: bill và trang không tràn ngang.
+- Chưa kiểm: đơn thật, gửi lại và tải lại do xung đột trên trình duyệt (chỉ có test), Safari, thiết bị thật,
+  trình đọc màn hình, `build:workers`; chưa có reviewer độc lập cho lượt này.

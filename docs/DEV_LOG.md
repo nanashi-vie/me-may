@@ -5488,3 +5488,13 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Góp ý reviewer hoãn**: bấm ✕/Xóa lọc làm mất focus; lỗi ngày ngược chỉ báo chung; gõ khoảng trắng rồi dừng 300 ms bị cắt khoảng trắng trong ô tìm (có từ trước).
 - **Bàn giao**: theo owner, đã khởi động lại `8080` bằng `run-local.sh` trên `me_may_dev` (V38, không migration, health UP); chưa kiểm màn hình bằng phiên owner. Commit + push `dev` theo yêu cầu owner.
 - **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.
+
+### 2026-11-25 — ORDER-BILL-VIEW-01 — Bill gửi khách, cân kiện gợi ý và 3 góp ý danh sách đơn
+
+- **Mục tiêu & phạm vi**: owner yêu cầu sửa 3 góp ý hoãn của ORDER-LIST-TABS-01, tự điền cân kiện = sách + 1.000 g, thêm hộp bill để chụp màn hình gửi khách. Đã chốt Q1–Q11 qua hai vòng; bill không có mã đơn và dòng giảm giá, dùng chữ "Cần thanh toán". Chỉ frontend, không migration/dependency; không viết spec/plan riêng.
+- **Trạng thái**: bắt đầu trên checkout `dev`, nền `5368373`. `dev` không có CI khi push (workflow chỉ chạy ở PR/push `main` hoặc chạy tay), thay ghi chú "theo dõi CI `dev`" của mục trước.
+- **File thay đổi**: frontend `orders/order-bill/*` (mới), `order-detail/*`, `order-shipping-form/*`, `order-list/*` và spec; `docs/product/ORDER_BILL.md` (mới, tách vì ORDERS gần trần 400 dòng), `docs/product/ORDERS.md`, `docs/README.md`, `docs/PROGRESS.md`, `docs/verification/ORDER_VERIFICATION.md`.
+- **Quyết định khi làm**: bill lấy `totals`/`shippingFee` hiện tại thay vì snapshot lần giao, để các dòng luôn cộng khớp cả sau khi hủy lần gửi lại; bỏ điều kiện `parcelWeightOverridden` trong `rebase` (luôn đúng nên không bao giờ chạy), thay bằng cờ ô đã sửa tay.
+- **Kiểm tra**: frontend 541 test, build đạt; chi tiết và giới hạn ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#bill-gửi-khách-và-cân-kiện-gợi-ý--25112026). Đã dọn container, server tạm, mật khẩu thử; `me_may_dev` không bị đụng.
+- **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.
+- **Bước tiếp theo**: owner xem trên đơn thật và quyết định: dòng "Đã thanh toán đủ" ở bill tạm tính khi cọc đủ tiền sách; giảm giá đơn cũ chỉ bỏ trên bill, chưa bỏ trong hệ thống.

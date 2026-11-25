@@ -63,11 +63,12 @@
         ><input
           type="search"
           maxlength="200"
-          [value]="filter().q"
+          [value]="searchText()"
           (input)="search($any($event.target).value)"
           placeholder="Tìm mã đơn, tên khách, số điện thoại, mã KH…"
       /></label>
       <button
+        #filterToggle
         type="button"
         class="secondary"
         aria-controls="order-filters"
@@ -87,16 +88,23 @@
           ><input
             type="date"
             [value]="filter().createdFrom"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
             (change)="change('createdFrom', $any($event.target).value)" /></label
         ><label
           ><span>Đến ngày</span
           ><input
             type="date"
             [value]="filter().createdTo"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
             (change)="change('createdTo', $any($event.target).value)"
         /></label>
       }
     </div>
+    @if (datesReversed()) {
+      <p class="error" role="alert" id="order-date-error">Từ ngày phải trước hoặc bằng Đến ngày.</p>
+    }
     @if (filter().customerId) {
       <p class="customer-filter">
         <span>Đang xem đơn của {{ customerName() }}</span>

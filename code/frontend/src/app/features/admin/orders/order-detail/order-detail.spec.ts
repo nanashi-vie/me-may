@@ -105,6 +105,36 @@ describe('OrderDetail', () => {
       expect(line(), JSON.stringify(patch)).toBeUndefined();
     }
   });
+  it('offers the customer bill on both tabs once there is a book and the order is open', async () => {
+    const { f, c } = await setup();
+    const item = { id: '1', sourceType: 'MANUAL', titleSnapshot: 'Sách thử', unitPriceVnd: 75000, quantity: 2 };
+    const button = () => Array.from(f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Xem bill gửi khách');
+    for (const total of [false, true]) {
+      c.totalTab.set(total);
+      for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+        c.order.set({ ...detail, status, items: [item] });
+        f.detectChanges();
+        expect(!!button(), status).toBe(status !== 'CANCELLED');
+      }
+      c.order.set(detail);
+      f.detectChanges();
+      expect(button()).toBeUndefined();
+    }
+    const shipment = { state: 'PLANNED', shippingSnapshot: { declaredValue: 150000, shippingFee: 30000 } };
+    const totals = { ...detail.totals, goodsTotal: 150000, orderTotal: 180000, balance: 180000 };
+    for (const [status, provisional] of [['KEEPING', true], ['READY_TO_SHIP', false]] as const) {
+      c.order.set({ ...detail, status, items: [item], shipments: [shipment], shippingFee: 30000, totalQuantity: 2, totals });
+      f.detectChanges();
+      button()!.click();
+      f.detectChanges();
+      const bill = f.nativeElement.querySelector('.bill');
+      expect(bill.textContent, status).toContain('Sách thử');
+      expect(bill.textContent.includes('chưa gồm phí ship'), status).toBe(provisional);
+    }
+    c.order.set(null);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.bill')).toBeNull();
+  });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
     const badge = () => f.nativeElement.querySelector('.heading .badge').textContent.trim();
