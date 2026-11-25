@@ -13,6 +13,7 @@ export interface CustomerMutation extends CustomerWrite {
   confirmedPhone?: string;
 }
 export interface CustomerSummary {
+  trashable?: boolean;
   orderCount?: number | null;
   zaloName: string | null;
   tiktokId: string | null;

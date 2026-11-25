@@ -1,0 +1,13 @@
+<dialog #dialog aria-labelledby="trash-target-heading" (cancel)="busy() && $event.preventDefault()">
+  @if (target(); as t) {
+    <h2 id="trash-target-heading">Chuyển vào Thùng rác?</h2>
+    @if (error()) {
+      <p role="alert" class="error">{{ error() }}</p>
+      <button type="button" class="secondary" (click)="close()">Đóng</button>
+    } @else {
+      <p>{{ t.name }} ({{ t.code }}) sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
+      <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="close()">Hủy</button>
+      <button type="button" [disabled]="busy()" (click)="confirm()">Chuyển vào Thùng rác</button>
+    }
+  }
+</dialog>

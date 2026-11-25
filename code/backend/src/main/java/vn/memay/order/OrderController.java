@@ -4,6 +4,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import vn.memay.common.AdminActorResolver;
 import vn.memay.common.AdminApiException;
+import vn.memay.common.RecordTrash;
+import vn.memay.common.VersionedItem;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.*;
 import tools.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.*;
@@ -11,12 +15,18 @@ import static vn.memay.order.OrderDtos.*;
 @RestController
 @RequestMapping("/api/v1/admin/orders")
 public class OrderController {
- private final OrderQueryService queries;private final OrderDraftService drafts;private final OrderKeepService keep;private final OrderPaymentService payments;private final OrderShippingService shipping;private final AdminActorResolver actors;private final OrderRepository db;
- public OrderController(OrderQueryService queries,OrderDraftService drafts,OrderKeepService keep,OrderPaymentService payments,OrderShippingService shipping,AdminActorResolver actors,OrderRepository db){this.queries=queries;this.drafts=drafts;this.keep=keep;this.payments=payments;this.shipping=shipping;this.actors=actors;this.db=db;}
+ private final OrderQueryService queries;private final OrderDraftService drafts;private final OrderKeepService keep;private final OrderPaymentService payments;private final OrderShippingService shipping;private final AdminActorResolver actors;private final OrderRepository db;private final OrderTrashService trash;
+ public OrderController(OrderQueryService queries,OrderDraftService drafts,OrderKeepService keep,OrderPaymentService payments,OrderShippingService shipping,AdminActorResolver actors,OrderRepository db,OrderTrashService trash){this.trash=trash;this.queries=queries;this.drafts=drafts;this.keep=keep;this.payments=payments;this.shipping=shipping;this.actors=actors;this.db=db;}
  @GetMapping public Page<OrderSummary> list(Authentication a,@RequestParam Map<String,String> params){return queries.list(filter(params),actors.current(a));}
  @GetMapping("/stats") public OrderStats stats(Authentication a,@RequestParam Map<String,String> params){return queries.stats(filter(params),actors.current(a));}
  @GetMapping("/catalog") public Page<CatalogCandidate> catalog(Authentication a,@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return queries.catalog(q,page,size,actors.current(a));}
  @GetMapping("/catalog-match") public MatchResult match(Authentication a,@RequestParam String title){return queries.matches(title,actors.current(a));}
+ public record TrashChange(@NotNull @PositiveOrZero Long version,@NotNull Boolean trashed){}
+ public record TrashPurge(@NotEmpty List<VersionedItem> items){}
+ @GetMapping("/trash") public RecordTrash.Listing trash(Authentication a,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return trash.list(actors.current(a),page,size);}
+ @GetMapping("/trash/selection") public List<VersionedItem> trashSelection(Authentication a){return trash.selection(actors.current(a));}
+ @PostMapping("/trash/purge") public ResponseEntity<Void> purge(Authentication a,@Valid @RequestBody TrashPurge r){trash.purge(actors.current(a),r.items());return ResponseEntity.noContent().build();}
+ @PatchMapping("/{id}/trash") public ResponseEntity<Void> changeTrash(Authentication a,@PathVariable long id,@Valid @RequestBody TrashChange r){trash.change(actors.current(a),id,r.version(),r.trashed());return ResponseEntity.noContent().build();}
  @GetMapping("/{id}") public OrderDetail detail(Authentication a,@PathVariable long id){return queries.detail(id,actors.current(a));}
  @PostMapping public ResponseEntity<MutationResult> create(Authentication a,@RequestBody JsonNode body){var result=drafts.create(decode(body,CreateRequest.class),actors.current(a));return ResponseEntity.created(URI.create("/api/v1/admin/orders/"+result.id())).body(result);}
  @PutMapping("/{id}") public MutationResult update(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return drafts.update(id,decode(body,UpdateRequest.class),actors.current(a));}

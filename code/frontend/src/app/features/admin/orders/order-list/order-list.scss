@@ -58,3 +58,12 @@
   color: var(--red);
   text-decoration: underline;
 }
+.order-row {
+  cursor: pointer;
+}
+.order-row:hover {
+  background: #faf7f2;
+}
+.actions-cell {
+  text-align: center;
+}

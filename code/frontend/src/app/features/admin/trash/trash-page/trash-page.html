@@ -1,0 +1,53 @@
+<h1>Thùng rác</h1>
+<nav class="trash-tabs" aria-label="Loại dữ liệu trong Thùng rác">
+  @for (t of tabs; track t.kind) {
+    <a routerLink="/admin/thung-rac" [queryParams]="{ loai: t.param }" [class.active]="t === tab()"
+      [attr.aria-current]="t === tab() ? 'page' : null">{{ t.label }}</a>
+  }
+</nav>
+<p class="muted">Mục trong Thùng rác bị xóa vĩnh viễn sau 7 ngày. {{ tab().note }}</p>
+@if (notice()) { <p role="status" class="trash-notice">{{ notice() }}</p> }
+@if (error()) { <p role="alert" class="error">{{ error() }}</p> }
+@if (loadError()) {
+  <p role="alert" class="error">Chưa tải được Thùng rác. <button type="button" class="secondary" (click)="reload()">Thử lại</button></p>
+}
+@if (loading() && !result()) { <p role="status">Đang tải Thùng rác…</p> }
+@if (result(); as trash) {
+  <div class="trash-toolbar">
+    <p class="trash-total">{{ trash.totalElements }} {{ tab().unit }}</p>
+    <div class="trash-actions">
+      <label class="trash-select-all">
+        <input type="checkbox" [checked]="trash.items.length > 0 && selected().size === trash.items.length"
+          [disabled]="busy() || loading() || !trash.items.length"
+          (change)="selectPage(trash.items, $any($event.target).checked)" />
+        <span>Chọn tất cả trên trang này</span>
+      </label>
+      <button type="button" [disabled]="busy() || loading() || !selected().size" (click)="askSelected(purgeDialog)">Dọn ({{ selected().size }})</button>
+      <button type="button" class="secondary" [disabled]="busy() || loading() || !trash.totalElements" (click)="askAll(purgeDialog)">Dọn tất cả</button>
+    </div>
+  </div>
+  <ul class="trash-list">
+    @for (item of trash.items; track item.id) {
+      <li class="trash-item">
+        <input type="checkbox" [attr.aria-label]="'Chọn ' + item.code" [checked]="selected().has(item.id)"
+          [disabled]="busy() || loading()" (change)="toggle(item.id, $any($event.target).checked)" />
+        <span class="trash-item-info">
+          <strong>{{ item.name || 'Chưa có tên' }}</strong> · {{ item.code }}
+          <small>Hạn khôi phục {{ item.expiresAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</small>
+        </span>
+        <button type="button" class="secondary" [attr.aria-label]="'Khôi phục ' + item.code"
+          [disabled]="busy() || loading() || expired(item)" (click)="restore(item)">Khôi phục</button>
+      </li>
+    } @empty { <li class="trash-empty">Thùng rác trống.</li> }
+  </ul>
+  <app-pagination [page]="trash.page" [totalPages]="trash.totalPages" [disabled]="busy() || loading()" (pageChange)="load($event)" />
+}
+<dialog #purgeDialog aria-labelledby="purge-heading" (cancel)="busy() && $event.preventDefault()">
+  @if (purgeTarget(); as target) {
+    <h2 id="purge-heading">Dọn vĩnh viễn {{ target.items.length }} {{ tab().unit }}?</h2>
+    <p>{{ target.all ? 'Thao tác áp dụng cho toàn bộ tab ' + tab().label + ', kể cả các trang khác.' : 'Thao tác áp dụng cho các mục đã chọn.' }}
+      Dữ liệu{{ tab().kind === 'books' ? ' và ảnh (nếu có)' : '' }} bị xóa vĩnh viễn, kể cả khi chưa đủ 7 ngày.</p>
+    <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="purgeDialog.close()">Hủy</button>
+    <button type="button" [disabled]="busy()" (click)="confirmPurge(purgeDialog)">Dọn vĩnh viễn</button>
+  }
+</dialog>

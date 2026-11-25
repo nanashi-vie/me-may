@@ -1,4 +1,5 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
+import { TrashIcon } from '../../../../shared/trash-icon/trash-icon';
 import {AuthService} from '../../../../core/auth/auth.service';
 import { formatAdminPriceRange } from '../book-copy';
 import { afterNextRender, Component, computed, DestroyRef, HostListener, inject, Injector, signal } from '@angular/core';
@@ -8,7 +9,7 @@ import { DatePipe, DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
 import { BookApi } from '../book-api';
-import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication, TrashBook } from '../book.models';
+import { Availability, Binding, BookFilter, BookSummary, CategoryCode, Page, Publication } from '../book.models';
 import { CATEGORY_LABELS, MEDIA_LABELS, PUBLICATION_LABELS } from '../book-copy';
 type FilterGroup = 'publication' | 'availability' | 'category' | 'storageBoxNumber' | 'missingOnly';
 function createFilters() { return new FormGroup({
@@ -26,7 +27,7 @@ function createFilters() { return new FormGroup({
 
 @Component({
   selector: 'app-book-list',
-  imports: [Pagination, RouterLink, ReactiveFormsModule, DatePipe],
+  imports: [Pagination, RouterLink, TrashIcon, ReactiveFormsModule, DatePipe],
   templateUrl: './book-list.html',
   styleUrl: './book-list.scss',
 })
@@ -69,15 +70,12 @@ export class BookList {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly labels = PUBLICATION_LABELS;
-  readonly trashOpen = signal(false);
-  readonly trashResult = signal<Page<TrashBook> | null>(null);
-  readonly trashLoading = signal(false);
   readonly mutationBusy = signal(false);
   readonly selected = signal<ReadonlySet<string>>(new Set());
   readonly photoDownloadBusy = signal(false);
   readonly photoDownloadNotice = signal('');
   readonly photoDownloadError = signal('');
-  readonly bulkTarget = signal<{items: readonly {id:string;version:number}[]; permanent:boolean; all:boolean} | null>(null);
+  readonly bulkTarget = signal<readonly {id:string;version:number}[] | null>(null);
   readonly target = signal<BookSummary | null>(null);
   readonly soldOutTarget = signal<readonly BookSummary[]>([]);
   readonly soldOutError = signal('');
@@ -86,7 +84,6 @@ export class BookList {
     this.result()?.items.filter(book => this.selected().has(book.id) && book.totalStock > 0) ?? []);
   private filter: BookFilter = {};
   private sequence = 0;
-  private trashSequence = 0;
   constructor() {
     this.api.storageBoxes().pipe(takeUntilDestroyed()).subscribe({
       next: boxes => this.storageBoxes.set(boxes),
@@ -197,27 +194,6 @@ export class BookList {
     });
   }
 
-  showTrash(page=0) {
-    if (this.mutationBusy()) return;
-    this.selected.set(new Set());
-    this.trashOpen.set(true);
-    this.trashLoading.set(true);
-    this.error.set('');
-    const sequence = ++this.trashSequence;
-    this.api.trash(page).pipe(takeUntilDestroyed(this.destroy)).subscribe({
-      next: result => {
-        if (sequence !== this.trashSequence) return;
-        this.trashLoading.set(false);
-        if (page && !result.items.length) this.showTrash(page - 1);
-        else this.trashResult.set(result);
-      },
-      error: () => { if (sequence === this.trashSequence) { this.trashLoading.set(false); this.error.set('Chưa tải được Thùng rác.'); } },
-    });
-  }
-  closeTrash() {
-    this.trashOpen.set(false);
-    this.selected.set(new Set());
-  }
   toggle(id:string, checked:boolean) {
     const selected=new Set(this.selected());
     if (checked) selected.add(id);
@@ -229,7 +205,7 @@ export class BookList {
   }
 
   downloadPhotos() {
-    if (this.photoDownloadBusy() || this.loading() || this.trashOpen()
+    if (this.photoDownloadBusy() || this.loading()
         || this.auth.user()?.role !== 'OWNER') return;
     const books = this.result()?.items.filter(book => this.selected().has(book.id)) ?? [];
     if (!books.length) return;
@@ -271,38 +247,18 @@ export class BookList {
       },
     });
   }
-  askBulk(dialog:HTMLDialogElement, permanent:boolean, all=false) {
+  askBulk(dialog:HTMLDialogElement) {
     if (this.mutationBusy()) return;
-    const open=(items: readonly {id:string;version:number}[])=>{
-      if (!items.length) return;
-      this.bulkTarget.set({items,permanent,all});
-      dialog.showModal();
-    };
-    if (!all) {
-      const page=permanent ? this.trashResult() : this.result();
-      open((page?.items ?? []).filter(item=>this.selected().has(item.id))
-        .map(({id,version})=>({id,version})));
-      return;
-    }
-    this.mutationBusy.set(true);
-    this.error.set('');
-    this.api.trashSelection().pipe(takeUntilDestroyed(this.destroy)).subscribe({
-      next: items=>{
-        this.mutationBusy.set(false);
-        if (items.length) open(items);
-        else this.showTrash();
-      },
-      error: ()=>{
-        this.mutationBusy.set(false);
-        this.error.set('Chưa tải được danh sách sách cần dọn.');
-      },
-    });
+    const items=(this.result()?.items ?? []).filter(item=>this.selected().has(item.id)).map(({id,version})=>({id,version}));
+    if (!items.length) return;
+    this.bulkTarget.set(items);
+    this.openDialog(dialog);
   }
   confirmBulk(dialog:HTMLDialogElement) {
-    const target=this.bulkTarget();
-    if (!target || this.mutationBusy()) return;
+    const items=this.bulkTarget();
+    if (!items || this.mutationBusy()) return;
     this.mutationBusy.set(true);
-    this.api.bulkTrash(target.items,target.permanent).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+    this.api.bulkTrash(items).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: ()=>this.finishBulk(dialog),
       error: error=>{
         this.finishBulk(dialog);
@@ -317,32 +273,32 @@ export class BookList {
     this.bulkTarget.set(null);
     dialog.close();
     this.loadBooks();
-    if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
+  }
+  /** autofocus only applies to content present when the dialog opens. */
+  private openDialog(dialog:HTMLDialogElement) {
+    afterNextRender(() => dialog.showModal(), {injector: this.injector});
   }
   askTrash(book:BookSummary, dialog:HTMLDialogElement) {
     this.target.set(book);
-    dialog.showModal();
+    this.openDialog(dialog);
   }
-  expired(book:TrashBook) {
-    return Date.parse(book.expiresAt) <= Date.now();
-  }
-  changeTrash(book:BookSummary | TrashBook, trashed:boolean, dialog?:HTMLDialogElement) {
+  moveToTrash(book:BookSummary, dialog:HTMLDialogElement) {
     if (this.mutationBusy()) return;
     this.mutationBusy.set(true);
     this.error.set('');
-    this.api.changeTrash(book.id,book.version,trashed).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+    this.api.changeTrash(book.id,book.version).pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: () => {
         this.mutationBusy.set(false);
-        dialog?.close();
-        if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
+        dialog.close();
         this.loadBooks();
       },
       error: error => {
         this.mutationBusy.set(false);
-        dialog?.close();
+        dialog.close();
         this.loadBooks();
-        if (this.trashOpen()) this.showTrash(this.trashResult()?.page ?? 0);
-        this.error.set(error.status === 409 ? 'Trạng thái sách đã đổi hoặc đã hết hạn khôi phục. Danh sách đang được làm mới.' : 'Chưa xác nhận được thao tác. Kiểm tra danh sách rồi thử lại.');
+        this.error.set(error.status !== 409 ? 'Chưa xác nhận được thao tác. Kiểm tra danh sách rồi thử lại.'
+          : error.error?.error === 'book_reserved' ? 'Sách đang được giữ trong đơn nên chưa xóa được.'
+          : 'Sách vừa được thay đổi ở nơi khác. Danh sách đang được làm mới.');
       },
     });
   }
@@ -350,8 +306,7 @@ export class BookList {
     if (this.mutationBusy() || !books.length) return;
     this.soldOutError.set('');
     this.soldOutTarget.set(books);
-    // autofocus only applies to content present when the dialog opens
-    afterNextRender(() => dialog.showModal(), {injector: this.injector});
+    this.openDialog(dialog);
   }
   confirmSoldOut(dialog:HTMLDialogElement) {
     const books=this.soldOutTarget();

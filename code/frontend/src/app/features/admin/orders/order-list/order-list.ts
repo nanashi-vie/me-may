@@ -1,6 +1,6 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
-import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
@@ -14,6 +14,8 @@ import {
   switchMap,
 } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { TrashIcon } from '../../../../shared/trash-icon/trash-icon';
+import { TrashDialog } from '../../trash/trash-dialog/trash-dialog';
 import { OrderApi } from '../order-api';
 import {
   defaultOrderFilter,
@@ -27,7 +29,7 @@ import {
 import { keepEnd, vnd } from '../order-values';
 @Component({
   selector: 'app-order-list',
-  imports: [Pagination, RouterLink, DatePipe],
+  imports: [Pagination, RouterLink, DatePipe, TrashDialog, TrashIcon],
   templateUrl: './order-list.html',
   styleUrls: ['../orders.scss', './order-list.scss'],
 })
@@ -37,6 +39,8 @@ export class OrderList {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
+  private readonly view = inject(DOCUMENT).defaultView;
+  private readonly trash = viewChild.required(TrashDialog);
   private readonly reloads = new Subject<void>();
   private readonly searches = new Subject<string>();
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
@@ -45,6 +49,7 @@ export class OrderList {
   readonly filter = signal<OrderFilter>(defaultOrderFilter());
   readonly loading = signal(true);
   readonly error = signal('');
+  readonly notice = signal('');
   readonly statusLabels = STATUS_LABELS;
   readonly statuses = Object.keys(STATUS_LABELS) as (keyof typeof STATUS_LABELS)[];
   readonly warningLabels = WARNING_LABELS;
@@ -114,6 +119,22 @@ export class OrderList {
   }
   refresh() {
     this.reloads.next();
+  }
+  /** Pointer shortcut only; the order code stays the keyboard and screen-reader link. */
+  openRow(event: MouseEvent, id: string) {
+    if ((event.target as Element).closest('a, button') || this.view?.getSelection()?.toString()) return;
+    const queryParams = this.filter();
+    if (event.ctrlKey || event.metaKey) {
+      const url = this.router.serializeUrl(this.router.createUrlTree(['/admin/orders', id], { queryParams }));
+      this.view?.open(url, '_blank', 'noopener');
+    } else void this.router.navigate(['/admin/orders', id], { queryParams });
+  }
+  askTrash({ id, version, orderCode, customerNameSnapshot }: OrderSummary) {
+    this.trash().open({ id, version, code: orderCode, name: customerNameSnapshot });
+  }
+  onTrashed(code: string) {
+    this.notice.set('Đã chuyển ' + code + ' vào Thùng rác.');
+    this.refresh();
   }
   canLeave() {
     return true;

@@ -314,7 +314,7 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 
 ## Thao tác từ danh sách
 
-Thùng rác, đánh dấu hết hàng và tải ảnh: [CATALOGUE_ACTIONS](CATALOGUE_ACTIONS.md).
+Đánh dấu hết hàng và tải ảnh: [CATALOGUE_ACTIONS](CATALOGUE_ACTIONS.md). Thùng rác: [TRASH](TRASH.md).
 
 ## Nơi lưu trữ sách
 

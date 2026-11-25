@@ -155,7 +155,6 @@ export interface AdminApiError {
   currentVersion?: number;
 }
 
-export interface TrashBook { id:string; bookCode:string; title:string|null; version:number; deletedAt:string; expiresAt:string; }
 
 export interface MediaMetadata {mediaId:string;alt:string|null;sourceRef:string|null;}
 export interface MediaAssignment { mediaId: string; role: MediaRole; }

@@ -13,6 +13,7 @@ import vn.memay.audit.AuditService;
 import vn.memay.auth.AdminUser;
 import vn.memay.catalogue.BookDtos.Page;
 import vn.memay.common.AdminApiException;
+import vn.memay.common.VersionedItem;
 
 @Service
 public class BookTrashService {
@@ -82,32 +83,16 @@ public class BookTrashService {
         purge(ids);
     }
 
-    public record Selection(String id,Long version) {}
-
-    public List<Selection> selection(AdminUser actor) {
+    public List<VersionedItem> selection(AdminUser actor) {
         access.requireOwner(actor);
         return jdbc.query("select id,version from book_copy where deleted_at is not null order by id",
-                (r,n) -> new Selection(r.getString(1),r.getLong(2)));
-    }
-
-    static java.util.TreeMap<Long,Long> ordered(List<Selection> items, boolean limited) {
-        if (items.isEmpty() || (limited && items.size()>100))
-            throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
-        var ordered = new java.util.TreeMap<Long,Long>();
-        for (var item:items) {
-            long id;
-            try { id = Long.parseLong(item == null ? null : item.id()); }
-            catch (NumberFormatException e) { throw AdminApiException.field("items", "Mã sách không hợp lệ"); }
-            if (id<1 || item.version()==null || item.version()<0 || ordered.putIfAbsent(id,item.version())!=null)
-                throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
-        }
-        return ordered;
+                (r,n) -> new VersionedItem(r.getString(1),r.getLong(2)));
     }
 
     @Transactional
-    public void bulk(AdminUser actor, List<Selection> items, boolean permanent) {
+    public void bulk(AdminUser actor, List<VersionedItem> items, boolean permanent) {
         access.requireOwner(actor);
-        var ordered = ordered(items, !permanent);
+        var ordered = VersionedItem.ordered(items, !permanent);
         if (!permanent) {
             ordered.forEach((id,version) -> change(actor,id,version,true));
             return;

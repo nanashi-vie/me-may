@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import vn.memay.auth.AdminUser;
 import vn.memay.audit.AuditService;
 import vn.memay.common.AdminApiException;
+import vn.memay.common.VersionedItem;
 import java.time.Clock;
 import java.sql.Timestamp;
 import java.util.*;
@@ -27,8 +28,8 @@ public class BookStockService {
  }
  /** Zeroes sellable stock all-or-nothing; copies already kept in orders stay reserved. */
  @Transactional
- public List<SoldOut> soldOut(List<BookTrashService.Selection> items,AdminUser actor){
-  requireActiveOwner(actor);var ordered=BookTrashService.ordered(items,true);lockAll(List.copyOf(ordered.keySet()));
+ public List<SoldOut> soldOut(List<VersionedItem> items,AdminUser actor){
+  requireActiveOwner(actor);var ordered=VersionedItem.ordered(items,true);lockAll(List.copyOf(ordered.keySet()));
   var result=new ArrayList<SoldOut>();
   for(var item:ordered.entrySet()){
    long id=item.getKey();var book=jdbc.queryForMap("select version,availability,deleted_at,updated_at from book_copy where id=?",id);

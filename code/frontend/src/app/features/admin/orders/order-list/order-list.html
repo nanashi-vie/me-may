@@ -77,6 +77,9 @@
           (change)="change('createdTo', $any($event.target).value)"
       /></label>
     </div>
+    @if (notice()) {
+      <p role="status">{{ notice() }}</p>
+    }
     @if (error()) {
       <p class="error" role="alert">
         {{ error() }} <button type="button" class="secondary" (click)="refresh()">Thử lại</button>
@@ -98,12 +101,12 @@
                 <th class="number">Đã thanh toán</th>
                 <th>Trạng thái</th>
                 <th>Hạn keep</th>
-                <th><span class="sr-only">Thao tác</span></th>
+                <th class="actions-cell">Thao tác</th>
               </tr>
             </thead>
             <tbody>
               @for (o of result.items; track o.id) {
-                <tr>
+                <tr class="order-row" (click)="openRow($event, o.id)">
                   <td>
                     <a
                       class="order-code"
@@ -145,8 +148,11 @@
                       —
                     }
                   </td>
-                  <td>
-                    <a [routerLink]="['/admin/orders', o.id]" [queryParams]="filter()">Xem</a>
+                  <td class="actions-cell">
+                    @if (o.trashable) {
+                      <button type="button" class="secondary trash-btn" [attr.aria-label]="'Xóa ' + o.orderCode"
+                        (click)="askTrash(o)"><app-trash-icon /></button>
+                    } @else { <span title="Chỉ xóa được đơn Nháp hoặc Đã hủy chưa có giao dịch tiền">—</span> }
                   </td>
                 </tr>
               }
@@ -163,3 +169,4 @@
     }
   }
 </section>
+<app-trash-dialog kind="orders" (trashed)="onTrashed($event)" (settled)="refresh()" />

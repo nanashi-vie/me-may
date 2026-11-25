@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
-import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
+import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
 import { BehaviorSubject, Subject, of } from 'rxjs';
 import { OrderList } from './order-list';
 import { OrderApi } from '../order-api';
@@ -74,6 +74,53 @@ describe('OrderList', () => {
     expect(f.nativeElement.textContent).toContain('Tạm tính');
     expect(f.nativeElement.textContent).toContain('12');
     expect(f.nativeElement.querySelector('[href="/admin/orders/new"]')).toBeTruthy();
+  });
+  it('opens the order from anywhere on its row except its controls', async () => {
+    const { f, api } = await setup();
+    api.list.mockReturnValue(of({ ...page('DH-000001'), items: [{ ...page('DH-000001').items[0], trashable: true }] }));
+    f.componentInstance.refresh();
+    await f.whenStable();
+    f.detectChanges();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const row = f.nativeElement.querySelector('tbody tr') as HTMLElement;
+    expect(row.textContent).not.toContain('Xem');
+    const dialog = f.nativeElement.querySelector('app-trash-dialog dialog') as HTMLDialogElement;
+    dialog.showModal = vi.fn();
+    row.querySelector<HTMLButtonElement>('.trash-btn')!.click();
+    f.detectChanges();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(navigate).not.toHaveBeenCalled();
+    row.querySelector<HTMLElement>('td:nth-child(5)')!.click();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/admin/orders', '1'], { queryParams: f.componentInstance.filter() });
+  });
+  it('keeps text selection and modified clicks from leaving the list', async () => {
+    const { f } = await setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    const selection = vi.spyOn(window, 'getSelection').mockReturnValue({ toString: () => 'Synthetic' } as Selection);
+    const cell = f.nativeElement.querySelector('tbody td:nth-child(2)') as HTMLElement;
+    try {
+      cell.click();
+      expect(navigate).not.toHaveBeenCalled();
+      selection.mockReturnValue({ toString: () => '' } as Selection);
+      cell.dispatchEvent(new MouseEvent('click', { bubbles: true, metaKey: true }));
+      expect(navigate).not.toHaveBeenCalled();
+      expect(open).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('/admin/orders/1'), '_blank', 'noopener');
+    } finally {
+      open.mockRestore();
+      selection.mockRestore();
+    }
+  });
+  it('shows a dash instead of the trash for orders that must be kept', async () => {
+    const { f, c, api } = await setup();
+    expect(f.nativeElement.querySelector('.trash-btn')).toBeNull();
+    expect(f.nativeElement.querySelector('tbody tr').lastElementChild.textContent.trim()).toBe('—');
+    const calls = api.list.mock.calls.length;
+    c.onTrashed('DH-000001');
+    expect(api.list).toHaveBeenCalledTimes(calls + 1);
+    await f.whenStable();
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('[role="status"]').textContent).toContain('DH-000001');
   });
   it('staff never loads private data', async () => {
     const { api, f } = await setup('STAFF');

@@ -372,7 +372,7 @@ File7/16/20cột cũ vẫn nhận, giữ giá/receipt, không tự gộp dòng t
   thì ở lại. **Lưu và xuất bản** ở lại cuốn hiện tại. Đổi cuốn dùng kiểm
   tra thay đổi chưa lưu và thao tác ảnh đang chạy.
 - Cột Thao tác (25/11) căn giữa: nút `Hết hàng` viền trung tính cao 40px cạnh nút thùng rác SVG `currentColor` 20px trong ô 40×40; OWNER, sách tồn > 0. Mở hộp thoại `X → 0`; xong cập nhật tại chỗ, tồn 0 hiện nhãn xám "Hết hàng". Nút hàng loạt `Đánh dấu hết hàng (N cuốn)` bỏ qua cuốn đã 0; 409 báo ngay trong hộp thoại và tải lại danh sách.
-- Thùng rác mở hộp thoại tên/mã, cảnh báo xóa vĩnh viễn sau 7 ngày; hạn theo giờ Việt Nam.
+- Thùng rác mở hộp thoại tên/mã, cảnh báo xóa vĩnh viễn sau 7 ngày; trang chung ba tab `/admin/thung-rac` và nút ở Khách/Đơn theo [TRASH](TRASH.md).
 - Hai ảnh bổ sung có checkbox **Hiện trên trang sách**, mặc định tắt.
 
 ## Quản lý khách hàng —12/11/2026

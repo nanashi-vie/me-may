@@ -25,6 +25,6 @@ class OrderPurgeTest extends OrderTestSupport {
   trash.purgeExpired(Instant.now());
   assertThat(jdbc.queryForList("select id::text from book_copy",String.class)).containsExactly(kept.id());
   assertThat(jdbc.queryForObject("select count(*) from order_items",Integer.class)).isEqualTo(1);
-  assertThatThrownBy(()->trash.bulk(owner,List.of(new BookTrashService.Selection(kept.id(),kept.version())),true)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("book_order_reference"));
+  assertThatThrownBy(()->trash.bulk(owner,List.of(new vn.memay.common.VersionedItem(kept.id(),kept.version())),true)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("book_order_reference"));
  }
 }

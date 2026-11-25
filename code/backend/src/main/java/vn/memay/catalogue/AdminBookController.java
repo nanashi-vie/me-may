@@ -76,11 +76,11 @@ public class AdminBookController {
         return trash.list(actors.current(a), page, size);
     }
 
-    public record TrashBulk(@jakarta.validation.constraints.NotEmpty java.util.List<BookTrashService.Selection> items,
+    public record TrashBulk(@jakarta.validation.constraints.NotEmpty java.util.List<vn.memay.common.VersionedItem> items,
             @jakarta.validation.constraints.NotNull Boolean permanent) {}
 
     @GetMapping("/trash/selection")
-    public java.util.List<BookTrashService.Selection> trashSelection(Authentication a) {
+    public java.util.List<vn.memay.common.VersionedItem> trashSelection(Authentication a) {
         return trash.selection(actors.current(a));
     }
 
@@ -92,7 +92,7 @@ public class AdminBookController {
 
     @org.springframework.beans.factory.annotation.Autowired private BookStockService stock;
 
-    public record SoldOutBatch(@jakarta.validation.constraints.NotEmpty java.util.List<BookTrashService.Selection> items) {}
+    public record SoldOutBatch(@jakarta.validation.constraints.NotEmpty java.util.List<vn.memay.common.VersionedItem> items) {}
 
     @PostMapping("/sold-out")
     public java.util.List<BookStockService.SoldOut> soldOut(Authentication a, @Valid @RequestBody SoldOutBatch body) {

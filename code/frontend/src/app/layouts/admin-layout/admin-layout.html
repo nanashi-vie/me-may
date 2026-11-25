@@ -115,6 +115,14 @@
         </div>
       }
 
+      @if (auth.user()?.role === 'OWNER') {
+        <div class="sidebar-divider" role="separator"></div>
+        <a routerLink="/admin/thung-rac" routerLinkActive="active" class="nav-item">
+          <span class="nav-icon" aria-hidden="true"><app-trash-icon /></span>
+          <span class="nav-text">Thùng rác</span>
+        </a>
+      }
+
       <div class="sidebar-divider" role="separator"></div>
 
       <a routerLink="/" class="nav-item nav-external" target="_blank" rel="noopener">
