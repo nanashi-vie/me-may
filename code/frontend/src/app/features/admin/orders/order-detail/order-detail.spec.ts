@@ -79,6 +79,30 @@ describe('OrderDetail', () => {
       expect(f.nativeElement.textContent.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
     }
   });
+  it('summarises the finished keep of handed-over orders only', async () => {
+    const { f, c } = await setup();
+    const line = () => f.nativeElement.querySelector('.keep-summary')?.textContent.trim().replace(/\s+/g, ' ');
+    const shipments = [
+      { handedOverAt: '2026-11-03T18:00:00Z' },
+      { handedOverAt: null },
+      { handedOverAt: '2026-11-20T01:00:00Z' },
+    ];
+    for (const status of ['COMPLETED', 'UNSUCCESSFUL']) {
+      c.order.set({ ...detail, status, shipments });
+      f.detectChanges();
+      expect(line(), status).toBe('Đã keep 01/11/2026 → bàn giao 04/11/2026 (hạn 15/11/2026)');
+    }
+    for (const patch of [
+      { status: 'KEEPING' },
+      { status: 'READY_TO_SHIP' },
+      { status: 'CANCELLED' },
+      { status: 'COMPLETED', keepStartedAt: null, keepUntil: null },
+    ]) {
+      c.order.set({ ...detail, shipments, ...patch });
+      f.detectChanges();
+      expect(line(), JSON.stringify(patch)).toBeUndefined();
+    }
+  });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
     const badge = () => f.nativeElement.querySelector('.heading .badge').textContent.trim();

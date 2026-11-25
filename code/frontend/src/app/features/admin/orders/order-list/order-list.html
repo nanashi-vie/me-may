@@ -142,7 +142,7 @@
                     }
                   </td>
                   <td class="nowrap">
-                    @if (o.keepUntil) {
+                    @if (o.status === 'KEEPING' && o.keepUntil) {
                       Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
                     } @else {
                       —

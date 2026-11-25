@@ -64,9 +64,9 @@ Nguồn nền: [DATA](../context/DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE
 ## 4. Danh sách, tạo đơn và khách hàng
 
 Route `/admin/orders`, `/admin/orders/new`, `/admin/orders/:id`.
-Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách,
-ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
-hạn keep và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
+Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách, ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
+hạn keep (chỉ đơn KEEPING, còn lại "—"; COMPLETED/UNSUCCESSFUL ghi một dòng keep → bàn giao lần đầu → hạn ở chi tiết;
+keep_until giữ nguyên trong DB) và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
 Tìm mã đơn/tên/SĐT/mã KH; lọc status, khoảng ngày tạo và keep sắp/đến/quá hạn.
 Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
 Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Hoàn tất/Không thành công do backend tính,

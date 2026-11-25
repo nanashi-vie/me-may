@@ -146,6 +146,19 @@ describe('OrderList', () => {
     expect(dialog.textContent).not.toContain('Chuyển vào Thùng rác');
     expect(navigate).not.toHaveBeenCalled();
   });
+  it('shows the keep deadline only while the order is being kept', async () => {
+    const t = await setup();
+    const cell = () => t.f.nativeElement.querySelector('tbody td:nth-child(8)').textContent.trim();
+    expect(cell()).toBe('Giữ hết 30/11/2026');
+    for (const status of ['DRAFT', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+      const result = page('DH-000001');
+      t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], status, keepWarning: '' }] }));
+      t.c.refresh();
+      await t.f.whenStable();
+      t.f.detectChanges();
+      expect(cell(), status).toBe('—');
+    }
+  });
   it('names cancelled orders and closed returns separately and filters each', async () => {
     const cancelled = await show({ status: 'CANCELLED', returned: false });
     const badge = () => cancelled.f.nativeElement.querySelector('tbody .badge').textContent.trim();

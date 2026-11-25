@@ -110,6 +110,12 @@ export class OrderDetailPage {
     this.selectTab(total);
     document.getElementById(total ? 'order-total-tab' : 'order-detail-tab')?.focus();
   }
+  /** First handover ends the keep; later resends do not change it. */
+  readonly keepHandedOver = computed(() => {
+    const d = this.order();
+    if (!d?.keepStartedAt || !d.keepUntil || !['COMPLETED', 'UNSUCCESSFUL'].includes(d.status)) return null;
+    return d.shipments.find((s) => s.handedOverAt)?.handedOverAt ?? null;
+  });
   readonly currentBill = computed(() => {
     const d = this.order();
     if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;

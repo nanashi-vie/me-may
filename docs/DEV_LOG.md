@@ -5448,3 +5448,11 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Kiểm tra**: TDD, test đỏ trước. `code/backend` `./mvnw test` với Postgres tạm: 404 test, 0 lỗi, 3 bỏ qua. `code/frontend` `npm test` 457/457, `npm run build` đạt. Trình duyệt trong app, OWNER, `me_may_dev`, 1440×900 với khách/đơn tạo riêng: nhãn Đã hủy/Đã hoàn đơn ở danh sách, chi tiết, lịch sử khách; lọc riêng từng nhãn; đơn hủy còn 50.000đ hiện thùng rác xám, hộp thoại nêu lý do và focus Đóng; ghi hoàn tiền xong chuyển đỏ, xóa và dọn được, cảnh báo xóa lịch sử giao dịch; nút hoàn về chỉ ở Hoàn tất, API fail trên đơn Nháp trả 409. Đã dọn hết dữ liệu thử. Chưa chạy: `build:workers`, Safari, STAFF trên trình duyệt, 390px.
 - **Lưu ý**: đơn hoàn dư không tồn tại vì backend đã chặn hoàn quá số thu. Cần triển khai backend trước frontend (lọc RETURNED và `returned`).
 - **Bàn giao**: commit + push `dev` theo yêu cầu owner. Khi rollout, backend trước frontend; không migration.
+
+### 2026-11-25 — ORDER-KEEP-END-01 — Ẩn hạn keep khi đơn không còn keep
+
+- **Mục tiêu & phạm vi**: owner thấy đơn Hoàn tất trước hạn vẫn hiện "Giữ hết …"; đồng ý cả Q1–Q3 (25/11). Chỉ là lỗi hiển thị ở danh sách: reservation đã CONSUMED, thống kê/lọc/cảnh báo chỉ tính KEEPING.
+- **Quyết định**: cột Hạn keep chỉ hiện khi KEEPING; giữ `keep_until` trong DB (mở lại Chờ giao và tra lịch sử); chi tiết COMPLETED/UNSUCCESSFUL có dòng "Đã keep … → bàn giao … (hạn …)" theo lần bàn giao đầu.
+- **File thay đổi**: `orders/order-list`, `orders/order-detail` và spec; `docs/product/ORDERS.md`, `docs/PROGRESS.md`.
+- **Kiểm tra**: test đỏ trước; `code/frontend` `npm test` 459/459, `npm run build` đạt. Trình duyệt trong app, OWNER, DH-000001: danh sách "—", chi tiết có dòng tóm tắt, 390px không tràn. Chưa chạy: backend (không đổi), `build:workers`, Safari.
+- **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.
