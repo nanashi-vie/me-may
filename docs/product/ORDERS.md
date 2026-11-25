@@ -64,13 +64,33 @@ Nguồn nền: [DATA](../context/DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE
 ## 4. Danh sách, tạo đơn và khách hàng
 
 Route `/admin/orders`, `/admin/orders/new`, `/admin/orders/:id`.
-Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách, ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
-hạn keep (chỉ đơn KEEPING, còn lại "—"; COMPLETED/UNSUCCESSFUL ghi một dòng keep → bàn giao lần đầu → hạn ở chi tiết;
-keep_until giữ nguyên trong DB) và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
-Tìm mã đơn/tên/SĐT/mã KH; lọc status, khoảng ngày tạo và keep sắp/đến/quá hạn.
-Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
-Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Hoàn tất/Không thành công do backend tính,
-không cộng chỉ các dòng trong trang; dùng cùng bộ lọc danh sách.
+Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng; bấm cả dòng mở đơn. Danh sách chia năm tab ở mục 4.1.
+Chi tiết COMPLETED/UNSUCCESSFUL ghi một dòng keep → bàn giao lần đầu → hạn; keep_until giữ nguyên trong DB.
+Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
+
+### 4.1 Tab danh sách (owner chốt 25/11/2026)
+
+| Tab (`nhom`, `group` API) | Trạng thái | Nút phụ | Thứ tự (null cuối, `id` phụ cùng chiều) | Cột riêng |
+|---|---|---|---|---|
+| Tất cả (trống, `ALL`) | Mọi đơn chưa vào Thùng rác | Không | `created_at` giảm | Trạng thái, Hạn keep |
+| Chờ xử lý (`cho-xu-ly`, `ACTION`) | DRAFT, READY_TO_SHIP, UNSUCCESSFUL | Nháp, Chờ giao, Không thành công | `created_at` tăng | Trạng thái |
+| Đang keep (`dang-keep`, `KEEPING`) | KEEPING | Quá hạn, Đến hạn hôm nay, Sắp hết hạn | `keep_until` tăng | Hạn keep kèm cảnh báo |
+| Hoàn tất (`hoan-tat`, `COMPLETED`) | COMPLETED | Không | `completed_at` giảm | Ngày bàn giao (lần gần nhất) |
+| Hủy/Hoàn (`huy-hoan`, `CLOSED`) | CANCELLED gồm RETURNED | Đã hủy, Đã hoàn đơn | `cancelled_at` giảm | Trạng thái, Ngày hủy/hoàn |
+
+- Mọi tab có mã DH, tên/SĐT khách, ngày tạo, tổng quantity, orderTotal, paidAmount, thao tác. Hạn keep ngoài KEEPING là "—".
+  Ngày dd/MM/yyyy giờ Việt Nam. Mỗi đơn thuộc đúng một nhóm; tổng bốn nhóm bằng Tất cả. Không có tự chọn sắp xếp.
+- Số cạnh tab và nút phụ theo từ khóa, khoảng ngày tạo, khách; không theo nhóm, nút phụ, trang. Số 0 mờ nhưng bấm được.
+  Tab Đang keep thêm "· N quá hạn" đỏ khi N > 0.
+- Bộ lọc thu gọn chỉ có Từ/Đến ngày tạo, tính là một bộ lọc, tự mở khi ngày vừa có giá trị. Lọc khách hiện
+  "Đang xem đơn của [tên] ✕" (chưa có dòng thì "một khách"). Xóa lọc bỏ ngày và khách, giữ tab, nút phụ, từ khóa.
+- Đổi tab giữ từ khóa, ngày, khách, size; bỏ nút phụ và trang. Chi tiết đơn dùng `tab` nên danh sách dùng `nhom`.
+  Link cũ không có `nhom`: `keepWarning` → Đang keep, rồi `status` → nhóm chứa nó; giá trị lạ → Tất cả.
+  Trang vượt quá số trang tự về trang cuối còn dữ liệu.
+- `GET /orders`: `group` sai trả 400, trống là `ALL`, AND với `status`/`keepWarning`; trả `completedAt`, `cancelledAt`.
+  `GET /orders/stats` kiểm mọi tham số nhưng không áp dụng `group`/`status`/`keepWarning`/trang; có đủ 7 nhãn và ba mức hạn.
+- Số và danh sách tải riêng: số lỗi thì ẩn số, danh sách vẫn dùng; đang tải giữ số cũ; đổi phiên xóa ngay.
+- Desktop là chính; màn hẹp tab và nút phụ cuộn ngang bằng CSS.
 
 Chọn khách ACTIVE bằng API customer hiện có, tìm cả ba username đã hỗ trợ.
 Tạo nhanh mở CustomerForm, giữ logic trùng SĐT và nhận saved để chọn ngay;

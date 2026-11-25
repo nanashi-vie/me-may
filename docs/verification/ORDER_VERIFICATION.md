@@ -139,3 +139,16 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
 - Reviewer độc lập: 0 Critical; đã sửa lệch chuẩn hóa SQL/Java (test đỏ trước), lỗi danh sách khách chặn nhầm và giá sách
   khác dính dòng thủ công. Ba điểm sửa này chỉ kiểm bằng test, chưa mở lại trình duyệt.
 - Chưa kiểm: Safari, thiết bị thật, ảnh bìa thật, STAFF trên trình duyệt, `build:workers`, locale DB đích.
+
+## Tab danh sách đơn — 25/11/2026
+
+- `ORDER-LIST-TABS-01`, nền `b1501ba`. Backend `./mvnw -B -ntp verify` trên PostgreSQL tạm, từ bản sao source: 440 test, 0 lỗi, 3 live skip.
+  Frontend 73 file/519 test; `ng build` đạt, 0 cảnh báo. Test viết và thấy đỏ trước code.
+- 14 lần làm hỏng có chủ đích đều đỏ rồi trả lại: khóa phụ `id`, thứ tự Tất cả, số theo tab, bỏ kiểm tham số, nhóm thiếu trạng thái,
+  giữ nút phụ khi đổi tab, số lỗi, đổi phiên (cả OWNER khác), trang vượt quá, tab đang mở, cảnh báo quá hạn.
+- Trình duyệt trong app, OWNER thử, backend/DB tạm riêng, 38 đơn giả, 1440×900: 5 tab, nút phụ, thứ tự/cột, tìm, ngày, khách,
+  link cũ `customerId&status`, trang vượt quá, mở đơn rồi quay lại, Back/Forward, xóa đơn cập nhật số, Tab/Enter/Space, focus.
+  390px: trang không tràn, tab và nút phụ cuộn ngang.
+- Reviewer độc lập: 0 Critical, 1 Important (thiếu test thứ tự Tất cả). Đã bổ sung, kèm test đổi phiên, làm mờ nút "Tất cả" số 0,
+  focus nút phụ đang chọn.
+- Chưa kiểm: Safari, thiết bị thật, STAFF trên trình duyệt, trình đọc màn hình, `build:workers`, dữ liệu `me_may_dev`, hiệu năng nhiều đơn.

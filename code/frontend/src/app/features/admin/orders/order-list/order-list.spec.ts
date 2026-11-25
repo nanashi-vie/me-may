@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
-import { BehaviorSubject, Subject, of } from 'rxjs';
+import { BehaviorSubject, NEVER, Observable, Subject, of, throwError } from 'rxjs';
 import { OrderList } from './order-list';
 import { OrderApi } from '../order-api';
 import { AuthService } from '../../../../core/auth/auth.service';
+import { ORDER_TABS, tabOf } from './order-groups';
 import { vi } from 'vitest';
 const stats = {
   keeping: 12,
@@ -14,6 +15,9 @@ const stats = {
   readyToShip: 5,
   completed: 9,
   unsuccessful: 1,
+  draft: 2,
+  cancelled: 4,
+  returned: 6,
 };
 const page = (code: string) => ({
   items: [
@@ -47,10 +51,13 @@ const page = (code: string) => ({
   totalElements: 1,
   totalPages: 1,
 });
-async function setup(role: 'OWNER' | 'STAFF' = 'OWNER') {
-  const params = new BehaviorSubject(convertToParamMap({}));
+async function setup(role: 'OWNER' | 'STAFF' = 'OWNER', query: Record<string, string> = {}) {
+  const params = new BehaviorSubject(convertToParamMap(query));
   const auth = { user: signal({ id: 1, email: 'owner@test', role }), epoch: signal(0) };
-  const api = { list: vi.fn(() => of(page('DH-000001'))), stats: vi.fn(() => of(stats)) };
+  const api = {
+    list: vi.fn((): Observable<any> => of(page('DH-000001'))),
+    stats: vi.fn((): Observable<any> => of(stats)),
+  };
   TestBed.configureTestingModule({
     imports: [OrderList],
     providers: [
@@ -64,15 +71,38 @@ async function setup(role: 'OWNER' | 'STAFF' = 'OWNER') {
   f.detectChanges();
   await f.whenStable();
   f.detectChanges();
-  return { f, c: f.componentInstance, api, params, auth };
+  const el = f.nativeElement as HTMLElement;
+  const text = (e: Element | null) => (e?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  return {
+    f,
+    c: f.componentInstance,
+    api,
+    params,
+    auth,
+    el,
+    tabs: () => Array.from(el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] a'), text),
+    subs: () => Array.from(el.querySelectorAll<HTMLButtonElement>('.order-subs button')),
+    button: (label: string) =>
+      Array.from(el.querySelectorAll('button')).find((b) => text(b).startsWith(label)) as HTMLButtonElement,
+    text,
+    async settle() {
+      await f.whenStable();
+      f.detectChanges();
+    },
+    async go(q: Record<string, string>) {
+      params.next(convertToParamMap(q));
+      f.detectChanges();
+      await f.whenStable();
+      f.detectChanges();
+    },
+  };
 }
 describe('OrderList', () => {
-  it('uses server metrics and indicates provisional shipping total', async () => {
+  it('indicates provisional shipping total', async () => {
     const { f } = await setup();
     expect(f.nativeElement.textContent).toContain('Quản lý đơn hàng');
     expect(f.nativeElement.textContent).toContain('DH-000001');
     expect(f.nativeElement.textContent).toContain('Tạm tính');
-    expect(f.nativeElement.textContent).toContain('12');
     expect(f.nativeElement.querySelector('[href="/admin/orders/new"]')).toBeTruthy();
   });
   it('opens the order from anywhere on its row except its controls', async () => {
@@ -91,7 +121,7 @@ describe('OrderList', () => {
     expect(dialog.showModal).toHaveBeenCalledOnce();
     expect(navigate).not.toHaveBeenCalled();
     row.querySelector<HTMLElement>('td:nth-child(5)')!.click();
-    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/admin/orders', '1'], { queryParams: f.componentInstance.filter() });
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/admin/orders', '1'], { queryParams: f.componentInstance.query() });
   });
   it('keeps text selection and modified clicks from leaving the list', async () => {
     const { f } = await setup();
@@ -168,11 +198,7 @@ describe('OrderList', () => {
     await cancelled.f.whenStable();
     cancelled.f.detectChanges();
     expect(badge()).toBe('Đã hoàn đơn');
-    expect(cancelled.api.list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'RETURNED' }));
-    const select = cancelled.f.nativeElement.querySelector('select') as HTMLSelectElement;
-    expect(Array.from(select.options, (o) => [o.value, o.text.trim()])).toEqual(
-      expect.arrayContaining([['CANCELLED', 'Đã hủy'], ['RETURNED', 'Đã hoàn đơn']]),
-    );
+    expect(cancelled.api.list).toHaveBeenLastCalledWith(expect.objectContaining({ group: 'CLOSED', status: 'RETURNED' }));
   });
   it('staff never loads private data', async () => {
     const { api, f } = await setup('STAFF');
@@ -199,5 +225,223 @@ describe('OrderList', () => {
     f.detectChanges();
     await f.whenStable();
     expect(c.page()).toBeNull();
+    expect(c.stats()).toBeNull();
+  });
+  it('links five counted tabs and marks the open one', async () => {
+    const t = await setup('OWNER', { nhom: 'hoan-tat' });
+    expect(t.tabs()).toEqual(['Tất cả 39', 'Chờ xử lý 8', 'Đang keep 12 · 2 quá hạn', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
+    const open = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] [aria-current="page"]');
+    expect(Array.from(open, t.text)).toEqual(['Hoàn tất 9']);
+    expect(t.el.querySelector('.metrics')).toBeNull();
+    expect(t.el.querySelector('select')).toBeNull();
+    t.api.stats.mockReturnValue(of({ ...stats, overdue: 0 }));
+    t.c.refresh();
+    await t.settle();
+    expect(t.tabs()[2]).toBe('Đang keep 12');
+  });
+  it('switching tabs keeps search, dates and customer only', async () => {
+    const t = await setup('OWNER', {
+      nhom: 'dang-keep',
+      keepWarning: 'OVERDUE',
+      q: 'Lan',
+      createdFrom: '2026-11-01',
+      customerId: '3',
+      page: '2',
+      size: '50',
+    });
+    t.api.list.mockReturnValue(NEVER);
+    const kept = { q: 'Lan', createdFrom: '2026-11-01', customerId: '3', size: 50 };
+    expect(t.c.tabQuery(tabOf('COMPLETED'))).toEqual({ nhom: 'hoan-tat', ...kept });
+    expect(t.c.tabQuery(tabOf('ALL'))).toEqual(kept);
+    const href = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] a')[3].getAttribute('href')!;
+    const url = new URL(href, 'http://test');
+    expect(url.pathname).toBe('/admin/orders');
+    expect(Object.fromEntries(url.searchParams)).toEqual({ nhom: 'hoan-tat', ...kept, size: '50' });
+  });
+  it('offers the sub filters of each tab', async () => {
+    const t = await setup();
+    const labels = () => t.subs().map(t.text);
+    const expected = [
+      [],
+      ['Tất cả 8', 'Nháp 2', 'Chờ giao 5', 'Không thành công 1'],
+      ['Tất cả 12', 'Quá hạn 2', 'Đến hạn hôm nay 1', 'Sắp hết hạn 3'],
+      [],
+      ['Tất cả 10', 'Đã hủy 4', 'Đã hoàn đơn 6'],
+    ];
+    for (const [i, tab] of ORDER_TABS.entries()) {
+      await t.go(tab.slug ? { nhom: tab.slug } : {});
+      expect(labels(), tab.label).toEqual(expected[i]);
+    }
+    t.api.stats.mockReturnValue(of({ ...stats, due: 0 }));
+    await t.go({ nhom: 'dang-keep', keepWarning: 'SOON', page: '0' });
+    expect(t.subs().map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'false', 'false', 'true']);
+    expect(t.subs().map((b) => b.classList.contains('zero'))).toEqual([false, false, true, false]);
+    expect(t.subs().some((b) => b.disabled)).toBe(false);
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    t.subs()[1].click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep', keepWarning: 'OVERDUE' });
+    t.subs()[0].click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep' });
+  });
+  it('shows the columns of each tab', async () => {
+    const t = await setup();
+    const base = ['Mã đơn', 'Khách hàng', 'Ngày tạo', 'Số sách', 'Tổng bill', 'Đã thanh toán'];
+    const cases: [string, object, string[], string][] = [
+      ['', {}, [...base, 'Trạng thái', 'Hạn keep', 'Thao tác'], 'Giữ hết 30/11/2026'],
+      ['cho-xu-ly', { status: 'DRAFT', keepWarning: '' }, [...base, 'Trạng thái', 'Thao tác'], 'Nháp'],
+      ['dang-keep', {}, [...base, 'Hạn keep', 'Thao tác'], 'Giữ hết 30/11/2026 Sắp hết hạn'],
+      ['hoan-tat', { status: 'COMPLETED', keepWarning: '', completedAt: '2026-11-19T18:00:00Z', cancelledAt: '2026-11-01T18:00:00Z' }, [...base, 'Ngày bàn giao', 'Thao tác'], '20/11/2026'],
+      ['hoan-tat', { status: 'COMPLETED', keepWarning: '', completedAt: null }, [...base, 'Ngày bàn giao', 'Thao tác'], '—'],
+      ['huy-hoan', { status: 'CANCELLED', keepWarning: '', cancelledAt: '2026-11-20T18:00:00Z', completedAt: '2026-11-01T18:00:00Z' }, [...base, 'Trạng thái', 'Ngày hủy/hoàn', 'Thao tác'], '21/11/2026'],
+      ['huy-hoan', { status: 'CANCELLED', keepWarning: '', cancelledAt: null }, [...base, 'Trạng thái', 'Ngày hủy/hoàn', 'Thao tác'], '—'],
+    ];
+    for (const [nhom, patch, headings, cell] of cases) {
+      const result = page('DH-000001');
+      t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], ...patch }] }));
+      await t.go(nhom ? { nhom } : {});
+      expect(Array.from(t.el.querySelectorAll('thead th'), t.text), nhom).toEqual(headings);
+      const cells = Array.from(t.el.querySelectorAll('tbody td'), t.text);
+      expect(cells.length, nhom).toBe(headings.length);
+      expect(cells.at(-2), nhom).toBe(cell);
+    }
+  });
+  it('opens the date row while a date is set', async () => {
+    const t = await setup();
+    const toggle = () => t.button('Bộ lọc');
+    const dates = () => t.el.querySelectorAll('input[type=date]').length;
+    expect([t.text(toggle()), toggle().getAttribute('aria-expanded'), dates()]).toEqual(['Bộ lọc', 'false', 0]);
+    toggle().click();
+    f(t);
+    expect([toggle().getAttribute('aria-expanded'), dates()]).toEqual(['true', 2]);
+    expect(t.el.querySelector('#' + toggle().getAttribute('aria-controls'))).toBeTruthy();
+    toggle().click();
+    f(t);
+    for (const q of [{ createdTo: '2026-11-20' }, { createdFrom: '2026-11-01', createdTo: '2026-11-20' }]) {
+      await t.go({});
+      await t.go(q as Record<string, string>);
+      expect([t.text(toggle()), dates()]).toEqual(['Bộ lọc (1)', 2]);
+    }
+    toggle().click();
+    f(t);
+    expect(dates()).toBe(0);
+    await t.go({ nhom: 'hoan-tat', createdFrom: '2026-11-01', createdTo: '2026-11-20' });
+    expect(dates()).toBe(0);
+  });
+  it('names and clears the customer filter', async () => {
+    const query = { nhom: 'dang-keep', keepWarning: 'DUE', q: 'Lan', createdFrom: '2026-11-01', customerId: '3', page: '1' };
+    const t = await setup('OWNER', query);
+    t.api.list.mockReturnValue(of({ ...page('DH-000001'), page: 1, totalPages: 2 }));
+    await t.go(query);
+    expect(t.text(t.el.querySelector('.customer-filter'))).toContain('Đang xem đơn của Synthetic reader');
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    (t.el.querySelector('.customer-filter button') as HTMLButtonElement).click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep', keepWarning: 'DUE', q: 'Lan', createdFrom: '2026-11-01' });
+    t.button('Xóa lọc').click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep', keepWarning: 'DUE', q: 'Lan' });
+    navigate.mockRestore();
+    await t.go({ q: 'Lan' });
+    expect(t.el.querySelector('.customer-filter')).toBeNull();
+    expect(t.button('Xóa lọc')).toBeUndefined();
+  });
+  it('keeps counts while loading and shows the list before slow counts', async () => {
+    const t = await setup();
+    t.api.list.mockReturnValue(NEVER);
+    t.api.stats.mockReturnValue(NEVER);
+    await t.go({ nhom: 'dang-keep' });
+    expect(t.tabs()[0]).toBe('Tất cả 39');
+    expect(t.el.textContent).toContain('Đang tải đơn hàng…');
+    t.api.list.mockReturnValue(of(page('DH-000009')));
+    await t.go({ nhom: 'hoan-tat' });
+    expect(t.el.textContent).toContain('DH-000009');
+  });
+  it('hides failed counts without failing the list', async () => {
+    const t = await setup();
+    t.api.stats.mockReturnValue(throwError(() => new Error('down')));
+    await t.go({ nhom: 'dang-keep' });
+    expect(t.tabs()).toEqual(['Tất cả', 'Chờ xử lý', 'Đang keep', 'Hoàn tất', 'Hủy/Hoàn']);
+    expect(t.subs().map(t.text)).toEqual(['Tất cả', 'Quá hạn', 'Đến hạn hôm nay', 'Sắp hết hạn']);
+    expect(t.subs().some((b) => b.classList.contains('zero'))).toBe(false);
+    expect(t.el.textContent).toContain('DH-000001');
+    expect(t.el.querySelector('[role="alert"]')).toBeNull();
+  });
+  it('keeps counts when only the list fails and retries both', async () => {
+    const t = await setup();
+    t.api.list.mockReturnValueOnce(throwError(() => new Error('down')));
+    await t.go({ nhom: 'dang-keep' });
+    expect(t.text(t.el.querySelector('[role="alert"]'))).toContain('Chưa tải được đơn hàng');
+    expect(t.tabs()[0]).toBe('Tất cả 39');
+    const calls = t.api.stats.mock.calls.length;
+    t.button('Thử lại').click();
+    await t.settle();
+    expect(t.el.textContent).toContain('DH-000001');
+    expect(t.api.stats).toHaveBeenCalledTimes(calls + 1);
+  });
+  it('falls back to the last page when the requested one has emptied', async () => {
+    const t = await setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    t.api.list.mockReturnValue(of({ items: [], page: 5, size: 20, totalElements: 21, totalPages: 2 }));
+    await t.go({ nhom: 'dang-keep', page: '5' });
+    expect(navigate).toHaveBeenCalledOnce();
+    expect(navigate.mock.lastCall?.[1]).toMatchObject({ queryParams: { nhom: 'dang-keep', page: 1 }, replaceUrl: true });
+    expect(t.el.textContent).not.toContain('Chưa có đơn hàng phù hợp');
+    navigate.mockClear();
+    t.api.list.mockReturnValue(of({ items: [], page: 5, size: 20, totalElements: 0, totalPages: 0 }));
+    await t.go({ nhom: 'hoan-tat', page: '5' });
+    expect(navigate).not.toHaveBeenCalled();
+    expect(t.el.textContent).toContain('Chưa có đơn hàng phù hợp');
+  });
+  it('keeps a search typed just before switching tabs', async () => {
+    const t = await setup();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    vi.useFakeTimers();
+    try {
+      const input = t.el.querySelector('input[type=search]') as HTMLInputElement;
+      input.value = 'Lan';
+      input.dispatchEvent(new Event('input'));
+      vi.advanceTimersByTime(100);
+      t.params.next(convertToParamMap({ nhom: 'dang-keep' }));
+      vi.advanceTimersByTime(300);
+    } finally {
+      vi.useRealTimers();
+    }
+    await t.settle();
+    expect(navigate).toHaveBeenCalledOnce();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep', q: 'Lan' });
+    expect((t.el.querySelector('input[type=search]') as HTMLInputElement).value).toBe('Lan');
+  });
+  it('drops the previous session counts even when another owner signs in', async () => {
+    const t = await setup();
+    t.api.list.mockReturnValue(NEVER);
+    t.api.stats.mockReturnValue(NEVER);
+    t.auth.user.set({ id: 2, email: 'other@test', role: 'OWNER' });
+    t.auth.epoch.update((v) => v + 1);
+    t.f.detectChanges();
+    await t.settle();
+    expect(t.c.stats()).toBeNull();
+    expect(t.tabs()[0]).toBe('Tất cả');
+  });
+  it('dims the whole-tab sub filter when the tab is empty', async () => {
+    const t = await setup();
+    t.api.stats.mockReturnValue(of({ ...stats, keeping: 0, soon: 0, due: 0, overdue: 0 }));
+    await t.go({ nhom: 'dang-keep', keepWarning: 'OVERDUE' });
+    expect(t.subs().map((b) => b.classList.contains('zero'))).toEqual([true, true, true, true]);
+  });
+  it('leaves invalid dates on screen to correct', async () => {
+    const t = await setup();
+    t.api.list.mockReturnValue(throwError(() => new Error('400')));
+    t.api.stats.mockReturnValue(throwError(() => new Error('400')));
+    await t.go({ createdFrom: '2026-11-20', createdTo: '2026-11-01' });
+    expect(t.el.querySelector('[role="alert"]')).toBeTruthy();
+    expect(Array.from(t.el.querySelectorAll<HTMLInputElement>('input[type=date]'), (i) => i.value)).toEqual(['2026-11-20', '2026-11-01']);
+  });
+  it('lets an unusable customer link be cleared', async () => {
+    const t = await setup();
+    t.api.list.mockReturnValue(throwError(() => new Error('400')));
+    await t.go({ customerId: 'abc' });
+    expect(t.text(t.el.querySelector('.customer-filter'))).toContain('Đang xem đơn của một khách');
+    expect(t.button('Xóa lọc')).toBeTruthy();
   });
 });
+function f(t: { f: { detectChanges(): void } }) {
+  t.f.detectChanges();
+}

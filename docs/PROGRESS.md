@@ -4,6 +4,7 @@ Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ORDER-LIST-TABS-01` (25/11, trên `dev`): danh sách đơn chia 5 tab có số, nút phụ, thứ tự và cột riêng; không migration, backend trước frontend. [Contract](product/ORDERS.md#41-tab-danh-sách-owner-chốt-25112026)
 - `ORDER-PICKER-01` (25/11, trên `dev`): thu gọn chọn khách/sách, gợi ý sách gần giống, chỉ tên trùng hẳn mới bắt xác nhận; không migration, backend trước frontend. [Contract](product/ORDER_ITEMS.md)
 - `ORDER-KEEP-END-01` (25/11, trên `dev`): hạn keep ở danh sách chỉ hiện khi Đang keep; chi tiết đơn đã bàn giao ghi một dòng tóm tắt keep. Chỉ frontend. [Contract](product/ORDERS.md)
 - `ORDER-CANCEL-01` (25/11, trên `dev`): tách nhãn Đã hủy/Đã hoàn đơn, xóa đơn hủy khi tiền còn giữ bằng 0; không migration, backend trước frontend. [Contract](product/TRASH.md)

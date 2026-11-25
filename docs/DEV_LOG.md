@@ -5472,3 +5472,19 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Góp ý reviewer hoãn**: lookup hồ sơ chậm có thể đè khách vừa chọn (có từ trước); focus sau 409/"Thử lại"; câu "Chọn…" ở dòng đã lưu; phạm vi `aria-live` và nhãn nút trùng; lượt tìm khách cũ chưa bị hủy khi đóng hộp; tên chỉ có dấu câu; "Tottochan 2" không gợi ý; vài test còn thiếu.
 - **Bàn giao**: owner yêu cầu bỏ class `.selected` thừa của `.catalog-result` (HTML + SCSS), commit và push `dev`. Chạy lại `npm test` 484/484 và `npm run build` đạt; backend không đổi từ lần `verify` 430 test. Chưa mở lại trình duyệt sau góp ý reviewer.
 - **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.
+
+### 2026-11-25 — ORDER-LIST-TABS-01 — Thiết kế tab cho danh sách đơn hàng
+
+- **Mục tiêu & phạm vi (thiết kế, chưa code)**: owner thấy `/admin/orders` có quá nhiều mục và số, muốn chia nhỏ danh sách; yêu cầu viết spec.
+- **Quyết định**: owner đồng ý Q1–Q14 qua ba vòng. Năm tab Tất cả/Chờ xử lý/Đang keep/Hoàn tất/Hủy-Hoàn; bỏ dãy 7 số; số theo từ khóa, ngày và khách nhưng không theo tab; nút phụ thay ô Trạng thái và Hạn keep; mỗi tab có thứ tự và cột riêng. Q11 rút gọn vì admin desktop-first: chỉ cuộn ngang bằng CSS.
+- **Phát hiện (đọc code, chưa chạy thử)**: `stats` dùng cùng bộ lọc trạng thái nên số nhóm khác về 0; `customerId` lọc ngầm không hiện trên màn hình; chi tiết đơn đã dùng `tab` nên danh sách dùng `nhom`.
+- **File thay đổi**: `docs/specs/ORDER_LIST_TABS.md` (mới), `docs/README.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`.
+- **Kiểm tra**: đối chiếu `dev` = `origin/dev` = `b1501ba`. Không chạy test, build hay trình duyệt vì chưa có code.
+- **Plan (owner duyệt spec)**: viết `docs/specs/ORDER_LIST_TABS_PLAN.md` (5 task, TDD), đăng ký chỉ mục. Bổ sung từ lúc rà: trang vượt quá số trang phải tự về trang cuối, số đếm tải riêng để không chặn danh sách. Chưa code.
+- **Thực thi (owner duyệt plan, Native)**: bắt đầu 25/11 trên checkout `dev`, nền `b1501ba`, không commit theo task. Hoàn tất 5 task, gộp spec vào ORDERS mục 4.1, xóa spec/plan.
+- **File code**: backend `OrderDtos`, `OrderController`, `OrderQueryService`, `OrderListApiTest` (mới); frontend `orders/order-models.ts`, `order-list/*`, `order-list/order-groups.ts` và spec (mới).
+- **Quyết định khi làm**: test backend chạy từ bản sao ở scratchpad với PostgreSQL tạm vì `8080` của owner đang chạy từ `target/classes`; từ khóa "ALL" phải giữ trong link; số và danh sách tải riêng.
+- **Kiểm tra**: backend 440 (3 skip), frontend 519, build đạt; mutation, trình duyệt, giới hạn ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#tab-danh-sách-đơn--25112026). Lần chạy backend đầu đỏ 4 ca `HeroBannerMediaTest` vì bản sao thiếu `image-worker`; nối lại thì đạt. Đã dọn container, server tạm, mật khẩu thử; `me_may_dev` không bị đụng.
+- **Góp ý reviewer hoãn**: bấm ✕/Xóa lọc làm mất focus; lỗi ngày ngược chỉ báo chung; gõ khoảng trắng rồi dừng 300 ms bị cắt khoảng trắng trong ô tìm (có từ trước).
+- **Bàn giao**: theo owner, đã khởi động lại `8080` bằng `run-local.sh` trên `me_may_dev` (V38, không migration, health UP); chưa kiểm màn hình bằng phiên owner. Commit + push `dev` theo yêu cầu owner.
+- **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.

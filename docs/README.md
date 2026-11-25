@@ -21,6 +21,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Kiểm tra tạo thùng → lưu → mở lại → lọc trên candidate | [Nơi lưu trữ](product/CATALOGUE.md#nơi-lưu-trữ-sách), [smoke V20](runbooks/ROLLOUT_CHECKS.md#nơi-lưu-trữ-v20) |
 | Điều tra cảnh báo nguồn ảnh, upload máy/Drive và phục hồi | [Quy tắc xuất bản](product/IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè), [vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [bằng chứng](verification/IMAGE_VERIFICATION.md) |
 | Sửa hồ sơ khách, đơn keep, giao nhận, tiền và bill | [Khách hàng](product/CUSTOMERS.md), [đơn nội bộ](product/ORDERS.md) |
+| Sửa tab, số đếm, bộ lọc danh sách đơn | [Tab danh sách](product/ORDERS.md#41-tab-danh-sách-owner-chốt-25112026) |
 | Sửa chọn khách, thêm sách, gợi ý/cảnh báo sách trùng trong đơn | [Sách trong đơn và chọn khách](product/ORDER_ITEMS.md) |
 | Chuẩn bị rollout V37 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
 | Kiểm quyền chấm công, lịch, ca và xuất Excel | [Hồ sơ, quyền và PIN](product/ATTENDANCE.md), [bảo mật](context/SECURITY.md) |

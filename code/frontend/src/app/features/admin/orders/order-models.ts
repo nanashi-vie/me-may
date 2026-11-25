@@ -13,7 +13,9 @@ export interface Page<T> {
   totalElements: number;
   totalPages: number;
 }
+export type OrderGroup = 'ALL' | 'ACTION' | 'KEEPING' | 'COMPLETED' | 'CLOSED';
 export interface OrderFilter {
+  group?: OrderGroup;
   q: string;
   status: OrderDisplayStatus | 'ALL';
   customerId?: string;
@@ -31,6 +33,9 @@ export interface OrderStats {
   readyToShip: number;
   completed: number;
   unsuccessful: number;
+  draft: number;
+  cancelled: number;
+  returned: number;
 }
 export interface Totals {
   subtotal: number;
@@ -54,6 +59,8 @@ export interface OrderSummary {
   fulfillmentType: FulfillmentType;
   createdAt: string;
   keepUntil: string | null;
+  completedAt?: string | null;
+  cancelledAt?: string | null;
   totalQuantity: number;
   totals: Totals;
   version: number;
