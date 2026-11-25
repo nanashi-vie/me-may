@@ -5456,3 +5456,19 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **File thay đổi**: `orders/order-list`, `orders/order-detail` và spec; `docs/product/ORDERS.md`, `docs/PROGRESS.md`.
 - **Kiểm tra**: test đỏ trước; `code/frontend` `npm test` 459/459, `npm run build` đạt. Trình duyệt trong app, OWNER, DH-000001: danh sách "—", chi tiết có dòng tóm tắt, 390px không tràn. Chưa chạy: backend (không đổi), `build:workers`, Safari.
 - **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.
+
+### 2026-11-25 — ORDER-PICKER-01 — Thiết kế chọn khách gọn và gợi ý sách gần giống
+
+- **Mục tiêu & phạm vi (thiết kế, chưa code)**: owner muốn ẩn danh sách khách sau khi chọn và gợi ý sách có tên trùng đa số ký tự khi nhập thủ công ở `/admin/orders`.
+- **Quyết định**: owner đồng ý cả 8 câu vòng 1 và chọn hướng A (SQL lọc sơ bộ 200, Java chấm điểm), ưu tiên nhanh, nhẹ. Chỉ tên trùng hẳn mới bắt xác nhận, thay quy định ORDERS mục 6 khi hoàn tất. Chi tiết ở `docs/specs/ORDER_PICKER.md`.
+- **Phát hiện**: `OrderItemForm.match` không phải signal trong app không có zone.js nên cảnh báo trùng không tự vẽ lại. Test tạm (đã xóa) trong `code/frontend`: API đã trả 1 kết quả mà DOM vẫn "Đang chờ kiểm tra", gõ sang ô khác mới hiện. Đọc code thấy hộp Sửa đơn nháp không xóa khách đã chọn khi đóng; chưa chạy thử. Ngưỡng hiện tại là Levenshtein cả chuỗi ≥ 0,8, không phải trùng 100%.
+- **File thay đổi**: `docs/specs/ORDER_PICKER.md` (mới), `docs/README.md`, `docs/PROGRESS.md`, `docs/DEV_LOG.md`. Không sửa code.
+- **Kiểm tra**: ngoài test tạm, chấm thử 21 cặp tên bằng script Python rời. Chưa chạy bộ test, build hay đo hiệu năng.
+- **Bổ sung**: owner duyệt spec. Đối chiếu Git: `dev` = `origin/dev` = `84fbbdd` (ORDER-CANCEL-01, ORDER-KEEP-END-01 của phiên khác, đã push); không conflict, hai commit không chạm luồng chọn khách/so tên. Dời mục này xuống cuối nhật ký.
+- **Plan**: viết `docs/specs/ORDER_PICKER_PLAN.md` (5 task, TDD), đăng ký chỉ mục. Chưa code.
+- **Thực thi (owner duyệt plan, Native)**: backend `TitleMatch` mới, `CatalogMatchService`, `OrderDtos`, `OrderDraftService`; frontend `order-item-form/*`, `order-detail/*`, `order-models.ts`, `order-picker.scss` mới (tách vì `orders.scss` vượt budget 6 kB) và test; docs tách `ORDERS` mục 5–6 sang `ORDER_ITEMS`, xóa spec/plan đã hết vai trò.
+- **Quyết định khi làm**: làm ngay trên checkout `dev`, không commit theo task; bỏ dấu bằng dải U+0300–036F và liệt kê khoảng trắng để SQL trùng Java; sửa dòng thủ công cũng khóa Lưu khi đang kiểm; RED đầu của hộp thêm sách không chạy được (lỗi lệnh zsh) nên bù bằng 7 mutation đều đỏ.
+- **Kiểm tra**: backend 430 test (3 skip), frontend 484, build đạt; p95 198–202ms → 68–83ms; Playwright 1440/390. Chi tiết, giới hạn: [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#chọn-khách-và-gợi-ý-sách-gần-giống--25112026). Đã gỡ container, worktree và server tạm; DB dev không bị đụng.
+- **Góp ý reviewer hoãn**: lookup hồ sơ chậm có thể đè khách vừa chọn (có từ trước); focus sau 409/"Thử lại"; câu "Chọn…" ở dòng đã lưu; phạm vi `aria-live` và nhãn nút trùng; lượt tìm khách cũ chưa bị hủy khi đóng hộp; tên chỉ có dấu câu; "Tottochan 2" không gợi ý; vài test còn thiếu.
+- **Bàn giao**: owner yêu cầu bỏ class `.selected` thừa của `.catalog-result` (HTML + SCSS), commit và push `dev`. Chạy lại `npm test` 484/484 và `npm run build` đạt; backend không đổi từ lần `verify` 430 test. Chưa mở lại trình duyệt sau góp ý reviewer.
+- **Bước tiếp theo**: theo dõi CI `dev`; khi rollout, backend trước frontend, không migration. Góp ý hoãn ở trên chờ owner chọn.

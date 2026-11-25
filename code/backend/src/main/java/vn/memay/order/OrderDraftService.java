@@ -56,9 +56,12 @@ public class OrderDraftService {
    title=text(r.title(),"title",300,true);number(weight,"unitWeightGrams",1,MAX);var confirmation=r.matchConfirmation();
    if(confirmation==null&&old!=null&&title.equals(old.titleSnapshot())&&old.manualMatchOverrideReason()!=null){
     var oldEvidence=db.jdbc.queryForObject("select manual_match_evidence from order_items where id=?",String.class,itemId);
-    confirmation=new MatchConfirmation(normalizeTitle(title),oldEvidence,old.manualMatchOverrideReason());
+    confirmation=new MatchConfirmation(TitleMatch.normalize(title),oldEvidence,old.manualMatchOverrideReason());
    }
    reason=match.confirm(title,confirmation);if(reason!=null)evidence=confirmation.fingerprint();
+   else if(old!=null&&title.equals(old.titleSnapshot())&&old.manualMatchOverrideReason()!=null){
+    reason=old.manualMatchOverrideReason();evidence=db.jdbc.queryForObject("select manual_match_evidence from order_items where id=?",String.class,itemId);
+   }
   }
   if(weight!=null)number(weight,"unitWeightGrams",1,MAX);
   if(d.status()==Status.KEEPING&&weight==null)throw AdminApiException.field("unitWeightGrams","Bổ sung trọng lượng trước khi giữ");

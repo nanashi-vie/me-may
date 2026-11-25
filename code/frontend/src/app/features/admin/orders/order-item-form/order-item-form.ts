@@ -1,16 +1,19 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
 import {
+  afterNextRender,
   Component,
   DestroyRef,
   ElementRef,
   inject,
+  Injector,
   output,
   signal,
   viewChild,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Subject, catchError, debounceTime, of, switchMap, timer } from 'rxjs';
+import { Subject, catchError, debounceTime, map, of, switchMap, timeout, timer } from 'rxjs';
 import { VndInput } from '../../books/vnd-input';
 import { OrderApi } from '../order-api';
 import {
@@ -25,13 +28,15 @@ import { integer, product, vnd } from '../order-values';
 type ItemDraft = Omit<ItemWrite, 'version' | 'requestId'>;
 @Component({
   selector: 'app-order-item-form',
-  imports: [Pagination, FormsModule, VndInput],
+  imports: [NgTemplateOutlet, Pagination, FormsModule, VndInput],
   templateUrl: './order-item-form.html',
-  styleUrl: '../orders.scss',
+  styleUrls: ['../orders.scss', '../order-picker.scss'],
 })
 export class OrderItemForm {
   private readonly api = inject(OrderApi);
   private readonly destroy = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
   private opener: HTMLElement | null = null;
   readonly refreshRequested = output<void>();
@@ -51,7 +56,16 @@ export class OrderItemForm {
   q = '';
   page = 0;
   catalog: Page<CatalogCandidate> | null = null;
-  match: MatchResult | null = null;
+  readonly match = signal<MatchResult | null>(null);
+  readonly matchState = signal<'idle' | 'checking' | 'ready' | 'failed'>('idle');
+  /** Catalogue book picked in this form; the search list collapses into it. */
+  readonly chosen = signal<CatalogCandidate | null>(null);
+  /** Manual line replaced by a suggestion, restored when switching back. */
+  private manualDraft: {
+    title: string;
+    unitPriceVnd: number | null;
+    unitWeightGrams: number | null;
+  } | null = null;
   model = {
     sourceType: 'CATALOG' as 'CATALOG' | 'MANUAL',
     bookCopyId: null as string | null,
@@ -69,19 +83,18 @@ export class OrderItemForm {
       .pipe(
         switchMap((title) =>
           !title
-            ? of(null)
+            ? of({ state: 'idle' as const, match: null })
             : timer(350).pipe(
-                switchMap(() => this.api.matches(title)),
-                catchError(() => {
-                  this.error.set('Chưa kiểm tra được sách tương tự. Thử lại tên sách.');
-                  return of(null);
-                }),
+                switchMap(() => this.api.matches(title).pipe(timeout(8000))),
+                map((match) => ({ state: 'ready' as const, match })),
+                catchError(() => of({ state: 'failed' as const, match: null })),
               ),
         ),
         takeUntilDestroyed(this.destroy),
       )
       .subscribe((r) => {
-        this.match = r;
+        this.match.set(r.match);
+        this.matchState.set(r.state);
       });
     this.queries
       .pipe(
@@ -107,7 +120,8 @@ export class OrderItemForm {
     this.error.set('');
     this.conflict.set(false);
     this.refreshing.set(false);
-    this.match = null;
+    this.chosen.set(null);
+    this.manualDraft = null;
     this.model = {
       sourceType: item?.sourceType ?? 'CATALOG',
       bookCopyId: item?.bookCopyId ?? null,
@@ -123,17 +137,25 @@ export class OrderItemForm {
     this.visible.set(true);
     this.opener = document.activeElement as HTMLElement;
     this.dialog()?.nativeElement.showModal?.();
-    if (item?.sourceType === 'MANUAL') {
-      this.match = { normalizedTitle: '', fingerprint: '', items: [] };
-      this.titles.next(this.model.title);
-    } else this.search();
+    if (item?.sourceType === 'MANUAL') this.check(this.model.title);
+    else {
+      this.check('');
+      this.search();
+    }
   }
   sourceChanged() {
     this.model.bookCopyId = null;
-    this.model.unitPriceVnd = null;
-    this.match = null;
-    if (this.model.sourceType === 'MANUAL') this.titleChanged(this.model.title);
-    else this.search();
+    this.chosen.set(null);
+    if (this.model.sourceType === 'MANUAL') {
+      if (this.manualDraft) Object.assign(this.model, this.manualDraft);
+      else this.model.unitPriceVnd = null;
+      this.manualDraft = null;
+      this.titleChanged(this.model.title);
+    } else {
+      this.model.unitPriceVnd = null;
+      this.check('');
+      this.search();
+    }
   }
   search(page = 0) {
     this.page = page;
@@ -145,13 +167,52 @@ export class OrderItemForm {
     this.model.title = book.title;
     this.model.unitWeightGrams = book.weightG;
     this.model.unitPriceVnd = null;
+    this.showChosen(book);
+  }
+  /** Moves a manual line to the suggested book, keeping what was agreed with the customer. */
+  pickSuggestion(book: CatalogCandidate) {
+    const { title, unitPriceVnd, unitWeightGrams } = this.model;
+    this.manualDraft = { title, unitPriceVnd, unitWeightGrams };
+    this.model.sourceType = 'CATALOG';
+    this.model.bookCopyId = book.id;
+    this.model.title = book.title;
+    this.model.unitWeightGrams = book.weightG ?? this.model.unitWeightGrams;
+    this.check('');
+    this.showChosen(book);
+  }
+  changeBook() {
+    this.model.bookCopyId = null;
+    this.chosen.set(null);
+    this.focusAfterRender('input[name=q]');
+  }
+  private showChosen(book: CatalogCandidate) {
+    this.chosen.set(book);
+    this.focusAfterRender('.picked button');
+  }
+  private focusAfterRender(selector: string) {
+    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(), {
+      injector: this.injector,
+    });
   }
   titleChanged(title: string) {
     this.model.title = title;
-    this.match = null;
     this.model.confirmed = false;
     this.model.overrideReason = '';
-    this.titles.next(title.trim());
+    this.check(title.trim());
+  }
+  retryMatch() {
+    this.check(this.model.title.trim());
+  }
+  private check(title: string) {
+    this.match.set(null);
+    this.matchState.set(title ? 'checking' : 'idle');
+    this.titles.next(title);
+  }
+  exactMatches() {
+    return this.match()?.items.filter((b) => b.exact) ?? [];
+  }
+  nearMatches() {
+    return this.match()?.items.filter((b) => !b.exact) ?? [];
   }
   rebase(order: OrderDetail) {
     this.order = order;
@@ -200,8 +261,8 @@ export class OrderItemForm {
       (m.sourceType === 'CATALOG'
         ? !!m.bookCopyId
         : !!m.title.trim() &&
-          !!this.match &&
-          (!this.match.items.length || (m.confirmed && !!m.overrideReason.trim())))
+          this.matchState() !== 'checking' &&
+          (!this.exactMatches().length || (m.confirmed && !!m.overrideReason.trim())))
     );
   }
   submit() {
@@ -216,17 +277,18 @@ export class OrderItemForm {
       unitWeightGrams: m.unitWeightGrams,
       reason: m.reason.trim() || null,
       matchConfirmation:
-        m.sourceType === 'MANUAL' && this.match?.items.length
+        m.sourceType === 'MANUAL' && this.exactMatches().length
           ? {
-              normalizedTitle: this.match.normalizedTitle,
-              fingerprint: this.match.fingerprint,
+              normalizedTitle: this.match()!.normalizedTitle,
+              fingerprint: this.match()!.fingerprint,
               reason: m.overrideReason.trim(),
             }
           : null,
     });
   }
   setMatches(result: MatchResult) {
-    this.match = result;
+    this.match.set(result);
+    this.matchState.set('ready');
     this.model.confirmed = false;
     this.model.overrideReason = '';
   }

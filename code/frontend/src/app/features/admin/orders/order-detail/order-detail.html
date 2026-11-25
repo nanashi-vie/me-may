@@ -32,46 +32,67 @@
         <div>
           <p class="eyebrow">Đơn hàng mới</p>
           <h1>Chọn khách hàng</h1>
-          <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
-        </div>
-        <button
-          class="secondary"
-          [disabled]="busy() || !!pending()"
-          (click)="customerForm()?.open()"
-        >
-          ＋ Thêm khách mới
-        </button>
-      </header>
-      <fieldset [disabled]="busy() || !!pending()">
-        <label
-          ><span>Tìm tên, mã KH, số điện thoại</span
-          ><input type="search" [(ngModel)]="customerQ" (ngModelChange)="searchCustomers()"
-        /></label>
-        @if (customerError()) {
-          <p class="error" role="alert">{{ customerError() }}</p>
-        }
-        @if (customerLoading()) {
-          <p role="status">Đang tìm khách…</p>
-        }
-        <div class="catalog-results">
-          @for (c of customerPage()?.items; track c.id) {
-            <button type="button" class="secondary catalog-result" (click)="customerSaved(c)">
-              {{ c.customerCode }} · {{ c.fullName }} · {{ c.phone || 'Chưa có SĐT' }}
-            </button>
+          @if (!selectedCustomer()) {
+            <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
           }
         </div>
-        @if (customerPage(); as page) {
-          <app-pagination
-            [page]="customerPageNumber"
-            [totalPages]="page.totalPages"
-            [disabled]="customerLoading() || busy() || !!pending()"
-            (pageChange)="searchCustomers($event)"
-          />
+        @if (!selectedCustomer()) {
+          <button
+            class="secondary"
+            [disabled]="busy() || !!pending()"
+            (click)="customerForm()?.open()"
+          >
+            ＋ Thêm khách mới
+          </button>
+        }
+      </header>
+      <fieldset [disabled]="busy() || !!pending()">
+        @if (!selectedCustomer()) {
+          <label
+            ><span>Tìm tên, mã KH, số điện thoại</span
+            ><input
+              class="customer-search"
+              type="search"
+              [(ngModel)]="customerQ"
+              (ngModelChange)="searchCustomers()"
+          /></label>
+          @if (customerError()) {
+            <p class="error" role="alert">{{ customerError() }}</p>
+          }
+          @if (customerLoading()) {
+            <p role="status">Đang tìm khách…</p>
+          }
+          <div class="catalog-results">
+            @for (c of customerPage()?.items; track c.id) {
+              <button type="button" class="secondary catalog-result" (click)="customerSaved(c)">
+                {{ c.customerCode }} · {{ c.fullName }} · {{ c.phone || 'Chưa có SĐT' }}
+              </button>
+            }
+          </div>
+          @if (customerPage(); as page) {
+            <app-pagination
+              [page]="customerPageNumber"
+              [totalPages]="page.totalPages"
+              [disabled]="customerLoading() || busy() || !!pending()"
+              (pageChange)="searchCustomers($event)"
+            />
+          }
         }
         @if (selectedCustomer(); as c) {
-          <div class="section">
-            <h2>Khách đã chọn: {{ c.fullName }}</h2>
-            <p>{{ c.customerCode }} · {{ c.phone || 'Chưa có SĐT' }}</p>
+          <div>
+            <div class="notice picked-customer">
+              <div>
+                <h2>{{ c.fullName }}</h2>
+                <p>{{ c.customerCode }} · {{ c.phone || 'Chưa có SĐT' }}</p>
+              </div>
+              <button type="button" class="secondary" (click)="changeCustomer()">Đổi khách</button>
+            </div>
+            @if (keepError()) {
+              <p class="error" role="alert">
+                {{ keepError() }}
+                <button type="button" class="text-button" (click)="customerSaved(c)">Thử lại</button>
+              </p>
+            }
             @if (existingKeeps(); as keeps) {
               @if (keeps.totalElements) {
                 <div class="notice">
@@ -96,7 +117,7 @@
                   }
                 </div>
               }
-            } @else {
+            } @else if (!keepError()) {
               <p role="status">Đang kiểm tra đơn keep hiện có…</p>
             }
             <label
@@ -107,7 +128,7 @@
               </select></label
             ><button
               class="primary"
-              [disabled]="!existingKeeps() || !!customerError()"
+              [disabled]="!existingKeeps()"
               (click)="create()"
             >
               Tạo đơn nháp cho khách
@@ -515,29 +536,41 @@
                   }
                   @if (action === 'edit') {
                     @if (d.status === 'DRAFT' && !d.payments.length) {
-                      <label
-                        ><span>Đổi khách của đơn nháp (tùy chọn)</span
-                        ><input
-                          type="search"
-                          name="customerQ"
-                          [(ngModel)]="customerQ"
-                          (ngModelChange)="searchCustomers()"
-                      /></label>
-                      @if (customerError()) {
-                        <p class="error">{{ customerError() }}</p>
-                      }
-                      <div class="catalog-results">
-                        @for (c of customerPage()?.items; track c.id) {
-                          <button type="button" class="secondary" (click)="customerSaved(c)">
-                            {{ c.customerCode }} · {{ c.fullName }}
-                          </button>
-                        }
-                      </div>
                       @if (selectedCustomer(); as c) {
-                        <p>
-                          Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng bên
-                          dưới lưu riêng.
-                        </p>
+                        <div class="notice picked-customer">
+                          <p>
+                            Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng
+                            bên dưới lưu riêng.
+                          </p>
+                          <button type="button" class="secondary" (click)="changeCustomer()">
+                            Đổi khách
+                          </button>
+                          <button type="button" class="text-button" (click)="keepCustomer()">
+                            Giữ khách hiện tại
+                          </button>
+                        </div>
+                      } @else {
+                        <label
+                          ><span>Đổi khách của đơn nháp (tùy chọn)</span
+                          ><input
+                            class="customer-search"
+                            type="search"
+                            name="customerQ"
+                            [(ngModel)]="customerQ"
+                            (ngModelChange)="searchCustomers()"
+                        /></label>
+                        @if (customerError()) {
+                          <p class="error">{{ customerError() }}</p>
+                        }
+                        @if (customerQ.trim()) {
+                          <div class="catalog-results">
+                            @for (c of customerPage()?.items; track c.id) {
+                              <button type="button" class="secondary" (click)="customerSaved(c)">
+                                {{ c.customerCode }} · {{ c.fullName }}
+                              </button>
+                            }
+                          </div>
+                        }
                       }
                       <label
                         ><span>Loại đơn</span

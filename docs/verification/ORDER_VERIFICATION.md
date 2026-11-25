@@ -127,3 +127,15 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
 - Phiên 18/11 chưa kiểm toàn bộ luồng gửi lại và hoàn đơn trên trình duyệt. Các ca backend shipping/return/API đã chạy.
 - Commit 6eadf95 đổi màu tab đang mở sang đỏ, tab còn lại màu tối. 8/8 test order-detail đạt.
 - Chưa migrate/deploy production. [Checkpoint 18/11](../DEV_LOG.md#2026-11-18--order-bill-exec).
+
+## Chọn khách và gợi ý sách gần giống — 25/11/2026
+
+- `ORDER-PICKER-01`, nền `84fbbdd`. Backend `./mvnw -B -ntp verify` trên PostgreSQL 17 tạm: 430 test, 0 lỗi, 3 live skip.
+  Frontend 72 file/484 test, `npm run build` đạt, 0 cảnh báo.
+- Đo HTTP `catalog-match`, 5.001 sách giả, 200 lượt/20 tên, cùng máy và container: bản cũ p95 198,4/201,5ms;
+  bản mới 71,0/67,7ms, đo lại sau khi sửa chuẩn hóa 82,8ms (ngưỡng 100ms). Dữ liệu giả không có ảnh/tồn.
+- Playwright OWNER, 1440×900 và 390px, backend/DB tạm riêng: đơn mới, đổi khách giữ trang, thêm khách mới, sửa nháp,
+  gợi ý (Ẩn/Hết hàng), giữ giá, trùng hẳn, lỗi mạng → 409 → xác nhận → lưu, đổi sách, không tràn ngang.
+- Reviewer độc lập: 0 Critical; đã sửa lệch chuẩn hóa SQL/Java (test đỏ trước), lỗi danh sách khách chặn nhầm và giá sách
+  khác dính dòng thủ công. Ba điểm sửa này chỉ kiểm bằng test, chưa mở lại trình duyệt.
+- Chưa kiểm: Safari, thiết bị thật, ảnh bìa thật, STAFF trên trình duyệt, `build:workers`, locale DB đích.

@@ -82,4 +82,25 @@ class OrderDraftTest extends OrderTestSupport {
  }
  @Test void draftRemovalDoesNotRequireReason(){long id=draft();long item=manual(id,100L,1,250);drafts.removeItem(id,item,new ReasonRequest(0L,UUID.randomUUID(),null),owner);assertThat(orders.require(id,false).items()).isEmpty();}
 
+ private void rename(String id,String title){jdbc.update("update book_copy set title=? where id=?",title,Long.parseLong(id));}
+ @Test void nearTitleSavesWithoutReason(){
+  rename(ready().id(),"Harry Potter tập 3");long id=draft();
+  drafts.addItem(id,item(0,"MANUAL",null,"Harry Potter tập 2",1L,1,1L,null),owner);
+  assertThat(orders.require(id,false).items().getFirst().manualMatchOverrideReason()).isNull();
+ }
+ @Test void titleDifferingOnlyByPunctuationStillNeedsConfirmation(){
+  rename(ready().id(),"Totto-chan!");long id=draft();
+  assertThatThrownBy(()->drafts.addItem(id,item(0,"MANUAL",null,"totto chan",1L,1,1L,null),owner)).isInstanceOfSatisfying(CatalogMatchService.ManualMatchException.class,e->assertThat(e.matches.items().getFirst().exact()).isTrue());
+ }
+ @Test void unchangedOldLineKeepsStoredReasonWhenNoLongerExact(){
+  var b=ready();long id=draft();var m=matching.match(b.title());
+  drafts.addItem(id,item(0,"MANUAL",null,b.title(),75000L,1,1L,new MatchConfirmation(m.normalizedTitle(),m.fingerprint(),"Different physical copy")),owner);
+  long itemId=Long.parseLong(orders.require(id,false).items().getFirst().id());
+  rename(b.id(),"Hoàn toàn khác");
+  drafts.updateItem(id,itemId,item(1,"MANUAL",null,b.title(),99000L,1,1L,null),owner);
+  var row=jdbc.queryForMap("select manual_match_override_reason r,manual_match_evidence e,unit_price_vnd p from order_items where id=?",itemId);
+  assertThat(row).containsEntry("r","Different physical copy").containsEntry("e",m.fingerprint()).containsEntry("p",99000L);
+  drafts.updateItem(id,itemId,item(2,"MANUAL",null,"Tên mới hẳn",99000L,1,1L,null),owner);
+  assertThat(orders.require(id,false).items().getFirst().manualMatchOverrideReason()).isNull();
+ }
 }

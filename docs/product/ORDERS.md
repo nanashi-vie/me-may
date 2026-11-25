@@ -82,49 +82,9 @@ không unique constraint một keep/khách. Khách ARCHIVED vẫn có lịch s�
 đang xử lý; không tự hủy đơn khi lưu trữ khách, không chọn cho đơn mới.
 Khóa đổi customer_id sau khi đơn rời DRAFT hoặc đã có giao dịch tiền.
 
-## 5. Item CATALOG/MANUAL và giá chốt từng cuốn
+## 5–6. Sách trong đơn, cảnh báo trùng và chọn khách
 
-CATALOG: tìm tên/mã MM qua admin API phân trang, hiển thị bìa, mã, tên,
-khoảng giá/sale tham khảo, weightG, totalStock/reservedQuantity/stock và publication.
-stock là còn bán; reservedQuantity là ACTIVE; tổng tại tiệm = stock + ACTIVE.
-Cho chọn sách Ẩn còn tồn; không chọn sách trong Thùng rác. CATALOG
-không đồng nghĩa đang public; không publish hay tạo listing mới khi thêm đơn.
-Thiếu giá/trọng lượng catalogue không tự điền0: admin bổ sung snapshot.
-
-**Giá user chốt16/11:** admin nhập/chỉnh đơn giá bán cụ thể từng cuốn lúc thêm;
-hiển thị khoảng giá/sale để tham khảo, không tự chốt priceMin/priceMax/sale.
-Giá cụ thể bắt buộc trước khi lưu dòng, kể cả DRAFT; chưa nhập không thêm dòng.
-Giá bán này lưu unitPriceVnd của item; sửa giá sách gốc không đổi dòng đã thêm,
-và sửa dòng đơn không cập nhật ngược Listing. Không làm tròn giá theo form sách.
-Hai cuốn cùng mã MM giá khác nhau phải là hai dòng riêng quantity1; chỉ dùng
-quantity>1 khi cùng giá/trọng lượng snapshot. Không tự gộp dòng theo book_copy_id.
-Khi kiểm tồn phải cộng mọi dòng cùng mã MM trong đơn; stock hiện tại đã trừ
-các lượng giữ trước đó, không trừ reservation đơn khác thêm lần nữa.
-
-MANUAL bắt buộc tên, đơn giá VND, quantity, gram/quyển. Không tạo book_copy,
-book_variant/listing, không giữ/trừ tồn website. Các FK catalogue phải NULL.
-CATALOG lưu book_copy_id/listing_id khớp nhau và snapshot mã/tên/giá/trọng lượng.
-Ảnh để nhận diện, thiếu có fallback; không giữ media vĩnh viễn vì item.
-
-DRAFT/KEEPING được thêm/sửa/xóa; KEEPING xóa/giảm quantity bắt buộc nhập lý do.
-Lưu snapshot cuốn/số bỏ/actor/time trong history; hoàn tồn cùng transaction.
-Draft được thiếu weight CATALOG trong lúc bổ sung; chỉ giữ/chốt khi
-mọi item có giá và weight hợp lệ; constraint weight cho phép NULL ở draft.
-
-## 6. Cảnh báo MANUAL giống danh mục
-
-Debounce300–500ms, backend tìm tối đa5 kết quả cả Ẩn/hết hàng, không chỉ public.
-Chuẩn hóa trim/khoảng trắng/chữ hoa-thường/không dấu; so khớp chính
-xác trước rồi gần giống bằng PostgreSQL, chưa tự cài extension/dependency.
-SQL lọc tối đa200ứng viên ưu tiên prefix/độ dài/id; Java Levenshtein≥0,8,
-trả tối đa5. Giới hạn200 là trần lookup hiện tại; tăng/search index khi dữ liệu cần.
-Không tải toàn bộ catalogue hoặc dùng AI để phân loại trùng.
-UI cảnh báo, cho chọn CATALOG hoặc vẫn MANUAL với lý do bản khác/kho livestream/
-lý do khác. Không đổi nguồn tự động, không chặn tuyệt đối vì cùng tên nhiều cuốn.
-Backend kiểm lại lúc lưu; trả409 `manual_match_confirmation_required` kèm
-kết quả mới cần xác nhận. Xác nhận gắn normalizedTitle và fingerprint
-kết quả (id/version), lưu lý do; đổi tên/kết quả mới làm mất hiệu lực xác nhận.
-Không xác nhận vô điều kiện, không tìm sách đã purge; phạm vi Thùng rác ở mục15.
+Contract hiện hành ở [ORDER_ITEMS](ORDER_ITEMS.md).
 
 ## 7. Tiền, trọng lượng và validation
 

@@ -1,8 +1,11 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
 import {
+  afterNextRender,
   Component,
   DestroyRef,
+  ElementRef,
   HostListener,
+  Injector,
   computed,
   inject,
   signal,
@@ -68,7 +71,7 @@ type Panel =
     OrderShippingForm,
   ],
   templateUrl: './order-detail.html',
-  styleUrl: '../orders.scss',
+  styleUrls: ['../orders.scss', '../order-picker.scss'],
 })
 export class OrderDetailPage {
   private readonly api = inject(OrderApi);
@@ -77,6 +80,8 @@ export class OrderDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
+  private readonly injector = inject(Injector);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly itemForm = viewChild(OrderItemForm);
   readonly shippingForm = viewChild(OrderShippingForm);
   readonly customerForm = viewChild(CustomerForm);
@@ -121,6 +126,7 @@ export class OrderDetailPage {
     if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;
     return d.shipments.filter((s) => s.state !== 'ABORTED').at(-1) ?? null;
   });
+  readonly keepError = signal('');
   readonly selectedCustomer = signal<CustomerSummary | null>(null);
   readonly customerPage = signal<Page<CustomerSummary> | null>(null);
   readonly existingKeeps = signal<Page<OrderSummary> | null>(null);
@@ -185,7 +191,7 @@ export class OrderDetailPage {
                 .pipe(takeUntilDestroyed(this.destroy))
                 .subscribe({
                   next: (c) => {
-                    if (epoch === this.auth.epoch()) this.customerSaved(c);
+                    if (epoch === this.auth.epoch()) this.customerSaved(c, false);
                   },
                   error: () => {
                     if (epoch === this.auth.epoch())
@@ -265,14 +271,16 @@ export class OrderDetailPage {
     this.customerLoading.set(true);
     this.customerQueries.next({ q: this.customerQ.trim(), page });
   }
-  customerSaved(c: CustomerSummary) {
+  customerSaved(c: CustomerSummary, focus = true) {
     if (c.status !== 'ACTIVE') {
       this.customerError.set('Chỉ chọn khách đang hoạt động.');
       return;
     }
     this.selectedCustomer.set(c);
     this.existingKeeps.set(null);
-    this.customerError.set('');
+    this.keepError.set('');
+    if (this.customerPage()) this.customerError.set('');
+    if (focus) this.focusAfterRender('.picked-customer button');
     const generation = ++this.selectionGeneration,
       epoch = this.auth.epoch();
     this.api
@@ -294,15 +302,39 @@ export class OrderDetailPage {
         },
         error: () => {
           if (generation === this.selectionGeneration && epoch === this.auth.epoch())
-            this.customerError.set(
-              'Chưa kiểm tra được đơn đang keep của khách. Chọn lại khách để thử lại.',
-            );
+            this.keepError.set('Chưa kiểm tra được đơn đang keep của khách.');
         },
       });
   }
+  changeCustomer() {
+    this.unselectCustomer();
+    this.focusAfterRender('.customer-search');
+  }
+  keepCustomer() {
+    this.resetCustomerPicker();
+    this.focusAfterRender('.customer-search');
+  }
+  private resetCustomerPicker() {
+    this.unselectCustomer();
+    this.customerQ = '';
+    this.customerPageNumber = 0;
+    this.customerPage.set(null);
+    this.customerError.set('');
+  }
+  private unselectCustomer() {
+    this.selectionGeneration++;
+    this.selectedCustomer.set(null);
+    this.existingKeeps.set(null);
+    this.keepError.set('');
+  }
+  private focusAfterRender(selector: string) {
+    afterNextRender(() => this.host.nativeElement.querySelector<HTMLElement>(selector)?.focus(), {
+      injector: this.injector,
+    });
+  }
   create() {
     const c = this.selectedCustomer();
-    if (!c || !this.existingKeeps() || this.customerError()) return;
+    if (!c || !this.existingKeeps()) return;
     if (
       this.existingKeeps()!.totalElements > 0 &&
       !window.confirm('Khách đang có đơn keep. Vẫn tạo đơn mới riêng?')
@@ -473,6 +505,7 @@ export class OrderDetailPage {
     this.allowInsufficientDeposit = false;
     this.trackingCode = this.order()?.trackingCode ?? '';
     this.paymentConflict.set(false);
+    this.resetCustomerPicker();
     this.panel.set(panel);
     if (panel === 'payment')
       this.payment = {
@@ -515,6 +548,7 @@ export class OrderDetailPage {
   closePanel() {
     if (this.pending() || this.busy()) return;
     if (!window.confirm('Đóng form và bỏ thông tin chưa lưu?')) return;
+    this.resetCustomerPicker();
     this.panel.set('');
   }
   submitAction() {

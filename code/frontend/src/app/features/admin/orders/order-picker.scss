@@ -1,0 +1,39 @@
+.picked,
+.picked-customer,
+.suggestion {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.picked img,
+.suggestion img {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.suggestion {
+  padding: 10px 0;
+}
+.suggestion + .suggestion {
+  border-top: 1px solid var(--line);
+}
+.picked-customer > :first-child {
+  flex: 1 1 220px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.picked-customer :is(h2, p) {
+  margin: 0;
+}
+.near-matches {
+  margin-bottom: 16px;
+}
+.book-summary {
+  flex: 1 1 180px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.book-summary small {
+  display: block;
+  margin-top: 4px;
+}

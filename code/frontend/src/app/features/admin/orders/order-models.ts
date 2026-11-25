@@ -171,6 +171,8 @@ export interface CatalogCandidate {
   salePriceVnd: number | null;
   reservedQuantity: number;
   totalStock: number;
+  /** Title equals the searched one after normalization; needs confirmation. */
+  exact: boolean;
 }
 export interface MatchResult {
   normalizedTitle: string;
