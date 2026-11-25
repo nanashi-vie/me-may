@@ -87,6 +87,11 @@ describe('TrashPage', () => {
     t.click(t.button('Dọn vĩnh viễn', t.dialog));
     expect(t.api.purge).toHaveBeenCalledExactlyOnceWith('books', [{ id: '7', version: 2 }, { id: '99', version: 5 }]);
   });
+  it('warns that purging orders also deletes their payment history', () => {
+    const t = setup('don-hang');
+    t.click(t.button('Dọn tất cả'));
+    expect(t.dialog.textContent).toContain('lịch sử giao dịch');
+  });
   it('never purges a snapshot of one kind under another tab', () => {
     const snapshot = new Subject<{ id: string; version: number }[]>();
     const t = setup(null, { selection: vi.fn(() => snapshot) });

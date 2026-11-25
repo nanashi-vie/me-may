@@ -24,6 +24,7 @@ import {
   OrderSummary,
   Page,
   STATUS_LABELS,
+  statusLabel,
   WARNING_LABELS,
 } from '../order-models';
 import { keepEnd, vnd } from '../order-values';
@@ -51,6 +52,7 @@ export class OrderList {
   readonly error = signal('');
   readonly notice = signal('');
   readonly statusLabels = STATUS_LABELS;
+  readonly statusLabel = statusLabel;
   readonly statuses = Object.keys(STATUS_LABELS) as (keyof typeof STATUS_LABELS)[];
   readonly warningLabels = WARNING_LABELS;
   readonly money = vnd;
@@ -129,8 +131,11 @@ export class OrderList {
       this.view?.open(url, '_blank', 'noopener');
     } else void this.router.navigate(['/admin/orders', id], { queryParams });
   }
-  askTrash({ id, version, orderCode, customerNameSnapshot }: OrderSummary) {
-    this.trash().open({ id, version, code: orderCode, name: customerNameSnapshot });
+  askTrash({ id, version, orderCode, customerNameSnapshot, trashable, totals }: OrderSummary) {
+    const blocked = trashable
+      ? undefined
+      : `Đơn còn giữ ${vnd(totals.paidAmount)} của khách. Ghi nhận hoàn tiền trước khi xóa.`;
+    this.trash().open({ id, version, code: orderCode, name: customerNameSnapshot, blocked });
   }
   onTrashed(code: string) {
     this.notice.set('Đã chuyển ' + code + ' vào Thùng rác.');

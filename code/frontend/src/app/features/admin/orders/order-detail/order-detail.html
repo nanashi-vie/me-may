@@ -128,7 +128,7 @@
             {{ d.customerPhoneSnapshot || 'Chưa có SĐT' }} · {{ d.customerCodeSnapshot }}
           </p>
         </div>
-        <span class="badge" [class.keeping]="d.status === 'KEEPING'">{{ labels[d.status] }}</span>
+        <span class="badge" [class.keeping]="d.status === 'KEEPING'">{{ statusLabel(d) }}</span>
       </header>
       @if (d.status === 'KEEPING') {
         <section aria-label="Thời gian giữ sách">
@@ -156,6 +156,13 @@
             tồn.</small
           >
         </section>
+      }
+      @if (keepHandedOver(); as handedOver) {
+        <p class="keep-summary muted">
+          Đã keep {{ d.keepStartedAt | date: 'dd/MM/yyyy' : '+0700' }} → bàn giao
+          {{ handedOver | date: 'dd/MM/yyyy' : '+0700' }} (hạn
+          {{ keepEnd(d.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }})
+        </p>
       }
       <div role="tablist" class="actions" aria-label="Nội dung đơn" (keydown)="tabKey($event)">
         <button

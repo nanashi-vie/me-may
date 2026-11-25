@@ -4,6 +4,8 @@ Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ORDER-KEEP-END-01` (25/11, trên `dev`): hạn keep ở danh sách chỉ hiện khi Đang keep; chi tiết đơn đã bàn giao ghi một dòng tóm tắt keep. Chỉ frontend. [Contract](product/ORDERS.md)
+- `ORDER-CANCEL-01` (25/11, trên `dev`): tách nhãn Đã hủy/Đã hoàn đơn, xóa đơn hủy khi tiền còn giữ bằng 0; không migration, backend trước frontend. [Contract](product/TRASH.md)
 - `ADMIN-TRASH-01` (25/11, trên `dev`): Thùng rác chung `/admin/thung-rac` cho sách/khách/đơn, xóa khách và đơn theo điều kiện, bấm cả dòng đơn; migration V38, backend trước frontend. [Contract](product/TRASH.md)
 - `ADMIN-SOLD-OUT-01` (25/11, trên `dev`): `/admin/sach` có icon thùng rác SVG, nút "Hết hàng" từng dòng và hàng loạt qua API `POST /admin/books/sold-out`; cần triển khai backend trước frontend, không migration. [Contract](product/CATALOGUE_ACTIONS.md#đánh-dấu-hết-hàng-từ-danh-sách-25112026)
 - `PUBLIC-CAROUSEL-SYNC-01` (24/11, trên `dev`): carousel book-detail và lưới `/sach` đồng bộ thẻ với Home; desktop 5 thumbnail khớp ảnh chính, hai nút bằng cụm ảnh; ẩn mã sách ở Home/carousel detail/lưới `/sach`; bỏ vạch ngăn. [Thiết kế](product/DESIGN.md)

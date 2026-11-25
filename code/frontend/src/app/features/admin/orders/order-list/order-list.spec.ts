@@ -122,6 +122,58 @@ describe('OrderList', () => {
     f.detectChanges();
     expect(f.nativeElement.querySelector('[role="status"]').textContent).toContain('DH-000001');
   });
+  async function show(patch: object) {
+    const t = await setup();
+    const result = page('DH-000001');
+    t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], keepWarning: '', ...patch }] }));
+    t.c.refresh();
+    await t.f.whenStable();
+    t.f.detectChanges();
+    return t;
+  }
+  it('explains in a dialog why a cancelled order holding money cannot be deleted', async () => {
+    const { f } = await show({ status: 'CANCELLED', trashable: false });
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const dialog = f.nativeElement.querySelector('app-trash-dialog dialog') as HTMLDialogElement;
+    dialog.showModal = vi.fn();
+    const button = f.nativeElement.querySelector('tbody .trash-btn') as HTMLButtonElement;
+    expect(button.classList).toContain('blocked');
+    expect(button.getAttribute('aria-label')).toBe('Vì sao chưa xóa được DH-000001');
+    button.click();
+    f.detectChanges();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(dialog.textContent).toMatch(/Đơn còn giữ 100\.000\s?đ của khách\. Ghi nhận hoàn tiền trước khi xóa\./);
+    expect(dialog.textContent).not.toContain('Chuyển vào Thùng rác');
+    expect(navigate).not.toHaveBeenCalled();
+  });
+  it('shows the keep deadline only while the order is being kept', async () => {
+    const t = await setup();
+    const cell = () => t.f.nativeElement.querySelector('tbody td:nth-child(8)').textContent.trim();
+    expect(cell()).toBe('Giữ hết 30/11/2026');
+    for (const status of ['DRAFT', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+      const result = page('DH-000001');
+      t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], status, keepWarning: '' }] }));
+      t.c.refresh();
+      await t.f.whenStable();
+      t.f.detectChanges();
+      expect(cell(), status).toBe('—');
+    }
+  });
+  it('names cancelled orders and closed returns separately and filters each', async () => {
+    const cancelled = await show({ status: 'CANCELLED', returned: false });
+    const badge = () => cancelled.f.nativeElement.querySelector('tbody .badge').textContent.trim();
+    expect(badge()).toBe('Đã hủy');
+    cancelled.api.list.mockReturnValue(of({ ...page('DH-000001'), items: [{ ...page('DH-000001').items[0], status: 'CANCELLED', returned: true }] }));
+    cancelled.params.next(convertToParamMap({ status: 'RETURNED' }));
+    await cancelled.f.whenStable();
+    cancelled.f.detectChanges();
+    expect(badge()).toBe('Đã hoàn đơn');
+    expect(cancelled.api.list).toHaveBeenLastCalledWith(expect.objectContaining({ status: 'RETURNED' }));
+    const select = cancelled.f.nativeElement.querySelector('select') as HTMLSelectElement;
+    expect(Array.from(select.options, (o) => [o.value, o.text.trim()])).toEqual(
+      expect.arrayContaining([['CANCELLED', 'Đã hủy'], ['RETURNED', 'Đã hoàn đơn']]),
+    );
+  });
   it('staff never loads private data', async () => {
     const { api, f } = await setup('STAFF');
     expect(api.list).not.toHaveBeenCalled();

@@ -17,12 +17,15 @@ import { TrashApi, TrashKind, TrashSelection } from '../trash-api';
 export interface TrashTarget extends TrashSelection {
   code: string;
   name: string;
+  /** Why the record cannot be deleted yet; the dialog then only explains. */
+  blocked?: string;
 }
 const REASONS: Record<string, string> = {
   customer_not_archived: 'Khách đang hoạt động. Lưu trữ khách trước khi xóa.',
   customer_has_orders: 'Khách đã có đơn hàng nên phải giữ lại hồ sơ.',
-  order_not_trashable: 'Chỉ xóa được đơn Nháp hoặc Đã hủy.',
-  order_has_payments: 'Đơn đã có giao dịch tiền nên phải giữ lại để đối soát.',
+  order_not_trashable: 'Chỉ xóa được đơn Nháp hoặc Đã hủy, Đã hoàn đơn.',
+  order_has_payments: 'Đơn Nháp đã có giao dịch tiền. Hủy đơn và hoàn tiền trước khi xóa.',
+  order_holds_money: 'Đơn còn giữ tiền của khách. Ghi nhận hoàn tiền trước khi xóa.',
 };
 
 @Component({
@@ -55,7 +58,7 @@ export class TrashDialog {
   }
   confirm() {
     const target = this.target();
-    if (!target || this.busy()) return;
+    if (!target || target.blocked || this.busy()) return;
     this.busy.set(true);
     this.api
       .change(this.kind(), target.id, target.version, true)

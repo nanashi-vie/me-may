@@ -1,5 +1,7 @@
 export type OrderStatus =
   'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'UNSUCCESSFUL' | 'CANCELLED';
+/** What staff see: a cancelled order closed after delivery is shown as RETURNED. */
+export type OrderDisplayStatus = OrderStatus | 'RETURNED';
 export type FulfillmentType = 'IMMEDIATE' | 'KEEP';
 export type PaymentType = 'DEPOSIT' | 'PAYMENT' | 'REFUND';
 export type CustomerPaymentMode = 'RECIPIENT' | 'MONTHLY';
@@ -13,7 +15,7 @@ export interface Page<T> {
 }
 export interface OrderFilter {
   q: string;
-  status: OrderStatus | 'ALL';
+  status: OrderDisplayStatus | 'ALL';
   customerId?: string;
   createdFrom: string;
   createdTo: string;
@@ -42,6 +44,7 @@ export interface Totals {
 }
 export interface OrderSummary {
   trashable?: boolean;
+  returned?: boolean;
   id: string;
   orderCode: string;
   customerId: string;
@@ -215,14 +218,17 @@ export type OrderAction =
   | 'resend'
   | 'abort-resend'
   | 'return';
-export const STATUS_LABELS: Record<OrderStatus, string> = {
+export const STATUS_LABELS: Record<OrderDisplayStatus, string> = {
   DRAFT: 'Nháp',
   KEEPING: 'Đang keep',
   READY_TO_SHIP: 'Chờ giao',
   COMPLETED: 'Hoàn tất',
   UNSUCCESSFUL: 'Không thành công',
-  CANCELLED: 'Đã hủy / hoàn đơn',
+  CANCELLED: 'Đã hủy',
+  RETURNED: 'Đã hoàn đơn',
 };
+export const statusLabel = (o: { status: OrderStatus; returned?: boolean; returns?: unknown[] }) =>
+  STATUS_LABELS[o.status === 'CANCELLED' && (o.returned || o.returns?.length) ? 'RETURNED' : o.status];
 export const WARNING_LABELS: Record<string, string> = {
   SOON: 'Sắp hết hạn',
   DUE: 'Đến hạn hôm nay',

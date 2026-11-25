@@ -34,6 +34,19 @@ describe('TrashDialog', () => {
     expect(t.dialog.close).toHaveBeenCalledOnce();
     expect(t.change).not.toHaveBeenCalled();
   });
+  it('only explains a record that cannot be deleted yet', () => {
+    const t = setup('orders');
+    t.f.componentInstance.open({ id: '7', version: 2, code: 'DH-000007', name: 'Lan', blocked: 'Synthetic reason' });
+    t.f.detectChanges();
+    expect(t.dialog.querySelector('h2')?.textContent).toContain('Chưa xóa được DH-000007');
+    expect(t.dialog.textContent).toContain('Synthetic reason');
+    expect(t.focused()).toBe('Đóng');
+    expect(t.button('Chuyển vào Thùng rác')).toBeUndefined();
+    t.f.componentInstance.confirm();
+    expect(t.change).not.toHaveBeenCalled();
+    t.button('Đóng')!.click();
+    expect(t.dialog.close).toHaveBeenCalledOnce();
+  });
   it('moves the record once and reports it', () => {
     const t = setup();
     t.open();
@@ -49,7 +62,8 @@ describe('TrashDialog', () => {
     ['customers', 'customer_has_orders', 'đã có đơn'],
     ['customers', 'customer_not_archived', 'Lưu trữ'],
     ['orders', 'order_not_trashable', 'Nháp hoặc Đã hủy'],
-    ['orders', 'order_has_payments', 'giao dịch tiền'],
+    ['orders', 'order_has_payments', 'Nháp đã có giao dịch tiền'],
+    ['orders', 'order_holds_money', 'hoàn tiền trước khi xóa'],
     ['orders', 'version_conflict', 'thay đổi ở nơi khác'],
   ] as [TrashKind, string, string][])('%s: explains %s and asks the list to reload', (kind, error, text) => {
     const t = setup(kind);

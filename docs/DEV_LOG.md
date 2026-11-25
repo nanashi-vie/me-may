@@ -5439,3 +5439,20 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
   - Trình duyệt trong app, OWNER, `localhost:4200` + `8080` trên `me_may_dev` (V38), 1440×900, với KH-000002/3 và DH-000003/4 tạo riêng để thử: nút đúng điều kiện (khách còn đơn nháp/hủy hiện "—", dọn hết đơn thì có nút); Hủy được focus sẵn; xóa → chi tiết khách báo không tìm thấy; khôi phục đơn về Nháp, khách về Đã lưu trữ; Dọn mục chọn, Dọn tất cả theo tab; 409 báo trong hộp thoại rồi thử lại được; bấm cả dòng đơn mở chi tiết; hộp thoại xóa Sách focus Hủy và nút Thùng rác dẫn tới tab Sách; 390px không tràn trang. Đã dọn hết dữ liệu thử, DB dev còn đúng 1 khách/2 đơn ban đầu, Thùng rác trống. Sửa khi thử: màu nút thùng rác ở Đơn hàng về đỏ; câu báo xung đột không khẳng định "chưa bị xóa". Chưa thử: khôi phục/dọn tab Sách trên trình duyệt (có test), STAFF trên trình duyệt, Safari, `build:workers`.
 - **Bước tiếp theo**: owner xem giao diện rồi yêu cầu commit/push `dev`. Thay đổi còn local, chưa commit. Rollout V38 cần backend trước frontend.
 - **Bàn giao**: theo owner, bỏ nút Thùng rác ở đầu trang `/admin/sach` (vào qua sidebar; thay phần nút của Q1). Chạy lại `npm test` 449/449 và `npm run build` đạt; trình duyệt xác nhận nút đã bỏ, sidebar còn mục Thùng rác. Commit + push `dev` theo yêu cầu. Bước tiếp: theo dõi CI; khi rollout, áp V38 và backend trước frontend.
+
+### 2026-11-25 — ORDER-CANCEL-01 — Tách nhãn Đã hủy/Đã hoàn đơn, xóa đơn hủy đã hết tiền
+
+- **Mục tiêu & phạm vi**: owner thấy đơn hủy không có nút xóa và nhãn "Đã hủy / hoàn đơn" gộp hai loại; đồng ý cả Q1–Q3 (25/11).
+- **Quyết định**: Đã hủy/Đã hoàn đơn xóa được khi tiền còn giữ bằng 0; Nháp giữ quy tắc chưa từng có giao dịch. Dọn đơn xóa lịch sử giao dịch. Nhãn suy từ `order_returns`, status vẫn `CANCELLED`, không migration; lọc thêm `RETURNED`. Đơn hủy còn giữ tiền hiện thùng rác xám và hộp thoại nêu lý do. "Đơn không thành công / hoàn về" vốn chỉ có ở Hoàn tất (FE và BE), thêm test khóa.
+- **File thay đổi**: backend `OrderTrashService`, `OrderQueryService`, `OrderDtos`, `OrderTrashApiTest`; frontend `orders/{order-models,order-list,order-detail,customer-order-history}`, `trash/{trash-dialog,trash-page}`, `styles.scss` và spec; `docs/product/{ORDERS,TRASH}.md`, `docs/context/DECISIONS.md`, `docs/PROGRESS.md`.
+- **Kiểm tra**: TDD, test đỏ trước. `code/backend` `./mvnw test` với Postgres tạm: 404 test, 0 lỗi, 3 bỏ qua. `code/frontend` `npm test` 457/457, `npm run build` đạt. Trình duyệt trong app, OWNER, `me_may_dev`, 1440×900 với khách/đơn tạo riêng: nhãn Đã hủy/Đã hoàn đơn ở danh sách, chi tiết, lịch sử khách; lọc riêng từng nhãn; đơn hủy còn 50.000đ hiện thùng rác xám, hộp thoại nêu lý do và focus Đóng; ghi hoàn tiền xong chuyển đỏ, xóa và dọn được, cảnh báo xóa lịch sử giao dịch; nút hoàn về chỉ ở Hoàn tất, API fail trên đơn Nháp trả 409. Đã dọn hết dữ liệu thử. Chưa chạy: `build:workers`, Safari, STAFF trên trình duyệt, 390px.
+- **Lưu ý**: đơn hoàn dư không tồn tại vì backend đã chặn hoàn quá số thu. Cần triển khai backend trước frontend (lọc RETURNED và `returned`).
+- **Bàn giao**: commit + push `dev` theo yêu cầu owner. Khi rollout, backend trước frontend; không migration.
+
+### 2026-11-25 — ORDER-KEEP-END-01 — Ẩn hạn keep khi đơn không còn keep
+
+- **Mục tiêu & phạm vi**: owner thấy đơn Hoàn tất trước hạn vẫn hiện "Giữ hết …"; đồng ý cả Q1–Q3 (25/11). Chỉ là lỗi hiển thị ở danh sách: reservation đã CONSUMED, thống kê/lọc/cảnh báo chỉ tính KEEPING.
+- **Quyết định**: cột Hạn keep chỉ hiện khi KEEPING; giữ `keep_until` trong DB (mở lại Chờ giao và tra lịch sử); chi tiết COMPLETED/UNSUCCESSFUL có dòng "Đã keep … → bàn giao … (hạn …)" theo lần bàn giao đầu.
+- **File thay đổi**: `orders/order-list`, `orders/order-detail` và spec; `docs/product/ORDERS.md`, `docs/PROGRESS.md`.
+- **Kiểm tra**: test đỏ trước; `code/frontend` `npm test` 459/459, `npm run build` đạt. Trình duyệt trong app, OWNER, DH-000001: danh sách "—", chi tiết có dòng tóm tắt, 390px không tràn. Chưa chạy: backend (không đổi), `build:workers`, Safari.
+- **Bàn giao**: commit + push `dev` theo yêu cầu owner. Chỉ frontend, không migration.

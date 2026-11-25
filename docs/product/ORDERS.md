@@ -46,7 +46,7 @@ Nguồn nền: [DATA](../context/DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE
 | READY_TO_SHIP — Chờ giao | Đã chốt item, người nhận, kiện/COD/khai giá; còn giữ tồn |
 | COMPLETED — Hoàn tất | Admin xác nhận đã bàn giao vận chuyển; khóa item, không trừ tồn nữa |
 | UNSUCCESSFUL — Đơn không thành công | Chủ ghi nhận thủ công đơn hoàn về; chờ gửi lại hoặc hoàn đơn/nhập tồn |
-| CANCELLED — Đã hủy/hoàn đơn | Hủy trước gửi hoặc đóng hoàn đơn sau thất bại; giữ lịch sử tiền/tồn |
+| CANCELLED — Đã hủy hoặc Đã hoàn đơn | Nhãn Đã hoàn đơn khi có `order_returns`, còn lại Đã hủy; lọc riêng (RETURNED); xóa theo [TRASH](TRASH.md) |
 
 - Giao ngay: DRAFT → READY_TO_SHIP → COMPLETED; keep thêm KEEPING sau DRAFT.
 - COMPLETED → UNSUCCESSFUL do chủ xác nhận hoàn về, lưu lý do/thời điểm.
@@ -64,9 +64,9 @@ Nguồn nền: [DATA](../context/DATA.md), [CUSTOMERS](CUSTOMERS.md), [CATALOGUE
 ## 4. Danh sách, tạo đơn và khách hàng
 
 Route `/admin/orders`, `/admin/orders/new`, `/admin/orders/:id`.
-Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách,
-ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
-hạn keep và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
+Tiêu đề Quản lý đơn hàng; nút + Tạo đơn hàng. Bảng mã DH, tên/SĐT khách, ngày tạo dd/MM/yyyy, tổng quantity, orderTotal, paidAmount, trạng thái,
+hạn keep (chỉ đơn KEEPING, còn lại "—"; COMPLETED/UNSUCCESSFUL ghi một dòng keep → bàn giao lần đầu → hạn ở chi tiết;
+keep_until giữ nguyên trong DB) và thao tác phù hợp trạng thái/quyền. Sắp mới nhất createdAt,id.
 Tìm mã đơn/tên/SĐT/mã KH; lọc status, khoảng ngày tạo và keep sắp/đến/quá hạn.
 Pagination backend20/max100, page bắt đầu0; đổi q/filter reset page.
 Thống kê Đang keep/Sắp hết hạn/Quá hạn/Chờ giao/Hoàn tất/Không thành công do backend tính,

@@ -6,7 +6,7 @@ import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import { combineLatest, catchError, of, switchMap } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { OrderApi } from '../order-api';
-import { OrderSummary, Page, STATUS_LABELS, defaultOrderFilter } from '../order-models';
+import { OrderSummary, Page, defaultOrderFilter, statusLabel } from '../order-models';
 import { vnd } from '../order-values';
 @Component({
   selector: 'app-customer-order-history',
@@ -35,7 +35,7 @@ import { vnd } from '../order-values';
             <div>
               <a [routerLink]="['/admin/orders', d.id]">{{ d.orderCode }}</a
               ><small
-                >{{ d.createdAt | date: 'dd/MM/yyyy' : '+0700' }} · {{ labels[d.status] }}</small
+                >{{ d.createdAt | date: 'dd/MM/yyyy' : '+0700' }} · {{ statusLabel(d) }}</small
               >
             </div>
             <div class="number">
@@ -68,7 +68,7 @@ export class CustomerOrderHistory {
   readonly result = signal<Page<OrderSummary> | null>(null);
   readonly loading = signal(true);
   readonly error = signal(false);
-  readonly labels = STATUS_LABELS;
+  readonly statusLabel = statusLabel;
   readonly money = vnd;
   constructor() {
     combineLatest([

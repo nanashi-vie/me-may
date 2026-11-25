@@ -1,7 +1,10 @@
 <dialog #dialog aria-labelledby="trash-target-heading" (cancel)="busy() && $event.preventDefault()">
   @if (target(); as t) {
-    <h2 id="trash-target-heading">Chuyển vào Thùng rác?</h2>
-    @if (error()) {
+    <h2 id="trash-target-heading">{{ t.blocked ? 'Chưa xóa được ' + t.code : 'Chuyển vào Thùng rác?' }}</h2>
+    @if (t.blocked) {
+      <p>{{ t.blocked }}</p>
+      <button type="button" class="secondary" autofocus (click)="close()">Đóng</button>
+    } @else if (error()) {
       <p role="alert" class="error">{{ error() }}</p>
       <button type="button" class="secondary" (click)="close()">Đóng</button>
     } @else {

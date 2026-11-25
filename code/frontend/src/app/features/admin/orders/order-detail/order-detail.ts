@@ -26,7 +26,7 @@ import {
   OrderPayment,
   OrderSummary,
   Page,
-  STATUS_LABELS,
+  statusLabel,
 } from '../order-models';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
@@ -91,7 +91,7 @@ export class OrderDetailPage {
   readonly paymentConflict = signal(false);
   readonly panel = signal<Panel>('');
   readonly money = vnd;
-  readonly labels = STATUS_LABELS;
+  readonly statusLabel = statusLabel;
   readonly keepEnd = keepEnd;
   readonly backQuery = { ...this.route.snapshot.queryParams };
   readonly totalTab = signal(this.backQuery['tab'] === 'total');
@@ -110,6 +110,12 @@ export class OrderDetailPage {
     this.selectTab(total);
     document.getElementById(total ? 'order-total-tab' : 'order-detail-tab')?.focus();
   }
+  /** First handover ends the keep; later resends do not change it. */
+  readonly keepHandedOver = computed(() => {
+    const d = this.order();
+    if (!d?.keepStartedAt || !d.keepUntil || !['COMPLETED', 'UNSUCCESSFUL'].includes(d.status)) return null;
+    return d.shipments.find((s) => s.handedOverAt)?.handedOverAt ?? null;
+  });
   readonly currentBill = computed(() => {
     const d = this.order();
     if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;

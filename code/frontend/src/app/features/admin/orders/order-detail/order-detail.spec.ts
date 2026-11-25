@@ -69,6 +69,50 @@ async function setup(id = '1') {
   return { f, c: f.componentInstance, api, auth, params };
 }
 describe('OrderDetail', () => {
+  it('offers the unsuccessful-return action only for completed orders', async () => {
+    const { f, c } = await setup();
+    c.totalTab.set(true);
+    for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+      c.order.set({ ...detail, status });
+      f.detectChanges();
+      expect(f.nativeElement.textContent.includes('Đơn không thành công / hoàn về'), status).toBe(status === 'COMPLETED');
+      expect(f.nativeElement.textContent.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
+    }
+  });
+  it('summarises the finished keep of handed-over orders only', async () => {
+    const { f, c } = await setup();
+    const line = () => f.nativeElement.querySelector('.keep-summary')?.textContent.trim().replace(/\s+/g, ' ');
+    const shipments = [
+      { handedOverAt: '2026-11-03T18:00:00Z' },
+      { handedOverAt: null },
+      { handedOverAt: '2026-11-20T01:00:00Z' },
+    ];
+    for (const status of ['COMPLETED', 'UNSUCCESSFUL']) {
+      c.order.set({ ...detail, status, shipments });
+      f.detectChanges();
+      expect(line(), status).toBe('Đã keep 01/11/2026 → bàn giao 04/11/2026 (hạn 15/11/2026)');
+    }
+    for (const patch of [
+      { status: 'KEEPING' },
+      { status: 'READY_TO_SHIP' },
+      { status: 'CANCELLED' },
+      { status: 'COMPLETED', keepStartedAt: null, keepUntil: null },
+    ]) {
+      c.order.set({ ...detail, shipments, ...patch });
+      f.detectChanges();
+      expect(line(), JSON.stringify(patch)).toBeUndefined();
+    }
+  });
+  it('labels a cancelled order apart from a closed return', async () => {
+    const { f, c } = await setup();
+    const badge = () => f.nativeElement.querySelector('.heading .badge').textContent.trim();
+    c.order.set({ ...detail, status: 'CANCELLED' });
+    f.detectChanges();
+    expect(badge()).toBe('Đã hủy');
+    c.order.set({ ...detail, status: 'CANCELLED', returns: [{ id: '1' }] });
+    f.detectChanges();
+    expect(badge()).toBe('Đã hoàn đơn');
+  });
   it('requires reason before deleting keep item and retains form after validation rejection', async () => {
     const { c, api } = await setup();
     c.remove({ id: '9', titleSnapshot: 'Book', quantity: 2 } as any);

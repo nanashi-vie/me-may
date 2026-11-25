@@ -133,7 +133,7 @@
                       class="badge"
                       [class.keeping]="o.status === 'KEEPING'"
                       [class.danger]="o.status === 'UNSUCCESSFUL'"
-                      >{{ statusLabels[o.status] }}</span
+                      >{{ statusLabel(o) }}</span
                     >
                     @if (o.keepWarning) {
                       <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{
@@ -142,7 +142,7 @@
                     }
                   </td>
                   <td class="nowrap">
-                    @if (o.keepUntil) {
+                    @if (o.status === 'KEEPING' && o.keepUntil) {
                       Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
                     } @else {
                       —
@@ -152,7 +152,10 @@
                     @if (o.trashable) {
                       <button type="button" class="secondary trash-btn" [attr.aria-label]="'Xóa ' + o.orderCode"
                         (click)="askTrash(o)"><app-trash-icon /></button>
-                    } @else { <span title="Chỉ xóa được đơn Nháp hoặc Đã hủy chưa có giao dịch tiền">—</span> }
+                    } @else if (o.status === 'CANCELLED') {
+                      <button type="button" class="secondary trash-btn blocked"
+                        [attr.aria-label]="'Vì sao chưa xóa được ' + o.orderCode" (click)="askTrash(o)"><app-trash-icon /></button>
+                    } @else { <span title="Chỉ xóa được đơn Nháp chưa có giao dịch tiền, Đã hủy hoặc Đã hoàn đơn">—</span> }
                   </td>
                 </tr>
               }

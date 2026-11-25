@@ -22,6 +22,7 @@ const REFUSALS: Record<string, string> = {
   book_order_reference: 'Có sách còn trong đơn hàng nên chưa dọn được. Chưa mục nào bị xóa.',
   customer_has_orders: 'Có khách đã có đơn hàng nên chưa dọn được. Chưa mục nào bị xóa.',
   order_has_payments: 'Có đơn đã có giao dịch tiền nên chưa dọn được. Chưa mục nào bị xóa.',
+  order_holds_money: 'Có đơn còn giữ tiền của khách nên chưa dọn được. Chưa mục nào bị xóa.',
   trash_expired: 'Mục này đã hết hạn khôi phục.',
 };
 
