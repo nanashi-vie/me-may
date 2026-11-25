@@ -64,6 +64,40 @@ describe('CustomerList', () => {
     expect(cells[5].textContent?.trim()).toBe('—');
     expect(api.detail).not.toHaveBeenCalled();
   });
+  it('offers the trash only on rows the server allows, and to the owner alone', async () => {
+    const { f, api } = setup();
+    api.list.mockReturnValue(of({ ...page, items: [row, { ...row, id: '2', customerCode: 'KH-000002', trashable: true }] } as any));
+    f.componentInstance.refresh();
+    await f.whenStable();f.detectChanges();
+    const rows = f.nativeElement.querySelectorAll('tbody tr') as NodeListOf<HTMLElement>;
+    expect(rows[0].querySelector('.trash-btn')).toBeNull();
+    expect(rows[0].lastElementChild?.textContent?.trim()).toBe('—');
+    expect(rows[1].querySelector('.trash-btn')?.getAttribute('aria-label')).toBe('Xóa KH-000002');
+  });
+  it('opens the confirmation, then reloads and announces the result', async () => {
+    const { f, c, api } = setup();
+    api.list.mockReturnValue(of({ ...page, items: [{ ...row, trashable: true }] } as any));
+    c.refresh();
+    await f.whenStable();f.detectChanges();
+    const dialog = f.nativeElement.querySelector('app-trash-dialog dialog') as HTMLDialogElement;
+    dialog.showModal = vi.fn();
+    f.nativeElement.querySelector('.trash-btn').click();
+    f.detectChanges();
+    expect(dialog.showModal).toHaveBeenCalledOnce();
+    expect(dialog.textContent).toContain('Lan (KH-000001)');
+    const calls = api.list.mock.calls.length;
+    c.onTrashed('KH-000001');
+    expect(api.list).toHaveBeenCalledTimes(calls + 1);
+    expect(c.toast()).toContain('KH-000001');
+  });
+  it('hides the actions column from STAFF', async () => {
+    const { f, api } = setup('STAFF');
+    api.list.mockReturnValue(of({ ...page, items: [{ ...row, trashable: true }] } as any));
+    f.componentInstance.refresh();
+    await f.whenStable();f.detectChanges();
+    expect(f.nativeElement.querySelector('.trash-btn')).toBeNull();
+    expect(f.nativeElement.textContent).not.toContain('Thao tác');
+  });
   it('preserves route filters and resets page on filter changes', async () => {
     const { f, c, api, nav } = setup();
     await f.whenStable();
@@ -128,11 +162,11 @@ describe('CustomerList', () => {
       expect.objectContaining({ queryParams: expect.objectContaining({ q: 'Mai', page: 0 }) }),
     );
   });
-  it('opens customer details through the name and has no row actions', async () => {
+  it('opens customer details through the name and offers no action on a kept row', async () => {
     const {f} = setup();await f.whenStable();f.detectChanges();
     const root=f.nativeElement as HTMLElement;
     expect(Array.from(root.querySelectorAll('th')).map(h=>h.textContent?.trim())).toEqual([
-      'Khách hàng','Zalo','TikTok','Threads','Số điện thoại','Tổng số đơn hàng']);
+      'Khách hàng','Zalo','TikTok','Threads','Số điện thoại','Tổng số đơn hàng','Thao tác']);
     expect(root.querySelector('tbody button')).toBeNull();
     expect(root.querySelector('a.customer-name')?.getAttribute('href')).toContain('/admin/customers/1');
     expect(root.querySelector('a.customer-name')?.textContent).toContain('Lan');

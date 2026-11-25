@@ -233,7 +233,7 @@ website/API đã nhận các nhãn/code mới. Không tự sửa workbook khi đ
 - Bảng `home_featured_config(id PK CHECK id=1, version BIGINT DEFAULT 0)` quản lý optimistic locking cho cấu hình kệ sách nổi bật.
 - Bảng `home_featured_item(shelf_key VARCHAR(160), position INT CHECK 0..9, listing_id FK listing ON DELETE CASCADE, PK(shelf_key, position), UNIQUE(shelf_key, listing_id))` lưu danh sách tối đa 10 cuốn ghim ưu tiên cho từng kệ (`NEWEST`, `CATEGORY:BOARD_BOOK`, `CATEGORY:PICTURE_BOOK`, `COLLECTION:<slug>`).
 
-`book_copy.deleted_at` xác định Thùng rác và hạn khôi phục sau 7 ngày.
+`deleted_at` của `book_copy`, `customer`, `orders` (V38) xác định [Thùng rác](../product/TRASH.md) và hạn 7 ngày.
 Sau khi dọn, snapshot mã/ID/tên trên receipt và audit tiếp tục tra được.
 Ảnh chờ dọn có thể có `book_copy_id` rỗng và không được ở trạng thái ACTIVE.
 

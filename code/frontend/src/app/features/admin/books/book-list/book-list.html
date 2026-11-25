@@ -3,73 +3,8 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  @if(auth.user()?.role === 'OWNER') { <div><button type="button" class="secondary" [disabled]="mutationBusy()" (click)="trashOpen() ? closeTrash() : showTrash()">{{ trashOpen() ? "Danh sách sách" : "Thùng rác" }}</button> <a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
+  @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
-@if (trashOpen()) {
-  <section aria-labelledby="trash-heading">
-    <h2 id="trash-heading">Thùng rác</h2>
-    <p>Sách được dọn sau 7 ngày kể từ khi chuyển vào Thùng rác.</p>
-    @if (error()) { <p role="alert">{{ error() }}</p> }
-    @if (trashResult(); as trash) {
-      <div class="bulk-toolbar">
-        <div class="bulk-actions">
-          <label class="bulk-select-all">
-            <input
-              type="checkbox"
-              [checked]="trash.items.length > 0 && selected().size === trash.items.length"
-              [disabled]="mutationBusy() || !trash.items.length"
-              (change)="selectPage(trash.items, $any($event.target).checked)"
-            />
-            <span>Chọn tất cả trên trang này</span>
-          </label>
-          <button
-            type="button"
-            class="bulk-trash-btn"
-            [disabled]="mutationBusy() || !selected().size"
-            (click)="askBulk(bulkDialog, true)"
-          >
-            Dọn ({{ selected().size }})
-          </button>
-          <button
-            type="button"
-            class="secondary bulk-trash-btn"
-            [disabled]="mutationBusy() || !trash.totalElements"
-            (click)="askBulk(bulkDialog, true, true)"
-          >
-            Dọn tất cả
-          </button>
-        </div>
-      </div>
-      <ul class="trash-list">
-        @for (book of trash.items; track book.id) {
-          <li class="trash-item">
-            <input
-              type="checkbox"
-              class="row-check"
-              [attr.aria-label]="'Chọn ' + book.bookCode"
-              [checked]="selected().has(book.id)"
-              [disabled]="mutationBusy()"
-              (change)="toggle(book.id, $any($event.target).checked)"
-            />
-            <span class="trash-item-info">
-              {{ book.title || 'Chưa có tên' }} · {{ book.bookCode }} · Hạn khôi phục
-              {{ book.expiresAt | date:'dd/MM/yyyy HH:mm':'+0700' }}
-            </span>
-            <button
-              type="button"
-              class="secondary trash-restore-btn"
-              [disabled]="mutationBusy() || expired(book)"
-              (click)="changeTrash(book, false)"
-            >
-              Khôi phục
-            </button>
-          </li>
-        } @empty { <li>Thùng rác trống.</li> }
-      </ul>
-      <app-pagination [page]="trash.page" [totalPages]="trash.totalPages" [disabled]="mutationBusy() || trashLoading()" (pageChange)="showTrash($event)" />
-    }
-  </section>
-} @else {
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label class="admin-field filter-search">
     <span class="field-label">Tên hoặc mã sách</span>
@@ -254,9 +189,17 @@
         </button>
         <button
           type="button"
+          class="sold-out-action bulk-sold-out-btn"
+          [disabled]="mutationBusy() || loading() || !selectedInStock().length"
+          (click)="askSoldOut(selectedInStock(), soldOutDialog)"
+        >
+          Đánh dấu hết hàng ({{ selectedInStock().length }} cuốn)
+        </button>
+        <button
+          type="button"
           class="bulk-trash-btn"
           [disabled]="mutationBusy() || loading() || !selected().size"
-          (click)="askBulk(bulkDialog, false)"
+          (click)="askBulk(bulkDialog)"
         >
           Chuyển {{ selected().size }} cuốn vào Thùng rác
         </button>
@@ -273,7 +216,7 @@
           <th>Tồn kho</th>
           <th>Nơi lưu trữ</th>
           <th>Cập nhật</th>
-          @if (auth.user()?.role === "OWNER") { <th scope="col">Thao tác</th> }
+          @if (auth.user()?.role === "OWNER") { <th scope="col" class="actions-heading">Thao tác</th> }
         </tr>
       </thead>
       <tbody>
@@ -316,13 +259,24 @@
               {{ price(book.priceMinVnd,book.priceMaxVnd) }}
             </td>
             <td>{{ book.publication === 'ARCHIVED' && !book.publishedAt ? 'Chưa xuất bản' : labels[book.publication] }}</td>
-            <td>{{ book.totalStock }}</td>
+            <td>
+              {{ book.totalStock }}
+              @if (book.totalStock === 0) { <span class="sold-out-badge">Hết hàng</span> }
+            </td>
             <td>{{ book.storageBoxNumber == null ? 'Chưa phân thùng' : 'Thùng ' + book.storageBoxNumber }}</td>
             <td>{{ book.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</td>
             @if (auth.user()?.role === 'OWNER') {
-              <td><button type="button" class="secondary" [disabled]="mutationBusy()"
-                [attr.aria-label]="'Chuyển ' + book.bookCode + ' vào Thùng rác'" (click)="askTrash(book,trashDialog)">
-                <span aria-hidden="true">🗑</span></button></td>
+              <td>
+                <div class="row-actions">
+                  @if (book.totalStock > 0) {
+                    <button type="button" class="sold-out-action sold-out-btn" [disabled]="mutationBusy() || loading()"
+                      [attr.aria-label]="'Đánh dấu hết hàng ' + book.bookCode" (click)="askSoldOut([book], soldOutDialog)">Hết hàng</button>
+                  }
+                  <button type="button" class="secondary trash-btn" [disabled]="mutationBusy()"
+                    [attr.aria-label]="'Chuyển ' + book.bookCode + ' vào Thùng rác'" (click)="askTrash(book,trashDialog)">
+                  <app-trash-icon /></button>
+                </div>
+              </td>
             }
           </tr>
         } @empty {
@@ -335,26 +289,42 @@
   </div>
   <app-pagination class="pagination" [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
 }
-}
 <dialog #trashDialog aria-labelledby="trash-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
   @if (target(); as book) {
     <h2 id="trash-dialog-heading">Chuyển vào Thùng rác?</h2>
     <p>{{ book.title || 'Chưa có tên' }} ({{ book.bookCode }}) sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
     <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="trashDialog.close()">Hủy</button>
-    <button type="button" [disabled]="mutationBusy()" (click)="changeTrash(book,true,trashDialog)">Chuyển vào Thùng rác</button>
+    <button type="button" [disabled]="mutationBusy()" (click)="moveToTrash(book,trashDialog)">Chuyển vào Thùng rác</button>
   }
 </dialog>
 
 <dialog #bulkDialog aria-labelledby="bulk-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
-  @if (bulkTarget(); as action) {
-    <h2 id="bulk-dialog-heading">{{ action.permanent ? 'Dọn vĩnh viễn' : 'Chuyển vào Thùng rác' }} {{ action.items.length }} cuốn?</h2>
-    @if (action.permanent) {
-      <p>{{ action.all ? 'Thao tác áp dụng cho toàn bộ danh sách Thùng rác vừa tải, kể cả các trang khác.' : 'Thao tác áp dụng cho sách đã chọn.' }}
-        Sách và ảnh (nếu có) sẽ bị xóa vĩnh viễn, kể cả khi chưa đủ 7 ngày.</p>
-    } @else {
-      <p>Sách sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
-    }
+  @if (bulkTarget(); as items) {
+    <h2 id="bulk-dialog-heading">Chuyển vào Thùng rác {{ items.length }} cuốn?</h2>
+    <p>Sách sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
     <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="bulkDialog.close()">Hủy</button>
-    <button type="button" [disabled]="mutationBusy()" (click)="confirmBulk(bulkDialog)">{{ action.permanent ? 'Dọn vĩnh viễn' : 'Chuyển vào Thùng rác' }}</button>
+    <button type="button" [disabled]="mutationBusy()" (click)="confirmBulk(bulkDialog)">Chuyển vào Thùng rác</button>
+  }
+</dialog>
+
+<dialog #soldOutDialog class="sold-out-dialog" aria-labelledby="sold-out-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
+  @if (soldOutTarget(); as books) {
+    @if (books.length) {
+      <h2 id="sold-out-dialog-heading">Đánh dấu hết hàng{{ books.length > 1 ? ' ' + books.length + ' cuốn' : '' }}?</h2>
+      @if (soldOutError()) {
+        <p role="alert" class="error">{{ soldOutError() }}</p>
+        <button type="button" class="secondary" (click)="soldOutDialog.close()">Đóng</button>
+      } @else {
+        @if (books.length === 1) {
+          <p>{{ books[0].title || 'Chưa có tên' }} ({{ books[0].bookCode }}): tồn kho <strong>{{ soldOutTotal() }} → 0</strong>.
+            @if (books[0].publication === 'PUBLISHED') { Sách vẫn công khai với trạng thái hết hàng. }
+            Đơn đang keep không đổi.</p>
+        } @else {
+          <p>{{ books.length }} cuốn, tổng tồn kho <strong>{{ soldOutTotal() }} → 0</strong>. Trạng thái xuất bản và đơn đang keep không đổi.</p>
+        }
+        <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="soldOutDialog.close()">Hủy</button>
+        <button type="button" [disabled]="mutationBusy()" (click)="confirmSoldOut(soldOutDialog)">Đánh dấu hết hàng</button>
+      }
+    }
   }
 </dialog>

@@ -1,9 +1,11 @@
 # Tiến độ và bàn giao
 
-Cập nhật 24/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ADMIN-TRASH-01` (25/11, trên `dev`): Thùng rác chung `/admin/thung-rac` cho sách/khách/đơn, xóa khách và đơn theo điều kiện, bấm cả dòng đơn; migration V38, backend trước frontend. [Contract](product/TRASH.md)
+- `ADMIN-SOLD-OUT-01` (25/11, trên `dev`): `/admin/sach` có icon thùng rác SVG, nút "Hết hàng" từng dòng và hàng loạt qua API `POST /admin/books/sold-out`; cần triển khai backend trước frontend, không migration. [Contract](product/CATALOGUE_ACTIONS.md#đánh-dấu-hết-hàng-từ-danh-sách-25112026)
 - `PUBLIC-CAROUSEL-SYNC-01` (24/11, trên `dev`): carousel book-detail và lưới `/sach` đồng bộ thẻ với Home; desktop 5 thumbnail khớp ảnh chính, hai nút bằng cụm ảnh; ẩn mã sách ở Home/carousel detail/lưới `/sach`; bỏ vạch ngăn. [Thiết kế](product/DESIGN.md)
 - `THEME-SWITCH-CSS-01` (23/11, đã commit `8c35861`): gỡ Rive (runtime/WASM/.riv), thay switch sáng/tối bằng CSS/SVG thuần theo mẫu Uiverse owner chọn. [Bằng chứng](verification/THEME_VERIFICATION.md#thay-rive-bằng-switch-css--2311)
 - Đã hoàn tất `DETAIL-MOBILE-THUMBS-01` trên `dev` cho `/sach/:slug`: sửa lỗi CSS Grid `1fr` thiếu `min-width: 0` khiến hàng thumbnail tràn chiều ngang màn hình mobile; đổi kích thước thumbnail mobile sang `54×72px` (`scroll-snap`, căn giữa tương thích mọi iOS Safari) và khóa `overflow-x: clip` trên `html`.
@@ -26,7 +28,7 @@ Cập nhật 24/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 |---|---|
 | Rollout backend/frontend | Owner chọn candidate, kiểm schema thực tế, backup/counts/fingerprint/sequence, rehearsal restore và rollback có xét ghi mới. Đối chiếu migration cần chạy, thứ tự backend trước frontend, smoke domain thật, origin/canonical/enquiry, auth, media, tồn và retry. [Triển khai](runbooks/DEPLOYMENT.md) |
 | Catalogue và lưu trữ | Kiểm privacy ghi chú/ảnh riêng, V14–V19 theo môi trường; tạo/chọn thùng, lưu/mở lại, đổi/bỏ và lọc trên nhiều trang, OWNER/STAFF. Kiểm cuộn về sách sau lưu cả khi đổi trang/rời bộ lọc. [Rollout sách](runbooks/BOOK_ENTRY_ROLLOUT.md), [smoke V20](runbooks/ROLLOUT_CHECKS.md) |
-| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V37 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
+| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V38 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
 | Ảnh | Đo Dell 20–50 sách, tám nguồn Drive thật, ảnh chữ, ngoài LAN, mixed-provider, RSS/latency và monitoring. Với backfill preview public, đối chiếu lại inventory 63 media và đủ 320/640 × JPEG/WebP, MIME, magic và kích thước. Migration sách Cloudinary sang LOCAL hoãn tới đợt owner mở riêng, cần dry-run và drill rollback pointer/version. [Ma trận và gate](verification/IMAGE_VERIFICATION.md) |
 | Backup và khôi phục | Xác lập lịch, retention, owner, offhost, RPO/RTO; drill phục hồi DB cùng file media và rollback app/schema/dữ liệu trên bản sao. [Vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [quy trình release](runbooks/DEPLOYMENT.md) |
 | Bảo mật và tải | Kiểm role DB tối thiểu/tách migration, rate limit đăng nhập, secrets, kết nối riêng, HTTPS, pool/quota/memory/load và quyền admin/public. [Bảo mật](context/SECURITY.md) |

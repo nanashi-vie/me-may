@@ -1,11 +1,12 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PageMetadata } from '../../core/page-metadata';
+import { TrashIcon } from '../../shared/trash-icon/trash-icon';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-admin-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, TrashIcon],
   templateUrl: './admin-layout.html',
   styleUrl: './admin-layout.scss',
 })

@@ -17,4 +17,15 @@ describe('BookApi', () => {
     r.flush({});
     http.verify();
   });
+  it('sends every version when marking books as sold out', () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const http = TestBed.inject(HttpTestingController);
+    TestBed.inject(BookApi).markSoldOut([{ id: '7', version: 2 }]).subscribe();
+    http.expectOne('/api/v1/auth/csrf').flush({ token: 't', headerName: 'X-CSRF-TOKEN' });
+    const r = http.expectOne('/api/v1/admin/books/sold-out');
+    expect(r.request.method).toBe('POST');
+    expect(r.request.body).toEqual({ items: [{ id: '7', version: 2 }] });
+    r.flush([]);
+    http.verify();
+  });
 });

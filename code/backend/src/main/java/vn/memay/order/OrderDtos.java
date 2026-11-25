@@ -23,7 +23,7 @@ public final class OrderDtos {
   boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
   List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
-  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning){}
+  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable){}
  public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size){}
  public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long unsuccessful){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}

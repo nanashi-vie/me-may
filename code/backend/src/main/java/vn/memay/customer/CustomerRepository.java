@@ -11,11 +11,11 @@ public class CustomerRepository {
  private final JdbcTemplate jdbc;
  public CustomerRepository(JdbcTemplate jdbc){this.jdbc=jdbc;}
  private static final RowMapper<CustomerDetail> DETAIL=(r,n)->new CustomerDetail(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),r.getString("note"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getString("created_by"),r.getTimestamp("created_at").toInstant(),r.getTimestamp("updated_at").toInstant());
- public Optional<CustomerDetail> find(long id,boolean forUpdate){return jdbc.query("select * from customer where id=?"+(forUpdate?" for update":""),DETAIL,id).stream().findFirst();}
+ public Optional<CustomerDetail> find(long id,boolean forUpdate){return jdbc.query("select * from customer where id=? and deleted_at is null"+(forUpdate?" for update":""),DETAIL,id).stream().findFirst();}
  public CustomerDetail insert(CustomerWrite w,long actorId,Instant now){return jdbc.queryForObject("insert into customer(full_name,phone,default_address,zalo_name,tiktok_id,threads_id,note,created_by,created_at,updated_at) values(?,?,?,?,?,?,?,?,?,?) returning *",DETAIL,w.fullName(),w.phone(),w.defaultAddress(),w.zaloName(),w.tiktokId(),w.threadsId(),w.note(),actorId,Timestamp.from(now),Timestamp.from(now));}
 
  public Page<CustomerSummary> list(String q,String status,int page,int size,boolean includeOrders){
-  var args=new ArrayList<Object>();var where=new StringBuilder(" where true");
+  var args=new ArrayList<Object>();var where=new StringBuilder(" where customer.deleted_at is null");
   if(!status.equals("ALL")){where.append(" and status=?");args.add(status);}
   if(!q.isEmpty()){
    String token=literal(q.toLowerCase(java.util.Locale.ROOT));
@@ -31,13 +31,13 @@ public class CustomerRepository {
   }
   long total=jdbc.queryForObject("select count(*) from customer"+where,Long.class,args.toArray());
   Collections.addAll(args,size,(long)page*size);
-  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,zalo_name,tiktok_id,threads_id,status,version,created_at,"+(includeOrders?"coalesce(oc.order_count,0)":"null::bigint")+" order_count from customer"+(includeOrders?" left join (select customer_id,count(*) order_count from orders where status in ('KEEPING','READY_TO_SHIP','COMPLETED') group by customer_id) oc on oc.customer_id=customer.id":"")+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant(),r.getObject("order_count",Long.class)),args.toArray());
+  var items=jdbc.query("select id,customer_code,full_name,phone,default_address,zalo_name,tiktok_id,threads_id,status,version,created_at,"+(includeOrders?"coalesce(oc.order_count,0)":"null::bigint")+" order_count,"+(includeOrders?"status='ARCHIVED' and "+CustomerTrashService.HAS_NO_ORDERS.formatted("customer"):"false")+" trashable from customer"+(includeOrders?" left join (select customer_id,count(*) order_count from orders where deleted_at is null and status in ('KEEPING','READY_TO_SHIP','COMPLETED') group by customer_id) oc on oc.customer_id=customer.id":"")+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new CustomerSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),r.getString("default_address"),r.getString("zalo_name"),r.getString("tiktok_id"),r.getString("threads_id"),Status.valueOf(r.getString("status")),r.getLong("version"),r.getTimestamp("created_at").toInstant(),r.getObject("order_count",Long.class),r.getBoolean("trashable")),args.toArray());
   return new Page<>(items,page,size,total,(total+size-1)/size);
  }
  private static String literal(String s){return "%"+s.replace("!","!!").replace("%","!%").replace("_","!_")+"%";}
  public Page<DuplicateSummary> duplicates(String phone,Long excludeId,int page,int size){
   if(phone==null)return new Page<>(List.of(),page,size,0,0);
-  String where=" where phone=?"+(excludeId==null?"":" and id<>?");var args=new ArrayList<Object>();args.add(phone);if(excludeId!=null)args.add(excludeId);
+  String where=" where deleted_at is null and phone=?"+(excludeId==null?"":" and id<>?");var args=new ArrayList<Object>();args.add(phone);if(excludeId!=null)args.add(excludeId);
   long total=jdbc.queryForObject("select count(*) from customer"+where,Long.class,args.toArray());Collections.addAll(args,size,(long)page*size);
   var items=jdbc.query("select id,customer_code,full_name,phone,status from customer"+where+" order by created_at desc,id desc limit ? offset ?",(r,n)->new DuplicateSummary(r.getString("id"),r.getString("customer_code"),r.getString("full_name"),r.getString("phone"),Status.valueOf(r.getString("status"))),args.toArray());
   return new Page<>(items,page,size,total,(total+size-1)/size);

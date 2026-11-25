@@ -140,6 +140,7 @@ th:last-child {
   align-items: center;
 }
 .social-account { min-width: 100px; max-width: 180px; overflow-wrap: anywhere; }
+.actions-cell { text-align: center; }
 .order-count { text-align: center; font-variant-numeric: tabular-nums; }
 .pagination app-pagination { flex: 1; min-width: 0; }
 .pagination > span { flex-shrink: 0; }

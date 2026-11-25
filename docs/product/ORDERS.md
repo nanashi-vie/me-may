@@ -207,7 +207,7 @@ Phải đồng bộ admin mapper, public list/detail/lookup/wishlist/Home/collec
 Flash Sale và cache invalidation sau commit; không chỉ đổi một DTO.
 Ẩn listing không nhả tồn đơn. Chặn trash khi còn reservation ACTIVE; các FK
 order phải bảo vệ lịch sử khỏi hard purge, không CASCADE xóa item/đơn/thanh toán.
-Kiểm tra job purge hiện có, không tự thêm cơ chế xóa dữ liệu đơn. Hoàn tồn phải
+Xóa đơn chỉ theo điều kiện ở [Thùng rác](TRASH.md) (25/11). Hoàn tồn phải
 giữ giới hạn mỗi dòng legacy; nếu không đủ sức chứa thì rollback và báo lỗi,
 không clamp hoặc âm thầm bỏ lượng hoàn. Plan phải kiểm case tăng tồn tay rồi hủy.
 

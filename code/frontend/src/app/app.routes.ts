@@ -58,6 +58,7 @@ export const routes: Routes = [
         loadComponent: () => import('./features/admin/attendance/punch').then((m) => m.Punch),
       },
       { path: 'cham-cong', pathMatch: 'full', redirectTo: 'nhan-vien' },
+      { path: 'thung-rac', title: 'Thùng rác | Mẹ Mây', canActivate: [requireOwner], loadComponent: () => import('./features/admin/trash/trash-page/trash-page').then(m => m.TrashPage) },
       {
         path: 'flash-sale',
         canDeactivate: [pendingBookChanges],

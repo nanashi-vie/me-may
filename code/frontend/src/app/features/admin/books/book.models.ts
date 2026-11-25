@@ -83,6 +83,7 @@ export interface BookSummary {
   updatedAt: string;
   frontContentPath: string | null;
 }
+export type StockUpdate = Pick<BookSummary, 'id' | 'version' | 'totalStock' | 'availability' | 'updatedAt'>;
 export interface BookFilter {
   storageBoxNumber?: number;
   missingOnly?: boolean;
@@ -154,7 +155,6 @@ export interface AdminApiError {
   currentVersion?: number;
 }
 
-export interface TrashBook { id:string; bookCode:string; title:string|null; version:number; deletedAt:string; expiresAt:string; }
 
 export interface MediaMetadata {mediaId:string;alt:string|null;sourceRef:string|null;}
 export interface MediaAssignment { mediaId: string; role: MediaRole; }

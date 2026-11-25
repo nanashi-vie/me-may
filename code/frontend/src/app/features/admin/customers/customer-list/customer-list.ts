@@ -14,11 +14,13 @@ import {
 import { AuthService } from '../../../../core/auth/auth.service';
 import { CustomerApi } from '../customer-api';
 import { CustomerDetail, CustomerFilter, CustomerSummary, Page } from '../customer-models';
+import { TrashIcon } from '../../../../shared/trash-icon/trash-icon';
+import { TrashDialog } from '../../trash/trash-dialog/trash-dialog';
 import { CustomerForm } from '../customer-form/customer-form';
 
 @Component({
   selector: 'app-customer-list',
-  imports: [Pagination, RouterLink, CustomerForm],
+  imports: [Pagination, RouterLink, CustomerForm, TrashDialog, TrashIcon],
   templateUrl: './customer-list.html',
   styleUrls: ['../customer-pages.scss'],
 })
@@ -29,6 +31,7 @@ export class CustomerList {
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
   private readonly editor = viewChild(CustomerForm);
+  private readonly trash = viewChild.required(TrashDialog);
   private readonly reloads = new Subject<void>();
   private readonly searches = new Subject<string>();
   private creating = false;
@@ -112,6 +115,13 @@ export class CustomerList {
     this.toast.set(this.creating ? 'Đã thêm khách hàng thành công' : 'Đã cập nhật khách hàng');
     if (this.creating) this.navigate({ q: '', status: 'ACTIVE', page: 0 });
     this.creating = false;
+    this.refresh();
+  }
+  askTrash({ id, version, customerCode, fullName }: CustomerSummary) {
+    this.trash().open({ id, version, code: customerCode, name: fullName });
+  }
+  onTrashed(code: string) {
+    this.toast.set('Đã chuyển ' + code + ' vào Thùng rác.');
     this.refresh();
   }
   canLeave() {

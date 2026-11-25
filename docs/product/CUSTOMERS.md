@@ -65,7 +65,7 @@ STAFF xem được các field hồ sơ, gồm ghi chú nội bộ, trong khu adm
 Đơn/giữ tồn/tiền/giao hàng do [ORDERS](ORDERS.md) quản lý, không xử lý trong customer.
 Ngoài phạm vi: checkout public, doanh thu/VIP/tích điểm, Excel, nhiều địa chỉ mỗi khách,
 đồng bộ tài khoản website/danh bạ hoặc nền tảng xã hội, SMS/OTP.
-Không xóa cứng khách qua giao diện hoặc cung cấp API DELETE trong module.
+Xóa khách Đã lưu trữ không có đơn chỉ qua [Thùng rác](TRASH.md) (25/11); không có API DELETE.
 
 ## 3. Dữ liệu
 
@@ -133,8 +133,8 @@ Route `/admin/customers`; mục **Khách hàng** trong sidebar cho OWNER/STAFF.
 Tiêu đề **Khách hàng**, nút OWNER **+ Thêm khách mới**.
 Toolbar: một ô tìm kiếm; trạng thái Đang hoạt động/Đã lưu trữ/Tất cả,
 mặc định ACTIVE. Bảng (đổi15/11): Khách hàng (tên + mã KH), Zalo, TikTok,
-Threads, Số điện thoại, Tổng số đơn hàng. Không có cột Thao tác; bấm tên mở
-chi tiết, OWNER sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem.
+Threads, Số điện thoại, Tổng số đơn hàng và Thao tác (OWNER, chỉ có [xóa](TRASH.md));
+bấm tên mở chi tiết, OWNER sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem.
 Ba tên tài khoản lấy từ API danh sách, field rỗng hiện —; không gọi từng hồ sơ.
 Cột tổng đơn chỉ OWNER: orderCount thật theo [ORDERS](ORDERS.md#13-api-quyền-audit-và-bảo-mật),
 0 khi chưa có đơn được tính; STAFF ẩn cột và API trả null, không query order.
@@ -216,7 +216,7 @@ Hai create đồng thời có thể cùng lưu một số nếu cùng chưa th�
 Lưu trữ hỏi: “Bạn có chắc muốn lưu trữ khách hàng này? Thông tin khách hàng
 sẽ được giữ lại nhưng không còn xuất hiện trong danh sách đang hoạt động.”
 Xác nhận đổi ARCHIVED, giữ mã/dữ liệu. Khôi phục đổi ACTIVE; cập nhật UI/filter.
-Không hard delete, không tái dùng mã. Không mất khách khỏi danh sách ALL.
+Lưu trữ không xóa dữ liệu, không tái dùng mã; xóa theo [Thùng rác](TRASH.md).
 
 PUT/PATCH gửi expected `version`; UPDATE có điều kiện và tăng version một lần
 cùng updated_at trong transaction. Cũ trả409 `version_conflict` và currentVersion;

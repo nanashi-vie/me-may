@@ -18,6 +18,19 @@ class OrderApiTest extends OrderTestSupport {
   var stats=tree(a.send("GET",BASE+"/stats?status=KEEPING&size=1",null,false));assertThat(stats.path("keeping").asLong()).isEqualTo(2);
   a.login("staff@catalogue.test");for(String path:List.of(BASE,BASE+"/stats",BASE+"/catalog",BASE+"/catalog-match?title=book",BASE+"/"+ids.getFirst()))assertThat(a.send("GET",path,null,false).statusCode()).isEqualTo(403);
  }
+ @Test void soldOutKeepsReservationAndRemovalReturnsKeptCopy()throws Exception{
+  var a=api();var b=ready();jdbc.update("update book_variant set stock=3 where book_copy_id=?",Long.parseLong(b.id()));
+  var made=a.send("POST",BASE,json(Map.of("customerId",Long.toString(customer()),"fulfillmentType","KEEP","requestId",UUID.randomUUID())),true);String id=tree(made).path("id").asString();
+  assertThat(a.send("POST",BASE+"/"+id+"/items",json(Map.of("version",0,"requestId",UUID.randomUUID(),"sourceType","CATALOG","bookCopyId",b.id(),"unitPriceVnd",75000,"quantity",1,"unitWeightGrams",250)),true).statusCode()).isEqualTo(200);
+  assertThat(a.send("POST",BASE+"/"+id+"/keep",json(Map.of("version",1,"requestId",UUID.randomUUID(),"allowInsufficientDeposit",true,"reason","Owner exception")),true).statusCode()).isEqualTo(200);
+  var kept=queries.detail(Long.parseLong(b.id()),owner);assertThat(kept.totalStock()).isEqualTo(2);
+  assertThat(a.send("POST","/api/v1/admin/books/sold-out",json(Map.of("items",List.of(Map.of("id",b.id(),"version",kept.version())))),true).statusCode()).isEqualTo(200);
+  assertThat(queries.detail(Long.parseLong(b.id()),owner).totalStock()).isZero();
+  assertThat(jdbc.queryForObject("select quantity from order_reservation where book_copy_id=? and state='ACTIVE'",Long.class,Long.parseLong(b.id()))).isEqualTo(1);
+  String item=tree(a.send("GET",BASE+"/"+id,null,false)).path("items").get(0).path("id").asString();
+  assertThat(a.send("DELETE",BASE+"/"+id+"/items/"+item,json(Map.of("version",2,"requestId",UUID.randomUUID(),"reason","Customer removed book")),true).statusCode()).isEqualTo(200);
+  var returned=queries.detail(Long.parseLong(b.id()),owner);assertThat(returned.totalStock()).isEqualTo(1);assertThat(returned.availability()).isEqualTo(vn.memay.catalogue.BookDtos.Availability.AVAILABLE);
+ }
  @Test void apiCreateKeepAndDeleteRequiresReasonBody()throws Exception{
   var a=api();var b=ready();var made=a.send("POST",BASE,json(Map.of("customerId",Long.toString(customer()),"fulfillmentType","KEEP","requestId",UUID.randomUUID())),true);assertThat(made.statusCode()).isEqualTo(201);String id=tree(made).path("id").asString();assertThat(tree(made).path("id").isString()).isTrue();assertThat(tree(made).path("orderCode").asString()).startsWith("DH-");
   assertThat(a.send("POST",BASE+"/"+id+"/items",json(Map.of("version",0,"requestId",UUID.randomUUID(),"sourceType","CATALOG","bookCopyId",b.id(),"unitPriceVnd",75000,"quantity",1,"unitWeightGrams",250)),true).statusCode()).isEqualTo(200);

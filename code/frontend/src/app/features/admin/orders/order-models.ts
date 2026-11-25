@@ -41,6 +41,7 @@ export interface Totals {
   paymentStatus: 'UNPAID' | 'PARTIALLY_PAID' | 'PAID' | 'OVERPAID' | 'PROVISIONAL';
 }
 export interface OrderSummary {
+  trashable?: boolean;
   id: string;
   orderCode: string;
   customerId: string;

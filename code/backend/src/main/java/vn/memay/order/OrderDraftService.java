@@ -72,7 +72,7 @@ public class OrderDraftService {
   else if(weightChanged)db.jdbc.update("update orders set parcel_weight_needs_review=true where id=?",id);
   if(moneyChanged)db.jdbc.update("update orders set cod_needs_review=true where id=?",id);
  }
- private Map<String,Object> customer(long id){var rows=db.jdbc.queryForList("select * from customer where id=? for update",id);if(rows.isEmpty())throw new AdminApiException(404,"not_found");var c=rows.getFirst();if(!"ACTIVE".equals(c.get("status")))throw new AdminApiException(409,"customer_archived");return c;}
+ private Map<String,Object> customer(long id){var rows=db.jdbc.queryForList("select * from customer where id=? and deleted_at is null for update",id);if(rows.isEmpty())throw new AdminApiException(404,"not_found");var c=rows.getFirst();if(!"ACTIVE".equals(c.get("status")))throw new AdminApiException(409,"customer_archived");return c;}
  private static String type(String value,String fallback){String t=value==null?fallback:value;if(!Set.of("IMMEDIATE","KEEP").contains(t))throw AdminApiException.field("fulfillmentType","Chọn loại đơn");return t;}
  private static void editable(OrderDetail d){transition(d.status()==Status.DRAFT||d.status()==Status.KEEPING);}
 }

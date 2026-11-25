@@ -13,8 +13,8 @@ import {
   Page,
   PreviewBook,
   Publication,
+  StockUpdate,
   Taxonomy,
-  TrashBook,
 } from './book.models';
 @Injectable({ providedIn: 'root' })
 export class BookApi {
@@ -29,17 +29,14 @@ export class BookApi {
       if (value !== undefined && value !== '') params = params.set(key, String(value));
     return this.http.get<Page<BookSummary>>('/books', params);
   }
-  trash(page=0) {
-    return this.http.get<Page<TrashBook>>('/books/trash',new HttpParams().set('page',page));
+  bulkTrash(items: readonly {id:string;version:number}[]) {
+    return this.http.mutate<void>('POST','/books/trash/bulk',{items,permanent:false});
   }
-  trashSelection() {
-    return this.http.get<{id:string;version:number}[]>('/books/trash/selection');
+  changeTrash(id:string, version:number) {
+    return this.http.mutate<void>('PATCH',`/books/${id}/trash`,{version,trashed:true});
   }
-  bulkTrash(items: readonly {id:string;version:number}[], permanent:boolean) {
-    return this.http.mutate<void>('POST','/books/trash/bulk',{items,permanent});
-  }
-  changeTrash(id:string, version:number, trashed:boolean) {
-    return this.http.mutate<void>('PATCH',`/books/${id}/trash`,{version,trashed});
+  markSoldOut(items: readonly {id:string;version:number}[]) {
+    return this.http.mutate<StockUpdate[]>('POST','/books/sold-out',{items});
   }
   titleDuplicate(title:string,excludeId?:string) {
     let params=new HttpParams().set('title',title);

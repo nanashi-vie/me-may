@@ -35,6 +35,7 @@ describe('AdminLayout', () => {
     expect(text).toContain('Tổng quan');
     expect(fixture.nativeElement.querySelector('a[href="/admin/customers"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/admin/orders"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/thung-rac"]')).not.toBeNull();
     expect(text).toContain('Quản lý sách');
     expect(text).toContain('Sách');
     expect(text).toContain('Bộ sưu tập');
@@ -52,7 +53,7 @@ describe('AdminLayout', () => {
     expect(text).toContain('OWNER');
 
     const svgIcons = fixture.nativeElement.querySelectorAll('.nav-icon svg');
-    expect(svgIcons.length).toBe(3);
+    expect(svgIcons.length).toBe(4);
 
     const chevron = fixture.nativeElement.querySelector('.nav-chevron svg');
     expect(chevron).toBeTruthy();

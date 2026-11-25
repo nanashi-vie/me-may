@@ -19,11 +19,11 @@ public class OrderQueryService {
  private static final String AGGREGATES=" from orders o left join lateral (select coalesce(sum(quantity),0) qty,coalesce(sum(unit_price_vnd::numeric*quantity),0) subtotal,case when count(*) filter(where unit_weight_grams is null)>0 then null else coalesce(sum(unit_weight_grams::numeric*quantity),0) end weight from order_items where order_id=o.id) i on true left join lateral(select coalesce(sum(case when transaction_type='REFUND' then -amount else amount end),0) paid from order_payments where order_id=o.id and voided_at is null) p on true";
  public Page<OrderSummary> list(OrderFilter f,AdminUser actor){access.requireOwner(actor,false);Instant now=db.clock.instant();var w=where(f,now);var args=new ArrayList<>(w.args());
   long count=db.jdbc.queryForObject("select count(*) from orders o"+w.sql(),Long.class,args.toArray());args.add(f.size());args.add((long)f.page()*f.size());
-  var rows=db.jdbc.query("select o.*,i.qty item_qty,i.subtotal item_subtotal,i.weight book_weight,p.paid paid_amount"+AGGREGATES+w.sql()+" order by o.created_at desc,o.id desc limit ? offset ?",(r,n)->{
+  var rows=db.jdbc.query("select o.*,i.qty item_qty,i.subtotal item_subtotal,i.weight book_weight,p.paid paid_amount,o.status in ('DRAFT','CANCELLED') and "+OrderTrashService.HAS_NO_PAYMENTS.formatted("o")+" trashable"+AGGREGATES+w.sql()+" order by o.created_at desc,o.id desc limit ? offset ?",(r,n)->{
    long subtotal=checked(r.getBigDecimal("item_subtotal").toBigIntegerExact(),"subtotal"),paid=checked(r.getBigDecimal("paid_amount").toBigIntegerExact(),"paidAmount");var weight=r.getBigDecimal("book_weight");
    var total=aggregate(subtotal,r.getLong("discount_amount"),r.getObject("shipping_fee",Long.class),paid,weight==null?null:checked(weight.toBigIntegerExact(),"totalBookWeightGrams"));
    Status status=Status.valueOf(r.getString("status"));Instant until=r.getTimestamp("keep_until")==null?null:r.getTimestamp("keep_until").toInstant();
-   return new OrderSummary(r.getString("id"),r.getString("order_code"),r.getString("customer_id"),r.getString("customer_name_snapshot"),r.getString("customer_phone_snapshot"),status,r.getString("fulfillment_type"),r.getTimestamp("created_at").toInstant(),until,r.getLong("item_qty"),total,r.getLong("version"),warning(status,until,now));
+   return new OrderSummary(r.getString("id"),r.getString("order_code"),r.getString("customer_id"),r.getString("customer_name_snapshot"),r.getString("customer_phone_snapshot"),status,r.getString("fulfillment_type"),r.getTimestamp("created_at").toInstant(),until,r.getLong("item_qty"),total,r.getLong("version"),warning(status,until,now),r.getBoolean("trashable"));
   },args.toArray());return new Page<>(rows,f.page(),f.size(),count,(count+f.size()-1)/f.size());
  }
  public OrderStats stats(OrderFilter f,AdminUser actor){access.requireOwner(actor,false);Instant now=db.clock.instant();var w=where(f,now);var args=new ArrayList<Object>();args.add(Timestamp.from(now));args.add(java.sql.Date.valueOf(now.atZone(ZONE).toLocalDate()));args.addAll(w.args());
@@ -33,7 +33,7 @@ public class OrderQueryService {
  public OrderDetail detail(long id,AdminUser actor){access.requireOwner(actor,false);return db.require(id,false);}
  public Page<CatalogCandidate> catalog(String q,int page,int size,AdminUser actor){access.requireOwner(actor,false);paging(page,size);return catalog.catalogList(q,page,size);}
  public MatchResult matches(String title,AdminUser actor){access.requireOwner(actor,false);return catalog.match(title);}
- private Where where(OrderFilter f,Instant now){paging(f.page(),f.size());var sql=new StringBuilder(" where true");var args=new ArrayList<Object>();String q=text(f.q(),"q",200,false);
+ private Where where(OrderFilter f,Instant now){paging(f.page(),f.size());var sql=new StringBuilder(" where o.deleted_at is null");var args=new ArrayList<Object>();String q=text(f.q(),"q",200,false);
   if(f.status()!=null&&!f.status().isBlank()&&!f.status().equals("ALL")){try{Status.valueOf(f.status());}catch(IllegalArgumentException e){throw new AdminApiException(400,"invalid_request");}sql.append(" and o.status=?");args.add(f.status());}
   if(f.customerId()!=null&&!f.customerId().isBlank()){sql.append(" and o.customer_id=?");args.add(id(f.customerId(),"customerId"));}
   if(q!=null){String token="%"+literal(q.toLowerCase(Locale.ROOT))+"%";String phone=q.replaceAll("[\\s.\\-]","");if(phone.startsWith("+84"))phone="0"+phone.substring(3);String pt="%"+literal(phone)+"%";

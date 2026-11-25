@@ -89,6 +89,40 @@
   justify-content: center;
   white-space: nowrap;
 }
+.sold-out-action {
+  width: auto;
+  margin: 0;
+  padding: 0 0.85rem;
+  border-color: #b8b0a6;
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink, #292724);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  &:hover:not(:disabled) { background: #f5f3ef; }
+}
+.bulk-sold-out-btn { height: 38px; }
+.actions-heading { text-align: center; }
+.row-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.sold-out-btn { height: 40px; }
+.sold-out-badge {
+  display: block;
+  width: max-content;
+  margin-top: 0.2rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+  background: #ece9e4;
+  color: #5d574f;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
 .book-cell {
   display: flex;
   align-items: center;
@@ -107,30 +141,6 @@
   flex-shrink: 0;
   cursor: pointer;
   vertical-align: middle;
-}
-.trash-list {
-  list-style: none;
-  padding: 0;
-  margin: 0.75rem 0 1.25rem;
-  border-top: 1px solid var(--line, #ddd7ce);
-}
-.trash-item {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0.5rem;
-  border-bottom: 1px solid var(--line, #ddd7ce);
-  flex-wrap: wrap;
-}
-.trash-item-info {
-  flex: 1 1 auto;
-  min-width: 200px;
-}
-.trash-restore-btn {
-  width: auto;
-  margin: 0;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.88rem;
 }
 .table-scroll {
   overflow: auto;

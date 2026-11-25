@@ -46,7 +46,7 @@
               <th scope="col">TikTok</th>
               <th scope="col">Threads</th>
               <th scope="col">Số điện thoại</th>
-              @if(owner()){<th scope="col">Tổng số đơn hàng</th>}
+              @if(owner()){<th scope="col">Tổng số đơn hàng</th><th scope="col" class="actions-cell">Thao tác</th>}
             </tr>
           </thead>
           <tbody>
@@ -67,7 +67,15 @@
                 <td class="social-account">{{ customer.tiktokId || '—' }}</td>
                 <td class="social-account">{{ customer.threadsId || '—' }}</td>
                 <td class="phone">{{ customer.phone || '—' }}</td>
-                @if(owner()){<td class="order-count">{{customer.orderCount??'—'}}</td>}
+                @if(owner()){
+                  <td class="order-count">{{customer.orderCount??'—'}}</td>
+                  <td class="actions-cell">
+                    @if (customer.trashable) {
+                      <button type="button" class="secondary trash-btn" [attr.aria-label]="'Xóa ' + customer.customerCode"
+                        (click)="askTrash(customer)"><app-trash-icon /></button>
+                    } @else { <span title="Chỉ xóa được khách Đã lưu trữ và không có đơn nào">—</span> }
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -94,3 +102,4 @@
   }
 </section>
 <app-customer-form (saved)="onSaved($event)" />
+<app-trash-dialog kind="customers" (trashed)="onTrashed($event)" (settled)="refresh()" />
