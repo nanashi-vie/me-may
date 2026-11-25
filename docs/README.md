@@ -16,6 +16,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Chạy backend/frontend, auth hoặc test trên máy mới | [Chạy local](runbooks/LOCAL.md) |
 | Sửa giao diện public/admin, wishlist, CTA, phân trang, banner | [Thiết kế](product/DESIGN.md), [phân trang](product/PAGINATION.md), [banner](product/HERO_BANNERS.md) |
 | Nhập, sửa, xuất bản, rà sách thiếu, lọc thùng | [Catalogue](product/CATALOGUE.md), [import CSV/XLSX](product/BOOK_IMPORT.md), [rollout nhập sách](runbooks/BOOK_ENTRY_ROLLOUT.md) |
+| Sửa Thùng rác, đánh dấu hết hàng, tải ảnh từ `/admin/sach` | [Thao tác danh sách](product/CATALOGUE_ACTIONS.md) |
 | Kiểm tra tạo thùng → lưu → mở lại → lọc trên candidate | [Nơi lưu trữ](product/CATALOGUE.md#nơi-lưu-trữ-sách), [smoke V20](runbooks/ROLLOUT_CHECKS.md#nơi-lưu-trữ-v20) |
 | Điều tra cảnh báo nguồn ảnh, upload máy/Drive và phục hồi | [Quy tắc xuất bản](product/IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè), [vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [bằng chứng](verification/IMAGE_VERIFICATION.md) |
 | Sửa hồ sơ khách, đơn keep, giao nhận, tiền và bill | [Khách hàng](product/CUSTOMERS.md), [đơn nội bộ](product/ORDERS.md) |

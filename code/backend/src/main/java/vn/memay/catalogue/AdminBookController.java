@@ -90,6 +90,15 @@ public class AdminBookController {
         return ResponseEntity.noContent().build();
     }
 
+    @org.springframework.beans.factory.annotation.Autowired private BookStockService stock;
+
+    public record SoldOutBatch(@jakarta.validation.constraints.NotEmpty java.util.List<BookTrashService.Selection> items) {}
+
+    @PostMapping("/sold-out")
+    public java.util.List<BookStockService.SoldOut> soldOut(Authentication a, @Valid @RequestBody SoldOutBatch body) {
+        return stock.soldOut(body.items(), actors.current(a));
+    }
+
     @PatchMapping("/{id}/trash")
     public ResponseEntity<Void> changeTrash(Authentication a, @PathVariable long id, @Valid @RequestBody TrashChange body) {
         trash.change(actors.current(a), id, body.version(), body.trashed());

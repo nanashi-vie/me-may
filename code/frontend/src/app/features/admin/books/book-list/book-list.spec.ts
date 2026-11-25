@@ -190,6 +190,130 @@ describe('BookList', () => {
     expect(rowCheck.checked).toBe(true);
     expect(toolbar.querySelector('.bulk-trash-btn')?.textContent?.trim()).toBe('Chuyển 1 cuốn vào Thùng rác');
   });
+  describe('mark as sold out', () => {
+    const books = () => [
+      {id:'7',bookCode:'MM-000007',title:'Bảy',publication:'PUBLISHED',availability:'AVAILABLE',version:2,totalStock:1,updatedAt:'2026-11-23T00:00:00Z'},
+      {id:'8',bookCode:'MM-000008',title:'Tám',publication:'ARCHIVED',publishedAt:null,availability:'SOLD',version:5,totalStock:0,updatedAt:'2026-11-22T00:00:00Z'},
+      {id:'9',bookCode:'MM-000009',title:'Chín',publication:'ARCHIVED',publishedAt:null,availability:'AVAILABLE',version:4,totalStock:3,updatedAt:'2026-11-21T00:00:00Z'},
+    ];
+    function setup(role = 'OWNER') {
+      const response = new Subject<unknown[]>();
+      const markSoldOut = vi.fn(() => response);
+      const list = vi.fn(() => of({items:books(),page:0,size:20,totalElements:3,totalPages:1}));
+      TestBed.configureTestingModule({providers:[provideRouter([]),
+        {provide:AuthService,useValue:{user:()=>({role})}},
+        {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+        {provide:BookApi,useValue:{storageBoxes:()=>of([]),list,markSoldOut}}]});
+      const f = TestBed.createComponent(BookList); f.detectChanges();
+      const root = f.nativeElement as HTMLElement;
+      const dialog = root.querySelector<HTMLDialogElement>('dialog.sold-out-dialog')!;
+      dialog.showModal = vi.fn(); dialog.close = vi.fn();
+      const row = (id:string) => root.querySelector<HTMLElement>('#admin-book-' + id)!;
+      const rowButton = (id:string) => row(id).querySelector<HTMLButtonElement>('.sold-out-btn');
+      const bulk = () => root.querySelector<HTMLButtonElement>('.bulk-sold-out-btn')!;
+      const dialogButton = (text:string) => Array.from(dialog.querySelectorAll('button')).find(b=>b.textContent.trim()===text);
+      const select = (code:string) => { root.querySelector<HTMLInputElement>(`[aria-label="Chọn ${code}"]`)!.click(); f.detectChanges(); };
+      return {f,root,dialog,row,rowButton,bulk,dialogButton,select,response,markSoldOut,list};
+    }
+    const codes = (root:HTMLElement) => Array.from(root.querySelectorAll('tbody tr')).map(tr=>tr.id);
+
+    it('confirms one book then updates its row in place without reloading', () => {
+      const t = setup();
+      t.rowButton('7')!.click(); t.f.detectChanges();
+      expect(t.dialog.showModal).toHaveBeenCalledOnce();
+      expect(t.dialog.textContent).toContain('MM-000007');
+      expect(t.dialog.textContent).toContain('1 → 0');
+      expect(t.dialog.textContent).toContain('vẫn công khai');
+      expect(t.markSoldOut).not.toHaveBeenCalled();
+
+      t.dialogButton('Đánh dấu hết hàng')!.click(); t.f.detectChanges();
+      expect(t.markSoldOut).toHaveBeenCalledExactlyOnceWith([{id:'7',version:2}]);
+      expect(t.dialogButton('Đánh dấu hết hàng')!.disabled).toBe(true);
+      t.response.next([{id:'7',version:3,totalStock:0,availability:'SOLD',updatedAt:'2026-11-25T06:00:00Z'}]); t.f.detectChanges();
+
+      expect(t.dialog.close).toHaveBeenCalledOnce();
+      expect(t.list).toHaveBeenCalledOnce();
+      expect(codes(t.root)).toEqual(['admin-book-7','admin-book-8','admin-book-9']);
+      expect(t.row('7').querySelector('.sold-out-badge')?.textContent).toContain('Hết hàng');
+      expect(t.row('7').textContent).toContain('25/11/2026 13:00');
+      expect(t.rowButton('7')).toBeNull();
+      expect(t.f.componentInstance.result()!.items[0]).toMatchObject({version:3,totalStock:0,availability:'SOLD'});
+      expect(t.root.querySelector('[role="status"]')?.textContent).toContain('Đã đánh dấu hết hàng MM-000007');
+    });
+    it('renders the cancel button before opening so the browser can autofocus it', () => {
+      const t = setup();
+      let focusable: string | undefined;
+      t.dialog.showModal = vi.fn(() => { focusable = t.dialog.querySelector('[autofocus]')?.textContent?.trim(); });
+      t.rowButton('7')!.click(); t.f.detectChanges();
+      expect(focusable).toBe('Hủy');
+    });
+    it('offers hidden books but never claims they stay public', () => {
+      const t = setup();
+      t.rowButton('9')!.click(); t.f.detectChanges();
+      expect(t.dialog.textContent).toContain('3 → 0');
+      expect(t.dialog.textContent).not.toContain('công khai');
+    });
+    it('shows the badge instead of the action for books already sold out', () => {
+      const t = setup();
+      expect(t.row('8').querySelector('.sold-out-badge')).not.toBeNull();
+      expect(t.rowButton('8')).toBeNull();
+      expect(t.row('7').querySelector('.sold-out-badge')).toBeNull();
+    });
+    it('hides the actions from STAFF but keeps the badge', () => {
+      const t = setup('STAFF');
+      expect(t.root.querySelector('.sold-out-btn, .bulk-sold-out-btn')).toBeNull();
+      expect(t.row('8').querySelector('.sold-out-badge')).not.toBeNull();
+    });
+    it('bulk marks only selected books that still have stock and clears the selection', () => {
+      const t = setup();
+      expect(t.bulk().disabled).toBe(true);
+      t.select('MM-000008');
+      expect(t.bulk().textContent).toContain('(0 cuốn)');
+      expect(t.bulk().disabled).toBe(true);
+      t.select('MM-000007'); t.select('MM-000009');
+      expect(t.bulk().textContent).toContain('(2 cuốn)');
+      t.bulk().click(); t.f.detectChanges();
+      expect(t.dialog.textContent).toContain('2 cuốn');
+      expect(t.dialog.textContent).toContain('4 → 0');
+      t.dialogButton('Đánh dấu hết hàng')!.click();
+      expect(t.markSoldOut).toHaveBeenCalledExactlyOnceWith([{id:'7',version:2},{id:'9',version:4}]);
+      t.response.next(['7','9'].map(id=>({id,version:9,totalStock:0,availability:'SOLD',updatedAt:'2026-11-25T06:00:00Z'}))); t.f.detectChanges();
+      expect(t.f.componentInstance.selected().size).toBe(0);
+      expect(t.root.querySelectorAll('.sold-out-badge').length).toBe(3);
+      expect(t.root.querySelector('[role="status"]')?.textContent).toContain('2 cuốn');
+    });
+    it('keeps the dialog open with a clear version conflict and reloads the list', () => {
+      const t = setup();
+      t.rowButton('7')!.click(); t.f.detectChanges();
+      t.dialogButton('Đánh dấu hết hàng')!.click();
+      t.response.error(new HttpErrorResponse({status:409,error:{error:'version_conflict',currentVersion:3}})); t.f.detectChanges();
+      const alert = t.dialog.querySelector('[role="alert"]');
+      expect(alert?.textContent).toContain('MM-000007');
+      expect(alert?.textContent).toContain('tồn kho chưa đổi');
+      expect(t.dialog.close).not.toHaveBeenCalled();
+      expect(t.dialogButton('Đánh dấu hết hàng')).toBeUndefined();
+      expect(t.list).toHaveBeenCalledTimes(2);
+      expect(t.rowButton('7')).not.toBeNull();
+      t.dialogButton('Đóng')!.click();
+      expect(t.dialog.close).toHaveBeenCalledOnce();
+    });
+    it('does not claim the stock is unchanged when the result is unknown', () => {
+      const t = setup();
+      t.rowButton('7')!.click(); t.f.detectChanges();
+      t.dialogButton('Đánh dấu hết hàng')!.click();
+      t.response.error(new HttpErrorResponse({status:0})); t.f.detectChanges();
+      const alert = t.dialog.querySelector('[role="alert"]');
+      expect(alert?.textContent).toContain('Chưa xác nhận được');
+      expect(alert?.textContent).not.toContain('chưa đổi');
+      expect(t.list).toHaveBeenCalledTimes(2);
+    });
+    it('draws the trash action as an SVG that follows the button colour', () => {
+      const t = setup();
+      const button = t.row('7').querySelector<HTMLButtonElement>('button[aria-label="Chuyển MM-000007 vào Thùng rác"]')!;
+      expect(button.textContent.trim()).toBe('');
+      expect(Array.from(button.querySelectorAll('svg path')).map(p=>p.getAttribute('fill'))).toEqual(['currentColor','currentColor','currentColor']);
+    });
+  });
   function setupFilters(params = new Map<string,string>()) {
     const queryParamMap = new Subject<Map<string,string>>();
     const list = vi.fn(() => of({items:[],page:0,size:20,totalElements:0,totalPages:0}));

@@ -83,6 +83,7 @@ export interface BookSummary {
   updatedAt: string;
   frontContentPath: string | null;
 }
+export type StockUpdate = Pick<BookSummary, 'id' | 'version' | 'totalStock' | 'availability' | 'updatedAt'>;
 export interface BookFilter {
   storageBoxNumber?: number;
   missingOnly?: boolean;

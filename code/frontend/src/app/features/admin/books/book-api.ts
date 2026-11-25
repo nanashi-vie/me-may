@@ -13,6 +13,7 @@ import {
   Page,
   PreviewBook,
   Publication,
+  StockUpdate,
   Taxonomy,
   TrashBook,
 } from './book.models';
@@ -40,6 +41,9 @@ export class BookApi {
   }
   changeTrash(id:string, version:number, trashed:boolean) {
     return this.http.mutate<void>('PATCH',`/books/${id}/trash`,{version,trashed});
+  }
+  markSoldOut(items: readonly {id:string;version:number}[]) {
+    return this.http.mutate<StockUpdate[]>('POST','/books/sold-out',{items});
   }
   titleDuplicate(title:string,excludeId?:string) {
     let params=new HttpParams().set('title',title);

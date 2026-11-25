@@ -312,38 +312,9 @@ Thay quy tắc6ảnh/tạoPUBLISHED-only trước đây; không đổi kiến tr
 - `GET /api/v1/admin/home-featured/candidates?shelfKey=...&q=...`: gợi ý tối đa 20 sách `PUBLISHED` + `AVAILABLE` thuộc phạm vi kệ khớp từ khóa `q` (mã sách, tên sách, NXB).
 - `PUT /api/v1/admin/home-featured`: chỉ `OWNER`, kiểm tra `version` (409 nếu lệch), tối đa 10 mã sách/kệ, không trùng mã trong cùng kệ, đúng phạm vi thể loại/bộ sưu tập; ghi audit `HOME_FEATURED` và kích hoạt `PublicCacheInvalidation`.
 
-## Thùng rác sách
+## Thao tác từ danh sách
 
-- OWNER chuyển vào Thùng rác và khôi phục tại `/admin/sach`. API
-  `GET /api/v1/admin/books/trash` phân trang. `PATCH /api/v1/admin/books/{id}/trash`
-  nhận `{version, trashed}`. Cập nhật version, audit và cache cùng luồng ghi.
-- Xóa mềm chuyển listing sang Ẩn và loại khỏi danh sách thường. Khôi phục
-  trước hạn đưa về Ẩn, giữ ngày xuất bản đầu tiên, ghim và Flash Sale.
-- Hạn là bảy ngày kể từ lúc xóa. Job mặc định chạy mỗi mười phút, khóa dòng
-  và dọn theo lô. Ảnh giữ trạng thái dọn để có thể thử lại khi Cloudinary lỗi.
-  Audit và receipt giữ dấu vết lịch sử. Tên sách được dùng lại sau khi dọn.
-
-- OWNER có thể chọn từng sách hoặc toàn bộ trang hiện tại để chuyển vào
-  Thùng rác. Trong Thùng rác, **Dọn** áp dụng cho sách đã chọn. **Dọn tất
-  cả** tải danh sách mọi trang qua `GET /api/v1/admin/books/trash/selection`.
-  Hộp thoại xác nhận số cuốn, phạm vi và xóa ảnh vĩnh viễn, kể cả trước hạn.
-- `POST /api/v1/admin/books/trash/bulk` nhận `{items: [{id, version}], permanent}`.
-  Ghi theo lô trong một giao dịch. Dọn vĩnh viễn chỉ nhận sách còn trong
-  Thùng rác với đúng version. Sách vào Thùng rác sau khi mở hộp thoại
-  không thuộc lần dọn đó. DB xóa sách khi xác nhận thành công và tác vụ
-  ảnh thử lại Cloudinary nếu nhà cung cấp chưa xác nhận đã xóa.
-
-## Tải ảnh sách từ trang quản trị
-
-- OWNER chọn tối đa 20 cuốn trên trang hiện tại ở `/admin/sach`, rồi bấm
-  **Tải ảnh**. Một cuốn nhận `<mã sách>.zip`, nhiều cuốn nhận
-  `me-may-anh-sach.zip`. Ảnh trong ZIP có đường dẫn `<mã sách>/<vai trò>.jpg`.
-- `GET /api/v1/admin/books/photo-download?ids=1&ids=2` lấy JPEG 1280 px
-  của tất cả ảnh ACTIVE, gồm ảnh bổ sung đang ẩn. Sách Ẩn được tải, sách
-  trong Thùng rác bị từ chối. ZIP chỉ trả sau khi tạo xong, có `no-store`.
-- Giới hạn 32 MiB dữ liệu ảnh và một lượt tạo ZIP đồng thời mỗi instance.
-  Sách thiếu ảnh được ghi trong `X-Missing-Book-Codes` để UI báo mã sách.
-  Nếu cả lượt thiếu ảnh, vượt giới hạn hoặc đọc ảnh lỗi, UI hiện thông báo.
+Thùng rác, đánh dấu hết hàng và tải ảnh: [CATALOGUE_ACTIONS](CATALOGUE_ACTIONS.md).
 
 ## Nơi lưu trữ sách
 

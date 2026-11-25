@@ -90,10 +90,8 @@ public class BookTrashService {
                 (r,n) -> new Selection(r.getString(1),r.getLong(2)));
     }
 
-    @Transactional
-    public void bulk(AdminUser actor, List<Selection> items, boolean permanent) {
-        access.requireOwner(actor);
-        if (items.isEmpty() || (!permanent && items.size()>100))
+    static java.util.TreeMap<Long,Long> ordered(List<Selection> items, boolean limited) {
+        if (items.isEmpty() || (limited && items.size()>100))
             throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
         var ordered = new java.util.TreeMap<Long,Long>();
         for (var item:items) {
@@ -103,6 +101,13 @@ public class BookTrashService {
             if (id<1 || item.version()==null || item.version()<0 || ordered.putIfAbsent(id,item.version())!=null)
                 throw AdminApiException.field("items", "Danh sách sách không hợp lệ");
         }
+        return ordered;
+    }
+
+    @Transactional
+    public void bulk(AdminUser actor, List<Selection> items, boolean permanent) {
+        access.requireOwner(actor);
+        var ordered = ordered(items, !permanent);
         if (!permanent) {
             ordered.forEach((id,version) -> change(actor,id,version,true));
             return;

@@ -1,9 +1,10 @@
 # Tiến độ và bàn giao
 
-Cập nhật 24/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ADMIN-SOLD-OUT-01` (25/11, trên `dev`): `/admin/sach` có icon thùng rác SVG, nút "Hết hàng" từng dòng và hàng loạt qua API `POST /admin/books/sold-out`; cần triển khai backend trước frontend, không migration. [Contract](product/CATALOGUE_ACTIONS.md#đánh-dấu-hết-hàng-từ-danh-sách-25112026)
 - `PUBLIC-CAROUSEL-SYNC-01` (24/11, trên `dev`): carousel book-detail và lưới `/sach` đồng bộ thẻ với Home; desktop 5 thumbnail khớp ảnh chính, hai nút bằng cụm ảnh; ẩn mã sách ở Home/carousel detail/lưới `/sach`; bỏ vạch ngăn. [Thiết kế](product/DESIGN.md)
 - `THEME-SWITCH-CSS-01` (23/11, đã commit `8c35861`): gỡ Rive (runtime/WASM/.riv), thay switch sáng/tối bằng CSS/SVG thuần theo mẫu Uiverse owner chọn. [Bằng chứng](verification/THEME_VERIFICATION.md#thay-rive-bằng-switch-css--2311)
 - Đã hoàn tất `DETAIL-MOBILE-THUMBS-01` trên `dev` cho `/sach/:slug`: sửa lỗi CSS Grid `1fr` thiếu `min-width: 0` khiến hàng thumbnail tràn chiều ngang màn hình mobile; đổi kích thước thumbnail mobile sang `54×72px` (`scroll-snap`, căn giữa tương thích mọi iOS Safari) và khóa `overflow-x: clip` trên `html`.

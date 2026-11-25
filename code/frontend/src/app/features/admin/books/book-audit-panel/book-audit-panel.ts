@@ -78,6 +78,7 @@ export class BookAuditPanel implements OnChanges {
           UPDATE: 'Sửa thông tin',
           PUBLICATION_CHANGED: 'Đổi xuất bản',
           AVAILABILITY_CHANGED: 'Đổi khả dụng',
+          SOLD_OUT: 'Đánh dấu hết hàng',
           MEDIA_ATTACHED: 'Thêm ảnh',
           MEDIA_REPLACED: 'Thay ảnh',
           MEDIA_UPDATED: 'Sửa thông tin ảnh',

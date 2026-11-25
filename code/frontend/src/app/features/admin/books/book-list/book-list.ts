@@ -1,7 +1,7 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
 import {AuthService} from '../../../../core/auth/auth.service';
 import { formatAdminPriceRange } from '../book-copy';
-import { Component, DestroyRef, HostListener, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, DestroyRef, HostListener, inject, Injector, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DatePipe, DOCUMENT } from '@angular/common';
@@ -44,6 +44,7 @@ export class BookList {
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
   readonly categories = Object.entries(CATEGORY_LABELS) as [CategoryCode, string][];
   readonly bindings: { code: Binding; label: string }[] = [
     { code: 'PAPERBACK', label: 'Paperback' },
@@ -78,6 +79,11 @@ export class BookList {
   readonly photoDownloadError = signal('');
   readonly bulkTarget = signal<{items: readonly {id:string;version:number}[]; permanent:boolean; all:boolean} | null>(null);
   readonly target = signal<BookSummary | null>(null);
+  readonly soldOutTarget = signal<readonly BookSummary[]>([]);
+  readonly soldOutError = signal('');
+  readonly soldOutTotal = computed(() => this.soldOutTarget().reduce((sum, book) => sum + book.totalStock, 0));
+  readonly selectedInStock = computed(() =>
+    this.result()?.items.filter(book => this.selected().has(book.id) && book.totalStock > 0) ?? []);
   private filter: BookFilter = {};
   private sequence = 0;
   private trashSequence = 0;
@@ -339,6 +345,44 @@ export class BookList {
         this.error.set(error.status === 409 ? 'Trạng thái sách đã đổi hoặc đã hết hạn khôi phục. Danh sách đang được làm mới.' : 'Chưa xác nhận được thao tác. Kiểm tra danh sách rồi thử lại.');
       },
     });
+  }
+  askSoldOut(books:readonly BookSummary[], dialog:HTMLDialogElement) {
+    if (this.mutationBusy() || !books.length) return;
+    this.soldOutError.set('');
+    this.soldOutTarget.set(books);
+    // autofocus only applies to content present when the dialog opens
+    afterNextRender(() => dialog.showModal(), {injector: this.injector});
+  }
+  confirmSoldOut(dialog:HTMLDialogElement) {
+    const books=this.soldOutTarget();
+    if (this.mutationBusy() || !books.length) return;
+    this.mutationBusy.set(true);
+    this.error.set('');
+    this.notice.set('');
+    this.api.markSoldOut(books.map(({id,version})=>({id,version}))).pipe(takeUntilDestroyed(this.destroy)).subscribe({
+      next: updates=>{
+        const changed=new Map(updates.map(update=>[update.id,update]));
+        // Patched in place: a reload would move these books, as the list sorts by last update.
+        this.result.update(page=>page && {...page,items:page.items.map(book=>({...book,...changed.get(book.id)}))});
+        this.mutationBusy.set(false);
+        this.selected.set(new Set());
+        this.notice.set('Đã đánh dấu hết hàng '+(books.length===1 ? books[0].bookCode : books.length+' cuốn')+'.');
+        dialog.close();
+        if (books.length===1) this.document.querySelector<HTMLElement>(`#admin-book-${books[0].id} a`)?.focus({preventScroll:true});
+      },
+      error: ({status})=>{
+        this.mutationBusy.set(false);
+        this.soldOutError.set(this.soldOutFailure(status,books));
+        this.loadBooks();
+      },
+    });
+  }
+  private soldOutFailure(status:number, books:readonly BookSummary[]) {
+    if (status===409 || status===404) return books.length===1
+      ? books[0].bookCode+' vừa được thay đổi ở nơi khác, tồn kho chưa đổi. Danh sách đã được làm mới, hãy kiểm tra rồi thử lại.'
+      : 'Có sách vừa được thay đổi ở nơi khác, chưa cuốn nào được đánh dấu. Danh sách đã được làm mới, hãy chọn lại.';
+    if (status===403) return 'Bạn không có quyền đánh dấu hết hàng.';
+    return 'Chưa xác nhận được thao tác. Kiểm tra tồn kho trong danh sách trước khi thử lại.';
   }
   search(page = 0) {
     this.closeFilters();
