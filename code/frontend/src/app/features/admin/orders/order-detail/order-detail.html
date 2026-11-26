@@ -849,7 +849,9 @@
               </div>
             </dl>
           } @else {
-            <p class="muted">Chưa chốt bill</p>
+            <p class="muted">
+              {{ needsNewBill() ? 'Cần xuất lại bill cho đơn này.' : 'Chưa chốt bill' }}
+            </p>
             @if (state !== 'cancelled') {
               <button type="button" class="text-button" (click)="selectTab('bill')">Xuất bill →</button>
             }
@@ -946,10 +948,12 @@
             Thêm sách ở Chi tiết đơn
           </button>
         </p>
-      } @else if (state === 'cancelled') {
+      }
+      @if (state === 'cancelled') {
         <p class="card empty">Đơn đã hủy, không xuất bill.</p>
       } @else {
-        <div class="bill-grid">
+        <!-- Kept alive while the order has no book, so typing survives removing the last one. -->
+        <div class="bill-grid" [hidden]="state === 'empty'">
           <div class="card">
             <app-order-shipping-form
               (changed)="billDraft.set($event)"

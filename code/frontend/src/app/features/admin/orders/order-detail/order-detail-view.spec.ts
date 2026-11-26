@@ -159,4 +159,12 @@ describe('order detail view', () => {
       dueAmount(order({ status: 'READY_TO_SHIP', shipments: [ship(1, 'PLANNED')], totals: totals(200000, 50000, 180000) })),
     ).toBe(180000);
   });
+  it('keeps finalizing on a cancelled order whose bill was aborted by the cancellation', () => {
+    const d = order({ status: 'CANCELLED', cancelledAt: '2026-11-05T01:00:00Z', shipments: [ship(2, 'ABORTED')] });
+    expect(steps(d)).toEqual([
+      ['created', true, '2026-10-30T01:00:00Z', false],
+      ['finalized', true, '2026-11-02T01:00:00Z', false],
+      ['cancelled', true, '2026-11-05T01:00:00Z', true],
+    ]);
+  });
 });

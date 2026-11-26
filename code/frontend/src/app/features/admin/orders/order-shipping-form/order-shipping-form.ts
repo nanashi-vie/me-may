@@ -19,6 +19,9 @@ export interface ShippingDraft {
   additionalShippingFee: number | null;
   reason: string | null;
 }
+/** Completed or returned: the bill can be read but not changed. */
+const finished = (o: OrderDetail) =>
+  o.status === 'COMPLETED' || (o.status === 'CANCELLED' && o.returns?.length > 0);
 /** Packaging allowance on top of the books; the owner can still type the real weight. */
 const PACKAGING_GRAMS = 1000;
 const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
@@ -64,8 +67,7 @@ export class OrderShippingForm {
   };
   /** Fills the form from the saved order; the mode follows the order's state. */
   load(order: OrderDetail) {
-    const returned = order.status === 'CANCELLED' && order.returns?.length > 0;
-    this.readOnly.set(order.status === 'COMPLETED' || returned);
+    this.readOnly.set(finished(order));
     const mode = order.status === 'DRAFT' || order.status === 'KEEPING' ? 'finalize' : 'shipping';
     this.order = order;
     this.mode = mode;
@@ -104,6 +106,11 @@ export class OrderShippingForm {
     if (this.order) this.load(this.order);
   }
   rebase(order: OrderDetail) {
+    if (finished(order)) {
+      // Finished elsewhere: nothing typed can be saved any more, so show what was saved.
+      this.load(order);
+      return;
+    }
     this.reviewRequired = true;
     this.order = order;
     this.conflict.set(false);

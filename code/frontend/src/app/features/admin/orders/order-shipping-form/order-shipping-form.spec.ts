@@ -144,4 +144,12 @@ describe('OrderShippingForm', () => {
     button.click();
     expect(asked).toHaveBeenCalledOnce();
   });
+  it('turns read-only with the saved values when the order is finished elsewhere', async () => {
+    const t = await shown(order({ status: 'READY_TO_SHIP' }));
+    t.c.model.recipientName = 'Typed name';
+    t.c.rebase(order({ status: 'COMPLETED' }));
+    expect(t.c.readOnly()).toBe(true);
+    expect(t.c.model.recipientName).toBe('Reader');
+    expect(t.c.dirty()).toBe(false);
+  });
 });

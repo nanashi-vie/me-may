@@ -35,7 +35,7 @@ public class OrderQueryService {
   String sql="with t as(select cast(? as timestamptz) moment,cast(? as date) today) select count(*) filter(where status='KEEPING'),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+" between t.today+1 and t.today+3),count(*) filter(where status='KEEPING' and keep_until>t.moment and "+END_DATE+"=t.today),count(*) filter(where status='KEEPING' and keep_until<=t.moment),count(*) filter(where status='READY_TO_SHIP'),count(*) filter(where status='COMPLETED'),count(*) filter(where status='DRAFT'),count(*) filter(where status='CANCELLED' and not "+RETURNED+"),count(*) filter(where "+RETURNED+") from orders o cross join t"+w.sql();
   return db.jdbc.queryForObject(sql,(r,n)->new OrderStats(r.getLong(1),r.getLong(2),r.getLong(3),r.getLong(4),r.getLong(5),r.getLong(6),r.getLong(7),r.getLong(8),r.getLong(9)),args.toArray());
  }
- public OrderDetail detail(long id,AdminUser actor){access.requireOwner(actor,false);return db.require(id,false);}
+ public OrderDetail detail(long id,AdminUser actor){access.requireOwner(actor,false);return db.requireDetail(id);}
  public Page<CatalogCandidate> catalog(String q,int page,int size,AdminUser actor){access.requireOwner(actor,false);paging(page,size);return catalog.catalogList(q,page,size);}
  public MatchResult matches(String title,AdminUser actor){access.requireOwner(actor,false);return catalog.match(title);}
  private Where where(OrderFilter f,Instant now){paging(f.page(),f.size());var sql=new StringBuilder(" where o.deleted_at is null");var args=new ArrayList<Object>();String q=text(f.q(),"q",200,false);

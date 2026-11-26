@@ -30,7 +30,9 @@ export function timeline(d: OrderDetail): TimelineStep[] {
     at: done ? (at ?? null) : null,
     danger,
   });
-  const billed = d.shipments.filter((s) => s.state !== 'ABORTED').at(-1);
+  // Cancelling aborts the bill, yet the order was finalized: then any bill counts.
+  const cancelled = d.status === 'CANCELLED' && !isReturned(d);
+  const billed = cancelled ? d.shipments.at(-1) : d.shipments.filter((s) => s.state !== 'ABORTED').at(-1);
   const handed = d.shipments.filter((s) => s.handedOverAt).at(-1);
   const steps: TimelineStep[] = [step('created', 'Tạo đơn', true, d.createdAt)];
   if (d.fulfillmentType === 'KEEP') steps.push(step('keep', 'Bắt đầu keep', !!d.keepStartedAt, d.keepStartedAt));

@@ -20,8 +20,11 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
 | Hoàn tất | Hoàn đơn | Sửa mã vận đơn |
 | Đã hủy / Đã hoàn đơn | (không) | (không có ⋮) |
 
-- Menu ⋮: `aria-label "Thao tác DH-…"`, mở thì focus mục đầu, ↑/↓/Home/End, Esc hoặc bấm
-  ngoài đóng và trả focus; Hủy đơn chữ đỏ.
+- Menu ⋮: `aria-label "Thao tác DH-…"`, `aria-controls` trỏ tới menu, mở thì focus mục đầu,
+  ↑/↓/Home/End; Esc (cả khi focus ở nút ⋮) đóng và trả focus; bấm ngoài hoặc Tab ra khỏi menu
+  thì đóng; Hủy đơn chữ đỏ.
+- Form bill còn thay đổi chưa lưu mà bấm nút chính hoặc mục ⋮: hỏi "Bill có thay đổi chưa lưu.
+  Bỏ các thay đổi này và tiếp tục?"; không đồng ý thì quay về tab Xuất bill.
 
 ## Hai tab
 
@@ -40,7 +43,7 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
 - **Phải:** Thời gian giữ sách (Đang keep) hoặc dòng tóm tắt keep đã bàn giao · Khách hàng
   (tên link hồ sơ, mã, SĐT, 1 kênh TikTok → Threads → Zalo) · Giao hàng ("Chưa chốt bill" +
   "Xuất bill →", hoặc người nhận/SĐT/địa chỉ/J&T/cân/thanh toán ship/COD/mã vận đơn; lịch sử
-  giao và hàng hoàn thu gọn) · Lịch sử đơn (timeline) · Ghi chú/lịch sử xử lý (5 mới nhất,
+  giao và hàng hoàn thu gọn; đơn đã mở lại ghi "Cần xuất lại bill cho đơn này.") · Lịch sử đơn (timeline) · Ghi chú/lịch sử xử lý (5 mới nhất,
   "Xem tất cả").
 
 | Badge Thanh toán (theo thứ tự) | |
@@ -51,7 +54,8 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
 | Còn lại | xanh dương "Đã cọc" |
 
 Timeline: Tạo đơn → Bắt đầu keep (đơn Keep) → Chốt đơn (ngày tạo lần giao mới nhất không
-ABORTED) → Đã bàn giao · Hoàn tất. Đơn hủy chỉ giữ các mốc đã qua rồi "Đã hủy" đỏ; đơn hoàn
+ABORTED) → Đã bàn giao · Hoàn tất. Đơn hủy chỉ giữ các mốc đã qua (đã từng chốt bill thì vẫn có
+Chốt đơn, theo lần chốt mới nhất) rồi "Đã hủy" đỏ; đơn hoàn
 thêm "Đã hoàn đơn" đỏ sau mốc bàn giao. Mở lại đơn làm mốc Chốt đơn về xám; lý do mở lại
 chỉ ở card Ghi chú. Mốc đã qua cuối cùng có `aria-current="step"`.
 
@@ -62,7 +66,7 @@ dưới 1024px form trên, bill dưới.
 
 | Đơn | Tab |
 |---|---|
-| Chưa có sách | "Đơn chưa có sách." và nút về tab Chi tiết đơn |
+| Chưa có sách | "Đơn chưa có sách." và nút về tab Chi tiết đơn; form vẫn giữ chữ đang gõ (ẩn) |
 | Đã hủy | "Đơn đã hủy, không xuất bill." |
 | Nháp / Đang keep | Form; **Lưu bill** chốt đơn (sang Đang đóng gói, ở lại tab) |
 | Đang đóng gói | Form; Lưu bill sửa thông tin bill |
@@ -71,7 +75,9 @@ dưới 1024px form trên, bill dưới.
 - Form giữ quy tắc điền sẵn, COD gợi ý, retry cùng `requestId`, lỗi theo ô. "Hoàn tác" (khi
   có thay đổi) trả về giá trị đã lưu. Nhận cọc nằm cạnh dòng Đã nhận.
 - Đơn tải lại khi form đang có thay đổi (sau Nhận cọc, 409…): giữ chữ đã gõ và bắt bấm
-  "Đã kiểm tra lại COD và cân nặng". Sau một lệnh lưu thành công, form lấy lại giá trị đã lưu.
+  "Đã kiểm tra lại COD và cân nặng". Sau một lệnh lưu thành công, form lấy lại giá trị đã lưu;
+  nếu lần tải lại sau lệnh lỗi mạng thì chữ gõ sau đó không bị thay. Đơn bị phiên khác chuyển
+  sang Hoàn tất/Đã hoàn đơn: form chuyển chỉ xem với giá trị đã lưu.
 
 ## Cân kiện gợi ý
 
@@ -111,3 +117,5 @@ dưới 1024px form trên, bill dưới.
 `GET /api/v1/admin/orders/{id}` trả thêm (chỉ đọc, không migration): `items[].coverUrl`
 (endpoint ảnh admin `/admin/books/{id}/media/FRONT/content` khi có FRONT ACTIVE), `shipments[].createdAt`,
 `completedAt`, `cancelledAt`, `customerChannel`. Frontend chịu được khi thiếu các field này.
+Kênh khách lấy trong cùng câu truy vấn của API xem chi tiết (`left join customer`); các lần đọc
+đơn nội bộ trong thao tác ghi không truy vấn kênh.

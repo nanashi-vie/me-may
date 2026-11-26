@@ -4,6 +4,8 @@
     class="actions-menu-toggle"
     aria-haspopup="menu"
     [attr.aria-expanded]="open()"
+    [attr.aria-controls]="menuId"
+    (keydown.escape)="open() && keydown($any($event))"
     [attr.aria-label]="'Thao tác ' + orderCode()"
     [disabled]="disabled()"
     (click)="toggle()"
@@ -13,7 +15,14 @@
     </svg>
   </button>
   @if (open()) {
-    <div class="actions-menu" role="menu" [attr.aria-label]="'Thao tác ' + orderCode()" (keydown)="keydown($event)">
+    <div
+      class="actions-menu"
+      role="menu"
+      [id]="menuId"
+      [attr.aria-label]="'Thao tác ' + orderCode()"
+      (focusout)="focusout($event)"
+      (keydown)="keydown($event)"
+    >
       @for (a of actions(); track a) {
         <button type="button" role="menuitem" [class.danger-item]="a === 'cancel'" (click)="choose(a)">
           {{ labels[a] }}

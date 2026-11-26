@@ -66,4 +66,22 @@ describe('OrderActionsMenu', () => {
     const t = setup([]);
     expect(t.toggle()).toBeNull();
   });
+  it('points the toggle at its menu, closes on Escape from the toggle and when focus leaves', () => {
+    const t = setup();
+    t.toggle()!.click();
+    t.f.detectChanges();
+    const menu = t.el.querySelector('[role="menu"]')!;
+    expect(t.toggle()!.getAttribute('aria-controls')).toBe(menu.id);
+    expect(menu.id).toBeTruthy();
+    t.toggle()!.focus();
+    t.key('Escape');
+    expect(t.items()).toEqual([]);
+    t.toggle()!.click();
+    t.f.detectChanges();
+    const outside = document.createElement('button');
+    document.body.append(outside);
+    t.items()[0].dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: outside }));
+    t.f.detectChanges();
+    expect(t.items()).toEqual([]);
+  });
 });

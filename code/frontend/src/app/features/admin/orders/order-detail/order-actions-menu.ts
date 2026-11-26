@@ -1,6 +1,7 @@
 import { afterNextRender, Component, ElementRef, HostListener, inject, Injector, input, output, signal } from '@angular/core';
 import { ACTION_LABELS, HeaderAction } from './order-detail-view';
 
+let menus = 0;
 const STEP: Record<string, (i: number, n: number) => number> = {
   ArrowDown: (i, n) => (i + 1) % n,
   ArrowUp: (i, n) => (i - 1 + n) % n,
@@ -21,6 +22,7 @@ export class OrderActionsMenu {
   readonly select = output<HeaderAction>();
   readonly open = signal(false);
   readonly labels = ACTION_LABELS;
+  readonly menuId = `order-actions-${++menus}`;
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly injector = inject(Injector);
 
@@ -43,6 +45,10 @@ export class OrderActionsMenu {
     event.preventDefault();
     const items = this.items();
     items[move(items.indexOf(document.activeElement as HTMLButtonElement), items.length)]?.focus();
+  }
+  /** Tab or a click elsewhere moves focus out of the open menu: it closes. */
+  focusout(event: FocusEvent) {
+    if (this.open() && !this.host.nativeElement.contains(event.relatedTarget as Node | null)) this.close(false);
   }
   @HostListener('document:click', ['$event'])
   outside(event: MouseEvent) {

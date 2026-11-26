@@ -205,3 +205,8 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   `max-width: 18ch`; chữ mục đầu của ⋮ trắng do kiểu nút chung.
 - Chưa kiểm: đơn thật, ảnh bìa thật (đã có test API/đơn vị), Safari/thiết bị thật, trình đọc màn
   hình, `build:workers`.
+- Sửa sau review (owner yêu cầu 26/11): kênh khách chỉ lấy ở API xem chi tiết, cùng câu truy vấn
+  (`left join`), lần đọc nội bộ/khóa không truy vấn thêm (test đỏ trước); cờ nạp lại form xóa khi
+  tải lại lỗi; form chuyển chỉ xem khi đơn hoàn tất ở phiên khác; xóa cuốn cuối không mất chữ đang
+  gõ; menu ⋮ có `aria-controls`, Esc từ nút, đóng khi Tab ra; timeline đơn hủy giữ mốc Chốt đơn;
+  dòng "Cần xuất lại bill cho đơn này." Mỗi mục có test đỏ trước. Frontend 610/610, build đạt.

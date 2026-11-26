@@ -80,4 +80,11 @@ class OrderDetailFieldsApiTest extends OrderTestSupport {
         assertThat(detail(zaloOnly).path("customerChannel").path("type").asString()).isEqualTo("ZALO");
         assertThat(detail(none).path("customerChannel").isNull()).isTrue();
     }
+
+    @Test void onlyTheDetailReadLooksUpTheChannel() throws Exception {
+        long id = withChannels("tt.reader", null, null);
+        assertThat(orders.require(id, false).customerChannel()).isNull();
+        assertThat(orders.require(id, true).customerChannel()).isNull();
+        assertThat(detail(id).path("customerChannel").path("value").asString()).isEqualTo("tt.reader");
+    }
 }

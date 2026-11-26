@@ -150,6 +150,11 @@ export class OrderDetailPage {
     return d ? currentShipment(d) : null;
   });
   readonly billed = computed(() => !!this.shipment());
+  /** A saved bill was dropped by reopening; the order needs a new one. */
+  readonly needsNewBill = computed(() => {
+    const d = this.order();
+    return !!d && d.status !== 'CANCELLED' && !this.shipment() && d.shipments.some((s) => s.state === 'ABORTED');
+  });
   readonly due = computed(() => {
     const d = this.order();
     return d ? dueAmount(d) : 0;
@@ -472,6 +477,8 @@ export class OrderDetailPage {
             this.itemForm()?.refreshing.set(false);
             this.shippingForm()?.refreshing.set(false);
             this.loading.set(false);
+            // The saved values never arrived; what is typed from now on must not be replaced.
+            this.reloadBill = false;
             this.error.set('Chưa tải được bản mới của đơn. Các trường đang nhập được giữ lại.');
           }
         },

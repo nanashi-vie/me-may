@@ -410,6 +410,47 @@ describe('OrderDetail', () => {
     expect(c.shippingForm()!.dirty()).toBe(false);
     vi.restoreAllMocks();
   });
+  it('does not wipe later typing when the reload after a command failed', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    api.detail.mockReturnValueOnce(throwError(() => ({ status: 0 })) as any);
+    c.runHeaderAction('extend-keep');
+    c.mutate('extend-keep', { keepUntil: '2026-12-01' });
+    await settle(f);
+    expect(c.error()).toContain('Chưa tải được');
+    c.shippingForm()!.model.recipientName = 'Typed later';
+    api.detail.mockReturnValue(of(billable({ version: 5 })));
+    c.refresh();
+    await settle(f);
+    expect(c.order()!.version).toBe(5);
+    expect(c.shippingForm()!.model.recipientName).toBe('Typed later');
+    vi.restoreAllMocks();
+  });
+  it('keeps the bill form and its typing while the last book is removed and added back', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    c.shippingForm()!.model.recipientName = 'Typed name';
+    c.order.set(billable({ items: [], version: 4 }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('#order-bill-panel'))).toContain('Đơn chưa có sách.');
+    c.order.set(billable({ version: 5 }));
+    await settle(f);
+    expect(c.shippingForm()!.model.recipientName).toBe('Typed name');
+  });
+  it('tells a reopened order that its bill must be exported again', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable({ shipments: [{ id: '1', state: 'ABORTED', shippingSnapshot: {}, handedOverAt: null }] }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('.delivery-card'))).toContain('Cần xuất lại bill cho đơn này.');
+    c.order.set(billable());
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('.delivery-card'))).toContain('Chưa chốt bill');
+  });
   it('lays the detail out in cards with cover, contact, delivery, payment and timeline', async () => {
     const { f, c } = await setup();
     c.order.set(billable({
