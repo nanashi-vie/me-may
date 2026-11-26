@@ -181,3 +181,8 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   cắt (đổi sang mở cạnh nút).
 - Chưa kiểm: đơn thật, STAFF trên trình duyệt, Safari/thiết bị thật, trình đọc màn hình,
   `build:workers`, migration V39 trên dữ liệu đích, ảnh JPEG chụp từ điện thoại thật.
+- Review độc lập toàn nhánh (một reviewer, chỉ đọc): không có lỗi nghiêm trọng; 5 tình huống trọng tâm
+  (gửi lại cùng request, ảnh giả/0 byte, ghi DB lỗi sau khi lưu file, ảnh của đơn khác, Enter ở menu)
+  đều đúng. Một lỗi quan trọng đã sửa: chưa có job dọn ảnh mồ côi (thêm `PaymentProofSweep`, test đỏ
+  trước). Sửa thêm: nút Xác nhận khóa đến khi chọn ảnh. Sau sửa: backend `verify` 462 (3 skip),
+  frontend 559, build đạt. Các góp ý nhỏ hoãn ghi ở DEV_LOG.

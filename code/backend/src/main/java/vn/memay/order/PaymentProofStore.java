@@ -5,6 +5,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
+import java.time.Instant;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.UUID;
@@ -72,6 +73,24 @@ public class PaymentProofStore {
     private Path file(String key) {
         if (key == null || !KEY.matcher(key).matches()) throw new AdminApiException(404, "not_found");
         return dir.resolve(key);
+    }
+
+    /** Removes leftovers older than {@code cutoff}: upload temp files, and receipts no payment row names. */
+    public int sweep(Instant cutoff, java.util.Set<String> referenced) {
+        if (!Files.isDirectory(dir)) return 0;
+        int removed = 0;
+        try (var files = Files.list(dir)) {
+            for (Path file : files.toList()) {
+                String name = file.getFileName().toString();
+                boolean temp = name.startsWith(".upload-") && name.endsWith(".tmp");
+                boolean orphan = KEY.matcher(name).matches() && !referenced.contains(name);
+                if ((temp || orphan) && Files.getLastModifiedTime(file).toInstant().isBefore(cutoff) && Files.deleteIfExists(file))
+                    removed++;
+            }
+        } catch (IOException e) {
+            log.warn("payment proof sweep failed: {}", e.getClass().getSimpleName());
+        }
+        return removed;
     }
 
     public static String sha256(byte[] bytes) {

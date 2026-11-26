@@ -45,6 +45,7 @@ Owner chốt 26/11/2026 (`ORDER-MONEY-LIST-01`), thay phần giao dịch tiền 
 - `PaymentProofStore` kiểm bằng `ImageValidator` (JPEG/PNG, ≤ 25.000.000 pixel), lưu
   nguyên bản tại `<memay.media.local.root>/private/payment-proofs/<uuid>.jpg|png`,
   không tạo biến thể, không qua gateway/CDN public. Transaction lỗi thì xóa file;
-  xóa vĩnh viễn đơn khỏi Thùng rác thì xóa file sau commit.
+  xóa vĩnh viễn đơn khỏi Thùng rác thì xóa file sau commit. `PaymentProofSweep` mỗi giờ
+  xóa file tạm `.upload-*.tmp` và ảnh không còn dòng `proof_key` nào, cũ hơn 1 giờ.
 - V39: PAYMENT dữ liệu thử thành DEPOSIT, bỏ cột `payment_method`, thêm
   `proof_key/proof_mime/proof_bytes/proof_sha256` (cả bốn cùng null với dòng cũ).

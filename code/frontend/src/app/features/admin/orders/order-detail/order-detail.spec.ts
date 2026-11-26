@@ -120,6 +120,19 @@ describe('OrderDetail', () => {
     expect(body).not.toHaveProperty('paymentMethod');
     expect(body).not.toHaveProperty('occurredAt');
   });
+  it('keeps Confirm locked until a receipt image is chosen', async () => {
+    const { f, c } = await setup();
+    c.openPayment('DEPOSIT');
+    c.payment.amount = 100000;
+    f.detectChanges();
+    await f.whenStable();
+    f.detectChanges();
+    const confirm = () => buttonNamed(f, 'Xác nhận')!;
+    expect(confirm().disabled).toBe(true);
+    c.chooseProof(png());
+    f.detectChanges();
+    expect(confirm().disabled).toBe(false);
+  });
   it('titles the refund form and still asks to confirm the actual refund', async () => {
     const { f, c, api } = await setup();
     c.order.set({ ...detail, totals: { ...detail.totals, paidAmount: 5000 } });

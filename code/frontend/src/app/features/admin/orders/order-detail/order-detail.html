@@ -611,7 +611,7 @@
                       class="primary"
                       [disabled]="
                         actionForm.invalid ||
-                        (action === 'payment' && (paymentConflict() || loading()))
+                        (action === 'payment' && (paymentConflict() || loading() || !paymentProof()))
                       "
                     >
                       Xác nhận
