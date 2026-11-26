@@ -346,6 +346,70 @@ describe('OrderDetail', () => {
     expect(f.nativeElement.querySelector('#order-bill-panel fieldset').disabled).toBe(true);
     expect(buttonNamed(f, 'Lưu bill')).toBeUndefined();
   });
+  it('asks before a header action drops unsaved bill edits', async () => {
+    const packing = { status: 'READY_TO_SHIP', shippingFee: 30000, shipments: [{ id: '1', state: 'PLANNED', shippingSnapshot: {}, handedOverAt: null }] };
+    const { f, c } = await setup();
+    c.order.set(billable(packing));
+    c.selectTab('bill');
+    await settle(f);
+    c.shippingForm()!.model.codAmount = 12345;
+    const ask = vi.spyOn(window, 'confirm').mockReturnValue(false);
+    c.selectTab('detail');
+    c.runHeaderAction('ship');
+    expect(ask).toHaveBeenCalledWith('Bill có thay đổi chưa lưu. Bỏ các thay đổi này và tiếp tục?');
+    expect(c.panel()).toBe('');
+    expect(c.tab()).toBe('bill');
+    expect(c.shippingForm()!.model.codAmount).toBe(12345);
+    ask.mockReturnValue(true);
+    c.runHeaderAction('ship');
+    expect(c.panel()).toBe('ship');
+    vi.restoreAllMocks();
+  });
+  it('opens header actions without asking while the bill has no edits', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable({ status: 'DRAFT' }));
+    await settle(f);
+    const ask = vi.spyOn(window, 'confirm');
+    c.runHeaderAction('cancel');
+    expect(ask).not.toHaveBeenCalled();
+    expect(c.panel()).toBe('cancel');
+    vi.restoreAllMocks();
+  });
+  it('keeps typed bill text when a deposit reloads the order, and asks to recheck', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    c.shippingForm()!.model.recipientName = 'Typed name';
+    api.detail.mockReturnValue(of(billable({ version: 4, totals: { ...billable().totals, paidAmount: 100000 } })));
+    c.openPayment('DEPOSIT');
+    c.payment.amount = 100000;
+    c.chooseProof(new File([new Uint8Array([137, 80, 78, 71])], 'bill.png', { type: 'image/png' }));
+    c.submitAction();
+    await settle(f);
+    expect(c.order()!.version).toBe(4);
+    expect(c.shippingForm()!.model.recipientName).toBe('Typed name');
+    expect(c.shippingForm()!.reviewRequired).toBe(true);
+    expect(c.shippingForm()!.dirty()).toBe(true);
+  });
+  it('reloads saved bill values after a confirmed command', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    c.shippingForm()!.model.recipientName = 'Typed name';
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    api.detail.mockReturnValue(of(billable({ version: 4 })));
+    c.runHeaderAction('cancel');
+    c.actionReason = 'Khách hủy';
+    c.submitAction();
+    await settle(f);
+    expect(api.command.mock.calls.at(-1)![1]).toBe('cancel');
+    expect(c.order()!.version).toBe(4);
+    expect(c.shippingForm()!.model.recipientName).toBe('Reader');
+    expect(c.shippingForm()!.dirty()).toBe(false);
+    vi.restoreAllMocks();
+  });
   it('lays the detail out in cards with cover, contact, delivery, payment and timeline', async () => {
     const { f, c } = await setup();
     c.order.set(billable({

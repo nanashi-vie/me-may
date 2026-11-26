@@ -182,7 +182,15 @@ export class OrderDetailPage {
   readonly billDraft = signal<ShippingDraft | null>(null);
   /** Set after a saved command: the next order replaces whatever the bill form holds. */
   private reloadBill = true;
+  /** Header actions reload the bill form afterwards, so unsaved bill edits are confirmed first. */
   runHeaderAction(action: HeaderAction) {
+    if (
+      this.shippingForm()?.dirty() &&
+      !window.confirm('Bill có thay đổi chưa lưu. Bỏ các thay đổi này và tiếp tục?')
+    ) {
+      this.selectTab('bill');
+      return;
+    }
     this.openPanel(action);
   }
   /** First handover ends the keep; later resends do not change it. */
