@@ -59,6 +59,8 @@ flowchart LR
   heartbeat, complete và fail; không expose qua HTTP app/public ingress.
 - Gateway public/admin chọn provider theo ảnh, không theo một cờ global.
 - Không thêm MinIO, Redis, Google Picker, AI hoặc tự đồng bộ thư mục Drive.
+- Ảnh bill chuyển khoản của đơn nằm riêng ở `private/payment-proofs`, chỉ Spring đọc cho OWNER,
+  không qua worker/nginx/gateway ([ORDER_PAYMENTS](ORDER_PAYMENTS.md)).
 
 ## 3. Một ảnh gồm những gì?
 

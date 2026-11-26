@@ -8,7 +8,8 @@ public final class OrderDtos {
  /** Admin list tabs: which orders they hold and what comes first. The id tie-break keeps paging stable. */
  public enum Group {
   ALL("","o.created_at desc,o.id desc"),
-  ACTION("o.status in ('DRAFT','READY_TO_SHIP')","o.created_at,o.id"),
+  ACTION("o.status='DRAFT'","o.created_at,o.id"),
+  PACKING("o.status='READY_TO_SHIP'","o.created_at,o.id"),
   KEEPING("o.status='KEEPING'","o.keep_until nulls last,o.id"),
   COMPLETED("o.status='COMPLETED'","o.completed_at desc nulls last,o.id desc"),
   CLOSED("o.status='CANCELLED'","o.cancelled_at desc nulls last,o.id desc");
@@ -33,7 +34,9 @@ public final class OrderDtos {
   boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
   List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
-  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt){}
+  Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt,CustomerChannel customerChannel){}
+ /** One contact handle for the list, TikTok first, then Threads, then Zalo; read from the live profile. */
+ public record CustomerChannel(String type,String value){}
  public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size,String group){}
  public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long draft,long cancelled,long returned){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}

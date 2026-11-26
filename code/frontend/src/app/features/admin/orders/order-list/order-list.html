@@ -131,47 +131,33 @@
     } @else if (page(); as result) {
       @if (result.items.length) {
         <div class="table-scroll" role="region" aria-label="Danh sách đơn hàng" tabindex="0">
-          <table>
+          <table class="order-table">
             <thead>
               <tr>
-                <th>Mã đơn</th>
                 <th>Khách hàng</th>
+                <th>Mã đơn</th>
                 <th>Ngày tạo</th>
-                <th class="number">Số sách</th>
-                <th class="number">Tổng bill</th>
-                <th class="number">Đã thanh toán</th>
-                @if (tab().showStatus) {
-                  <th>Trạng thái</th>
-                }
-                @switch (tab().dateColumn) {
-                  @case ('keep') {
-                    <th>Hạn keep</th>
-                  }
-                  @case ('completed') {
-                    <th>Ngày bàn giao</th>
-                  }
-                  @case ('closed') {
-                    <th>Ngày hủy/hoàn</th>
-                  }
-                }
+                <th class="number">Số lượng sách</th>
+                <th class="number">Tổng đơn</th>
+                <th class="number">Đã cọc</th>
+                <th>Trạng thái</th>
+                <th>Hạn keep</th>
                 <th class="actions-cell">Thao tác</th>
               </tr>
             </thead>
             <tbody>
               @for (o of result.items; track o.id) {
-                <tr class="order-row" (click)="openRow($event, o.id)">
+                <tr
+                  class="order-row"
+                  tabindex="0"
+                  [attr.aria-label]="'Mở đơn ' + o.orderCode"
+                  (click)="openRow($event, o.id)"
+                  (keydown.enter)="openRowKey($event, o.id)"
+                >
                   <td>
-                    <a
-                      class="order-code"
-                      [routerLink]="['/admin/orders', o.id]"
-                      [queryParams]="query()"
-                      >{{ o.orderCode }}</a
-                    >
+                    <strong>{{ o.customerNameSnapshot }}</strong><small>{{ channelLine(o) }}</small>
                   </td>
-                  <td>
-                    <strong>{{ o.customerNameSnapshot }}</strong
-                    ><small>{{ o.customerPhoneSnapshot || 'Chưa có SĐT' }}</small>
-                  </td>
+                  <td class="order-code">{{ o.orderCode }}</td>
                   <td class="nowrap">{{ o.createdAt | date: 'dd/MM/yyyy' : '+0700' }}</td>
                   <td class="number">{{ o.totalQuantity }}</td>
                   <td class="number nowrap">
@@ -181,46 +167,23 @@
                     }
                   </td>
                   <td class="number nowrap">{{ money(o.totals.paidAmount) }}</td>
-                  @if (tab().showStatus) {
-                    <td>
-                      <span
-                        class="badge"
-                        [class.keeping]="o.status === 'KEEPING'"
-                        >{{ statusLabel(o) }}</span
-                      >
-                      @if (o.keepWarning) {
-                        <ng-container [ngTemplateOutlet]="warning" [ngTemplateOutletContext]="{ $implicit: o }" />
-                      }
-                    </td>
-                  }
-                  @switch (tab().dateColumn) {
-                    @case ('keep') {
-                      <td class="nowrap">
-                        @if (o.status === 'KEEPING' && o.keepUntil) {
-                          Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
-                        } @else {
-                          —
-                        }
-                        @if (!tab().showStatus && o.keepWarning) {
-                          <ng-container [ngTemplateOutlet]="warning" [ngTemplateOutletContext]="{ $implicit: o }" />
-                        }
-                      </td>
+                  <td>
+                    <span [class]="'badge ' + badgeClass(o)">{{ statusLabel(o) }}</span>
+                    @if (o.keepWarning) {
+                      <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{
+                        warningLabels[o.keepWarning]
+                      }}</small>
                     }
-                    @case ('completed') {
-                      <td class="nowrap">{{ (o.completedAt | date: 'dd/MM/yyyy' : '+0700') || '—' }}</td>
+                  </td>
+                  <td class="nowrap">
+                    @if (o.status === 'KEEPING' && o.keepUntil) {
+                      Giữ hết {{ keepEnd(o.keepUntil) | date: 'dd/MM/yyyy' : '+0700' }}
+                    } @else {
+                      —
                     }
-                    @case ('closed') {
-                      <td class="nowrap">{{ (o.cancelledAt | date: 'dd/MM/yyyy' : '+0700') || '—' }}</td>
-                    }
-                  }
+                  </td>
                   <td class="actions-cell">
-                    @if (o.trashable) {
-                      <button type="button" class="secondary trash-btn" [attr.aria-label]="'Xóa ' + o.orderCode"
-                        (click)="askTrash(o)"><app-trash-icon /></button>
-                    } @else if (o.status === 'CANCELLED') {
-                      <button type="button" class="secondary trash-btn blocked"
-                        [attr.aria-label]="'Vì sao chưa xóa được ' + o.orderCode" (click)="askTrash(o)"><app-trash-icon /></button>
-                    } @else { <span title="Chỉ xóa được đơn Nháp chưa có giao dịch tiền, Đã hủy hoặc Đã hoàn đơn">—</span> }
+                    <app-order-row-menu [order]="o" (remove)="askTrash(o)" />
                   </td>
                 </tr>
               }
@@ -237,7 +200,4 @@
     }
   }
 </section>
-<ng-template #warning let-o>
-  <small class="warning" [class.danger-text]="o.keepWarning === 'OVERDUE'">{{ warningLabels[o.keepWarning] }}</small>
-</ng-template>
 <app-trash-dialog kind="orders" (trashed)="onTrashed($event)" (settled)="refresh()" />

@@ -24,7 +24,7 @@ Chủ chọn khách, ghi từng dòng hàng và giá chốt. Dòng catalogue có
 tồn của mã MM. Dòng thủ công ghi nhận hàng ngoài catalogue, chẳng hạn sách
 từ kho livestream. Đơn giao ngay và đơn keep có trình tự riêng. Tiền khách
 trả, hoàn tiền, số cần thu và thông tin kiện hàng có lịch sử riêng. Khi
-giao không thành công, chủ ghi nhận gửi lại hoặc hoàn đơn. Chủ xác nhận số
+đơn bị hoàn về, chủ bấm Hoàn đơn (không gửi lại). Chủ xác nhận số
 sách thực nhận trước khi nhập lại tồn cho dòng catalogue.
 Quy tắc cọc/hạn keep áp dụng theo contract của đơn; wishlist chỉ lưu mã.
 [Đơn hàng](../product/ORDERS.md) · [Hồ sơ khách](../product/CUSTOMERS.md)

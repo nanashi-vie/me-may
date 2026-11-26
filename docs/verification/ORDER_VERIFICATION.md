@@ -163,3 +163,21 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   ✕/Xóa lọc giữ focus, ngày ngược, gõ "Khách " dừng rồi "thử". 390px: bill và trang không tràn ngang.
 - Chưa kiểm: đơn thật, gửi lại và tải lại do xung đột trên trình duyệt (chỉ có test), Safari, thiết bị thật,
   trình đọc màn hình, `build:workers`; chưa có reviewer độc lập cho lượt này.
+
+## Nhận cọc có ảnh bill và bảng danh sách — 26/11/2026
+
+- `ORDER-MONEY-LIST-01`, nền `67d7ffd`, commit 1 `4ca3690`. Test viết và thấy đỏ trước code (riêng
+  `voidKeepsProof` và `removedEndpointsAreGone` xanh ngay vì hành vi đã có, giữ làm chốt).
+- `me_may_test` local lệch checksum V21 (không do thay đổi này) nên backend chạy trên PostgreSQL 17
+  container tạm, từ bản sao ở scratchpad để không đụng `8080` của owner. `verify` 457 test: 3 lỗi
+  `HeroBannerMediaTest` do bản sao thiếu `node_modules` image-worker, nối lại thì 5/5 đạt.
+  Sau phần 2: `verify` 461 test (3 skip) đạt. Frontend 75 file/558 test, `ng build` đạt.
+- Trình duyệt trong app, OWNER thử trên backend/DB tạm (20 đơn tổng hợp), 1440px: 6 tab và số đếm,
+  9 cột, badge 5 màu, dòng phụ TikTok/Threads/Zalo/SĐT; Enter mở dòng; ⋮ bằng phím (Enter vào "Xóa",
+  Esc trả focus), Xóa mở hộp Thùng rác; Nhận cọc với ảnh PNG có xem trước, lịch sử có ảnh nhỏ,
+  ảnh lớn đóng bằng Esc trả focus, nút Hoàn tiền xuất hiện; Hoàn đơn từ Hoàn tất → Đã hoàn đơn,
+  lần giao FAILED kèm lý do, 1 dòng hoàn. 375px: trang không tràn, bảng cuộn trong khung.
+- Sửa khi kiểm: ô đầu/cuối bảng chạm mép khung (thêm padding); menu ⋮ dòng cuối bị khung cuộn
+  cắt (đổi sang mở cạnh nút).
+- Chưa kiểm: đơn thật, STAFF trên trình duyệt, Safari/thiết bị thật, trình đọc màn hình,
+  `build:workers`, migration V39 trên dữ liệu đích, ảnh JPEG chụp từ điện thoại thật.

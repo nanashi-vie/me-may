@@ -13,7 +13,7 @@ export interface Page<T> {
   totalElements: number;
   totalPages: number;
 }
-export type OrderGroup = 'ALL' | 'ACTION' | 'KEEPING' | 'COMPLETED' | 'CLOSED';
+export type OrderGroup = 'ALL' | 'ACTION' | 'KEEPING' | 'PACKING' | 'COMPLETED' | 'CLOSED';
 export interface OrderFilter {
   group?: OrderGroup;
   q: string;
@@ -64,6 +64,8 @@ export interface OrderSummary {
   totals: Totals;
   version: number;
   keepWarning: string;
+  /** One contact handle from the live customer profile: TikTok, then Threads, then Zalo. */
+  customerChannel?: { type: 'TIKTOK' | 'THREADS' | 'ZALO'; value: string } | null;
 }
 export interface OrderItem {
   id: string;

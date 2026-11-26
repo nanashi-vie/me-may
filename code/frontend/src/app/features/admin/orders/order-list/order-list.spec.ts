@@ -112,14 +112,36 @@ describe('OrderList', () => {
     f.detectChanges();
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const row = f.nativeElement.querySelector('tbody tr') as HTMLElement;
-    expect(row.textContent).not.toContain('Xem');
+    expect(row.querySelector('a')).toBeNull();
     const dialog = f.nativeElement.querySelector('app-trash-dialog dialog') as HTMLDialogElement;
     dialog.showModal = vi.fn();
-    row.querySelector<HTMLButtonElement>('.trash-btn')!.click();
+    const toggle = row.querySelector<HTMLButtonElement>('.row-menu-toggle')!;
+    expect(toggle.getAttribute('aria-label')).toBe('Thao tác DH-000001');
+    toggle.click();
+    f.detectChanges();
+    expect(navigate).not.toHaveBeenCalled();
+    const item = row.querySelector<HTMLButtonElement>('[role="menuitem"]')!;
+    expect(item.textContent!.trim()).toBe('Xóa');
+    item.click();
     f.detectChanges();
     expect(dialog.showModal).toHaveBeenCalledOnce();
     expect(navigate).not.toHaveBeenCalled();
     row.querySelector<HTMLElement>('td:nth-child(5)')!.click();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith(['/admin/orders', '1'], { queryParams: f.componentInstance.query() });
+  });
+  it('opens the focused row with Enter but not from its menu', async () => {
+    const { f, api } = await setup();
+    api.list.mockReturnValue(of({ ...page('DH-000001'), items: [{ ...page('DH-000001').items[0], trashable: true }] }));
+    f.componentInstance.refresh();
+    await f.whenStable();
+    f.detectChanges();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const row = f.nativeElement.querySelector('tbody tr') as HTMLElement;
+    expect(row.getAttribute('tabindex')).toBe('0');
+    expect(row.getAttribute('aria-label')).toBe('Mở đơn DH-000001');
+    row.querySelector('.row-menu-toggle')!.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    expect(navigate).not.toHaveBeenCalled();
+    row.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     expect(navigate).toHaveBeenCalledExactlyOnceWith(['/admin/orders', '1'], { queryParams: f.componentInstance.query() });
   });
   it('keeps text selection and modified clicks from leaving the list', async () => {
@@ -140,9 +162,9 @@ describe('OrderList', () => {
       selection.mockRestore();
     }
   });
-  it('shows a dash instead of the trash for orders that must be kept', async () => {
+  it('shows a dash instead of the menu for orders that must be kept', async () => {
     const { f, c, api } = await setup();
-    expect(f.nativeElement.querySelector('.trash-btn')).toBeNull();
+    expect(f.nativeElement.querySelector('.row-menu-toggle')).toBeNull();
     expect(f.nativeElement.querySelector('tbody tr').lastElementChild.textContent.trim()).toBe('—');
     const calls = api.list.mock.calls.length;
     c.onTrashed('DH-000001');
@@ -165,10 +187,9 @@ describe('OrderList', () => {
     const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     const dialog = f.nativeElement.querySelector('app-trash-dialog dialog') as HTMLDialogElement;
     dialog.showModal = vi.fn();
-    const button = f.nativeElement.querySelector('tbody .trash-btn') as HTMLButtonElement;
-    expect(button.classList).toContain('blocked');
-    expect(button.getAttribute('aria-label')).toBe('Vì sao chưa xóa được DH-000001');
-    button.click();
+    (f.nativeElement.querySelector('tbody .row-menu-toggle') as HTMLButtonElement).click();
+    f.detectChanges();
+    (f.nativeElement.querySelector('tbody [role="menuitem"]') as HTMLButtonElement).click();
     f.detectChanges();
     expect(dialog.showModal).toHaveBeenCalledOnce();
     expect(dialog.textContent).toMatch(/Đơn còn giữ 100\.000\s?đ của khách\. Ghi nhận hoàn tiền trước khi xóa\./);
@@ -226,9 +247,9 @@ describe('OrderList', () => {
     expect(c.page()).toBeNull();
     expect(c.stats()).toBeNull();
   });
-  it('links five counted tabs and marks the open one', async () => {
+  it('links six counted tabs and marks the open one', async () => {
     const t = await setup('OWNER', { nhom: 'hoan-tat' });
-    expect(t.tabs()).toEqual(['Tất cả 38', 'Chờ xử lý 7', 'Đang keep 12 · 2 quá hạn', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
+    expect(t.tabs()).toEqual(['Tất cả 38', 'Chờ xử lý 2', 'Đang keep 12 · 2 quá hạn', 'Đang đóng gói 5', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
     const open = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] [aria-current="page"]');
     expect(Array.from(open, t.text)).toEqual(['Hoàn tất 9']);
     expect(t.el.querySelector('.metrics')).toBeNull();
@@ -252,7 +273,7 @@ describe('OrderList', () => {
     const kept = { q: 'Lan', createdFrom: '2026-11-01', customerId: '3', size: 50 };
     expect(t.c.tabQuery(tabOf('COMPLETED'))).toEqual({ nhom: 'hoan-tat', ...kept });
     expect(t.c.tabQuery(tabOf('ALL'))).toEqual(kept);
-    const href = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] a')[3].getAttribute('href')!;
+    const href = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] a')[4].getAttribute('href')!;
     const url = new URL(href, 'http://test');
     expect(url.pathname).toBe('/admin/orders');
     expect(Object.fromEntries(url.searchParams)).toEqual({ nhom: 'hoan-tat', ...kept, size: '50' });
@@ -262,8 +283,9 @@ describe('OrderList', () => {
     const labels = () => t.subs().map(t.text);
     const expected = [
       [],
-      ['Tất cả 7', 'Nháp 2', 'Đang đóng gói 5'],
+      [],
       ['Tất cả 12', 'Quá hạn 2', 'Đến hạn hôm nay 1', 'Sắp hết hạn 3'],
+      [],
       [],
       ['Tất cả 10', 'Đã hủy 4', 'Đã hoàn đơn 6'],
     ];
@@ -282,26 +304,45 @@ describe('OrderList', () => {
     t.subs()[0].click();
     expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ nhom: 'dang-keep' });
   });
-  it('shows the columns of each tab', async () => {
+  it('shows the same nine columns on every tab', async () => {
     const t = await setup();
-    const base = ['Mã đơn', 'Khách hàng', 'Ngày tạo', 'Số sách', 'Tổng bill', 'Đã thanh toán'];
-    const cases: [string, object, string[], string][] = [
-      ['', {}, [...base, 'Trạng thái', 'Hạn keep', 'Thao tác'], 'Giữ hết 30/11/2026'],
-      ['cho-xu-ly', { status: 'DRAFT', keepWarning: '' }, [...base, 'Trạng thái', 'Thao tác'], 'Nháp'],
-      ['dang-keep', {}, [...base, 'Hạn keep', 'Thao tác'], 'Giữ hết 30/11/2026 Sắp hết hạn'],
-      ['hoan-tat', { status: 'COMPLETED', keepWarning: '', completedAt: '2026-11-19T18:00:00Z', cancelledAt: '2026-11-01T18:00:00Z' }, [...base, 'Ngày bàn giao', 'Thao tác'], '20/11/2026'],
-      ['hoan-tat', { status: 'COMPLETED', keepWarning: '', completedAt: null }, [...base, 'Ngày bàn giao', 'Thao tác'], '—'],
-      ['huy-hoan', { status: 'CANCELLED', keepWarning: '', cancelledAt: '2026-11-20T18:00:00Z', completedAt: '2026-11-01T18:00:00Z' }, [...base, 'Trạng thái', 'Ngày hủy/hoàn', 'Thao tác'], '21/11/2026'],
-      ['huy-hoan', { status: 'CANCELLED', keepWarning: '', cancelledAt: null }, [...base, 'Trạng thái', 'Ngày hủy/hoàn', 'Thao tác'], '—'],
-    ];
-    for (const [nhom, patch, headings, cell] of cases) {
-      const result = page('DH-000001');
-      t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], ...patch }] }));
-      await t.go(nhom ? { nhom } : {});
-      expect(Array.from(t.el.querySelectorAll('thead th'), t.text), nhom).toEqual(headings);
-      const cells = Array.from(t.el.querySelectorAll('tbody td'), t.text);
-      expect(cells.length, nhom).toBe(headings.length);
-      expect(cells.at(-2), nhom).toBe(cell);
+    const headings = ['Khách hàng', 'Mã đơn', 'Ngày tạo', 'Số lượng sách', 'Tổng đơn', 'Đã cọc', 'Trạng thái', 'Hạn keep', 'Thao tác'];
+    for (const tab of ORDER_TABS) {
+      await t.go(tab.slug ? { nhom: tab.slug } : {});
+      expect(Array.from(t.el.querySelectorAll('thead th'), t.text), tab.label).toEqual(headings);
+      expect(t.el.querySelectorAll('tbody td').length, tab.label).toBe(9);
+    }
+    const cells = Array.from(t.el.querySelectorAll('tbody td'), t.text);
+    expect(cells[1]).toBe('DH-000001');
+    expect(cells[5]).toMatch(/^100\.000\s?đ$/);
+  });
+  it('names the order status with its colour', async () => {
+    for (const [patch, cls, label] of [
+      [{ status: 'DRAFT' }, 'draft', 'Nháp'],
+      [{ status: 'KEEPING' }, 'keeping', 'Đang keep'],
+      [{ status: 'READY_TO_SHIP' }, 'packing', 'Đang đóng gói'],
+      [{ status: 'COMPLETED' }, 'completed', 'Hoàn tất'],
+      [{ status: 'CANCELLED' }, 'closed', 'Đã hủy'],
+      [{ status: 'CANCELLED', returned: true }, 'closed', 'Đã hoàn đơn'],
+    ] as const) {
+      const t = await show(patch);
+      const badge = t.el.querySelector('tbody .badge') as HTMLElement;
+      expect(badge.classList, label).toContain(cls);
+      expect(badge.textContent!.trim()).toBe(label);
+      TestBed.resetTestingModule();
+    }
+  });
+  it('shows one contact channel under the customer name', async () => {
+    for (const [patch, line] of [
+      [{ customerChannel: { type: 'TIKTOK', value: 'tt.reader' } }, 'TikTok: tt.reader'],
+      [{ customerChannel: { type: 'THREADS', value: 'th.reader' } }, 'Threads: th.reader'],
+      [{ customerChannel: { type: 'ZALO', value: 'Zalo Mẹ Bin' } }, 'Zalo: Zalo Mẹ Bin'],
+      [{ customerChannel: null, customerPhoneSnapshot: '0901234567' }, '0901234567'],
+      [{ customerChannel: null, customerPhoneSnapshot: null }, 'Chưa có SĐT'],
+    ] as const) {
+      const t = await show(patch);
+      expect(t.text(t.el.querySelector('tbody td:first-child small')), line).toBe(line);
+      TestBed.resetTestingModule();
     }
   });
   it('opens the date row while a date is set', async () => {
@@ -357,7 +398,7 @@ describe('OrderList', () => {
     const t = await setup();
     t.api.stats.mockReturnValue(throwError(() => new Error('down')));
     await t.go({ nhom: 'dang-keep' });
-    expect(t.tabs()).toEqual(['Tất cả', 'Chờ xử lý', 'Đang keep', 'Hoàn tất', 'Hủy/Hoàn']);
+    expect(t.tabs()).toEqual(['Tất cả', 'Chờ xử lý', 'Đang keep', 'Đang đóng gói', 'Hoàn tất', 'Hủy/Hoàn']);
     expect(t.subs().map(t.text)).toEqual(['Tất cả', 'Quá hạn', 'Đến hạn hôm nay', 'Sắp hết hạn']);
     expect(t.subs().some((b) => b.classList.contains('zero'))).toBe(false);
     expect(t.el.textContent).toContain('DH-000001');

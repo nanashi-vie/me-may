@@ -26,16 +26,28 @@ revision backend/frontend, image digest, tên môi trường và phiên bản Fl
    Kiểm schema V34–V36 cho đơn trước khi áp V37 theo chuỗi migration.
 2. Diễn tập trên bản sao. V37 thêm cột nullable cho chế độ khách thanh toán.
    Bill cũ có thể chưa có mode. Kiểm dữ liệu cũ, khoản thu và receipt,
-   mã trả cước J&T, cách tính số dư và tương thích request gửi lại.
+   mã trả cước J&T và cách tính số dư.
 3. Sau khi owner cho rollout, triển khai backend tương thích trước frontend.
    Đối chiếu digest/schema, health, quyền OWNER/STAFF và CSRF qua hostname thật.
    Kiểm public catalogue/cache/SEO sau thay revision. Với QA, kiểm hai tab, bill
-   thu hộ và thanh toán theo tháng, ghi thu và tải lại số dư. Chạy ca gửi lại,
-   hoàn đơn và kiểm tồn theo contract.
+   thu hộ và thanh toán theo tháng, ghi thu và tải lại số dư. Chạy ca hoàn đơn
+   và kiểm tồn theo contract.
 4. Nếu cần rollback, ngừng luồng ghi liên quan, ghi nhận giao dịch phát sinh
    và chọn image tương thích dữ liệu. Giữ đơn, khoản thu, reservation, receipt
    và audit. Đối chiếu trước khi mở lại ghi. Owner ghi lại kết quả/giới hạn ở
    [tiến độ](../PROGRESS.md) và [bằng chứng đơn](../verification/ORDER_VERIFICATION.md).
+
+## Ảnh bill, hoàn đơn một bước và danh sách đơn V39
+
+1. Trước V39: backup DB và media off-host; đếm `order_payments` theo `transaction_type`
+   và `payment_method`, đếm đơn `UNSUCCESSFUL`, ghi số vào bằng chứng. V39 đổi PAYMENT
+   thành DEPOSIT, bỏ cột phương thức, chuyển UNSUCCESSFUL về COMPLETED; chỉ áp khi
+   dữ liệu đơn vẫn là dữ liệu thử như owner xác nhận 26/11.
+2. Kiểm thư mục `<MEMAY_IMAGE_ROOT>/private/payment-proofs` ghi được bởi backend, nằm
+   trong mount media đã backup, không được nginx/CDN public phục vụ.
+3. Triển khai backend trước, frontend ngay sau: frontend cũ gửi tiền dạng JSON sẽ bị
+   từ chối. Smoke: Nhận cọc có ảnh, xem ảnh (OWNER 200, STAFF 403), Hoàn tiền, VOID,
+   Hoàn đơn từ Hoàn tất, sáu tab và menu ⋮. Rollback code không đảo được V39.
 
 [Contract đơn](../product/ORDERS.md) · [Runbook triển khai](DEPLOYMENT.md) ·
 [Khôi phục media](IMAGE_OPERATIONS.md).

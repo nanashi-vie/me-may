@@ -4,7 +4,7 @@ Owner chốt 25/11/2026. Phần mở rộng của [đơn nội bộ](ORDERS.md),
 
 ## Cân kiện gợi ý
 
-- Xuất bill và Chuẩn bị gửi lại tự điền Trọng lượng sau đóng gói = tổng trọng lượng
+- Xuất bill tự điền Trọng lượng sau đóng gói = tổng trọng lượng
   sách + 1.000 g (cố định trong code, đơn nhỏ cũng cộng đủ), kèm dòng
   "Sách 850 g + 1.000 g đóng gói". Ô vẫn sửa được. Đây là số ước tính, thay quy định
   buộc nhập số cân thật trước đây.
