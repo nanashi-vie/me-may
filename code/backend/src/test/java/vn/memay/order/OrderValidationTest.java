@@ -14,7 +14,7 @@ class OrderValidationTest {
   assertThat(t.orderTotal()).isNull();assertThat(t.balance()).isNull();assertThat(t.totalBookWeightGrams()).isNull();assertThat(t.provisional()).isTrue();
  }
  @Test void refundAndVoidUseActualNetMoney(){
-  var t=OrderValidation.totals(List.of(new ItemValue(0L,1,250L)),0,0L,List.of(new PaymentValue(PaymentType.PAYMENT,500000,true),new PaymentValue(PaymentType.DEPOSIT,100000,false),new PaymentValue(PaymentType.REFUND,20000,false)));
+  var t=OrderValidation.totals(List.of(new ItemValue(0L,1,250L)),0,0L,List.of(new PaymentValue(PaymentType.DEPOSIT,500000,true),new PaymentValue(PaymentType.DEPOSIT,100000,false),new PaymentValue(PaymentType.REFUND,20000,false)));
   assertThat(t.paidAmount()).isEqualTo(80000);assertThat(t.balance()).isEqualTo(-80000);assertThat(t.paymentStatus()).isEqualTo("OVERPAID");
   assertThatThrownBy(()->OrderValidation.totals(List.of(),0,0L,List.of(new PaymentValue(PaymentType.REFUND,1,false)))).isInstanceOf(vn.memay.common.AdminApiException.class);
  }

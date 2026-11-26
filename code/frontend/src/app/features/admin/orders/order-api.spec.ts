@@ -53,25 +53,44 @@ describe('OrderApi', () => {
     retry.flush({ id: '5', orderCode: 'DH-000005', version: 3, status: 'KEEPING' });
     http.verify();
   });
-  it('csrf refresh retries the exact requestId and amount', () => {
+  it('csrf refresh retries the exact requestId and body', () => {
     const { api, http } = setup();
     const body = {
       version: 2,
       requestId: '22222222-2222-4222-8222-222222222222',
-      transactionType: 'PAYMENT',
-      amount: 100000,
-      paymentMethod: 'CASH',
+      reason: 'Customer cancelled',
     };
-    api.command('5', 'payments', body).subscribe();
+    api.command('5', 'cancel', body).subscribe();
     http.expectOne('/api/v1/auth/csrf').flush({ token: 'old', headerName: 'X-CSRF-TOKEN' });
-    const first = http.expectOne('/api/v1/admin/orders/5/payments');
+    const first = http.expectOne('/api/v1/admin/orders/5/cancel');
     first.flush({ error: 'csrf_invalid' }, { status: 403, statusText: 'Forbidden' });
-    body.amount = 200000;
+    body.reason = 'Edited later';
     http.expectOne('/api/v1/auth/csrf').flush({ token: 'new', headerName: 'X-CSRF-TOKEN' });
-    const retry = http.expectOne('/api/v1/admin/orders/5/payments');
-    expect(retry.request.body.amount).toBe(100000);
+    const retry = http.expectOne('/api/v1/admin/orders/5/cancel');
+    expect(retry.request.body.reason).toBe('Customer cancelled');
     expect(retry.request.body.requestId).toBe('22222222-2222-4222-8222-222222222222');
     retry.flush({ id: '5', orderCode: 'DH-000005', version: 3, status: 'DRAFT' });
     http.verify();
+  });
+  it('records a payment as multipart with the JSON part and one receipt file', () => {
+    const { api, http } = setup();
+    const proof = new File([new Uint8Array([137, 80, 78, 71])], 'bill.png', { type: 'image/png' });
+    let result: any;
+    api
+      .recordPayment('5', { transactionType: 'DEPOSIT', amount: 100000, note: '', version: 2, requestId: 'r-1' }, proof)
+      .subscribe((r) => (result = r));
+    http.expectOne('/api/v1/auth/csrf').flush({ token: 't', headerName: 'X-CSRF-TOKEN' });
+    const r = http.expectOne('/api/v1/admin/orders/5/payments');
+    expect(r.request.method).toBe('POST');
+    const form = r.request.body as FormData;
+    expect(form.get('proof')).toBe(proof);
+    expect((form.get('payment') as Blob).type).toBe('application/json');
+    r.flush({ id: '5', version: 3, status: 'KEEPING' });
+    expect(result).toEqual({ id: '5', version: 3, status: 'KEEPING' });
+    http.verify();
+  });
+  it('points receipt images at the private admin path', () => {
+    const { api } = setup();
+    expect(api.proofUrl('5', '9')).toBe('/api/v1/admin/orders/5/payments/9/proof');
   });
 });

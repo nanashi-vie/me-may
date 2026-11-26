@@ -168,6 +168,8 @@ Cloudinary khác. Bước này khác với migration hàng loạt sách cũ.
    với profile `restore` mặc định cách ly. Đối chiếu manifest, file ngoài DB,
    recipe digest và lease. Chỉ bật lại kết nối sau khi xác minh namespace,
    mount, credential. Đo thời gian tới ảnh bìa đầu tiên và toàn bộ lô.
+   Backup/restore gồm cả `private/payment-proofs` (ảnh bill chuyển khoản, V39);
+   đối chiếu số file với `order_payments.proof_key` khác null.
 
 ## 5. Benchmark
 

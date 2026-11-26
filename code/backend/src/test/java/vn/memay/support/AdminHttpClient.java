@@ -37,4 +37,13 @@ public final class AdminHttpClient {
   if(csrf)request.header("X-CSRF-TOKEN",tree(send("GET","/api/v1/auth/csrf",null,false)).path("token").asString());
   return client.send(request.POST(HttpRequest.BodyPublishers.ofByteArray(bytes.toByteArray())).build(),HttpResponse.BodyHandlers.ofString());
  }
+ public record Part(String name,String filename,String type,byte[] body){}
+ public HttpResponse<String> parts(String path,java.util.List<Part> parts,boolean csrf)throws Exception{
+  String boundary="parts"+java.util.UUID.randomUUID();var bytes=new java.io.ByteArrayOutputStream();
+  for(var p:parts){bytes.write(("--"+boundary+"\r\nContent-Disposition: form-data; name=\""+p.name()+"\""+(p.filename()==null?"":"; filename=\""+p.filename()+"\"")+"\r\nContent-Type: "+p.type()+"\r\n\r\n").getBytes(StandardCharsets.UTF_8));bytes.write(p.body());bytes.write("\r\n".getBytes(StandardCharsets.UTF_8));}
+  bytes.write(("--"+boundary+"--\r\n").getBytes(StandardCharsets.UTF_8));
+  var request=HttpRequest.newBuilder(URI.create("http://127.0.0.1:"+port+path)).header("Content-Type","multipart/form-data; boundary="+boundary);
+  if(csrf)request.header("X-CSRF-TOKEN",tree(send("GET","/api/v1/auth/csrf",null,false)).path("token").asString());
+  return client.send(request.POST(HttpRequest.BodyPublishers.ofByteArray(bytes.toByteArray())).build(),HttpResponse.BodyHandlers.ofString());
+ }
 }

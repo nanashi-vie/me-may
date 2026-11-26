@@ -11,7 +11,6 @@ const stats: OrderStats = {
   overdue: 2,
   readyToShip: 5,
   completed: 9,
-  unsuccessful: 1,
   cancelled: 4,
   returned: 6,
 };
@@ -19,7 +18,10 @@ const stats: OrderStats = {
 describe('order groups', () => {
   it.each([
     [{}, 'ALL', 'ALL', 'ALL'],
-    [{ nhom: 'cho-xu-ly', status: 'READY_TO_SHIP' }, 'ACTION', 'READY_TO_SHIP', 'ALL'],
+    [{ nhom: 'cho-xu-ly', status: 'READY_TO_SHIP' }, 'ACTION', 'ALL', 'ALL'],
+    [{ nhom: 'dang-dong-goi' }, 'PACKING', 'ALL', 'ALL'],
+    [{ status: 'READY_TO_SHIP' }, 'PACKING', 'ALL', 'ALL'],
+    [{ status: 'DRAFT' }, 'ACTION', 'ALL', 'ALL'],
     [{ nhom: 'dang-keep', keepWarning: 'OVERDUE' }, 'KEEPING', 'ALL', 'OVERDUE'],
     [{ nhom: 'dang-keep', status: 'KEEPING' }, 'KEEPING', 'ALL', 'ALL'],
     [{ nhom: 'huy-hoan', status: 'DRAFT' }, 'CLOSED', 'ALL', 'ALL'],
@@ -28,7 +30,7 @@ describe('order groups', () => {
     [{ status: 'KEEPING', customerId: '3' }, 'KEEPING', 'ALL', 'ALL'],
     [{ status: 'COMPLETED' }, 'COMPLETED', 'ALL', 'ALL'],
     [{ status: 'RETURNED' }, 'CLOSED', 'RETURNED', 'ALL'],
-    [{ status: 'UNSUCCESSFUL' }, 'ACTION', 'UNSUCCESSFUL', 'ALL'],
+    [{ status: 'UNSUCCESSFUL' }, 'ALL', 'ALL', 'ALL'],
     [{ status: 'COMPLETED', keepWarning: 'SOON' }, 'KEEPING', 'ALL', 'SOON'],
     [{ status: 'LA', keepWarning: 'LA' }, 'ALL', 'ALL', 'ALL'],
     [{ status: 'toString' }, 'ALL', 'ALL', 'ALL'],
@@ -67,24 +69,26 @@ describe('order groups', () => {
         expect(parse(query), JSON.stringify(query)).toEqual(filter);
         checked++;
       }
-    expect(checked).toBe(13);
+    expect(checked).toBe(11);
   });
 
-  it('counts each tab so the four groups add up to all', () => {
+  it('counts each tab so the five groups add up to all', () => {
     expect(ORDER_TABS.map((t) => [t.label, t.count(stats)])).toEqual([
-      ['Tất cả', 39],
-      ['Chờ xử lý', 8],
+      ['Tất cả', 38],
+      ['Chờ xử lý', 2],
       ['Đang keep', 12],
+      ['Đang đóng gói', 5],
       ['Hoàn tất', 9],
       ['Hủy/Hoàn', 10],
     ]);
   });
 
   it('names and counts the sub filters', () => {
-    const subs = (group: 'ALL' | 'ACTION' | 'KEEPING' | 'COMPLETED' | 'CLOSED') =>
+    const subs = (group: 'ALL' | 'ACTION' | 'KEEPING' | 'PACKING' | 'COMPLETED' | 'CLOSED') =>
       tabOf(group).subs.map((s) => [s.label, s.count(stats)]);
     expect(subs('ALL')).toEqual([]);
-    expect(subs('ACTION')).toEqual([['Nháp', 2], ['Chờ giao', 5], ['Không thành công', 1]]);
+    expect(subs('ACTION')).toEqual([]);
+    expect(subs('PACKING')).toEqual([]);
     expect(subs('KEEPING')).toEqual([['Quá hạn', 2], ['Đến hạn hôm nay', 1], ['Sắp hết hạn', 3]]);
     expect(subs('COMPLETED')).toEqual([]);
     expect(subs('CLOSED')).toEqual([['Đã hủy', 4], ['Đã hoàn đơn', 6]]);

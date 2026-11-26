@@ -7,8 +7,10 @@ import {
   HostListener,
   Injector,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { DatePipe, KeyValuePipe, NgTemplateOutlet } from '@angular/common';
@@ -28,15 +30,33 @@ import {
   OrderItem,
   OrderPayment,
   OrderSummary,
+  PaymentType,
   Page,
   statusLabel,
+  statusTone,
+  CHANNEL_LABELS,
 } from '../order-models';
 import { OrderBill } from '../order-bill/order-bill';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
+import {
+  ACTION_LABELS,
+  HeaderAction,
+  billTab,
+  currentShipment,
+  dueAmount,
+  menuActions,
+  paymentBadge,
+  primaryAction,
+} from './order-detail-view';
+import { OrderTimeline } from './order-timeline';
+import { OrderActionsMenu } from './order-actions-menu';
+type Tab = 'detail' | 'bill';
+/** `total` is the old name of the bill tab, kept so saved links still open it. */
+const tabOf = (q: string | null | undefined): Tab => (q === 'bill' || q === 'total' ? 'bill' : 'detail');
 type Pending = {
-  kind: 'command' | 'create' | 'update' | 'itemAdd' | 'itemUpdate' | 'remove' | 'void';
+  kind: 'command' | 'create' | 'update' | 'itemAdd' | 'itemUpdate' | 'remove' | 'void' | 'payment';
   action?: OrderAction;
   itemId?: string;
   orderId?: string;
@@ -52,8 +72,6 @@ type Panel =
   | 'payment'
   | 'void'
   | 'ship'
-  | 'fail'
-  | 'abort-resend'
   | 'return'
   | 'tracking'
   | 'edit';
@@ -71,9 +89,11 @@ type Panel =
     OrderBill,
     OrderItemForm,
     OrderShippingForm,
+    OrderTimeline,
+    OrderActionsMenu,
   ],
   templateUrl: './order-detail.html',
-  styleUrls: ['../orders.scss', '../order-picker.scss'],
+  styleUrls: ['../orders.scss', '../order-picker.scss', './order-detail.scss'],
 })
 export class OrderDetailPage {
   private readonly api = inject(OrderApi);
@@ -84,7 +104,6 @@ export class OrderDetailPage {
   private readonly destroy = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  readonly bill = viewChild(OrderBill);
   readonly itemForm = viewChild(OrderItemForm);
   readonly shippingForm = viewChild(OrderShippingForm);
   readonly customerForm = viewChild(CustomerForm);
@@ -97,37 +116,93 @@ export class OrderDetailPage {
   readonly toast = signal('');
   readonly pending = signal<Pending | null>(null);
   readonly paymentConflict = signal(false);
+  /** The receipt stays outside `pending` (which is JSON-cloned) so a retry resends the same file. */
+  readonly paymentProof = signal<File | null>(null);
+  readonly proofPreview = signal('');
+  readonly proofError = signal('');
+  readonly viewing = signal<OrderPayment | null>(null);
   readonly panel = signal<Panel>('');
   readonly money = vnd;
   readonly statusLabel = statusLabel;
   readonly keepEnd = keepEnd;
   readonly backQuery = { ...this.route.snapshot.queryParams };
-  readonly totalTab = signal(this.backQuery['tab'] === 'total');
-  selectTab(total: boolean) {
-    this.totalTab.set(total);
+  readonly tab = signal<Tab>(tabOf(this.backQuery['tab']));
+  selectTab(tab: Tab) {
+    this.tab.set(tab);
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: total ? 'total' : null },
+      queryParams: { tab: tab === 'bill' ? 'bill' : null },
       queryParamsHandling: 'merge',
     });
   }
   tabKey(event: KeyboardEvent) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const total = event.key === 'End' || (event.key !== 'Home' && !this.totalTab());
-    this.selectTab(total);
-    document.getElementById(total ? 'order-total-tab' : 'order-detail-tab')?.focus();
+    const bill = event.key === 'End' || (event.key !== 'Home' && this.tab() === 'detail');
+    this.selectTab(bill ? 'bill' : 'detail');
+    document.getElementById(bill ? 'order-bill-tab' : 'order-detail-tab')?.focus();
+  }
+  readonly statusTone = statusTone;
+  readonly channelLabels = CHANNEL_LABELS;
+  readonly actionLabels = ACTION_LABELS;
+  readonly shipment = computed(() => {
+    const d = this.order();
+    return d ? currentShipment(d) : null;
+  });
+  readonly billed = computed(() => !!this.shipment());
+  /** A saved bill was dropped by reopening; the order needs a new one. */
+  readonly needsNewBill = computed(() => {
+    const d = this.order();
+    return !!d && d.status !== 'CANCELLED' && !this.shipment() && d.shipments.some((s) => s.state === 'ABORTED');
+  });
+  readonly due = computed(() => {
+    const d = this.order();
+    return d ? dueAmount(d) : 0;
+  });
+  readonly paymentBadge = computed(() => {
+    const d = this.order();
+    return d ? paymentBadge(d) : null;
+  });
+  readonly primary = computed(() => {
+    const d = this.order();
+    return d ? primaryAction(d) : null;
+  });
+  /** Extending is offered only while a later end date is still possible. */
+  readonly menu = computed(() => {
+    const d = this.order();
+    if (!d) return [];
+    return menuActions(d).filter((a) => a !== 'extend-keep' || this.minKeepDate() <= this.maxKeepDate());
+  });
+  readonly billState = computed(() => {
+    const d = this.order();
+    return d ? billTab(d) : 'empty';
+  });
+  readonly allNotes = signal(false);
+  /** Newest first; five unless the owner asks for all. */
+  readonly shownNotes = computed(() => {
+    const notes = [...(this.order()?.notes ?? [])].reverse();
+    return this.allNotes() ? notes : notes.slice(0, 5);
+  });
+  /** What the bill form holds now, for the bill beside it. */
+  readonly billDraft = signal<ShippingDraft | null>(null);
+  /** Set after a saved command: the next order replaces whatever the bill form holds. */
+  private reloadBill = true;
+  /** Header actions reload the bill form afterwards, so unsaved bill edits are confirmed first. */
+  runHeaderAction(action: HeaderAction) {
+    if (
+      this.shippingForm()?.dirty() &&
+      !window.confirm('Bill có thay đổi chưa lưu. Bỏ các thay đổi này và tiếp tục?')
+    ) {
+      this.selectTab('bill');
+      return;
+    }
+    this.openPanel(action);
   }
   /** First handover ends the keep; later resends do not change it. */
   readonly keepHandedOver = computed(() => {
     const d = this.order();
-    if (!d?.keepStartedAt || !d.keepUntil || !['COMPLETED', 'UNSUCCESSFUL'].includes(d.status)) return null;
+    if (!d?.keepStartedAt || !d.keepUntil || d.status !== 'COMPLETED') return null;
     return d.shipments.find((s) => s.handedOverAt)?.handedOverAt ?? null;
-  });
-  readonly currentBill = computed(() => {
-    const d = this.order();
-    if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;
-    return d.shipments.filter((s) => s.state !== 'ABORTED').at(-1) ?? null;
   });
   readonly keepError = signal('');
   readonly selectedCustomer = signal<CustomerSummary | null>(null);
@@ -150,10 +225,8 @@ export class OrderDetailPage {
   trackingCode = '';
   actualConfirmed = false;
   payment = {
-    transactionType: 'PAYMENT' as 'PAYMENT' | 'DEPOSIT' | 'REFUND',
+    transactionType: 'DEPOSIT' as PaymentType,
     amount: null as number | null,
-    paymentMethod: 'BANK_TRANSFER',
-    occurredAt: '',
     note: '',
   };
   returns: {
@@ -176,7 +249,19 @@ export class OrderDetailPage {
     delete this.backQuery['tab'];
     this.route.queryParamMap
       ?.pipe(takeUntilDestroyed(this.destroy))
-      .subscribe((q) => this.totalTab.set(q.get('tab') === 'total'));
+      .subscribe((q) => this.tab.set(tabOf(q.get('tab'))));
+    // Each new order reaches the bill form: saved values when nothing is typed or after a
+    // save, otherwise a rebase that keeps the typing and asks to recheck COD and weight.
+    effect(() => {
+      const d = this.order(),
+        form = this.shippingForm();
+      if (!d || !form) return;
+      untracked(() => {
+        if (this.reloadBill || !form.dirty()) form.load(d);
+        else form.rebase(d);
+        this.reloadBill = false;
+      });
+    });
     combineLatest([this.route.paramMap, toObservable(this.auth.epoch)])
       .pipe(
         switchMap(([params]) => {
@@ -266,7 +351,9 @@ export class OrderDetailPage {
     this.fieldErrors.set({});
     this.toast.set('');
     this.itemForm()?.close();
-    this.shippingForm()?.close();
+    this.billDraft.set(null);
+    this.allNotes.set(false);
+    this.reloadBill = true;
   }
   searchCustomers(page = 0) {
     this.customerPageNumber = page;
@@ -374,7 +461,6 @@ export class OrderDetailPage {
               this.order.set(v);
               this.paymentConflict.set(false);
               if (this.itemForm()?.visible()) this.itemForm()?.rebase(v);
-              if (this.shippingForm()?.visible()) this.shippingForm()?.rebase(v);
               this.error.set('');
             }
             this.itemForm()?.refreshing.set(false);
@@ -391,6 +477,8 @@ export class OrderDetailPage {
             this.itemForm()?.refreshing.set(false);
             this.shippingForm()?.refreshing.set(false);
             this.loading.set(false);
+            // The saved values never arrived; what is typed from now on must not be replaced.
+            this.reloadBill = false;
             this.error.set('Chưa tải được bản mới của đơn. Các trường đang nhập được giữ lại.');
           }
         },
@@ -434,7 +522,9 @@ export class OrderDetailPage {
                 ? this.api.removeItem(id, p.itemId!, p.body)
                 : p.kind === 'void'
                   ? this.api.voidPayment(id, p.itemId!, p.body)
-                  : this.api.command(id, p.action!, p.body);
+                  : p.kind === 'payment'
+                    ? this.api.recordPayment(id, p.body, this.paymentProof()!)
+                    : this.api.command(id, p.action!, p.body);
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (r) => {
         if (epoch !== this.auth.epoch() || pageGeneration !== this.pageGeneration) return;
@@ -444,8 +534,8 @@ export class OrderDetailPage {
         this.panel.set('');
         this.selectedCustomer.set(null);
         this.itemForm()?.close();
-        if (p.action !== 'payments') this.shippingForm()?.close();
-        if (p.action === 'finalize') this.selectTab(true);
+        if (p.kind === 'payment') this.chooseProof(null);
+        if (p.kind === 'command' || p.kind === 'update') this.reloadBill = true;
         this.toast.set('Đã lưu thao tác.');
         if (p.kind === 'create') {
           this.selectedCustomer.set(null);
@@ -466,7 +556,7 @@ export class OrderDetailPage {
         this.fieldErrors.set(e.error?.fieldErrors ?? {});
         if (e.error?.matches) this.itemForm()?.setMatches(e.error.matches);
         const conflict = e.status === 409 && e.error?.error === 'version_conflict';
-        this.paymentConflict.set(p.action === 'payments' && conflict);
+        this.paymentConflict.set(p.kind === 'payment' && conflict);
         this.itemForm()?.conflict.set(conflict);
         this.shippingForm()?.conflict.set(conflict);
         this.itemForm()?.error.set(orderError(e));
@@ -510,14 +600,6 @@ export class OrderDetailPage {
     this.paymentConflict.set(false);
     this.resetCustomerPicker();
     this.panel.set(panel);
-    if (panel === 'payment')
-      this.payment = {
-        transactionType: this.order()?.status === 'CANCELLED' ? 'REFUND' : 'PAYMENT',
-        amount: null,
-        paymentMethod: 'BANK_TRANSFER',
-        occurredAt: '',
-        note: '',
-      };
     const d = this.order();
     if (d) {
       this.fulfillmentType = d.fulfillmentType;
@@ -548,6 +630,42 @@ export class OrderDetailPage {
         ?.focus();
     }, 0);
   }
+  openPayment(type: PaymentType) {
+    if (this.pending() || this.busy()) return;
+    this.openPanel('payment');
+    this.payment = { transactionType: type, amount: null, note: '' };
+    this.chooseProof(null);
+  }
+  chooseProof(file: File | null) {
+    if (this.proofPreview()) URL.revokeObjectURL?.(this.proofPreview());
+    this.proofPreview.set('');
+    this.paymentProof.set(null);
+    this.proofError.set('');
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      this.proofError.set('Chỉ nhận ảnh JPG hoặc PNG.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      this.proofError.set('Ảnh tối đa 10 MB.');
+      return;
+    }
+    this.paymentProof.set(file);
+    this.proofPreview.set(URL.createObjectURL?.(file) ?? '');
+  }
+  proofUrl(p: OrderPayment) {
+    return this.api.proofUrl(this.order()!.id, p.id);
+  }
+  viewProof(p: OrderPayment | null) {
+    this.viewing.set(p);
+    setTimeout(() => {
+      const viewer = document.querySelector<HTMLDialogElement>('#proof-viewer');
+      if (p) viewer?.showModal?.();
+      else document.querySelector<HTMLElement>('[data-proof="' + this.lastViewed + '"]')?.focus();
+    }, 0);
+    if (p) this.lastViewed = p.id;
+  }
+  private lastViewed = '';
   closePanel() {
     if (this.pending() || this.busy()) return;
     if (!window.confirm('Đóng form và bỏ thông tin chưa lưu?')) return;
@@ -566,8 +684,6 @@ export class OrderDetailPage {
         'reopen',
         'cancel',
         'void',
-        'fail',
-        'abort-resend',
         'return',
         'tracking',
       ].includes(panel) ||
@@ -593,22 +709,25 @@ export class OrderDetailPage {
       return;
     }
     if (panel === 'payment') {
-      if (
-        !integer(this.payment.amount, 1) ||
-        (this.payment.transactionType === 'REFUND' && !this.actualConfirmed)
-      ) {
+      const refund = this.payment.transactionType === 'REFUND';
+      if (!integer(this.payment.amount, 1) || (refund && !this.actualConfirmed)) {
         this.error.set('Nhập số tiền nguyên dương và xác nhận hoàn thực tế nếu hoàn tiền.');
         return;
       }
-      const when = this.payment.occurredAt ? new Date(this.payment.occurredAt) : null;
-      if (when && !Number.isFinite(when.getTime())) {
-        this.error.set('Thời gian không hợp lệ.');
+      if (!this.paymentProof()) {
+        if (!this.proofError()) this.proofError.set('Chọn ảnh bill chuyển khoản.');
         return;
       }
-      this.mutate('payments', {
-        ...this.payment,
-        occurredAt: when?.toISOString() ?? null,
-        actualConfirmed: this.actualConfirmed,
+      this.sendNew({
+        kind: 'payment',
+        orderId: d.id,
+        body: {
+          transactionType: this.payment.transactionType,
+          amount: this.payment.amount,
+          note: this.payment.note,
+          ...(refund ? { actualConfirmed: true } : {}),
+          ...meta,
+        },
       });
       return;
     }

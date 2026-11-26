@@ -40,7 +40,7 @@ class OrderTrashApiTest extends OrderTestSupport {
     }
 
     private void payment(long id, String type, long amount, boolean voided) {
-        jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,created_by,voided_at,voided_by,void_reason) values(?,?,?,'OTHER',current_timestamp,?,?,?,?)",
+        jdbc.update("insert into order_payments(order_id,transaction_type,amount,occurred_at,created_by,voided_at,voided_by,void_reason) values(?,?,?,current_timestamp,?,?,?,?)",
                 id, type, amount, owner.getId(), voided ? Timestamp.from(Instant.now()) : null, voided ? owner.getId() : null, voided ? "Synthetic" : null);
     }
 
@@ -64,7 +64,7 @@ class OrderTrashApiTest extends OrderTestSupport {
     }
 
     @Test void onlyUnpaidDraftsAndCancelledOrdersHoldingNoMoneyCanBeTrashed() throws Exception {
-        for (String status : List.of("KEEPING", "READY_TO_SHIP", "COMPLETED", "UNSUCCESSFUL")) {
+        for (String status : List.of("KEEPING", "READY_TO_SHIP", "COMPLETED")) {
             long id = draft();
             jdbc.update("update orders set status=? where id=?", status, id);
             assertThat(error(id)).as(status).isEqualTo("order_not_trashable");
@@ -87,7 +87,7 @@ class OrderTrashApiTest extends OrderTestSupport {
         }
         var allowed = List.of(draft, unpaid, voided, refunded, returned);
         var items = tree(api.send("GET", BASE, null, false)).path("items");
-        assertThat(items.size()).isEqualTo(13);
+        assertThat(items.size()).isEqualTo(12);
         for (var item : items)
             assertThat(item.path("trashable").asBoolean()).isEqualTo(allowed.contains(Long.parseLong(item.path("id").asString())));
         for (long id : allowed) assertThat(change(id, 0, true).statusCode()).isEqualTo(204);
@@ -102,6 +102,22 @@ class OrderTrashApiTest extends OrderTestSupport {
         assertThat(listed("")).containsExactlyInAnyOrder(cancelled, returned, draft);
         assertThat(api.send("GET", BASE + "/stats?status=RETURNED", null, false).statusCode()).isEqualTo(200);
         assertThat(api.send("GET", BASE + "?status=UNKNOWN", null, false).statusCode()).isEqualTo(400);
+    }
+
+    @Test void purgeDeletesProofFilesAfterCommit() throws Exception {
+        long id = draft(), other = draft();
+        deposit(id, 0, 1000);
+        jdbc.update("update orders set status='CANCELLED' where id=?", id);
+        payments.record(id, new OrderDtos.PaymentRequest(1L, UUID.randomUUID(), OrderDtos.PaymentType.REFUND, 1000L, null, true), PNG, owner);
+        deposit(other, 0, 500);
+        var gone = jdbc.queryForList("select proof_key from order_payments where order_id=?", String.class, id);
+        String kept = jdbc.queryForObject("select proof_key from order_payments where order_id=?", String.class, other);
+        assertThat(gone).hasSize(2);
+        assertThat(change(id, 2, true).statusCode()).isEqualTo(204);
+        var items = json(Map.of("items", List.of(Map.of("id", Long.toString(id), "version", 3))));
+        assertThat(api.send("POST", BASE + "/trash/purge", items, true).statusCode()).isEqualTo(204);
+        for (String key : gone) assertThat(proofDir().resolve(key)).doesNotExist();
+        assertThat(proofDir().resolve(kept)).exists();
     }
 
     @Test void purgeDeletesSettledPaymentHistoryOfReturnedOrder() throws Exception {
@@ -125,7 +141,7 @@ class OrderTrashApiTest extends OrderTestSupport {
 
         assertThat(api.send("GET", BASE + "/" + id, null, false).statusCode()).isEqualTo(404);
         assertThat(api.send("POST", BASE + "/" + id + "/cancel", json(Map.of("version", 1, "requestId", UUID.randomUUID(), "reason", "x")), true).statusCode()).isEqualTo(404);
-        assertThat(api.send("POST", BASE + "/" + id + "/payments", json(Map.of("version", 1, "requestId", UUID.randomUUID(), "transactionType", "DEPOSIT", "amount", 1000, "paymentMethod", "OTHER")), true).statusCode()).isEqualTo(404);
+        assertThat(api.parts(BASE + "/" + id + "/payments", List.of(new AdminHttpClient.Part("payment", null, "application/json", json(Map.of("version", 1, "requestId", UUID.randomUUID(), "transactionType", "DEPOSIT", "amount", 1000)).getBytes()), new AdminHttpClient.Part("proof", "bill.png", "image/png", PNG)), true).statusCode()).isEqualTo(404);
         var list = tree(api.send("GET", BASE, null, false));
         assertThat(list.path("totalElements").asLong()).isEqualTo(1);
         assertThat(list.path("items").get(0).path("id").asString()).isEqualTo(Long.toString(kept));

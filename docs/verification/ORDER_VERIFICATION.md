@@ -163,3 +163,50 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   ✕/Xóa lọc giữ focus, ngày ngược, gõ "Khách " dừng rồi "thử". 390px: bill và trang không tràn ngang.
 - Chưa kiểm: đơn thật, gửi lại và tải lại do xung đột trên trình duyệt (chỉ có test), Safari, thiết bị thật,
   trình đọc màn hình, `build:workers`; chưa có reviewer độc lập cho lượt này.
+
+## Nhận cọc có ảnh bill và bảng danh sách — 26/11/2026
+
+- `ORDER-MONEY-LIST-01`, nền `67d7ffd`, commit 1 `4ca3690`. Test viết và thấy đỏ trước code (riêng
+  `voidKeepsProof` và `removedEndpointsAreGone` xanh ngay vì hành vi đã có, giữ làm chốt).
+- `me_may_test` local lệch checksum V21 (không do thay đổi này) nên backend chạy trên PostgreSQL 17
+  container tạm, từ bản sao ở scratchpad để không đụng `8080` của owner. `verify` 457 test: 3 lỗi
+  `HeroBannerMediaTest` do bản sao thiếu `node_modules` image-worker, nối lại thì 5/5 đạt.
+  Sau phần 2: `verify` 461 test (3 skip) đạt. Frontend 75 file/558 test, `ng build` đạt.
+- Trình duyệt trong app, OWNER thử trên backend/DB tạm (20 đơn tổng hợp), 1440px: 6 tab và số đếm,
+  9 cột, badge 5 màu, dòng phụ TikTok/Threads/Zalo/SĐT; Enter mở dòng; ⋮ bằng phím (Enter vào "Xóa",
+  Esc trả focus), Xóa mở hộp Thùng rác; Nhận cọc với ảnh PNG có xem trước, lịch sử có ảnh nhỏ,
+  ảnh lớn đóng bằng Esc trả focus, nút Hoàn tiền xuất hiện; Hoàn đơn từ Hoàn tất → Đã hoàn đơn,
+  lần giao FAILED kèm lý do, 1 dòng hoàn. 375px: trang không tràn, bảng cuộn trong khung.
+- Sửa khi kiểm: ô đầu/cuối bảng chạm mép khung (thêm padding); menu ⋮ dòng cuối bị khung cuộn
+  cắt (đổi sang mở cạnh nút).
+- Chưa kiểm: đơn thật, STAFF trên trình duyệt, Safari/thiết bị thật, trình đọc màn hình,
+  `build:workers`, migration V39 trên dữ liệu đích, ảnh JPEG chụp từ điện thoại thật.
+- Review độc lập toàn nhánh (một reviewer, chỉ đọc): không có lỗi nghiêm trọng; 5 tình huống trọng tâm
+  (gửi lại cùng request, ảnh giả/0 byte, ghi DB lỗi sau khi lưu file, ảnh của đơn khác, Enter ở menu)
+  đều đúng. Một lỗi quan trọng đã sửa: chưa có job dọn ảnh mồ côi (thêm `PaymentProofSweep`, test đỏ
+  trước). Sửa thêm: nút Xác nhận khóa đến khi chọn ảnh. Sau sửa: backend `verify` 462 (3 skip),
+  frontend 559, build đạt. Các góp ý nhỏ hoãn ghi ở DEV_LOG.
+
+## Trang chi tiết đơn 2 cột và tab Xuất bill — 26/11/2026
+
+- `ORDER-DETAIL-BILL-01`, nền `8f44a5a`, commit 1 `4d637ef` (backend 5 field đọc). Test viết và
+  thấy đỏ trước code ở từng phần (backend 4/4 đỏ vì thiếu field; frontend hàm hiển thị, timeline,
+  menu ⋮, bill, form, trang).
+- Backend trên PostgreSQL 17 container tạm từ bản sao ở scratchpad (như lần trước): `verify` 466
+  test (3 skip) đạt. Frontend 78 file/600 test, `ng build` đạt (không vượt ngân sách CSS).
+- Trình duyệt trong app, OWNER thử trên backend/DB tạm (6 đơn tổng hợp đủ trạng thái), 1440px và
+  900px: header với nút chính và ⋮ đúng từng trạng thái; 2 cột/1 cột, không cuộn ngang trang;
+  `?tab=total` mở tab Xuất bill; gõ phí ship thì bill đổi ngay và hiện dải "Chưa lưu"; đổi tab qua
+  lại vẫn giữ số; Lưu bill đơn nháp → Đang đóng gói, ở lại tab, hết dải vàng, card Giao hàng có
+  thông tin; Mở lại đơn → mốc Chốt đơn về xám, lý do vào card Ghi chú; đơn Hoàn tất/Đã hoàn đơn
+  form chỉ xem; đơn Đã hủy báo không xuất bill, badge "Còn giữ 120.000đ"; timeline hoàn đơn có mốc
+  bàn giao rồi "Đã hoàn đơn" đỏ; đơn đã mở lại rồi chốt lại lấy ngày lần chốt mới.
+- Sửa khi kiểm: bảng sách bị cuộn ngang trong cột 2/3 (thu gọn ô); badge rớt dòng do `h1` toàn cục
+  `max-width: 18ch`; chữ mục đầu của ⋮ trắng do kiểu nút chung.
+- Chưa kiểm: đơn thật, ảnh bìa thật (đã có test API/đơn vị), Safari/thiết bị thật, trình đọc màn
+  hình, `build:workers`.
+- Sửa sau review (owner yêu cầu 26/11): kênh khách chỉ lấy ở API xem chi tiết, cùng câu truy vấn
+  (`left join`), lần đọc nội bộ/khóa không truy vấn thêm (test đỏ trước); cờ nạp lại form xóa khi
+  tải lại lỗi; form chuyển chỉ xem khi đơn hoàn tất ở phiên khác; xóa cuốn cuối không mất chữ đang
+  gõ; menu ⋮ có `aria-controls`, Esc từ nút, đóng khi Tab ra; timeline đơn hủy giữ mốc Chốt đơn;
+  dòng "Cần xuất lại bill cho đơn này." Mỗi mục có test đỏ trước. Frontend 610/610, build đạt.

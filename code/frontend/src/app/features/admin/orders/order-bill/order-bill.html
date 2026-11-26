@@ -1,80 +1,82 @@
-<dialog #dialog aria-label="Bill gửi khách" (cancel)="close($event)">
-  @if (visible()) {
-    @let o = order();
-    <section class="bill">
-      <header>
-        <p class="shop">Mẹ Mây</p>
-        <p class="tagline">Sách ngoại văn cho bé</p>
+@let o = order();
+@if (dirty()) {
+  <p class="unsaved" role="status">Chưa lưu — bấm Lưu bill trước khi chụp gửi khách</p>
+}
+<section class="bill" aria-label="Bill gửi khách">
+  <header>
+    <p class="shop">Mẹ Mây</p>
+    <p class="tagline">Sách ngoại văn cho bé</p>
+    <p class="split">
+      <span>Khách: <strong>{{ o.customerNameSnapshot }}</strong></span>
+      <span class="nowrap">{{ o.serverNow | date: 'dd/MM/yyyy' : '+0700' }}</span>
+    </p>
+    @if (phone()) {
+      <p>SĐT: <strong>{{ phone() }}</strong></p>
+    }
+    @if (address()) {
+      <p class="address">Địa chỉ: {{ address() }}</p>
+    }
+    @if (!billed()) {
+      <p class="provisional">Tạm tính, chưa gồm phí ship</p>
+    }
+  </header>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Sách</th>
+        <th scope="col" class="number">SL × Đơn giá</th>
+        <th scope="col" class="number">Thành tiền</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of lines(); track item.id) {
+        <tr>
+          <td>{{ item.titleSnapshot }}</td>
+          <td class="number">{{ item.quantity }} × {{ money(item.unitPriceVnd) }}</td>
+          <td class="number">{{ money(item.unitPriceVnd * item.quantity) }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  @if (isLast()) {
+    <div class="bill-totals">
+      <p class="split">
+        <span>Tiền sách ({{ o.totalQuantity }} quyển)</span>
+        <span>{{ money(o.totals.goodsTotal) }}</span>
+      </p>
+      @if (billed()) {
         <p class="split">
-          <span>Khách: <strong>{{ o.customerNameSnapshot }}</strong></span>
-          <span class="nowrap">{{ o.createdAt | date: 'dd/MM/yyyy' : '+0700' }}</span>
+          <span>Phí ship</span>
+          <span>{{ fee() === 0 ? 'Miễn phí' : money(fee()) }}</span>
         </p>
-        @if (!billed()) {
-          <p class="provisional">Tạm tính, chưa gồm phí ship</p>
+      }
+      <p class="split">
+        <strong>{{ billed() ? 'Tổng bill' : 'Tạm tính' }}</strong>
+        <strong>{{ money(total()) }}</strong>
+      </p>
+      <p class="split">
+        <span>Đã thanh toán</span>
+        <span>{{ money(o.totals.paidAmount) }}</span>
+      </p>
+      <p class="split due">
+        @if (balance() === 0) {
+          <strong>Đã thanh toán đủ</strong>
+        } @else {
+          <strong>{{ balance() < 0 ? 'Tiền thừa' : 'Cần thanh toán' }}</strong>
+          <strong>{{ money(balance() < 0 ? -balance() : balance()) }}</strong>
         }
-      </header>
-      <table>
-        <thead>
-          <tr>
-            <th scope="col">Sách</th>
-            <th scope="col" class="number">SL × Đơn giá</th>
-            <th scope="col" class="number">Thành tiền</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (item of lines(); track item.id) {
-            <tr>
-              <td>{{ item.titleSnapshot }}</td>
-              <td class="number">{{ item.quantity }} × {{ money(item.unitPriceVnd) }}</td>
-              <td class="number">{{ money(item.unitPriceVnd * item.quantity) }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-      @if (isLast()) {
-        <div class="bill-totals">
-          <p class="split">
-            <span>Tiền sách ({{ o.totalQuantity }} quyển)</span>
-            <span>{{ money(o.totals.goodsTotal) }}</span>
-          </p>
-          @if (billed()) {
-            <p class="split">
-              <span>Phí ship</span>
-              <span>{{ o.shippingFee === 0 ? 'Miễn phí' : money(o.shippingFee) }}</span>
-            </p>
-          }
-          <p class="split">
-            <strong>{{ billed() ? 'Tổng bill' : 'Tạm tính' }}</strong>
-            <strong>{{ money(total()) }}</strong>
-          </p>
-          <p class="split">
-            <span>Đã thanh toán</span>
-            <span>{{ money(o.totals.paidAmount) }}</span>
-          </p>
-          <p class="split due">
-            @if (balance() === 0) {
-              <strong>Đã thanh toán đủ</strong>
-            } @else {
-              <strong>{{ (balance() ?? 0) < 0 ? 'Tiền thừa' : 'Cần thanh toán' }}</strong>
-              <strong>{{ money((balance() ?? 0) < 0 ? -balance()! : balance()) }}</strong>
-            }
-          </p>
-        </div>
-      }
-      @if (pageCount() > 1) {
-        <p class="page-number">Trang {{ page() + 1 }}/{{ pageCount() }}</p>
-      }
-    </section>
-    <footer>
-      @if (pageCount() > 1) {
-        <button type="button" aria-label="Trang trước" [disabled]="page() === 0" (click)="go(-1)">
-          ‹ Trước
-        </button>
-        <button type="button" aria-label="Trang sau" [disabled]="isLast()" (click)="go(1)">
-          Sau ›
-        </button>
-      }
-      <button type="button" (click)="close()">Đóng</button>
-    </footer>
+      </p>
+    </div>
   }
-</dialog>
+  @if (pageCount() > 1) {
+    <p class="page-number">Trang {{ page() + 1 }}/{{ pageCount() }}</p>
+  }
+</section>
+@if (pageCount() > 1) {
+  <footer>
+    <button type="button" aria-label="Trang trước" [disabled]="page() === 0" (click)="go(-1)">
+      ‹ Trước
+    </button>
+    <button type="button" aria-label="Trang sau" [disabled]="isLast()" (click)="go(1)">Sau ›</button>
+  </footer>
+}

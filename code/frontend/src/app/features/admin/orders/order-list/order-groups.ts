@@ -10,8 +10,6 @@ export interface OrderTab {
   group: OrderGroup;
   slug: string;
   label: string;
-  showStatus: boolean;
-  dateColumn: 'keep' | 'completed' | 'closed' | null;
   subs: readonly OrderSub[];
   count(s: OrderStats): number;
 }
@@ -27,37 +25,26 @@ const warning = (value: string, label: string, count: OrderSub['count']): OrderS
   label,
   count,
 });
-const action = (s: OrderStats) => s.draft + s.readyToShip + s.unsuccessful;
 const closed = (s: OrderStats) => s.cancelled + s.returned;
 export const ORDER_TABS: readonly OrderTab[] = [
   {
     group: 'ALL',
     slug: '',
     label: 'Tất cả',
-    showStatus: true,
-    dateColumn: 'keep',
     subs: [],
-    count: (s) => action(s) + s.keeping + s.completed + closed(s),
+    count: (s) => s.draft + s.keeping + s.readyToShip + s.completed + closed(s),
   },
   {
     group: 'ACTION',
     slug: 'cho-xu-ly',
     label: 'Chờ xử lý',
-    showStatus: true,
-    dateColumn: null,
-    subs: [
-      status('DRAFT', (s) => s.draft),
-      status('READY_TO_SHIP', (s) => s.readyToShip),
-      status('UNSUCCESSFUL', (s) => s.unsuccessful),
-    ],
-    count: action,
+    subs: [],
+    count: (s) => s.draft,
   },
   {
     group: 'KEEPING',
     slug: 'dang-keep',
     label: 'Đang keep',
-    showStatus: false,
-    dateColumn: 'keep',
     subs: [
       warning('OVERDUE', 'Quá hạn', (s) => s.overdue),
       warning('DUE', 'Đến hạn hôm nay', (s) => s.due),
@@ -66,11 +53,16 @@ export const ORDER_TABS: readonly OrderTab[] = [
     count: (s) => s.keeping,
   },
   {
+    group: 'PACKING',
+    slug: 'dang-dong-goi',
+    label: 'Đang đóng gói',
+    subs: [],
+    count: (s) => s.readyToShip,
+  },
+  {
     group: 'COMPLETED',
     slug: 'hoan-tat',
     label: 'Hoàn tất',
-    showStatus: false,
-    dateColumn: 'completed',
     subs: [],
     count: (s) => s.completed,
   },
@@ -78,8 +70,6 @@ export const ORDER_TABS: readonly OrderTab[] = [
     group: 'CLOSED',
     slug: 'huy-hoan',
     label: 'Hủy/Hoàn',
-    showStatus: true,
-    dateColumn: 'closed',
     subs: [status('CANCELLED', (s) => s.cancelled), status('RETURNED', (s) => s.returned)],
     count: closed,
   },
@@ -87,15 +77,21 @@ export const ORDER_TABS: readonly OrderTab[] = [
 export function tabOf(group: OrderGroup | undefined): OrderTab {
   return ORDER_TABS.find((t) => t.group === group) ?? ORDER_TABS[0];
 }
+/** Statuses that are a whole tab, so old `?status=` links open it. */
+const LEGACY_STATUS: Record<string, OrderGroup> = {
+  DRAFT: 'ACTION',
+  KEEPING: 'KEEPING',
+  READY_TO_SHIP: 'PACKING',
+  COMPLETED: 'COMPLETED',
+};
 /** Links from before the tabs carry only status or keepWarning; open the tab that holds them. */
 function tabFrom(p: ParamMap): OrderTab {
   const slug = p.get('nhom');
   if (slug) return ORDER_TABS.find((t) => t.slug === slug) ?? ORDER_TABS[0];
   const holding = (key: OrderSub['key']) =>
     ORDER_TABS.find((t) => t.subs.some((s) => s.key === key && s.value === p.get(key)));
-  const whole = ORDER_TABS.find(
-    (t) => (t.group === 'KEEPING' || t.group === 'COMPLETED') && t.group === p.get('status'),
-  );
+  const old = p.get('status') ?? '';
+  const whole = Object.hasOwn(LEGACY_STATUS, old) ? tabOf(LEGACY_STATUS[old]) : undefined;
   return holding('keepWarning') ?? holding('status') ?? whole ?? ORDER_TABS[0];
 }
 export function parseOrderQuery(p: ParamMap): OrderFilter {

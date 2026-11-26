@@ -56,15 +56,55 @@ class OrderListApiTest extends OrderTestSupport {
 
     @Test void everyOrderBelongsToExactlyOneGroup() throws Exception {
         long draft = order("DRAFT"), keep = order("KEEPING"), ready = order("READY_TO_SHIP"), done = order("COMPLETED");
-        long failed = order("UNSUCCESSFUL"), cancelled = order("CANCELLED"), returned = returned(), trashed = order("DRAFT");
+        long cancelled = order("CANCELLED"), returned = returned(), trashed = order("DRAFT");
         jdbc.update("update orders set deleted_at=current_timestamp where id=?", trashed);
-        assertThat(listed("?group=ACTION")).containsExactlyInAnyOrder(draft, ready, failed);
+        assertThat(listed("?group=ACTION")).containsExactly(draft);
+        assertThat(listed("?group=PACKING")).containsExactly(ready);
         assertThat(listed("?group=KEEPING")).containsExactly(keep);
         assertThat(listed("?group=COMPLETED")).containsExactly(done);
         assertThat(listed("?group=CLOSED")).containsExactlyInAnyOrder(cancelled, returned);
-        assertThat(listed("?group=ALL")).hasSize(7).isEqualTo(listed("")).isEqualTo(listed("?group="));
+        assertThat(listed("?group=ALL")).hasSize(6).isEqualTo(listed("")).isEqualTo(listed("?group="));
         assertThat(listed("?group=CLOSED&status=RETURNED")).containsExactly(returned);
         assertThat(listed("?group=COMPLETED&status=DRAFT")).isEmpty();
+    }
+
+    @Test void packingGroupListsReadyOldestFirst() throws Exception {
+        long newer = order("READY_TO_SHIP"), older = order("READY_TO_SHIP");
+        at(newer, "created_at", "2026-02-02T00:00:00Z");
+        at(older, "created_at", "2026-01-01T00:00:00Z");
+        order("DRAFT");
+        assertThat(listed("?group=PACKING")).containsExactly(older, newer);
+    }
+
+    @Test void unsuccessfulStatusIs400() throws Exception {
+        assertThat(api.send("GET", BASE + "?status=UNSUCCESSFUL", null, false).statusCode()).isEqualTo(400);
+    }
+
+    private long withChannels(String tiktok, String threads, String zalo) {
+        long id = draft();
+        jdbc.update("update customer set tiktok_id=?,threads_id=?,zalo_name=? where id=(select customer_id from orders where id=?)", tiktok, threads, zalo, id);
+        return id;
+    }
+
+    private JsonNode summary(long id) throws Exception {
+        for (var item : get("?size=100").path("items")) if (item.path("id").asString().equals(Long.toString(id))) return item;
+        throw new AssertionError("missing " + id);
+    }
+
+    @Test void customerChannelPrefersTiktokThenThreadsThenZalo() throws Exception {
+        long all = withChannels("tt.reader", "th.reader", "Zalo Reader"), noTiktok = withChannels("  ", "th.only", "Zalo Only"),
+                zaloOnly = withChannels(null, null, "Zalo Mẹ Bin"), none = withChannels(null, "", null);
+        assertThat(summary(all).path("customerChannel").path("type").asString()).isEqualTo("TIKTOK");
+        assertThat(summary(all).path("customerChannel").path("value").asString()).isEqualTo("tt.reader");
+        assertThat(summary(noTiktok).path("customerChannel").path("type").asString()).isEqualTo("THREADS");
+        assertThat(summary(zaloOnly).path("customerChannel").path("value").asString()).isEqualTo("Zalo Mẹ Bin");
+        assertThat(summary(none).path("customerChannel").isNull()).isTrue();
+    }
+
+    @Test void channelFollowsCurrentProfile() throws Exception {
+        long id = withChannels(null, null, "Old");
+        jdbc.update("update customer set tiktok_id='new.handle' where id=(select customer_id from orders where id=?)", id);
+        assertThat(summary(id).path("customerChannel").path("value").asString()).isEqualTo("new.handle");
     }
 
     @Test void rejectsUnknownGroups() throws Exception {
@@ -134,7 +174,6 @@ class OrderListApiTest extends OrderTestSupport {
         for (int days : new int[]{-1, 0, 2, 9}) keeping(days);
         order("READY_TO_SHIP");
         for (int i = 0; i < 3; i++) order("COMPLETED");
-        order("UNSUCCESSFUL");
         order("CANCELLED");
         order("CANCELLED");
         returned();
@@ -145,7 +184,7 @@ class OrderListApiTest extends OrderTestSupport {
     @Test void countsEveryStatusOutsideTheTrash() throws Exception {
         everyStatus();
         var stats = get("/stats");
-        Map.of("draft", 2, "keeping", 4, "overdue", 1, "due", 1, "soon", 1, "readyToShip", 1, "completed", 3, "unsuccessful", 1, "cancelled", 2, "returned", 1)
+        Map.of("draft", 2, "keeping", 4, "overdue", 1, "due", 1, "soon", 1, "readyToShip", 1, "completed", 3, "cancelled", 2, "returned", 1)
                 .forEach((field, count) -> assertThat(stats.path(field).asInt(-1)).as(field).isEqualTo(count));
     }
 
@@ -162,22 +201,22 @@ class OrderListApiTest extends OrderTestSupport {
         at(alsoMoved, "created_at", "2026-01-06T00:00:00Z");
         String customer = jdbc.queryForObject("select customer_id::text from orders where id=?", String.class, first);
         String code = jdbc.queryForObject("select order_code from orders where id=?", String.class, moved);
-        for (var scope : Map.of("size=20", 16L, "customerId=" + customer, 1L, "createdFrom=2026-01-05&createdTo=2026-01-06", 2L, "q=" + code, 1L).entrySet()) {
+        for (var scope : Map.of("size=20", 15L, "customerId=" + customer, 1L, "createdFrom=2026-01-05&createdTo=2026-01-06", 2L, "q=" + code, 1L).entrySet()) {
             String q = scope.getKey();
             var s = get("/stats?" + q);
             long action = 0, closed = 0;
-            for (var status : List.of(List.of("ACTION", "DRAFT", "draft"), List.of("ACTION", "READY_TO_SHIP", "readyToShip"), List.of("ACTION", "UNSUCCESSFUL", "unsuccessful"),
-                    List.of("CLOSED", "CANCELLED", "cancelled"), List.of("CLOSED", "RETURNED", "returned"))) {
+            for (var status : List.of(List.of("CLOSED", "CANCELLED", "cancelled"), List.of("CLOSED", "RETURNED", "returned"))) {
                 long count = s.path(status.get(2)).asLong(-1);
                 assertThat(total(q + "&group=" + status.get(0) + "&status=" + status.get(1))).as(q + status).isEqualTo(count);
-                if (status.get(0).equals("ACTION")) action += count; else closed += count;
+                closed += count;
             }
             for (var warning : List.of(List.of("OVERDUE", "overdue"), List.of("DUE", "due"), List.of("SOON", "soon")))
                 assertThat(total(q + "&group=KEEPING&keepWarning=" + warning.get(0))).as(q + warning).isEqualTo(s.path(warning.get(1)).asLong(-1));
-            long keeping = s.path("keeping").asLong(-1), completed = s.path("completed").asLong(-1);
-            assertThat(List.of(total(q + "&group=ACTION"), total(q + "&group=KEEPING"), total(q + "&group=COMPLETED"), total(q + "&group=CLOSED")))
-                    .as(q).isEqualTo(List.of(action, keeping, completed, closed));
-            assertThat(action + keeping + completed + closed).as(q).isEqualTo(total(q + "&group=ALL")).isEqualTo(scope.getValue());
+            action = s.path("draft").asLong(-1);
+            long packing = s.path("readyToShip").asLong(-1), keeping = s.path("keeping").asLong(-1), completed = s.path("completed").asLong(-1);
+            assertThat(List.of(total(q + "&group=ACTION"), total(q + "&group=PACKING"), total(q + "&group=KEEPING"), total(q + "&group=COMPLETED"), total(q + "&group=CLOSED")))
+                    .as(q).isEqualTo(List.of(action, packing, keeping, completed, closed));
+            assertThat(action + packing + keeping + completed + closed).as(q).isEqualTo(total(q + "&group=ALL")).isEqualTo(scope.getValue());
         }
     }
 

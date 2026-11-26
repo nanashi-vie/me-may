@@ -1,0 +1,59 @@
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+li {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  padding-bottom: 18px;
+}
+li:last-child {
+  padding-bottom: 0;
+}
+/* Dashed connector from one dot to the next. */
+li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: 2px;
+  border-left: 2px dashed var(--line);
+}
+.dot {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #e5f4ea;
+  color: #237a46;
+  font-size: 14px;
+  font-weight: 700;
+}
+li.pending .dot {
+  background: #f0efec;
+}
+li.pending strong {
+  color: var(--muted);
+  font-weight: 500;
+}
+li.danger .dot {
+  background: #fceae5;
+  color: #a13f24;
+}
+li.danger strong {
+  color: #a13f24;
+}
+strong,
+time,
+small {
+  display: block;
+}
+time,
+small {
+  color: var(--muted);
+  font-size: 13px;
+}

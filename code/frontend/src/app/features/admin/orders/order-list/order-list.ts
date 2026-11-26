@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { DatePipe, DOCUMENT, NgTemplateOutlet } from '@angular/common';
+import { DatePipe, DOCUMENT } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
@@ -23,7 +23,6 @@ import {
   tap,
 } from 'rxjs';
 import { AuthService } from '../../../../core/auth/auth.service';
-import { TrashIcon } from '../../../../shared/trash-icon/trash-icon';
 import { TrashDialog } from '../../trash/trash-dialog/trash-dialog';
 import { OrderApi } from '../order-api';
 import {
@@ -33,14 +32,17 @@ import {
   OrderSummary,
   Page,
   statusLabel,
+  statusTone,
+  CHANNEL_LABELS,
   WARNING_LABELS,
 } from '../order-models';
 import { keepEnd, vnd } from '../order-values';
 import { ORDER_TABS, OrderSub, OrderTab, orderQuery, parseOrderQuery, tabOf } from './order-groups';
+import { OrderRowMenu } from './order-row-menu';
 const normalize = (q: string) => q.trim().replace(/\s+/g, ' ');
 @Component({
   selector: 'app-order-list',
-  imports: [Pagination, RouterLink, DatePipe, NgTemplateOutlet, TrashDialog, TrashIcon],
+  imports: [Pagination, RouterLink, DatePipe, TrashDialog, OrderRowMenu],
   templateUrl: './order-list.html',
   styleUrls: ['../orders.scss', './order-list.scss'],
 })
@@ -196,9 +198,19 @@ export class OrderList {
   refresh() {
     this.reloads.next();
   }
-  /** Pointer shortcut only; the order code stays the keyboard and screen-reader link. */
+  /** The line under the name: one contact channel, else the phone on the order. */
+  channelLine(o: OrderSummary) {
+    const c = o.customerChannel;
+    return c ? CHANNEL_LABELS[c.type] + ': ' + c.value : o.customerPhoneSnapshot || 'Chưa có SĐT';
+  }
+  readonly badgeClass = statusTone;
+  /** Enter on the row itself opens it; Enter on the ⋮ menu stays with the menu. */
+  openRowKey(event: Event, id: string) {
+    if (event.target !== event.currentTarget) return;
+    void this.router.navigate(['/admin/orders', id], { queryParams: this.query() });
+  }
   openRow(event: MouseEvent, id: string) {
-    if ((event.target as Element).closest('a, button') || this.view?.getSelection()?.toString()) return;
+    if ((event.target as Element).closest('a, button, [role="menu"]') || this.view?.getSelection()?.toString()) return;
     const queryParams = this.query();
     if (event.ctrlKey || event.metaKey) {
       const url = this.router.serializeUrl(this.router.createUrlTree(['/admin/orders', id], { queryParams }));

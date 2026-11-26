@@ -1,5 +1,4 @@
-<dialog #dialog (cancel)="escape($event)" aria-labelledby="shipping-title">
-  @if (visible()) {
+@if (loaded()) {
     @if (locked() && error()) {
       <div class="notice" role="alert">
         <p>{{ error() }}</p>
@@ -19,21 +18,16 @@
         </button>
       </div>
     }
-    <form (ngSubmit)="submit()" #form="ngForm">
-      <fieldset [disabled]="locked() || refreshing()">
+    <form
+      (ngSubmit)="submit()"
+      #form="ngForm"
+      aria-labelledby="shipping-title"
+      (input)="emitChange()"
+      (change)="emitChange()"
+    >
+      <fieldset [disabled]="locked() || refreshing() || readOnly()">
         <header class="heading">
-          <h2 id="shipping-title">
-            {{
-              mode === 'resend'
-                ? 'Chuẩn bị gửi lại'
-                : mode === 'shipping'
-                  ? 'Sửa thông tin bill'
-                  : 'Xuất bill'
-            }}
-          </h2>
-          <button type="button" class="secondary" (click)="requestClose()" aria-label="Đóng">
-            ×
-          </button>
+          <h2 id="shipping-title">Thông tin bill</h2>
         </header>
         @if (error()) {
           <p class="error" role="alert">{{ error() }}</p>
@@ -59,18 +53,6 @@
               [(ngModel)]="model.shippingAddress"
             ></textarea>
           </label>
-          @if (mode === 'resend') {
-            <label
-              ><span>Phí ship thu thêm lần này (VNĐ) *</span
-              ><input
-                appVndInput
-                name="extra"
-                required
-                [(ngModel)]="model.additionalShippingFee"
-                (ngModelChange)="suggestCod()"
-              /><small>Chỉ cộng phần thu thêm vào bill cũ.</small></label
-            >
-          } @else {
             <label
               ><span>Phí ship khách trả (VNĐ) *</span
               ><input
@@ -80,7 +62,6 @@
                 [(ngModel)]="model.shippingFee"
                 (ngModelChange)="suggestCod()"
             /></label>
-          }
           <label
             >Phương thức thanh toán
             <select
@@ -119,24 +100,13 @@
                 (ngModelChange)="manualCod = true"
               />
             </label>
-          } @else if ((balance() ?? 0) > 0) {
+          } @else if ((balance() ?? 0) > 0 && !readOnly()) {
             <p>
               Còn thiếu {{ money(balance()) }}.
               <button type="button" class="secondary" (click)="paymentRequested.emit()">
-                Ghi nhận thu tiền
+                Nhận cọc
               </button>
             </p>
-          }
-          @if (mode === 'resend') {
-            <label class="full"
-              ><span>Lý do gửi lại *</span
-              ><textarea
-                name="reason"
-                required
-                maxlength="1000"
-                [(ngModel)]="model.reason"
-              ></textarea>
-            </label>
           }
         </div>
         <div class="notice">
@@ -144,24 +114,32 @@
             <span>Tổng bill gồm tiền hàng + ship</span><strong>{{ money(billTotal()) }}</strong>
           </p>
           <p class="split-line">
-            <span>Đã nhận</span><strong>{{ money(received()) }}</strong>
+            <span
+              >Đã nhận
+              @if (!readOnly()) {
+                <button type="button" class="text-button" (click)="paymentRequested.emit()">
+                  Nhận cọc
+                </button>
+              }</span
+            ><strong>{{ money(received()) }}</strong>
           </p>
           <p class="split-line">
             <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
           </p>
         </div>
-        @if (reviewRequired) {
+        @if (reviewRequired && !readOnly()) {
           <button type="button" class="secondary" (click)="reviewRequired = false">
             Đã kiểm tra lại COD và cân nặng
           </button>
         }
-        <footer class="form-footer">
-          <button type="button" class="secondary" (click)="requestClose()">Hủy</button
-          ><button class="primary" [disabled]="!valid() || form.invalid">
-            {{ mode === 'resend' ? 'Chốt gửi lại' : 'Lưu bill' }}
-          </button>
-        </footer>
+        @if (!readOnly()) {
+          <footer class="form-footer">
+            @if (dirty()) {
+              <button type="button" class="secondary" (click)="undo()">Hoàn tác</button>
+            }
+            <button class="primary" [disabled]="!valid() || form.invalid">Lưu bill</button>
+          </footer>
+        }
       </fieldset>
     </form>
-  }
-</dialog>
+}

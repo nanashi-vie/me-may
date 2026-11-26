@@ -37,21 +37,27 @@ public class OrderController {
  @PostMapping("/{id}/extend-keep") public MutationResult extend(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return keep.extend(id,decode(body,ExtendRequest.class),actors.current(a));}
  @PostMapping("/{id}/reopen") public MutationResult reopen(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return keep.reopen(id,decode(body,ReasonRequest.class),actors.current(a));}
  @PostMapping("/{id}/cancel") public MutationResult cancel(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return keep.cancel(id,decode(body,ReasonRequest.class),actors.current(a));}
- @PostMapping("/{id}/payments") public MutationResult pay(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return payments.record(id,decode(body,PaymentRequest.class),actors.current(a));}
+ @PostMapping(value="/{id}/payments",consumes=org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE) public MutationResult pay(Authentication a,@PathVariable long id,@RequestPart("payment") String payment,@RequestParam(value="proof",required=false) List<org.springframework.web.multipart.MultipartFile> proof){
+  var actor=actors.current(a);var request=decode(readTree(payment),PaymentRequest.class);
+  if(proof==null||proof.size()!=1)throw AdminApiException.field("proof","Chọn đúng 1 ảnh bill chuyển khoản");
+  try{return payments.record(id,request,proof.getFirst().getBytes(),actor);}catch(java.io.IOException e){throw new AdminApiException(400,"invalid_request");}
+ }
+ @GetMapping("/{id}/payments/{paymentId}/proof") public ResponseEntity<byte[]> proof(Authentication a,@PathVariable long id,@PathVariable long paymentId){
+  var proof=payments.proof(id,paymentId,actors.current(a));
+  return ResponseEntity.ok().header("Content-Type",proof.mime()).header("Cache-Control","private, no-store").header("X-Content-Type-Options","nosniff").header("Content-Disposition","inline").body(payments.proofBytes(proof));
+ }
  @PostMapping("/{id}/payments/{paymentId}/void") public MutationResult voidPayment(Authentication a,@PathVariable long id,@PathVariable long paymentId,@RequestBody JsonNode body){return payments.voidPayment(id,paymentId,decode(body,ReasonRequest.class),actors.current(a));}
  @PostMapping("/{id}/finalize") public MutationResult finalizeOrder(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.finalizeOrder(id,decode(body,ShippingRequest.class),actors.current(a));}
  @PatchMapping("/{id}/shipping") public MutationResult shipping(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.updateShipping(id,decode(body,ShippingRequest.class),actors.current(a));}
  @PostMapping("/{id}/ship") public MutationResult ship(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.ship(id,decode(body,ShipRequest.class),actors.current(a));}
- @PostMapping("/{id}/fail") public MutationResult fail(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.fail(id,decode(body,ReasonRequest.class),actors.current(a));}
- @PostMapping("/{id}/resend") public MutationResult resend(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.resend(id,decode(body,ShippingRequest.class),actors.current(a));}
- @PostMapping("/{id}/abort-resend") public MutationResult abortResend(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.abortResend(id,decode(body,ReasonRequest.class),actors.current(a));}
  @PostMapping("/{id}/return") public MutationResult returnOrder(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return shipping.returnOrder(id,decode(body,ReturnRequest.class),actors.current(a));}
  @ExceptionHandler(CatalogMatchService.ManualMatchException.class) public ResponseEntity<?> matches(CatalogMatchService.ManualMatchException e){return ResponseEntity.status(409).header("Cache-Control","no-store").body(Map.of("error",e.error,"message","Kiểm tra sách tương tự và xác nhận sách ngoài.","matches",e.matches));}
  private static OrderFilter filter(Map<String,String> p){try{return new OrderFilter(p.getOrDefault("q",""),p.getOrDefault("status","ALL"),p.get("customerId"),p.get("createdFrom"),p.get("createdTo"),p.getOrDefault("keepWarning","ALL"),Integer.parseInt(p.getOrDefault("page","0")),Integer.parseInt(p.getOrDefault("size","20")),p.getOrDefault("group","ALL"));}catch(NumberFormatException e){throw new AdminApiException(400,"invalid_request");}}
+ private JsonNode readTree(String body){try{return db.json.readTree(body);}catch(tools.jackson.core.JacksonException e){throw new AdminApiException(400,"invalid_request");}}
  private <T>T decode(JsonNode body,Class<T> type){strict(body);try{return db.json.readerFor(type).with(tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES).readValue(body.toString());}catch(tools.jackson.core.JacksonException e){throw new AdminApiException(400,"invalid_request");}}
  private static final Set<String> INTEGERS=Set.of("version","discountAmount","unitPriceVnd","quantity","unitWeightGrams","shippingFee","parcelWeightGrams","codAmount","amount","additionalShippingFee","quantityReceived","quantityRestocked");
  private static final Set<String> FLAGS=Set.of("actualConfirmed","codConfirmed","parcelWeightConfirmed","parcelWeightOverridden","allowInsufficientDeposit");
- private static final Set<String> TEXTS=Set.of("customerId","bookCopyId","itemId","requestId","transactionType","fulfillmentType","sourceType","paymentMethod","shippingPaymentType","customerPaymentMode","trackingCode","reason","recipientName","recipientPhone","shippingAddress","title","note","occurredAt","keepUntilDate","normalizedTitle","fingerprint");
+ private static final Set<String> TEXTS=Set.of("customerId","bookCopyId","itemId","requestId","transactionType","fulfillmentType","sourceType","shippingPaymentType","customerPaymentMode","trackingCode","reason","recipientName","recipientPhone","shippingAddress","title","note","occurredAt","keepUntilDate","normalizedTitle","fingerprint");
  private static void strict(JsonNode n){
   if(n==null||!n.isObject())throw AdminApiException.field("body","Nội dung phải là object");
   for(String field:INTEGERS){var v=n.get(field);if(v!=null&&!v.isNull()&&(!v.isIntegralNumber()||!v.canConvertToLong()))throw AdminApiException.field(field,"Nhập số nguyên hợp lệ");}

@@ -2,38 +2,6 @@ import { TestBed } from '@angular/core/testing';
 import { OrderShippingForm } from './order-shipping-form';
 import { vi } from 'vitest';
 describe('OrderShippingForm', () => {
-  it('resend adds only extra shipping and declares goods without shipping or payment deduction', () => {
-    const f = TestBed.createComponent(OrderShippingForm);
-    const c = f.componentInstance;
-    c.open(
-      {
-        status: 'UNSUCCESSFUL',
-        recipientName: 'Reader',
-        recipientPhone: '0901234567',
-        shippingAddress: 'Test address',
-        shippingFee: 30000,
-        parcelWeightOverridden: false,
-        totals: { goodsTotal: 170000, paidAmount: 100000, totalBookWeightGrams: 500 },
-        codAmount: 100000,
-        shippingPaymentType: 'PP_CASH',
-      } as any,
-      'resend',
-    );
-    c.model.additionalShippingFee = 20000;
-    expect(c.billTotal()).toBe(220000);
-    expect(c.declaredValue()).toBe(170000);
-    expect(c.model.codConfirmed).toBe(false);
-    expect(c.model.shippingPaymentType).toBe('PP_CASH');
-    const sent = vi.fn();
-    c.saved.subscribe(sent);
-    c.model.codConfirmed = true;
-    c.model.customerPaymentMode = 'RECIPIENT';
-    c.model.parcelWeightGrams = 750;
-    c.model.reason = 'Gửi lại';
-    c.submit();
-    expect(sent.mock.calls[0][0].shippingFee).toBeNull();
-    expect(sent.mock.calls[0][0].additionalShippingFee).toBe(20000);
-  });
   const order = (patch: object = {}, totals: object = {}) =>
     ({
       status: 'KEEPING',
@@ -46,10 +14,10 @@ describe('OrderShippingForm', () => {
       totals: { goodsTotal: 170000, paidAmount: 0, totalBookWeightGrams: 850, ...totals },
       ...patch,
     }) as any;
-  async function shown(o: any, mode: 'finalize' | 'shipping' | 'resend') {
+  async function shown(o: any, _mode?: 'finalize' | 'shipping') {
     const f = TestBed.createComponent(OrderShippingForm);
     f.detectChanges();
-    f.componentInstance.open(o, mode);
+    f.componentInstance.load(o);
     f.detectChanges();
     await f.whenStable();
     f.detectChanges();
@@ -67,7 +35,6 @@ describe('OrderShippingForm', () => {
   it('suggests the book weight plus packaging for a new parcel', async () => {
     for (const [o, mode] of [
       [order(), 'finalize'],
-      [order({ status: 'UNSUCCESSFUL' }), 'resend'],
     ] as const) {
       const t = await shown(o, mode);
       expect(t.input.value, mode).toBe('1850');
@@ -106,8 +73,7 @@ describe('OrderShippingForm', () => {
       t.input.dispatchEvent(new Event('input'));
       t.c.rebase(order({}, { totalBookWeightGrams: 900 }));
       expect(t.c.model.parcelWeightGrams).toBe(kept);
-      t.c.close();
-      t.c.open(order(), 'finalize');
+      t.c.load(order());
       expect(t.c.model.parcelWeightGrams).toBe(1850);
       t.c.rebase(order({}, { totalBookWeightGrams: 900 }));
       expect(t.c.model.parcelWeightGrams).toBe(1900);
@@ -119,5 +85,71 @@ describe('OrderShippingForm', () => {
     t.c.saved.subscribe(sent);
     t.c.submit();
     expect(sent.mock.calls[0][0]).toMatchObject({ parcelWeightGrams: 1850, parcelWeightOverridden: true, parcelWeightConfirmed: true });
+  });
+  it('takes its mode from the order and saves a bill or edits it', async () => {
+    expect((await shown(order())).c.mode).toBe('finalize');
+    expect((await shown(order({ status: 'DRAFT' }))).c.mode).toBe('finalize');
+    const t = await shown(order({ status: 'READY_TO_SHIP' }));
+    expect(t.c.mode).toBe('shipping');
+    expect(t.f.nativeElement.querySelector('h2').textContent.trim()).toBe('Thông tin bill');
+    expect(t.f.nativeElement.querySelector('dialog')).toBeNull();
+  });
+  it('only shows a completed or returned bill', async () => {
+    for (const o of [order({ status: 'COMPLETED' }), order({ status: 'CANCELLED', returns: [{}] })]) {
+      const t = await shown(o);
+      expect(t.c.readOnly()).toBe(true);
+      expect(t.f.nativeElement.querySelector('fieldset').disabled).toBe(true);
+      const labels = Array.from(t.f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).map((b) => b.textContent!.trim());
+      for (const hidden of ['Lưu bill', 'Hoàn tác', 'Nhận cọc']) expect(labels).not.toContain(hidden);
+      expect(t.input.value).toBe('700');
+    }
+    expect((await shown(order())).c.readOnly()).toBe(false);
+  });
+  it('reports what is typed so the bill can follow it', async () => {
+    const t = await shown(order());
+    const drafts: any[] = [];
+    t.c.changed.subscribe((d) => drafts.push(d));
+    const fee = t.f.nativeElement.querySelector('input[name=fee]') as HTMLInputElement;
+    fee.value = '45000';
+    fee.dispatchEvent(new Event('input', { bubbles: true }));
+    expect(drafts.at(-1)).toMatchObject({ shippingFee: 45000 });
+    expect(t.c.dirty()).toBe(true);
+  });
+  it('undoes back to the saved values', async () => {
+    const t = await shown(order());
+    const drafts: any[] = [];
+    t.c.changed.subscribe((d) => drafts.push(d));
+    t.c.model.recipientName = 'Someone else';
+    expect(t.c.dirty()).toBe(true);
+    t.c.undo();
+    expect(t.c.model.recipientName).toBe('Reader');
+    expect(t.c.dirty()).toBe(false);
+    expect(drafts.at(-1)).toMatchObject({ recipientName: 'Reader' });
+  });
+  it('keeps typed text when the order reloads underneath', async () => {
+    const t = await shown(order());
+    t.c.model.recipientName = 'Typed name';
+    t.c.model.shippingFee = 12345;
+    t.c.rebase(order({}, { paidAmount: 50000 }));
+    expect(t.c.model.recipientName).toBe('Typed name');
+    expect(t.c.model.shippingFee).toBe(12345);
+    expect(t.c.dirty()).toBe(true);
+  });
+  it('offers a deposit next to what was received', async () => {
+    const t = await shown(order());
+    const asked = vi.fn();
+    t.c.paymentRequested.subscribe(asked);
+    const button = Array.from(t.f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Nhận cọc')!;
+    expect(button.closest('.split-line')!.textContent).toContain('Đã nhận');
+    button.click();
+    expect(asked).toHaveBeenCalledOnce();
+  });
+  it('turns read-only with the saved values when the order is finished elsewhere', async () => {
+    const t = await shown(order({ status: 'READY_TO_SHIP' }));
+    t.c.model.recipientName = 'Typed name';
+    t.c.rebase(order({ status: 'COMPLETED' }));
+    expect(t.c.readOnly()).toBe(true);
+    expect(t.c.model.recipientName).toBe('Reader');
+    expect(t.c.dirty()).toBe(false);
   });
 });

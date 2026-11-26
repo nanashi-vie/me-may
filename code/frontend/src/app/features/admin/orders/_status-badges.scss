@@ -1,0 +1,31 @@
+// Badge tones shared by the order list and the order detail page.
+/* Status colours; text on tint stays at least 4.5:1. */
+.badge.draft {
+  background: #f0efec;
+  color: #4a4844;
+}
+.badge.keeping {
+  background: #edf4fc;
+  color: #2166a3;
+}
+.badge.packing {
+  background: #fdf1e3;
+  color: #8a4b06;
+}
+.badge.completed {
+  background: #e8f5ec;
+  color: #1d6b3a;
+}
+.badge.closed {
+  background: #fceae5;
+  color: #a13f24;
+}
+/* Payment badge tones on the detail page. */
+.badge.info {
+  background: #edf4fc;
+  color: #2166a3;
+}
+.badge.success {
+  background: #e8f5ec;
+  color: #1d6b3a;
+}

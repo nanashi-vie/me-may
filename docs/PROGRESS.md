@@ -1,11 +1,14 @@
 # Tiến độ và bàn giao
 
-Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 26/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ORDER-DETAIL-BILL-01` (26/11, trên `dev`): chi tiết đơn 2 cột có header nút chính + ⋮, timeline, ảnh bìa, kênh khách; tab Xuất bill gộp form chốt/sửa bill và bill gửi khách (SĐT, địa chỉ, ngày xuất, cập nhật khi gõ). Không migration; backend trước frontend. [Contract](product/ORDER_BILL.md)
+- `ORDER-MONEY-LIST-01` (26/11, trên `dev`): Nhận cọc/Hoàn tiền bắt buộc 1 ảnh bill (lưu private, chỉ OWNER), không ghi COD; bỏ Không thành công/gửi lại, Hoàn đơn một bước; "Đang đóng gói"; danh sách 6 tab, 9 cột, menu ⋮. Migration V39 (đổi dữ liệu thử), backend trước frontend sát nhau. [Tiền](product/ORDER_PAYMENTS.md) · [tab](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026) · [rollout](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39)
+
 - `ORDER-BILL-VIEW-01` (25/11, trên `dev`): bill gửi khách để chụp màn hình, cân kiện gợi ý sách + 1.000 g, 3 góp ý danh sách đơn; chỉ frontend. [Contract](product/ORDER_BILL.md)
-- `ORDER-LIST-TABS-01` (25/11, trên `dev`): danh sách đơn chia 5 tab có số, nút phụ, thứ tự và cột riêng; không migration, backend trước frontend. [Contract](product/ORDERS.md#41-tab-danh-sách-owner-chốt-25112026)
+- `ORDER-LIST-TABS-01` (25/11, trên `dev`): danh sách đơn chia 5 tab có số, nút phụ, thứ tự và cột riêng; không migration, backend trước frontend. [Contract](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026)
 - `ORDER-PICKER-01` (25/11, trên `dev`): thu gọn chọn khách/sách, gợi ý sách gần giống, chỉ tên trùng hẳn mới bắt xác nhận; không migration, backend trước frontend. [Contract](product/ORDER_ITEMS.md)
 - `ORDER-KEEP-END-01` (25/11, trên `dev`): hạn keep ở danh sách chỉ hiện khi Đang keep; chi tiết đơn đã bàn giao ghi một dòng tóm tắt keep. Chỉ frontend. [Contract](product/ORDERS.md)
 - `ORDER-CANCEL-01` (25/11, trên `dev`): tách nhãn Đã hủy/Đã hoàn đơn, xóa đơn hủy khi tiền còn giữ bằng 0; không migration, backend trước frontend. [Contract](product/TRASH.md)
@@ -21,7 +24,6 @@ Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
   và cách tái lập kiểm tra nằm ở checkpoint cuối [DEV_LOG](DEV_LOG.md).
 - Đơn nội bộ, popup bill, hai tab và tra cứu trùng SĐT đã kiểm local đến V37.
   Phân trang hai trang lân cận mỗi bên đã kiểm local trên public/admin.
-  Bằng chứng browser gửi lại/hoàn đơn trong lượt bill còn thiếu.
   [Đơn và bill](verification/ORDER_VERIFICATION.md) · [phân trang](product/PAGINATION.md)
 - Owner đã xác nhận V30, cổng management riêng và restore R2 ở R6 ngày 11/11,
   luồng upload ngày 12/11. Revision/schema trên môi trường đích cần kiểm
@@ -33,7 +35,7 @@ Cập nhật 25/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 |---|---|
 | Rollout backend/frontend | Owner chọn candidate, kiểm schema thực tế, backup/counts/fingerprint/sequence, rehearsal restore và rollback có xét ghi mới. Đối chiếu migration cần chạy, thứ tự backend trước frontend, smoke domain thật, origin/canonical/enquiry, auth, media, tồn và retry. [Triển khai](runbooks/DEPLOYMENT.md) |
 | Catalogue và lưu trữ | Kiểm privacy ghi chú/ảnh riêng, V14–V19 theo môi trường; tạo/chọn thùng, lưu/mở lại, đổi/bỏ và lọc trên nhiều trang, OWNER/STAFF. Kiểm cuộn về sách sau lưu cả khi đổi trang/rời bộ lọc. [Rollout sách](runbooks/BOOK_ENTRY_ROLLOUT.md), [smoke V20](runbooks/ROLLOUT_CHECKS.md) |
-| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V38 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
+| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V39 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
 | Ảnh | Đo Dell 20–50 sách, tám nguồn Drive thật, ảnh chữ, ngoài LAN, mixed-provider, RSS/latency và monitoring. Với backfill preview public, đối chiếu lại inventory 63 media và đủ 320/640 × JPEG/WebP, MIME, magic và kích thước. Migration sách Cloudinary sang LOCAL hoãn tới đợt owner mở riêng, cần dry-run và drill rollback pointer/version. [Ma trận và gate](verification/IMAGE_VERIFICATION.md) |
 | Backup và khôi phục | Xác lập lịch, retention, owner, offhost, RPO/RTO; drill phục hồi DB cùng file media và rollback app/schema/dữ liệu trên bản sao. [Vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [quy trình release](runbooks/DEPLOYMENT.md) |
 | Bảo mật và tải | Kiểm role DB tối thiểu/tách migration, rate limit đăng nhập, secrets, kết nối riêng, HTTPS, pool/quota/memory/load và quyền admin/public. [Bảo mật](context/SECURITY.md) |

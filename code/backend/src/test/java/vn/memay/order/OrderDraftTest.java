@@ -33,7 +33,7 @@ class OrderDraftTest extends OrderTestSupport {
  @Test void archivedCustomerAndSwitchAfterPaymentAreBlocked(){
   long archived=customer();jdbc.update("update customer set status='ARCHIVED' where id=?",archived);
   assertThatThrownBy(()->drafts.create(new CreateRequest(Long.toString(archived),"IMMEDIATE",UUID.randomUUID()),owner)).isInstanceOf(AdminApiException.class);
-  long id=draft();jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,created_by) values(?,'DEPOSIT',100000,'CASH',current_timestamp,?)",id,owner.getId());
+  long id=draft();jdbc.update("insert into order_payments(order_id,transaction_type,amount,occurred_at,created_by) values(?,'DEPOSIT',100000,current_timestamp,?)",id,owner.getId());
   assertThatThrownBy(()->drafts.update(id,new UpdateRequest(0L,UUID.randomUUID(),Long.toString(customer()),"IMMEDIATE",0L,null,null,null,null,null,false),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.status).isEqualTo(409));
  }
  @Test void manualConfirmationIsBoundToCurrentMatchesAndTitle(){

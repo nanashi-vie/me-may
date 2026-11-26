@@ -1,10 +1,12 @@
-import { Component, ElementRef, computed, input, signal, viewChild } from '@angular/core';
+import { Component, computed, input, linkedSignal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { OrderDetail } from '../order-models';
 import { vnd } from '../order-values';
+import { ShippingDraft } from '../order-shipping-form/order-shipping-form';
 /** Lines that fit one screenshot on a 1440×800 screen together with the totals. */
 const LINES_PER_PAGE = 12;
-/** What the shop screenshots for the customer: nothing internal or about delivery belongs here. */
+export type BillDraft = Pick<ShippingDraft, 'recipientPhone' | 'shippingAddress' | 'shippingFee'>;
+/** What the shop screenshots for the customer: contact and money only, nothing internal. */
 @Component({
   selector: 'app-order-bill',
   imports: [DatePipe],
@@ -12,14 +14,13 @@ const LINES_PER_PAGE = 12;
   styleUrl: './order-bill.scss',
 })
 export class OrderBill {
-  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
-  private opener: HTMLElement | null = null;
   readonly order = input.required<OrderDetail>();
-  /** False until a bill is saved, or after it is reopened: shipping may still change. */
-  readonly billed = input.required<boolean>();
-  readonly visible = signal(false);
-  private readonly index = signal(0);
+  /** What the bill form holds right now, saved or not; null before the form loads. */
+  readonly draft = input.required<BillDraft | null>();
+  readonly dirty = input(false);
   readonly money = vnd;
+  /** Back to the first page whenever the number of books changes. */
+  private readonly index = linkedSignal({ source: () => this.order().items.length, computation: () => 0 });
   readonly pageCount = computed(() =>
     Math.max(1, Math.ceil(this.order().items.length / LINES_PER_PAGE)),
   );
@@ -28,27 +29,18 @@ export class OrderBill {
     this.order().items.slice(this.page() * LINES_PER_PAGE, (this.page() + 1) * LINES_PER_PAGE),
   );
   readonly isLast = computed(() => this.page() === this.pageCount() - 1);
-  readonly total = computed(() => {
-    const t = this.order().totals;
-    return this.billed() ? t.orderTotal : t.goodsTotal;
-  });
-  readonly balance = computed(() => {
-    const t = this.order().totals;
-    return this.billed() ? t.balance : t.goodsTotal - t.paidAmount;
-  });
-  open() {
-    this.opener = document.activeElement as HTMLElement;
-    this.index.set(0);
-    this.visible.set(true);
-    this.dialog()?.nativeElement.showModal?.();
-  }
+  readonly fee = computed(() => this.draft()?.shippingFee ?? null);
+  /** A fee is entered: the bill shows shipping; otherwise it is provisional on the books. */
+  readonly billed = computed(() => this.fee() !== null);
+  readonly total = computed(() => this.order().totals.goodsTotal + (this.fee() ?? 0));
+  readonly balance = computed(() => this.total() - this.order().totals.paidAmount);
+  readonly phone = computed(
+    () => this.draft()?.recipientPhone.trim() || this.order().customerPhoneSnapshot || '',
+  );
+  readonly address = computed(
+    () => this.draft()?.shippingAddress.trim() || this.order().shippingAddress || '',
+  );
   go(step: 1 | -1) {
     this.index.set(this.page() + step);
-  }
-  close(event?: Event) {
-    event?.preventDefault();
-    this.visible.set(false);
-    this.dialog()?.nativeElement.close?.();
-    this.opener?.focus();
   }
 }

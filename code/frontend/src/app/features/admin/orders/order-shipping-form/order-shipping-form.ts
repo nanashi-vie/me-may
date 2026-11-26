@@ -1,4 +1,4 @@
-import { Component, ElementRef, output, signal, viewChild } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VndInput } from '../../books/vnd-input';
 import { CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
@@ -19,6 +19,9 @@ export interface ShippingDraft {
   additionalShippingFee: number | null;
   reason: string | null;
 }
+/** Completed or returned: the bill can be read but not changed. */
+const finished = (o: OrderDetail) =>
+  o.status === 'COMPLETED' || (o.status === 'CANCELLED' && o.returns?.length > 0);
 /** Packaging allowance on top of the books; the owner can still type the real weight. */
 const PACKAGING_GRAMS = 1000;
 const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
@@ -29,8 +32,6 @@ const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
   styleUrl: '../orders.scss',
 })
 export class OrderShippingForm {
-  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
-  private opener: HTMLElement | null = null;
   private order: OrderDetail | null = null;
   private initial = '';
   readonly refreshRequested = output<void>();
@@ -38,11 +39,16 @@ export class OrderShippingForm {
   readonly refreshing = signal(false);
   readonly retry = output<void>();
   readonly saved = output<ShippingDraft>();
-  readonly visible = signal(false);
+  /** Everything typed so far, saved or not, so the bill beside the form can follow it. */
+  readonly changed = output<ShippingDraft>();
+  /** A completed or returned order: the bill can be read but not changed. */
+  readonly readOnly = signal(false);
+  /** The form renders only once it holds an order, so its first paint shows real values. */
+  readonly loaded = signal(false);
   readonly locked = signal(false);
   readonly error = signal('');
   readonly money = vnd;
-  mode: 'finalize' | 'shipping' | 'resend' = 'finalize';
+  mode: 'finalize' | 'shipping' = 'finalize';
   model: ShippingDraft = {
     customerPaymentMode: 'RECIPIENT',
     recipientName: '',
@@ -59,7 +65,10 @@ export class OrderShippingForm {
     additionalShippingFee: 0,
     reason: null,
   };
-  open(order: OrderDetail, mode: typeof this.mode) {
+  /** Fills the form from the saved order; the mode follows the order's state. */
+  load(order: OrderDetail) {
+    this.readOnly.set(finished(order));
+    const mode = order.status === 'DRAFT' || order.status === 'KEEPING' ? 'finalize' : 'shipping';
     this.order = order;
     this.mode = mode;
     this.model = {
@@ -74,7 +83,7 @@ export class OrderShippingForm {
       codAmount: order.codAmount,
       codConfirmed: false,
       shippingPaymentType: order.shippingPaymentType ?? 'PP_CASH',
-      trackingCode: mode === 'resend' ? null : order.trackingCode,
+      trackingCode: order.trackingCode,
       additionalShippingFee: 0,
       reason: null,
     };
@@ -86,11 +95,22 @@ export class OrderShippingForm {
     this.manualCod = mode !== 'finalize';
     this.suggestCod();
     this.initial = JSON.stringify(this.model);
-    this.opener = document.activeElement as HTMLElement;
-    this.visible.set(true);
-    this.dialog()?.nativeElement.showModal?.();
+    this.loaded.set(true);
+    this.emitChange();
+  }
+  emitChange() {
+    this.changed.emit({ ...this.model });
+  }
+  /** Back to what is saved on the order, dropping what was typed. */
+  undo() {
+    if (this.order) this.load(this.order);
   }
   rebase(order: OrderDetail) {
+    if (finished(order)) {
+      // Finished elsewhere: nothing typed can be saved any more, so show what was saved.
+      this.load(order);
+      return;
+    }
     this.reviewRequired = true;
     this.order = order;
     this.conflict.set(false);
@@ -101,25 +121,19 @@ export class OrderShippingForm {
     this.suggestCod();
     if (!this.allowed())
       this.error.set(
-        'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra trước khi đóng.',
+        'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra.',
       );
+    this.emitChange();
   }
   private allowed() {
     const s = this.order?.status;
-    return this.mode === 'resend'
-      ? s === 'UNSUCCESSFUL'
-      : this.mode === 'shipping'
-        ? s === 'READY_TO_SHIP'
-        : s === 'DRAFT' || s === 'KEEPING';
+    return this.mode === 'shipping' ? s === 'READY_TO_SHIP' : s === 'DRAFT' || s === 'KEEPING';
   }
   declaredValue() {
     return this.order?.totals.goodsTotal ?? 0;
   }
   billTotal() {
-    const fee =
-      this.mode === 'resend'
-        ? (this.order?.shippingFee ?? 0) + (this.model.additionalShippingFee ?? 0)
-        : this.model.shippingFee;
+    const fee = this.model.shippingFee;
     const n = fee === null ? NaN : this.declaredValue() + fee;
     return Number.isSafeInteger(n) ? n : null;
   }
@@ -158,11 +172,10 @@ export class OrderShippingForm {
       !!m.recipientName.trim() &&
       !!m.recipientPhone.trim() &&
       !!m.shippingAddress.trim() &&
-      integer(this.mode === 'resend' ? m.additionalShippingFee : m.shippingFee) &&
+      integer(m.shippingFee) &&
       integer(m.parcelWeightGrams, 1) &&
       integer(m.codAmount) &&
       (m.customerPaymentMode !== 'MONTHLY' || (this.balance() ?? 1) <= 0) &&
-      (this.mode !== 'resend' || !!m.reason?.trim()) &&
       this.billTotal() !== null
     );
   }
@@ -175,26 +188,11 @@ export class OrderShippingForm {
       recipientName: this.model.recipientName.trim(),
       recipientPhone: this.model.recipientPhone.trim(),
       shippingAddress: this.model.shippingAddress.trim(),
-      shippingFee: this.mode === 'resend' ? null : this.model.shippingFee,
-      additionalShippingFee: this.mode === 'resend' ? this.model.additionalShippingFee : null,
+      shippingFee: this.model.shippingFee,
+      additionalShippingFee: null,
     });
   }
-  close() {
-    this.visible.set(false);
-    this.dialog()?.nativeElement.close?.();
-    this.opener?.focus();
-  }
   dirty() {
-    return this.visible() && this.initial !== JSON.stringify(this.model);
-  }
-  requestClose() {
-    if (this.locked() || this.refreshing()) return false;
-    if (this.dirty() && !window.confirm('Bỏ thông tin giao hàng chưa lưu?')) return false;
-    this.close();
-    return true;
-  }
-  escape(e: Event) {
-    e.preventDefault();
-    this.requestClose();
+    return !!this.order && !this.readOnly() && this.initial !== JSON.stringify(this.model);
   }
 }

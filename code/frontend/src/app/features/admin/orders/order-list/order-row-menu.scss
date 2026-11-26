@@ -1,0 +1,57 @@
+:host {
+  position: relative;
+  display: inline-block;
+}
+.row-menu-toggle {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  fill: currentColor;
+}
+.row-menu-toggle:hover,
+.row-menu-toggle[aria-expanded='true'] {
+  background: #f0efec;
+  color: var(--ink);
+}
+.row-menu-toggle:focus-visible,
+.row-menu button:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: 1px;
+}
+.row-menu {
+  position: absolute;
+  /* Opens beside the button, inside the row, so the table's scroll box never clips it. */
+  right: calc(100% + 4px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  min-width: 120px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+.row-menu button {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  text-align: left;
+}
+.row-menu .danger-item {
+  color: #a13f24;
+}
+.row-menu .danger-item:hover {
+  background: #fceae5;
+}

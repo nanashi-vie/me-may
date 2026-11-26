@@ -1,3 +1,4 @@
+@use '../status-badges';
 /* Same measures as .trash-tabs; scrolls sideways instead of wrapping. */
 .order-tabs,
 .order-subs {
@@ -103,21 +104,45 @@
     flex: 1 1 140px;
   }
 }
-.order-code {
-  color: var(--ink);
-  font-weight: 750;
-  white-space: nowrap;
-  text-decoration: none;
+/* Table in a rounded card: pale header, airy rows, the whole row opens the order. */
+.table-scroll {
+  border: 1px solid var(--line);
+  border-radius: 14px;
 }
-.order-code:hover {
-  color: var(--red);
-  text-decoration: underline;
+.order-table {
+  min-width: 960px;
+}
+.order-table thead th {
+  background: #f6f5f2;
+  white-space: nowrap;
+}
+.order-table td {
+  padding-block: 14px;
+  vertical-align: middle;
+}
+.order-table :is(th, td):first-child {
+  padding-left: 18px;
+}
+.order-table :is(th, td):last-child {
+  padding-right: 18px;
+}
+.order-table td small {
+  display: block;
+  color: var(--muted);
+}
+.order-code {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .order-row {
   cursor: pointer;
 }
 .order-row:hover {
   background: #faf7f2;
+}
+.order-row:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: -2px;
 }
 .actions-cell {
   text-align: center;

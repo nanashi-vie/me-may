@@ -15,7 +15,7 @@ liệu đơn" trước đây, chỉ trong đúng các điều kiện dưới đ�
 - Trong Thùng rác, khách và đơn không có ở danh sách, tìm kiếm, thống kê, số đơn,
   tra trùng SĐT, chọn khách; mở hoặc sửa theo ID trả 404.
 - Tiền còn giữ = thu − hoàn, không tính giao dịch đã vô hiệu. Đơn còn giữ tiền, đơn
-  đang keep/chờ giao/hoàn tất/không thành công và khách có đơn không bao giờ bị xóa.
+  đang keep/đang đóng gói/hoàn tất và khách có đơn không bao giờ bị xóa.
   Điều kiện được kiểm lại lúc dọn và trong job.
 - Dọn đơn xóa dòng sách, reservation, kiện, hoàn hàng, ghi chú và lịch sử giao dịch
   của đơn đó (hộp thoại dọn nói rõ);

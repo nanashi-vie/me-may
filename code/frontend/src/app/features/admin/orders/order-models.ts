@@ -1,9 +1,9 @@
 export type OrderStatus =
-  'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'UNSUCCESSFUL' | 'CANCELLED';
+  'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'CANCELLED';
 /** What staff see: a cancelled order closed after delivery is shown as RETURNED. */
 export type OrderDisplayStatus = OrderStatus | 'RETURNED';
 export type FulfillmentType = 'IMMEDIATE' | 'KEEP';
-export type PaymentType = 'DEPOSIT' | 'PAYMENT' | 'REFUND';
+export type PaymentType = 'DEPOSIT' | 'REFUND';
 export type CustomerPaymentMode = 'RECIPIENT' | 'MONTHLY';
 export type ShippingPaymentType = 'PP_CASH' | 'CC_CASH' | 'PP_PM';
 export interface Page<T> {
@@ -13,7 +13,7 @@ export interface Page<T> {
   totalElements: number;
   totalPages: number;
 }
-export type OrderGroup = 'ALL' | 'ACTION' | 'KEEPING' | 'COMPLETED' | 'CLOSED';
+export type OrderGroup = 'ALL' | 'ACTION' | 'KEEPING' | 'PACKING' | 'COMPLETED' | 'CLOSED';
 export interface OrderFilter {
   group?: OrderGroup;
   q: string;
@@ -32,7 +32,6 @@ export interface OrderStats {
   overdue: number;
   readyToShip: number;
   completed: number;
-  unsuccessful: number;
   draft: number;
   cancelled: number;
   returned: number;
@@ -65,6 +64,8 @@ export interface OrderSummary {
   totals: Totals;
   version: number;
   keepWarning: string;
+  /** One contact handle from the live customer profile: TikTok, then Threads, then Zalo. */
+  customerChannel?: { type: 'TIKTOK' | 'THREADS' | 'ZALO'; value: string } | null;
 }
 export interface OrderItem {
   id: string;
@@ -78,18 +79,20 @@ export interface OrderItem {
   unitWeightGrams: number | null;
   manualMatchOverrideReason: string | null;
   addedAt: string;
+  /** Admin cover image of a website book; null for outside books or books without a front image. */
+  coverUrl?: string | null;
 }
 export interface OrderPayment {
   id: string;
   transactionType: PaymentType;
   amount: number;
-  paymentMethod: string;
   occurredAt: string;
   note: string | null;
   createdBy: string;
   createdAt: string;
   voidedAt: string | null;
   voidReason: string | null;
+  hasProof: boolean;
 }
 export interface Shipment {
   id: string;
@@ -114,6 +117,8 @@ export interface Shipment {
   handedOverAt: string | null;
   failedAt: string | null;
   failureReason: string | null;
+  /** When this bill was saved; missing from older backends. */
+  createdAt?: string;
 }
 export interface ActionNote {
   id: string;
@@ -214,30 +219,37 @@ export interface ItemWrite extends MutationMeta {
   matchConfirmation: MatchConfirmation | null;
   reason?: string | null;
 }
+export interface PaymentWrite {
+  transactionType: PaymentType;
+  amount: number;
+  note: string;
+  actualConfirmed?: boolean;
+  version: number;
+  requestId: string;
+}
 export type OrderAction =
   | 'keep'
   | 'extend-keep'
   | 'reopen'
   | 'cancel'
-  | 'payments'
   | 'finalize'
   | 'shipping'
   | 'ship'
-  | 'fail'
-  | 'resend'
-  | 'abort-resend'
   | 'return';
 export const STATUS_LABELS: Record<OrderDisplayStatus, string> = {
   DRAFT: 'Nháp',
   KEEPING: 'Đang keep',
-  READY_TO_SHIP: 'Chờ giao',
+  READY_TO_SHIP: 'Đang đóng gói',
   COMPLETED: 'Hoàn tất',
-  UNSUCCESSFUL: 'Không thành công',
   CANCELLED: 'Đã hủy',
   RETURNED: 'Đã hoàn đơn',
 };
 export const statusLabel = (o: { status: OrderStatus; returned?: boolean; returns?: unknown[] }) =>
   STATUS_LABELS[o.status === 'CANCELLED' && (o.returned || o.returns?.length) ? 'RETURNED' : o.status];
+/** Badge colour class shared by the list and the detail page. */
+export const statusTone = (o: { status: OrderStatus }) =>
+  o.status === 'READY_TO_SHIP' ? 'packing' : o.status === 'CANCELLED' ? 'closed' : o.status.toLowerCase();
+export const CHANNEL_LABELS = { TIKTOK: 'TikTok', THREADS: 'Threads', ZALO: 'Zalo' } as const;
 export const WARNING_LABELS: Record<string, string> = {
   SOON: 'Sắp hết hạn',
   DUE: 'Đến hạn hôm nay',

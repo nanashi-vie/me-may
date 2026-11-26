@@ -1,0 +1,21 @@
+@if (offered()) {
+  <button
+    type="button"
+    class="row-menu-toggle"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="'Thao tác ' + order().orderCode"
+    (click)="toggle()"
+  >
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+    </svg>
+  </button>
+  @if (open()) {
+    <div class="row-menu" role="menu" [attr.aria-label]="'Thao tác ' + order().orderCode" (keydown)="keydown($event)">
+      <button type="button" role="menuitem" class="danger-item" (click)="choose()">Xóa</button>
+    </div>
+  }
+} @else {
+  <span title="Chỉ xóa được đơn Nháp chưa có giao dịch tiền, Đã hủy hoặc Đã hoàn đơn">—</span>
+}
