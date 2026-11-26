@@ -21,18 +21,18 @@ public final class OrderDtos {
  public record ItemValue(Long unitPriceVnd,long quantity,Long unitWeightGrams){}
  public record PaymentValue(PaymentType type,long amount,boolean voided){}
  public record Totals(long subtotal,long goodsTotal,Long orderTotal,long paidAmount,Long balance,Long totalBookWeightGrams,boolean provisional,String paymentStatus){}
- public record OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt){
+ public record OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt,String coverUrl){
   public ItemValue value(){return new ItemValue(unitPriceVnd,quantity,unitWeightGrams);}
  }
  public record OrderPayment(String id,PaymentType transactionType,long amount,Instant occurredAt,String note,String createdBy,Instant createdAt,Instant voidedAt,String voidReason,boolean hasProof){
   public PaymentValue value(){return new PaymentValue(transactionType,amount,voidedAt!=null);}
  }
- public record Shipment(String id,int attemptNo,String state,Map<String,Object> shippingSnapshot,String trackingCode,Instant handedOverAt,Instant failedAt,String failureReason){}
+ public record Shipment(String id,int attemptNo,String state,Map<String,Object> shippingSnapshot,String trackingCode,Instant handedOverAt,Instant failedAt,String failureReason,Instant createdAt){}
  public record OrderDetail(String id,String orderCode,String customerId,String customerCodeSnapshot,String customerNameSnapshot,String customerPhoneSnapshot,
   Status status,String fulfillmentType,long version,Instant createdAt,Instant updatedAt,Instant keepStartedAt,Instant keepUntil,int keepExtensionCount,
   long requiredDepositVnd,long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,
   boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
-  List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow){}
+  List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow,Instant completedAt,Instant cancelledAt,CustomerChannel customerChannel){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
   Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt,CustomerChannel customerChannel){}
  /** One contact handle for the list, TikTok first, then Threads, then Zalo; read from the live profile. */
