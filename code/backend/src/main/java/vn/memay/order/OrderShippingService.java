@@ -14,7 +14,7 @@ public class OrderShippingService {
  public OrderShippingService(OrderRepository db,OrderMutations mutations,OrderInventory inventory,BookStockService stock){this.db=db;this.mutations=mutations;this.inventory=inventory;this.stock=stock;}
  public MutationResult finalizeOrder(long id,ShippingRequest r,AdminUser actor){return mutations.run(actor,"FINALIZE",id,r.meta(),r,()->{
   var d=db.require(id,false);transition((d.status()==Status.DRAFT||d.status()==Status.KEEPING)&&!OrderKeepService.everShipped(d));OrderKeepService.requireItems(d);
-  apply(id,d,r,false);if(d.status()==Status.DRAFT)inventory.sync(id,actor);else inventory.verify(id,"ACTIVE");
+  apply(id,d,r);if(d.status()==Status.DRAFT)inventory.sync(id,actor);else inventory.verify(id,"ACTIVE");
   db.jdbc.update("update orders set status='READY_TO_SHIP' where id=?",id);newPlan(id,0);return id;
  });}
  public MutationResult updateShipping(long id,ShippingRequest r,AdminUser actor){return mutations.run(actor,"SHIPPING_UPDATE",id,r.meta(),r,()->{
@@ -24,7 +24,7 @@ public class OrderShippingService {
    String reason=text(r.reason(),"reason",1000,true),code=text(r.trackingCode(),"trackingCode",100,true);var current=latestHanded(d);uniqueTracking(d,code,current.id());
    db.jdbc.update("update order_shipments set tracking_code=? where id=?",code,Long.parseLong(current.id()));db.jdbc.update("update orders set tracking_code=? where id=?",code,id);db.note(id,"TRACKING_CORRECTED",reason,r.meta(),actor);
   }else{
-   transition(d.status()==Status.READY_TO_SHIP);var current=planned(d);apply(id,d,r,false);
+   transition(d.status()==Status.READY_TO_SHIP);var current=planned(d);apply(id,d,r);
    updatePlan(id,current.id(),OrderRepository.nullableLong(current.shippingSnapshot(),"additionalShippingFee"));
   }return id;
  });}
@@ -39,23 +39,8 @@ public class OrderShippingService {
   db.jdbc.update("update order_shipments set state='HANDED_OVER',tracking_code=?,handed_over_at=?,handed_over_by=? where id=?",code,now(),actor.getId(),Long.parseLong(current.id()));
   db.jdbc.update("update orders set status='COMPLETED',tracking_code=?,completed_at=?,completed_by=? where id=?",code,now(),actor.getId(),id);return id;
  });}
- public MutationResult fail(long id,ReasonRequest r,AdminUser actor){return mutations.run(actor,"FAIL",id,r.meta(),r,()->{
-  var d=db.require(id,false);transition(d.status()==Status.COMPLETED);var current=latestHanded(d);transition(current.state().equals("HANDED_OVER"));String reason=text(r.reason(),"reason",1000,true);
-  db.jdbc.update("update order_shipments set state='FAILED',failed_at=?,failed_by=?,failure_reason=? where id=?",now(),actor.getId(),reason,Long.parseLong(current.id()));
-  db.jdbc.update("update orders set status='UNSUCCESSFUL',failed_at=?,failed_by=?,failure_reason=? where id=?",now(),actor.getId(),reason,id);db.note(id,"FAIL",reason,r.meta(),actor);return id;
- });}
- public MutationResult resend(long id,ShippingRequest r,AdminUser actor){return mutations.run(actor,"RESEND",id,r.meta(),r,()->{
-  var d=db.require(id,false);transition(d.status()==Status.UNSUCCESSFUL&&OrderKeepService.everShipped(d));inventory.verify(id,"CONSUMED");
-  String reason=text(r.reason(),"reason",1000,true);long additional=r.additionalShippingFee()==null?0:number(r.additionalShippingFee(),"additionalShippingFee",0,MAX);
-  apply(id,d,r,true);db.jdbc.update("update orders set status='READY_TO_SHIP' where id=?",id);newPlan(id,additional);db.note(id,"RESEND",reason,r.meta(),actor);return id;
- });}
- public MutationResult abortResend(long id,ReasonRequest r,AdminUser actor){return mutations.run(actor,"ABORT_RESEND",id,r.meta(),r,()->{
-  var d=db.require(id,false);transition(d.status()==Status.READY_TO_SHIP&&OrderKeepService.everShipped(d));var current=planned(d);String reason=text(r.reason(),"reason",1000,true);
-  db.jdbc.update("update order_shipments set state='ABORTED' where id=?",Long.parseLong(current.id()));
-  db.jdbc.update("update orders set status='UNSUCCESSFUL',tracking_code=?,cod_needs_review=true where id=?",latestHanded(d).trackingCode(),id);db.note(id,"ABORT_RESEND",reason,r.meta(),actor);return id;
- });}
  public MutationResult returnOrder(long id,ReturnRequest r,AdminUser actor){return mutations.run(actor,"RETURN",id,r.meta(),r,()->{
-  var d=db.require(id,false);transition(d.status()==Status.UNSUCCESSFUL&&OrderKeepService.everShipped(d));inventory.verify(id,"CONSUMED");
+  var d=db.require(id,false);transition(d.status()==Status.COMPLETED&&OrderKeepService.everShipped(d));inventory.verify(id,"CONSUMED");
   String reason=text(r.reason(),"reason",1000,true);if(!Boolean.TRUE.equals(r.actualConfirmed()))throw AdminApiException.field("actualConfirmed","Xác nhận hàng thực tế đã nhận");
   if(r.items()==null||r.items().size()!=d.items().size())throw AdminApiException.field("items","Xác nhận đủ từng dòng trong đơn");
   var seen=new HashSet<String>();var received=new TreeMap<Long,Long>();var restocked=new TreeMap<Long,Long>();
@@ -70,25 +55,25 @@ public class OrderShippingService {
   for(var entry:restocked.entrySet())stock.adjust(entry.getKey(),entry.getValue(),actor);
   for(var entry:received.entrySet())db.jdbc.update("update order_reservation set returned_quantity=?,restocked_quantity=?,updated_at=? where order_id=? and book_copy_id=? and state='CONSUMED'",entry.getValue(),restocked.get(entry.getKey()),now(),id,entry.getKey());
   for(var line:r.items()){String why=text(line.reason(),"reason",1000,false);db.jdbc.update("insert into order_returns(order_id,item_id,quantity_received,quantity_restocked,reason,created_by,created_at,request_id) values(?,?,?,?,?,?,?,?)",id,OrderValidation.id(line.itemId(),"itemId"),line.quantityReceived(),line.quantityRestocked(),why==null?reason:why,actor.getId(),now(),r.requestId());}
+  var shipment=latestHanded(d);db.jdbc.update("update order_shipments set state='FAILED',failed_at=?,failed_by=?,failure_reason=? where id=? and state='HANDED_OVER'",now(),actor.getId(),reason,Long.parseLong(shipment.id()));
   db.jdbc.update("update orders set status='CANCELLED',cancelled_at=?,cancelled_by=?,cancellation_reason=? where id=?",now(),actor.getId(),reason,id);db.note(id,"RETURN",reason,r.meta(),actor);return id;
  });}
- private void apply(long id,OrderDetail d,ShippingRequest r,boolean resend){
+ private void apply(long id,OrderDetail d,ShippingRequest r){
   OrderKeepService.requireItems(d);String name=text(r.recipientName()==null?d.recipientName():r.recipientName(),"recipientName",150,true);
   String phone=phone(r.recipientPhone()==null?d.recipientPhone():r.recipientPhone());String address=text(r.shippingAddress()==null?d.shippingAddress():r.shippingAddress(),"shippingAddress",500,true);
   Long fee;
-  if(resend){long additional=r.additionalShippingFee()==null?0:number(r.additionalShippingFee(),"additionalShippingFee",0,MAX);fee=add(number(d.shippingFee(),"shippingFee",0,MAX),additional,"shippingFee");if(r.shippingFee()!=null&&!fee.equals(r.shippingFee()))throw AdminApiException.field("shippingFee","Phí gửi lại là phần thu thêm, không cộng phí cũ lần nữa");}
-  else{if(r.additionalShippingFee()!=null&&r.additionalShippingFee()!=0)throw AdminApiException.field("additionalShippingFee","Chỉ nhập phí thêm trong lần gửi lại");fee=r.shippingFee();number(fee,"shippingFee",0,MAX);}
+  if(r.additionalShippingFee()!=null&&r.additionalShippingFee()!=0)throw AdminApiException.field("additionalShippingFee","Không còn phí gửi lại");fee=r.shippingFee();number(fee,"shippingFee",0,MAX);
   long weight=number(r.parcelWeightGrams(),"parcelWeightGrams",1,MAX);
   if (!Boolean.TRUE.equals(r.parcelWeightConfirmed()))
    throw AdminApiException.field("parcelWeightConfirmed","Xác nhận lại trọng lượng kiện");
   long cod=r.codAmount()==null?d.codAmount():number(r.codAmount(),"codAmount",0,MAX);
-  if((resend||d.codNeedsReview()||cod!=d.codAmount()||!Objects.equals(fee,d.shippingFee()))&&!Boolean.TRUE.equals(r.codConfirmed()))throw AdminApiException.field("codConfirmed","Xác nhận lại số tiền COD");
+  if((d.codNeedsReview()||cod!=d.codAmount()||!Objects.equals(fee,d.shippingFee()))&&!Boolean.TRUE.equals(r.codConfirmed()))throw AdminApiException.field("codConfirmed","Xác nhận lại số tiền COD");
   String mode=r.customerPaymentMode();
   if (!"RECIPIENT".equals(mode) && !"MONTHLY".equals(mode))
    throw AdminApiException.field("customerPaymentMode","Chọn phương thức thanh toán bill");
   validateMonthly(mode,cod,add(d.totals().goodsTotal(),fee,"shippingFee"),d.totals().paidAmount());
   String payment=r.shippingPaymentType()==null?d.shippingPaymentType():r.shippingPaymentType();if(!Set.of("PP_CASH","CC_CASH","PP_PM").contains(payment))throw AdminApiException.field("shippingPaymentType","Chọn phương thức trả phí");
-  String tracking=text(r.trackingCode()==null&&!resend?d.trackingCode():r.trackingCode(),"trackingCode",100,false);
+  String tracking=text(r.trackingCode()==null?d.trackingCode():r.trackingCode(),"trackingCode",100,false);
   db.jdbc.update("update orders set recipient_name=?,recipient_phone=?,shipping_address=?,shipping_fee=?,parcel_weight_grams=?,parcel_weight_overridden=?,parcel_weight_needs_review=false,cod_amount=?,cod_needs_review=false,declared_value=?,shipping_payment_type=?,customer_payment_mode=?,tracking_code=? where id=?",name,phone,address,fee,weight,true,cod,d.totals().goodsTotal(),payment,mode,tracking,id);
  }
  private static void validateMonthly(String mode,long cod,long total,long received){

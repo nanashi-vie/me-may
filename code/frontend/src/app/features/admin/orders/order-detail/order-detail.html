@@ -286,7 +286,12 @@
             @if (editable()) {
               <button class="secondary" (click)="openPanel('edit')">Sửa thông tin</button>
             }
-            <button class="secondary" (click)="openPanel('payment')">Ghi nhận thu tiền</button>
+            @if (d.status !== 'CANCELLED') {
+              <button class="secondary" (click)="openPayment('DEPOSIT')">Nhận cọc</button>
+            }
+            @if (d.totals.paidAmount > 0) {
+              <button class="secondary" (click)="openPayment('REFUND')">Hoàn tiền</button>
+            }
             @if (d.items.length && d.status !== 'CANCELLED') {
               <button type="button" class="secondary" (click)="bill()?.open()">
                 Xem bill gửi khách
@@ -304,11 +309,7 @@
               <button class="secondary" (click)="shippingForm()?.open(d, 'shipping')">
                 Sửa thông tin bill</button
               ><button class="primary" (click)="openPanel('ship')">Đã bàn giao vận chuyển</button>
-              @if (everShipped()) {
-                <button class="secondary" (click)="openPanel('abort-resend')">
-                  Hủy lần gửi lại
-                </button>
-              } @else {
+              @if (!everShipped()) {
                 <button class="secondary" (click)="openPanel('reopen')">Mở lại đơn đã chốt</button>
               }
             }
@@ -317,16 +318,7 @@
             }
             @if (totalTab() && d.status === 'COMPLETED') {
               <button class="secondary" (click)="openPanel('tracking')">Sửa mã vận đơn</button
-              ><button class="secondary" (click)="openPanel('fail')">
-                Đơn không thành công / hoàn về
-              </button>
-            }
-            @if (totalTab() && d.status === 'UNSUCCESSFUL') {
-              <button class="primary" (click)="shippingForm()?.open(d, 'resend')">
-                Chuẩn bị gửi lại</button
-              ><button class="secondary" (click)="openPanel('return')">
-                Hoàn đơn & xử lý tồn thực tế
-              </button>
+              ><button class="secondary" (click)="openPanel('return')">Hoàn đơn</button>
             }
           </div>
         </fieldset>
@@ -360,7 +352,9 @@
                   action === 'remove'
                     ? 'Xóa sách khỏi đơn'
                     : action === 'payment'
-                      ? 'Ghi nhận tiền thực tế'
+                      ? payment.transactionType === 'REFUND'
+                        ? 'Hoàn tiền'
+                        : 'Nhận cọc'
                       : action === 'return'
                         ? 'Hoàn đơn & nhập lại tồn'
                         : action === 'ship'
@@ -375,13 +369,9 @@
                                   ? 'Gia hạn keep'
                                   : action === 'void'
                                     ? 'Vô hiệu giao dịch nhập nhầm'
-                                    : action === 'fail'
-                                      ? 'Đơn không thành công'
-                                      : action === 'cancel'
-                                        ? 'Hủy đơn'
-                                        : action === 'reopen'
-                                          ? 'Mở lại đơn đã chốt'
-                                          : 'Hủy lần gửi lại'
+                                    : action === 'cancel'
+                                      ? 'Hủy đơn'
+                                      : 'Mở lại đơn đã chốt'
                 }}
               </h2>
               <form (ngSubmit)="submitAction()" #actionForm="ngForm">
@@ -435,37 +425,28 @@
                   @if (action === 'payment') {
                     <div class="grid">
                       <label
-                        ><span>Loại giao dịch</span
-                        ><select name="type" [(ngModel)]="payment.transactionType">
-                          <option value="DEPOSIT" [disabled]="d.status === 'CANCELLED'">
-                            Nhận cọc
-                          </option>
-                          <option value="PAYMENT" [disabled]="d.status === 'CANCELLED'">
-                            Nhận thanh toán
-                          </option>
-                          <option value="REFUND">Hoàn tiền đã thực hiện</option>
-                        </select></label
-                      ><label
                         ><span>Số tiền (VNĐ) *</span
                         ><input
                           appVndInput
                           name="amount"
                           required
                           [(ngModel)]="payment.amount" /></label
-                      ><label
-                        ><span>Phương thức</span
-                        ><select name="method" [(ngModel)]="payment.paymentMethod">
-                          <option value="BANK_TRANSFER">Chuyển khoản</option>
-
-                          <option value="OTHER">Khác</option>
-                        </select></label
-                      ><label
-                        ><span>Thời điểm thực tế</span
+                      ><label class="proof-field"
+                        ><span>Ảnh bill chuyển khoản *</span
                         ><input
-                          name="time"
-                          type="datetime-local"
-                          [(ngModel)]="payment.occurredAt"
-                        /><small>Để trống: thời điểm ghi nhận.</small></label
+                          type="file"
+                          name="proof"
+                          accept="image/jpeg,image/png"
+                          [attr.aria-invalid]="proofError() ? true : null"
+                          [attr.aria-describedby]="proofError() ? 'proof-error' : null"
+                          (change)="chooseProof($any($event.target).files?.[0] ?? null)"
+                        />
+                        @if (proofError()) {
+                          <small class="error" id="proof-error" role="alert">{{ proofError() }}</small>
+                        }
+                        @if (proofPreview()) {
+                          <img class="proof-preview" [src]="proofPreview()" alt="Ảnh bill đã chọn" />
+                        }</label
                       ><label class="full"
                         ><span>Ghi chú</span
                         ><textarea
@@ -725,7 +706,8 @@
               <thead>
                 <tr>
                   <th>Thời điểm</th>
-                  <th>Loại / phương thức</th>
+                  <th>Loại</th>
+                  <th>Ảnh bill</th>
                   <th class="number">Số tiền</th>
                   <th>Ghi chú / xử lý</th>
                 </tr>
@@ -738,18 +720,26 @@
                       }}<small>Người ghi #{{ p.createdBy }}</small>
                     </td>
                     <td>
-                      {{
-                        p.transactionType === 'DEPOSIT'
-                          ? 'Nhận cọc'
-                          : p.transactionType === 'PAYMENT'
-                            ? 'Nhận tiền'
-                            : 'Đã hoàn tiền'
-                      }}
-                      · {{ p.paymentMethod }}
+                      {{ p.transactionType === 'DEPOSIT' ? 'Nhận cọc' : 'Đã hoàn tiền' }}
                       @if (p.voidedAt) {
                         <small class="danger-text"
                           >Vô hiệu {{ p.voidedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</small
                         >
+                      }
+                    </td>
+                    <td>
+                      @if (p.hasProof) {
+                        <button
+                          type="button"
+                          class="proof-thumb"
+                          [attr.data-proof]="p.id"
+                          [attr.aria-label]="'Xem ảnh bill ' + money(p.amount)"
+                          (click)="viewProof(p)"
+                        >
+                          <img [src]="proofUrl(p)" alt="" loading="lazy" />
+                        </button>
+                      } @else {
+                        <small>Không có ảnh</small>
                       }
                     </td>
                     <td class="number">{{ money(p.amount) }}</td>
@@ -770,7 +760,7 @@
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="4" class="empty">Chưa ghi nhận giao dịch.</td>
+                    <td colspan="5" class="empty">Chưa ghi nhận giao dịch.</td>
                   </tr>
                 }
               </tbody>
@@ -805,7 +795,7 @@
                   <p>Bàn giao: {{ s.handedOverAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
                 }
                 @if (s.failureReason) {
-                  <p class="note">Không thành công: {{ s.failureReason }}</p>
+                  <p class="note">Hoàn về: {{ s.failureReason }}</p>
                 }
               </details>
             } @empty {
@@ -856,9 +846,15 @@
     (saved)="itemSaved($event)"
   />
   <app-order-shipping-form
-    (paymentRequested)="openPanel('payment')"
+    (paymentRequested)="openPayment('DEPOSIT')"
     (retry)="retry()"
     (refreshRequested)="refresh()"
     (saved)="shippingSaved($event)"
   />
+}
+@if (viewing(); as p) {
+  <dialog id="proof-viewer" aria-label="Ảnh bill chuyển khoản" (close)="viewProof(null)">
+    <img [src]="proofUrl(p)" alt="Ảnh bill chuyển khoản" />
+    <button type="button" class="secondary" (click)="viewProof(null)">Đóng</button>
+  </dialog>
 }

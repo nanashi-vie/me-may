@@ -12,7 +12,7 @@ class OrderShippingTest extends OrderShippingTestSupport {
   long id=sale(1);
   var initial=monthly(1);
   assertThatThrownBy(()->shipping.finalizeOrder(id,initial,owner)).isInstanceOf(AdminApiException.class);
-  payments.record(id,new PaymentRequest(1L,UUID.randomUUID(),PaymentType.PAYMENT,530000L,"BANK_TRANSFER",null,null,false),owner);
+  payments.record(id,new PaymentRequest(1L,UUID.randomUUID(),PaymentType.DEPOSIT,530000L,null,false),PNG,owner);
   shipping.finalizeOrder(id,monthly(2),owner);
   var order=orders.require(id,false);
   assertThat(order.shipments().getFirst().shippingSnapshot()).containsEntry("customerPaymentMode","MONTHLY");
@@ -43,7 +43,7 @@ class OrderShippingTest extends OrderShippingTestSupport {
   shipping.finalizeOrder(id,shipping(1,30000L,350L,0),owner);assertThat(orders.require(id,false).parcelWeightGrams()).isEqualTo(350);assertThat(orders.require(id,false).parcelWeightNeedsReview()).isFalse();
  }
  @Test void receiptOrFeeChangesRequireCodReviewBeforeHandoff(){
-  long id=readyOrder();payments.record(id,new PaymentRequest(2L,UUID.randomUUID(),PaymentType.DEPOSIT,100000L,"BANK_TRANSFER",null,null,false),owner);
+  long id=readyOrder();payments.record(id,new PaymentRequest(2L,UUID.randomUUID(),PaymentType.DEPOSIT,100000L,null,false),PNG,owner);
   assertThatThrownBy(()->shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACK-ONE"),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("cod_review_required"));
   shipping.updateShipping(id,shipping(3,35000L,300L,435000),owner);var d=orders.require(id,false);assertThat(d.codNeedsReview()).isFalse();assertThat(d.codAmount()).isEqualTo(435000);assertThat(d.shipments().getFirst().shippingSnapshot().get("codAmount").toString()).isEqualTo("435000");shipping.ship(id,new ShipRequest(4L,UUID.randomUUID(),"TRACK-ONE"),owner);
  }

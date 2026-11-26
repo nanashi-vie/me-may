@@ -17,7 +17,7 @@ class OrderKeepTest extends OrderTestSupport {
   var d=drafts.create(new CreateRequest(Long.toString(customer()),type,UUID.randomUUID()),owner);long id=Long.parseLong(d.id());
   drafts.addItem(id,new ItemRequest(0L,UUID.randomUUID(),"CATALOG",b.id(),null,100000L,2L,250L,null),owner);return id;
  }
- private void deposit(long id){jdbc.update("insert into order_payments(order_id,transaction_type,amount,payment_method,occurred_at,created_by) values(?,'DEPOSIT',100000,'CASH',current_timestamp,?)",id,owner.getId());}
+ private void deposit(long id){jdbc.update("insert into order_payments(order_id,transaction_type,amount,occurred_at,created_by) values(?,'DEPOSIT',100000,current_timestamp,?)",id,owner.getId());}
  @Test void keepDeductsOnceAndDoesNotExtendOnAdd(){
   long id=populated("KEEP",5);deposit(id);var key=UUID.randomUUID();keep.keep(id,new KeepRequest(1L,key,false,null),owner);var first=orders.require(id,false);String book=first.items().getFirst().bookCopyId();
   assertThat(first.keepUntil()).isEqualTo(Instant.parse("2026-11-30T17:00:00Z"));assertThat(queries.detail(Long.parseLong(book),owner).totalStock()).isEqualTo(3);

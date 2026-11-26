@@ -3,12 +3,12 @@ import java.time.Instant;
 import java.util.*;
 public final class OrderDtos {
  private OrderDtos(){}
- public enum Status {DRAFT,KEEPING,READY_TO_SHIP,COMPLETED,UNSUCCESSFUL,CANCELLED}
- public enum PaymentType {DEPOSIT,PAYMENT,REFUND}
+ public enum Status {DRAFT,KEEPING,READY_TO_SHIP,COMPLETED,CANCELLED}
+ public enum PaymentType {DEPOSIT,REFUND}
  /** Admin list tabs: which orders they hold and what comes first. The id tie-break keeps paging stable. */
  public enum Group {
   ALL("","o.created_at desc,o.id desc"),
-  ACTION("o.status in ('DRAFT','READY_TO_SHIP','UNSUCCESSFUL')","o.created_at,o.id"),
+  ACTION("o.status in ('DRAFT','READY_TO_SHIP')","o.created_at,o.id"),
   KEEPING("o.status='KEEPING'","o.keep_until nulls last,o.id"),
   COMPLETED("o.status='COMPLETED'","o.completed_at desc nulls last,o.id desc"),
   CLOSED("o.status='CANCELLED'","o.cancelled_at desc nulls last,o.id desc");
@@ -23,7 +23,7 @@ public final class OrderDtos {
  public record OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt){
   public ItemValue value(){return new ItemValue(unitPriceVnd,quantity,unitWeightGrams);}
  }
- public record OrderPayment(String id,PaymentType transactionType,long amount,String paymentMethod,Instant occurredAt,String note,String createdBy,Instant createdAt,Instant voidedAt,String voidReason){
+ public record OrderPayment(String id,PaymentType transactionType,long amount,Instant occurredAt,String note,String createdBy,Instant createdAt,Instant voidedAt,String voidReason,boolean hasProof){
   public PaymentValue value(){return new PaymentValue(transactionType,amount,voidedAt!=null);}
  }
  public record Shipment(String id,int attemptNo,String state,Map<String,Object> shippingSnapshot,String trackingCode,Instant handedOverAt,Instant failedAt,String failureReason){}
@@ -35,7 +35,7 @@ public final class OrderDtos {
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
   Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt){}
  public record OrderFilter(String q,String status,String customerId,String createdFrom,String createdTo,String keepWarning,int page,int size,String group){}
- public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long unsuccessful,long draft,long cancelled,long returned){}
+ public record OrderStats(long keeping,long soon,long due,long overdue,long readyToShip,long completed,long draft,long cancelled,long returned){}
  public record Page<T>(List<T> items,int page,int size,long totalElements,long totalPages){}
  public record CatalogCandidate(String id,String listingId,String bookCode,String title,Long weightG,Long priceMinVnd,Long priceMaxVnd,long stock,String publication,long version,String coverUrl,Long salePriceVnd,long reservedQuantity,long totalStock,boolean exact){
   public CatalogCandidate asExact(){return new CatalogCandidate(id,listingId,bookCode,title,weightG,priceMinVnd,priceMaxVnd,stock,publication,version,coverUrl,salePriceVnd,reservedQuantity,totalStock,true);}
@@ -54,7 +54,7 @@ public final class OrderDtos {
  public record ExtendRequest(Long version,UUID requestId,String keepUntilDate,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ReasonRequest(Long version,UUID requestId,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
- public record PaymentRequest(Long version,UUID requestId,PaymentType transactionType,Long amount,String paymentMethod,Instant occurredAt,String note,Boolean actualConfirmed){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ public record PaymentRequest(Long version,UUID requestId,PaymentType transactionType,Long amount,String note,Boolean actualConfirmed){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
  public record ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String customerPaymentMode,String trackingCode,Long additionalShippingFee,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ShipRequest(Long version,UUID requestId,String trackingCode){public MutationMeta meta(){return new MutationMeta(version,requestId);}}

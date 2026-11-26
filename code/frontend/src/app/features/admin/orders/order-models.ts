@@ -1,9 +1,9 @@
 export type OrderStatus =
-  'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'UNSUCCESSFUL' | 'CANCELLED';
+  'DRAFT' | 'KEEPING' | 'READY_TO_SHIP' | 'COMPLETED' | 'CANCELLED';
 /** What staff see: a cancelled order closed after delivery is shown as RETURNED. */
 export type OrderDisplayStatus = OrderStatus | 'RETURNED';
 export type FulfillmentType = 'IMMEDIATE' | 'KEEP';
-export type PaymentType = 'DEPOSIT' | 'PAYMENT' | 'REFUND';
+export type PaymentType = 'DEPOSIT' | 'REFUND';
 export type CustomerPaymentMode = 'RECIPIENT' | 'MONTHLY';
 export type ShippingPaymentType = 'PP_CASH' | 'CC_CASH' | 'PP_PM';
 export interface Page<T> {
@@ -32,7 +32,6 @@ export interface OrderStats {
   overdue: number;
   readyToShip: number;
   completed: number;
-  unsuccessful: number;
   draft: number;
   cancelled: number;
   returned: number;
@@ -83,13 +82,13 @@ export interface OrderPayment {
   id: string;
   transactionType: PaymentType;
   amount: number;
-  paymentMethod: string;
   occurredAt: string;
   note: string | null;
   createdBy: string;
   createdAt: string;
   voidedAt: string | null;
   voidReason: string | null;
+  hasProof: boolean;
 }
 export interface Shipment {
   id: string;
@@ -214,25 +213,28 @@ export interface ItemWrite extends MutationMeta {
   matchConfirmation: MatchConfirmation | null;
   reason?: string | null;
 }
+export interface PaymentWrite {
+  transactionType: PaymentType;
+  amount: number;
+  note: string;
+  actualConfirmed?: boolean;
+  version: number;
+  requestId: string;
+}
 export type OrderAction =
   | 'keep'
   | 'extend-keep'
   | 'reopen'
   | 'cancel'
-  | 'payments'
   | 'finalize'
   | 'shipping'
   | 'ship'
-  | 'fail'
-  | 'resend'
-  | 'abort-resend'
   | 'return';
 export const STATUS_LABELS: Record<OrderDisplayStatus, string> = {
   DRAFT: 'Nháp',
   KEEPING: 'Đang keep',
-  READY_TO_SHIP: 'Chờ giao',
+  READY_TO_SHIP: 'Đang đóng gói',
   COMPLETED: 'Hoàn tất',
-  UNSUCCESSFUL: 'Không thành công',
   CANCELLED: 'Đã hủy',
   RETURNED: 'Đã hoàn đơn',
 };

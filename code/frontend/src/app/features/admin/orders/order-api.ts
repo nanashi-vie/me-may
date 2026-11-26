@@ -12,6 +12,7 @@ import {
   OrderStats,
   OrderSummary,
   Page,
+  PaymentWrite,
   ReasonRequest,
 } from './order-models';
 @Injectable({ providedIn: 'root' })
@@ -55,6 +56,16 @@ export class OrderApi {
   }
   command(id: string, action: OrderAction, body: object) {
     return this.send(action === 'shipping' ? 'PATCH' : 'POST', this.path(id) + '/' + action, body);
+  }
+  /** One multipart request: the JSON command and its single transfer receipt. */
+  recordPayment(id: string, body: PaymentWrite, proof: File) {
+    const form = new FormData();
+    form.append('payment', new Blob([JSON.stringify(body)], { type: 'application/json' }));
+    form.append('proof', proof);
+    return this.http.mutate<MutationResult>('POST', this.path(id) + '/payments', form);
+  }
+  proofUrl(id: string, paymentId: string) {
+    return '/api/v1/admin' + this.path(id) + '/payments/' + encodeURIComponent(paymentId) + '/proof';
   }
   voidPayment(id: string, paymentId: string, body: ReasonRequest) {
     return this.send(

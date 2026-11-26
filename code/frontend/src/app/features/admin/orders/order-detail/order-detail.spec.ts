@@ -41,6 +41,8 @@ async function setup(id = '1', queryParams: Record<string, string> = {}, page: a
   const api = {
     detail: vi.fn(() => of(detail)),
     command: vi.fn((..._args: any[]) => of({ id: '1', version: 4, status: 'KEEPING' })),
+    recordPayment: vi.fn((..._args: any[]) => of({ id: '1', version: 4, status: 'KEEPING' })),
+    proofUrl: vi.fn((id: string, p: string) => '/proof/' + id + '/' + p),
     removeItem: vi.fn((..._args: any[]) => of({ id: '1', version: 4 })),
     create: vi.fn(() => of({ id: '2', version: 0 })),
     list: vi.fn(() => of({ items: [], totalPages: 0 })),
@@ -71,15 +73,132 @@ async function setup(id = '1', queryParams: Record<string, string> = {}, page: a
   return { f, c: f.componentInstance, api, auth, params };
 }
 describe('OrderDetail', () => {
-  it('offers the unsuccessful-return action only for completed orders', async () => {
+  const png = () => new File([new Uint8Array([137, 80, 78, 71])], 'bill.png', { type: 'image/png' });
+  const buttonNamed = (f: any, name: string) =>
+    (Array.from(f.nativeElement.querySelectorAll('button')) as HTMLButtonElement[]).find((b) => b.textContent!.trim() === name);
+  it('offers a deposit while open and a refund only while the shop holds money', async () => {
     const { f, c } = await setup();
+    for (const [status, paid, deposit, refund] of [
+      ['KEEPING', 0, true, false],
+      ['KEEPING', 1000, true, true],
+      ['CANCELLED', 1000, false, true],
+      ['CANCELLED', 0, false, false],
+    ] as const) {
+      c.order.set({ ...detail, status, totals: { ...detail.totals, paidAmount: paid } });
+      f.detectChanges();
+      expect(!!buttonNamed(f, 'Nhận cọc'), status + paid).toBe(deposit);
+      expect(!!buttonNamed(f, 'Hoàn tiền'), status + paid).toBe(refund);
+      expect(buttonNamed(f, 'Ghi nhận thu tiền')).toBeUndefined();
+    }
+  });
+  it('asks only amount, receipt image and note, and needs the image before sending', async () => {
+    const { f, c, api } = await setup();
+    c.openPayment('DEPOSIT');
+    f.detectChanges();
+    const dialog = f.nativeElement.querySelector('#payment-dialog') as HTMLElement;
+    expect(dialog.querySelector('h2')!.textContent!.trim()).toBe('Nhận cọc');
+    expect(dialog.querySelector('select, [name=time], [name=method]')).toBeNull();
+    expect(dialog.querySelector('input[type=file]')!.getAttribute('accept')).toBe('image/jpeg,image/png');
+    c.payment.amount = 100000;
+    c.submitAction();
+    expect(api.recordPayment).not.toHaveBeenCalled();
+    expect(c.proofError()).toBe('Chọn ảnh bill chuyển khoản.');
+    c.chooseProof(new File(['x'], 'a.gif', { type: 'image/gif' }));
+    expect(c.proofError()).toBe('Chỉ nhận ảnh JPG hoặc PNG.');
+    c.chooseProof(new File([new Uint8Array(10 * 1024 * 1024 + 1)], 'big.png', { type: 'image/png' }));
+    expect(c.proofError()).toBe('Ảnh tối đa 10 MB.');
+    expect(c.paymentProof()).toBeNull();
+    const file = png();
+    c.chooseProof(file);
+    c.payment.note = 'Đợt 1';
+    c.submitAction();
+    const [id, body, proof] = api.recordPayment.mock.calls[0] as any[];
+    expect(id).toBe('1');
+    expect(proof).toBe(file);
+    expect(body).toMatchObject({ transactionType: 'DEPOSIT', amount: 100000, note: 'Đợt 1', version: 3 });
+    expect(body.requestId).toBeTruthy();
+    expect(body).not.toHaveProperty('paymentMethod');
+    expect(body).not.toHaveProperty('occurredAt');
+  });
+  it('titles the refund form and still asks to confirm the actual refund', async () => {
+    const { f, c, api } = await setup();
+    c.order.set({ ...detail, totals: { ...detail.totals, paidAmount: 5000 } });
+    c.openPayment('REFUND');
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('#payment-dialog h2').textContent.trim()).toBe('Hoàn tiền');
+    c.payment.amount = 5000;
+    c.chooseProof(png());
+    c.submitAction();
+    expect(api.recordPayment).not.toHaveBeenCalled();
+    c.actualConfirmed = true;
+    c.submitAction();
+    expect((api.recordPayment.mock.calls[0] as any[])[1]).toMatchObject({ transactionType: 'REFUND', actualConfirmed: true });
+  });
+  it('keeps amount, note and receipt and resends the same request after a network failure', async () => {
+    const { c, api } = await setup();
+    api.recordPayment.mockReturnValueOnce(throwError(() => ({ status: 0 })) as any);
+    c.openPayment('DEPOSIT');
+    const file = png();
+    c.payment.amount = 100000;
+    c.chooseProof(file);
+    c.submitAction();
+    expect(c.pending()).toBeTruthy();
+    c.retry();
+    const [first, second] = api.recordPayment.mock.calls as any[];
+    expect(second[1]).toEqual(first[1]);
+    expect(second[2]).toBe(file);
+    expect(c.payment.amount).toBe(100000);
+  });
+  it('shows receipt thumbnails without a payment method and opens the large image', async () => {
+    const { f, c } = await setup();
+    const base = { amount: 1000, occurredAt: '2026-11-20T01:00:00Z', createdBy: '1', note: null, voidedAt: null, voidReason: null };
+    c.order.set({ ...detail, payments: [
+      { ...base, id: '9', transactionType: 'DEPOSIT', hasProof: true },
+      { ...base, id: '10', transactionType: 'REFUND', hasProof: false },
+    ] });
     c.totalTab.set(true);
-    for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+    f.detectChanges();
+    const ledger = f.nativeElement.querySelector('table.ledger') as HTMLElement;
+    expect(ledger.textContent).not.toContain('BANK_TRANSFER');
+    expect(ledger.textContent).toContain('Không có ảnh');
+    const thumb = ledger.querySelector('button.proof-thumb img') as HTMLImageElement;
+    expect(thumb.getAttribute('src')).toBe('/proof/1/9');
+    (thumb.parentElement as HTMLButtonElement).click();
+    f.detectChanges();
+    expect(c.viewing()?.id).toBe('9');
+    expect(f.nativeElement.querySelector('#proof-viewer img').getAttribute('src')).toBe('/proof/1/9');
+  });
+  it('offers a one-step return only for completed orders and no resend actions', async () => {
+    const { f, c, api } = await setup();
+    c.totalTab.set(true);
+    for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'CANCELLED']) {
       c.order.set({ ...detail, status });
       f.detectChanges();
-      expect(f.nativeElement.textContent.includes('Đơn không thành công / hoàn về'), status).toBe(status === 'COMPLETED');
-      expect(f.nativeElement.textContent.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
+      const text = f.nativeElement.textContent;
+      expect(!!buttonNamed(f, 'Hoàn đơn'), status).toBe(status === 'COMPLETED');
+      expect(text.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
+      for (const gone of ['không thành công', 'Không thành công', 'gửi lại', 'Gửi lại'])
+        expect(text.includes(gone), status + gone).toBe(false);
     }
+    const item = { id: '5', sourceType: 'CATALOG', titleSnapshot: 'Sách', unitPriceVnd: 1, quantity: 1 };
+    c.order.set({ ...detail, status: 'COMPLETED', items: [item] });
+    f.detectChanges();
+    buttonNamed(f, 'Hoàn đơn')!.click();
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('#action-title').textContent.trim()).toBe('Hoàn đơn & nhập lại tồn');
+    c.actionReason = 'Khách không nhận';
+    c.actualConfirmed = true;
+    c.returns[0].quantityReceived = 1;
+    c.returns[0].quantityRestocked = 1;
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    c.submitAction();
+    expect(api.command.mock.calls.at(-1)![1]).toBe('return');
+    vi.restoreAllMocks();
+  });
+  it('labels ready orders as being packed', async () => {
+    const { STATUS_LABELS } = await import('../order-models');
+    expect(STATUS_LABELS.READY_TO_SHIP).toBe('Đang đóng gói');
+    expect(Object.values(STATUS_LABELS)).not.toContain('Chờ giao');
   });
   it('summarises the finished keep of handed-over orders only', async () => {
     const { f, c } = await setup();
@@ -89,7 +208,7 @@ describe('OrderDetail', () => {
       { handedOverAt: null },
       { handedOverAt: '2026-11-20T01:00:00Z' },
     ];
-    for (const status of ['COMPLETED', 'UNSUCCESSFUL']) {
+    for (const status of ['COMPLETED']) {
       c.order.set({ ...detail, status, shipments });
       f.detectChanges();
       expect(line(), status).toBe('Đã keep 01/11/2026 → bàn giao 04/11/2026 (hạn 15/11/2026)');
@@ -111,7 +230,7 @@ describe('OrderDetail', () => {
     const button = () => Array.from(f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Xem bill gửi khách');
     for (const total of [false, true]) {
       c.totalTab.set(total);
-      for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+      for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'CANCELLED']) {
         c.order.set({ ...detail, status, items: [item] });
         f.detectChanges();
         expect(!!button(), status).toBe(status !== 'CANCELLED');

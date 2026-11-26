@@ -11,6 +11,10 @@ class OrderApiTest extends OrderTestSupport {
  @Value("${local.server.port}") int port;
  private static final String BASE="/api/v1/admin/orders";
  private AdminHttpClient api()throws Exception{var a=new AdminHttpClient(port);a.login("owner@catalogue.test");return a;}
+ @Test void removedEndpointsAreGone()throws Exception{
+  var a=api();long id=draft();
+  for(String action:List.of("fail","resend","abort-resend"))assertThat(a.send("POST",BASE+"/"+id+"/"+action,json(Map.of("version",0,"requestId",UUID.randomUUID(),"reason","x")),true).statusCode()).as(action).isIn(404,405);
+ }
  @Test void ownerPagesStaffSeesNoOrderData()throws Exception{
   var a=api();var ids=new ArrayList<Long>();for(int i=0;i<25;i++){long id=draft();manual(id,100000,1,250);ids.add(id);}
   jdbc.update("update orders set status='KEEPING',keep_started_at=current_timestamp,keep_until=? where id in (?,?)",Timestamp.from(OrderValidation.keepUntil(Instant.now(),2)),ids.get(0),ids.get(1));

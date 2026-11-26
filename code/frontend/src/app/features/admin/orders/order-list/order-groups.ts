@@ -27,7 +27,7 @@ const warning = (value: string, label: string, count: OrderSub['count']): OrderS
   label,
   count,
 });
-const action = (s: OrderStats) => s.draft + s.readyToShip + s.unsuccessful;
+const action = (s: OrderStats) => s.draft + s.readyToShip;
 const closed = (s: OrderStats) => s.cancelled + s.returned;
 export const ORDER_TABS: readonly OrderTab[] = [
   {
@@ -48,7 +48,6 @@ export const ORDER_TABS: readonly OrderTab[] = [
     subs: [
       status('DRAFT', (s) => s.draft),
       status('READY_TO_SHIP', (s) => s.readyToShip),
-      status('UNSUCCESSFUL', (s) => s.unsuccessful),
     ],
     count: action,
   },

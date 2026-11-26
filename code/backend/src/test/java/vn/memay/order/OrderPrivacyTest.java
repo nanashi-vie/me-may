@@ -8,7 +8,7 @@ import static org.assertj.core.api.Assertions.*;
 class OrderPrivacyTest extends OrderTestSupport {
  @Value("${local.server.port}") int port;
  @Test void customerCountsAreOwnerOnlyAndDoNotCountDraftCancelledOrUnsuccessful()throws Exception{
-  long c=customer();for(String status:List.of("DRAFT","KEEPING","READY_TO_SHIP","COMPLETED","UNSUCCESSFUL","CANCELLED"))jdbc.update("insert into orders(customer_id,customer_code_snapshot,customer_name_snapshot,status) values(?,'KH-TEST','Synthetic customer',?)",c,status);
+  long c=customer();for(String status:List.of("DRAFT","KEEPING","READY_TO_SHIP","COMPLETED","CANCELLED"))jdbc.update("insert into orders(customer_id,customer_code_snapshot,customer_name_snapshot,status) values(?,'KH-TEST','Synthetic customer',?)",c,status);
   var a=new AdminHttpClient(port);a.login("owner@catalogue.test");var own=tree(a.send("GET","/api/v1/admin/customers",null,false));assertThat(own.path("items").get(0).path("orderCount").asLong()).isEqualTo(3);
   a.login("staff@catalogue.test");var staff=tree(a.send("GET","/api/v1/admin/customers",null,false)).path("items").get(0);assertThat(staff.get("orderCount")==null||staff.path("orderCount").isNull()).isTrue();
  }

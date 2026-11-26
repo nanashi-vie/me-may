@@ -186,7 +186,6 @@
                       <span
                         class="badge"
                         [class.keeping]="o.status === 'KEEPING'"
-                        [class.danger]="o.status === 'UNSUCCESSFUL'"
                         >{{ statusLabel(o) }}</span
                       >
                       @if (o.keepWarning) {

@@ -14,7 +14,6 @@ const stats = {
   overdue: 2,
   readyToShip: 5,
   completed: 9,
-  unsuccessful: 1,
   draft: 2,
   cancelled: 4,
   returned: 6,
@@ -180,7 +179,7 @@ describe('OrderList', () => {
     const t = await setup();
     const cell = () => t.f.nativeElement.querySelector('tbody td:nth-child(8)').textContent.trim();
     expect(cell()).toBe('Giữ hết 30/11/2026');
-    for (const status of ['DRAFT', 'READY_TO_SHIP', 'COMPLETED', 'UNSUCCESSFUL', 'CANCELLED']) {
+    for (const status of ['DRAFT', 'READY_TO_SHIP', 'COMPLETED', 'CANCELLED']) {
       const result = page('DH-000001');
       t.api.list.mockReturnValue(of({ ...result, items: [{ ...result.items[0], status, keepWarning: '' }] }));
       t.c.refresh();
@@ -229,7 +228,7 @@ describe('OrderList', () => {
   });
   it('links five counted tabs and marks the open one', async () => {
     const t = await setup('OWNER', { nhom: 'hoan-tat' });
-    expect(t.tabs()).toEqual(['Tất cả 39', 'Chờ xử lý 8', 'Đang keep 12 · 2 quá hạn', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
+    expect(t.tabs()).toEqual(['Tất cả 38', 'Chờ xử lý 7', 'Đang keep 12 · 2 quá hạn', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
     const open = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] [aria-current="page"]');
     expect(Array.from(open, t.text)).toEqual(['Hoàn tất 9']);
     expect(t.el.querySelector('.metrics')).toBeNull();
@@ -263,7 +262,7 @@ describe('OrderList', () => {
     const labels = () => t.subs().map(t.text);
     const expected = [
       [],
-      ['Tất cả 8', 'Nháp 2', 'Chờ giao 5', 'Không thành công 1'],
+      ['Tất cả 7', 'Nháp 2', 'Đang đóng gói 5'],
       ['Tất cả 12', 'Quá hạn 2', 'Đến hạn hôm nay 1', 'Sắp hết hạn 3'],
       [],
       ['Tất cả 10', 'Đã hủy 4', 'Đã hoàn đơn 6'],
@@ -348,7 +347,7 @@ describe('OrderList', () => {
     t.api.list.mockReturnValue(NEVER);
     t.api.stats.mockReturnValue(NEVER);
     await t.go({ nhom: 'dang-keep' });
-    expect(t.tabs()[0]).toBe('Tất cả 39');
+    expect(t.tabs()[0]).toBe('Tất cả 38');
     expect(t.el.textContent).toContain('Đang tải đơn hàng…');
     t.api.list.mockReturnValue(of(page('DH-000009')));
     await t.go({ nhom: 'hoan-tat' });
@@ -369,7 +368,7 @@ describe('OrderList', () => {
     t.api.list.mockReturnValueOnce(throwError(() => new Error('down')));
     await t.go({ nhom: 'dang-keep' });
     expect(t.text(t.el.querySelector('[role="alert"]'))).toContain('Chưa tải được đơn hàng');
-    expect(t.tabs()[0]).toBe('Tất cả 39');
+    expect(t.tabs()[0]).toBe('Tất cả 38');
     const calls = t.api.stats.mock.calls.length;
     t.button('Thử lại').click();
     await t.settle();
@@ -446,7 +445,7 @@ describe('OrderList', () => {
     await t.go({ createdFrom: '2026-11-20', createdTo: '2026-11-20' });
     expect(t.el.querySelector('[role="alert"]')).toBeNull();
     expect(t.el.textContent).toContain('DH-000001');
-    expect(t.tabs()[0]).toBe('Tất cả 39');
+    expect(t.tabs()[0]).toBe('Tất cả 38');
   });
   it('moves focus to the filter button when a clear button disappears', async () => {
     const t = await setup('OWNER', { customerId: '3' });

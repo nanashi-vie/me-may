@@ -42,7 +42,7 @@ export class OrderShippingForm {
   readonly locked = signal(false);
   readonly error = signal('');
   readonly money = vnd;
-  mode: 'finalize' | 'shipping' | 'resend' = 'finalize';
+  mode: 'finalize' | 'shipping' = 'finalize';
   model: ShippingDraft = {
     customerPaymentMode: 'RECIPIENT',
     recipientName: '',
@@ -74,7 +74,7 @@ export class OrderShippingForm {
       codAmount: order.codAmount,
       codConfirmed: false,
       shippingPaymentType: order.shippingPaymentType ?? 'PP_CASH',
-      trackingCode: mode === 'resend' ? null : order.trackingCode,
+      trackingCode: order.trackingCode,
       additionalShippingFee: 0,
       reason: null,
     };
@@ -106,20 +106,13 @@ export class OrderShippingForm {
   }
   private allowed() {
     const s = this.order?.status;
-    return this.mode === 'resend'
-      ? s === 'UNSUCCESSFUL'
-      : this.mode === 'shipping'
-        ? s === 'READY_TO_SHIP'
-        : s === 'DRAFT' || s === 'KEEPING';
+    return this.mode === 'shipping' ? s === 'READY_TO_SHIP' : s === 'DRAFT' || s === 'KEEPING';
   }
   declaredValue() {
     return this.order?.totals.goodsTotal ?? 0;
   }
   billTotal() {
-    const fee =
-      this.mode === 'resend'
-        ? (this.order?.shippingFee ?? 0) + (this.model.additionalShippingFee ?? 0)
-        : this.model.shippingFee;
+    const fee = this.model.shippingFee;
     const n = fee === null ? NaN : this.declaredValue() + fee;
     return Number.isSafeInteger(n) ? n : null;
   }
@@ -158,11 +151,10 @@ export class OrderShippingForm {
       !!m.recipientName.trim() &&
       !!m.recipientPhone.trim() &&
       !!m.shippingAddress.trim() &&
-      integer(this.mode === 'resend' ? m.additionalShippingFee : m.shippingFee) &&
+      integer(m.shippingFee) &&
       integer(m.parcelWeightGrams, 1) &&
       integer(m.codAmount) &&
       (m.customerPaymentMode !== 'MONTHLY' || (this.balance() ?? 1) <= 0) &&
-      (this.mode !== 'resend' || !!m.reason?.trim()) &&
       this.billTotal() !== null
     );
   }
@@ -175,8 +167,8 @@ export class OrderShippingForm {
       recipientName: this.model.recipientName.trim(),
       recipientPhone: this.model.recipientPhone.trim(),
       shippingAddress: this.model.shippingAddress.trim(),
-      shippingFee: this.mode === 'resend' ? null : this.model.shippingFee,
-      additionalShippingFee: this.mode === 'resend' ? this.model.additionalShippingFee : null,
+      shippingFee: this.model.shippingFee,
+      additionalShippingFee: null,
     });
   }
   close() {

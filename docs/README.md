@@ -23,6 +23,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Sửa hồ sơ khách, đơn keep, giao nhận, tiền và bill | [Khách hàng](product/CUSTOMERS.md), [đơn nội bộ](product/ORDERS.md) |
 | Sửa cân kiện gợi ý, bill gửi khách | [Bill gửi khách](product/ORDER_BILL.md) |
 | Sửa tab, số đếm, bộ lọc danh sách đơn | [Tab danh sách](product/ORDERS.md#41-tab-danh-sách-owner-chốt-25112026) |
+| Nhận cọc/hoàn tiền có ảnh bill, bỏ Không thành công, bảng danh sách đơn (spec đã duyệt, plan chờ duyệt) | [spec](specs/ORDER_MONEY_LIST.md), [plan](specs/ORDER_MONEY_LIST_PLAN.md) |
 | Sửa chọn khách, thêm sách, gợi ý/cảnh báo sách trùng trong đơn | [Sách trong đơn và chọn khách](product/ORDER_ITEMS.md) |
 | Chuẩn bị rollout V37 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
 | Kiểm quyền chấm công, lịch, ca và xuất Excel | [Hồ sơ, quyền và PIN](product/ATTENDANCE.md), [bảo mật](context/SECURITY.md) |

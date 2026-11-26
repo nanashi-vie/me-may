@@ -56,13 +56,13 @@ class OrderListApiTest extends OrderTestSupport {
 
     @Test void everyOrderBelongsToExactlyOneGroup() throws Exception {
         long draft = order("DRAFT"), keep = order("KEEPING"), ready = order("READY_TO_SHIP"), done = order("COMPLETED");
-        long failed = order("UNSUCCESSFUL"), cancelled = order("CANCELLED"), returned = returned(), trashed = order("DRAFT");
+        long cancelled = order("CANCELLED"), returned = returned(), trashed = order("DRAFT");
         jdbc.update("update orders set deleted_at=current_timestamp where id=?", trashed);
-        assertThat(listed("?group=ACTION")).containsExactlyInAnyOrder(draft, ready, failed);
+        assertThat(listed("?group=ACTION")).containsExactlyInAnyOrder(draft, ready);
         assertThat(listed("?group=KEEPING")).containsExactly(keep);
         assertThat(listed("?group=COMPLETED")).containsExactly(done);
         assertThat(listed("?group=CLOSED")).containsExactlyInAnyOrder(cancelled, returned);
-        assertThat(listed("?group=ALL")).hasSize(7).isEqualTo(listed("")).isEqualTo(listed("?group="));
+        assertThat(listed("?group=ALL")).hasSize(6).isEqualTo(listed("")).isEqualTo(listed("?group="));
         assertThat(listed("?group=CLOSED&status=RETURNED")).containsExactly(returned);
         assertThat(listed("?group=COMPLETED&status=DRAFT")).isEmpty();
     }
@@ -134,7 +134,6 @@ class OrderListApiTest extends OrderTestSupport {
         for (int days : new int[]{-1, 0, 2, 9}) keeping(days);
         order("READY_TO_SHIP");
         for (int i = 0; i < 3; i++) order("COMPLETED");
-        order("UNSUCCESSFUL");
         order("CANCELLED");
         order("CANCELLED");
         returned();
@@ -145,7 +144,7 @@ class OrderListApiTest extends OrderTestSupport {
     @Test void countsEveryStatusOutsideTheTrash() throws Exception {
         everyStatus();
         var stats = get("/stats");
-        Map.of("draft", 2, "keeping", 4, "overdue", 1, "due", 1, "soon", 1, "readyToShip", 1, "completed", 3, "unsuccessful", 1, "cancelled", 2, "returned", 1)
+        Map.of("draft", 2, "keeping", 4, "overdue", 1, "due", 1, "soon", 1, "readyToShip", 1, "completed", 3, "cancelled", 2, "returned", 1)
                 .forEach((field, count) -> assertThat(stats.path(field).asInt(-1)).as(field).isEqualTo(count));
     }
 
@@ -162,11 +161,11 @@ class OrderListApiTest extends OrderTestSupport {
         at(alsoMoved, "created_at", "2026-01-06T00:00:00Z");
         String customer = jdbc.queryForObject("select customer_id::text from orders where id=?", String.class, first);
         String code = jdbc.queryForObject("select order_code from orders where id=?", String.class, moved);
-        for (var scope : Map.of("size=20", 16L, "customerId=" + customer, 1L, "createdFrom=2026-01-05&createdTo=2026-01-06", 2L, "q=" + code, 1L).entrySet()) {
+        for (var scope : Map.of("size=20", 15L, "customerId=" + customer, 1L, "createdFrom=2026-01-05&createdTo=2026-01-06", 2L, "q=" + code, 1L).entrySet()) {
             String q = scope.getKey();
             var s = get("/stats?" + q);
             long action = 0, closed = 0;
-            for (var status : List.of(List.of("ACTION", "DRAFT", "draft"), List.of("ACTION", "READY_TO_SHIP", "readyToShip"), List.of("ACTION", "UNSUCCESSFUL", "unsuccessful"),
+            for (var status : List.of(List.of("ACTION", "DRAFT", "draft"), List.of("ACTION", "READY_TO_SHIP", "readyToShip"),
                     List.of("CLOSED", "CANCELLED", "cancelled"), List.of("CLOSED", "RETURNED", "returned"))) {
                 long count = s.path(status.get(2)).asLong(-1);
                 assertThat(total(q + "&group=" + status.get(0) + "&status=" + status.get(1))).as(q + status).isEqualTo(count);

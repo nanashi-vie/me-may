@@ -28,6 +28,7 @@ import {
   OrderItem,
   OrderPayment,
   OrderSummary,
+  PaymentType,
   Page,
   statusLabel,
 } from '../order-models';
@@ -36,7 +37,7 @@ import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
 type Pending = {
-  kind: 'command' | 'create' | 'update' | 'itemAdd' | 'itemUpdate' | 'remove' | 'void';
+  kind: 'command' | 'create' | 'update' | 'itemAdd' | 'itemUpdate' | 'remove' | 'void' | 'payment';
   action?: OrderAction;
   itemId?: string;
   orderId?: string;
@@ -52,8 +53,6 @@ type Panel =
   | 'payment'
   | 'void'
   | 'ship'
-  | 'fail'
-  | 'abort-resend'
   | 'return'
   | 'tracking'
   | 'edit';
@@ -73,7 +72,7 @@ type Panel =
     OrderShippingForm,
   ],
   templateUrl: './order-detail.html',
-  styleUrls: ['../orders.scss', '../order-picker.scss'],
+  styleUrls: ['../orders.scss', '../order-picker.scss', './order-detail.scss'],
 })
 export class OrderDetailPage {
   private readonly api = inject(OrderApi);
@@ -97,6 +96,11 @@ export class OrderDetailPage {
   readonly toast = signal('');
   readonly pending = signal<Pending | null>(null);
   readonly paymentConflict = signal(false);
+  /** The receipt stays outside `pending` (which is JSON-cloned) so a retry resends the same file. */
+  readonly paymentProof = signal<File | null>(null);
+  readonly proofPreview = signal('');
+  readonly proofError = signal('');
+  readonly viewing = signal<OrderPayment | null>(null);
   readonly panel = signal<Panel>('');
   readonly money = vnd;
   readonly statusLabel = statusLabel;
@@ -121,7 +125,7 @@ export class OrderDetailPage {
   /** First handover ends the keep; later resends do not change it. */
   readonly keepHandedOver = computed(() => {
     const d = this.order();
-    if (!d?.keepStartedAt || !d.keepUntil || !['COMPLETED', 'UNSUCCESSFUL'].includes(d.status)) return null;
+    if (!d?.keepStartedAt || !d.keepUntil || d.status !== 'COMPLETED') return null;
     return d.shipments.find((s) => s.handedOverAt)?.handedOverAt ?? null;
   });
   readonly currentBill = computed(() => {
@@ -150,10 +154,8 @@ export class OrderDetailPage {
   trackingCode = '';
   actualConfirmed = false;
   payment = {
-    transactionType: 'PAYMENT' as 'PAYMENT' | 'DEPOSIT' | 'REFUND',
+    transactionType: 'DEPOSIT' as PaymentType,
     amount: null as number | null,
-    paymentMethod: 'BANK_TRANSFER',
-    occurredAt: '',
     note: '',
   };
   returns: {
@@ -434,7 +436,9 @@ export class OrderDetailPage {
                 ? this.api.removeItem(id, p.itemId!, p.body)
                 : p.kind === 'void'
                   ? this.api.voidPayment(id, p.itemId!, p.body)
-                  : this.api.command(id, p.action!, p.body);
+                  : p.kind === 'payment'
+                    ? this.api.recordPayment(id, p.body, this.paymentProof()!)
+                    : this.api.command(id, p.action!, p.body);
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (r) => {
         if (epoch !== this.auth.epoch() || pageGeneration !== this.pageGeneration) return;
@@ -444,7 +448,8 @@ export class OrderDetailPage {
         this.panel.set('');
         this.selectedCustomer.set(null);
         this.itemForm()?.close();
-        if (p.action !== 'payments') this.shippingForm()?.close();
+        if (p.kind === 'payment') this.chooseProof(null);
+        else this.shippingForm()?.close();
         if (p.action === 'finalize') this.selectTab(true);
         this.toast.set('Đã lưu thao tác.');
         if (p.kind === 'create') {
@@ -466,7 +471,7 @@ export class OrderDetailPage {
         this.fieldErrors.set(e.error?.fieldErrors ?? {});
         if (e.error?.matches) this.itemForm()?.setMatches(e.error.matches);
         const conflict = e.status === 409 && e.error?.error === 'version_conflict';
-        this.paymentConflict.set(p.action === 'payments' && conflict);
+        this.paymentConflict.set(p.kind === 'payment' && conflict);
         this.itemForm()?.conflict.set(conflict);
         this.shippingForm()?.conflict.set(conflict);
         this.itemForm()?.error.set(orderError(e));
@@ -510,14 +515,6 @@ export class OrderDetailPage {
     this.paymentConflict.set(false);
     this.resetCustomerPicker();
     this.panel.set(panel);
-    if (panel === 'payment')
-      this.payment = {
-        transactionType: this.order()?.status === 'CANCELLED' ? 'REFUND' : 'PAYMENT',
-        amount: null,
-        paymentMethod: 'BANK_TRANSFER',
-        occurredAt: '',
-        note: '',
-      };
     const d = this.order();
     if (d) {
       this.fulfillmentType = d.fulfillmentType;
@@ -548,6 +545,42 @@ export class OrderDetailPage {
         ?.focus();
     }, 0);
   }
+  openPayment(type: PaymentType) {
+    if (this.pending() || this.busy()) return;
+    this.openPanel('payment');
+    this.payment = { transactionType: type, amount: null, note: '' };
+    this.chooseProof(null);
+  }
+  chooseProof(file: File | null) {
+    if (this.proofPreview()) URL.revokeObjectURL?.(this.proofPreview());
+    this.proofPreview.set('');
+    this.paymentProof.set(null);
+    this.proofError.set('');
+    if (!file) return;
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      this.proofError.set('Chỉ nhận ảnh JPG hoặc PNG.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      this.proofError.set('Ảnh tối đa 10 MB.');
+      return;
+    }
+    this.paymentProof.set(file);
+    this.proofPreview.set(URL.createObjectURL?.(file) ?? '');
+  }
+  proofUrl(p: OrderPayment) {
+    return this.api.proofUrl(this.order()!.id, p.id);
+  }
+  viewProof(p: OrderPayment | null) {
+    this.viewing.set(p);
+    setTimeout(() => {
+      const viewer = document.querySelector<HTMLDialogElement>('#proof-viewer');
+      if (p) viewer?.showModal?.();
+      else document.querySelector<HTMLElement>('[data-proof="' + this.lastViewed + '"]')?.focus();
+    }, 0);
+    if (p) this.lastViewed = p.id;
+  }
+  private lastViewed = '';
   closePanel() {
     if (this.pending() || this.busy()) return;
     if (!window.confirm('Đóng form và bỏ thông tin chưa lưu?')) return;
@@ -566,8 +599,6 @@ export class OrderDetailPage {
         'reopen',
         'cancel',
         'void',
-        'fail',
-        'abort-resend',
         'return',
         'tracking',
       ].includes(panel) ||
@@ -593,22 +624,25 @@ export class OrderDetailPage {
       return;
     }
     if (panel === 'payment') {
-      if (
-        !integer(this.payment.amount, 1) ||
-        (this.payment.transactionType === 'REFUND' && !this.actualConfirmed)
-      ) {
+      const refund = this.payment.transactionType === 'REFUND';
+      if (!integer(this.payment.amount, 1) || (refund && !this.actualConfirmed)) {
         this.error.set('Nhập số tiền nguyên dương và xác nhận hoàn thực tế nếu hoàn tiền.');
         return;
       }
-      const when = this.payment.occurredAt ? new Date(this.payment.occurredAt) : null;
-      if (when && !Number.isFinite(when.getTime())) {
-        this.error.set('Thời gian không hợp lệ.');
+      if (!this.paymentProof()) {
+        if (!this.proofError()) this.proofError.set('Chọn ảnh bill chuyển khoản.');
         return;
       }
-      this.mutate('payments', {
-        ...this.payment,
-        occurredAt: when?.toISOString() ?? null,
-        actualConfirmed: this.actualConfirmed,
+      this.sendNew({
+        kind: 'payment',
+        orderId: d.id,
+        body: {
+          transactionType: this.payment.transactionType,
+          amount: this.payment.amount,
+          note: this.payment.note,
+          ...(refund ? { actualConfirmed: true } : {}),
+          ...meta,
+        },
       });
       return;
     }

@@ -23,13 +23,7 @@
       <fieldset [disabled]="locked() || refreshing()">
         <header class="heading">
           <h2 id="shipping-title">
-            {{
-              mode === 'resend'
-                ? 'Chuẩn bị gửi lại'
-                : mode === 'shipping'
-                  ? 'Sửa thông tin bill'
-                  : 'Xuất bill'
-            }}
+            {{ mode === 'shipping' ? 'Sửa thông tin bill' : 'Xuất bill' }}
           </h2>
           <button type="button" class="secondary" (click)="requestClose()" aria-label="Đóng">
             ×
@@ -59,18 +53,6 @@
               [(ngModel)]="model.shippingAddress"
             ></textarea>
           </label>
-          @if (mode === 'resend') {
-            <label
-              ><span>Phí ship thu thêm lần này (VNĐ) *</span
-              ><input
-                appVndInput
-                name="extra"
-                required
-                [(ngModel)]="model.additionalShippingFee"
-                (ngModelChange)="suggestCod()"
-              /><small>Chỉ cộng phần thu thêm vào bill cũ.</small></label
-            >
-          } @else {
             <label
               ><span>Phí ship khách trả (VNĐ) *</span
               ><input
@@ -80,7 +62,6 @@
                 [(ngModel)]="model.shippingFee"
                 (ngModelChange)="suggestCod()"
             /></label>
-          }
           <label
             >Phương thức thanh toán
             <select
@@ -123,20 +104,9 @@
             <p>
               Còn thiếu {{ money(balance()) }}.
               <button type="button" class="secondary" (click)="paymentRequested.emit()">
-                Ghi nhận thu tiền
+                Nhận cọc
               </button>
             </p>
-          }
-          @if (mode === 'resend') {
-            <label class="full"
-              ><span>Lý do gửi lại *</span
-              ><textarea
-                name="reason"
-                required
-                maxlength="1000"
-                [(ngModel)]="model.reason"
-              ></textarea>
-            </label>
           }
         </div>
         <div class="notice">
@@ -158,7 +128,7 @@
         <footer class="form-footer">
           <button type="button" class="secondary" (click)="requestClose()">Hủy</button
           ><button class="primary" [disabled]="!valid() || form.invalid">
-            {{ mode === 'resend' ? 'Chốt gửi lại' : 'Lưu bill' }}
+            Lưu bill
           </button>
         </footer>
       </fieldset>
