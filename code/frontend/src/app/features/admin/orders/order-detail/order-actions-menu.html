@@ -1,0 +1,24 @@
+@if (actions().length) {
+  <button
+    type="button"
+    class="actions-menu-toggle"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="open()"
+    [attr.aria-label]="'Thao tác ' + orderCode()"
+    [disabled]="disabled()"
+    (click)="toggle()"
+  >
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+      <circle cx="12" cy="5" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="12" cy="19" r="1.8" />
+    </svg>
+  </button>
+  @if (open()) {
+    <div class="actions-menu" role="menu" [attr.aria-label]="'Thao tác ' + orderCode()" (keydown)="keydown($event)">
+      @for (a of actions(); track a) {
+        <button type="button" role="menuitem" [class.danger-item]="a === 'cancel'" (click)="choose(a)">
+          {{ labels[a] }}
+        </button>
+      }
+    </div>
+  }
+}

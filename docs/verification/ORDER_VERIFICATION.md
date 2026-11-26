@@ -186,3 +186,22 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   đều đúng. Một lỗi quan trọng đã sửa: chưa có job dọn ảnh mồ côi (thêm `PaymentProofSweep`, test đỏ
   trước). Sửa thêm: nút Xác nhận khóa đến khi chọn ảnh. Sau sửa: backend `verify` 462 (3 skip),
   frontend 559, build đạt. Các góp ý nhỏ hoãn ghi ở DEV_LOG.
+
+## Trang chi tiết đơn 2 cột và tab Xuất bill — 26/11/2026
+
+- `ORDER-DETAIL-BILL-01`, nền `8f44a5a`, commit 1 `4d637ef` (backend 5 field đọc). Test viết và
+  thấy đỏ trước code ở từng phần (backend 4/4 đỏ vì thiếu field; frontend hàm hiển thị, timeline,
+  menu ⋮, bill, form, trang).
+- Backend trên PostgreSQL 17 container tạm từ bản sao ở scratchpad (như lần trước): `verify` 466
+  test (3 skip) đạt. Frontend 78 file/600 test, `ng build` đạt (không vượt ngân sách CSS).
+- Trình duyệt trong app, OWNER thử trên backend/DB tạm (6 đơn tổng hợp đủ trạng thái), 1440px và
+  900px: header với nút chính và ⋮ đúng từng trạng thái; 2 cột/1 cột, không cuộn ngang trang;
+  `?tab=total` mở tab Xuất bill; gõ phí ship thì bill đổi ngay và hiện dải "Chưa lưu"; đổi tab qua
+  lại vẫn giữ số; Lưu bill đơn nháp → Đang đóng gói, ở lại tab, hết dải vàng, card Giao hàng có
+  thông tin; Mở lại đơn → mốc Chốt đơn về xám, lý do vào card Ghi chú; đơn Hoàn tất/Đã hoàn đơn
+  form chỉ xem; đơn Đã hủy báo không xuất bill, badge "Còn giữ 120.000đ"; timeline hoàn đơn có mốc
+  bàn giao rồi "Đã hoàn đơn" đỏ; đơn đã mở lại rồi chốt lại lấy ngày lần chốt mới.
+- Sửa khi kiểm: bảng sách bị cuộn ngang trong cột 2/3 (thu gọn ô); badge rớt dòng do `h1` toàn cục
+  `max-width: 18ch`; chữ mục đầu của ⋮ trắng do kiểu nút chung.
+- Chưa kiểm: đơn thật, ảnh bìa thật (đã có test API/đơn vị), Safari/thiết bị thật, trình đọc màn
+  hình, `build:workers`.

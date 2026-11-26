@@ -22,7 +22,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Điều tra cảnh báo nguồn ảnh, upload máy/Drive và phục hồi | [Quy tắc xuất bản](product/IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè), [vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [bằng chứng](verification/IMAGE_VERIFICATION.md) |
 | Sửa hồ sơ khách, đơn keep, giao nhận, tiền và bill | [Khách hàng](product/CUSTOMERS.md), [đơn nội bộ](product/ORDERS.md) |
 | Sửa Nhận cọc/Hoàn tiền, ảnh bill chuyển khoản, COD | [Nhận tiền và ảnh bill](product/ORDER_PAYMENTS.md) |
-| Sửa cân kiện gợi ý, bill gửi khách | [Bill gửi khách](product/ORDER_BILL.md) |
+| Sửa trang chi tiết đơn, tab Xuất bill, cân kiện gợi ý, bill gửi khách | [Chi tiết đơn và bill](product/ORDER_BILL.md) |
 | Sửa tab, số đếm, bộ lọc danh sách đơn | [Tab danh sách](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026) |
 | Sửa chọn khách, thêm sách, gợi ý/cảnh báo sách trùng trong đơn | [Sách trong đơn và chọn khách](product/ORDER_ITEMS.md) |
 | Chuẩn bị rollout V37–V39 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [V39](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |

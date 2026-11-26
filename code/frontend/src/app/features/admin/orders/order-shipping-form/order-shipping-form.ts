@@ -1,4 +1,4 @@
-import { Component, ElementRef, output, signal, viewChild } from '@angular/core';
+import { Component, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VndInput } from '../../books/vnd-input';
 import { CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
@@ -29,8 +29,6 @@ const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
   styleUrl: '../orders.scss',
 })
 export class OrderShippingForm {
-  private readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('dialog');
-  private opener: HTMLElement | null = null;
   private order: OrderDetail | null = null;
   private initial = '';
   readonly refreshRequested = output<void>();
@@ -38,7 +36,12 @@ export class OrderShippingForm {
   readonly refreshing = signal(false);
   readonly retry = output<void>();
   readonly saved = output<ShippingDraft>();
-  readonly visible = signal(false);
+  /** Everything typed so far, saved or not, so the bill beside the form can follow it. */
+  readonly changed = output<ShippingDraft>();
+  /** A completed or returned order: the bill can be read but not changed. */
+  readonly readOnly = signal(false);
+  /** The form renders only once it holds an order, so its first paint shows real values. */
+  readonly loaded = signal(false);
   readonly locked = signal(false);
   readonly error = signal('');
   readonly money = vnd;
@@ -59,7 +62,11 @@ export class OrderShippingForm {
     additionalShippingFee: 0,
     reason: null,
   };
-  open(order: OrderDetail, mode: typeof this.mode) {
+  /** Fills the form from the saved order; the mode follows the order's state. */
+  load(order: OrderDetail) {
+    const returned = order.status === 'CANCELLED' && order.returns?.length > 0;
+    this.readOnly.set(order.status === 'COMPLETED' || returned);
+    const mode = order.status === 'DRAFT' || order.status === 'KEEPING' ? 'finalize' : 'shipping';
     this.order = order;
     this.mode = mode;
     this.model = {
@@ -86,9 +93,15 @@ export class OrderShippingForm {
     this.manualCod = mode !== 'finalize';
     this.suggestCod();
     this.initial = JSON.stringify(this.model);
-    this.opener = document.activeElement as HTMLElement;
-    this.visible.set(true);
-    this.dialog()?.nativeElement.showModal?.();
+    this.loaded.set(true);
+    this.emitChange();
+  }
+  emitChange() {
+    this.changed.emit({ ...this.model });
+  }
+  /** Back to what is saved on the order, dropping what was typed. */
+  undo() {
+    if (this.order) this.load(this.order);
   }
   rebase(order: OrderDetail) {
     this.reviewRequired = true;
@@ -101,8 +114,9 @@ export class OrderShippingForm {
     this.suggestCod();
     if (!this.allowed())
       this.error.set(
-        'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra trước khi đóng.',
+        'Trạng thái đơn đã đổi. Thông tin đang nhập được giữ để kiểm tra.',
       );
+    this.emitChange();
   }
   private allowed() {
     const s = this.order?.status;
@@ -171,22 +185,7 @@ export class OrderShippingForm {
       additionalShippingFee: null,
     });
   }
-  close() {
-    this.visible.set(false);
-    this.dialog()?.nativeElement.close?.();
-    this.opener?.focus();
-  }
   dirty() {
-    return this.visible() && this.initial !== JSON.stringify(this.model);
-  }
-  requestClose() {
-    if (this.locked() || this.refreshing()) return false;
-    if (this.dirty() && !window.confirm('Bỏ thông tin giao hàng chưa lưu?')) return false;
-    this.close();
-    return true;
-  }
-  escape(e: Event) {
-    e.preventDefault();
-    this.requestClose();
+    return !!this.order && !this.readOnly() && this.initial !== JSON.stringify(this.model);
   }
 }

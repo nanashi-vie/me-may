@@ -7,8 +7,10 @@ import {
   HostListener,
   Injector,
   computed,
+  effect,
   inject,
   signal,
+  untracked,
   viewChild,
 } from '@angular/core';
 import { DatePipe, KeyValuePipe, NgTemplateOutlet } from '@angular/common';
@@ -31,11 +33,28 @@ import {
   PaymentType,
   Page,
   statusLabel,
+  statusTone,
+  CHANNEL_LABELS,
 } from '../order-models';
 import { OrderBill } from '../order-bill/order-bill';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
+import {
+  ACTION_LABELS,
+  HeaderAction,
+  billTab,
+  currentShipment,
+  dueAmount,
+  menuActions,
+  paymentBadge,
+  primaryAction,
+} from './order-detail-view';
+import { OrderTimeline } from './order-timeline';
+import { OrderActionsMenu } from './order-actions-menu';
+type Tab = 'detail' | 'bill';
+/** `total` is the old name of the bill tab, kept so saved links still open it. */
+const tabOf = (q: string | null | undefined): Tab => (q === 'bill' || q === 'total' ? 'bill' : 'detail');
 type Pending = {
   kind: 'command' | 'create' | 'update' | 'itemAdd' | 'itemUpdate' | 'remove' | 'void' | 'payment';
   action?: OrderAction;
@@ -70,6 +89,8 @@ type Panel =
     OrderBill,
     OrderItemForm,
     OrderShippingForm,
+    OrderTimeline,
+    OrderActionsMenu,
   ],
   templateUrl: './order-detail.html',
   styleUrls: ['../orders.scss', '../order-picker.scss', './order-detail.scss'],
@@ -83,7 +104,6 @@ export class OrderDetailPage {
   private readonly destroy = inject(DestroyRef);
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
-  readonly bill = viewChild(OrderBill);
   readonly itemForm = viewChild(OrderItemForm);
   readonly shippingForm = viewChild(OrderShippingForm);
   readonly customerForm = viewChild(CustomerForm);
@@ -106,32 +126,70 @@ export class OrderDetailPage {
   readonly statusLabel = statusLabel;
   readonly keepEnd = keepEnd;
   readonly backQuery = { ...this.route.snapshot.queryParams };
-  readonly totalTab = signal(this.backQuery['tab'] === 'total');
-  selectTab(total: boolean) {
-    this.totalTab.set(total);
+  readonly tab = signal<Tab>(tabOf(this.backQuery['tab']));
+  selectTab(tab: Tab) {
+    this.tab.set(tab);
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: { tab: total ? 'total' : null },
+      queryParams: { tab: tab === 'bill' ? 'bill' : null },
       queryParamsHandling: 'merge',
     });
   }
   tabKey(event: KeyboardEvent) {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
-    const total = event.key === 'End' || (event.key !== 'Home' && !this.totalTab());
-    this.selectTab(total);
-    document.getElementById(total ? 'order-total-tab' : 'order-detail-tab')?.focus();
+    const bill = event.key === 'End' || (event.key !== 'Home' && this.tab() === 'detail');
+    this.selectTab(bill ? 'bill' : 'detail');
+    document.getElementById(bill ? 'order-bill-tab' : 'order-detail-tab')?.focus();
+  }
+  readonly statusTone = statusTone;
+  readonly channelLabels = CHANNEL_LABELS;
+  readonly actionLabels = ACTION_LABELS;
+  readonly shipment = computed(() => {
+    const d = this.order();
+    return d ? currentShipment(d) : null;
+  });
+  readonly billed = computed(() => !!this.shipment());
+  readonly due = computed(() => {
+    const d = this.order();
+    return d ? dueAmount(d) : 0;
+  });
+  readonly paymentBadge = computed(() => {
+    const d = this.order();
+    return d ? paymentBadge(d) : null;
+  });
+  readonly primary = computed(() => {
+    const d = this.order();
+    return d ? primaryAction(d) : null;
+  });
+  /** Extending is offered only while a later end date is still possible. */
+  readonly menu = computed(() => {
+    const d = this.order();
+    if (!d) return [];
+    return menuActions(d).filter((a) => a !== 'extend-keep' || this.minKeepDate() <= this.maxKeepDate());
+  });
+  readonly billState = computed(() => {
+    const d = this.order();
+    return d ? billTab(d) : 'empty';
+  });
+  readonly allNotes = signal(false);
+  /** Newest first; five unless the owner asks for all. */
+  readonly shownNotes = computed(() => {
+    const notes = [...(this.order()?.notes ?? [])].reverse();
+    return this.allNotes() ? notes : notes.slice(0, 5);
+  });
+  /** What the bill form holds now, for the bill beside it. */
+  readonly billDraft = signal<ShippingDraft | null>(null);
+  /** Set after a saved command: the next order replaces whatever the bill form holds. */
+  private reloadBill = true;
+  runHeaderAction(action: HeaderAction) {
+    this.openPanel(action);
   }
   /** First handover ends the keep; later resends do not change it. */
   readonly keepHandedOver = computed(() => {
     const d = this.order();
     if (!d?.keepStartedAt || !d.keepUntil || d.status !== 'COMPLETED') return null;
     return d.shipments.find((s) => s.handedOverAt)?.handedOverAt ?? null;
-  });
-  readonly currentBill = computed(() => {
-    const d = this.order();
-    if (!d || d.status === 'DRAFT' || d.status === 'KEEPING') return null;
-    return d.shipments.filter((s) => s.state !== 'ABORTED').at(-1) ?? null;
   });
   readonly keepError = signal('');
   readonly selectedCustomer = signal<CustomerSummary | null>(null);
@@ -178,7 +236,19 @@ export class OrderDetailPage {
     delete this.backQuery['tab'];
     this.route.queryParamMap
       ?.pipe(takeUntilDestroyed(this.destroy))
-      .subscribe((q) => this.totalTab.set(q.get('tab') === 'total'));
+      .subscribe((q) => this.tab.set(tabOf(q.get('tab'))));
+    // Each new order reaches the bill form: saved values when nothing is typed or after a
+    // save, otherwise a rebase that keeps the typing and asks to recheck COD and weight.
+    effect(() => {
+      const d = this.order(),
+        form = this.shippingForm();
+      if (!d || !form) return;
+      untracked(() => {
+        if (this.reloadBill || !form.dirty()) form.load(d);
+        else form.rebase(d);
+        this.reloadBill = false;
+      });
+    });
     combineLatest([this.route.paramMap, toObservable(this.auth.epoch)])
       .pipe(
         switchMap(([params]) => {
@@ -268,7 +338,9 @@ export class OrderDetailPage {
     this.fieldErrors.set({});
     this.toast.set('');
     this.itemForm()?.close();
-    this.shippingForm()?.close();
+    this.billDraft.set(null);
+    this.allNotes.set(false);
+    this.reloadBill = true;
   }
   searchCustomers(page = 0) {
     this.customerPageNumber = page;
@@ -376,7 +448,6 @@ export class OrderDetailPage {
               this.order.set(v);
               this.paymentConflict.set(false);
               if (this.itemForm()?.visible()) this.itemForm()?.rebase(v);
-              if (this.shippingForm()?.visible()) this.shippingForm()?.rebase(v);
               this.error.set('');
             }
             this.itemForm()?.refreshing.set(false);
@@ -449,8 +520,7 @@ export class OrderDetailPage {
         this.selectedCustomer.set(null);
         this.itemForm()?.close();
         if (p.kind === 'payment') this.chooseProof(null);
-        else this.shippingForm()?.close();
-        if (p.action === 'finalize') this.selectTab(true);
+        if (p.kind === 'command' || p.kind === 'update') this.reloadBill = true;
         this.toast.set('Đã lưu thao tác.');
         if (p.kind === 'create') {
           this.selectedCustomer.set(null);

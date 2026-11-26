@@ -133,7 +133,7 @@ Backend tính; không tin tổng frontend, không dùng float cho tiền.
   thái thanh toán tạm tính. Refund không vượt tiền nhận, không tự xóa khoản phải thu.
 - itemWeight = unitWeightGrams × quantity; totalBookWeightGrams = SUM(itemWeight).
   Thiếu bất kỳ weight hiển thị “Chưa đủ dữ liệu”, không coi thiếu là0.
-- Popup Xuất bill: cân kiện gram nguyên dương, gợi ý và bill gửi khách theo [ORDER_BILL](ORDER_BILL.md).
+- Tab Xuất bill: cân kiện gram nguyên dương, gợi ý và bill gửi khách theo [ORDER_BILL](ORDER_BILL.md).
   Sau refresh do version thay đổi, admin kiểm lại cân/COD rồi lưu.
   Thay đổi weight sách gốc không sửa snapshot đã bàn giao.
 
@@ -330,10 +330,10 @@ Admin desktop-first theo form/table/custom dropdown hiện có; tablet/mobile kh
 tràn khung. Loading/error/empty, keyboard/focus, dirty guard và double-submit.
 Giữ form khi lỗi; stale response không đè mới. Xác nhận xóa/hủy/ship/ngoại lệ,
 không tải hết sách/khách. Hiển thị giá bán cụ thể/quantity/gram rõ từng dòng.
-Chi tiết đơn hiển thị tiền sách, cọc và trọng lượng sách cùng danh sách sách.
-Tổng đơn (tab=total) hiển thị bill sau lưu. Mở lại đơn phải xuất bill mới.
-Nhận cọc/Hoàn tiền qua popup riêng có ảnh bill, giữ draft bill khi ghi chuyển khoản.
-Lưu bill chốt READY, mở Tổng đơn; khi bàn giao mới bắt mã vận đơn và hoàn tất.
+Trang chi tiết đơn có hai tab Chi tiết đơn | Xuất bill, bố cục theo [ORDER_BILL](ORDER_BILL.md).
+Mở lại đơn phải xuất bill mới. Nhận cọc/Hoàn tiền qua popup riêng có ảnh bill, giữ
+draft bill khi ghi chuyển khoản. Lưu bill chốt READY và ở lại tab Xuất bill; khi bàn
+giao mới bắt mã vận đơn và hoàn tất.
 
 AC gốc01–20 được giữ qua nhóm kiểm tra sau và bổ sung các case tích hợp:
 - 01–04: chọn/tạo khách, CATALOG/MANUAL, duplicate confirm FE/BE; hai dòng

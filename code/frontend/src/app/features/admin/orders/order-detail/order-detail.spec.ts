@@ -169,7 +169,6 @@ describe('OrderDetail', () => {
       { ...base, id: '9', transactionType: 'DEPOSIT', hasProof: true },
       { ...base, id: '10', transactionType: 'REFUND', hasProof: false },
     ] });
-    c.totalTab.set(true);
     f.detectChanges();
     const ledger = f.nativeElement.querySelector('table.ledger') as HTMLElement;
     expect(ledger.textContent).not.toContain('BANK_TRANSFER');
@@ -183,13 +182,12 @@ describe('OrderDetail', () => {
   });
   it('offers a one-step return only for completed orders and no resend actions', async () => {
     const { f, c, api } = await setup();
-    c.totalTab.set(true);
     for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'CANCELLED']) {
       c.order.set({ ...detail, status });
       f.detectChanges();
       const text = f.nativeElement.textContent;
       expect(!!buttonNamed(f, 'Hoàn đơn'), status).toBe(status === 'COMPLETED');
-      expect(text.includes('Hủy đơn'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
+      expect(c.menu().includes('cancel'), status).toBe(['DRAFT', 'KEEPING', 'READY_TO_SHIP'].includes(status));
       for (const gone of ['không thành công', 'Không thành công', 'gửi lại', 'Gửi lại'])
         expect(text.includes(gone), status + gone).toBe(false);
     }
@@ -217,9 +215,9 @@ describe('OrderDetail', () => {
     const { f, c } = await setup();
     const line = () => f.nativeElement.querySelector('.keep-summary')?.textContent.trim().replace(/\s+/g, ' ');
     const shipments = [
-      { handedOverAt: '2026-11-03T18:00:00Z' },
-      { handedOverAt: null },
-      { handedOverAt: '2026-11-20T01:00:00Z' },
+      { id: '1', state: 'HANDED_OVER', shippingSnapshot: {}, handedOverAt: '2026-11-03T18:00:00Z' },
+      { id: '2', state: 'FAILED', shippingSnapshot: {}, handedOverAt: null },
+      { id: '3', state: 'HANDED_OVER', shippingSnapshot: {}, handedOverAt: '2026-11-20T01:00:00Z' },
     ];
     for (const status of ['COMPLETED']) {
       c.order.set({ ...detail, status, shipments });
@@ -237,35 +235,138 @@ describe('OrderDetail', () => {
       expect(line(), JSON.stringify(patch)).toBeUndefined();
     }
   });
-  it('offers the customer bill on both tabs once there is a book and the order is open', async () => {
-    const { f, c } = await setup();
-    const item = { id: '1', sourceType: 'MANUAL', titleSnapshot: 'Sách thử', unitPriceVnd: 75000, quantity: 2 };
-    const button = () => Array.from(f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Xem bill gửi khách');
-    for (const total of [false, true]) {
-      c.totalTab.set(total);
-      for (const status of ['DRAFT', 'KEEPING', 'READY_TO_SHIP', 'COMPLETED', 'CANCELLED']) {
-        c.order.set({ ...detail, status, items: [item] });
-        f.detectChanges();
-        expect(!!button(), status).toBe(status !== 'CANCELLED');
-      }
-      c.order.set(detail);
-      f.detectChanges();
-      expect(button()).toBeUndefined();
-    }
-    const shipment = { state: 'PLANNED', shippingSnapshot: { declaredValue: 150000, shippingFee: 30000 } };
-    const totals = { ...detail.totals, goodsTotal: 150000, orderTotal: 180000, balance: 180000 };
-    for (const [status, provisional] of [['KEEPING', true], ['READY_TO_SHIP', false]] as const) {
-      c.order.set({ ...detail, status, items: [item], shipments: [shipment], shippingFee: 30000, totalQuantity: 2, totals });
-      f.detectChanges();
-      button()!.click();
-      f.detectChanges();
-      const bill = f.nativeElement.querySelector('.bill');
-      expect(bill.textContent, status).toContain('Sách thử');
-      expect(bill.textContent.includes('chưa gồm phí ship'), status).toBe(provisional);
-    }
-    c.order.set(null);
+  const book = { id: '1', sourceType: 'MANUAL', titleSnapshot: 'Sách thử', unitPriceVnd: 75000, quantity: 2, unitWeightGrams: 250, coverUrl: null };
+  const billable = (patch: object = {}) => ({
+    ...detail,
+    items: [book],
+    totalQuantity: 2,
+    recipientName: 'Reader',
+    recipientPhone: '0901234567',
+    shippingAddress: 'Số 1 đường thử',
+    shippingFee: null,
+    codAmount: 0,
+    customerPhoneSnapshot: '0909999999',
+    totals: { ...detail.totals, goodsTotal: 150000, subtotal: 150000, totalBookWeightGrams: 500 },
+    ...patch,
+  });
+  async function settle(f: any) {
     f.detectChanges();
-    expect(f.nativeElement.querySelector('.bill')).toBeNull();
+    await f.whenStable();
+    f.detectChanges();
+  }
+  const text = (e: Element | null) => (e?.textContent ?? '').replace(/\s+/g, ' ').trim();
+  it('puts one main action in the header and the rest behind the menu', async () => {
+    const { f, c } = await setup();
+    for (const [patch, primary] of [
+      [{ status: 'DRAFT', fulfillmentType: 'KEEP' }, 'Bắt đầu keep & trừ tồn'],
+      [{ status: 'READY_TO_SHIP', shipments: [{ id: '1', state: 'PLANNED', shippingSnapshot: {}, handedOverAt: null }] }, 'Đã bàn giao vận chuyển'],
+      [{ status: 'COMPLETED' }, 'Hoàn đơn'],
+    ] as const) {
+      c.order.set(billable(patch));
+      await settle(f);
+      expect(f.nativeElement.querySelector('.page-head .primary').textContent.trim(), primary).toBe(primary);
+    }
+    c.order.set(billable({ status: 'DRAFT' }));
+    await settle(f);
+    f.nativeElement.querySelector('.actions-menu-toggle').click();
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.actions-menu-toggle').getAttribute('aria-label')).toBe('Thao tác DH-000001');
+    (Array.from(f.nativeElement.querySelectorAll('[role="menuitem"]')) as HTMLButtonElement[]).find((b) => b.textContent!.trim() === 'Hủy đơn')!.click();
+    f.detectChanges();
+    expect(c.panel()).toBe('cancel');
+    expect(buttonNamed(f, 'Sửa thông tin bill')).toBeUndefined();
+    expect(buttonNamed(f, 'Xem bill gửi khách')).toBeUndefined();
+  });
+  it('opens the bill tab from the header and from old links', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable());
+    await settle(f);
+    expect(c.tab()).toBe('detail');
+    buttonNamed(f, 'Xuất bill')!.click();
+    await settle(f);
+    expect(c.tab()).toBe('bill');
+    expect(f.nativeElement.querySelector('#order-bill-tab').getAttribute('aria-selected')).toBe('true');
+    TestBed.resetTestingModule();
+    expect((await setup('1', { tab: 'total' })).c.tab()).toBe('bill');
+  });
+  it('lets the bill follow the form and keeps typing across tabs', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    const fee = f.nativeElement.querySelector('input[name=fee]') as HTMLInputElement;
+    fee.value = '30000';
+    fee.dispatchEvent(new Event('input', { bubbles: true }));
+    await settle(f);
+    const bill = () =>
+      Array.from(f.nativeElement.querySelectorAll('.bill header > *, .bill-totals > *') as NodeListOf<Element>, (row) =>
+        row.children.length ? Array.from(row.children, text).join(' ') : text(row),
+      ).join(' | ');
+    expect(bill()).toContain('Phí ship 30.000đ');
+    expect(text(f.nativeElement.querySelector('.bill'))).toContain('SĐT: 0901234567');
+    expect(text(f.nativeElement.querySelector('.unsaved'))).toContain('Chưa lưu');
+    c.selectTab('detail');
+    await settle(f);
+    c.selectTab('bill');
+    await settle(f);
+    expect(c.shippingForm()!.model.shippingFee).toBe(30000);
+    expect(bill()).toContain('Phí ship 30.000đ');
+  });
+  it('saves the bill from the tab and stays there with the saved values', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable());
+    c.selectTab('bill');
+    await settle(f);
+    c.shippingForm()!.model.shippingFee = 30000;
+    c.shippingForm()!.suggestCod();
+    api.command.mockReturnValueOnce(of({ id: '1', version: 4, status: 'READY_TO_SHIP' }));
+    api.detail.mockReturnValue(of(billable({ status: 'READY_TO_SHIP', version: 4, shippingFee: 30000, shipments: [{ id: '1', state: 'PLANNED', shippingSnapshot: {}, handedOverAt: null }] })));
+    c.shippingForm()!.submit();
+    await settle(f);
+    const [, action, body] = api.command.mock.calls.at(-1)! as any[];
+    expect(action).toBe('finalize');
+    expect(body).toMatchObject({ shippingFee: 30000, recipientPhone: '0901234567', version: 3 });
+    expect(c.tab()).toBe('bill');
+    expect(c.shippingForm()!.mode).toBe('shipping');
+    expect(c.shippingForm()!.dirty()).toBe(false);
+    expect(f.nativeElement.querySelector('.unsaved')).toBeNull();
+  });
+  it('explains when there is no bill to make and only shows a finished one', async () => {
+    const { f, c } = await setup();
+    c.selectTab('bill');
+    c.order.set(billable({ items: [] }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('#order-bill-panel'))).toContain('Đơn chưa có sách.');
+    c.order.set(billable({ status: 'CANCELLED' }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('#order-bill-panel'))).toContain('Đơn đã hủy, không xuất bill.');
+    expect(f.nativeElement.querySelector('.head-actions').textContent).not.toContain('Xuất bill');
+    c.order.set(billable({ status: 'COMPLETED', shippingFee: 30000 }));
+    await settle(f);
+    expect(f.nativeElement.querySelector('#order-bill-panel fieldset').disabled).toBe(true);
+    expect(buttonNamed(f, 'Lưu bill')).toBeUndefined();
+  });
+  it('lays the detail out in cards with cover, contact, delivery, payment and timeline', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable({
+      items: [{ ...book, coverUrl: '/cover/1' }, { ...book, id: '2', coverUrl: null }],
+      customerChannel: { type: 'TIKTOK', value: 'tt.reader' },
+      customerCodeSnapshot: 'KH-000007',
+    }));
+    await settle(f);
+    const el = f.nativeElement as HTMLElement;
+    expect(el.querySelector('.item-table img.cover')!.getAttribute('src')).toBe('/cover/1');
+    expect(el.querySelectorAll('.item-table .cover.empty').length).toBe(1);
+    const customer = text(el.querySelector('.customer-card'));
+    for (const part of ['Reader', 'KH-000007', '0909999999', 'TikTok: tt.reader']) expect(customer).toContain(part);
+    expect(text(el.querySelector('.delivery-card'))).toContain('Chưa chốt bill');
+    buttonNamed(f, 'Xuất bill →')!.click();
+    expect(c.tab()).toBe('bill');
+    c.selectTab('detail');
+    await settle(f);
+    expect(text(el.querySelector('.payment-card .badge'))).toBe('Chưa cọc');
+    expect(el.querySelector('table.ledger')!.closest('details')).toBeNull();
+    expect(el.querySelector('app-order-timeline')).not.toBeNull();
   });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
@@ -345,12 +446,14 @@ describe('OrderDetail', () => {
   for (const kind of ['item', 'shipping'] as const)
     it('recovers ' + kind + ' version conflict inside dialog without losing draft', async () => {
       const { c, f, api } = await setup();
-      const form = kind === 'item' ? c.itemForm()! : c.shippingForm()!;
+      
       if (kind === 'item') {
         c.itemForm()!.open(c.order()!);
         c.itemForm()!.model.unitPriceVnd = 123456;
       } else {
-        c.shippingForm()!.open(c.order()!, 'finalize');
+        c.order.set(billable());
+        c.selectTab('bill');
+        await settle(f);
         c.shippingForm()!.model.recipientName = 'Changed recipient';
         c.shippingForm()!.model.codConfirmed = true;
         c.shippingForm()!.model.parcelWeightConfirmed = true;
@@ -361,16 +464,16 @@ describe('OrderDetail', () => {
       c.mutate('finalize', {});
       f.detectChanges();
       const button = Array.from(
-        f.nativeElement.querySelectorAll('dialog button'),
+        f.nativeElement.querySelectorAll(kind === 'item' ? 'dialog button' : '#order-bill-panel button'),
       ) as HTMLButtonElement[];
       const reload = button.find((b) => b.textContent?.trim() === 'Tải lại dữ liệu đơn');
       expect(reload).toBeTruthy();
-      api.detail.mockReturnValueOnce(of({ ...detail, version: 4 }));
+      api.detail.mockReturnValueOnce(of(kind === 'item' ? { ...detail, version: 4 } : billable({ version: 4 })));
       reload!.click();
       f.detectChanges();
       await f.whenStable();
       expect(c.order()?.version).toBe(4);
-      expect(form.visible()).toBe(true);
+      expect(kind === 'item' ? c.itemForm()!.visible() : true).toBe(true);
       if (kind === 'item') expect(c.itemForm()!.model.unitPriceVnd).toBe(123456);
       else {
         expect(c.shippingForm()!.model.recipientName).toBe('Changed recipient');

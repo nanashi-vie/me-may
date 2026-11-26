@@ -1,0 +1,19 @@
+<ol class="timeline">
+  @for (s of steps(); track s.key; let i = $index) {
+    <li
+      [class.pending]="!s.done"
+      [class.danger]="s.danger"
+      [attr.aria-current]="i === current() ? 'step' : null"
+    >
+      <span class="dot" aria-hidden="true">{{ s.done ? (s.danger ? '✕' : '✓') : '' }}</span>
+      <div>
+        <strong>{{ s.label }}</strong>
+        @if (s.at) {
+          <time [attr.datetime]="s.at">{{ s.at | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</time>
+        } @else if (!s.done) {
+          <small>Chưa tới</small>
+        }
+      </div>
+    </li>
+  }
+</ol>

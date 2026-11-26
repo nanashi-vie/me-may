@@ -32,12 +32,13 @@ import {
   OrderSummary,
   Page,
   statusLabel,
+  statusTone,
+  CHANNEL_LABELS,
   WARNING_LABELS,
 } from '../order-models';
 import { keepEnd, vnd } from '../order-values';
 import { ORDER_TABS, OrderSub, OrderTab, orderQuery, parseOrderQuery, tabOf } from './order-groups';
 import { OrderRowMenu } from './order-row-menu';
-const CHANNELS = { TIKTOK: 'TikTok', THREADS: 'Threads', ZALO: 'Zalo' } as const;
 const normalize = (q: string) => q.trim().replace(/\s+/g, ' ');
 @Component({
   selector: 'app-order-list',
@@ -200,15 +201,9 @@ export class OrderList {
   /** The line under the name: one contact channel, else the phone on the order. */
   channelLine(o: OrderSummary) {
     const c = o.customerChannel;
-    return c ? CHANNELS[c.type] + ': ' + c.value : o.customerPhoneSnapshot || 'Chưa có SĐT';
+    return c ? CHANNEL_LABELS[c.type] + ': ' + c.value : o.customerPhoneSnapshot || 'Chưa có SĐT';
   }
-  badgeClass(o: OrderSummary) {
-    return o.status === 'READY_TO_SHIP'
-      ? 'packing'
-      : o.status === 'CANCELLED'
-        ? 'closed'
-        : o.status.toLowerCase();
-  }
+  readonly badgeClass = statusTone;
   /** Enter on the row itself opens it; Enter on the ⋮ menu stays with the menu. */
   openRowKey(event: Event, id: string) {
     if (event.target !== event.currentTarget) return;

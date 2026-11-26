@@ -79,6 +79,8 @@ export interface OrderItem {
   unitWeightGrams: number | null;
   manualMatchOverrideReason: string | null;
   addedAt: string;
+  /** Admin cover image of a website book; null for outside books or books without a front image. */
+  coverUrl?: string | null;
 }
 export interface OrderPayment {
   id: string;
@@ -115,6 +117,8 @@ export interface Shipment {
   handedOverAt: string | null;
   failedAt: string | null;
   failureReason: string | null;
+  /** When this bill was saved; missing from older backends. */
+  createdAt?: string;
 }
 export interface ActionNote {
   id: string;
@@ -242,6 +246,10 @@ export const STATUS_LABELS: Record<OrderDisplayStatus, string> = {
 };
 export const statusLabel = (o: { status: OrderStatus; returned?: boolean; returns?: unknown[] }) =>
   STATUS_LABELS[o.status === 'CANCELLED' && (o.returned || o.returns?.length) ? 'RETURNED' : o.status];
+/** Badge colour class shared by the list and the detail page. */
+export const statusTone = (o: { status: OrderStatus }) =>
+  o.status === 'READY_TO_SHIP' ? 'packing' : o.status === 'CANCELLED' ? 'closed' : o.status.toLowerCase();
+export const CHANNEL_LABELS = { TIKTOK: 'TikTok', THREADS: 'Threads', ZALO: 'Zalo' } as const;
 export const WARNING_LABELS: Record<string, string> = {
   SOON: 'Sắp hết hạn',
   DUE: 'Đến hạn hôm nay',
