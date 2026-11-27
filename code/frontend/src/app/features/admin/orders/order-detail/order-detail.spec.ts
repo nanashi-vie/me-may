@@ -493,6 +493,17 @@ describe('OrderDetail', () => {
     expect(basics()).toContain('Giao ngay');
     expect(basics()).not.toContain('Hạn keep');
   });
+  it('asks to refund what a cancelled order still holds instead of collecting the rest', async () => {
+    const { f, c } = await setup();
+    const due = () => text(f.nativeElement.querySelector('.money-lines .due'));
+    c.order.set(billable({ status: 'CANCELLED', totals: { ...billable().totals, paidAmount: 70000 } }));
+    await settle(f);
+    expect(due()).toContain('Cần hoàn');
+    expect(due()).toContain('70.000');
+    c.order.set(billable({ status: 'CANCELLED', totals: { ...billable().totals, paidAmount: 0 } }));
+    await settle(f);
+    expect(due()).toBe('Không còn giữ tiền');
+  });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
     const badge = () => f.nativeElement.querySelector('.heading .badge').textContent.trim();

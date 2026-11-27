@@ -219,6 +219,7 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   thanh toán đủ; Đã hủy + Còn giữ 70.000đ); card thông tin không còn Mã đơn/Ngày tạo, Hạn keep
   chỉ ở đơn Keep; "＋ Thêm sách" ở tiêu đề chỉ khi sửa được, "n quyển · m g" dưới bảng; Tổng/Tạm
   tính 20px so với 16px các dòng khác; khách 2 dòng, tên không gạch chân, chip kênh.
-- Ghi nhận, chưa sửa (có từ trước): đơn Đã hủy chưa chốt bill vẫn hiện "Còn thu" (tiền sách − đã
-  nhận) trong card Thanh toán.
+- Sửa thêm (owner yêu cầu): đơn Đã hủy không còn "Còn thu"; tiền còn giữ thành "Cần hoàn x" (khớp
+  badge "Còn giữ x"), không giữ tiền thì "Không còn giữ tiền". Test đỏ trước; `npm test` 613/613,
+  build đạt; DH-000013 hiện "Cần hoàn 70.000đ".
 - Chưa kiểm: dưới 1024px, Safari/thiết bị thật, trình đọc màn hình.

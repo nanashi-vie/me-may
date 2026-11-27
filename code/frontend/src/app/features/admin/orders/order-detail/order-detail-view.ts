@@ -46,9 +46,13 @@ export function timeline(d: OrderDetail): TimelineStep[] {
   return [...steps.filter((s) => s.done), step('cancelled', 'Đã hủy', true, d.cancelledAt, true)];
 }
 
-/** Still to collect: the balance once billed, otherwise the books less what was paid. */
+/**
+ * Still to collect: the balance once billed, otherwise the books less what was paid.
+ * A cancelled order collects nothing, so any money it still holds is to refund (negative).
+ */
 export function dueAmount(d: OrderDetail): number {
   const t = d.totals;
+  if (d.status === 'CANCELLED') return 0 - t.paidAmount;
   const unbilled = t.goodsTotal - t.paidAmount;
   return currentShipment(d) ? (t.balance ?? unbilled) : unbilled;
 }

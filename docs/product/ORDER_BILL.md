@@ -42,7 +42,8 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
   khung xám cho sách ngoài; Sửa chữ thường, Xóa chữ đỏ; "n quyển · m g" căn phải dưới bảng) ·
   Thanh toán (nút nhỏ Nhận cọc/Hoàn tiền ở góc phải tiêu đề; Tiền sách, Phí ship hoặc "Chưa
   chốt"; **Tổng/Tạm tính** chữ to nhất có kẻ trên; Đã nhận; Còn thu (màu cảnh báo)/Cần hoàn/Đã
-  thanh toán đủ (xanh lá) đậm cỡ thường) · Lịch sử thu/hoàn luôn mở.
+  thanh toán đủ (xanh lá) đậm cỡ thường; đơn Đã hủy không thu thêm: tiền còn giữ là Cần hoàn,
+  không giữ thì "Không còn giữ tiền") · Lịch sử thu/hoàn luôn mở.
 - **Phải:** Thời gian giữ sách (Đang keep) hoặc dòng tóm tắt keep đã bàn giao · Khách hàng
   (2 dòng không nhãn: tên đậm link hồ sơ không gạch chân + chip 1 kênh TikTok → Threads → Zalo;
   "mã · SĐT" chữ mờ) · Giao hàng ("Chưa chốt bill" +

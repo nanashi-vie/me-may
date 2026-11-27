@@ -668,7 +668,7 @@
             </div>
             <div class="due" [class.owing]="due() > 0" [class.settled]="due() === 0">
               @if (due() === 0) {
-                <dt>Đã thanh toán đủ</dt>
+                <dt>{{ d.status === 'CANCELLED' ? 'Không còn giữ tiền' : 'Đã thanh toán đủ' }}</dt>
                 <dd></dd>
               } @else {
                 <dt>{{ due() < 0 ? 'Cần hoàn' : 'Còn thu' }}</dt>
