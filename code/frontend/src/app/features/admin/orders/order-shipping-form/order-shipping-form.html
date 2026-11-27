@@ -165,22 +165,15 @@
           </div>
         } @else {
           <p class="muted">Khách lấy tại tiệm: cần thanh toán đủ trước khi giao.</p>
+          @if ((balance() ?? 0) > 0 && !readOnly()) {
+            <p>
+              Còn thiếu {{ money(balance()) }}.
+              <button type="button" class="secondary" (click)="paymentRequested.emit()">
+                Nhận cọc
+              </button>
+            </p>
+          }
         }
-        <div class="notice">
-          <p class="split-line">
-            <span
-              >Đã nhận
-              @if (!readOnly()) {
-                <button type="button" class="text-button" (click)="paymentRequested.emit()">
-                  Nhận cọc
-                </button>
-              }</span
-            ><strong>{{ money(received()) }}</strong>
-          </p>
-          <p class="split-line">
-            <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
-          </p>
-        </div>
         @if (reviewRequired && !readOnly()) {
           <button type="button" class="secondary" (click)="reviewRequired = false">
             Đã kiểm tra lại COD và cân nặng

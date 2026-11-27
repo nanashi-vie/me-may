@@ -71,8 +71,9 @@ khách sửa trực tiếp** — Người nhận/SĐT/Địa chỉ ở đầu tr
 có), **Phí ship** là ô số ở dòng tiền trang cuối (0 → "Miễn phí", trống → Tạm tính); ô trông như chữ
 bill, gạch mờ khi rê, khung khi gõ, chữ gợi ý đỏ mờ khi trống. Dưới vạch là **"Nội bộ · không gửi
 khách"**: 2 nút chọn Người nhận thanh toán / Thanh toán cuối tháng (giữ nhãn, vẫn lưu
-RECIPIENT/MONTHLY cho file J&T sau này), cân nặng + gợi ý, COD, Đã nhận + Nhận cọc, Còn thu (±),
-"Còn thiếu: …" khi chưa đủ để lưu, Hoàn tác / Lưu bill.
+RECIPIENT/MONTHLY cho file J&T sau này), cân nặng + gợi ý, COD, "Còn thiếu: …" khi chưa đủ để
+lưu, Hoàn tác / Lưu bill. Không lặp Đã nhận / Còn thu (bill đã có, owner 27/11); chỉ Thanh toán
+cuối tháng hoặc Khách tự lấy còn thiếu tiền mới có dòng "Còn thiếu X · Nhận cọc".
 
 | Đơn | Tab |
 |---|---|

@@ -26,7 +26,7 @@ Owner chốt 26/11/2026 (`ORDER-MONEY-LIST-01`), thay phần giao dịch tiền 
 ## Giao diện chi tiết đơn
 
 - Hai nút **Nhận cọc** (ẩn khi đơn hủy/hoàn) và **Hoàn tiền** (chỉ khi `paidAmount > 0`) ở card Thanh toán.
-  Form bill ở tab Xuất bill có nút Nhận cọc cạnh dòng Đã nhận, mở cùng popup.
+  Tab Xuất bill chỉ có Nhận cọc khi Thanh toán cuối tháng hoặc Khách tự lấy còn thiếu, mở cùng popup.
 - Popup: ô tick không có ảnh, Số tiền (VND) *, **Ảnh bill chuyển khoản** * (JPEG/PNG,
   ≤ 10 MB, có xem trước; ẩn khi tick), Ghi chú (thành Lý do không có ảnh * khi tick); Hoàn tiền thêm ô xác nhận hoàn thực tế. Sai định dạng/quá cỡ báo tại ô.
 - Lỗi mạng giữ số tiền, ghi chú, ảnh và gửi lại cùng `requestId`.

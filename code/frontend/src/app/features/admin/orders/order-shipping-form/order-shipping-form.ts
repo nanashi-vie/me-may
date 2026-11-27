@@ -171,9 +171,6 @@ export class OrderShippingForm {
     const n = fee === null ? NaN : this.declaredValue() + fee;
     return Number.isSafeInteger(n) ? n : null;
   }
-  received() {
-    return this.order?.totals.paidAmount ?? 0;
-  }
   balance() {
     const total = this.billTotal();
     return total === null ? null : total - (this.order?.totals.paidAmount ?? 0);

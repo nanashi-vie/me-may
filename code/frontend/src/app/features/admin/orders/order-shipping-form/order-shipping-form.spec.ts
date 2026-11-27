@@ -168,14 +168,24 @@ describe('OrderShippingForm', () => {
     expect(t.c.model.shippingFee).toBe(12345);
     expect(t.c.dirty()).toBe(true);
   });
-  it('offers a deposit next to what was received', async () => {
-    const t = await shown(order());
+  it('leaves the money to the bill and offers a deposit only while monthly or pickup still owes', async () => {
+    const deposit = (t: any) =>
+      Array.from(t.f.nativeElement.querySelectorAll('.internal button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Nhận cọc');
+    let t = await shown(order());
+    expect(t.f.nativeElement.querySelector('.internal .notice')).toBeNull();
+    expect(t.f.nativeElement.querySelector('.internal').textContent).not.toContain('Đã nhận');
+    expect(deposit(t)).toBeUndefined();
+    t = await shown(order({ customerPaymentMode: 'MONTHLY' }));
+    expect(t.f.nativeElement.querySelector('.internal').textContent).toContain('Còn thiếu 200.000đ');
     const asked = vi.fn();
     t.c.paymentRequested.subscribe(asked);
-    const button = Array.from(t.f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Nhận cọc')!;
-    expect(button.closest('.split-line')!.textContent).toContain('Đã nhận');
-    button.click();
+    deposit(t)!.click();
     expect(asked).toHaveBeenCalledOnce();
+    t = await shown(order({ shippingProvider: 'PICKUP', shippingFee: 0 }));
+    expect(t.f.nativeElement.querySelector('.internal').textContent).toContain('Còn thiếu 170.000đ');
+    expect(deposit(t)).toBeDefined();
+    t = await shown(order({ shippingProvider: 'PICKUP', shippingFee: 0 }, { paidAmount: 170000 }));
+    expect(deposit(t)).toBeUndefined();
   });
   it('turns read-only with the saved values when the order is finished elsewhere', async () => {
     const t = await shown(order({ status: 'READY_TO_SHIP' }));
