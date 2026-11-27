@@ -5539,3 +5539,23 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Quyết định**: mốc Chốt đơn của đơn hủy lấy lần giao mới nhất bất kể trạng thái (hủy làm lần giao thành ABORTED) — theo spec "giữ các mốc đã qua".
 - **Kiểm tra**: mỗi mục có test đỏ trước rồi xanh. Frontend `npm test` 610/610, build đạt; backend test đơn hàng 123 đạt trên PostgreSQL tạm, `verify` đầy đủ ghi ở dòng dưới.
 - **Kết quả verify**: backend `verify` 467 test (3 skip) đạt. Đã xóa container PostgreSQL tạm. Commit trên `dev`, chưa push.
+
+### 2026-11-27 — CI-DOKPLOY-403-01 — Sửa dứt điểm lỗi HTTP 403 khi GitHub Actions trigger Dokploy
+
+- **Mục tiêu & phạm vi**: điều tra và sửa lỗi `curl: (22) The requested URL returned error: 403` ở job `deploy` (`Trigger Dokploy deployment`) của `.github/workflows/publish-backend.yml` tại run `#95` (`Merge pull request #65 from nanashi-vie/dev`). Chỉ cập nhật tài liệu vận hành; không sửa code sản phẩm hay workflow trong phiên này.
+- **Nguyên nhân gốc đã xác minh**:
+  - `dokploy.memaybooks.com` trên Cloudflare Zero Trust đã có sẵn policy `github actions` kiểu `Service Auth` (cùng policy `Allow Me May Admin` kiểu `Allow`), nhưng `Access authentication logs` (24 giờ) hoàn toàn trống đối với request từ GitHub Actions.
+  - Trên zone `memaybooks.com` (gói Cloudflare Free), công tắc **Bot Fight Mode** đang bật. Bot Fight Mode gói Free áp toàn zone (gồm cả `dokploy.memaybooks.com`), chạy **trước** Cloudflare Zero Trust Access và không hỗ trợ ngoại lệ (Skip) qua Custom WAF Rule → chặn `curl` từ IP datacenter của GitHub Actions bằng `403` trước khi request tới Access.
+  - Ngoài ra, `.github/workflows/publish-backend.yml` đang dùng `curl --fail --output /dev/null` khiến lệnh thoát mã `22` trước khối `case "$status"` và nuốt toàn bộ response header/body chẩn đoán (ghi nhận để cải thiện sau nếu cần).
+- **Thay đổi hạ tầng & tài liệu**:
+  - Hạ tầng (owner thao tác trên Cloudflare Dashboard): tắt **Bot Fight Mode** trên zone `memaybooks.com` (vẫn giữ nguyên bảo vệ Cloudflare Zero Trust Access `Allow` + `Service Auth` và `x-api-key` trên `dokploy.memaybooks.com`).
+  - Tài liệu: cập nhật `docs/DEV_LOG.md`, `docs/PROGRESS.md`, `docs/runbooks/DEPLOYMENT.md`.
+- **Kiểm tra đã chạy**:
+  - Owner bấm **Re-run failed jobs** cho run `#95` (`Publish Me May Backend`) sau khi tắt Bot Fight Mode: job `deploy` xanh trong 4 giây (`Dokploy accepted the deployment request; check deployment logs for completion.`) và Dokploy đã tạo deployment mới.
+  - Chưa chạy test/build code ứng dụng vì không sửa code.
+- **Còn mở & bước tiếp theo**:
+  - Đã commit và push tài liệu lên `origin/dev`; dọn các branch/worktree local cũ đã gộp vào `dev`.
+  - Tùy chọn sau: gỡ `--fail` và in metadata chẩn đoán an toàn (không lộ secret) trong `.github/workflows/publish-backend.yml`.
+- **Bổ sung redirect `www` (27/11)**:
+  - Owner đã cấu hình DNS `AAAA www → 100::` (Proxied) và Cloudflare Redirect Rule `www.memaybooks.com` → `https://memaybooks.com` (Dynamic `concat("https://memaybooks.com", http.request.uri.path)`, status `301`, Preserve query string). Không sửa code/Worker, không dùng wildcard `*`.
+  - Kiểm tra thực tế qua Cloudflare edge (`104.21.72.192`, `@1.1.1.1`, NS `vera.ns.cloudflare.com`): `http://www.memaybooks.com/` → `301` `https://memaybooks.com/`; `https://www.memaybooks.com/` → `301` `https://memaybooks.com/`; `https://www.memaybooks.com/sach?page=2&q=test` → `301` `https://memaybooks.com/sach?page=2&q=test`; `https://memaybooks.com/` vẫn `200`. (Resolver máy local có thể giữ cache NXDOMAIN cũ vài phút nếu vừa tra trước đó.)
