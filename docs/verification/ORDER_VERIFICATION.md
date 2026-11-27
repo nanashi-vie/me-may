@@ -210,3 +210,15 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   tải lại lỗi; form chuyển chỉ xem khi đơn hoàn tất ở phiên khác; xóa cuốn cuối không mất chữ đang
   gõ; menu ⋮ có `aria-controls`, Esc từ nút, đóng khi Tab ra; timeline đơn hủy giữ mốc Chốt đơn;
   dòng "Cần xuất lại bill cho đơn này." Mỗi mục có test đỏ trước. Frontend 610/610, build đạt.
+
+## Gọn trang chi tiết đơn — 27/11/2026
+
+- `npm test` 611/611, `npm run build` đạt (frontend, `dev`).
+- Trình duyệt 1440px, frontend tạm 4210 + backend tạm 18080 (code `dev`, `me_may_dev`), 4 đơn mẫu
+  `[Mẫu]` DH-000010…013: header hai badge (Đang keep + Đã cọc; Nháp + Chưa cọc; Hoàn tất + Đã
+  thanh toán đủ; Đã hủy + Còn giữ 70.000đ); card thông tin không còn Mã đơn/Ngày tạo, Hạn keep
+  chỉ ở đơn Keep; "＋ Thêm sách" ở tiêu đề chỉ khi sửa được, "n quyển · m g" dưới bảng; Tổng/Tạm
+  tính 20px so với 16px các dòng khác; khách 2 dòng, tên không gạch chân, chip kênh.
+- Ghi nhận, chưa sửa (có từ trước): đơn Đã hủy chưa chốt bill vẫn hiện "Còn thu" (tiền sách − đã
+  nhận) trong card Thanh toán.
+- Chưa kiểm: dưới 1024px, Safari/thiết bị thật, trình đọc màn hình.

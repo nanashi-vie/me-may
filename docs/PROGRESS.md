@@ -4,6 +4,7 @@ Cập nhật 27/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ORDER-DETAIL-TIDY-01` (27/11, trên `dev`, chưa push): gọn trang chi tiết đơn — badge thanh toán lên header, Tổng to nhất, bỏ trùng Mã đơn/Ngày tạo, khách 2 dòng, nút nhỏ ở tiêu đề card. Chỉ frontend. 4 đơn `[Mẫu]` DH-000010…013 trên DB local. [Contract](product/ORDER_BILL.md)
 - `CI-DOKPLOY-403-01` (27/11, đã xác minh live trên `main` run `#95`): tắt Cloudflare Free Bot Fight Mode (chặn 403 trước Zero Trust Access); job `deploy` của `Publish Me May Backend` đã xanh và kích hoạt deployment mới trên Dokploy. [Runbook](runbooks/DEPLOYMENT.md)
 - `ORDER-DETAIL-BILL-01` (26/11, trên `dev`): chi tiết đơn 2 cột có header nút chính + ⋮, timeline, ảnh bìa, kênh khách; tab Xuất bill gộp form chốt/sửa bill và bill gửi khách (SĐT, địa chỉ, ngày xuất, cập nhật khi gõ). Không migration; backend trước frontend. [Contract](product/ORDER_BILL.md)
 - `ORDER-MONEY-LIST-01` (26/11, trên `dev`): Nhận cọc/Hoàn tiền bắt buộc 1 ảnh bill (lưu private, chỉ OWNER), không ghi COD; bỏ Không thành công/gửi lại, Hoàn đơn một bước; "Đang đóng gói"; danh sách 6 tab, 9 cột, menu ⋮. Migration V39 (đổi dữ liệu thử), backend trước frontend sát nhau. [Tiền](product/ORDER_PAYMENTS.md) · [tab](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026) · [rollout](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39)

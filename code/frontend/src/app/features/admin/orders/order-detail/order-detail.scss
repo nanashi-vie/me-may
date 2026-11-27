@@ -25,7 +25,20 @@
     align-items: center;
     gap: 12px;
   }
-  h1 .badge { font-size: 0.8rem; }
+  h1 .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+  // A dot in the badge's own colour, like the reference header.
+  h1 .badge::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
   > div:first-child { flex: 1; }
   .head-actions { flex: none; }
 }
@@ -75,12 +88,23 @@
 .card-head {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
   h2 { margin: 0; padding: 0; border: 0; }
+  .actions { margin: 0; flex-wrap: wrap; justify-content: flex-end; }
+}
+// Compact buttons that sit in a card heading.
+button.small {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+  font-weight: 650;
 }
 .detail-grid,
 .bill-grid {
@@ -110,8 +134,28 @@
   object-fit: cover;
 }
 .cover.empty { background: #f0efec; }
-.add-book { margin-top: 20px; }
-.payment-card .actions { margin-bottom: 14px; }
+.items-total { margin: 12px 0 0; text-align: right; font-variant-numeric: tabular-nums; }
+.text-button.neutral { color: var(--ink); }
+.customer-name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-weight: 700;
+  a { color: var(--ink); text-decoration: none; }
+  a:hover { color: var(--red); }
+}
+.channel-chip {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #f0efec;
+  color: #4a4844;
+  font-size: 0.8rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.customer-meta { margin: 4px 0 0; font-size: 0.9rem; }
 .money-lines {
   display: grid;
   gap: 8px;
@@ -119,15 +163,20 @@
   div { display: flex; justify-content: space-between; gap: 16px; }
   dt { color: var(--muted); }
   dd { margin: 0; font-variant-numeric: tabular-nums; }
-  .strong dt, .strong dd { color: var(--ink); font-weight: 700; }
-  .due {
-    margin-top: 4px;
+  // The total is the largest figure; paid/due follow at normal size.
+  .total {
+    align-items: baseline;
+    margin: 4px 0 6px;
     padding-top: 10px;
     border-top: 1px solid var(--line);
-    font-size: 1.05rem;
-    font-weight: 750;
+    font-size: 1.25rem;
+    font-weight: 800;
   }
+  .total dt { color: var(--ink); }
+  .due { font-weight: 750; }
   .due dt { color: var(--ink); }
+  .due.owing dt, .due.owing dd { color: #9c5b0b; }
+  .due.settled dt { color: #24723f; }
 }
 .facts {
   display: grid;

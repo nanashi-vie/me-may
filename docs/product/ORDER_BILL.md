@@ -8,7 +8,8 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
 ## Header
 
 - Trái: "Đơn DH-…", badge trạng thái cùng màu danh sách (xám Nháp, xanh dương Đang keep,
-  cam Đang đóng gói, xanh lá Hoàn tất, đỏ Đã hủy/Đã hoàn đơn), "Tạo lúc …", Keep sách/Giao ngay.
+  cam Đang đóng gói, xanh lá Hoàn tất, đỏ Đã hủy/Đã hoàn đơn) và badge Thanh toán ngay cạnh
+  (mỗi badge có chấm màu), rồi "Tạo lúc …". Không còn dòng Keep sách/Giao ngay trên tiêu đề.
 - Phải: **Xuất bill** (chỉ chuyển sang tab Xuất bill; ẩn khi đơn chưa có sách hoặc Đã hủy),
   **1 nút chính** và menu **⋮**. Chọn nút hoặc mục ⋮ mở panel thao tác dưới header như cũ.
 
@@ -35,18 +36,21 @@ cột, tab Xuất bill). Phần mở rộng của [đơn nội bộ](ORDERS.md);
 
 2 cột (trái 2/3, phải 1/3); dưới 1024px còn 1 cột, không cuộn ngang trang.
 
-- **Trái:** Thông tin cơ bản (Mã đơn, Ngày tạo, Hình thức, Hạn keep khi Đang keep, Mã vận
-  đơn) · Sách trong đơn (ảnh bìa 40×53 cho sách website có ảnh FRONT, khung xám cho sách
-  ngoài; "n quyển · m g") · Thanh toán (badge, Nhận cọc/Hoàn tiền, Tiền sách, Phí ship hoặc
-  "Chưa chốt", Tổng/Tạm tính, Đã nhận, Còn thu/Cần hoàn/Đã thanh toán đủ) · Lịch sử thu/hoàn
-  luôn mở.
+- **Trái:** Thông tin cơ bản (Hình thức, Hạn keep chỉ với đơn Keep — ngày khi Đang keep,
+  "—" khi khác —, Mã vận đơn; mã đơn và ngày tạo chỉ ở header) · Sách trong đơn (nút nhỏ
+  "＋ Thêm sách" ở góc phải tiêu đề khi sửa được; ảnh bìa 40×53 cho sách website có ảnh FRONT,
+  khung xám cho sách ngoài; Sửa chữ thường, Xóa chữ đỏ; "n quyển · m g" căn phải dưới bảng) ·
+  Thanh toán (nút nhỏ Nhận cọc/Hoàn tiền ở góc phải tiêu đề; Tiền sách, Phí ship hoặc "Chưa
+  chốt"; **Tổng/Tạm tính** chữ to nhất có kẻ trên; Đã nhận; Còn thu (màu cảnh báo)/Cần hoàn/Đã
+  thanh toán đủ (xanh lá) đậm cỡ thường) · Lịch sử thu/hoàn luôn mở.
 - **Phải:** Thời gian giữ sách (Đang keep) hoặc dòng tóm tắt keep đã bàn giao · Khách hàng
-  (tên link hồ sơ, mã, SĐT, 1 kênh TikTok → Threads → Zalo) · Giao hàng ("Chưa chốt bill" +
+  (2 dòng không nhãn: tên đậm link hồ sơ không gạch chân + chip 1 kênh TikTok → Threads → Zalo;
+  "mã · SĐT" chữ mờ) · Giao hàng ("Chưa chốt bill" +
   "Xuất bill →", hoặc người nhận/SĐT/địa chỉ/J&T/cân/thanh toán ship/COD/mã vận đơn; lịch sử
   giao và hàng hoàn thu gọn; đơn đã mở lại ghi "Cần xuất lại bill cho đơn này.") · Lịch sử đơn (timeline) · Ghi chú/lịch sử xử lý (5 mới nhất,
   "Xem tất cả").
 
-| Badge Thanh toán (theo thứ tự) | |
+| Badge Thanh toán ở header (theo thứ tự) | |
 |---|---|
 | Đã hủy/Đã hoàn đơn, còn giữ tiền | đỏ "Còn giữ x" (không giữ thì không badge) |
 | Chưa nhận đồng nào | đỏ "Chưa cọc" |

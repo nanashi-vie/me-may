@@ -463,15 +463,35 @@ describe('OrderDetail', () => {
     expect(el.querySelector('.item-table img.cover')!.getAttribute('src')).toBe('/cover/1');
     expect(el.querySelectorAll('.item-table .cover.empty').length).toBe(1);
     const customer = text(el.querySelector('.customer-card'));
-    for (const part of ['Reader', 'KH-000007', '0909999999', 'TikTok: tt.reader']) expect(customer).toContain(part);
+    for (const part of ['Reader', 'KH-000007', '0909999999', 'TikTok · tt.reader']) expect(customer).toContain(part);
+    expect(el.querySelector('.customer-card .channel-chip')!.closest('.customer-name')).not.toBeNull();
+    expect(el.querySelector('.customer-card dt')).toBeNull();
     expect(text(el.querySelector('.delivery-card'))).toContain('Chưa chốt bill');
     buttonNamed(f, 'Xuất bill →')!.click();
     expect(c.tab()).toBe('bill');
     c.selectTab('detail');
     await settle(f);
-    expect(text(el.querySelector('.payment-card .badge'))).toBe('Chưa cọc');
+    expect(text(el.querySelector('.heading .payment-badge'))).toBe('Chưa cọc');
+    expect(el.querySelector('.payment-card .badge')).toBeNull();
+    expect(text(el.querySelector('.payment-card .money-lines .total'))).toContain('Tạm tính');
+    expect(text(el.querySelector('.payment-card .card-head'))).toContain('Nhận cọc');
+    expect(text(el.querySelector('.item-table')!.closest('.card')!.querySelector('.card-head'))).toContain('＋ Thêm sách');
+    expect(text(el.querySelector('.items-total'))).toContain('quyển');
+    const basics = text(el.querySelector('.basics'));
+    for (const gone of ['Mã đơn', 'Ngày tạo']) expect(basics).not.toContain(gone);
     expect(el.querySelector('table.ledger')!.closest('details')).toBeNull();
     expect(el.querySelector('app-order-timeline')).not.toBeNull();
+  });
+  it('shows the keep deadline only for keep orders', async () => {
+    const { f, c } = await setup();
+    const basics = () => text(f.nativeElement.querySelector('.basics'));
+    c.order.set(billable());
+    await settle(f);
+    expect(basics()).toContain('Hạn keep');
+    c.order.set(billable({ fulfillmentType: 'IMMEDIATE' }));
+    await settle(f);
+    expect(basics()).toContain('Giao ngay');
+    expect(basics()).not.toContain('Hạn keep');
   });
   it('labels a cancelled order apart from a closed return', async () => {
     const { f, c } = await setup();
