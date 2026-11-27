@@ -89,6 +89,14 @@ describe('OrderApi', () => {
     expect(result).toEqual({ id: '5', version: 3, status: 'KEEPING' });
     http.verify();
   });
+  it('sends a payment without a receipt part when there is no image', () => {
+    const { api, http } = setup();
+    api.recordPayment('5', { transactionType: 'DEPOSIT', amount: 1000, note: 'Tiền mặt', version: 2, requestId: 'r-2' }, null).subscribe();
+    http.expectOne('/api/v1/auth/csrf').flush({ token: 't', headerName: 'X-CSRF-TOKEN' });
+    const form = http.expectOne('/api/v1/admin/orders/5/payments').request.body as FormData;
+    expect(form.has('proof')).toBe(false);
+    http.verify();
+  });
   it('points receipt images at the private admin path', () => {
     const { api } = setup();
     expect(api.proofUrl('5', '9')).toBe('/api/v1/admin/orders/5/payments/9/proof');

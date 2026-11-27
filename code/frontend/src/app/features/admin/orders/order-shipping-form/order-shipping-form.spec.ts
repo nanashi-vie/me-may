@@ -5,6 +5,10 @@ describe('OrderShippingForm', () => {
   const order = (patch: object = {}, totals: object = {}) =>
     ({
       status: 'KEEPING',
+      items: [],
+      totalQuantity: 0,
+      customerNameSnapshot: 'Customer',
+      serverNow: '2026-11-27T01:00:00Z',
       recipientName: 'Reader',
       recipientPhone: '0901234567',
       shippingAddress: 'Test address',
@@ -91,7 +95,7 @@ describe('OrderShippingForm', () => {
     expect((await shown(order({ status: 'DRAFT' }))).c.mode).toBe('finalize');
     const t = await shown(order({ status: 'READY_TO_SHIP' }));
     expect(t.c.mode).toBe('shipping');
-    expect(t.f.nativeElement.querySelector('h2').textContent.trim()).toBe('Thông tin bill');
+    expect(t.f.nativeElement.querySelector('h2').textContent.trim()).toBe('Nội bộ · không gửi khách');
     expect(t.f.nativeElement.querySelector('dialog')).toBeNull();
   });
   it('only shows a completed or returned bill', async () => {
@@ -115,6 +119,35 @@ describe('OrderShippingForm', () => {
     expect(drafts.at(-1)).toMatchObject({ shippingFee: 45000 });
     expect(t.c.dirty()).toBe(true);
   });
+  it('edits the recipient and fee on the bill and names what is still missing', async () => {
+    const t = await shown(order({ recipientName: null, recipientPhone: null, shippingAddress: null, shippingFee: null, customerPhoneSnapshot: '0907777777' }));
+    const bill = t.f.nativeElement.querySelector('.bill') as HTMLElement;
+    expect((bill.querySelector('input[name=name]') as HTMLInputElement).value).toBe('Customer');
+    expect((bill.querySelector('input[name=phone]') as HTMLInputElement).value).toBe('0907777777');
+    expect(bill.querySelector('input[name=fee]')).not.toBeNull();
+    expect(t.c.dirty()).toBe(false);
+    expect(t.f.nativeElement.querySelector('.missing').textContent).toContain('địa chỉ, phí ship');
+    const modes = Array.from(t.f.nativeElement.querySelectorAll('.internal input[name=mode]') as NodeListOf<HTMLInputElement>, (r) => r.closest('label')!.textContent!.trim());
+    expect(modes).toEqual(['Người nhận thanh toán', 'Thanh toán cuối tháng']);
+  });
+  it('asks only the recipient for a pickup and charges no shipping', async () => {
+    const t = await shown(order({ shippingAddress: null, shippingFee: null, parcelWeightGrams: null }));
+    const el = t.f.nativeElement as HTMLElement;
+    expect(Array.from(el.querySelectorAll('.internal input[name=carrier]') as NodeListOf<HTMLInputElement>, (r) => r.value)).toEqual(['JNT', 'SPX', 'PICKUP']);
+    expect(t.c.model.shippingProvider).toBe('JNT');
+    t.c.chooseCarrier('PICKUP');
+    t.f.detectChanges();
+    expect(el.querySelector('.bill input[name=fee]')).toBeNull();
+    expect(el.querySelector('.bill textarea[name=address]')).toBeNull();
+    expect(el.querySelector('.bill-fee')!.textContent).toContain('Khách tự lấy');
+    for (const gone of ['weight', 'cod', 'mode']) expect(el.querySelector(`.internal [name=${gone}]`), gone).toBeNull();
+    expect(t.c.missing()).toEqual([]);
+    expect(t.c.valid()).toBe(true);
+    const sent: any[] = [];
+    t.c.saved.subscribe((b) => sent.push(b));
+    t.c.submit();
+    expect(sent[0]).toMatchObject({ shippingProvider: 'PICKUP', shippingFee: 0, codAmount: 0, parcelWeightGrams: null, customerPaymentMode: null });
+  });
   it('undoes back to the saved values', async () => {
     const t = await shown(order());
     const drafts: any[] = [];
@@ -135,14 +168,24 @@ describe('OrderShippingForm', () => {
     expect(t.c.model.shippingFee).toBe(12345);
     expect(t.c.dirty()).toBe(true);
   });
-  it('offers a deposit next to what was received', async () => {
-    const t = await shown(order());
+  it('leaves the money to the bill and offers a deposit only while monthly or pickup still owes', async () => {
+    const deposit = (t: any) =>
+      Array.from(t.f.nativeElement.querySelectorAll('.internal button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Nhận cọc');
+    let t = await shown(order());
+    expect(t.f.nativeElement.querySelector('.internal .notice')).toBeNull();
+    expect(t.f.nativeElement.querySelector('.internal').textContent).not.toContain('Đã nhận');
+    expect(deposit(t)).toBeUndefined();
+    t = await shown(order({ customerPaymentMode: 'MONTHLY' }));
+    expect(t.f.nativeElement.querySelector('.internal').textContent).toContain('Còn thiếu 200.000đ');
     const asked = vi.fn();
     t.c.paymentRequested.subscribe(asked);
-    const button = Array.from(t.f.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>).find((b) => b.textContent!.trim() === 'Nhận cọc')!;
-    expect(button.closest('.split-line')!.textContent).toContain('Đã nhận');
-    button.click();
+    deposit(t)!.click();
     expect(asked).toHaveBeenCalledOnce();
+    t = await shown(order({ shippingProvider: 'PICKUP', shippingFee: 0 }));
+    expect(t.f.nativeElement.querySelector('.internal').textContent).toContain('Còn thiếu 170.000đ');
+    expect(deposit(t)).toBeDefined();
+    t = await shown(order({ shippingProvider: 'PICKUP', shippingFee: 0 }, { paidAmount: 170000 }));
+    expect(deposit(t)).toBeUndefined();
   });
   it('turns read-only with the saved values when the order is finished elsewhere', async () => {
     const t = await shown(order({ status: 'READY_TO_SHIP' }));

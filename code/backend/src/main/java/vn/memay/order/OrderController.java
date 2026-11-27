@@ -39,8 +39,8 @@ public class OrderController {
  @PostMapping("/{id}/cancel") public MutationResult cancel(Authentication a,@PathVariable long id,@RequestBody JsonNode body){return keep.cancel(id,decode(body,ReasonRequest.class),actors.current(a));}
  @PostMapping(value="/{id}/payments",consumes=org.springframework.http.MediaType.MULTIPART_FORM_DATA_VALUE) public MutationResult pay(Authentication a,@PathVariable long id,@RequestPart("payment") String payment,@RequestParam(value="proof",required=false) List<org.springframework.web.multipart.MultipartFile> proof){
   var actor=actors.current(a);var request=decode(readTree(payment),PaymentRequest.class);
-  if(proof==null||proof.size()!=1)throw AdminApiException.field("proof","Chọn đúng 1 ảnh bill chuyển khoản");
-  try{return payments.record(id,request,proof.getFirst().getBytes(),actor);}catch(java.io.IOException e){throw new AdminApiException(400,"invalid_request");}
+  if(proof!=null&&proof.size()>1)throw AdminApiException.field("proof","Chọn đúng 1 ảnh bill chuyển khoản");
+  try{return payments.record(id,request,proof==null||proof.isEmpty()?null:proof.getFirst().getBytes(),actor);}catch(java.io.IOException e){throw new AdminApiException(400,"invalid_request");}
  }
  @GetMapping("/{id}/payments/{paymentId}/proof") public ResponseEntity<byte[]> proof(Authentication a,@PathVariable long id,@PathVariable long paymentId){
   var proof=payments.proof(id,paymentId,actors.current(a));

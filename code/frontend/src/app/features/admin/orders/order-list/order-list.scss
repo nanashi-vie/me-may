@@ -22,9 +22,30 @@
 .order-tabs a:hover {
   color: var(--ink);
 }
+// Tone per tab, from the status badge colours: text/underline when open, count pill always.
+.order-tabs a {
+  --tone: var(--red);
+  --tint: #fceae5;
+}
+.order-tabs a.tone-draft { --tone: #4a4844; --tint: #f0efec; }
+.order-tabs a.tone-keeping { --tone: #2166a3; --tint: #edf4fc; }
+.order-tabs a.tone-packing { --tone: #8a4b06; --tint: #fdf1e3; }
+.order-tabs a.tone-completed { --tone: #1d6b3a; --tint: #e8f5ec; }
+.order-tabs a.tone-closed { --tone: #a13f24; --tint: #fceae5; }
 .order-tabs a.active {
-  border-bottom-color: var(--action);
-  color: var(--red);
+  border-bottom-color: var(--tone);
+  color: var(--tone);
+}
+.order-tabs .count {
+  display: inline-block;
+  min-width: 1.6em;
+  margin-left: 2px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--tint);
+  color: var(--tone);
+  font-size: 0.85em;
+  text-align: center;
 }
 .order-tabs a:focus-visible,
 .order-subs button:focus-visible {

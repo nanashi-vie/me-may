@@ -143,6 +143,13 @@ export async function handleWorkerRequest(
     }
     return finish(response, cacheable ? 'MISS' : 'BYPASS');
   };
+  const backendUnavailable = (upstreamStatus: number) =>
+    noStore(
+      Response.json(
+        { error: 'backend_unavailable', upstreamStatus },
+        { status: 503, headers: { 'Retry-After': '300' } },
+      ),
+    );
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     try {
       const target = new URL(origins.MEMAY_API_ORIGIN);
@@ -161,6 +168,9 @@ export async function handleWorkerRequest(
         redirect: 'manual',
         signal: AbortSignal.timeout(70000),
       });
+      // Cloudflare answers an unreachable tunnel origin with 530/52x as a normal response.
+      if ([502, 504, 520, 521, 522, 523, 524, 530].includes(response.status))
+        return backendUnavailable(response.status);
       if (media && response.ok && response.headers.get('X-Memay-Public-Cache') === '30') {
         const headers = new Headers(response.headers);
         headers.set(
@@ -187,7 +197,7 @@ export async function handleWorkerRequest(
         return response;
       return noStore(response);
     } catch {
-      return noStore(Response.json({ error: 'backend_unavailable' }, { status: 503 }));
+      return backendUnavailable(0);
     }
   }
   if (!['GET', 'HEAD'].includes(request.method)) {

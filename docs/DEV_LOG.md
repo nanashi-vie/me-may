@@ -5539,3 +5539,63 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **Quyết định**: mốc Chốt đơn của đơn hủy lấy lần giao mới nhất bất kể trạng thái (hủy làm lần giao thành ABORTED) — theo spec "giữ các mốc đã qua".
 - **Kiểm tra**: mỗi mục có test đỏ trước rồi xanh. Frontend `npm test` 610/610, build đạt; backend test đơn hàng 123 đạt trên PostgreSQL tạm, `verify` đầy đủ ghi ở dòng dưới.
 - **Kết quả verify**: backend `verify` 467 test (3 skip) đạt. Đã xóa container PostgreSQL tạm. Commit trên `dev`, chưa push.
+
+### 2026-11-27 — CI-DOKPLOY-403-01 — Sửa dứt điểm lỗi HTTP 403 khi GitHub Actions trigger Dokploy
+
+- **Mục tiêu & phạm vi**: điều tra và sửa lỗi `curl: (22) The requested URL returned error: 403` ở job `deploy` (`Trigger Dokploy deployment`) của `.github/workflows/publish-backend.yml` tại run `#95` (`Merge pull request #65 from nanashi-vie/dev`). Chỉ cập nhật tài liệu vận hành; không sửa code sản phẩm hay workflow trong phiên này.
+- **Nguyên nhân gốc đã xác minh**:
+  - `dokploy.memaybooks.com` trên Cloudflare Zero Trust đã có sẵn policy `github actions` kiểu `Service Auth` (cùng policy `Allow Me May Admin` kiểu `Allow`), nhưng `Access authentication logs` (24 giờ) hoàn toàn trống đối với request từ GitHub Actions.
+  - Trên zone `memaybooks.com` (gói Cloudflare Free), công tắc **Bot Fight Mode** đang bật. Bot Fight Mode gói Free áp toàn zone (gồm cả `dokploy.memaybooks.com`), chạy **trước** Cloudflare Zero Trust Access và không hỗ trợ ngoại lệ (Skip) qua Custom WAF Rule → chặn `curl` từ IP datacenter của GitHub Actions bằng `403` trước khi request tới Access.
+  - Ngoài ra, `.github/workflows/publish-backend.yml` đang dùng `curl --fail --output /dev/null` khiến lệnh thoát mã `22` trước khối `case "$status"` và nuốt toàn bộ response header/body chẩn đoán (ghi nhận để cải thiện sau nếu cần).
+- **Thay đổi hạ tầng & tài liệu**:
+  - Hạ tầng (owner thao tác trên Cloudflare Dashboard): tắt **Bot Fight Mode** trên zone `memaybooks.com` (vẫn giữ nguyên bảo vệ Cloudflare Zero Trust Access `Allow` + `Service Auth` và `x-api-key` trên `dokploy.memaybooks.com`).
+  - Tài liệu: cập nhật `docs/DEV_LOG.md`, `docs/PROGRESS.md`, `docs/runbooks/DEPLOYMENT.md`.
+- **Kiểm tra đã chạy**:
+  - Owner bấm **Re-run failed jobs** cho run `#95` (`Publish Me May Backend`) sau khi tắt Bot Fight Mode: job `deploy` xanh trong 4 giây (`Dokploy accepted the deployment request; check deployment logs for completion.`) và Dokploy đã tạo deployment mới.
+  - Chưa chạy test/build code ứng dụng vì không sửa code.
+- **Còn mở & bước tiếp theo**:
+  - Đã commit và push tài liệu lên `origin/dev`; dọn các branch/worktree local cũ đã gộp vào `dev`.
+  - Tùy chọn sau: gỡ `--fail` và in metadata chẩn đoán an toàn (không lộ secret) trong `.github/workflows/publish-backend.yml`.
+- **Bổ sung redirect `www` (27/11)**:
+  - Owner đã cấu hình DNS `AAAA www → 100::` (Proxied) và Cloudflare Redirect Rule `www.memaybooks.com` → `https://memaybooks.com` (Dynamic `concat("https://memaybooks.com", http.request.uri.path)`, status `301`, Preserve query string). Không sửa code/Worker, không dùng wildcard `*`.
+  - Kiểm tra thực tế qua Cloudflare edge (`104.21.72.192`, `@1.1.1.1`, NS `vera.ns.cloudflare.com`): `http://www.memaybooks.com/` → `301` `https://memaybooks.com/`; `https://www.memaybooks.com/` → `301` `https://memaybooks.com/`; `https://www.memaybooks.com/sach?page=2&q=test` → `301` `https://memaybooks.com/sach?page=2&q=test`; `https://memaybooks.com/` vẫn `200`. (Resolver máy local có thể giữ cache NXDOMAIN cũ vài phút nếu vừa tra trước đó.)
+
+### 2026-11-27 — ORDER-DETAIL-TIDY-01 — Gọn trang chi tiết đơn
+
+- **Yêu cầu owner (qua grill-me, chốt Q1–Q12)**: badge thanh toán lên header cạnh badge trạng thái (chấm màu, bỏ khỏi card); Tổng/Tạm tính to nhất, Còn thu đậm cỡ thường (cảnh báo/xanh lá); card thông tin bỏ Mã đơn/Ngày tạo, Hạn keep chỉ đơn Keep; bỏ dòng Keep sách/Giao ngay trên tiêu đề; Khách hàng 2 dòng (tên không gạch chân + chip kênh, "mã · SĐT"); "＋ Thêm sách" nhỏ lên tiêu đề, "n quyển · m g" xuống dưới bảng; Nhận cọc/Hoàn tiền nhỏ lên tiêu đề card; Sửa chữ thường, Xóa đỏ. Seed đơn mẫu lên DB local cho owner xem.
+- **File**: `order-detail.html/.scss/.spec.ts`; `product/ORDER_BILL.md`, `verification/ORDER_VERIFICATION.md`, PROGRESS, DEV_LOG. Chỉ frontend, không migration.
+- **Kiểm tra**: `npm test` 611/611, `npm run build` đạt; trình duyệt 1440px trên 4 đơn mẫu, chi tiết ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#gọn-trang-chi-tiết-đơn--27112026).
+- **Dữ liệu local**: tạo OWNER thử `seed-owner@memay.local` (mật khẩu ngẫu nhiên, không ghi log) trên `me_may_dev`; script trong scratchpad (không commit) gọi API admin, chỉ thêm: 4 khách + 4 đơn `[Mẫu]` DH-000010 (Keep, cọc 50.000đ; một lần cọc trùng do chạy lại đã vô hiệu), 011 (Giao ngay, chốt bill, trả đủ, bàn giao, mã vận đơn MAU123456789), 012 (Nháp, chưa cọc, khách không SĐT/kênh), 013 (Đã hủy, còn giữ 70.000đ). Đơn 010/011 trừ tồn 3 sách website thử (MM-000010…012).
+- **Môi trường**: backend 8080 của owner chạy từ 25/11 (cũ hơn V39 và các field chi tiết đơn), không được phép dừng nên chạy thêm backend 18080 (`MEMAY_IMAGE_ROOT=.local/hero-banners/images`, vì mặc định `/srv` chỉ đọc trên macOS) và `ng serve` 4210 proxy tới 18080; cấu hình ở `.claude/launch.json` (Git bỏ qua).
+- **Commit `6ab38a0`**. Sau đó owner yêu cầu sửa luôn lỗi có từ trước: đơn Đã hủy hiện "Còn thu" (tiền sách − đã nhận). `dueAmount` trả `0 − đã nhận` cho đơn Đã hủy → "Cần hoàn x" khớp badge "Còn giữ x"; không giữ tiền thì "Không còn giữ tiền". Test đỏ trước (view + trang); `npm test` 613/613, build đạt; DH-000013 hiện "Cần hoàn 70.000đ".
+- **Còn mở**: chưa kiểm <1024px. Backend 18080 và `ng serve` 4210 vẫn chạy để owner xem (dừng trong Browser pane hoặc khi xong). Commit trên `dev`, chưa push.
+
+### 2026-11-27 — ORDER-BILL-INLINE-01 — Màu tab danh sách đơn và bill sửa trực tiếp
+
+- **Yêu cầu owner (grill-me Q1–Q10)**: tab danh sách mang màu nhãn (chữ xám + số đếm viên màu; tab mở chữ/gạch màu nhãn); gộp form Xuất bill vào bill: Người nhận/SĐT/Địa chỉ/Phí ship sửa ngay trên bill, phần "Nội bộ · không gửi khách" giữ 2 nút chọn Người nhận thanh toán / Thanh toán cuối tháng (giữ nhãn, không thêm mô tả; vẫn lưu RECIPIENT/MONTHLY cho file J&T), cân, COD, tiền, Còn thiếu, Lưu.
+- **Thiết kế**: `OrderBill` thêm 2 khe `ng-content` (`[billContact]` trang 1, `[billFee]` trang cuối) có nội dung dự phòng là chữ cũ; `OrderShippingForm` chứa bill và chiếu ô nhập vào khe; trang chi tiết bỏ lưới 2 cột và `billDraft`. Bill đổi "Khách: tên khách" → "Người nhận" (theo Q2). Form điền sẵn người nhận/SĐT từ hồ sơ khi đơn chưa có (trước đây bill tự lấy SĐT hồ sơ nhưng ô form trống). Không đổi backend.
+- **File**: `order-list.{ts,html,scss,spec}`, `order-bill.{ts,html,scss,spec}`, `order-shipping-form.{ts,html,spec}` + `order-shipping-form.scss` mới, `order-detail.{ts,html,scss,spec}`; ORDER_BILL, ORDERS, ORDER_VERIFICATION, PROGRESS, DEV_LOG.
+- **Kiểm tra**: `npm test` 614/614, build đạt; trình duyệt 1440px trên đơn mẫu, chi tiết ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#màu-tab-danh-sách-và-bill-sửa-trực-tiếp--27112026). Test mới viết cùng lúc với code (không đỏ trước), test cũ sửa theo bố cục mới. Đã dừng server tạm 18080/4210.
+- **Còn mở**: chưa kiểm <1024px và bill nhiều trang trên trình duyệt. Commit trên `dev`, chưa push.
+
+### 2026-11-27 — ORDER-BILL-BRAND-01 — Logo và bảng 5 cột trên bill gửi khách
+
+- **Yêu cầu owner (grill-me)**: logo tròn cạnh tên shop; bảng STT · Tên sách · SL · Đơn giá · Thành tiền tiêu đề đậm (STT liên tục qua trang); Tiền sách bỏ "n quyển"; "Tổng bill" → "Tổng tiền"; giữ Tạm tính/Đã thanh toán đủ/Tiền thừa, 12 dòng/trang. **QR chuyển khoản hoãn**: repo GitHub công khai nên khi làm lại owner chọn commit ảnh vào `public/` hay đặt file riêng `MEMAY_IMAGE_ROOT/private/` phục vụ qua API chỉ OWNER.
+- **File**: `order-bill.{html,ts,scss,spec}`, `order-detail.spec.ts`; ORDER_BILL, ORDER_VERIFICATION, DEV_LOG. Chỉ frontend; logo dùng `public/favicon/web-app-manifest-192x192.png` có sẵn.
+- **Kiểm tra**: 8 test đỏ trước rồi xanh; `npm test` 614/614, build đạt; trình duyệt 1440px DH-000010. Đã dừng server tạm. Commit trên `dev`, chưa push.
+
+### 2026-11-27 — ORDER-CARRIER-01 — J&T / Shopee Express / Khách tự lấy, kiểm mã vận đơn, nhận tiền không ảnh
+
+- **Yêu cầu owner (grill-me Q1–Q10)**: chọn hãng ở phần Nội bộ tab Xuất bill (J&T mặc định), hộp bàn giao đổi được J&T↔Shopee Express (không sang/từ Khách tự lấy); Shopee Express cùng luật J&T; Khách tự lấy bỏ địa chỉ/cân/phí/COD, chỉ bàn giao khi đã đủ tiền; mã vận đơn bỏ khoảng trắng, in hoa, 8–30 chữ/số, không trùng đơn khác; sửa mã đổi được hãng. **Owner đổi giữa chừng**: bỏ kiểu Tiền mặt, thay bằng tick "Chuyển khoản không có ảnh bill" + ghi chú lý do bắt buộc.
+- **Backend**: V40 (`shipping_provider` "J&T"→JNT, CHECK JNT/SPX/PICKUP, chỉ mục mã vận đơn); `ShippingRequest`/`ShipRequest` thêm `shippingProvider` (constructor cũ giữ); `OrderShippingService` nhánh PICKUP, `tracking()` chuẩn hóa, `uniqueTracking` kiểm cả đơn khác, snapshot ghi hãng thật; `OrderPaymentService` cho thiếu ảnh khi có ghi chú; controller nhận 0–1 file. Test cũ dùng "TRACK-ONE" đổi sang mã hợp lệ; `OrderPaymentProofApiTest` thêm ca không ảnh có ghi chú.
+- **Frontend**: `CARRIER_LABELS`/`carrierOf`; form bill chọn hãng + nhánh tự lấy; hộp bàn giao/sửa mã có nút hãng; nhãn nút/timeline/card theo hãng; Nhận cọc có tick không ảnh. Lỗi gặp khi làm: 3 radio cùng `name` dùng chung một control `ngModel` nên `[disabled]` khóa cả ba → dùng `[attr.disabled]`; `required` động trên ô ghi chú gây NG0100 → nút Xác nhận tự khóa theo điều kiện thay cho `required`.
+- **Kiểm tra**: xem [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#hãng-vận-chuyển-mã-vận-đơn-và-nhận-tiền-không-ảnh--27112026). DB local thêm DH-000014 (Shopee Express, đang đóng gói) và DH-000015 (Khách tự lấy, đã nhận đủ không ảnh) qua API; V40 đã chạy trên `me_may_dev` qua backend tạm 18080.
+- **Còn mở**: backend 8080 của owner vẫn chạy code 25/11 nên chưa thấy tính năng mới; rollout V40 backend trước frontend theo [ROLLOUT_CHECKS](runbooks/ROLLOUT_CHECKS.md#hãng-vận-chuyển-và-mã-vận-đơn-v40). Commit trên `dev`, chưa push.
+- **Bổ sung (owner duyệt 27/11)**: phần Nội bộ tab Xuất bill bỏ khối Đã nhận / Còn thu (±) và link Nhận cọc vì trùng bill; giữ "Còn thiếu X · Nhận cọc" cho Thanh toán cuối tháng và thêm cho Khách tự lấy khi còn thiếu. Bỏ hàm `received()` không còn dùng. Test đỏ trước rồi xanh; `npm test` 620/620, build đạt. Chưa xem lại trên trình duyệt.
+
+### 2026-11-27 — OUTAGE-NOTICE-01 — Thông báo khi máy chủ không phản hồi
+
+- **Yêu cầu owner (grill-me 2 vòng)**: Dell mất điện → Cloudflare 530; muốn trang thông báo cho khách/admin. Chốt: public thay cả trang (giọng ấm, đám mây ngủ SVG, bỏ chồng sách theo duyệt bản xem trước), nút "Liên hệ với tiệm" → `zalo.me/0703260005`, mô tả "Hệ thống Mẹ Mây đang được bảo trì. Tiệm sẽ mở lại sớm", "Thử lại ngay" không gạch chân, tự kiểm 30 giây; 503 + Retry-After + noindex; admin banner + sửa guard; chỉ tự phát hiện; uptime monitor tách việc sau.
+- **File**: mới `core/outage/{backend-status,outage-page,admin-outage-banner}.ts`, `outage-page.scss`, spec `backend-status`, `outage-page`, `app.outage`; sửa `app.ts/html`, `app.config.ts` (interceptor), `auth.guard.ts`, `auth.service.ts` (không xóa phiên khi outage), `worker-runtime.ts` (+spec); tài liệu `product/OUTAGE.md` (mới, vì DESIGN.md đã 400 dòng), README, DECISIONS, PROGRESS, DEV_LOG.
+- **Kiểm tra**: `npm test` 632/632; `npm run build:workers` + `wrangler dev` với origin giả trả 530 (cổng 18999, script trong scratchpad, không commit): API 503 JSON `upstreamStatus: 530`, trang public 503/noindex/no-store, tự tải lại sau khi origin sống, admin giữ trang có banner. Chi tiết ở [OUTAGE](product/OUTAGE.md#kiểm-chứng-27112026). Test viết sau code, không chạy đỏ trước. Đã dừng server tạm; backend 8080 của owner không đụng.
+- **Còn mở**: chưa kiểm môi trường thật và Safari iPhone; trang đăng nhập chỉ hiện banner sau lần gửi đầu tiên. Commit trên `dev`.

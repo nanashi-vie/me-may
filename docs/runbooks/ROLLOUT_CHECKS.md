@@ -49,5 +49,13 @@ revision backend/frontend, image digest, tên môi trường và phiên bản Fl
    từ chối. Smoke: Nhận cọc có ảnh, xem ảnh (OWNER 200, STAFF 403), Hoàn tiền, VOID,
    Hoàn đơn từ Hoàn tất, sáu tab và menu ⋮. Rollback code không đảo được V39.
 
+## Hãng vận chuyển và mã vận đơn V40
+
+1. Trước V40: backup DB; đếm `orders` theo `shipping_provider` (dự kiến toàn "J&T"). V40 đổi
+   "J&T" thành JNT, thêm ràng buộc JNT/SPX/PICKUP và chỉ mục `order_shipments.tracking_code`.
+2. Backend trước, frontend ngay sau. Smoke: chốt bill Shopee Express và Khách tự lấy, Nhận cọc
+   không ảnh có lý do, bàn giao tự lấy khi đã đủ tiền, mã "hi" bị từ chối, mã trùng đơn khác bị
+   từ chối, sửa mã đổi J&T→Shopee Express. Rollback code không đảo V40 (giá trị JNT).
+
 [Contract đơn](../product/ORDERS.md) · [Runbook triển khai](DEPLOYMENT.md) ·
 [Khôi phục media](IMAGE_OPERATIONS.md).

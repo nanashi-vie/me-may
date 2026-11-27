@@ -160,6 +160,8 @@ export interface OrderDetail extends Omit<OrderSummary, 'keepWarning'> {
   customerPaymentMode?: CustomerPaymentMode | null;
   shippingPaymentType: ShippingPaymentType;
   trackingCode: string | null;
+  /** JNT, SPX or PICKUP; orders saved before 27/11/2026 may still say "J&T". */
+  shippingProvider?: string | null;
   items: OrderItem[];
   payments: OrderPayment[];
   shipments: Shipment[];
@@ -249,6 +251,15 @@ export const statusLabel = (o: { status: OrderStatus; returned?: boolean; return
 /** Badge colour class shared by the list and the detail page. */
 export const statusTone = (o: { status: OrderStatus }) =>
   o.status === 'READY_TO_SHIP' ? 'packing' : o.status === 'CANCELLED' ? 'closed' : o.status.toLowerCase();
+export type Carrier = 'JNT' | 'SPX' | 'PICKUP';
+export const CARRIER_LABELS: Record<Carrier, string> = {
+  JNT: 'J&T Express',
+  SPX: 'Shopee Express',
+  PICKUP: 'Khách tự lấy',
+};
+/** The order's carrier; older orders without one, or saved as "J&T", ship with J&T. */
+export const carrierOf = (value: string | null | undefined): Carrier =>
+  value === 'SPX' || value === 'PICKUP' ? value : 'JNT';
 export const CHANNEL_LABELS = { TIKTOK: 'TikTok', THREADS: 'Threads', ZALO: 'Zalo' } as const;
 export const WARNING_LABELS: Record<string, string> = {
   SOON: 'Sắp hết hạn',

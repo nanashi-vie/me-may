@@ -38,8 +38,11 @@ service production vẫn theo branch `main`, không tự đổi deployment sang 
   pull nếu private; runner GitHub cần truy cập được API Dokploy qua HTTPS.
 - POST `/api/application.deploy` chỉ xác nhận enqueue2xx, không chứng minh deploy
   đã xong; kiểm deployment logs, image digest và health sau đó. Không tự retry POST.
-- Chưa xác minh secrets/live deployment. Frontend deploy Cloudflare riêng; bật
-  Trước rollout, kiểm cả hai secret Cloudflare Access mà workflow gửi tới Dokploy.
+- Đã xác minh trigger live trên `main` run `#95` (27/11/2026) sau khi tắt **Bot Fight Mode**
+  (gói Cloudflare Free) trên zone `memaybooks.com`: tính năng này chạy toàn zone
+  trước Zero Trust Access và không skip được bằng Custom WAF Rule nên gây `HTTP 403`
+  cho GitHub Actions. Nếu cần chặn bot trang bán hàng, dùng Custom WAF Rule khoanh
+  riêng `memaybooks.com` (chừa `dokploy.memaybooks.com`). Frontend deploy Cloudflare riêng.
 - Nguồn: [Dokploy external registry/API](https://docs.dokploy.com/docs/core/applications/going-production#external-registry).
 
 ## 1. Cloudflare Workers Git integration
@@ -55,6 +58,9 @@ service production vẫn theo branch `main`, không tự đổi deployment sang 
 Worker production dùng Custom Domain `memaybooks.com` và đặt
 `MEMAY_SITE_ORIGIN=https://memaybooks.com` cho SSR, canonical, Open Graph và link hỏi
 sách. Route production trên `workers.dev` được tắt khi deploy cấu hình này.
+`www.memaybooks.com` cấu hình DNS `AAAA → 100::` (Proxied) + Cloudflare Redirect Rule
+`301` sang `https://memaybooks.com` (giữ path và query string, đã xác minh 27/11/2026);
+không trỏ `www` hay wildcard `*` vào Worker.
 Trình duyệt gọi `/api` cùng origin, Worker chuyển tiếp sang API homelab qua
 `MEMAY_API_ORIGIN`. Forwarded headers bị bỏ trước Angular và Worker kiểm tra
 request khớp origin đã cấu hình.

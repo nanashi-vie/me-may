@@ -1,106 +1,171 @@
 @if (loaded()) {
-    @if (locked() && error()) {
-      <div class="notice" role="alert">
-        <p>{{ error() }}</p>
-        <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
-      </div>
-    }
-    @if (conflict()) {
-      <div class="notice" role="alert">
-        <p>Dữ liệu đơn đã đổi. Tải lại bản mới để tiếp tục; nội dung đang nhập được giữ lại.</p>
-        <button
-          type="button"
-          class="secondary"
-          [disabled]="refreshing()"
-          (click)="refreshRequested.emit()"
-        >
-          Tải lại dữ liệu đơn
-        </button>
-      </div>
-    }
-    <form
-      (ngSubmit)="submit()"
-      #form="ngForm"
-      aria-labelledby="shipping-title"
-      (input)="emitChange()"
-      (change)="emitChange()"
-    >
-      <fieldset [disabled]="locked() || refreshing() || readOnly()">
-        <header class="heading">
-          <h2 id="shipping-title">Thông tin bill</h2>
-        </header>
-        @if (error()) {
-          <p class="error" role="alert">{{ error() }}</p>
-        }
-        <div class="grid">
-          <label
-            ><span>Người nhận *</span
-            ><input name="name" required maxlength="150" [(ngModel)]="model.recipientName" /></label
-          ><label
-            ><span>Số điện thoại *</span
-            ><input
-              name="phone"
-              type="tel"
-              required
-              maxlength="20"
-              [(ngModel)]="model.recipientPhone" /></label
-          ><label class="full"
-            ><span>Địa chỉ nhận *</span
-            ><textarea
-              name="address"
-              required
-              maxlength="500"
-              [(ngModel)]="model.shippingAddress"
-            ></textarea>
-          </label>
+  @if (locked() && error()) {
+    <div class="notice" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
+    </div>
+  }
+  @if (conflict()) {
+    <div class="notice" role="alert">
+      <p>Dữ liệu đơn đã đổi. Tải lại bản mới để tiếp tục; nội dung đang nhập được giữ lại.</p>
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="refreshing()"
+        (click)="refreshRequested.emit()"
+      >
+        Tải lại dữ liệu đơn
+      </button>
+    </div>
+  }
+  <form
+    (ngSubmit)="submit()"
+    #form="ngForm"
+    aria-label="Xuất bill"
+    (input)="emitChange()"
+    (change)="emitChange()"
+  >
+    <fieldset [disabled]="locked() || refreshing() || readOnly()">
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      @if (current(); as o) {
+        <app-order-bill [order]="o" [draft]="draft()" [dirty]="dirty()">
+          <div billContact class="bill-contact">
             <label
-              ><span>Phí ship khách trả (VNĐ) *</span
+              ><span>Người nhận:</span
               ><input
-                appVndInput
-                name="fee"
+                name="name"
                 required
-                [(ngModel)]="model.shippingFee"
-                (ngModelChange)="suggestCod()"
+                maxlength="150"
+                placeholder="Nhập tên người nhận"
+                [(ngModel)]="model.recipientName" /></label
+            ><label
+              ><span>SĐT:</span
+              ><input
+                name="phone"
+                type="tel"
+                required
+                maxlength="20"
+                placeholder="Nhập SĐT"
+                [(ngModel)]="model.recipientPhone"
             /></label>
-          <label
-            >Phương thức thanh toán
-            <select
-              name="mode"
-              [(ngModel)]="model.customerPaymentMode"
-              (ngModelChange)="manualCod = false; suggestCod()"
-            >
-              <option [ngValue]="null" disabled>Chọn phương thức</option>
-              <option value="RECIPIENT">Người nhận thanh toán</option>
-              <option value="MONTHLY">Thanh toán cuối tháng</option>
-            </select>
-          </label>
-          <label
-            ><span>Trọng lượng sau đóng gói (gram) *</span
-            ><input
-              type="number"
-              min="1"
-              step="1"
-              name="weight"
-              required
-              [(ngModel)]="model.parcelWeightGrams"
-              (ngModelChange)="manualWeight = true; model.parcelWeightConfirmed = false"
-            />
-            @if (weightHint(); as hint) {
-              <small>{{ hint }}</small>
+            @if (!pickup()) {
+              <label
+                ><span>Địa chỉ:</span
+                ><textarea
+                  name="address"
+                  required
+                  maxlength="500"
+                  rows="2"
+                  placeholder="Nhập địa chỉ nhận"
+                  [(ngModel)]="model.shippingAddress"
+                ></textarea>
+              </label>
+            }
+          </div>
+          <label billFee class="split bill-fee"
+            ><span>Phí ship</span>
+            @if (pickup()) {
+              <span>Khách tự lấy</span>
+            } @else {
+              <span class="fee-field">
+                @if (model.shippingFee === 0) {
+                  <small>Miễn phí</small>
+                }
+                <input
+                  appVndInput
+                  name="fee"
+                  required
+                  placeholder="nhập phí"
+                  aria-label="Phí ship khách trả (VNĐ)"
+                  [(ngModel)]="model.shippingFee"
+                  (ngModelChange)="suggestCod()"
+                />
+                @if (model.shippingFee !== null) {
+                  đ
+                }
+              </span>
             }
           </label>
-          @if (model.customerPaymentMode === 'RECIPIENT') {
+        </app-order-bill>
+      }
+      <section class="internal" aria-labelledby="internal-title">
+        <h2 id="internal-title">Nội bộ · không gửi khách</h2>
+        <fieldset class="modes carriers">
+          <legend>Giao hàng</legend>
+          @for (c of carriers; track c[0]) {
             <label
-              >Tiền thu hộ COD (VNĐ) *
-              <input
-                appVndInput
-                name="cod"
+              ><input
+                type="radio"
+                name="carrier"
+                [value]="c[0]"
+                [checked]="model.shippingProvider === c[0]"
+                (change)="chooseCarrier(c[0])"
+              />{{ c[1] }}</label
+            >
+          }
+        </fieldset>
+        @if (!pickup()) {
+          <div class="grid">
+            <fieldset class="modes full">
+              <legend>Phương thức thanh toán</legend>
+              <label
+                ><input
+                  type="radio"
+                  name="mode"
+                  value="RECIPIENT"
+                  [(ngModel)]="model.customerPaymentMode"
+                  (ngModelChange)="manualCod = false; suggestCod()"
+                />Người nhận thanh toán</label
+              ><label
+                ><input
+                  type="radio"
+                  name="mode"
+                  value="MONTHLY"
+                  [(ngModel)]="model.customerPaymentMode"
+                  (ngModelChange)="manualCod = false; suggestCod()"
+                />Thanh toán cuối tháng</label
+              >
+            </fieldset>
+            <label
+              ><span>Trọng lượng sau đóng gói (gram) *</span
+              ><input
+                type="number"
+                min="1"
+                step="1"
+                name="weight"
                 required
-                [(ngModel)]="model.codAmount"
-                (ngModelChange)="manualCod = true"
+                [(ngModel)]="model.parcelWeightGrams"
+                (ngModelChange)="manualWeight = true; model.parcelWeightConfirmed = false"
               />
+              @if (weightHint(); as hint) {
+                <small>{{ hint }}</small>
+              }
             </label>
-          } @else if ((balance() ?? 0) > 0 && !readOnly()) {
+            @if (model.customerPaymentMode === 'RECIPIENT') {
+              <label
+                >Tiền thu hộ COD (VNĐ) *
+                <input
+                  appVndInput
+                  name="cod"
+                  required
+                  [(ngModel)]="model.codAmount"
+                  (ngModelChange)="manualCod = true"
+                />
+              </label>
+            } @else if ((balance() ?? 0) > 0 && !readOnly()) {
+              <p>
+                Còn thiếu {{ money(balance()) }}.
+                <button type="button" class="secondary" (click)="paymentRequested.emit()">
+                  Nhận cọc
+                </button>
+              </p>
+            }
+          </div>
+        } @else {
+          <p class="muted">Khách lấy tại tiệm: cần thanh toán đủ trước khi giao.</p>
+          @if ((balance() ?? 0) > 0 && !readOnly()) {
             <p>
               Còn thiếu {{ money(balance()) }}.
               <button type="button" class="secondary" (click)="paymentRequested.emit()">
@@ -108,31 +173,16 @@
               </button>
             </p>
           }
-        </div>
-        <div class="notice">
-          <p class="split-line">
-            <span>Tổng bill gồm tiền hàng + ship</span><strong>{{ money(billTotal()) }}</strong>
-          </p>
-          <p class="split-line">
-            <span
-              >Đã nhận
-              @if (!readOnly()) {
-                <button type="button" class="text-button" (click)="paymentRequested.emit()">
-                  Nhận cọc
-                </button>
-              }</span
-            ><strong>{{ money(received()) }}</strong>
-          </p>
-          <p class="split-line">
-            <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
-          </p>
-        </div>
+        }
         @if (reviewRequired && !readOnly()) {
           <button type="button" class="secondary" (click)="reviewRequired = false">
             Đã kiểm tra lại COD và cân nặng
           </button>
         }
         @if (!readOnly()) {
+          @if (missing().length) {
+            <p class="missing">Còn thiếu: {{ missing().join(', ') }}</p>
+          }
           <footer class="form-footer">
             @if (dirty()) {
               <button type="button" class="secondary" (click)="undo()">Hoàn tác</button>
@@ -140,6 +190,7 @@
             <button class="primary" [disabled]="!valid() || form.invalid">Lưu bill</button>
           </footer>
         }
-      </fieldset>
-    </form>
+      </section>
+    </fieldset>
+  </form>
 }

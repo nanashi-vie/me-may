@@ -99,6 +99,8 @@ describe('order detail view', () => {
     ]);
     expect(timeline(cases['draftNow']).map((s) => s.key)).toEqual(['created', 'finalized', 'completed']);
     expect(timeline(cases['keeping'])[1]).toMatchObject({ done: true, at: '2026-11-01T02:00:00Z', label: 'Bắt đầu keep' });
+    const pickedUp = { ...cases['keeping'], shippingProvider: 'PICKUP' } as OrderDetail;
+    expect(timeline(pickedUp).find((s) => s.key === 'completed')!.label).toBe('Khách đã lấy · Hoàn tất');
   });
 
   it('greys finalizing after a reopen and dates it by the newest bill', () => {
@@ -158,6 +160,10 @@ describe('order detail view', () => {
     expect(
       dueAmount(order({ status: 'READY_TO_SHIP', shipments: [ship(1, 'PLANNED')], totals: totals(200000, 50000, 180000) })),
     ).toBe(180000);
+  });
+  it('owes nothing on a cancelled order: whatever is still held is to refund', () => {
+    expect(dueAmount(order({ status: 'CANCELLED', totals: totals(150000, 70000) }))).toBe(-70000);
+    expect(dueAmount(order({ status: 'CANCELLED', totals: totals(150000, 0) }))).toBe(0);
   });
   it('keeps finalizing on a cancelled order whose bill was aborted by the cancellation', () => {
     const d = order({ status: 'CANCELLED', cancelledAt: '2026-11-05T01:00:00Z', shipments: [ship(2, 'ABORTED')] });

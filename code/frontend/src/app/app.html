@@ -1,1 +1,8 @@
-<router-outlet />
+@if (publicOutage()) {
+  <app-outage-page />
+} @else {
+  @if (adminView()) {
+    <app-admin-outage-banner />
+  }
+  <router-outlet />
+}

@@ -35,8 +35,10 @@ import {
   statusLabel,
   statusTone,
   CHANNEL_LABELS,
+  CARRIER_LABELS,
+  Carrier,
+  carrierOf,
 } from '../order-models';
-import { OrderBill } from '../order-bill/order-bill';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
@@ -86,7 +88,6 @@ type Panel =
     RouterLink,
     VndInput,
     CustomerForm,
-    OrderBill,
     OrderItemForm,
     OrderShippingForm,
     OrderTimeline,
@@ -144,6 +145,15 @@ export class OrderDetailPage {
   }
   readonly statusTone = statusTone;
   readonly channelLabels = CHANNEL_LABELS;
+  readonly carrierLabels = CARRIER_LABELS;
+  readonly carriers = Object.entries(CARRIER_LABELS) as [Carrier, string][];
+  readonly carrierOf = carrierOf;
+  /** Carrier chosen in the handover form; J&T and Shopee Express swap there, pickup only on the bill. */
+  shipCarrier: Carrier = 'JNT';
+  /** The header button names what actually happens to the parcel. */
+  actionLabel(a: keyof typeof ACTION_LABELS, d: { shippingProvider?: string | null }) {
+    return a === 'ship' && carrierOf(d.shippingProvider) === 'PICKUP' ? 'Khách đã lấy hàng' : this.actionLabels[a];
+  }
   readonly actionLabels = ACTION_LABELS;
   readonly shipment = computed(() => {
     const d = this.order();
@@ -184,7 +194,6 @@ export class OrderDetailPage {
     return this.allNotes() ? notes : notes.slice(0, 5);
   });
   /** What the bill form holds now, for the bill beside it. */
-  readonly billDraft = signal<ShippingDraft | null>(null);
   /** Set after a saved command: the next order replaces whatever the bill form holds. */
   private reloadBill = true;
   /** Header actions reload the bill form afterwards, so unsaved bill edits are confirmed first. */
@@ -228,6 +237,8 @@ export class OrderDetailPage {
     transactionType: 'DEPOSIT' as PaymentType,
     amount: null as number | null,
     note: '',
+    /** A transfer confirmed without its receipt image; the note must say why. */
+    noProof: false,
   };
   returns: {
     itemId: string;
@@ -351,7 +362,6 @@ export class OrderDetailPage {
     this.fieldErrors.set({});
     this.toast.set('');
     this.itemForm()?.close();
-    this.billDraft.set(null);
     this.allNotes.set(false);
     this.reloadBill = true;
   }
@@ -523,7 +533,7 @@ export class OrderDetailPage {
                 : p.kind === 'void'
                   ? this.api.voidPayment(id, p.itemId!, p.body)
                   : p.kind === 'payment'
-                    ? this.api.recordPayment(id, p.body, this.paymentProof()!)
+                    ? this.api.recordPayment(id, p.body, this.payment.noProof ? null : this.paymentProof())
                     : this.api.command(id, p.action!, p.body);
     request.pipe(takeUntilDestroyed(this.destroy)).subscribe({
       next: (r) => {
@@ -597,6 +607,7 @@ export class OrderDetailPage {
     this.actualConfirmed = false;
     this.allowInsufficientDeposit = false;
     this.trackingCode = this.order()?.trackingCode ?? '';
+    this.shipCarrier = carrierOf(this.order()?.shippingProvider);
     this.paymentConflict.set(false);
     this.resetCustomerPicker();
     this.panel.set(panel);
@@ -633,7 +644,7 @@ export class OrderDetailPage {
   openPayment(type: PaymentType) {
     if (this.pending() || this.busy()) return;
     this.openPanel('payment');
-    this.payment = { transactionType: type, amount: null, note: '' };
+    this.payment = { transactionType: type, amount: null, note: '', noProof: false };
     this.chooseProof(null);
   }
   chooseProof(file: File | null) {
@@ -714,7 +725,12 @@ export class OrderDetailPage {
         this.error.set('Nhập số tiền nguyên dương và xác nhận hoàn thực tế nếu hoàn tiền.');
         return;
       }
-      if (!this.paymentProof()) {
+      if (this.payment.noProof) {
+        if (!this.payment.note.trim()) {
+          this.error.set('Ghi lý do không có ảnh bill.');
+          return;
+        }
+      } else if (!this.paymentProof()) {
         if (!this.proofError()) this.proofError.set('Chọn ảnh bill chuyển khoản.');
         return;
       }
@@ -760,17 +776,26 @@ export class OrderDetailPage {
         this.error.set('Nhập mã vận đơn.');
         return;
       }
-      this.mutate('shipping', { trackingCode: this.trackingCode.trim(), reason });
+      this.mutate('shipping', {
+        trackingCode: this.trackingCode.trim(),
+        reason,
+        shippingProvider: this.shipCarrier,
+      });
       return;
     }
     if (panel === 'ship') {
+      if (carrierOf(d.shippingProvider) === 'PICKUP') {
+        if (!window.confirm('Xác nhận khách đã nhận hàng tại tiệm? Đơn sẽ hoàn tất.')) return;
+        this.mutate('ship', {});
+        return;
+      }
       if (!this.trackingCode.trim()) {
         this.error.set('Nhập mã vận đơn trước khi bàn giao.');
         return;
       }
       if (!window.confirm('Xác nhận đã bàn giao kiện hàng cho đơn vị vận chuyển? Đơn sẽ hoàn tất.'))
         return;
-      this.mutate('ship', { trackingCode: this.trackingCode.trim() });
+      this.mutate('ship', { trackingCode: this.trackingCode.trim(), shippingProvider: this.shipCarrier });
       return;
     }
     if (panel === 'return') {

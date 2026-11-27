@@ -60,10 +60,13 @@ describe('OrderBill', () => {
   it('shows the shop, customer contact, books and money of a saved bill', () => {
     const t = setup(order(1));
     const all = t.text(t.card());
-    for (const part of ['Mẹ Mây', 'Sách ngoại văn cho bé', 'Khách: Chị Lan', 'SĐT: 0907654321', 'Địa chỉ: Số 1 đường thử'])
+    for (const part of ['Mẹ Mây', 'Sách ngoại văn cho bé', 'Người nhận: Người khác', 'SĐT: 0907654321', 'Địa chỉ: Số 1 đường thử'])
       expect(all).toContain(part);
-    expect(t.rows()).toEqual(['Sách số 1 2 × 75.000đ 150.000đ']);
-    expect(t.sums()).toEqual(['Tiền sách (2 quyển) 150.000đ', 'Phí ship 30.000đ', 'Tổng bill 180.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 80.000đ']);
+    expect(t.rows()).toEqual(['1 Sách số 1 2 75.000đ 150.000đ']);
+    expect(Array.from(t.el.querySelectorAll('.bill thead th'), t.text)).toEqual(['STT', 'Tên sách', 'SL', 'Đơn giá', 'Thành tiền']);
+    const logo = t.el.querySelector('.bill header img.logo') as HTMLImageElement;
+    expect(logo.getAttribute('src')).toBe('/favicon/web-app-manifest-192x192.png');
+    expect(t.sums()).toEqual(['Tiền sách 150.000đ', 'Phí ship 30.000đ', 'Tổng tiền 180.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 80.000đ']);
     expect(all).not.toContain('Trang');
     expect(all).not.toContain('Tạm tính');
     expect(t.el.querySelector('dialog')).toBeNull();
@@ -75,7 +78,7 @@ describe('OrderBill', () => {
   });
   it('keeps internal details off the bill', () => {
     const all = (t => t.text(t.card()))(setup(order(2, {}, { discountAmount: 10000 })));
-    for (const secret of ['DH-', 'KH-', 'Người khác', 'MM-', '456', '1456', '98.765', 'COD', 'Ghi chú', 'Sách ngoài', 'Website', 'Giảm giá', 'TikTok', 'Zalo'])
+    for (const secret of ['DH-', 'KH-', 'MM-', '456', '1456', '98.765', 'COD', 'Ghi chú', 'Sách ngoài', 'Website', 'Giảm giá', 'TikTok', 'Zalo'])
       expect(all, secret).not.toContain(secret);
   });
   it('falls back to the profile phone and the saved address, and hides what is missing', () => {
@@ -88,7 +91,7 @@ describe('OrderBill', () => {
   });
   it('follows the fee being typed', () => {
     const t = setup(order(1, {}, { status: 'KEEPING' }), { ...saved, shippingFee: 25000 });
-    expect(t.sums()).toEqual(['Tiền sách (2 quyển) 150.000đ', 'Phí ship 25.000đ', 'Tổng bill 175.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 75.000đ']);
+    expect(t.sums()).toEqual(['Tiền sách 150.000đ', 'Phí ship 25.000đ', 'Tổng tiền 175.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 75.000đ']);
     t.set('draft', { ...saved, shippingFee: 0 });
     expect(t.sums()[1]).toBe('Phí ship Miễn phí');
     expect(t.sums().at(-1)).toBe('Cần thanh toán 50.000đ');
@@ -103,7 +106,7 @@ describe('OrderBill', () => {
     for (const draft of [null, { ...saved, shippingFee: null }]) {
       const t = setup(order(1, {}, { status: 'KEEPING' }), draft);
       expect(t.text(t.card())).toContain('Tạm tính, chưa gồm phí ship');
-      expect(t.sums()).toEqual(['Tiền sách (2 quyển) 150.000đ', 'Tạm tính 150.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 50.000đ']);
+      expect(t.sums()).toEqual(['Tiền sách 150.000đ', 'Tạm tính 150.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 50.000đ']);
     }
   });
   it('warns outside the screenshot while the form has unsaved changes', () => {
@@ -125,6 +128,7 @@ describe('OrderBill', () => {
     pages.forEach((size, i) => {
       expect(t.rows().length).toBe(size);
       seen.push(...t.rows());
+      expect(t.rows()[0].split(' ')[0]).toBe(String(i * 12 + 1));
       const last = i === pages.length - 1;
       expect(t.sums().length > 0).toBe(last);
       expect(t.text(t.card()).includes(`Trang ${i + 1}/${pages.length}`)).toBe(pages.length > 1);

@@ -10,8 +10,10 @@ Owner chốt 26/11/2026 (`ORDER-MONEY-LIST-01`), thay phần giao dịch tiền 
   nên mọi khoản là chuyển khoản; không lưu phương thức.
 - `occurred_at` là thời điểm server ghi nhận; không có ô nhập thời điểm thực tế.
   Ảnh bill là bằng chứng thời gian chuyển.
-- Mỗi giao dịch bắt buộc **đúng 1 ảnh bill**. Khách cọc nhiều đợt thì ghi nhiều
-  giao dịch Nhận cọc.
+- Mỗi giao dịch có **đúng 1 ảnh bill**, trừ khi tick **"Chuyển khoản không có ảnh bill"**
+  (owner 27/11, ví dụ khách trả tiền mặt khi tự lấy): khi đó không gửi ảnh và ghi chú thành
+  **"Lý do không có ảnh"** bắt buộc. Không có cột phương thức. Khách cọc nhiều đợt thì ghi
+  nhiều giao dịch Nhận cọc.
 - `paidAmount` = SUM(DEPOSIT) − SUM(REFUND) của giao dịch chưa VOID. Ngưỡng cọc keep,
   tiền còn giữ ở Thùng rác và COD gợi ý dùng số này.
 - Hoàn tiền vẫn bắt xác nhận "tiệm đã hoàn tiền thực tế", không vượt số đang giữ.
@@ -24,9 +26,9 @@ Owner chốt 26/11/2026 (`ORDER-MONEY-LIST-01`), thay phần giao dịch tiền 
 ## Giao diện chi tiết đơn
 
 - Hai nút **Nhận cọc** (ẩn khi đơn hủy/hoàn) và **Hoàn tiền** (chỉ khi `paidAmount > 0`) ở card Thanh toán.
-  Form bill ở tab Xuất bill có nút Nhận cọc cạnh dòng Đã nhận, mở cùng popup.
-- Popup: Số tiền (VND) *, **Ảnh bill chuyển khoản** * (JPEG/PNG, ≤ 10 MB, có xem trước),
-  Ghi chú; Hoàn tiền thêm ô xác nhận hoàn thực tế. Sai định dạng/quá cỡ báo tại ô.
+  Tab Xuất bill chỉ có Nhận cọc khi Thanh toán cuối tháng hoặc Khách tự lấy còn thiếu, mở cùng popup.
+- Popup: ô tick không có ảnh, Số tiền (VND) *, **Ảnh bill chuyển khoản** * (JPEG/PNG,
+  ≤ 10 MB, có xem trước; ẩn khi tick), Ghi chú (thành Lý do không có ảnh * khi tick); Hoàn tiền thêm ô xác nhận hoàn thực tế. Sai định dạng/quá cỡ báo tại ô.
 - Lỗi mạng giữ số tiền, ghi chú, ảnh và gửi lại cùng `requestId`.
 - Lịch sử thu/hoàn: loại, ảnh nhỏ (bấm mở ảnh lớn, Esc đóng, focus trở về ảnh nhỏ),
   số tiền, ghi chú/VOID. Dòng cũ không ảnh hiện "Không có ảnh". Bill gửi khách không có ảnh.
@@ -35,7 +37,8 @@ Owner chốt 26/11/2026 (`ORDER-MONEY-LIST-01`), thay phần giao dịch tiền 
 
 - `POST /api/v1/admin/orders/{id}/payments` là `multipart/form-data`: part `payment`
   (JSON `{transactionType, amount, note?, actualConfirmed?, version, requestId}`) và
-  đúng 1 file `proof`. Thiếu/thừa file → 400 `fieldErrors.proof`; loại khác → 400;
+  tối đa 1 file `proof`. Thiếu file mà ghi chú trống, hoặc thừa file → 400
+  `fieldErrors.proof`; loại khác → 400;
   file không phải ảnh → 415; quá 10 MiB → 413.
 - Fingerprint idempotency gồm SHA-256 ảnh: replay cùng ảnh trả cùng kết quả, không lưu
   file lần hai; cùng `requestId` khác ảnh → 409 `idempotency_conflict`.

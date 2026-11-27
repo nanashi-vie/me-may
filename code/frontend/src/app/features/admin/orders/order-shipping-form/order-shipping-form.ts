@@ -1,9 +1,11 @@
 import { Component, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VndInput } from '../../books/vnd-input';
-import { CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
+import { OrderBill } from '../order-bill/order-bill';
+import { Carrier, CARRIER_LABELS, carrierOf, CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
 import { integer, vnd } from '../order-values';
 export interface ShippingDraft {
+  shippingProvider: Carrier;
   customerPaymentMode: CustomerPaymentMode | null;
   recipientName: string;
   recipientPhone: string;
@@ -27,9 +29,9 @@ const PACKAGING_GRAMS = 1000;
 const grams = (n: number) => new Intl.NumberFormat('vi-VN').format(n) + ' g';
 @Component({
   selector: 'app-order-shipping-form',
-  imports: [FormsModule, VndInput],
+  imports: [FormsModule, VndInput, OrderBill],
   templateUrl: './order-shipping-form.html',
-  styleUrl: '../orders.scss',
+  styleUrls: ['../orders.scss', './order-shipping-form.scss'],
 })
 export class OrderShippingForm {
   private order: OrderDetail | null = null;
@@ -39,8 +41,12 @@ export class OrderShippingForm {
   readonly refreshing = signal(false);
   readonly retry = output<void>();
   readonly saved = output<ShippingDraft>();
-  /** Everything typed so far, saved or not, so the bill beside the form can follow it. */
+  /** Everything typed so far, saved or not; the page uses it to warn before leaving. */
   readonly changed = output<ShippingDraft>();
+  /** The order the bill shows; the bill is the top of this form. */
+  readonly current = signal<OrderDetail | null>(null);
+  /** A copy of what is typed, so the bill's totals follow each keystroke. */
+  readonly draft = signal<ShippingDraft | null>(null);
   /** A completed or returned order: the bill can be read but not changed. */
   readonly readOnly = signal(false);
   /** The form renders only once it holds an order, so its first paint shows real values. */
@@ -49,7 +55,9 @@ export class OrderShippingForm {
   readonly error = signal('');
   readonly money = vnd;
   mode: 'finalize' | 'shipping' = 'finalize';
+  readonly carriers = Object.entries(CARRIER_LABELS) as [Carrier, string][];
   model: ShippingDraft = {
+    shippingProvider: 'JNT',
     customerPaymentMode: 'RECIPIENT',
     recipientName: '',
     recipientPhone: '',
@@ -70,14 +78,20 @@ export class OrderShippingForm {
     this.readOnly.set(finished(order));
     const mode = order.status === 'DRAFT' || order.status === 'KEEPING' ? 'finalize' : 'shipping';
     this.order = order;
+    this.current.set(order);
     this.mode = mode;
+    // The recipient starts as the customer until the shop types someone else.
+    const carrier = carrierOf(order.shippingProvider);
     this.model = {
-      customerPaymentMode: order.customerPaymentMode ?? (mode === 'finalize' ? 'RECIPIENT' : null),
-      recipientName: order.recipientName ?? '',
-      recipientPhone: order.recipientPhone ?? '',
+      shippingProvider: carrier,
+      customerPaymentMode:
+        carrier === 'PICKUP' ? null : (order.customerPaymentMode ?? (mode === 'finalize' ? 'RECIPIENT' : null)),
+      recipientName: order.recipientName ?? order.customerNameSnapshot ?? '',
+      recipientPhone: order.recipientPhone ?? order.customerPhoneSnapshot ?? '',
       shippingAddress: order.shippingAddress ?? '',
       shippingFee: order.shippingFee,
-      parcelWeightGrams: mode === 'shipping' ? order.parcelWeightGrams : this.suggestedWeight(),
+      parcelWeightGrams:
+        carrier === 'PICKUP' ? null : mode === 'shipping' ? order.parcelWeightGrams : this.suggestedWeight(),
       parcelWeightOverridden: true,
       parcelWeightConfirmed: false,
       codAmount: order.codAmount,
@@ -98,7 +112,26 @@ export class OrderShippingForm {
     this.loaded.set(true);
     this.emitChange();
   }
+  /** The customer collects at the shop: no shipping fee, parcel, COD or payment mode. */
+  pickup() {
+    return this.model.shippingProvider === 'PICKUP';
+  }
+  chooseCarrier(carrier: Carrier) {
+    const wasPickup = this.pickup();
+    this.model.shippingProvider = carrier;
+    if (carrier === 'PICKUP') {
+      Object.assign(this.model, { shippingFee: 0, codAmount: 0, customerPaymentMode: null, parcelWeightGrams: null });
+    } else if (wasPickup) {
+      const saved = this.order?.shippingProvider === 'PICKUP' ? null : (this.order?.shippingFee ?? null);
+      Object.assign(this.model, { shippingFee: saved, customerPaymentMode: 'RECIPIENT', parcelWeightGrams: this.suggestedWeight() });
+      this.manualWeight = false;
+      this.manualCod = false;
+      this.suggestCod();
+    }
+    this.emitChange();
+  }
   emitChange() {
+    this.draft.set({ ...this.model });
     this.changed.emit({ ...this.model });
   }
   /** Back to what is saved on the order, dropping what was typed. */
@@ -113,6 +146,7 @@ export class OrderShippingForm {
     }
     this.reviewRequired = true;
     this.order = order;
+    this.current.set(order);
     this.conflict.set(false);
     this.error.set('');
     this.model.codConfirmed = false;
@@ -136,9 +170,6 @@ export class OrderShippingForm {
     const fee = this.model.shippingFee;
     const n = fee === null ? NaN : this.declaredValue() + fee;
     return Number.isSafeInteger(n) ? n : null;
-  }
-  received() {
-    return this.order?.totals.paidAmount ?? 0;
   }
   balance() {
     const total = this.billTotal();
@@ -166,6 +197,7 @@ export class OrderShippingForm {
   valid() {
     if (!this.allowed()) return false;
     const m = this.model;
+    if (this.pickup()) return !!m.recipientName.trim() && !!m.recipientPhone.trim();
     return (
       !!m.customerPaymentMode &&
       !this.reviewRequired &&
@@ -179,6 +211,24 @@ export class OrderShippingForm {
       this.billTotal() !== null
     );
   }
+  /** What still blocks saving, named the way the bill shows it. */
+  missing() {
+    const m = this.model;
+    const contact: [boolean, string][] = [
+      [!m.recipientName.trim(), 'người nhận'],
+      [!m.recipientPhone.trim(), 'SĐT'],
+    ];
+    if (this.pickup()) return contact.filter(([gap]) => gap).map(([, name]) => name);
+    return [
+      ...contact,
+      [!m.shippingAddress.trim(), 'địa chỉ'],
+      [!integer(m.shippingFee), 'phí ship'],
+      [!m.customerPaymentMode, 'phương thức thanh toán'],
+      [!integer(m.parcelWeightGrams, 1), 'cân nặng'],
+    ]
+      .filter(([gap]) => gap)
+      .map(([, name]) => name as string);
+  }
   submit() {
     if (!this.valid() || this.locked()) return;
     this.saved.emit({
@@ -190,6 +240,9 @@ export class OrderShippingForm {
       shippingAddress: this.model.shippingAddress.trim(),
       shippingFee: this.model.shippingFee,
       additionalShippingFee: null,
+      ...(this.pickup()
+        ? { shippingFee: 0, codAmount: 0, parcelWeightGrams: null, customerPaymentMode: null }
+        : {}),
     });
   }
   dirty() {

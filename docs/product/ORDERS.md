@@ -78,6 +78,9 @@ Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0
 | Hoàn tất (`hoan-tat`, `COMPLETED`) | COMPLETED | Không | `completed_at` giảm |
 | Hủy/Hoàn (`huy-hoan`, `CLOSED`) | CANCELLED gồm RETURNED | Đã hủy, Đã hoàn đơn | `cancelled_at` giảm |
 
+- Màu tab (27/11) theo badge trạng thái: tab chưa chọn chữ xám, số đếm là viên tô màu nhãn
+  (Chờ xử lý xám, Đang keep xanh dương, Đang đóng gói cam, Hoàn tất xanh lá, Hủy/Hoàn đỏ; Tất
+  cả đỏ thương hiệu); tab đang chọn chữ và gạch dưới cùng màu đó.
 - Bảng 9 cột giống nhau ở mọi tab: Khách hàng · Mã đơn · Ngày tạo · Số lượng sách · Tổng đơn
   · Đã cọc (`paidAmount`) · Trạng thái · Hạn keep · Thao tác. Ngày dd/MM/yyyy giờ Việt Nam.
 - Khách hàng: tên snapshot, dòng phụ một kênh từ hồ sơ hiện tại theo thứ tự TikTok → Threads
@@ -237,6 +240,10 @@ Backend tính/chốt declaredValue=goodsTotal; không gồm phí ship, không tr
 Mode RECIPIENT cho nhập COD; MONTHLY lưu COD0, kiểm đã thu đủ bill lúc lưu và bàn giao.
 Mode nullable cho bill cũ, ghi riêng trên order và snapshot V37; không suy ra từ mã trả cước.
 
+Hãng (V40, owner 27/11): `shipping_provider` JNT (mặc định, "J&T" cũ đổi thành JNT) | SPX |
+PICKUP; snapshot ghi hãng. PICKUP chốt chỉ cần tên + SĐT, phí/COD 0, không cân/mode; bàn
+giao cần đã nhận đủ, không mã vận đơn. Bàn giao/sửa mã đổi được JNT↔SPX, không sang/từ
+PICKUP. Mã vận đơn bỏ khoảng trắng, in hoa, 8–30 chữ/số, không trùng đơn khác (mã cũ giữ).
 Cấu hình theo bản user cung cấp: J&T Express, EXPRESS, sản phẩm Sách,
 HÀNG HÓA, không gửi tại bưu cục, parcelCount1, không dùng dài/rộng/cao.
 shippingPaymentType: CC_CASH (người nhận), PP_CASH (người gửi), PP_PM (cuối tháng);

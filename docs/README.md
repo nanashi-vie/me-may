@@ -17,6 +17,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Sửa giao diện public/admin, wishlist, CTA, phân trang, banner | [Thiết kế](product/DESIGN.md), [phân trang](product/PAGINATION.md), [banner](product/HERO_BANNERS.md) |
 | Nhập, sửa, xuất bản, rà sách thiếu, lọc thùng | [Catalogue](product/CATALOGUE.md), [import CSV/XLSX](product/BOOK_IMPORT.md), [rollout nhập sách](runbooks/BOOK_ENTRY_ROLLOUT.md) |
 | Sửa đánh dấu hết hàng, tải ảnh từ `/admin/sach` | [Thao tác danh sách](product/CATALOGUE_ACTIONS.md) |
+| Sửa thông báo khi máy chủ không phản hồi (530), màn "Tiệm tạm nghỉ", banner admin | [Máy chủ không phản hồi](product/OUTAGE.md) |
 | Xóa, khôi phục, dọn sách/khách/đơn; Thùng rác chung | [Thùng rác](product/TRASH.md) |
 | Kiểm tra tạo thùng → lưu → mở lại → lọc trên candidate | [Nơi lưu trữ](product/CATALOGUE.md#nơi-lưu-trữ-sách), [smoke V20](runbooks/ROLLOUT_CHECKS.md#nơi-lưu-trữ-v20) |
 | Điều tra cảnh báo nguồn ảnh, upload máy/Drive và phục hồi | [Quy tắc xuất bản](product/IMAGES.md#10-xác-minh-nguồn-và-chống-ghi-đè), [vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [bằng chứng](verification/IMAGE_VERIFICATION.md) |
@@ -25,7 +26,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Sửa trang chi tiết đơn, tab Xuất bill, cân kiện gợi ý, bill gửi khách | [Chi tiết đơn và bill](product/ORDER_BILL.md) |
 | Sửa tab, số đếm, bộ lọc danh sách đơn | [Tab danh sách](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026) |
 | Sửa chọn khách, thêm sách, gợi ý/cảnh báo sách trùng trong đơn | [Sách trong đơn và chọn khách](product/ORDER_ITEMS.md) |
-| Chuẩn bị rollout V37–V39 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [V39](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
+| Chuẩn bị rollout V37–V40 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [V39](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39), [V40](runbooks/ROLLOUT_CHECKS.md#hãng-vận-chuyển-và-mã-vận-đơn-v40), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
 | Kiểm quyền chấm công, lịch, ca và xuất Excel | [Hồ sơ, quyền và PIN](product/ATTENDANCE.md), [bảo mật](context/SECURITY.md) |
 | Deploy, backup/restore, rollback, điều tra Cloudflare bỏ lỡ merge | [Runbook triển khai](runbooks/DEPLOYMENT.md), [trigger Builds](runbooks/CLOUDFLARE_BUILDS.md), [phục hồi ảnh](runbooks/IMAGE_OPERATIONS.md) |
 

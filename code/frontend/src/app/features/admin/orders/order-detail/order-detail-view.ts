@@ -37,7 +37,8 @@ export function timeline(d: OrderDetail): TimelineStep[] {
   const steps: TimelineStep[] = [step('created', 'Tạo đơn', true, d.createdAt)];
   if (d.fulfillmentType === 'KEEP') steps.push(step('keep', 'Bắt đầu keep', !!d.keepStartedAt, d.keepStartedAt));
   steps.push(step('finalized', 'Chốt đơn', !!billed, billed?.createdAt));
-  steps.push(step('completed', 'Đã bàn giao · Hoàn tất', !!handed, handed?.handedOverAt));
+  const pickedUp = d.shippingProvider === 'PICKUP';
+  steps.push(step('completed', pickedUp ? 'Khách đã lấy · Hoàn tất' : 'Đã bàn giao · Hoàn tất', !!handed, handed?.handedOverAt));
   if (d.status !== 'CANCELLED') return steps;
   if (isReturned(d)) {
     const failed = d.shipments.filter((s) => s.failedAt).at(-1);
@@ -46,9 +47,13 @@ export function timeline(d: OrderDetail): TimelineStep[] {
   return [...steps.filter((s) => s.done), step('cancelled', 'Đã hủy', true, d.cancelledAt, true)];
 }
 
-/** Still to collect: the balance once billed, otherwise the books less what was paid. */
+/**
+ * Still to collect: the balance once billed, otherwise the books less what was paid.
+ * A cancelled order collects nothing, so any money it still holds is to refund (negative).
+ */
 export function dueAmount(d: OrderDetail): number {
   const t = d.totals;
+  if (d.status === 'CANCELLED') return 0 - t.paidAmount;
   const unbilled = t.goodsTotal - t.paidAmount;
   return currentShipment(d) ? (t.balance ?? unbilled) : unbilled;
 }

@@ -33,7 +33,7 @@ class OrderReturnTest extends OrderShippingTestSupport {
   assertThat(queries.detail(book,owner).totalStock()).isZero();assertThat(orders.require(id,false).status()).isEqualTo(Status.COMPLETED);assertThat(orders.require(id,false).returns()).isEmpty();
  }
  @Test void partialResellableCopiesAndManualItemsAreRecordedSeparately(){
-  long id=sale(2);drafts.addItem(id,new ItemRequest(1L,UUID.randomUUID(),"MANUAL",null,"Outside stock",50000L,1L,100L,null),owner);shipping.finalizeOrder(id,shipping(2,30000L,650L,0),owner);shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACK-RETURN"),owner);
+  long id=sale(2);drafts.addItem(id,new ItemRequest(1L,UUID.randomUUID(),"MANUAL",null,"Outside stock",50000L,1L,100L,null),owner);shipping.finalizeOrder(id,shipping(2,30000L,650L,0),owner);shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACKRETURN01"),owner);
   var d=orders.require(id,false);var catalog=d.items().getFirst();var manual=d.items().getLast();
   var r=new ReturnRequest(4L,UUID.randomUUID(),"Partial resellable return",true,List.of(new ReturnItem(catalog.id(),2L,1L,"One damaged"),new ReturnItem(manual.id(),1L,0L,"Outside stock")));
   shipping.returnOrder(id,r,owner);assertThat(queries.detail(Long.parseLong(catalog.bookCopyId()),owner).totalStock()).isEqualTo(1);assertThat(orders.require(id,false).returns()).hasSize(2);

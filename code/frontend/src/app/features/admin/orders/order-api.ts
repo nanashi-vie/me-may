@@ -57,11 +57,11 @@ export class OrderApi {
   command(id: string, action: OrderAction, body: object) {
     return this.send(action === 'shipping' ? 'PATCH' : 'POST', this.path(id) + '/' + action, body);
   }
-  /** One multipart request: the JSON command and its single transfer receipt. */
-  recordPayment(id: string, body: PaymentWrite, proof: File) {
+  /** One multipart request: the JSON command and its transfer receipt, if there is one. */
+  recordPayment(id: string, body: PaymentWrite, proof: File | null) {
     const form = new FormData();
     form.append('payment', new Blob([JSON.stringify(body)], { type: 'application/json' }));
-    form.append('proof', proof);
+    if (proof) form.append('proof', proof);
     return this.http.mutate<MutationResult>('POST', this.path(id) + '/payments', form);
   }
   proofUrl(id: string, paymentId: string) {

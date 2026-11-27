@@ -210,3 +210,48 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   tải lại lỗi; form chuyển chỉ xem khi đơn hoàn tất ở phiên khác; xóa cuốn cuối không mất chữ đang
   gõ; menu ⋮ có `aria-controls`, Esc từ nút, đóng khi Tab ra; timeline đơn hủy giữ mốc Chốt đơn;
   dòng "Cần xuất lại bill cho đơn này." Mỗi mục có test đỏ trước. Frontend 610/610, build đạt.
+
+## Gọn trang chi tiết đơn — 27/11/2026
+
+- `npm test` 611/611, `npm run build` đạt (frontend, `dev`).
+- Trình duyệt 1440px, frontend tạm 4210 + backend tạm 18080 (code `dev`, `me_may_dev`), 4 đơn mẫu
+  `[Mẫu]` DH-000010…013: header hai badge (Đang keep + Đã cọc; Nháp + Chưa cọc; Hoàn tất + Đã
+  thanh toán đủ; Đã hủy + Còn giữ 70.000đ); card thông tin không còn Mã đơn/Ngày tạo, Hạn keep
+  chỉ ở đơn Keep; "＋ Thêm sách" ở tiêu đề chỉ khi sửa được, "n quyển · m g" dưới bảng; Tổng/Tạm
+  tính 20px so với 16px các dòng khác; khách 2 dòng, tên không gạch chân, chip kênh.
+- Sửa thêm (owner yêu cầu): đơn Đã hủy không còn "Còn thu"; tiền còn giữ thành "Cần hoàn x" (khớp
+  badge "Còn giữ x"), không giữ tiền thì "Không còn giữ tiền". Test đỏ trước; `npm test` 613/613,
+  build đạt; DH-000013 hiện "Cần hoàn 70.000đ".
+- Chưa kiểm: dưới 1024px, Safari/thiết bị thật, trình đọc màn hình.
+
+## Màu tab danh sách và bill sửa trực tiếp — 27/11/2026
+
+- `npm test` 614/614, `npm run build` đạt (frontend, `dev`).
+- Trình duyệt 1440px (frontend tạm 4210 + backend tạm 18080, đơn mẫu): tab Đang keep chữ/gạch xanh
+  dương, số đếm các tab là viên màu nhãn. DH-000012 (Nháp): bill hiện Người nhận điền sẵn, "Nhập
+  SĐT" đỏ mờ, gõ phí 30000 → Phí ship 30.000đ, Tổng bill 120.000đ, COD gợi ý 120.000, "Còn thiếu:
+  SĐT", hiện Hoàn tác (không lưu). DH-000011 (Hoàn tất): bill chỉ xem, ô là chữ thường, không Lưu.
+- Sửa khi kiểm: rule toàn cục `.admin-shell input:not(…)` đè kiểu ô trên bill → dùng cùng chuỗi
+  `:not` để thắng; khoảng trống giữa số phí và "đ".
+- Chưa kiểm: dưới 1024px, bill nhiều trang trên trình duyệt (có test đơn vị), chụp ảnh thật gửi khách.
+
+## Bill có logo và bảng 5 cột — 27/11/2026
+
+- Test bill đỏ trước (8 ca) rồi xanh; `npm test` 614/614, `npm run build` đạt.
+- Trình duyệt 1440px, DH-000010 tab Xuất bill: logo tròn cạnh "Mẹ Mây / Sách ngoại văn cho bé";
+  bảng STT · Tên sách · SL · Đơn giá · Thành tiền tiêu đề đậm, STT 1–3; Tiền sách (không "n
+  quyển"), Phí ship "nhập phí", Tạm tính, Đã thanh toán, Cần thanh toán.
+- Chưa kiểm: bill nhiều trang trên trình duyệt (STT liên tục có test đơn vị), dưới 1024px.
+
+## Hãng vận chuyển, mã vận đơn và nhận tiền không ảnh — 27/11/2026
+
+- Backend: `OrderCarrierTest` 8 ca đỏ trước (chưa có hãng/kiểm mã/thanh toán không ảnh) rồi xanh;
+  `verify` 476 test (3 skip) đạt trên PostgreSQL 17 container tạm (cổng 55440, đã xóa) vì
+  `me_may_test` trên máy còn ở V21 lệch checksum.
+- Frontend: `npm test` 620/620, `npm run build` đạt.
+- Trình duyệt 1440px (backend 18080 + frontend 4210 tạm, đã dừng): DH-000015 Khách tự lấy — bill
+  không Địa chỉ, Phí ship "Khách tự lấy", Nội bộ chỉ còn tiền, nút "Khách đã lấy hàng";
+  DH-000014 Shopee Express — hộp bàn giao chọn sẵn Shopee Express, Khách tự lấy bị khóa; Nhận cọc
+  tick không ảnh → ẩn ô ảnh, ô "Lý do không có ảnh *".
+- Chưa kiểm trên trình duyệt: bấm bàn giao thật (hộp xác nhận của trình duyệt), lỗi mã "hi"/trùng
+  (có test backend), dưới 1024px.

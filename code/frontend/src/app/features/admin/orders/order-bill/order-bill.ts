@@ -1,15 +1,15 @@
 import { Component, computed, input, linkedSignal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, NgTemplateOutlet } from '@angular/common';
 import { OrderDetail } from '../order-models';
 import { vnd } from '../order-values';
-import { ShippingDraft } from '../order-shipping-form/order-shipping-form';
+import type { ShippingDraft } from '../order-shipping-form/order-shipping-form';
 /** Lines that fit one screenshot on a 1440×800 screen together with the totals. */
 const LINES_PER_PAGE = 12;
-export type BillDraft = Pick<ShippingDraft, 'recipientPhone' | 'shippingAddress' | 'shippingFee'>;
+export type BillDraft = Pick<ShippingDraft, 'recipientName' | 'recipientPhone' | 'shippingAddress' | 'shippingFee'>;
 /** What the shop screenshots for the customer: contact and money only, nothing internal. */
 @Component({
   selector: 'app-order-bill',
-  imports: [DatePipe],
+  imports: [DatePipe, NgTemplateOutlet],
   templateUrl: './order-bill.html',
   styleUrl: './order-bill.scss',
 })
@@ -28,12 +28,17 @@ export class OrderBill {
   readonly lines = computed(() =>
     this.order().items.slice(this.page() * LINES_PER_PAGE, (this.page() + 1) * LINES_PER_PAGE),
   );
+  /** STT keeps counting across pages. */
+  readonly firstNumber = computed(() => this.page() * LINES_PER_PAGE + 1);
   readonly isLast = computed(() => this.page() === this.pageCount() - 1);
   readonly fee = computed(() => this.draft()?.shippingFee ?? null);
   /** A fee is entered: the bill shows shipping; otherwise it is provisional on the books. */
   readonly billed = computed(() => this.fee() !== null);
   readonly total = computed(() => this.order().totals.goodsTotal + (this.fee() ?? 0));
   readonly balance = computed(() => this.total() - this.order().totals.paidAmount);
+  readonly name = computed(
+    () => this.draft()?.recipientName?.trim() || this.order().recipientName || this.order().customerNameSnapshot,
+  );
   readonly phone = computed(
     () => this.draft()?.recipientPhone.trim() || this.order().customerPhoneSnapshot || '',
   );

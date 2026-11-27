@@ -24,7 +24,7 @@ class OrderShippingTest extends OrderShippingTestSupport {
   return new ShippingRequest(version,UUID.randomUUID(),"Synthetic receiver","0901234567","Synthetic address",30000L,300L,true,true,0L,true,"PP_CASH","MONTHLY",null,0L,null);
  }
  @Test void handoffCompletesWithoutMarkingPaidAndRetryNeverDeductsAgain(){
-  long id=readyOrder();var before=orders.require(id,false);long book=Long.parseLong(before.items().getFirst().bookCopyId());var request=new ShipRequest(2L,UUID.randomUUID(),"TRACK-ONE");
+  long id=readyOrder();var before=orders.require(id,false);long book=Long.parseLong(before.items().getFirst().bookCopyId());var request=new ShipRequest(2L,UUID.randomUUID(),"TRACKONE01");
   var result=shipping.ship(id,request,owner);assertThat(result.status()).isEqualTo(Status.COMPLETED);assertThat(shipping.ship(id,request,owner)).isEqualTo(result);
   var after=orders.require(id,false);assertThat(after.totals().paidAmount()).isEqualTo(before.totals().paidAmount());assertThat(after.totals().balance()).isEqualTo(530000);assertThat(queries.detail(book,owner).totalStock()).isZero();assertThat(after.shipments()).hasSize(1);assertThat(after.shipments().getFirst().handedOverAt()).isNotNull();assertThat(after.declaredValue()).isEqualTo(500000);
  }
@@ -44,8 +44,8 @@ class OrderShippingTest extends OrderShippingTestSupport {
  }
  @Test void receiptOrFeeChangesRequireCodReviewBeforeHandoff(){
   long id=readyOrder();payments.record(id,new PaymentRequest(2L,UUID.randomUUID(),PaymentType.DEPOSIT,100000L,null,false),PNG,owner);
-  assertThatThrownBy(()->shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACK-ONE"),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("cod_review_required"));
-  shipping.updateShipping(id,shipping(3,35000L,300L,435000),owner);var d=orders.require(id,false);assertThat(d.codNeedsReview()).isFalse();assertThat(d.codAmount()).isEqualTo(435000);assertThat(d.shipments().getFirst().shippingSnapshot().get("codAmount").toString()).isEqualTo("435000");shipping.ship(id,new ShipRequest(4L,UUID.randomUUID(),"TRACK-ONE"),owner);
+  assertThatThrownBy(()->shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACKONE01"),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("cod_review_required"));
+  shipping.updateShipping(id,shipping(3,35000L,300L,435000),owner);var d=orders.require(id,false);assertThat(d.codNeedsReview()).isFalse();assertThat(d.codAmount()).isEqualTo(435000);assertThat(d.shipments().getFirst().shippingSnapshot().get("codAmount").toString()).isEqualTo("435000");shipping.ship(id,new ShipRequest(4L,UUID.randomUUID(),"TRACKONE01"),owner);
  }
  @Test void feeAloneInvalidatesPreviouslyConfirmedCod(){
   long id=readyOrder();var req=new ShippingRequest(2L,UUID.randomUUID(),null,null,null,35000L,300L,true,true,0L,false,"PP_CASH","RECIPIENT",null,0L,null);
@@ -53,7 +53,7 @@ class OrderShippingTest extends OrderShippingTestSupport {
  }
  @Test void trackingRequiredAndCorrectionKeepsAuditReason(){
   long id=readyOrder();assertThatThrownBy(()->shipping.ship(id,new ShipRequest(2L,UUID.randomUUID()," "),owner)).isInstanceOf(AdminApiException.class);
-  shipping.ship(id,new ShipRequest(2L,UUID.randomUUID(),"TRACK-ONE"),owner);
+  shipping.ship(id,new ShipRequest(2L,UUID.randomUUID(),"TRACKONE01"),owner);
   var noReason=new ShippingRequest(3L,UUID.randomUUID(),null,null,null,null,null,null,null,null,null,null,null,"CORRECTED",null,null);
   assertThatThrownBy(()->shipping.updateShipping(id,noReason,owner)).isInstanceOf(AdminApiException.class);
   var correct=new ShippingRequest(3L,UUID.randomUUID(),null,null,null,null,null,null,null,null,null,null,null,"CORRECTED",null,"Correct mistyped tracking");
@@ -62,7 +62,7 @@ class OrderShippingTest extends OrderShippingTestSupport {
  }
  @Test void keepFinalizeAndHandoffDoNotDecrementAgain(){
   var b=ready();var d=drafts.create(new CreateRequest(Long.toString(customer()),"KEEP",UUID.randomUUID()),owner);long id=Long.parseLong(d.id());drafts.addItem(id,new ItemRequest(0L,UUID.randomUUID(),"CATALOG",b.id(),null,100000L,1L,250L,null),owner);
-  keeps.keep(id,new KeepRequest(1L,UUID.randomUUID(),true,"Owner exception"),owner);shipping.finalizeOrder(id,shipping(2,0L,300L,0),owner);shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACK-KEEP"),owner);
+  keeps.keep(id,new KeepRequest(1L,UUID.randomUUID(),true,"Owner exception"),owner);shipping.finalizeOrder(id,shipping(2,0L,300L,0),owner);shipping.ship(id,new ShipRequest(3L,UUID.randomUUID(),"TRACKKEEP01"),owner);
   assertThat(queries.detail(Long.parseLong(b.id()),owner).totalStock()).isZero();assertThat(jdbc.queryForObject("select state from order_reservation where order_id=?",String.class,id)).isEqualTo("CONSUMED");
  }
  @Test void directlyFinalizedKeepDraftReopensAsDraftUntilKeepIsExplicitlyStarted(){
