@@ -5,6 +5,10 @@ describe('OrderShippingForm', () => {
   const order = (patch: object = {}, totals: object = {}) =>
     ({
       status: 'KEEPING',
+      items: [],
+      totalQuantity: 0,
+      customerNameSnapshot: 'Customer',
+      serverNow: '2026-11-27T01:00:00Z',
       recipientName: 'Reader',
       recipientPhone: '0901234567',
       shippingAddress: 'Test address',
@@ -91,7 +95,7 @@ describe('OrderShippingForm', () => {
     expect((await shown(order({ status: 'DRAFT' }))).c.mode).toBe('finalize');
     const t = await shown(order({ status: 'READY_TO_SHIP' }));
     expect(t.c.mode).toBe('shipping');
-    expect(t.f.nativeElement.querySelector('h2').textContent.trim()).toBe('Thông tin bill');
+    expect(t.f.nativeElement.querySelector('h2').textContent.trim()).toBe('Nội bộ · không gửi khách');
     expect(t.f.nativeElement.querySelector('dialog')).toBeNull();
   });
   it('only shows a completed or returned bill', async () => {
@@ -114,6 +118,17 @@ describe('OrderShippingForm', () => {
     fee.dispatchEvent(new Event('input', { bubbles: true }));
     expect(drafts.at(-1)).toMatchObject({ shippingFee: 45000 });
     expect(t.c.dirty()).toBe(true);
+  });
+  it('edits the recipient and fee on the bill and names what is still missing', async () => {
+    const t = await shown(order({ recipientName: null, recipientPhone: null, shippingAddress: null, shippingFee: null, customerPhoneSnapshot: '0907777777' }));
+    const bill = t.f.nativeElement.querySelector('.bill') as HTMLElement;
+    expect((bill.querySelector('input[name=name]') as HTMLInputElement).value).toBe('Customer');
+    expect((bill.querySelector('input[name=phone]') as HTMLInputElement).value).toBe('0907777777');
+    expect(bill.querySelector('input[name=fee]')).not.toBeNull();
+    expect(t.c.dirty()).toBe(false);
+    expect(t.f.nativeElement.querySelector('.missing').textContent).toContain('địa chỉ, phí ship');
+    const modes = Array.from(t.f.nativeElement.querySelectorAll('.internal input[type=radio]') as NodeListOf<HTMLInputElement>, (r) => r.closest('label')!.textContent!.trim());
+    expect(modes).toEqual(['Người nhận thanh toán', 'Thanh toán cuối tháng']);
   });
   it('undoes back to the saved values', async () => {
     const t = await shown(order());

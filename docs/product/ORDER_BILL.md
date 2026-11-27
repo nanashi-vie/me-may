@@ -66,8 +66,13 @@ chỉ ở card Ghi chú. Mốc đã qua cuối cùng có `aria-current="step"`.
 
 ### Tab Xuất bill
 
-Thay popup Xuất bill, Sửa thông tin bill và Bill gửi khách. Trái là form bill, phải là bill;
-dưới 1024px form trên, bill dưới.
+Một card (rộng tối đa 640px, căn giữa) gộp form và bill (owner chốt 27/11): trên là **bill gửi
+khách sửa trực tiếp** — Người nhận/SĐT/Địa chỉ ở đầu trang 1 (điền sẵn từ hồ sơ khách khi đơn chưa
+có), **Phí ship** là ô số ở dòng tiền trang cuối (0 → "Miễn phí", trống → Tạm tính); ô trông như chữ
+bill, gạch mờ khi rê, khung khi gõ, chữ gợi ý đỏ mờ khi trống. Dưới vạch là **"Nội bộ · không gửi
+khách"**: 2 nút chọn Người nhận thanh toán / Thanh toán cuối tháng (giữ nhãn, vẫn lưu
+RECIPIENT/MONTHLY cho file J&T sau này), cân nặng + gợi ý, COD, Đã nhận + Nhận cọc, Còn thu (±),
+"Còn thiếu: …" khi chưa đủ để lưu, Hoàn tác / Lưu bill.
 
 | Đơn | Tab |
 |---|---|
@@ -75,7 +80,7 @@ dưới 1024px form trên, bill dưới.
 | Đã hủy | "Đơn đã hủy, không xuất bill." |
 | Nháp / Đang keep | Form; **Lưu bill** chốt đơn (sang Đang đóng gói, ở lại tab) |
 | Đang đóng gói | Form; Lưu bill sửa thông tin bill |
-| Hoàn tất / Đã hoàn đơn | Form chỉ xem, không Lưu bill/Hoàn tác/Nhận cọc |
+| Hoàn tất / Đã hoàn đơn | Chỉ xem: ô trên bill thành chữ thường, không Lưu bill/Hoàn tác/Nhận cọc |
 
 - Form giữ quy tắc điền sẵn, COD gợi ý, retry cùng `requestId`, lỗi theo ô. "Hoàn tác" (khi
   có thay đổi) trả về giá trị đã lưu. Nhận cọc nằm cạnh dòng Đã nhận.
@@ -95,8 +100,8 @@ dưới 1024px form trên, bill dưới.
 ## Bill để chụp màn hình
 
 - Chỉ OWNER, trong tab Xuất bill. Không có link công khai, tải ảnh, in hay PDF.
-- Hiện: Mẹ Mây, Sách ngoại văn cho bé, **Khách** (tên khách), **ngày xuất bill** (ngày
-  `serverNow`, giờ Việt Nam), **SĐT** (ô SĐT người nhận đang nhập, trống thì SĐT hồ sơ),
+- Hiện: Mẹ Mây, Sách ngoại văn cho bé, **ngày xuất bill** (ngày `serverNow`, giờ Việt Nam),
+  **Người nhận** (thay "Khách" từ 27/11), **SĐT** (ô SĐT người nhận, trống thì SĐT hồ sơ),
   **Địa chỉ** (ô địa chỉ đang nhập, trống thì địa chỉ đã lưu; trống hẳn thì ẩn dòng); mỗi
   dòng tên sách, SL × đơn giá, thành tiền; các khoản tiền bên dưới.
 - Không hiện: mã đơn, mã khách, kênh liên hệ, trọng lượng, COD, mã sách, nguồn sách, ghi chú,
@@ -109,7 +114,7 @@ dưới 1024px form trên, bill dưới.
 |---|---|
 | Có phí ship | Tiền sách (n quyển), Phí ship, Tổng bill, Đã thanh toán, dòng cuối |
 | Phí ship bằng 0 | Phí ship Miễn phí |
-| Ô phí ship trống | "Tạm tính, chưa gồm phí ship"; không có Phí ship, dòng tổng là Tạm tính |
+| Ô phí ship trống | "Tạm tính, chưa gồm phí ship"; ô Phí ship "nhập phí", dòng tổng là Tạm tính |
 | Dòng cuối | Cần thanh toán / Đã thanh toán đủ / Tiền thừa |
 
 - Tiền sách là `goodsTotal`; đơn cũ có giảm giá thì đã trừ sẵn.

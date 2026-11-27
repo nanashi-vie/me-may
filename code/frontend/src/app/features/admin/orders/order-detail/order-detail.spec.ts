@@ -302,15 +302,19 @@ describe('OrderDetail', () => {
       Array.from(f.nativeElement.querySelectorAll('.bill header > *, .bill-totals > *') as NodeListOf<Element>, (row) =>
         row.children.length ? Array.from(row.children, text).join(' ') : text(row),
       ).join(' | ');
-    expect(bill()).toContain('Phí ship 30.000đ');
-    expect(text(f.nativeElement.querySelector('.bill'))).toContain('SĐT: 0901234567');
+    expect(bill()).toContain('Tổng bill 180.000đ');
+    const bill1 = f.nativeElement.querySelector('.bill') as HTMLElement;
+    expect((bill1.querySelector('input[name=phone]') as HTMLInputElement).value).toBe('0901234567');
+    expect(bill1.querySelector('input[name=fee]')).not.toBeNull();
+    expect(bill1.querySelector('input[name=weight]')).toBeNull();
+    expect(f.nativeElement.querySelector('.internal input[name=weight]')).not.toBeNull();
     expect(text(f.nativeElement.querySelector('.unsaved'))).toContain('Chưa lưu');
     c.selectTab('detail');
     await settle(f);
     c.selectTab('bill');
     await settle(f);
     expect(c.shippingForm()!.model.shippingFee).toBe(30000);
-    expect(bill()).toContain('Phí ship 30.000đ');
+    expect(bill()).toContain('Tổng bill 180.000đ');
   });
   it('saves the bill from the tab and stays there with the saved values', async () => {
     const { f, c, api } = await setup();

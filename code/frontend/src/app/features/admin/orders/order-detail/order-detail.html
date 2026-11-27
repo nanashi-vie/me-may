@@ -937,17 +937,13 @@
         <p class="card empty">Đơn đã hủy, không xuất bill.</p>
       } @else {
         <!-- Kept alive while the order has no book, so typing survives removing the last one. -->
-        <div class="bill-grid" [hidden]="state === 'empty'">
-          <div class="card">
-            <app-order-shipping-form
-              (changed)="billDraft.set($event)"
-              (paymentRequested)="openPayment('DEPOSIT')"
-              (retry)="retry()"
-              (refreshRequested)="refresh()"
-              (saved)="shippingSaved($event)"
-            />
-          </div>
-          <app-order-bill [order]="d" [draft]="billDraft()" [dirty]="!!shippingForm()?.dirty()" />
+        <div class="card bill-card" [hidden]="state === 'empty'">
+          <app-order-shipping-form
+            (paymentRequested)="openPayment('DEPOSIT')"
+            (retry)="retry()"
+            (refreshRequested)="refresh()"
+            (saved)="shippingSaved($event)"
+          />
         </div>
       }
     </div>

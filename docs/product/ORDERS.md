@@ -78,6 +78,9 @@ Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0
 | Hoàn tất (`hoan-tat`, `COMPLETED`) | COMPLETED | Không | `completed_at` giảm |
 | Hủy/Hoàn (`huy-hoan`, `CLOSED`) | CANCELLED gồm RETURNED | Đã hủy, Đã hoàn đơn | `cancelled_at` giảm |
 
+- Màu tab (27/11) theo badge trạng thái: tab chưa chọn chữ xám, số đếm là viên tô màu nhãn
+  (Chờ xử lý xám, Đang keep xanh dương, Đang đóng gói cam, Hoàn tất xanh lá, Hủy/Hoàn đỏ; Tất
+  cả đỏ thương hiệu); tab đang chọn chữ và gạch dưới cùng màu đó.
 - Bảng 9 cột giống nhau ở mọi tab: Khách hàng · Mã đơn · Ngày tạo · Số lượng sách · Tổng đơn
   · Đã cọc (`paidAmount`) · Trạng thái · Hạn keep · Thao tác. Ngày dd/MM/yyyy giờ Việt Nam.
 - Khách hàng: tên snapshot, dòng phụ một kênh từ hồ sơ hiện tại theo thứ tự TikTok → Threads

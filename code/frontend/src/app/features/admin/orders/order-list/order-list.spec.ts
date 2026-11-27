@@ -252,6 +252,8 @@ describe('OrderList', () => {
     expect(t.tabs()).toEqual(['Tất cả 38', 'Chờ xử lý 2', 'Đang keep 12 · 2 quá hạn', 'Đang đóng gói 5', 'Hoàn tất 9', 'Hủy/Hoàn 10']);
     const open = t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] [aria-current="page"]');
     expect(Array.from(open, t.text)).toEqual(['Hoàn tất 9']);
+    const tones = Array.from(t.el.querySelectorAll('nav[aria-label="Nhóm đơn hàng"] a'), (a) => a.className.match(/tone-\w+/)?.[0]);
+    expect(tones).toEqual(['tone-all', 'tone-draft', 'tone-keeping', 'tone-packing', 'tone-completed', 'tone-closed']);
     expect(t.el.querySelector('.metrics')).toBeNull();
     expect(t.el.querySelector('select')).toBeNull();
     t.api.stats.mockReturnValue(of({ ...stats, overdue: 0 }));

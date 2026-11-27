@@ -223,3 +223,14 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   badge "Còn giữ x"), không giữ tiền thì "Không còn giữ tiền". Test đỏ trước; `npm test` 613/613,
   build đạt; DH-000013 hiện "Cần hoàn 70.000đ".
 - Chưa kiểm: dưới 1024px, Safari/thiết bị thật, trình đọc màn hình.
+
+## Màu tab danh sách và bill sửa trực tiếp — 27/11/2026
+
+- `npm test` 614/614, `npm run build` đạt (frontend, `dev`).
+- Trình duyệt 1440px (frontend tạm 4210 + backend tạm 18080, đơn mẫu): tab Đang keep chữ/gạch xanh
+  dương, số đếm các tab là viên màu nhãn. DH-000012 (Nháp): bill hiện Người nhận điền sẵn, "Nhập
+  SĐT" đỏ mờ, gõ phí 30000 → Phí ship 30.000đ, Tổng bill 120.000đ, COD gợi ý 120.000, "Còn thiếu:
+  SĐT", hiện Hoàn tác (không lưu). DH-000011 (Hoàn tất): bill chỉ xem, ô là chữ thường, không Lưu.
+- Sửa khi kiểm: rule toàn cục `.admin-shell input:not(…)` đè kiểu ô trên bill → dùng cùng chuỗi
+  `:not` để thắng; khoảng trống giữa số phí và "đ".
+- Chưa kiểm: dưới 1024px, bill nhiều trang trên trình duyệt (có test đơn vị), chụp ảnh thật gửi khách.

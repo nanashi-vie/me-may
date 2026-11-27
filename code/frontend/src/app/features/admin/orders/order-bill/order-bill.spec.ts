@@ -60,7 +60,7 @@ describe('OrderBill', () => {
   it('shows the shop, customer contact, books and money of a saved bill', () => {
     const t = setup(order(1));
     const all = t.text(t.card());
-    for (const part of ['Mẹ Mây', 'Sách ngoại văn cho bé', 'Khách: Chị Lan', 'SĐT: 0907654321', 'Địa chỉ: Số 1 đường thử'])
+    for (const part of ['Mẹ Mây', 'Sách ngoại văn cho bé', 'Người nhận: Người khác', 'SĐT: 0907654321', 'Địa chỉ: Số 1 đường thử'])
       expect(all).toContain(part);
     expect(t.rows()).toEqual(['Sách số 1 2 × 75.000đ 150.000đ']);
     expect(t.sums()).toEqual(['Tiền sách (2 quyển) 150.000đ', 'Phí ship 30.000đ', 'Tổng bill 180.000đ', 'Đã thanh toán 100.000đ', 'Cần thanh toán 80.000đ']);
@@ -75,7 +75,7 @@ describe('OrderBill', () => {
   });
   it('keeps internal details off the bill', () => {
     const all = (t => t.text(t.card()))(setup(order(2, {}, { discountAmount: 10000 })));
-    for (const secret of ['DH-', 'KH-', 'Người khác', 'MM-', '456', '1456', '98.765', 'COD', 'Ghi chú', 'Sách ngoài', 'Website', 'Giảm giá', 'TikTok', 'Zalo'])
+    for (const secret of ['DH-', 'KH-', 'MM-', '456', '1456', '98.765', 'COD', 'Ghi chú', 'Sách ngoài', 'Website', 'Giảm giá', 'TikTok', 'Zalo'])
       expect(all, secret).not.toContain(secret);
   });
   it('falls back to the profile phone and the saved address, and hides what is missing', () => {

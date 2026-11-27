@@ -17,6 +17,7 @@
         <a
           routerLink="/admin/orders"
           [queryParams]="tabQuery(t)"
+          [class]="'tone-' + tones[t.group]"
           [class.active]="t === tab()"
           [attr.aria-current]="t === tab() ? 'page' : null"
           >{{ t.label }}

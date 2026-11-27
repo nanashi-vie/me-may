@@ -1,0 +1,139 @@
+// The global admin field rule is `.admin-shell input:not(…)×5`; the same :not chain lets these
+// bill fields outrank it.
+$bill-field: ':is(.bill-contact, .bill-fee) :is(input, textarea):not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="submit"]):not([type="button"])';
+// The recipient and fee fields sit inside the customer bill: they read as bill text and only
+// show a line on hover and a frame while typing, so a screenshot stays clean.
+.bill-contact {
+  display: grid;
+  gap: 2px;
+}
+.bill-contact label,
+.bill-fee {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+}
+.bill-contact label > span {
+  flex: none;
+  margin: 0;
+}
+.bill-fee {
+  justify-content: space-between;
+  gap: 20px;
+  font-weight: 400;
+}
+.bill-fee > span {
+  display: inline;
+  margin: 0;
+}
+.fee-field {
+  display: inline-flex !important;
+  align-items: baseline;
+  gap: 1px;
+}
+#{$bill-field} {
+  width: 100%;
+  margin: 0;
+  box-shadow: none;
+  padding: 1px 4px;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  border-radius: 4px;
+  background: transparent;
+  min-height: 0;
+  height: auto;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  line-height: inherit;
+}
+#{$bill-field}:is(textarea) {
+  font-weight: 400;
+  resize: none;
+  field-sizing: content;
+}
+#{$bill-field}[name='fee'] {
+  width: 9ch;
+  padding-right: 0;
+  font-weight: 400;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+#{$bill-field}:hover:not(:disabled) {
+  border-bottom-color: #c7bfb4;
+}
+#{$bill-field}:focus {
+  border-bottom-color: transparent;
+  outline: 2px solid var(--red);
+  outline-offset: 1px;
+}
+#{$bill-field}::placeholder {
+  color: #b32635;
+  font-weight: 400;
+  opacity: 0.7;
+}
+// Read-only bills: the fields are plain bill text.
+#{$bill-field}:disabled {
+  opacity: 1;
+  -webkit-text-fill-color: currentColor;
+}
+.fee-field small {
+  color: #68615a;
+}
+.internal {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--line);
+  h2 {
+    margin: 0 0 14px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+}
+.modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+  padding: 0;
+  border: 0;
+  legend {
+    width: 100%;
+    margin-bottom: 7px;
+    padding: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  label:has(input:checked) {
+    border-color: var(--red);
+    background: #fdf8f5;
+  }
+  input {
+    width: 16px;
+    min-height: 16px;
+    margin: 0;
+    accent-color: var(--red);
+  }
+}
+.missing {
+  margin: 0 0 8px;
+  color: #9c5b0b;
+  font-size: 0.88rem;
+}

@@ -36,7 +36,6 @@ import {
   statusTone,
   CHANNEL_LABELS,
 } from '../order-models';
-import { OrderBill } from '../order-bill/order-bill';
 import { OrderItemForm } from '../order-item-form/order-item-form';
 import { OrderShippingForm, ShippingDraft } from '../order-shipping-form/order-shipping-form';
 import { integer, keepEnd, orderError, vnd } from '../order-values';
@@ -86,7 +85,6 @@ type Panel =
     RouterLink,
     VndInput,
     CustomerForm,
-    OrderBill,
     OrderItemForm,
     OrderShippingForm,
     OrderTimeline,
@@ -184,7 +182,6 @@ export class OrderDetailPage {
     return this.allNotes() ? notes : notes.slice(0, 5);
   });
   /** What the bill form holds now, for the bill beside it. */
-  readonly billDraft = signal<ShippingDraft | null>(null);
   /** Set after a saved command: the next order replaces whatever the bill form holds. */
   private reloadBill = true;
   /** Header actions reload the bill form afterwards, so unsaved bill edits are confirmed first. */
@@ -351,7 +348,6 @@ export class OrderDetailPage {
     this.fieldErrors.set({});
     this.toast.set('');
     this.itemForm()?.close();
-    this.billDraft.set(null);
     this.allNotes.set(false);
     this.reloadBill = true;
   }

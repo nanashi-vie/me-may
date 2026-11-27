@@ -28,6 +28,7 @@ import { OrderApi } from '../order-api';
 import {
   defaultOrderFilter,
   OrderFilter,
+  OrderGroup,
   OrderStats,
   OrderSummary,
   Page,
@@ -63,6 +64,15 @@ export class OrderList {
   readonly stats = signal<OrderStats | null>(null);
   readonly filter = signal<OrderFilter>(defaultOrderFilter());
   readonly tabs = ORDER_TABS;
+  /** Each tab takes the colour of its status badge; "Tất cả" keeps the brand red. */
+  readonly tones: Record<OrderGroup, string> = {
+    ALL: 'all',
+    ACTION: 'draft',
+    KEEPING: 'keeping',
+    PACKING: 'packing',
+    COMPLETED: 'completed',
+    CLOSED: 'closed',
+  };
   readonly tab = computed(() => tabOf(this.filter().group));
   readonly query = computed(() => orderQuery(this.filter()));
   readonly subActive = computed(() => this.tab().subs.some((s) => this.filter()[s.key] === s.value));
