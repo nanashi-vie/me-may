@@ -23,16 +23,26 @@
 p {
   margin: 0;
 }
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.logo {
+  display: block;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+}
 .shop {
   color: #b32635;
   font: 700 1.9rem/1.1 var(--font-display);
-  text-align: center;
 }
 .tagline {
-  margin-bottom: 12px;
   color: #68615a;
-  font-size: 0.82rem;
-  text-align: center;
+  font-size: 0.9rem;
 }
 .split {
   display: flex;
@@ -58,9 +68,9 @@ table {
   border-collapse: collapse;
 }
 th {
-  color: #68615a;
+  color: #292724;
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 700;
   text-align: left;
 }
 th,

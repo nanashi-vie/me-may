@@ -28,6 +28,8 @@ export class OrderBill {
   readonly lines = computed(() =>
     this.order().items.slice(this.page() * LINES_PER_PAGE, (this.page() + 1) * LINES_PER_PAGE),
   );
+  /** STT keeps counting across pages. */
+  readonly firstNumber = computed(() => this.page() * LINES_PER_PAGE + 1);
   readonly isLast = computed(() => this.page() === this.pageCount() - 1);
   readonly fee = computed(() => this.draft()?.shippingFee ?? null);
   /** A fee is entered: the bill shows shipping; otherwise it is provisional on the books. */

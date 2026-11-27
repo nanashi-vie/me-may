@@ -5577,3 +5577,9 @@ giữ điều kiện nghiệm thu và kiểm tra đường dẫn sau di chuyển
 - **File**: `order-list.{ts,html,scss,spec}`, `order-bill.{ts,html,scss,spec}`, `order-shipping-form.{ts,html,spec}` + `order-shipping-form.scss` mới, `order-detail.{ts,html,scss,spec}`; ORDER_BILL, ORDERS, ORDER_VERIFICATION, PROGRESS, DEV_LOG.
 - **Kiểm tra**: `npm test` 614/614, build đạt; trình duyệt 1440px trên đơn mẫu, chi tiết ở [ORDER_VERIFICATION](verification/ORDER_VERIFICATION.md#màu-tab-danh-sách-và-bill-sửa-trực-tiếp--27112026). Test mới viết cùng lúc với code (không đỏ trước), test cũ sửa theo bố cục mới. Đã dừng server tạm 18080/4210.
 - **Còn mở**: chưa kiểm <1024px và bill nhiều trang trên trình duyệt. Commit trên `dev`, chưa push.
+
+### 2026-11-27 — ORDER-BILL-BRAND-01 — Logo và bảng 5 cột trên bill gửi khách
+
+- **Yêu cầu owner (grill-me)**: logo tròn cạnh tên shop; bảng STT · Tên sách · SL · Đơn giá · Thành tiền tiêu đề đậm (STT liên tục qua trang); Tiền sách bỏ "n quyển"; "Tổng bill" → "Tổng tiền"; giữ Tạm tính/Đã thanh toán đủ/Tiền thừa, 12 dòng/trang. **QR chuyển khoản hoãn**: repo GitHub công khai nên khi làm lại owner chọn commit ảnh vào `public/` hay đặt file riêng `MEMAY_IMAGE_ROOT/private/` phục vụ qua API chỉ OWNER.
+- **File**: `order-bill.{html,ts,scss,spec}`, `order-detail.spec.ts`; ORDER_BILL, ORDER_VERIFICATION, DEV_LOG. Chỉ frontend; logo dùng `public/favicon/web-app-manifest-192x192.png` có sẵn.
+- **Kiểm tra**: 8 test đỏ trước rồi xanh; `npm test` 614/614, build đạt; trình duyệt 1440px DH-000010. Đã dừng server tạm. Commit trên `dev`, chưa push.

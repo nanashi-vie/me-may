@@ -234,3 +234,11 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
 - Sửa khi kiểm: rule toàn cục `.admin-shell input:not(…)` đè kiểu ô trên bill → dùng cùng chuỗi
   `:not` để thắng; khoảng trống giữa số phí và "đ".
 - Chưa kiểm: dưới 1024px, bill nhiều trang trên trình duyệt (có test đơn vị), chụp ảnh thật gửi khách.
+
+## Bill có logo và bảng 5 cột — 27/11/2026
+
+- Test bill đỏ trước (8 ca) rồi xanh; `npm test` 614/614, `npm run build` đạt.
+- Trình duyệt 1440px, DH-000010 tab Xuất bill: logo tròn cạnh "Mẹ Mây / Sách ngoại văn cho bé";
+  bảng STT · Tên sách · SL · Đơn giá · Thành tiền tiêu đề đậm, STT 1–3; Tiền sách (không "n
+  quyển"), Phí ship "nhập phí", Tạm tính, Đã thanh toán, Cần thanh toán.
+- Chưa kiểm: bill nhiều trang trên trình duyệt (STT liên tục có test đơn vị), dưới 1024px.

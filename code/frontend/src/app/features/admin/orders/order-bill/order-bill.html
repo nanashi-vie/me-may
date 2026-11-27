@@ -4,8 +4,13 @@
 }
 <section class="bill" aria-label="Bill gửi khách">
   <header>
-    <p class="shop">Mẹ Mây</p>
-    <p class="tagline">Sách ngoại văn cho bé</p>
+    <div class="brand">
+      <img class="logo" src="/favicon/web-app-manifest-192x192.png" alt="" width="64" height="64" />
+      <div>
+        <p class="shop">Mẹ Mây</p>
+        <p class="tagline">Sách ngoại văn cho bé</p>
+      </div>
+    </div>
     <p class="date">{{ o.serverNow | date: 'dd/MM/yyyy' : '+0700' }}</p>
     @if (page() === 0) {
       <!-- The bill form puts its recipient fields here, on the first page only. -->
@@ -22,16 +27,20 @@
   <table>
     <thead>
       <tr>
-        <th scope="col">Sách</th>
-        <th scope="col" class="number">SL × Đơn giá</th>
+        <th scope="col" class="number">STT</th>
+        <th scope="col">Tên sách</th>
+        <th scope="col" class="number">SL</th>
+        <th scope="col" class="number">Đơn giá</th>
         <th scope="col" class="number">Thành tiền</th>
       </tr>
     </thead>
     <tbody>
-      @for (item of lines(); track item.id) {
+      @for (item of lines(); track item.id; let i = $index) {
         <tr>
+          <td class="number">{{ firstNumber() + i }}</td>
           <td>{{ item.titleSnapshot }}</td>
-          <td class="number">{{ item.quantity }} × {{ money(item.unitPriceVnd) }}</td>
+          <td class="number">{{ item.quantity }}</td>
+          <td class="number">{{ money(item.unitPriceVnd) }}</td>
           <td class="number">{{ money(item.unitPriceVnd * item.quantity) }}</td>
         </tr>
       }
@@ -40,7 +49,7 @@
   @if (isLast()) {
     <div class="bill-totals">
       <p class="split">
-        <span>Tiền sách ({{ o.totalQuantity }} quyển)</span>
+        <span>Tiền sách</span>
         <span>{{ money(o.totals.goodsTotal) }}</span>
       </p>
       <!-- The bill form puts an editable fee here. -->
@@ -53,7 +62,7 @@
         }
       </ng-content>
       <p class="split">
-        <strong>{{ billed() ? 'Tổng bill' : 'Tạm tính' }}</strong>
+        <strong>{{ billed() ? 'Tổng tiền' : 'Tạm tính' }}</strong>
         <strong>{{ money(total()) }}</strong>
       </p>
       <p class="split">

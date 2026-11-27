@@ -100,19 +100,21 @@ RECIPIENT/MONTHLY cho file J&T sau này), cân nặng + gợi ý, COD, Đã nh�
 ## Bill để chụp màn hình
 
 - Chỉ OWNER, trong tab Xuất bill. Không có link công khai, tải ảnh, in hay PDF.
-- Hiện: Mẹ Mây, Sách ngoại văn cho bé, **ngày xuất bill** (ngày `serverNow`, giờ Việt Nam),
+- Hiện: logo tròn (favicon 192px) bên trái "Mẹ Mây" và "Sách ngoại văn cho bé", **ngày xuất bill** (ngày `serverNow`, giờ Việt Nam),
   **Người nhận** (thay "Khách" từ 27/11), **SĐT** (ô SĐT người nhận, trống thì SĐT hồ sơ),
   **Địa chỉ** (ô địa chỉ đang nhập, trống thì địa chỉ đã lưu; trống hẳn thì ẩn dòng); mỗi
-  dòng tên sách, SL × đơn giá, thành tiền; các khoản tiền bên dưới.
+  dòng bảng 5 cột tiêu đề đậm **STT · Tên sách · SL · Đơn giá · Thành tiền** (STT đếm liên
+  tục qua các trang); các khoản tiền bên dưới.
 - Không hiện: mã đơn, mã khách, kênh liên hệ, trọng lượng, COD, mã sách, nguồn sách, ghi chú,
-  thông tin chuyển khoản, giảm giá.
-- Bill đi theo form khi gõ: Tổng bill = tiền sách + phí ship đang nhập; dòng cuối = Tổng bill
+  thông tin chuyển khoản/QR (owner hoãn 27/11; khi làm lại chọn lưu QR trong Git công khai hay
+  file riêng phục vụ qua API chỉ OWNER), giảm giá.
+- Bill đi theo form khi gõ: Tổng tiền = tiền sách + phí ship đang nhập; dòng cuối = Tổng tiền
   − đã nhận. Form có thay đổi chưa lưu thì dải vàng "Chưa lưu — bấm Lưu bill trước khi chụp
   gửi khách" hiện ngoài khung bill.
 
 | Trường hợp | Bill hiện |
 |---|---|
-| Có phí ship | Tiền sách (n quyển), Phí ship, Tổng bill, Đã thanh toán, dòng cuối |
+| Có phí ship | Tiền sách, Phí ship, Tổng tiền, Đã thanh toán, dòng cuối |
 | Phí ship bằng 0 | Phí ship Miễn phí |
 | Ô phí ship trống | "Tạm tính, chưa gồm phí ship"; ô Phí ship "nhập phí", dòng tổng là Tạm tính |
 | Dòng cuối | Cần thanh toán / Đã thanh toán đủ / Tiền thừa |
