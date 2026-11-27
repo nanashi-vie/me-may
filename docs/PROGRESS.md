@@ -4,6 +4,7 @@ Cập nhật 27/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `OUTAGE-NOTICE-01` (27/11, trên `dev`): khi backend không phản hồi (530…), public hiện màn "Tiệm tạm nghỉ" (503, tự tải lại khi sống, nút Zalo), admin có banner và không bị đẩy ra đăng nhập; Worker đổi 530 thành `503 backend_unavailable`. Chỉ frontend. Chưa kiểm trên môi trường thật. Việc sau: uptime monitor ping `/actuator/health`. [Contract](product/OUTAGE.md)
 - `ORDER-CARRIER-01` (27/11, trên `dev`, chưa push): chọn J&T / Shopee Express / Khách tự lấy, kiểm mã vận đơn 8–30 chữ/số không trùng, Nhận cọc không ảnh cần lý do. **Migration V40**, backend trước frontend. [Rollout](runbooks/ROLLOUT_CHECKS.md#hãng-vận-chuyển-và-mã-vận-đơn-v40)
 - `ORDER-BILL-INLINE-01` (27/11, đã push `dev`): tab danh sách đơn mang màu nhãn; tab Xuất bill gộp form vào bill sửa trực tiếp (người nhận/SĐT/địa chỉ/phí ship), phần Nội bộ giữ thanh toán/cân/COD/Lưu. Chỉ frontend. [Contract](product/ORDER_BILL.md)
 - `ORDER-DETAIL-TIDY-01` (27/11, đã push `dev`): gọn trang chi tiết đơn — badge thanh toán lên header, Tổng to nhất, bỏ trùng Mã đơn/Ngày tạo, khách 2 dòng, nút nhỏ ở tiêu đề card. Chỉ frontend. 4 đơn `[Mẫu]` DH-000010…013 trên DB local. [Contract](product/ORDER_BILL.md)

@@ -63,8 +63,28 @@ describe('Workers HTTP boundary', () => {
       async () => null,
     );
     expect(r.status).toBe(503);
-    expect(await r.json()).toEqual({ error: 'backend_unavailable' });
+    expect(await r.json()).toEqual({ error: 'backend_unavailable', upstreamStatus: 0 });
     expect(r.headers.get('cache-control')).toBe('no-store');
+  });
+  it('turns a Cloudflare 530 from an unreachable origin into a retryable backend_unavailable', async () => {
+    for (const status of [530, 502, 522]) {
+      vi.stubGlobal('fetch', async () => new Response('<html>cloudflare error</html>', { status }));
+      const r = await handleWorkerRequest(
+        new Request('http://127.0.0.1:8787/api/v1/books'),
+        env,
+        async () => null,
+      );
+      expect(r.status).toBe(503);
+      expect(r.headers.get('retry-after')).toBe('300');
+      expect(r.headers.get('cache-control')).toBe('no-store');
+      expect(await r.json()).toEqual({ error: 'backend_unavailable', upstreamStatus: status });
+    }
+  });
+  it('passes app errors through unchanged', async () => {
+    vi.stubGlobal('fetch', async () => Response.json({ error: 'boom' }, { status: 500 }));
+    const r = await handleWorkerRequest(new Request('http://127.0.0.1:8787/api/v1/books'), env, async () => null);
+    expect(r.status).toBe(500);
+    expect(await r.json()).toEqual({ error: 'boom' });
   });
   it('renders HTML including index.html through SSR; enforces private headers and real 404', async () => {
     for (const path of ['/quan-tam', '/admin/sach', '/index.html', '/missing']) {

@@ -3,6 +3,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { catchError, of, switchMap, tap, throwError, map, Observable, defer, shareReplay, finalize } from 'rxjs';
 
+import { outageCode } from '../outage/backend-status';
+
 export interface CurrentAdmin { id: number; email: string; role: 'OWNER' | 'STAFF'; }
 export interface CsrfResponse { headerName: string; token: string; }
 
@@ -43,7 +45,7 @@ export class AuthService {
     return this.http.get<CurrentAdmin>('/api/v1/auth/me', this.options).pipe(
       map(user => {if(epoch!==this.epoch())return this.currentUser();this.accept(user);return user;}),
       catchError((error: HttpErrorResponse) => {
-        if(epoch===this.epoch())this.invalidateSession();
+        if(epoch===this.epoch() && outageCode(error)===null)this.invalidateSession();
         return error.status === 401 ? of(null) : throwError(() => error);
       }),
     );
