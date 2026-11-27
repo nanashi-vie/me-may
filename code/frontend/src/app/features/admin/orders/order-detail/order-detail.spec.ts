@@ -120,6 +120,31 @@ describe('OrderDetail', () => {
     expect(body).not.toHaveProperty('paymentMethod');
     expect(body).not.toHaveProperty('occurredAt');
   });
+  it('confirms a transfer without a receipt image only with a note saying why', async () => {
+    const { f, c, api } = await setup();
+    c.openPayment('DEPOSIT');
+    await settle(f);
+    (f.nativeElement.querySelector('#payment-dialog input[name=noProof]') as HTMLInputElement).click();
+    await settle(f);
+    expect(c.payment.noProof).toBe(true);
+    const dialog = f.nativeElement.querySelector('#payment-dialog') as HTMLElement;
+    expect(dialog.querySelector('input[type=file]')).toBeNull();
+    expect(text(dialog.querySelector('textarea[name=note]')!.closest('label'))).toContain('Lý do không có ảnh *');
+    c.payment.amount = 50000;
+    c.submitAction();
+    expect(api.recordPayment).not.toHaveBeenCalled();
+    c.payment.note = 'Khách trả tiền mặt tại tiệm';
+    c.submitAction();
+    const [, body, proof] = api.recordPayment.mock.calls.at(-1) as any[];
+    expect(body).toMatchObject({ amount: 50000, note: 'Khách trả tiền mặt tại tiệm' });
+    expect(proof).toBeNull();
+  });
+  it('marks a payment without receipt in the ledger', async () => {
+    const { f, c } = await setup();
+    c.order.set(billable({ payments: [{ id: '9', transactionType: 'DEPOSIT', amount: 50000, occurredAt: '2026-11-27T01:00:00Z', note: 'Khách trả tiền mặt tại tiệm', createdBy: '1', createdAt: '2026-11-27T01:00:00Z', voidedAt: null, voidReason: null, hasProof: false }] }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('table.ledger tbody'))).toContain('Không có ảnh');
+  });
   it('keeps Confirm locked until a receipt image is chosen', async () => {
     const { f, c } = await setup();
     c.openPayment('DEPOSIT');
@@ -367,6 +392,39 @@ describe('OrderDetail', () => {
     ask.mockReturnValue(true);
     c.runHeaderAction('ship');
     expect(c.panel()).toBe('ship');
+    vi.restoreAllMocks();
+  });
+  it('hands a pickup over without a tracking code once paid', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable({ status: 'READY_TO_SHIP', shipments: [{ id: '1', state: 'PLANNED', shippingSnapshot: {}, handedOverAt: null }], shippingProvider: 'PICKUP', shippingFee: 0, totals: { ...billable().totals, orderTotal: 150000, paidAmount: 150000, balance: 0 } }));
+    await settle(f);
+    expect(text(f.nativeElement.querySelector('.head-actions'))).toContain('Khách đã lấy hàng');
+    expect(text(f.nativeElement.querySelector('.basics'))).toContain('Khách tự lấy');
+    c.runHeaderAction('ship');
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('input[name=tracking]')).toBeNull();
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    c.submitAction();
+    expect((api.command.mock.calls.at(-1) as any[]).slice(1, 3)).toEqual(['ship', expect.not.objectContaining({ trackingCode: expect.anything() })]);
+    vi.restoreAllMocks();
+  });
+  it('switches between J&T and Shopee Express at handover, not to pickup', async () => {
+    const { f, c, api } = await setup();
+    c.order.set(billable({ status: 'READY_TO_SHIP', shipments: [{ id: '1', state: 'PLANNED', shippingSnapshot: {}, handedOverAt: null }], shippingFee: 30000, shippingProvider: 'JNT' }));
+    await settle(f);
+    c.runHeaderAction('ship');
+    await settle(f);
+    const carriers = Array.from(f.nativeElement.querySelectorAll('.inline-form input[name=shipCarrier]') as NodeListOf<HTMLInputElement>);
+    expect(carriers.map((r) => [text(r.closest('label')), r.disabled, r.checked])).toEqual([
+      ['J&T Express', false, true],
+      ['Shopee Express', false, false],
+      ['Khách tự lấy', true, false],
+    ]);
+    c.shipCarrier = 'SPX';
+    c.trackingCode = 'spxvn0001';
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    c.submitAction();
+    expect((api.command.mock.calls.at(-1) as any[]).slice(1, 3)).toEqual(['ship', expect.objectContaining({ trackingCode: 'spxvn0001', shippingProvider: 'SPX' })]);
     vi.restoreAllMocks();
   });
   it('opens header actions without asking while the bill has no edits', async () => {

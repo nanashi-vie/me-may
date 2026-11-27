@@ -242,3 +242,16 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   bảng STT · Tên sách · SL · Đơn giá · Thành tiền tiêu đề đậm, STT 1–3; Tiền sách (không "n
   quyển"), Phí ship "nhập phí", Tạm tính, Đã thanh toán, Cần thanh toán.
 - Chưa kiểm: bill nhiều trang trên trình duyệt (STT liên tục có test đơn vị), dưới 1024px.
+
+## Hãng vận chuyển, mã vận đơn và nhận tiền không ảnh — 27/11/2026
+
+- Backend: `OrderCarrierTest` 8 ca đỏ trước (chưa có hãng/kiểm mã/thanh toán không ảnh) rồi xanh;
+  `verify` 476 test (3 skip) đạt trên PostgreSQL 17 container tạm (cổng 55440, đã xóa) vì
+  `me_may_test` trên máy còn ở V21 lệch checksum.
+- Frontend: `npm test` 620/620, `npm run build` đạt.
+- Trình duyệt 1440px (backend 18080 + frontend 4210 tạm, đã dừng): DH-000015 Khách tự lấy — bill
+  không Địa chỉ, Phí ship "Khách tự lấy", Nội bộ chỉ còn tiền, nút "Khách đã lấy hàng";
+  DH-000014 Shopee Express — hộp bàn giao chọn sẵn Shopee Express, Khách tự lấy bị khóa; Nhận cọc
+  tick không ảnh → ẩn ô ảnh, ô "Lý do không có ảnh *".
+- Chưa kiểm trên trình duyệt: bấm bàn giao thật (hộp xác nhận của trình duyệt), lỗi mã "hi"/trùng
+  (có test backend), dưới 1024px.

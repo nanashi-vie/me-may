@@ -31,7 +31,7 @@ public final class OrderDtos {
  public record OrderDetail(String id,String orderCode,String customerId,String customerCodeSnapshot,String customerNameSnapshot,String customerPhoneSnapshot,
   Status status,String fulfillmentType,long version,Instant createdAt,Instant updatedAt,Instant keepStartedAt,Instant keepUntil,int keepExtensionCount,
   long requiredDepositVnd,long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,
-  boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,
+  boolean parcelWeightOverridden,boolean parcelWeightNeedsReview,long codAmount,boolean codNeedsReview,Long declaredValue,String shippingPaymentType,String customerPaymentMode,String trackingCode,String shippingProvider,
   List<OrderItem> items,List<OrderPayment> payments,List<Shipment> shipments,List<ActionNote> notes,List<OrderReturn> returns,Totals totals,long totalQuantity,Instant serverNow,Instant completedAt,Instant cancelledAt,CustomerChannel customerChannel){}
  public record OrderSummary(String id,String orderCode,String customerId,String customerNameSnapshot,String customerPhoneSnapshot,Status status,String fulfillmentType,
   Instant createdAt,Instant keepUntil,long totalQuantity,Totals totals,long version,String keepWarning,boolean trashable,boolean returned,Instant completedAt,Instant cancelledAt,CustomerChannel customerChannel){}
@@ -57,10 +57,19 @@ public final class OrderDtos {
  public record ExtendRequest(Long version,UUID requestId,String keepUntilDate,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record ReasonRequest(Long version,UUID requestId,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
+ /** Without a receipt image the note must say why (owner 27/11/2026). */
  public record PaymentRequest(Long version,UUID requestId,PaymentType transactionType,Long amount,String note,Boolean actualConfirmed){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
 
- public record ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String customerPaymentMode,String trackingCode,Long additionalShippingFee,String reason){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
- public record ShipRequest(Long version,UUID requestId,String trackingCode){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
+ /** shippingProvider JNT, SPX or PICKUP; null keeps the order's carrier. */
+ public record ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String customerPaymentMode,String trackingCode,Long additionalShippingFee,String reason,String shippingProvider){
+  public ShippingRequest(Long version,UUID requestId,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden,Boolean parcelWeightConfirmed,Long codAmount,Boolean codConfirmed,String shippingPaymentType,String customerPaymentMode,String trackingCode,Long additionalShippingFee,String reason){this(version,requestId,recipientName,recipientPhone,shippingAddress,shippingFee,parcelWeightGrams,parcelWeightOverridden,parcelWeightConfirmed,codAmount,codConfirmed,shippingPaymentType,customerPaymentMode,trackingCode,additionalShippingFee,reason,null);}
+  public MutationMeta meta(){return new MutationMeta(version,requestId);}
+ }
+ /** shippingProvider may switch between JNT and SPX at handover; null keeps the order's carrier. */
+ public record ShipRequest(Long version,UUID requestId,String trackingCode,String shippingProvider){
+  public ShipRequest(Long version,UUID requestId,String trackingCode){this(version,requestId,trackingCode,null);}
+  public MutationMeta meta(){return new MutationMeta(version,requestId);}
+ }
  public record ReturnItem(String itemId,Long quantityReceived,Long quantityRestocked,String reason){}
  public record ReturnRequest(Long version,UUID requestId,String reason,Boolean actualConfirmed,List<ReturnItem> items){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
  public record OrderReturn(String id,String itemId,long quantityReceived,long quantityRestocked,String reason,String createdBy,Instant createdAt){}

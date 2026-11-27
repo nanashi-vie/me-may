@@ -58,8 +58,18 @@ class OrderPaymentProofApiTest extends OrderTestSupport {
         var payments = tree(api.send("GET", BASE + "/" + id, null, false)).path("payments");
         assertThat(payments.size()).isEqualTo(1);
         assertThat(payments.get(0).path("hasProof").asBoolean()).isTrue();
-        assertThat(payments.get(0).has("paymentMethod")).isFalse();
         assertThat(proofFiles()).isEqualTo(1);
+    }
+
+    @Test void recordsWithoutProofWhenTheNoteSaysWhy() throws Exception {
+        long id = invoice();
+        var fields = new HashMap<>(deposit(0, UUID.randomUUID(), 100000));
+        fields.put("note", "Khách trả tiền mặt tại tiệm");
+        var r = post(id, payment(fields));
+        assertThat(r.statusCode()).as(r.body()).isEqualTo(200);
+        var paid = tree(api.send("GET", BASE + "/" + id, null, false)).path("payments").get(0);
+        assertThat(paid.path("hasProof").asBoolean()).isFalse();
+        assertThat(proofFiles()).isZero();
     }
 
     @Test void missingProofIs400() throws Exception {

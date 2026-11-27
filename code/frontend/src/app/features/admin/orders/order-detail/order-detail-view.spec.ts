@@ -99,6 +99,8 @@ describe('order detail view', () => {
     ]);
     expect(timeline(cases['draftNow']).map((s) => s.key)).toEqual(['created', 'finalized', 'completed']);
     expect(timeline(cases['keeping'])[1]).toMatchObject({ done: true, at: '2026-11-01T02:00:00Z', label: 'Bắt đầu keep' });
+    const pickedUp = { ...cases['keeping'], shippingProvider: 'PICKUP' } as OrderDetail;
+    expect(timeline(pickedUp).find((s) => s.key === 'completed')!.label).toBe('Khách đã lấy · Hoàn tất');
   });
 
   it('greys finalizing after a reopen and dates it by the newest bill', () => {

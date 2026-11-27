@@ -2,9 +2,10 @@ import { Component, output, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { VndInput } from '../../books/vnd-input';
 import { OrderBill } from '../order-bill/order-bill';
-import { CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
+import { Carrier, CARRIER_LABELS, carrierOf, CustomerPaymentMode, OrderDetail, ShippingPaymentType } from '../order-models';
 import { integer, vnd } from '../order-values';
 export interface ShippingDraft {
+  shippingProvider: Carrier;
   customerPaymentMode: CustomerPaymentMode | null;
   recipientName: string;
   recipientPhone: string;
@@ -54,7 +55,9 @@ export class OrderShippingForm {
   readonly error = signal('');
   readonly money = vnd;
   mode: 'finalize' | 'shipping' = 'finalize';
+  readonly carriers = Object.entries(CARRIER_LABELS) as [Carrier, string][];
   model: ShippingDraft = {
+    shippingProvider: 'JNT',
     customerPaymentMode: 'RECIPIENT',
     recipientName: '',
     recipientPhone: '',
@@ -78,13 +81,17 @@ export class OrderShippingForm {
     this.current.set(order);
     this.mode = mode;
     // The recipient starts as the customer until the shop types someone else.
+    const carrier = carrierOf(order.shippingProvider);
     this.model = {
-      customerPaymentMode: order.customerPaymentMode ?? (mode === 'finalize' ? 'RECIPIENT' : null),
+      shippingProvider: carrier,
+      customerPaymentMode:
+        carrier === 'PICKUP' ? null : (order.customerPaymentMode ?? (mode === 'finalize' ? 'RECIPIENT' : null)),
       recipientName: order.recipientName ?? order.customerNameSnapshot ?? '',
       recipientPhone: order.recipientPhone ?? order.customerPhoneSnapshot ?? '',
       shippingAddress: order.shippingAddress ?? '',
       shippingFee: order.shippingFee,
-      parcelWeightGrams: mode === 'shipping' ? order.parcelWeightGrams : this.suggestedWeight(),
+      parcelWeightGrams:
+        carrier === 'PICKUP' ? null : mode === 'shipping' ? order.parcelWeightGrams : this.suggestedWeight(),
       parcelWeightOverridden: true,
       parcelWeightConfirmed: false,
       codAmount: order.codAmount,
@@ -103,6 +110,24 @@ export class OrderShippingForm {
     this.suggestCod();
     this.initial = JSON.stringify(this.model);
     this.loaded.set(true);
+    this.emitChange();
+  }
+  /** The customer collects at the shop: no shipping fee, parcel, COD or payment mode. */
+  pickup() {
+    return this.model.shippingProvider === 'PICKUP';
+  }
+  chooseCarrier(carrier: Carrier) {
+    const wasPickup = this.pickup();
+    this.model.shippingProvider = carrier;
+    if (carrier === 'PICKUP') {
+      Object.assign(this.model, { shippingFee: 0, codAmount: 0, customerPaymentMode: null, parcelWeightGrams: null });
+    } else if (wasPickup) {
+      const saved = this.order?.shippingProvider === 'PICKUP' ? null : (this.order?.shippingFee ?? null);
+      Object.assign(this.model, { shippingFee: saved, customerPaymentMode: 'RECIPIENT', parcelWeightGrams: this.suggestedWeight() });
+      this.manualWeight = false;
+      this.manualCod = false;
+      this.suggestCod();
+    }
     this.emitChange();
   }
   emitChange() {
@@ -175,6 +200,7 @@ export class OrderShippingForm {
   valid() {
     if (!this.allowed()) return false;
     const m = this.model;
+    if (this.pickup()) return !!m.recipientName.trim() && !!m.recipientPhone.trim();
     return (
       !!m.customerPaymentMode &&
       !this.reviewRequired &&
@@ -191,9 +217,13 @@ export class OrderShippingForm {
   /** What still blocks saving, named the way the bill shows it. */
   missing() {
     const m = this.model;
-    return [
+    const contact: [boolean, string][] = [
       [!m.recipientName.trim(), 'người nhận'],
       [!m.recipientPhone.trim(), 'SĐT'],
+    ];
+    if (this.pickup()) return contact.filter(([gap]) => gap).map(([, name]) => name);
+    return [
+      ...contact,
       [!m.shippingAddress.trim(), 'địa chỉ'],
       [!integer(m.shippingFee), 'phí ship'],
       [!m.customerPaymentMode, 'phương thức thanh toán'],
@@ -213,6 +243,9 @@ export class OrderShippingForm {
       shippingAddress: this.model.shippingAddress.trim(),
       shippingFee: this.model.shippingFee,
       additionalShippingFee: null,
+      ...(this.pickup()
+        ? { shippingFee: 0, codAmount: 0, parcelWeightGrams: null, customerPaymentMode: null }
+        : {}),
     });
   }
   dirty() {

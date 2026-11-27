@@ -1,55 +1,57 @@
 @if (loaded()) {
-    @if (locked() && error()) {
-      <div class="notice" role="alert">
-        <p>{{ error() }}</p>
-        <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
-      </div>
-    }
-    @if (conflict()) {
-      <div class="notice" role="alert">
-        <p>Dữ liệu đơn đã đổi. Tải lại bản mới để tiếp tục; nội dung đang nhập được giữ lại.</p>
-        <button
-          type="button"
-          class="secondary"
-          [disabled]="refreshing()"
-          (click)="refreshRequested.emit()"
-        >
-          Tải lại dữ liệu đơn
-        </button>
-      </div>
-    }
-    <form
-      (ngSubmit)="submit()"
-      #form="ngForm"
-      aria-label="Xuất bill"
-      (input)="emitChange()"
-      (change)="emitChange()"
-    >
-      <fieldset [disabled]="locked() || refreshing() || readOnly()">
-        @if (error()) {
-          <p class="error" role="alert">{{ error() }}</p>
-        }
-        @if (current(); as o) {
-          <app-order-bill [order]="o" [draft]="draft()" [dirty]="dirty()">
-            <div billContact class="bill-contact">
+  @if (locked() && error()) {
+    <div class="notice" role="alert">
+      <p>{{ error() }}</p>
+      <button type="button" class="primary" (click)="retry.emit()">Thử lại cùng yêu cầu</button>
+    </div>
+  }
+  @if (conflict()) {
+    <div class="notice" role="alert">
+      <p>Dữ liệu đơn đã đổi. Tải lại bản mới để tiếp tục; nội dung đang nhập được giữ lại.</p>
+      <button
+        type="button"
+        class="secondary"
+        [disabled]="refreshing()"
+        (click)="refreshRequested.emit()"
+      >
+        Tải lại dữ liệu đơn
+      </button>
+    </div>
+  }
+  <form
+    (ngSubmit)="submit()"
+    #form="ngForm"
+    aria-label="Xuất bill"
+    (input)="emitChange()"
+    (change)="emitChange()"
+  >
+    <fieldset [disabled]="locked() || refreshing() || readOnly()">
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+      @if (current(); as o) {
+        <app-order-bill [order]="o" [draft]="draft()" [dirty]="dirty()">
+          <div billContact class="bill-contact">
+            <label
+              ><span>Người nhận:</span
+              ><input
+                name="name"
+                required
+                maxlength="150"
+                placeholder="Nhập tên người nhận"
+                [(ngModel)]="model.recipientName" /></label
+            ><label
+              ><span>SĐT:</span
+              ><input
+                name="phone"
+                type="tel"
+                required
+                maxlength="20"
+                placeholder="Nhập SĐT"
+                [(ngModel)]="model.recipientPhone"
+            /></label>
+            @if (!pickup()) {
               <label
-                ><span>Người nhận:</span
-                ><input
-                  name="name"
-                  required
-                  maxlength="150"
-                  placeholder="Nhập tên người nhận"
-                  [(ngModel)]="model.recipientName" /></label
-              ><label
-                ><span>SĐT:</span
-                ><input
-                  name="phone"
-                  type="tel"
-                  required
-                  maxlength="20"
-                  placeholder="Nhập SĐT"
-                  [(ngModel)]="model.recipientPhone" /></label
-              ><label
                 ><span>Địa chỉ:</span
                 ><textarea
                   name="address"
@@ -60,10 +62,14 @@
                   [(ngModel)]="model.shippingAddress"
                 ></textarea>
               </label>
-            </div>
-            <label billFee class="split bill-fee"
-              ><span>Phí ship</span
-              ><span class="fee-field">
+            }
+          </div>
+          <label billFee class="split bill-fee"
+            ><span>Phí ship</span>
+            @if (pickup()) {
+              <span>Khách tự lấy</span>
+            } @else {
+              <span class="fee-field">
                 @if (model.shippingFee === 0) {
                   <small>Miễn phí</small>
                 }
@@ -74,15 +80,33 @@
                   placeholder="nhập phí"
                   aria-label="Phí ship khách trả (VNĐ)"
                   [(ngModel)]="model.shippingFee"
-                  (ngModelChange)="suggestCod()" />
+                  (ngModelChange)="suggestCod()"
+                />
                 @if (model.shippingFee !== null) {
                   đ
-                }</span
-            ></label>
-          </app-order-bill>
-        }
-        <section class="internal" aria-labelledby="internal-title">
-          <h2 id="internal-title">Nội bộ · không gửi khách</h2>
+                }
+              </span>
+            }
+          </label>
+        </app-order-bill>
+      }
+      <section class="internal" aria-labelledby="internal-title">
+        <h2 id="internal-title">Nội bộ · không gửi khách</h2>
+        <fieldset class="modes carriers">
+          <legend>Giao hàng</legend>
+          @for (c of carriers; track c[0]) {
+            <label
+              ><input
+                type="radio"
+                name="carrier"
+                [value]="c[0]"
+                [checked]="model.shippingProvider === c[0]"
+                (change)="chooseCarrier(c[0])"
+              />{{ c[1] }}</label
+            >
+          }
+        </fieldset>
+        @if (!pickup()) {
           <div class="grid">
             <fieldset class="modes full">
               <legend>Phương thức thanh toán</legend>
@@ -139,38 +163,41 @@
               </p>
             }
           </div>
-          <div class="notice">
-            <p class="split-line">
-              <span
-                >Đã nhận
-                @if (!readOnly()) {
-                  <button type="button" class="text-button" (click)="paymentRequested.emit()">
-                    Nhận cọc
-                  </button>
-                }</span
-              ><strong>{{ money(received()) }}</strong>
-            </p>
-            <p class="split-line">
-              <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
-            </p>
-          </div>
-          @if (reviewRequired && !readOnly()) {
-            <button type="button" class="secondary" (click)="reviewRequired = false">
-              Đã kiểm tra lại COD và cân nặng
-            </button>
+        } @else {
+          <p class="muted">Khách lấy tại tiệm: cần thanh toán đủ trước khi giao.</p>
+        }
+        <div class="notice">
+          <p class="split-line">
+            <span
+              >Đã nhận
+              @if (!readOnly()) {
+                <button type="button" class="text-button" (click)="paymentRequested.emit()">
+                  Nhận cọc
+                </button>
+              }</span
+            ><strong>{{ money(received()) }}</strong>
+          </p>
+          <p class="split-line">
+            <span>Còn thu (+) / cần hoàn (−)</span><strong>{{ money(balance()) }}</strong>
+          </p>
+        </div>
+        @if (reviewRequired && !readOnly()) {
+          <button type="button" class="secondary" (click)="reviewRequired = false">
+            Đã kiểm tra lại COD và cân nặng
+          </button>
+        }
+        @if (!readOnly()) {
+          @if (missing().length) {
+            <p class="missing">Còn thiếu: {{ missing().join(', ') }}</p>
           }
-          @if (!readOnly()) {
-            @if (missing().length) {
-              <p class="missing">Còn thiếu: {{ missing().join(', ') }}</p>
+          <footer class="form-footer">
+            @if (dirty()) {
+              <button type="button" class="secondary" (click)="undo()">Hoàn tác</button>
             }
-            <footer class="form-footer">
-              @if (dirty()) {
-                <button type="button" class="secondary" (click)="undo()">Hoàn tác</button>
-              }
-              <button class="primary" [disabled]="!valid() || form.invalid">Lưu bill</button>
-            </footer>
-          }
-        </section>
-      </fieldset>
-    </form>
+            <button class="primary" [disabled]="!valid() || form.invalid">Lưu bill</button>
+          </footer>
+        }
+      </section>
+    </fieldset>
+  </form>
 }

@@ -90,7 +90,9 @@
             @if (keepError()) {
               <p class="error" role="alert">
                 {{ keepError() }}
-                <button type="button" class="text-button" (click)="customerSaved(c)">Thử lại</button>
+                <button type="button" class="text-button" (click)="customerSaved(c)">
+                  Thử lại
+                </button>
               </p>
             }
             @if (existingKeeps(); as keeps) {
@@ -126,11 +128,7 @@
                 <option value="KEEP">Keep sách</option>
                 <option value="IMMEDIATE">Giao ngay</option>
               </select></label
-            ><button
-              class="primary"
-              [disabled]="!existingKeeps()"
-              (click)="create()"
-            >
+            ><button class="primary" [disabled]="!existingKeeps()" (click)="create()">
               Tạo đơn nháp cho khách
             </button>
           </div>
@@ -171,7 +169,7 @@
             [disabled]="busy() || !!pending()"
             (click)="runHeaderAction(a)"
           >
-            {{ actionLabels[a] }}
+            {{ actionLabel(a, d) }}
           </button>
         }
         <app-order-actions-menu
@@ -238,8 +236,8 @@
             <fieldset [disabled]="busy() || !!pending()">
               @if (action === 'remove') {
                 <p>
-                  {{ targetTitle() }} · Xóa dòng sách và trả tồn đang giữ tương ứng. Lịch sử lý
-                  do được giữ lại.
+                  {{ targetTitle() }} · Xóa dòng sách và trả tồn đang giữ tương ứng. Lịch sử lý do
+                  được giữ lại.
                 </p>
               }
               @if (action === 'keep') {
@@ -248,11 +246,8 @@
                   {{ money(d.totals.paidAmount) }}. Keep 14 ngày và trừ tồn ngay.
                 </p>
                 <label class="check"
-                  ><input
-                    type="checkbox"
-                    name="allow"
-                    [(ngModel)]="allowInsufficientDeposit"
-                  />Cho keep khi chưa đủ cọc (phải có lý do)</label
+                  ><input type="checkbox" name="allow" [(ngModel)]="allowInsufficientDeposit" />Cho
+                  keep khi chưa đủ cọc (phải có lý do)</label
                 >
               }
               @if (action === 'extend-keep') {
@@ -267,11 +262,39 @@
                     [(ngModel)]="keepUntilDate" /></label
                 ><small>Gia hạn không vượt {{ maxKeepDate() | date: 'dd/MM/yyyy' }}.</small>
               }
-              @if (action === 'ship' || action === 'tracking') {
+              @if (
+                (action === 'ship' || action === 'tracking') &&
+                carrierOf(d.shippingProvider) === 'PICKUP'
+              ) {
+                <p>
+                  Khách tự lấy tại tiệm · Bill {{ money(d.totals.orderTotal) }} · đã nhận
+                  {{ money(d.totals.paidAmount) }}
+                </p>
+              } @else if (action === 'ship' || action === 'tracking') {
+                <fieldset class="carrier-choice">
+                  <legend>Đơn vị vận chuyển</legend>
+                  @for (c of carriers; track c[0]) {
+                    <label class="check"
+                      ><input
+                        type="radio"
+                        name="shipCarrier"
+                        value="{{ c[0] }}"
+                        [attr.disabled]="c[0] === 'PICKUP' ? '' : null"
+                        [(ngModel)]="shipCarrier"
+                      />{{ c[1] }}</label
+                    >
+                  }
+                  <small>Đổi sang Khách tự lấy ở tab Xuất bill.</small>
+                </fieldset>
                 <label
                   ><span>Mã vận đơn *</span
-                  ><input name="tracking" maxlength="100" required [(ngModel)]="trackingCode"
-                /></label>
+                  ><input
+                    name="tracking"
+                    maxlength="100"
+                    required
+                    autocomplete="off"
+                    [(ngModel)]="trackingCode" /></label
+                ><small>8–30 chữ hoặc số; khoảng trắng tự bỏ.</small>
                 <p>
                   Bill {{ money(d.totals.orderTotal) }} · COD {{ money(d.codAmount) }} ·
                   {{ d.parcelWeightGrams }} g
@@ -283,32 +306,38 @@
                 }
               }
               @if (action === 'payment') {
+                <label class="check"
+                  ><input type="checkbox" name="noProof" [(ngModel)]="payment.noProof" />Chuyển
+                  khoản không có ảnh bill</label
+                >
                 <div class="grid">
                   <label
                     ><span>Số tiền (VNĐ) *</span
-                    ><input
-                      appVndInput
-                      name="amount"
-                      required
-                      [(ngModel)]="payment.amount" /></label
-                  ><label class="proof-field"
-                    ><span>Ảnh bill chuyển khoản *</span
-                    ><input
-                      type="file"
-                      name="proof"
-                      accept="image/jpeg,image/png"
-                      [attr.aria-invalid]="proofError() ? true : null"
-                      [attr.aria-describedby]="proofError() ? 'proof-error' : null"
-                      (change)="chooseProof($any($event.target).files?.[0] ?? null)"
-                    />
-                    @if (proofError()) {
-                      <small class="error" id="proof-error" role="alert">{{ proofError() }}</small>
-                    }
-                    @if (proofPreview()) {
-                      <img class="proof-preview" [src]="proofPreview()" alt="Ảnh bill đã chọn" />
-                    }</label
-                  ><label class="full"
-                    ><span>Ghi chú</span
+                    ><input appVndInput name="amount" required [(ngModel)]="payment.amount"
+                  /></label>
+                  @if (!payment.noProof) {
+                    <label class="proof-field"
+                      ><span>Ảnh bill chuyển khoản *</span
+                      ><input
+                        type="file"
+                        name="proof"
+                        accept="image/jpeg,image/png"
+                        [attr.aria-invalid]="proofError() ? true : null"
+                        [attr.aria-describedby]="proofError() ? 'proof-error' : null"
+                        (change)="chooseProof($any($event.target).files?.[0] ?? null)"
+                      />
+                      @if (proofError()) {
+                        <small class="error" id="proof-error" role="alert">{{
+                          proofError()
+                        }}</small>
+                      }
+                      @if (proofPreview()) {
+                        <img class="proof-preview" [src]="proofPreview()" alt="Ảnh bill đã chọn" />
+                      }
+                    </label>
+                  }
+                  <label class="full"
+                    ><span>{{ payment.noProof ? 'Lý do không có ảnh *' : 'Ghi chú' }}</span
                     ><textarea
                       name="note"
                       maxlength="1000"
@@ -329,8 +358,8 @@
               }
               @if (action === 'return') {
                 <p>
-                  Chỉ nhập tồn website đúng lượng sách thực tế đã nhận và có thể bán lại. Hoàn
-                  tiền được ghi riêng sau khi đã hoàn thực tế.
+                  Chỉ nhập tồn website đúng lượng sách thực tế đã nhận và có thể bán lại. Hoàn tiền
+                  được ghi riêng sau khi đã hoàn thực tế.
                 </p>
                 @for (line of returns; track line.itemId) {
                   <div class="section">
@@ -373,12 +402,8 @@
                   </div>
                 }
                 <label class="check"
-                  ><input
-                    name="actual"
-                    type="checkbox"
-                    required
-                    [(ngModel)]="actualConfirmed"
-                  />Đã kiểm tra hàng hoàn thực tế và số lượng từng dòng</label
+                  ><input name="actual" type="checkbox" required [(ngModel)]="actualConfirmed" />Đã
+                  kiểm tra hàng hoàn thực tế và số lượng từng dòng</label
                 >
               }
               @if (action === 'edit') {
@@ -386,8 +411,8 @@
                   @if (selectedCustomer(); as c) {
                     <div class="notice picked-customer">
                       <p>
-                        Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng
-                        bên dưới lưu riêng.
+                        Đổi sang: {{ c.customerCode }} · {{ c.fullName }}. Thông tin nhận hàng bên
+                        dưới lưu riêng.
                       </p>
                       <button type="button" class="secondary" (click)="changeCustomer()">
                         Đổi khách
@@ -458,11 +483,7 @@
                           ? '(không bắt buộc)'
                           : '*'
                     }}</span
-                  ><textarea
-                    name="reason"
-                    maxlength="1000"
-                    [(ngModel)]="actionReason"
-                  ></textarea>
+                  ><textarea name="reason" maxlength="1000" [(ngModel)]="actionReason"></textarea>
                 </label>
               }
               <footer class="form-footer">
@@ -471,7 +492,8 @@
                   class="primary"
                   [disabled]="
                     actionForm.invalid ||
-                    (action === 'payment' && (paymentConflict() || loading() || !paymentProof()))
+                    (action === 'payment' &&
+                      (paymentConflict() || loading() || (payment.noProof ? !payment.note.trim() : !paymentProof())))
                   "
                 >
                   Xác nhận
@@ -533,7 +555,13 @@
           }
           <div>
             <dt>Mã vận đơn</dt>
-            <dd>{{ d.trackingCode || 'Chưa có' }}</dd>
+            <dd>
+              {{
+                carrierOf(d.shippingProvider) === 'PICKUP'
+                  ? 'Khách tự lấy'
+                  : d.trackingCode || 'Chưa có'
+              }}
+            </dd>
           </div>
         </dl>
         <section class="card" aria-labelledby="items-title">
@@ -809,7 +837,12 @@
               </div>
               <div>
                 <dt>Vận chuyển</dt>
-                <dd>J&T EXPRESS · {{ s.shippingSnapshot.parcelWeightGrams }} g</dd>
+                <dd>
+                  {{ carrierLabels[carrierOf(s.shippingSnapshot.shippingProvider)] }}
+                  @if (s.shippingSnapshot.parcelWeightGrams) {
+                    · {{ s.shippingSnapshot.parcelWeightGrams }} g
+                  }
+                </dd>
               </div>
               <div>
                 <dt>Thanh toán ship</dt>
@@ -837,7 +870,9 @@
               {{ needsNewBill() ? 'Cần xuất lại bill cho đơn này.' : 'Chưa chốt bill' }}
             </p>
             @if (state !== 'cancelled') {
-              <button type="button" class="text-button" (click)="selectTab('bill')">Xuất bill →</button>
+              <button type="button" class="text-button" (click)="selectTab('bill')">
+                Xuất bill →
+              </button>
             }
           }
           @if (d.shipments.length) {
@@ -846,7 +881,8 @@
               @for (s of d.shipments; track s.id) {
                 <details class="history-entry">
                   <summary>
-                    Lần {{ s.attemptNo }} · {{ s.trackingCode || 'Chưa có vận đơn' }} · {{ s.state }}
+                    Lần {{ s.attemptNo }} · {{ s.trackingCode || 'Chưa có vận đơn' }} ·
+                    {{ s.state }}
                   </summary>
                   <p>
                     Người nhận: {{ s.shippingSnapshot.recipientName }} ·
@@ -854,7 +890,8 @@
                   </p>
                   <p>{{ s.shippingSnapshot.shippingAddress }}</p>
                   <p>
-                    J&T EXPRESS · {{ s.shippingSnapshot.parcelWeightGrams }} g ·
+                    {{ carrierLabels[carrierOf(s.shippingSnapshot.shippingProvider)] }} ·
+                    {{ s.shippingSnapshot.parcelWeightGrams }} g ·
                     {{ s.shippingSnapshot.shippingPaymentType }} · COD
                     {{ money(s.shippingSnapshot.codAmount) }} · Khai giá
                     {{ money(s.shippingSnapshot.declaredValue) }}

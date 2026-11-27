@@ -127,8 +127,26 @@ describe('OrderShippingForm', () => {
     expect(bill.querySelector('input[name=fee]')).not.toBeNull();
     expect(t.c.dirty()).toBe(false);
     expect(t.f.nativeElement.querySelector('.missing').textContent).toContain('địa chỉ, phí ship');
-    const modes = Array.from(t.f.nativeElement.querySelectorAll('.internal input[type=radio]') as NodeListOf<HTMLInputElement>, (r) => r.closest('label')!.textContent!.trim());
+    const modes = Array.from(t.f.nativeElement.querySelectorAll('.internal input[name=mode]') as NodeListOf<HTMLInputElement>, (r) => r.closest('label')!.textContent!.trim());
     expect(modes).toEqual(['Người nhận thanh toán', 'Thanh toán cuối tháng']);
+  });
+  it('asks only the recipient for a pickup and charges no shipping', async () => {
+    const t = await shown(order({ shippingAddress: null, shippingFee: null, parcelWeightGrams: null }));
+    const el = t.f.nativeElement as HTMLElement;
+    expect(Array.from(el.querySelectorAll('.internal input[name=carrier]') as NodeListOf<HTMLInputElement>, (r) => r.value)).toEqual(['JNT', 'SPX', 'PICKUP']);
+    expect(t.c.model.shippingProvider).toBe('JNT');
+    t.c.chooseCarrier('PICKUP');
+    t.f.detectChanges();
+    expect(el.querySelector('.bill input[name=fee]')).toBeNull();
+    expect(el.querySelector('.bill textarea[name=address]')).toBeNull();
+    expect(el.querySelector('.bill-fee')!.textContent).toContain('Khách tự lấy');
+    for (const gone of ['weight', 'cod', 'mode']) expect(el.querySelector(`.internal [name=${gone}]`), gone).toBeNull();
+    expect(t.c.missing()).toEqual([]);
+    expect(t.c.valid()).toBe(true);
+    const sent: any[] = [];
+    t.c.saved.subscribe((b) => sent.push(b));
+    t.c.submit();
+    expect(sent[0]).toMatchObject({ shippingProvider: 'PICKUP', shippingFee: 0, codAmount: 0, parcelWeightGrams: null, customerPaymentMode: null });
   });
   it('undoes back to the saved values', async () => {
     const t = await shown(order());

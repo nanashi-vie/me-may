@@ -193,3 +193,50 @@ button.small {
   th:first-child, td:first-child { width: 40px; padding-left: 0; }
 }
 .detail-main .ledger { min-width: 560px; }
+// Carrier choice in the handover form: pills like the bill's internal section.
+.carrier-choice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  legend {
+    width: 100%;
+    margin-bottom: 7px;
+    padding: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  label.check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: #fff;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  label.check:has(input:checked) {
+    border-color: var(--red);
+    background: #fdf8f5;
+  }
+  label.check:has(input:disabled) {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  input[type='radio'] {
+    width: 16px;
+    min-height: 16px;
+    margin: 0;
+    accent-color: var(--red);
+  }
+  small {
+    width: 100%;
+    color: var(--muted);
+  }
+}

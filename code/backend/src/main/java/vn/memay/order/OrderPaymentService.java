@@ -14,8 +14,8 @@ public class OrderPaymentService {
  public OrderPaymentService(OrderRepository db,OrderMutations mutations,PaymentProofStore proofs){this.db=db;this.mutations=mutations;this.proofs=proofs;}
  /** The receipt's hash is part of the request, so a retry with another image is a different request. */
  public MutationResult record(long id,PaymentRequest r,byte[] proof,AdminUser actor){
-  if(proof==null)throw AdminApiException.field("proof","Chọn ảnh bill chuyển khoản");
-  var payload=new LinkedHashMap<String,Object>();payload.put("payment",r);payload.put("proofSha256",PaymentProofStore.sha256(proof));
+  if(proof==null&&(r.note()==null||r.note().isBlank()))throw AdminApiException.field("proof","Chọn ảnh bill chuyển khoản hoặc ghi chú vì sao không có ảnh");
+  var payload=new LinkedHashMap<String,Object>();payload.put("payment",r);payload.put("proofSha256",proof==null?null:PaymentProofStore.sha256(proof));
   return mutations.run(actor,"PAYMENT_RECORD",id,r.meta(),payload,()->{
   var d=db.require(id,false);if(r.transactionType()==null)throw AdminApiException.field("transactionType","Chọn loại giao dịch");
   transition(d.status()!=Status.CANCELLED||r.transactionType()==PaymentType.REFUND);
@@ -23,11 +23,11 @@ public class OrderPaymentService {
   if(r.transactionType()==PaymentType.REFUND&&!Boolean.TRUE.equals(r.actualConfirmed()))throw AdminApiException.field("actualConfirmed","Xác nhận đã hoàn tiền thực tế");
   var when=db.clock.instant();
   String note=text(r.note(),"note",1000,false);
-  var stored=proofs.store(proof);
-  TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
+  var stored=proof==null?null:proofs.store(proof);
+  if(stored!=null)TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization(){
    @Override public void afterCompletion(int status){if(status!=STATUS_COMMITTED)proofs.delete(stored.key());}
   });
-  db.jdbc.update("insert into order_payments(order_id,transaction_type,amount,occurred_at,note,created_by,created_at,proof_key,proof_mime,proof_bytes,proof_sha256) values(?,?,?,?,?,?,?,?,?,?,?)",id,r.transactionType().name(),amount,Timestamp.from(when),note,actor.getId(),Timestamp.from(db.clock.instant()),stored.key(),stored.mime(),stored.bytes(),stored.sha256());
+  db.jdbc.update("insert into order_payments(order_id,transaction_type,amount,occurred_at,note,created_by,created_at,proof_key,proof_mime,proof_bytes,proof_sha256) values(?,?,?,?,?,?,?,?,?,?,?)",id,r.transactionType().name(),amount,Timestamp.from(when),note,actor.getId(),Timestamp.from(db.clock.instant()),stored==null?null:stored.key(),stored==null?null:stored.mime(),stored==null?null:stored.bytes(),stored==null?null:stored.sha256());
   reviewCod(id);return id;
  });
  }

@@ -82,6 +82,11 @@ RECIPIENT/MONTHLY cho file J&T sau này), cân nặng + gợi ý, COD, Đã nh�
 | Đang đóng gói | Form; Lưu bill sửa thông tin bill |
 | Hoàn tất / Đã hoàn đơn | Chỉ xem: ô trên bill thành chữ thường, không Lưu bill/Hoàn tác/Nhận cọc |
 
+- **Giao hàng** (owner 27/11): 3 nút J&T Express (mặc định) / Shopee Express / Khách tự lấy
+  ở đầu phần Nội bộ. Shopee Express cùng luật J&T. Khách tự lấy: bill ẩn Địa chỉ, Phí ship ghi
+  "Khách tự lấy" (phí 0, Tổng tiền = tiền sách); Nội bộ ẩn phương thức/cân/COD; lưu chỉ cần
+  tên + SĐT; nút chính "Khách đã lấy hàng", timeline "Khách đã lấy · Hoàn tất", ô Mã vận đơn
+  ghi "Khách tự lấy". Contract backend ở [ORDERS mục 11](ORDERS.md#11-chốt-giao-jt-và-snapshot).
 - Form giữ quy tắc điền sẵn, COD gợi ý, retry cùng `requestId`, lỗi theo ô. "Hoàn tác" (khi
   có thay đổi) trả về giá trị đã lưu. Nhận cọc nằm cạnh dòng Đã nhận.
 - Đơn tải lại khi form đang có thay đổi (sau Nhận cọc, 409…): giữ chữ đã gõ và bắt bấm

@@ -25,7 +25,7 @@ quy định cách xác minh, ghi log và bàn giao qua dev.
 | Sửa trang chi tiết đơn, tab Xuất bill, cân kiện gợi ý, bill gửi khách | [Chi tiết đơn và bill](product/ORDER_BILL.md) |
 | Sửa tab, số đếm, bộ lọc danh sách đơn | [Tab danh sách](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026) |
 | Sửa chọn khách, thêm sách, gợi ý/cảnh báo sách trùng trong đơn | [Sách trong đơn và chọn khách](product/ORDER_ITEMS.md) |
-| Chuẩn bị rollout V37–V39 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [V39](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
+| Chuẩn bị rollout V37–V40 | [Kiểm tra trước và sau rollout](runbooks/ROLLOUT_CHECKS.md#đơn-nội-bộ-và-bill-v37), [V39](runbooks/ROLLOUT_CHECKS.md#ảnh-bill-hoàn-đơn-một-bước-và-danh-sách-đơn-v39), [V40](runbooks/ROLLOUT_CHECKS.md#hãng-vận-chuyển-và-mã-vận-đơn-v40), [bằng chứng đơn](verification/ORDER_VERIFICATION.md), [gate](PROGRESS.md) |
 | Kiểm quyền chấm công, lịch, ca và xuất Excel | [Hồ sơ, quyền và PIN](product/ATTENDANCE.md), [bảo mật](context/SECURITY.md) |
 | Deploy, backup/restore, rollback, điều tra Cloudflare bỏ lỡ merge | [Runbook triển khai](runbooks/DEPLOYMENT.md), [trigger Builds](runbooks/CLOUDFLARE_BUILDS.md), [phục hồi ảnh](runbooks/IMAGE_OPERATIONS.md) |
 

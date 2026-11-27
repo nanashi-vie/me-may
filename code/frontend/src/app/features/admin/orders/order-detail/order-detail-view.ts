@@ -37,7 +37,8 @@ export function timeline(d: OrderDetail): TimelineStep[] {
   const steps: TimelineStep[] = [step('created', 'Tạo đơn', true, d.createdAt)];
   if (d.fulfillmentType === 'KEEP') steps.push(step('keep', 'Bắt đầu keep', !!d.keepStartedAt, d.keepStartedAt));
   steps.push(step('finalized', 'Chốt đơn', !!billed, billed?.createdAt));
-  steps.push(step('completed', 'Đã bàn giao · Hoàn tất', !!handed, handed?.handedOverAt));
+  const pickedUp = d.shippingProvider === 'PICKUP';
+  steps.push(step('completed', pickedUp ? 'Khách đã lấy · Hoàn tất' : 'Đã bàn giao · Hoàn tất', !!handed, handed?.handedOverAt));
   if (d.status !== 'CANCELLED') return steps;
   if (isReturned(d)) {
     const failed = d.shipments.filter((s) => s.failedAt).at(-1);
