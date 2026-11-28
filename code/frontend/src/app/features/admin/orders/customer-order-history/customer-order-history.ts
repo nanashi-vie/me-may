@@ -12,7 +12,7 @@ import { vnd } from '../order-values';
   selector: 'app-customer-order-history',
   imports: [Pagination, RouterLink, DatePipe],
   template: ` @if (owner()) {
-    <section class="section">
+    <section class="section history">
       <div class="section-heading">
         <h2>Lịch sử đơn hàng</h2>
         <a

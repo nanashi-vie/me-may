@@ -1,9 +1,11 @@
 # Tiến độ và bàn giao
 
-Cập nhật 27/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
+Cập nhật 28/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 
 ## Trạng thái hiện tại
 
+- `ADMIN-SHEET-01` (28/11, đã push `dev`): đơn và khách bỏ card trắng lớn, tiêu đề ngoài, ô tìm/bộ lọc lên trên tab, tab mở lên tấm xám lạnh `#f4f5f7` chứa bảng (chỉ chữ tab mang màu nhãn), card viền nhạt + bóng mảnh; sidebar thêm icon Khách hàng/Đơn hàng/Nhân viên; Hôm nay/Hôm qua không làm nhảy nút; bảng khách bấm cả dòng. Chỉ frontend. [Bố cục](product/ORDERS.md#41-tab-danh-sách-owner-chốt-2511-sửa-26112026)
+- `ORDER-SALE-DATE-LOT-01` (28/11, đã push `dev`): Ngày bán từng sách (sửa được, không tương lai), Lô hàng chữ tự do cho Sách ngoài có gợi ý, bảng sách gọn cuộn trong card, Tiền sách ở card thông tin; danh sách có Hôm nay/Hôm qua và tìm theo Zalo/TikTok/Threads; tab kiểu trình duyệt. **Migration V41**, backend trước frontend. [Sách trong đơn](product/ORDER_ITEMS.md#4-ngày-bán-lô-hàng-và-bảng-sách-owner-chốt-28112026) · [rollout](runbooks/ROLLOUT_CHECKS.md#ngày-bán-và-lô-hàng-của-sách-trong-đơn-v41). Đợt sau: doanh thu trang Tổng quan theo ngày bán.
 - `OUTAGE-NOTICE-01` (27/11, trên `dev`): khi backend không phản hồi (530…), public hiện màn "Tiệm tạm nghỉ" (503, tự tải lại khi sống, nút Zalo), admin có banner và không bị đẩy ra đăng nhập; Worker đổi 530 thành `503 backend_unavailable`. Chỉ frontend. Chưa kiểm trên môi trường thật. Việc sau: uptime monitor ping `/actuator/health`. [Contract](product/OUTAGE.md)
 - `ORDER-CARRIER-01` (27/11, trên `dev`, chưa push): chọn J&T / Shopee Express / Khách tự lấy, kiểm mã vận đơn 8–30 chữ/số không trùng, Nhận cọc không ảnh cần lý do. **Migration V40**, backend trước frontend. [Rollout](runbooks/ROLLOUT_CHECKS.md#hãng-vận-chuyển-và-mã-vận-đơn-v40)
 - `ORDER-BILL-INLINE-01` (27/11, đã push `dev`): tab danh sách đơn mang màu nhãn; tab Xuất bill gộp form vào bill sửa trực tiếp (người nhận/SĐT/địa chỉ/phí ship), phần Nội bộ giữ thanh toán/cân/COD/Lưu. Chỉ frontend. [Contract](product/ORDER_BILL.md)
@@ -40,7 +42,7 @@ Cập nhật 27/11/2026 · Asia/Ho_Chi_Minh · branch bàn giao `dev`.
 |---|---|
 | Rollout backend/frontend | Owner chọn candidate, kiểm schema thực tế, backup/counts/fingerprint/sequence, rehearsal restore và rollback có xét ghi mới. Đối chiếu migration cần chạy, thứ tự backend trước frontend, smoke domain thật, origin/canonical/enquiry, auth, media, tồn và retry. [Triển khai](runbooks/DEPLOYMENT.md) |
 | Catalogue và lưu trữ | Kiểm privacy ghi chú/ảnh riêng, V14–V19 theo môi trường; tạo/chọn thùng, lưu/mở lại, đổi/bỏ và lọc trên nhiều trang, OWNER/STAFF. Kiểm cuộn về sách sau lưu cả khi đổi trang/rời bộ lọc. [Rollout sách](runbooks/BOOK_ENTRY_ROLLOUT.md), [smoke V20](runbooks/ROLLOUT_CHECKS.md) |
-| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V39 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
+| Chấm công, khách, hero và đơn | Xác minh quyền/CSRF, ghi nhận migration V21–V23, V32–V41 trên target; kiểm PIN/bảng công, trùng SĐT, mount/digest/artwork banner, keep/giá chốt/thu/hoàn và bill. [Chấm công](product/ATTENDANCE.md), [hero](product/HERO_BANNERS.md), [rollout đơn](runbooks/ROLLOUT_CHECKS.md) |
 | Ảnh | Đo Dell 20–50 sách, tám nguồn Drive thật, ảnh chữ, ngoài LAN, mixed-provider, RSS/latency và monitoring. Với backfill preview public, đối chiếu lại inventory 63 media và đủ 320/640 × JPEG/WebP, MIME, magic và kích thước. Migration sách Cloudinary sang LOCAL hoãn tới đợt owner mở riêng, cần dry-run và drill rollback pointer/version. [Ma trận và gate](verification/IMAGE_VERIFICATION.md) |
 | Backup và khôi phục | Xác lập lịch, retention, owner, offhost, RPO/RTO; drill phục hồi DB cùng file media và rollback app/schema/dữ liệu trên bản sao. [Vận hành ảnh](runbooks/IMAGE_OPERATIONS.md), [quy trình release](runbooks/DEPLOYMENT.md) |
 | Bảo mật và tải | Kiểm role DB tối thiểu/tách migration, rate limit đăng nhập, secrets, kết nối riêng, HTTPS, pool/quota/memory/load và quyền admin/public. [Bảo mật](context/SECURITY.md) |

@@ -37,6 +37,8 @@ public class OrderQueryService {
  }
  public OrderDetail detail(long id,AdminUser actor){access.requireOwner(actor,false);return db.requireDetail(id);}
  public Page<CatalogCandidate> catalog(String q,int page,int size,AdminUser actor){access.requireOwner(actor,false);paging(page,size);return catalog.catalogList(q,page,size);}
+ /** Up to ten lot names last used on outside books, newest first, to save retyping. */
+ public List<String> recentLots(AdminUser actor){access.requireOwner(actor,false);return db.jdbc.queryForList("select lot_label from order_items where lot_label is not null group by lot_label order by max(added_at) desc,lot_label limit 10",String.class);}
  public MatchResult matches(String title,AdminUser actor){access.requireOwner(actor,false);return catalog.match(title);}
  private Where where(OrderFilter f,Instant now){paging(f.page(),f.size());var sql=new StringBuilder(" where o.deleted_at is null");var args=new ArrayList<Object>();String q=text(f.q(),"q",200,false);
   var group=group(f);if(!group.condition.isEmpty())sql.append(" and ").append(group.condition);
@@ -47,7 +49,7 @@ public class OrderQueryService {
   }
   if(f.customerId()!=null&&!f.customerId().isBlank()){sql.append(" and o.customer_id=?");args.add(id(f.customerId(),"customerId"));}
   if(q!=null){String token="%"+literal(q.toLowerCase(Locale.ROOT))+"%";String phone=q.replaceAll("[\\s.\\-]","");if(phone.startsWith("+84"))phone="0"+phone.substring(3);String pt="%"+literal(phone)+"%";
-   sql.append(" and (lower(o.order_code) like ? escape '!' or lower(o.customer_code_snapshot) like ? escape '!' or lower(o.customer_name_snapshot) like ? escape '!' or o.customer_phone_snapshot like ? escape '!' or exists(select 1 from customer c where c.id=o.customer_id and (lower(c.customer_code) like ? escape '!' or lower(c.full_name) like ? escape '!' or c.phone like ? escape '!')))");Collections.addAll(args,token,token,token,pt,token,token,pt);
+   sql.append(" and (lower(o.order_code) like ? escape '!' or lower(o.customer_code_snapshot) like ? escape '!' or lower(o.customer_name_snapshot) like ? escape '!' or o.customer_phone_snapshot like ? escape '!' or exists(select 1 from customer c where c.id=o.customer_id and (lower(c.customer_code) like ? escape '!' or lower(c.full_name) like ? escape '!' or c.phone like ? escape '!' or lower(c.zalo_name) like ? escape '!' or lower(c.tiktok_id) like ? escape '!' or lower(c.threads_id) like ? escape '!')))");String handle=q.startsWith("@")?q.substring(1):q;String ht="%"+literal(handle.toLowerCase(Locale.ROOT))+"%";Collections.addAll(args,token,token,token,pt,token,token,pt,ht,ht,ht);
   }
   LocalDate from=date(f.createdFrom(),"createdFrom"),to=date(f.createdTo(),"createdTo");if(from!=null&&to!=null&&from.isAfter(to))throw AdminApiException.field("createdFrom","Ngày bắt đầu phải trước ngày kết thúc");
   if(from!=null){sql.append(" and o.created_at>=?");args.add(Timestamp.from(from.atStartOfDay(ZONE).toInstant()));}if(to!=null){sql.append(" and o.created_at<?");args.add(Timestamp.from(to.plusDays(1).atStartOfDay(ZONE).toInstant()));}

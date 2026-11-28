@@ -24,6 +24,9 @@ public class OrderMutations {
   Object fields=db.json.convertValue(payload,Object.class);
   if (payload instanceof OrderDtos.ShippingRequest request && request.customerPaymentMode()==null && fields instanceof Map<?,?> map)
    map.remove("customerPaymentMode"); // Retain fingerprints of pre-V37 requests.
+  if (payload instanceof OrderDtos.ItemRequest && fields instanceof Map<?,?> map){ // Retain fingerprints of pre-V41 requests.
+   if(map.get("soldOn")==null)map.remove("soldOn");if(map.get("lotLabel")==null)map.remove("lotLabel");
+  }
   String fingerprint=hash(Arrays.asList(orderId,meta.version(),canonical(fields)));
   db.jdbc.update("insert into order_mutation_receipt(actor_id,operation,request_id,fingerprint) values(?,?,?,?) on conflict do nothing",actor.getId(),operation,meta.requestId(),fingerprint);
   var receipt=db.jdbc.queryForMap("select fingerprint,result_json::text as result from order_mutation_receipt where actor_id=? and operation=? and request_id=? for update",actor.getId(),operation,meta.requestId());
@@ -57,7 +60,7 @@ public class OrderMutations {
   var m=new LinkedHashMap<String,Object>();if(d==null)return m;
   m.put("status",d.status());m.put("fulfillmentType",d.fulfillmentType());m.put("customerId",d.customerId());m.put("keepUntil",d.keepUntil());
   m.put("discountAmount",d.discountAmount());m.put("shippingFee",d.shippingFee());m.put("parcelWeightGrams",d.parcelWeightGrams());m.put("codAmount",d.codAmount());m.put("declaredValue",d.declaredValue());m.put("customerPaymentMode",d.customerPaymentMode());m.put("shippingPaymentType",d.shippingPaymentType());
-  m.put("orderItems",d.items().stream().map(i->Arrays.asList(i.id(),i.bookCopyId(),i.listingId(),i.unitPriceVnd(),i.quantity(),i.unitWeightGrams(),hash(i.titleSnapshot()))).toList());
+  m.put("orderItems",d.items().stream().map(i->Arrays.asList(i.id(),i.bookCopyId(),i.listingId(),i.unitPriceVnd(),i.quantity(),i.unitWeightGrams(),hash(i.titleSnapshot()),String.valueOf(i.soldOn()),String.valueOf(i.lotLabel()))).toList());
   m.put("orderPayments",d.payments().stream().map(p->Arrays.asList(p.id(),p.transactionType(),p.amount(),p.voidedAt())).toList());
   m.put("orderReturns",d.returns().stream().map(r->List.of(r.id(),r.itemId(),r.quantityReceived(),r.quantityRestocked())).toList());
   m.put("orderNotes",d.notes().stream().map(n->List.of(n.id(),n.operation(),n.version())).toList());

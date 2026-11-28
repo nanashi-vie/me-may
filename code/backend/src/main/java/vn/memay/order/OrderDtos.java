@@ -21,7 +21,8 @@ public final class OrderDtos {
  public record ItemValue(Long unitPriceVnd,long quantity,Long unitWeightGrams){}
  public record PaymentValue(PaymentType type,long amount,boolean voided){}
  public record Totals(long subtotal,long goodsTotal,Long orderTotal,long paidAmount,Long balance,Long totalBookWeightGrams,boolean provisional,String paymentStatus){}
- public record OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt,String coverUrl){
+ public record OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt,String coverUrl,java.time.LocalDate soldOn,String lotLabel){
+  public OrderItem(String id,String sourceType,String bookCopyId,String listingId,String bookCodeSnapshot,String titleSnapshot,long unitPriceVnd,long quantity,Long unitWeightGrams,String manualMatchOverrideReason,Instant addedAt,String coverUrl){this(id,sourceType,bookCopyId,listingId,bookCodeSnapshot,titleSnapshot,unitPriceVnd,quantity,unitWeightGrams,manualMatchOverrideReason,addedAt,coverUrl,addedAt==null?null:addedAt.atZone(OrderValidation.ZONE).toLocalDate(),null);}
   public ItemValue value(){return new ItemValue(unitPriceVnd,quantity,unitWeightGrams);}
  }
  public record OrderPayment(String id,PaymentType transactionType,long amount,Instant occurredAt,String note,String createdBy,Instant createdAt,Instant voidedAt,String voidReason,boolean hasProof){
@@ -47,8 +48,10 @@ public final class OrderDtos {
  public record MatchConfirmation(String normalizedTitle,String fingerprint,String reason){}
  public record CreateRequest(String customerId,String fulfillmentType,UUID requestId){public MutationMeta meta(){return new MutationMeta(null,requestId);}}
  public record UpdateRequest(Long version,UUID requestId,String customerId,String fulfillmentType,Long discountAmount,String recipientName,String recipientPhone,String shippingAddress,Long shippingFee,Long parcelWeightGrams,Boolean parcelWeightOverridden){public MutationMeta meta(){return new MutationMeta(version,requestId);}}
- public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation,String reason){
-  public ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){this(version,requestId,sourceType,bookCopyId,title,unitPriceVnd,quantity,unitWeightGrams,matchConfirmation,null);}
+ public record ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation,String reason,String soldOn,String lotLabel){
+  public ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation){this(version,requestId,sourceType,bookCopyId,title,unitPriceVnd,quantity,unitWeightGrams,matchConfirmation,null,null,null);}
+  public ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation,String reason){this(version,requestId,sourceType,bookCopyId,title,unitPriceVnd,quantity,unitWeightGrams,matchConfirmation,reason,null,null);}
+  public ItemRequest(Long version,UUID requestId,String sourceType,String bookCopyId,String title,Long unitPriceVnd,Long quantity,Long unitWeightGrams,MatchConfirmation matchConfirmation,String reason,String soldOn){this(version,requestId,sourceType,bookCopyId,title,unitPriceVnd,quantity,unitWeightGrams,matchConfirmation,reason,soldOn,null);}
   public MutationMeta meta(){return new MutationMeta(version,requestId);}
  }
 

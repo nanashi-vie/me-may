@@ -79,6 +79,10 @@ export interface OrderItem {
   unitWeightGrams: number | null;
   manualMatchOverrideReason: string | null;
   addedAt: string;
+  /** Sale date (yyyy-MM-dd, shop clock); starts as the day the line was added. */
+  soldOn: string;
+  /** Stock lot an outside book came from, in the owner's own words; null for website books. */
+  lotLabel: string | null;
   /** Admin cover image of a website book; null for outside books or books without a front image. */
   coverUrl?: string | null;
 }
@@ -220,6 +224,9 @@ export interface ItemWrite extends MutationMeta {
   unitWeightGrams: number | null;
   matchConfirmation: MatchConfirmation | null;
   reason?: string | null;
+  /** Missing keeps the line's date (today for a new line). */
+  soldOn?: string | null;
+  lotLabel?: string | null;
 }
 export interface PaymentWrite {
   transactionType: PaymentType;

@@ -80,7 +80,14 @@ Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0
 
 - Màu tab (27/11) theo badge trạng thái: tab chưa chọn chữ xám, số đếm là viên tô màu nhãn
   (Chờ xử lý xám, Đang keep xanh dương, Đang đóng gói cam, Hoàn tất xanh lá, Hủy/Hoàn đỏ; Tất
-  cả đỏ thương hiệu); tab đang chọn chữ và gạch dưới cùng màu đó.
+  cả đỏ thương hiệu). Bố cục 28/11 (`features/admin/_page-sheet.scss`, dùng cho đơn và khách):
+  tiêu đề, ô tìm và bộ lọc (áp cho mọi tab) nằm ngoài, trên hàng tab; tab kiểu trình duyệt mở
+  lên một tấm xám lạnh `#f4f5f7` chung (theo mẫu owner) chứa nút phụ, bảng và phân trang; chỉ chữ
+  tab mở đổi màu nhãn. Card trắng viền `#e8e6e1` + bóng mảnh. Chi tiết đơn dùng cùng tấm.
+- Lọc nhanh "Hôm nay · Hôm qua" (28/11) cạnh ô tìm: đặt `createdFrom = createdTo` một ngày giờ
+  Việt Nam (`shared/date-presets`, để trang Tổng quan dùng lại), sáng khi khoảng ngày khớp, bấm
+  lại bỏ lọc ngày. Lọc nhanh không mở hàng ngày, không hiện chấm/Xóa lọc nên thanh công cụ
+  đứng yên. Ô tìm còn khớp Zalo/TikTok/Threads trong hồ sơ khách hiện tại (bỏ "@" đầu).
 - Bảng 9 cột giống nhau ở mọi tab: Khách hàng · Mã đơn · Ngày tạo · Số lượng sách · Tổng đơn
   · Đã cọc (`paidAmount`) · Trạng thái · Hạn keep · Thao tác. Ngày dd/MM/yyyy giờ Việt Nam.
 - Khách hàng: tên snapshot, dòng phụ một kênh từ hồ sơ hiện tại theo thứ tự TikTok → Threads
@@ -95,7 +102,8 @@ Tìm mã đơn/tên/SĐT/mã KH. Pagination backend20/max100, page bắt đầu0
 - Mỗi đơn thuộc đúng một nhóm; tổng năm nhóm bằng Tất cả. Không có tự chọn sắp xếp.
 - Số cạnh tab và nút phụ theo từ khóa, khoảng ngày tạo, khách; không theo nhóm, nút phụ, trang. Số 0 mờ nhưng bấm được.
   Tab Đang keep thêm "· N quá hạn" đỏ khi N > 0.
-- Bộ lọc thu gọn chỉ có Từ/Đến ngày tạo, tính là một bộ lọc, tự mở khi ngày vừa có giá trị. Lọc khách hiện
+- Bộ lọc thu gọn chỉ có Từ/Đến ngày tạo, tự mở khi nhập ngày tay (khác lọc nhanh); khi đó nút Bộ lọc có chấm đỏ
+  (không đổi độ rộng) và hàng ngày có Xóa lọc. Lọc khách hiện
   "Đang xem đơn của [tên] ✕" (chưa có dòng thì "một khách"). Xóa lọc bỏ ngày và khách, giữ tab, nút phụ, từ khóa;
   bấm ✕/Xóa lọc đưa focus về Bộ lọc. Từ ngày sau Đến ngày: báo lỗi cạnh ô, không gọi API, ẩn số. Ô tìm không bị viết đè khi đang gõ.
 - Đổi tab giữ từ khóa, ngày, khách, size; bỏ nút phụ và trang. Chi tiết đơn dùng `tab` nên danh sách dùng `nhom`.

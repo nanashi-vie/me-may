@@ -43,6 +43,8 @@
         </div>
       }
     </header>
+    <div class="page-sheet">
+    <section class="sheet-card" aria-label="Hồ sơ khách">
     <dl class="profile-fields">
       <div>
         <dt>Số điện thoại</dt>
@@ -69,7 +71,11 @@
       <span>Ngày tạo: {{ c.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span
       ><span>Cập nhật: {{ c.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span>
     </div>
-    @if(owner()){<app-customer-order-history [customerId]="c.id" />}
+    </section>
+    @if (owner()) {
+      <section class="sheet-card"><app-customer-order-history [customerId]="c.id" /></section>
+    }
+    </div>
   </article>
 }
 <app-customer-form (saved)="onSaved($event)" />

@@ -1,3 +1,4 @@
+import { DATE_PRESETS, presetRange, shopDay } from '../../../../shared/date-presets/date-presets';
 import { TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ActivatedRoute, Router, convertToParamMap, provideRouter } from '@angular/router';
@@ -347,6 +348,44 @@ describe('OrderList', () => {
       TestBed.resetTestingModule();
     }
   });
+  it('filters today or yesterday by creation date and clears on a second press', async () => {
+    const t = await setup();
+    const today = shopDay();
+    const yesterday = presetRange(DATE_PRESETS[1]).from;
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
+    const quick = () => Array.from(t.el.querySelectorAll<HTMLButtonElement>('.quick-days button'));
+    expect(quick().map((b) => [t.text(b), b.getAttribute('aria-pressed')])).toEqual([
+      ['Hôm nay', 'false'],
+      ['Hôm qua', 'false'],
+    ]);
+    quick()[0].click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({ createdFrom: today, createdTo: today });
+    await t.go({ createdFrom: yesterday, createdTo: yesterday });
+    expect(quick().map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true']);
+    quick()[1].click();
+    expect(navigate.mock.lastCall?.[1]?.queryParams).toEqual({});
+    await t.go({ createdFrom: yesterday, createdTo: today });
+    expect(quick().map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'false']);
+  });
+  it('keeps the toolbar still on a quick day: no date row, no dot, no clear button', async () => {
+    const t = await setup();
+    const day = shopDay();
+    const toolbar = () =>
+      Array.from(t.el.querySelectorAll('.toolbar:not(.dates) button'), (b) => t.text(b).replace(' (đang lọc ngày)', ''));
+    const before = toolbar();
+    await t.go({ createdFrom: day, createdTo: day });
+    expect(toolbar()).toEqual(before);
+    expect(t.el.querySelector('.filter-dot')).toBeNull();
+    expect(t.el.querySelectorAll('input[type=date]').length).toBe(0);
+    await t.go({ createdFrom: '2026-11-01', createdTo: day });
+    expect(t.el.querySelector('.filter-dot')).not.toBeNull();
+    expect(t.el.querySelector('.toolbar.dates')?.textContent).toContain('Xóa lọc');
+    expect(toolbar()).toEqual(before);
+  });
+  it('searches social channels too', async () => {
+    const t = await setup();
+    expect(t.el.querySelector('input[type=search]')?.getAttribute('placeholder')).toContain('Zalo, TikTok, Threads');
+  });
   it('opens the date row while a date is set', async () => {
     const t = await setup();
     const toggle = () => t.button('Bộ lọc');
@@ -361,7 +400,7 @@ describe('OrderList', () => {
     for (const q of [{ createdTo: '2026-11-20' }, { createdFrom: '2026-11-01', createdTo: '2026-11-20' }]) {
       await t.go({});
       await t.go(q as Record<string, string>);
-      expect([t.text(toggle()), dates()]).toEqual(['Bộ lọc (1)', 2]);
+      expect([t.text(toggle()), dates()]).toEqual(['Bộ lọc (đang lọc ngày)', 2]);
     }
     toggle().click();
     f(t);
@@ -492,12 +531,13 @@ describe('OrderList', () => {
   });
   it('moves focus to the filter button when a clear button disappears', async () => {
     const t = await setup('OWNER', { customerId: '3' });
+    await t.go({ customerId: '3', createdFrom: '2026-11-01' });
     document.body.append(t.el);
     vi.spyOn(TestBed.inject(Router), 'navigate').mockResolvedValue(true);
     for (const clear of [t.el.querySelector('.customer-filter button') as HTMLButtonElement, t.button('Xóa lọc')]) {
       clear.focus();
       clear.click();
-      expect(t.text(document.activeElement)).toBe('Bộ lọc');
+      expect(t.text(document.activeElement)).toMatch(/^Bộ lọc/);
     }
   });
   it('never rewrites the search box while it is being typed in', async () => {
@@ -546,7 +586,7 @@ describe('OrderList', () => {
     t.api.list.mockReturnValue(throwError(() => new Error('400')));
     await t.go({ customerId: 'abc' });
     expect(t.text(t.el.querySelector('.customer-filter'))).toContain('Đang xem đơn của một khách');
-    expect(t.button('Xóa lọc')).toBeTruthy();
+    expect(t.el.querySelector('.customer-filter button')).toBeTruthy();
   });
 });
 function f(t: { f: { detectChanges(): void } }) {

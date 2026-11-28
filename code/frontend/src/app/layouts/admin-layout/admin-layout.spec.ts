@@ -53,7 +53,13 @@ describe('AdminLayout', () => {
     expect(text).toContain('OWNER');
 
     const svgIcons = fixture.nativeElement.querySelectorAll('.nav-icon svg');
-    expect(svgIcons.length).toBe(4);
+    expect(svgIcons.length).toBe(7);
+    const withIcon = (label: string) =>
+      Array.from(fixture.nativeElement.querySelectorAll('.nav-item') as NodeListOf<HTMLElement>).find((i) =>
+        i.textContent?.includes(label),
+      )?.querySelector('.nav-icon svg');
+    for (const label of ['Khách hàng', 'Đơn hàng', 'Nhân viên']) expect(withIcon(label), label).toBeTruthy();
+    expect(fixture.nativeElement.querySelectorAll('.sidebar-divider').length).toBe(2);
 
     const chevron = fixture.nativeElement.querySelector('.nav-chevron svg');
     expect(chevron).toBeTruthy();

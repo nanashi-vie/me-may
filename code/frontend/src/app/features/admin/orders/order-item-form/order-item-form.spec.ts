@@ -8,6 +8,7 @@ import { CatalogCandidate, MatchResult, OrderDetail, OrderItem } from '../order-
 function setup() {
   const api = {
     catalog: vi.fn(() => of({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 })),
+    lots: vi.fn(() => of(['Lô Mỹ 11'])),
     matches: vi.fn(() => of({ normalizedTitle: 'outside', fingerprint: 'fp', items: [] })),
   };
   TestBed.configureTestingModule({ providers: [{ provide: OrderApi, useValue: api }] });
@@ -329,5 +330,52 @@ describe('OrderItemForm', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+  describe('lot and sale date', () => {
+    const withLots = {
+      status: 'DRAFT',
+      version: 1,
+      items: [
+        { id: '1', sourceType: 'MANUAL', lotLabel: 'Lô cũ', addedAt: '2026-11-20T03:00:00Z' },
+        { id: '2', sourceType: 'CATALOG', lotLabel: null, addedAt: '2026-11-28T03:00:00Z' },
+        { id: '3', sourceType: 'MANUAL', lotLabel: 'Lô Mỹ 11', addedAt: '2026-11-27T03:00:00Z' },
+      ],
+    } as OrderDetail;
+    it('starts a new outside book with the lot of the last one, offers recent lots and sends it trimmed', () => {
+      const { c, f, api } = setup();
+      c.open(withLots);
+      c.model.sourceType = 'MANUAL';
+      f.detectChanges();
+      expect(api.lots).toHaveBeenCalled();
+      expect(c.model.lotLabel).toBe('Lô Mỹ 11');
+      const box = f.nativeElement.querySelector('input[name="lot"]') as HTMLInputElement;
+      expect(box.getAttribute('list')).toBe('order-lots');
+      expect(f.nativeElement.querySelector('#order-lots option')?.getAttribute('value')).toBe('Lô Mỹ 11');
+      expect(f.nativeElement.querySelector('input[name="soldOn"]')).toBeNull();
+      Object.assign(c.model, { title: 'Outside', unitPriceVnd: 1000, quantity: 1, unitWeightGrams: 100, lotLabel: '  Lô 12 ' });
+      const saved = vi.fn();
+      c.saved.subscribe(saved);
+      c.submit();
+      expect(saved).toHaveBeenCalledWith(expect.objectContaining({ lotLabel: 'Lô 12', soldOn: null }));
+    });
+    it('has no lot box for website books', () => {
+      const { c, f } = setup();
+      c.open(withLots);
+      f.detectChanges();
+      expect(f.nativeElement.querySelector('input[name="lot"]')).toBeNull();
+    });
+    it('edits the sale date of a saved line but never into the future', () => {
+      const { c, f } = setup();
+      c.open(withLots, { ...item, sourceType: 'CATALOG', bookCopyId: '6', soldOn: '2026-11-20', lotLabel: null } as OrderItem);
+      f.detectChanges();
+      expect((f.nativeElement.querySelector('input[name="soldOn"]') as HTMLInputElement).max).toBe(c.today);
+      c.model.soldOn = '2999-01-01';
+      expect(c.valid()).toBe(false);
+      c.model.soldOn = '2026-11-21';
+      const saved = vi.fn();
+      c.saved.subscribe(saved);
+      c.submit();
+      expect(saved).toHaveBeenCalledWith(expect.objectContaining({ soldOn: '2026-11-21', lotLabel: null }));
+    });
   });
 });

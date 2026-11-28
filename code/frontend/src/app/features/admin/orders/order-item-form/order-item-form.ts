@@ -1,3 +1,4 @@
+import { shopDay } from '../../../../shared/date-presets/date-presets';
 import { Pagination } from '../../../../shared/pagination/pagination';
 import {
   afterNextRender,
@@ -25,6 +26,12 @@ import {
   Page,
 } from '../order-models';
 import { integer, product, vnd } from '../order-values';
+/** Lot of the outside book added last to this order, so a run from one lot needs no retyping. */
+function lastLot(order: OrderDetail) {
+  const manual = order.items.filter((i) => i.sourceType === 'MANUAL');
+  const last = manual.reduce<OrderItem | null>((a, i) => (!a || i.addedAt >= a.addedAt ? i : a), null);
+  return last?.lotLabel ?? '';
+}
 type ItemDraft = Omit<ItemWrite, 'version' | 'requestId'>;
 @Component({
   selector: 'app-order-item-form',
@@ -76,7 +83,12 @@ export class OrderItemForm {
     reason: '',
     overrideReason: '',
     confirmed: false,
+    soldOn: '',
+    lotLabel: '',
   };
+  /** Suggestions for the lot box; typing a new name is always allowed. */
+  readonly lots = signal<string[]>([]);
+  readonly today = shopDay();
   private initial = '';
   constructor() {
     this.titles
@@ -132,8 +144,14 @@ export class OrderItemForm {
       reason: '',
       overrideReason: '',
       confirmed: false,
+      soldOn: item?.soldOn ?? shopDay(),
+      lotLabel: item ? (item.lotLabel ?? '') : lastLot(order),
     };
     this.initial = JSON.stringify(this.model);
+    this.api
+      .lots()
+      .pipe(catchError(() => of([] as string[])))
+      .subscribe((lots) => this.lots.set(lots));
     this.visible.set(true);
     this.opener = document.activeElement as HTMLElement;
     this.dialog()?.nativeElement.showModal?.();
@@ -258,6 +276,8 @@ export class OrderItemForm {
         ? m.sourceType === 'CATALOG' && this.order?.status === 'DRAFT'
         : integer(m.unitWeightGrams, 1)) &&
       (!this.requiresReason() || !!m.reason.trim()) &&
+      (!this.item || (!!m.soldOn && m.soldOn <= shopDay())) &&
+      m.lotLabel.trim().length <= 60 &&
       (m.sourceType === 'CATALOG'
         ? !!m.bookCopyId
         : !!m.title.trim() &&
@@ -276,6 +296,8 @@ export class OrderItemForm {
       quantity: m.quantity!,
       unitWeightGrams: m.unitWeightGrams,
       reason: m.reason.trim() || null,
+      soldOn: this.item ? m.soldOn : null,
+      lotLabel: m.sourceType === 'MANUAL' ? m.lotLabel.trim() || null : null,
       matchConfirmation:
         m.sourceType === 'MANUAL' && this.exactMatches().length
           ? {

@@ -1,0 +1,59 @@
+// Admin page layout shared by orders and customers (owner 28/11/2026): the page title and the
+// list's search sit on the page, browser-style tabs (where a page has them) open onto one cool
+// light-grey sheet (as in the owner's reference) on which white cards stand out. Only the open tab's title takes its status colour (set --ink-tab).
+$sheet: #f4f5f7;
+
+/* No card around the page; it sits straight on the admin background. */
+@mixin page {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+@mixin strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  border-bottom: 0;
+  overflow-x: auto;
+}
+@mixin tab {
+  flex: none;
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border: 0;
+  border-radius: 12px 12px 0 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 650;
+  white-space: nowrap;
+  text-decoration: none;
+  &:hover {
+    background: color-mix(in srgb, #{$sheet} 55%, transparent);
+    color: var(--ink);
+  }
+}
+@mixin open {
+  background: $sheet;
+  color: var(--ink-tab, var(--ink));
+  &:hover {
+    background: $sheet;
+  }
+}
+/* The area under the strip (or under the title on pages without tabs). Users square the corner
+   under the first tab while it is open. */
+@mixin sheet {
+  padding: 18px;
+  border-radius: 16px;
+  background: $sheet;
+}
+/* White card on the sheet: faint border and a hairline shadow lift it off the grey. */
+$card-line: #e8e6e1;
+$table-head: #f9fafb;
+@mixin card {
+  border: 1px solid $card-line;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
+}

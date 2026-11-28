@@ -532,7 +532,7 @@
       role="tabpanel"
       id="order-detail-panel"
       aria-labelledby="order-detail-tab"
-      class="detail-grid"
+      class="detail-grid tab-sheet first-open"
       [hidden]="tab() !== 'detail'"
     >
       <div class="detail-main">
@@ -563,10 +563,22 @@
               }}
             </dd>
           </div>
+          <div>
+            <dt>Tiền sách</dt>
+            <dd>{{ money(d.totals.goodsTotal) }}</dd>
+          </div>
         </dl>
         <section class="card" aria-labelledby="items-title">
           <div class="card-head">
             <h2 id="items-title">Sách trong đơn</h2>
+            <p class="muted items-total">
+              {{ d.totalQuantity }} quyển ·
+              {{
+                d.totals.totalBookWeightGrams === null
+                  ? 'Chưa đủ trọng lượng'
+                  : d.totals.totalBookWeightGrams + ' g'
+              }}
+            </p>
             @if (editable()) {
               <button
                 class="secondary small add-book"
@@ -577,10 +589,18 @@
               </button>
             }
           </div>
-          <div class="table-scroll" role="region" aria-label="Sách trong đơn" tabindex="0">
+          <div
+            #itemScroll
+            class="table-scroll item-scroll"
+            role="region"
+            aria-label="Sách trong đơn"
+            tabindex="0"
+          >
             <table class="item-table">
               <thead>
                 <tr>
+                  <th>Lô hàng</th>
+                  <th>Ngày bán</th>
                   <th><span class="sr-only">Ảnh bìa</span></th>
                   <th>Sách / nguồn</th>
                   <th class="number">Đơn giá chốt</th>
@@ -592,7 +612,9 @@
               </thead>
               <tbody>
                 @for (item of d.items; track item.id) {
-                  <tr>
+                  <tr [attr.data-item]="item.id" [class.flash]="flashed() === item.id">
+                    <td class="lot">{{ item.lotLabel || '—' }}</td>
+                    <td class="nowrap">{{ item.soldOn | date: 'dd/MM/yyyy' }}</td>
                     <td>
                       @if (item.coverUrl) {
                         <img class="cover" [src]="item.coverUrl" alt="" loading="lazy" />
@@ -634,20 +656,12 @@
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="7" class="empty">Chưa có sách trong đơn.</td>
+                    <td colspan="9" class="empty">Chưa có sách trong đơn.</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-          <p class="muted items-total">
-            {{ d.totalQuantity }} quyển ·
-            {{
-              d.totals.totalBookWeightGrams === null
-                ? 'Chưa đủ trọng lượng'
-                : d.totals.totalBookWeightGrams + ' g'
-            }}
-          </p>
         </section>
         <section class="card payment-card" aria-labelledby="payment-title">
           <div class="card-head">
@@ -960,6 +974,7 @@
       role="tabpanel"
       id="order-bill-panel"
       aria-labelledby="order-bill-tab"
+      class="tab-sheet"
       [hidden]="tab() !== 'bill'"
     >
       @if (state === 'empty') {

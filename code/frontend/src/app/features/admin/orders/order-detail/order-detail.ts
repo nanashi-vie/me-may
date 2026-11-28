@@ -106,6 +106,12 @@ export class OrderDetailPage {
   private readonly injector = inject(Injector);
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   readonly itemForm = viewChild(OrderItemForm);
+  readonly itemScroll = viewChild<ElementRef<HTMLElement>>('itemScroll');
+  /** Line just added or edited: scrolled into view and lit for a moment. */
+  readonly flashed = signal<string | null>(null);
+  /** Set when an item is saved: the edited line, or the lines that existed before an add. */
+  private flashFor: { id: string } | { before: Set<string> } | null = null;
+  private flashTimer?: ReturnType<typeof setTimeout>;
   readonly shippingForm = viewChild(OrderShippingForm);
   readonly customerForm = viewChild(CustomerForm);
   readonly owner = computed(() => this.auth.user()?.role === 'OWNER');
@@ -273,6 +279,17 @@ export class OrderDetailPage {
         this.reloadBill = false;
       });
     });
+    effect(() => {
+      const d = this.order();
+      if (!d || !this.flashFor) return;
+      const target = this.flashFor;
+      const id =
+        'id' in target ? target.id : d.items.find((i) => !target.before.has(i.id))?.id;
+      if (!id || !d.items.some((i) => i.id === id)) return;
+      this.flashFor = null;
+      untracked(() => this.flash(id));
+    });
+    this.destroy.onDestroy(() => clearTimeout(this.flashTimer));
     combineLatest([this.route.paramMap, toObservable(this.auth.epoch)])
       .pipe(
         switchMap(([params]) => {
@@ -582,11 +599,28 @@ export class OrderDetailPage {
     const d = this.order();
     if (!d) return;
     const item = this.itemForm()?.item;
+    this.flashFor = item ? { id: item.id } : { before: new Set(d.items.map((i) => i.id)) };
     this.sendNew({
       kind: item ? 'itemUpdate' : 'itemAdd',
       orderId: d.id,
       itemId: item?.id,
       body: { ...body, version: d.version, requestId: crypto.randomUUID() },
+    });
+  }
+  private flash(id: string) {
+    this.flashed.set(id);
+    clearTimeout(this.flashTimer);
+    this.flashTimer = setTimeout(() => this.flashed.set(null), 1200);
+    // After render: bring the row into the card's own scroll area only.
+    setTimeout(() => {
+      const box = this.itemScroll()?.nativeElement;
+      const row = box?.querySelector<HTMLElement>(`tr[data-item="${id}"]`);
+      if (!box || !row) return;
+      const head = box.querySelector('thead')?.getBoundingClientRect().height ?? 0;
+      const view = box.getBoundingClientRect(),
+        r = row.getBoundingClientRect();
+      if (r.top < view.top + head || r.bottom > view.bottom)
+        box.scrollTop += r.top - view.top - head - (view.height - head - r.height) / 2;
     });
   }
   shippingSaved(body: ShippingDraft) {

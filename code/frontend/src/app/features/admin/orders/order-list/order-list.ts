@@ -1,4 +1,5 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
+import { DATE_PRESETS, DatePreset, matchingPreset, presetRange } from '../../../../shared/date-presets/date-presets';
 import {
   Component,
   DestroyRef,
@@ -77,6 +78,11 @@ export class OrderList {
   readonly query = computed(() => orderQuery(this.filter()));
   readonly subActive = computed(() => this.tab().subs.some((s) => this.filter()[s.key] === s.value));
   readonly dated = computed(() => !!(this.filter().createdFrom || this.filter().createdTo));
+  readonly presets = DATE_PRESETS;
+  /** Quick day button lit when the creation-date range is exactly that day. */
+  readonly preset = computed(() => matchingPreset(this.filter().createdFrom, this.filter().createdTo)?.key);
+  /** Dates typed in the filter row; a quick day only lights its own button, so nothing moves. */
+  readonly manualDated = computed(() => this.dated() && !this.preset());
   readonly customerName = computed(
     () => this.page()?.items[0]?.customerNameSnapshot || 'một khách',
   );
@@ -115,8 +121,9 @@ export class OrderList {
           if (f.q !== before.q && !this.typing && normalize(this.searchText()) !== f.q)
             this.searchText.set(f.q);
           if (
-            (f.createdFrom && f.createdFrom !== before.createdFrom) ||
-            (f.createdTo && f.createdTo !== before.createdTo)
+            ((f.createdFrom && f.createdFrom !== before.createdFrom) ||
+              (f.createdTo && f.createdTo !== before.createdTo)) &&
+            !matchingPreset(f.createdFrom, f.createdTo)
           )
             this.filterOpen.set(true);
           if (!this.owner()) {
@@ -159,6 +166,11 @@ export class OrderList {
   }
   change(key: 'createdFrom' | 'createdTo', value: string) {
     this.navigate({ [key]: value, page: 0 });
+  }
+  /** Pressing the lit day again drops the date filter. */
+  togglePreset(p: DatePreset) {
+    const r = this.preset() === p.key ? { from: '', to: '' } : presetRange(p);
+    this.navigate({ createdFrom: r.from, createdTo: r.to, page: 0 });
   }
   tabQuery(t: OrderTab) {
     return orderQuery({

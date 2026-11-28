@@ -25,6 +25,7 @@
       </select></label
     >
   </div>
+  <div class="page-sheet">
   @if (toast()) {
     <p class="notice" role="status">{{ toast() }}</p>
   }
@@ -38,7 +39,7 @@
   } @else if (page(); as result) {
     @if (result.items.length) {
       <div class="table-scroll" role="region" aria-label="Danh sách khách hàng" tabindex="0">
-        <table>
+        <table class="customer-table">
           <thead>
             <tr>
               <th scope="col">Khách hàng</th>
@@ -51,17 +52,19 @@
           </thead>
           <tbody>
             @for (customer of result.items; track customer.id) {
-              <tr>
+              <tr
+                class="customer-row"
+                tabindex="0"
+                [attr.aria-label]="'Mở khách ' + customer.customerCode"
+                (click)="openRow($event, customer.id)"
+                (keydown.enter)="openRowKey($event, customer.id)"
+              >
                 <td>
-                  <a
-                    class="customer-name"
-                    [routerLink]="['/admin/customers', customer.id]"
-                    [queryParams]="filter()"
-                    >{{ customer.fullName }}</a
-                  ><span class="customer-code">{{ customer.customerCode }}</span>
+                  <strong class="customer-name">{{ customer.fullName }}</strong>
                   @if (customer.status === 'ARCHIVED') {
                     <span class="status-badge">Đã lưu trữ</span>
                   }
+                  <small class="customer-code">{{ customer.customerCode }}</small>
                 </td>
                 <td class="social-account">{{ customer.zaloName || '—' }}</td>
                 <td class="social-account">{{ customer.tiktokId || '—' }}</td>
@@ -100,6 +103,7 @@
       <button class="secondary" (click)="goPage(0)">Về trang đầu</button>
     }
   }
+  </div>
 </section>
 <app-customer-form (saved)="onSaved($event)" />
 <app-trash-dialog kind="customers" (trashed)="onTrashed($event)" (settled)="refresh()" />

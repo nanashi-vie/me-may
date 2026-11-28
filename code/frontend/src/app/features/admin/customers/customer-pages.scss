@@ -1,3 +1,4 @@
+@use '../page-sheet' as sheet;
 :host {
   --admin-field-active: var(--red);
   --admin-field-active-ring: #b3263526;
@@ -8,10 +9,47 @@
   color: var(--ink);
 }
 .customer-panel {
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 26px;
-  background: #fff;
+  @include sheet.page;
+}
+/* Everything under the title sits on the grey sheet; the table and profile are white cards on it. */
+.page-sheet {
+  @include sheet.sheet;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.customer-panel .page-sheet > * {
+  margin: 0;
+}
+.sheet-card,
+.page-sheet .table-scroll {
+  @include sheet.card;
+}
+.sheet-card {
+  padding: 22px 24px;
+}
+.customer-table thead th {
+  background: sheet.$table-head;
+  white-space: nowrap;
+}
+.customer-table :is(th, td):first-child {
+  padding-left: 18px;
+}
+.customer-table :is(th, td):last-child {
+  padding-right: 18px;
+}
+.customer-table .customer-code {
+  margin-top: 2px;
+}
+.customer-row {
+  cursor: pointer;
+}
+.customer-row:hover {
+  background: #faf7f2;
+}
+.customer-row:focus-visible {
+  outline: 2px solid var(--action);
+  outline-offset: -2px;
 }
 .page-heading {
   display: flex;
@@ -104,10 +142,6 @@ th:last-child {
   font-weight: 800;
   color: var(--ink);
   text-decoration: none;
-}
-.customer-name:hover {
-  color: var(--red);
-  text-decoration: underline;
 }
 .customer-code {
   display: block;
@@ -211,8 +245,7 @@ th:last-child {
   gap: 10px;
 }
 .detail-panel .page-heading {
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 24px;
+  margin-bottom: 20px;
 }
 .profile-fields {
   margin: 0;
@@ -267,9 +300,6 @@ dd.prominent {
   margin: 8px 0;
 }
 @media (max-width: 800px) {
-  .customer-panel {
-    padding: 20px;
-  }
   .page-heading {
     align-items: flex-start;
     flex-wrap: wrap;
@@ -293,9 +323,8 @@ dd.prominent {
   }
 }
 @media (max-width: 500px) {
-  .customer-panel {
-    padding: 16px;
-    border-radius: 16px;
+  .page-sheet {
+    padding: 12px;
   }
   .customer-toolbar {
     flex-direction: column;

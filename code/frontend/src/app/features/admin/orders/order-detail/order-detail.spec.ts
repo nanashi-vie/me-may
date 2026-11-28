@@ -48,6 +48,7 @@ async function setup(id = '1', queryParams: Record<string, string> = {}, page: a
     list: vi.fn(() => of({ items: [], totalPages: 0 })),
     catalog: vi.fn(() => of({ items: [], totalPages: 0 })),
     matches: vi.fn(() => of({ items: [] })),
+    lots: vi.fn(() => of([])),
   };
   const params = new BehaviorSubject(convertToParamMap({ id }));
   const auth = { user: signal({ id: 1, role: 'OWNER' }), epoch: signal(0) };
@@ -301,6 +302,28 @@ describe('OrderDetail', () => {
     expect(c.panel()).toBe('cancel');
     expect(buttonNamed(f, 'Sửa thông tin bill')).toBeUndefined();
     expect(buttonNamed(f, 'Xem bill gửi khách')).toBeUndefined();
+  });
+  it('lists books with lot and sale date first, the count beside Thêm sách and book money in the summary', async () => {
+    const { f, c } = await setup();
+    c.order.set(
+      billable({
+        status: 'DRAFT',
+        items: [
+          { ...book, lotLabel: 'Lô Mỹ 11', soldOn: '2026-11-27' },
+          { ...book, id: '2', sourceType: 'CATALOG', bookCodeSnapshot: 'MM-000002', lotLabel: null, soldOn: '2026-11-28' },
+        ],
+      }),
+    );
+    await settle(f);
+    const el = f.nativeElement as HTMLElement;
+    expect(Array.from(el.querySelectorAll('.item-table thead th'), text).slice(0, 4)).toEqual(['Lô hàng', 'Ngày bán', 'Ảnh bìa', 'Sách / nguồn']);
+    const rows = Array.from(el.querySelectorAll('.item-table tbody tr'), (r) => Array.from(r.children, text).slice(0, 2));
+    expect(rows).toEqual([['Lô Mỹ 11', '27/11/2026'], ['—', '28/11/2026']]);
+    expect(text(el.querySelector('#items-title')!.parentElement)).toMatch(/Sách trong đơn 2 quyển · 500 g ＋ Thêm sách/);
+    const basics = Array.from(el.querySelectorAll('.basics > div'), text);
+    expect(basics.at(-1)).toBe('Tiền sách150.000đ');
+    expect(el.querySelector('.item-scroll')).not.toBeNull();
+    expect(el.querySelector('#order-detail-panel')!.classList).toContain('tab-sheet');
   });
   it('opens the bill tab from the header and from old links', async () => {
     const { f, c } = await setup();

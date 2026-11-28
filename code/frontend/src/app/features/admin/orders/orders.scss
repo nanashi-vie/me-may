@@ -1,3 +1,4 @@
+@use '../page-sheet' as sheet;
 :host {
   display: block;
   max-width: 1400px;
@@ -9,10 +10,7 @@
   --admin-field-active-ring: #b3263526;
 }
 .order-panel {
-  background: #fff;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 28px;
+  @include sheet.page;
   min-width: 0;
 }
 .heading {
@@ -272,6 +270,12 @@ td:last-child {
   margin-top: 26px;
   border-top: 1px solid var(--line);
 }
+/* Customer order history: its own white card on the customer sheet. */
+.section.history {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
 .section-heading {
   display: flex;
   justify-content: space-between;
@@ -325,9 +329,6 @@ td:last-child {
   margin-top: 22px;
 }
 @media (max-width: 800px) {
-  .order-panel {
-    padding: 20px;
-  }
   .heading {
     align-items: flex-start;
     flex-wrap: wrap;

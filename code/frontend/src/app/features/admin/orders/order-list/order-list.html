@@ -1,7 +1,7 @@
 <section class="order-panel">
   <header class="heading">
     <div>
-      <p class="eyebrow">Vận hành cửa hàng</p>
+      <p class="eyebrow"></p>
       <h1>Quản lý đơn hàng</h1>
       <p>Danh sách và theo dõi các đơn hàng</p>
     </div>
@@ -12,6 +12,79 @@
   @if (!owner()) {
     <p class="error" role="alert">Chỉ chủ tiệm được quản lý đơn hàng.</p>
   } @else {
+    <div class="list-filters">
+    <div class="toolbar">
+      <label class="search"
+        ><span class="sr-only">Tìm đơn hàng</span
+        ><input
+          type="search"
+          maxlength="200"
+          [value]="searchText()"
+          (input)="search($any($event.target).value)"
+          placeholder="Tìm mã đơn, tên khách, SĐT, mã KH, Zalo, TikTok, Threads…"
+      /></label>
+      <div class="quick-days" role="group" aria-label="Lọc nhanh theo ngày tạo">
+        @for (p of presets; track p.key) {
+          <button type="button" [attr.aria-pressed]="preset() === p.key" (click)="togglePreset(p)">
+            {{ p.label }}
+          </button>
+        }
+      </div>
+      <button
+        #filterToggle
+        type="button"
+        class="secondary"
+        aria-controls="order-filters"
+        [attr.aria-expanded]="filterOpen()"
+        (click)="filterOpen.set(!filterOpen())"
+      >
+        Bộ lọc
+        @if (manualDated()) {
+          <span class="filter-dot" aria-hidden="true"></span><span class="sr-only">(đang lọc ngày)</span>
+        }
+      </button>
+    </div>
+    <div class="toolbar dates" id="order-filters" [hidden]="!filterOpen()">
+      @if (filterOpen()) {
+        <label
+          ><span>Từ ngày tạo</span
+          ><input
+            type="date"
+            [value]="filter().createdFrom"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
+            (change)="change('createdFrom', $any($event.target).value)" /></label
+        ><label
+          ><span>Đến ngày</span
+          ><input
+            type="date"
+            [value]="filter().createdTo"
+            [attr.aria-invalid]="datesReversed() || null"
+            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
+            (change)="change('createdTo', $any($event.target).value)"
+        /></label>
+        @if (dated()) {
+          <button type="button" class="secondary" (click)="clearFilters()">Xóa lọc</button>
+        }
+      }
+    </div>
+    @if (datesReversed()) {
+      <p class="error" role="alert" id="order-date-error">Từ ngày phải trước hoặc bằng Đến ngày.</p>
+    }
+    @if (filter().customerId) {
+      <p class="customer-filter">
+        <span>Đang xem đơn của {{ customerName() }}</span>
+        <button
+          type="button"
+          class="secondary"
+          aria-label="Bỏ lọc theo khách"
+          (click)="clearCustomer()"
+        >
+          ✕
+        </button>
+      </p>
+    }
+    </div>
     <nav class="order-tabs" aria-label="Nhóm đơn hàng">
       @for (t of tabs; track t.group) {
         <a
@@ -30,6 +103,7 @@
         >
       }
     </nav>
+    <div class="tab-sheet" [class.first-open]="tab() === tabs[0]">
     @if (tab().subs.length) {
       <div class="order-subs" role="group" [attr.aria-label]="'Lọc trong ' + tab().label">
         <button
@@ -57,67 +131,6 @@
           </button>
         }
       </div>
-    }
-    <div class="toolbar">
-      <label class="search"
-        ><span class="sr-only">Tìm đơn hàng</span
-        ><input
-          type="search"
-          maxlength="200"
-          [value]="searchText()"
-          (input)="search($any($event.target).value)"
-          placeholder="Tìm mã đơn, tên khách, số điện thoại, mã KH…"
-      /></label>
-      <button
-        #filterToggle
-        type="button"
-        class="secondary"
-        aria-controls="order-filters"
-        [attr.aria-expanded]="filterOpen()"
-        (click)="filterOpen.set(!filterOpen())"
-      >
-        Bộ lọc{{ dated() ? ' (1)' : '' }}
-      </button>
-      @if (dated() || filter().customerId) {
-        <button type="button" class="secondary" (click)="clearFilters()">Xóa lọc</button>
-      }
-    </div>
-    <div class="toolbar dates" id="order-filters" [hidden]="!filterOpen()">
-      @if (filterOpen()) {
-        <label
-          ><span>Từ ngày tạo</span
-          ><input
-            type="date"
-            [value]="filter().createdFrom"
-            [attr.aria-invalid]="datesReversed() || null"
-            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
-            (change)="change('createdFrom', $any($event.target).value)" /></label
-        ><label
-          ><span>Đến ngày</span
-          ><input
-            type="date"
-            [value]="filter().createdTo"
-            [attr.aria-invalid]="datesReversed() || null"
-            [attr.aria-describedby]="datesReversed() ? 'order-date-error' : null"
-            (change)="change('createdTo', $any($event.target).value)"
-        /></label>
-      }
-    </div>
-    @if (datesReversed()) {
-      <p class="error" role="alert" id="order-date-error">Từ ngày phải trước hoặc bằng Đến ngày.</p>
-    }
-    @if (filter().customerId) {
-      <p class="customer-filter">
-        <span>Đang xem đơn của {{ customerName() }}</span>
-        <button
-          type="button"
-          class="secondary"
-          aria-label="Bỏ lọc theo khách"
-          (click)="clearCustomer()"
-        >
-          ✕
-        </button>
-      </p>
     }
     @if (notice()) {
       <p role="status">{{ notice() }}</p>
@@ -199,6 +212,7 @@
         <app-pagination [page]="filter().page" [totalPages]="result.totalPages" [disabled]="loading()" (pageChange)="navigate({ page: $event })" />
       </footer>
     }
+    </div>
   }
 </section>
 <app-trash-dialog kind="orders" (trashed)="onTrashed($event)" (settled)="refresh()" />

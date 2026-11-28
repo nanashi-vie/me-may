@@ -79,3 +79,24 @@ Focus chuyển tới nút đổi sau khi chọn và tới ô tìm sau khi đổi
 
 Triển khai backend trước frontend; không migration. Giao diện cũ với backend mới tạm thời
 vẫn bắt xác nhận cả gợi ý gần giống.
+
+## 4. Ngày bán, lô hàng và bảng sách (owner chốt 28/11/2026)
+
+- **Ngày bán** (`order_items.sold_on`, ngày giờ Việt Nam, V41): tự là ngày thêm dòng; chỉ hộp
+  Sửa dòng có ô "Ngày bán", không sau hôm nay (400 `soldOn`). Dòng cũ lấy theo `added_at`.
+  Doanh thu theo ngày ở trang Tổng quan (đợt sau) sẽ tính theo ngày bán, còn danh sách đơn lọc
+  theo ngày tạo — hai số có thể lệch.
+- **Lô hàng** (`lot_label`, tối đa 60 ký tự, V41): chỉ Sách ngoài, chữ tự do theo quy tắc của
+  chủ tiệm, không bắt buộc; bỏ khoảng trắng hai đầu, giữ hoa/thường và dấu. Ô nằm ngang Trọng
+  lượng (5:5); sách website giữ ô Trọng lượng nửa bên trái. Gợi ý 10 lô dùng gần nhất
+  (`GET /orders/lots`, chỉ OWNER) qua `datalist`; dòng mới điền sẵn lô của Sách ngoài thêm gần
+  nhất trong đơn. Gửi lô cho sách website: 400 `lotLabel`. Không lên bill, chưa tìm/lọc theo lô.
+- Audit dòng (`orderItems`) có ngày bán và lô; request không có `soldOn`/`lotLabel` giữ
+  fingerprint cũ (idempotency trước V41).
+- **Bảng Sách trong đơn**: Lô hàng · Ngày bán · ảnh · Sách / nguồn · Đơn giá chốt · SL ·
+  Gram/quyển · Thành tiền · Thao tác; sắp theo ngày bán tăng dần rồi thứ tự thêm. Dòng gọn (bìa
+  36×48), vùng cuộn tối đa 640px (khoảng 10 dòng) với tiêu đề dính; "n quyển · m g" nằm trên tiêu
+  đề card cạnh "＋ Thêm sách". Thêm/sửa xong cuộn tới dòng đó trong card và tô sáng 1,2 giây
+  (giảm chuyển động: chỉ tô). Tab Xuất bill vẫn đủ mọi sách theo trang bill.
+- Card thông tin thêm "Tiền sách" ở cuối (bằng dòng Tiền sách của card Thanh toán, cả hai giữ).
+  Cột phải trang chi tiết cố định 340px.

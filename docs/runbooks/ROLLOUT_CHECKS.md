@@ -57,5 +57,14 @@ revision backend/frontend, image digest, tên môi trường và phiên bản Fl
    không ảnh có lý do, bàn giao tự lấy khi đã đủ tiền, mã "hi" bị từ chối, mã trùng đơn khác bị
    từ chối, sửa mã đổi J&T→Shopee Express. Rollback code không đảo V40 (giá trị JNT).
 
+## Ngày bán và lô hàng của sách trong đơn V41
+
+1. Trước V41: backup DB; đếm `order_items`. V41 thêm `sold_on` (điền từ `added_at` giờ Việt Nam,
+   mặc định hôm nay, NOT NULL, chỉ mục) và `lot_label` (≤60, CHECK chỉ MANUAL).
+2. Backend trước, frontend ngay sau (frontend cũ vẫn chạy: không gửi hai trường mới). Smoke: số
+   dòng có `sold_on` bằng tổng dòng; thêm Sách ngoài có lô, sửa ngày bán về hôm trước (dòng đổi
+   chỗ), ngày tương lai bị từ chối; gợi ý lô; tìm đơn theo TikTok có "@"; Hôm nay/Hôm qua.
+   Rollback code không đảo V41 (hai cột thừa vô hại, `sold_on` có mặc định).
+
 [Contract đơn](../product/ORDERS.md) · [Runbook triển khai](DEPLOYMENT.md) ·
 [Khôi phục media](IMAGE_OPERATIONS.md).
