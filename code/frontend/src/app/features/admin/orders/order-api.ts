@@ -33,6 +33,10 @@ export class OrderApi {
       new HttpParams({ fromObject: { q, page, size } }),
     );
   }
+  /** Lot names last used on outside books, newest first. */
+  lots() {
+    return this.http.get<string[]>('/orders/lots');
+  }
   matches(title: string) {
     return this.http.get<MatchResult>(
       '/orders/catalog-match',

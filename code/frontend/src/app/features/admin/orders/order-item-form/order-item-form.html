@@ -161,18 +161,46 @@
               step="1"
               required
               [(ngModel)]="model.quantity" /></label
-          ><label class="full"
+          ><label
             ><span>Trọng lượng mỗi quyển (gram) {{ model.sourceType === 'MANUAL' ? '*' : '' }}</span
             ><input
               name="weight"
               type="number"
               min="1"
               step="1"
-              [(ngModel)]="model.unitWeightGrams"
-            /><small
-              >Trọng lượng lưu riêng cho dòng sách. Khác giá hoặc gram: thêm dòng mới.</small
-            ></label
+              [(ngModel)]="model.unitWeightGrams" /></label
+          >@if (model.sourceType === 'MANUAL') {
+            <label
+              ><span>Lô hàng</span
+              ><input
+                name="lot"
+                maxlength="60"
+                autocomplete="off"
+                list="order-lots"
+                placeholder="Không bắt buộc"
+                [(ngModel)]="model.lotLabel" /><datalist id="order-lots">
+                @for (lot of lots(); track lot) {
+                  <option [value]="lot"></option>
+                }
+              </datalist></label
+            >
+          } @else {
+            <span aria-hidden="true"></span>
+          }
+          <small class="full"
+            >Trọng lượng lưu riêng cho dòng sách. Khác giá hoặc gram: thêm dòng mới.</small
           >
+          @if (item) {
+            <label
+              ><span>Ngày bán *</span
+              ><input
+                name="soldOn"
+                type="date"
+                required
+                [max]="today"
+                [(ngModel)]="model.soldOn"
+            /></label>
+          }
         </div>
         @if (requiresReason()) {
           <label

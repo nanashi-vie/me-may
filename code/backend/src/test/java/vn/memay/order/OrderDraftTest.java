@@ -22,6 +22,36 @@ class OrderDraftTest extends OrderTestSupport {
   assertThatThrownBy(()->drafts.addItem(id,item(2,"CATALOG",b.id(),null,1L,1,1L,null),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.error).isEqualTo("stock_conflict"));
   assertThat(orders.require(id,false).items()).hasSize(2);
  }
+ @Test void saleDateDefaultsToTodayCanBeCorrectedAndSortsLines(){
+  long id=draft();var today=java.time.LocalDate.now(OrderValidation.ZONE);
+  drafts.addItem(id,item(0,"MANUAL",null,"Sold today synthetic",1000L,1,100L,null),owner);
+  var first=orders.require(id,false).items().getFirst();assertThat(first.soldOn()).isEqualTo(today);
+  drafts.addItem(id,new ItemRequest(1L,UUID.randomUUID(),"MANUAL",null,"Sold earlier synthetic",2000L,1L,100L,null,null,today.minusDays(1).toString()),owner);
+  assertThat(orders.require(id,false).items()).extracting(OrderItem::titleSnapshot).containsExactly("Sold earlier synthetic","Sold today synthetic");
+  assertThatThrownBy(()->drafts.updateItem(id,Long.parseLong(first.id()),new ItemRequest(2L,UUID.randomUUID(),null,null,first.titleSnapshot(),1000L,1L,100L,null,null,today.plusDays(1).toString()),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.status).isEqualTo(400));
+  drafts.updateItem(id,Long.parseLong(first.id()),new ItemRequest(2L,UUID.randomUUID(),null,null,first.titleSnapshot(),1500L,1L,100L,null,null,today.minusDays(3).toString()),owner);
+  var lines=orders.require(id,false).items();assertThat(lines.getFirst().titleSnapshot()).isEqualTo("Sold today synthetic");assertThat(lines.getFirst().soldOn()).isEqualTo(today.minusDays(3));
+  drafts.updateItem(id,Long.parseLong(first.id()),item(3,"MANUAL",null,first.titleSnapshot(),1500L,1,100L,null),owner);
+  assertThat(orders.require(id,false).items().getFirst().soldOn()).isEqualTo(today.minusDays(3));
+ }
+ @Autowired OrderQueryService orderQueries;
+ @Test void outsideBookLotIsTrimmedOptionalSuggestedAndRefusedForWebsiteBooks(){
+  long id=draft();
+  drafts.addItem(id,new ItemRequest(0L,UUID.randomUUID(),"MANUAL",null,"Lot synthetic",1000L,1L,100L,null,null,null,"  Lô Mỹ 11/26 "),owner);
+  var line=orders.require(id,false).items().getFirst();assertThat(line.lotLabel()).isEqualTo("Lô Mỹ 11/26");
+  assertThat(orderQueries.recentLots(owner)).first().isEqualTo("Lô Mỹ 11/26");
+  drafts.updateItem(id,Long.parseLong(line.id()),new ItemRequest(1L,UUID.randomUUID(),null,null,line.titleSnapshot(),1000L,1L,100L,null,null,null,""),owner);
+  assertThat(orders.require(id,false).items().getFirst().lotLabel()).isNull();
+  assertThatThrownBy(()->drafts.addItem(id,new ItemRequest(2L,UUID.randomUUID(),"MANUAL",null,"Long lot",1000L,1L,100L,null,null,null,"x".repeat(61)),owner)).isInstanceOf(AdminApiException.class);
+  var b=ready();
+  assertThatThrownBy(()->drafts.addItem(id,new ItemRequest(2L,UUID.randomUUID(),"CATALOG",b.id(),null,1000L,1L,100L,null,null,null,"Lô web"),owner)).isInstanceOfSatisfying(AdminApiException.class,e->assertThat(e.status).isEqualTo(400));
+ }
+ @Test void orderSearchMatchesCustomerSocialChannels(){
+  long id=draft();jdbc.update("update customer set zalo_name='Huyền Hab',tiktok_id='em bé hyhy',threads_id='minh.threads' where id=(select customer_id from orders where id=?)",id);
+  for(String q:List.of("hyhy","@em bé","huyền hab","MINH.THREADS"))
+   assertThat(orderQueries.list(new OrderFilter(q,"ALL",null,null,null,"ALL",0,20,"ALL"),owner).items()).as(q).extracting(OrderSummary::id).contains(Long.toString(id));
+  assertThat(orderQueries.list(new OrderFilter("không-có-kênh-này","ALL",null,null,null,"ALL",0,20,"ALL"),owner).items()).isEmpty();
+ }
  @Test void manualDoesNotCreateCatalogueAndRequiresPriceAndWeight(){
   long id=draft();long books=jdbc.queryForObject("select count(*) from book_copy",Long.class);
   drafts.addItem(id,item(0,"MANUAL",null,"Outside synthetic",75000L,2,250L,null),owner);

@@ -20,6 +20,7 @@ public class OrderController {
  @GetMapping public Page<OrderSummary> list(Authentication a,@RequestParam Map<String,String> params){return queries.list(filter(params),actors.current(a));}
  @GetMapping("/stats") public OrderStats stats(Authentication a,@RequestParam Map<String,String> params){return queries.stats(filter(params),actors.current(a));}
  @GetMapping("/catalog") public Page<CatalogCandidate> catalog(Authentication a,@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return queries.catalog(q,page,size,actors.current(a));}
+ @GetMapping("/lots") public List<String> lots(Authentication a){return queries.recentLots(actors.current(a));}
  @GetMapping("/catalog-match") public MatchResult match(Authentication a,@RequestParam String title){return queries.matches(title,actors.current(a));}
  public record TrashChange(@NotNull @PositiveOrZero Long version,@NotNull Boolean trashed){}
  public record TrashPurge(@NotEmpty List<VersionedItem> items){}

@@ -134,7 +134,10 @@ Tiêu đề **Khách hàng**, nút OWNER **+ Thêm khách mới**.
 Toolbar: một ô tìm kiếm; trạng thái Đang hoạt động/Đã lưu trữ/Tất cả,
 mặc định ACTIVE. Bảng (đổi15/11): Khách hàng (tên + mã KH), Zalo, TikTok,
 Threads, Số điện thoại, Tổng số đơn hàng và Thao tác (OWNER, chỉ có [xóa](TRASH.md));
-bấm tên mở chi tiết, OWNER sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem.
+bấm cả dòng mở chi tiết (28/11, như danh sách đơn: Ctrl/Cmd+click tab mới, bôi chữ không mở,
+Tab + Enter "Mở khách KH-…", nút xóa không mở dòng; tên không còn là link), OWNER
+sửa/lưu trữ/khôi phục tại đó; STAFF chỉ xem. Bố cục chung với đơn: tiêu đề và ô tìm ngoài, bảng
+(card trắng kiểu bảng đơn) trên tấm xám; chi tiết khách là hai card trắng (hồ sơ, lịch sử đơn).
 Ba tên tài khoản lấy từ API danh sách, field rỗng hiện —; không gọi từng hồ sơ.
 Cột tổng đơn chỉ OWNER: orderCount thật theo [ORDERS](ORDERS.md#13-api-quyền-audit-và-bảo-mật),
 0 khi chưa có đơn được tính; STAFF ẩn cột và API trả null, không query order.

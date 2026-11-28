@@ -162,13 +162,18 @@ describe('CustomerList', () => {
       expect.objectContaining({ queryParams: expect.objectContaining({ q: 'Mai', page: 0 }) }),
     );
   });
-  it('opens customer details through the name and offers no action on a kept row', async () => {
+  it('opens customer details from the whole row and offers no action on a kept row', async () => {
     const {f} = setup();await f.whenStable();f.detectChanges();
     const root=f.nativeElement as HTMLElement;
     expect(Array.from(root.querySelectorAll('th')).map(h=>h.textContent?.trim())).toEqual([
       'Khách hàng','Zalo','TikTok','Threads','Số điện thoại','Tổng số đơn hàng','Thao tác']);
     expect(root.querySelector('tbody button')).toBeNull();
-    expect(root.querySelector('a.customer-name')?.getAttribute('href')).toContain('/admin/customers/1');
-    expect(root.querySelector('a.customer-name')?.textContent).toContain('Lan');
+    expect(root.querySelector('a.customer-name')).toBeNull();
+    const row=root.querySelector('tbody tr.customer-row') as HTMLElement;
+    expect(row.getAttribute('aria-label')).toMatch(/^Mở khách /);
+    expect(row.textContent).toContain('Lan');
+    const navigate=vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    (row.querySelector('td') as HTMLElement).click();
+    expect(navigate).toHaveBeenCalledWith(['/admin/customers','1'],{queryParams:{q:'lan',status:'ALL',page:2,size:20}});
   });
 });

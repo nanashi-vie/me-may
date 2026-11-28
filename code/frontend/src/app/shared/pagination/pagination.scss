@@ -28,16 +28,16 @@ button {
   cursor: pointer;
 }
 button:hover:not(:disabled):not([aria-current]) {
-  background: color-mix(in srgb, var(--red, #b32635) 12%, transparent);
-  color: var(--red, #b32635);
+  background: color-mix(in srgb, var(--admin-primary, var(--red, #b32635)) 12%, transparent);
+  color: var(--admin-primary, var(--red, #b32635));
 }
 button[aria-current] {
   // --action retains a white-text-safe brand red in both public themes.
-  background: var(--action, #b32635);
+  background: var(--admin-primary, var(--action, #b32635));
   color: #fff;
 }
 button:focus-visible {
-  outline: 2px solid var(--red, #b32635);
+  outline: 2px solid var(--admin-primary, var(--red, #b32635));
   outline-offset: 2px;
 }
 button:disabled {

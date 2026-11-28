@@ -1,4 +1,14 @@
-<a class="back-link" routerLink="/admin/orders" [queryParams]="backQuery">‹ Danh sách đơn hàng</a>
+@if (!newId && !order()) {
+  <a
+    class="admin-back-btn"
+    routerLink="/admin/orders"
+    [queryParams]="backQuery"
+    aria-label="Quay lại danh sách đơn hàng"
+    title="Quay lại danh sách đơn hàng"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  </a>
+}
 @if (error()) {
   <div class="error" role="alert">
     {{ error() }}
@@ -29,12 +39,23 @@
   @if (newId) {
     <section class="order-panel">
       <header class="heading">
-        <div>
-          <p class="eyebrow">Đơn hàng mới</p>
-          <h1>Chọn khách hàng</h1>
-          @if (!selectedCustomer()) {
-            <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
-          }
+        <div class="admin-title-row-start">
+          <a
+            class="admin-back-btn"
+            routerLink="/admin/orders"
+            [queryParams]="backQuery"
+            aria-label="Quay lại danh sách đơn hàng"
+            title="Quay lại danh sách đơn hàng"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          </a>
+          <div>
+            <p class="eyebrow">Đơn hàng mới</p>
+            <h1>Chọn khách hàng</h1>
+            @if (!selectedCustomer()) {
+              <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
+            }
+          </div>
         </div>
         @if (!selectedCustomer()) {
           <button
@@ -139,17 +160,28 @@
   @if (order(); as d) {
     @let state = billState();
     <header class="page-head heading">
-      <div>
-        <h1>
-          Đơn {{ d.orderCode }}
-          <span class="badge" [class]="'badge ' + statusTone(d)">{{ statusLabel(d) }}</span>
-          @if (paymentBadge(); as b) {
-            <span class="badge payment-badge" [class]="'badge payment-badge ' + b.tone">{{
-              b.label
-            }}</span>
-          }
-        </h1>
-        <p>Tạo lúc {{ d.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+      <div class="admin-title-row-start">
+        <a
+          class="admin-back-btn"
+          routerLink="/admin/orders"
+          [queryParams]="backQuery"
+          aria-label="Quay lại danh sách đơn hàng"
+          title="Quay lại danh sách đơn hàng"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </a>
+        <div>
+          <h1>
+            Đơn {{ d.orderCode }}
+            <span class="badge" [class]="'badge ' + statusTone(d)">{{ statusLabel(d) }}</span>
+            @if (paymentBadge(); as b) {
+              <span class="badge payment-badge" [class]="'badge payment-badge ' + b.tone">{{
+                b.label
+              }}</span>
+            }
+          </h1>
+          <p>Tạo lúc {{ d.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+        </div>
       </div>
       <div class="head-actions">
         @if (state === 'edit' || state === 'readonly') {
@@ -532,7 +564,7 @@
       role="tabpanel"
       id="order-detail-panel"
       aria-labelledby="order-detail-tab"
-      class="detail-grid"
+      class="detail-grid tab-sheet first-open"
       [hidden]="tab() !== 'detail'"
     >
       <div class="detail-main">
@@ -563,10 +595,22 @@
               }}
             </dd>
           </div>
+          <div>
+            <dt>Tiền sách</dt>
+            <dd>{{ money(d.totals.goodsTotal) }}</dd>
+          </div>
         </dl>
         <section class="card" aria-labelledby="items-title">
           <div class="card-head">
             <h2 id="items-title">Sách trong đơn</h2>
+            <p class="muted items-total">
+              {{ d.totalQuantity }} quyển ·
+              {{
+                d.totals.totalBookWeightGrams === null
+                  ? 'Chưa đủ trọng lượng'
+                  : d.totals.totalBookWeightGrams + ' g'
+              }}
+            </p>
             @if (editable()) {
               <button
                 class="secondary small add-book"
@@ -577,10 +621,18 @@
               </button>
             }
           </div>
-          <div class="table-scroll" role="region" aria-label="Sách trong đơn" tabindex="0">
+          <div
+            #itemScroll
+            class="table-scroll item-scroll"
+            role="region"
+            aria-label="Sách trong đơn"
+            tabindex="0"
+          >
             <table class="item-table">
               <thead>
                 <tr>
+                  <th>Lô hàng</th>
+                  <th>Ngày bán</th>
                   <th><span class="sr-only">Ảnh bìa</span></th>
                   <th>Sách / nguồn</th>
                   <th class="number">Đơn giá chốt</th>
@@ -592,7 +644,9 @@
               </thead>
               <tbody>
                 @for (item of d.items; track item.id) {
-                  <tr>
+                  <tr [attr.data-item]="item.id" [class.flash]="flashed() === item.id">
+                    <td class="lot">{{ item.lotLabel || '—' }}</td>
+                    <td class="nowrap">{{ item.soldOn | date: 'dd/MM/yyyy' }}</td>
                     <td>
                       @if (item.coverUrl) {
                         <img class="cover" [src]="item.coverUrl" alt="" loading="lazy" />
@@ -622,7 +676,7 @@
                           >
                             Sửa</button
                           ><button
-                            class="text-button"
+                            class="text-button danger-text"
                             [disabled]="busy() || !!pending()"
                             (click)="remove(item)"
                           >
@@ -634,20 +688,12 @@
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="7" class="empty">Chưa có sách trong đơn.</td>
+                    <td colspan="9" class="empty">Chưa có sách trong đơn.</td>
                   </tr>
                 }
               </tbody>
             </table>
           </div>
-          <p class="muted items-total">
-            {{ d.totalQuantity }} quyển ·
-            {{
-              d.totals.totalBookWeightGrams === null
-                ? 'Chưa đủ trọng lượng'
-                : d.totals.totalBookWeightGrams + ' g'
-            }}
-          </p>
         </section>
         <section class="card payment-card" aria-labelledby="payment-title">
           <div class="card-head">
@@ -655,7 +701,7 @@
             <div class="actions">
               @if (d.status !== 'CANCELLED') {
                 <button
-                  class="secondary small"
+                  class="success small"
                   [disabled]="busy() || !!pending()"
                   (click)="openPayment('DEPOSIT')"
                 >
@@ -960,6 +1006,7 @@
       role="tabpanel"
       id="order-bill-panel"
       aria-labelledby="order-bill-tab"
+      class="tab-sheet"
       [hidden]="tab() !== 'bill'"
     >
       @if (state === 'empty') {

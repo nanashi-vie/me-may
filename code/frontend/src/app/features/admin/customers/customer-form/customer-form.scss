@@ -1,7 +1,5 @@
 :host {
-  --customer-red: var(--red, #b32635);
-  --admin-field-active: var(--red);
-  --admin-field-active-ring: #b3263526;
+  --customer-red: var(--admin-danger, #d92d20);
   --admin-field-radius: 24px;
 }
 dialog {
@@ -67,7 +65,7 @@ textarea {
 }
 input:focus,
 textarea:focus {
-  outline: 2px solid var(--customer-red);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: 2px;
 }
 input[aria-invalid='true'],
@@ -112,7 +110,7 @@ footer {
 button {
   width: auto;
   margin: 0;
-  border-radius: 30px;
+  border-radius: 999px;
   min-height: 44px;
 }
 .close {

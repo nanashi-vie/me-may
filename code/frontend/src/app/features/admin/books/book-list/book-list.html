@@ -3,8 +3,10 @@
     <p class="eyebrow">Catalogue · Nhập thủ công</p>
     <h1>Quản lý sách</h1>
   </div>
-  @if(auth.user()?.role === 'OWNER') { <div><a class="button" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
+  @if(auth.user()?.role === 'OWNER') { <div><a class="button secondary" routerLink="/admin/sach/import">Import sách</a> <a class="button" routerLink="/admin/sach/moi" queryParamsHandling="preserve">Thêm sách</a></div> }
 </div>
+<div class="admin-card admin-card-flush book-card">
+<div class="book-card-head">
 <form class="filters" [formGroup]="filters" (ngSubmit)="search()">
   <label class="admin-field filter-search">
     <span class="field-label">Tên hoặc mã sách</span>
@@ -165,24 +167,16 @@
 @if (loading()) {
   <p role="status">Đang tải sách…</p>
 }
+</div>
 @if (result(); as data) {
-  <div class="bulk-toolbar">
-    <p class="book-total">{{ data.totalElements }} cuốn</p>
-    @if (auth.user()?.role === 'OWNER') {
+  @if (auth.user()?.role === 'OWNER' && selected().size > 0) {
+    <div class="bulk-toolbar" role="region" aria-label="Thao tác hàng loạt">
+      <p class="bulk-selected">Đã chọn {{ selected().size }} cuốn</p>
       <div class="bulk-actions">
-        <label class="bulk-select-all">
-          <input
-            type="checkbox"
-            [checked]="data.items.length > 0 && selected().size === data.items.length"
-            [disabled]="mutationBusy() || loading() || !data.items.length"
-            (change)="selectPage(data.items, $any($event.target).checked)"
-          />
-          <span>Chọn tất cả trên trang này</span>
-        </label>
         <button
           type="button"
           class="secondary"
-          [disabled]="mutationBusy() || loading() || photoDownloadBusy() || !selected().size"
+          [disabled]="mutationBusy() || loading() || photoDownloadBusy()"
           (click)="downloadPhotos()"
         >
           {{ photoDownloadBusy() ? 'Đang tạo ZIP…' : 'Tải ảnh (' + selected().size + ' cuốn)' }}
@@ -197,20 +191,35 @@
         </button>
         <button
           type="button"
-          class="bulk-trash-btn"
-          [disabled]="mutationBusy() || loading() || !selected().size"
+          class="bulk-trash-btn danger"
+          [disabled]="mutationBusy() || loading()"
           (click)="askBulk(bulkDialog)"
         >
           Chuyển {{ selected().size }} cuốn vào Thùng rác
         </button>
       </div>
-    }
-  </div>
+    </div>
+  }
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
-          <th>Mã / sách</th>
+          <th>
+            <div class="head-select">
+              @if (auth.user()?.role === 'OWNER') {
+                <input
+                  type="checkbox"
+                  class="row-check select-all-check"
+                  aria-label="Chọn tất cả trên trang này"
+                  [checked]="data.items.length > 0 && selected().size === data.items.length"
+                  [indeterminate]="selected().size > 0 && selected().size < data.items.length"
+                  [disabled]="mutationBusy() || loading() || !data.items.length"
+                  (change)="selectPage(data.items, $any($event.target).checked)"
+                />
+              }
+              <span>Mã / sách</span>
+            </div>
+          </th>
           <th>Giá tham khảo</th>
           <th>Xuất bản</th>
           <th>Tồn kho</th>
@@ -221,7 +230,15 @@
       </thead>
       <tbody>
         @for (book of data.items; track book.id) {
-          <tr [id]="'admin-book-' + book.id" [class.source-warning]="book.unverifiedSourceRoles?.length">
+          <tr
+            [id]="'admin-book-' + book.id"
+            class="book-row"
+            tabindex="0"
+            [attr.aria-label]="'Mở sách ' + book.bookCode"
+            [class.source-warning]="book.unverifiedSourceRoles?.length"
+            (click)="openRow($event, book.id)"
+            (keydown.enter)="openRowKey($event, book.id)"
+          >
             <td>
               <div class="book-cell">
                 @if (auth.user()?.role === 'OWNER') {
@@ -244,9 +261,7 @@
                   <span class="cover-placeholder" role="img" aria-label="Chưa có ảnh">Chưa có ảnh</span>
                 }
                 <div class="book-cell-info">
-                  <a [href]="editUrl(book.id)" (click)="openBook($event, book.id)">{{
-                    book.title || 'Chưa có tên'
-                  }}</a>
+                  <strong class="book-title">{{ book.title || 'Chưa có tên' }}</strong>
                   <small>{{ book.bookCode }}</small>
                   @if (sourceWarning(book); as warning) {
                     <small class="source-warning-reason">{{ warning }}</small>
@@ -287,14 +302,20 @@
       </tbody>
     </table>
   </div>
-  <app-pagination class="pagination" [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
+}
+</div>
+@if (result(); as data) {
+  <footer class="pagination">
+    <span class="book-total">{{ data.totalElements }} cuốn</span>
+    <app-pagination [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
+  </footer>
 }
 <dialog #trashDialog aria-labelledby="trash-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
   @if (target(); as book) {
     <h2 id="trash-dialog-heading">Chuyển vào Thùng rác?</h2>
     <p>{{ book.title || 'Chưa có tên' }} ({{ book.bookCode }}) sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
     <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="trashDialog.close()">Hủy</button>
-    <button type="button" [disabled]="mutationBusy()" (click)="moveToTrash(book,trashDialog)">Chuyển vào Thùng rác</button>
+    <button type="button" class="danger" [disabled]="mutationBusy()" (click)="moveToTrash(book,trashDialog)">Chuyển vào Thùng rác</button>
   }
 </dialog>
 
@@ -303,7 +324,7 @@
     <h2 id="bulk-dialog-heading">Chuyển vào Thùng rác {{ items.length }} cuốn?</h2>
     <p>Sách sẽ ẩn ngay và bị xóa vĩnh viễn sau 7 ngày nếu chưa khôi phục.</p>
     <button type="button" class="secondary" autofocus [disabled]="mutationBusy()" (click)="bulkDialog.close()">Hủy</button>
-    <button type="button" [disabled]="mutationBusy()" (click)="confirmBulk(bulkDialog)">Chuyển vào Thùng rác</button>
+    <button type="button" class="danger" [disabled]="mutationBusy()" (click)="confirmBulk(bulkDialog)">Chuyển vào Thùng rác</button>
   }
 </dialog>
 

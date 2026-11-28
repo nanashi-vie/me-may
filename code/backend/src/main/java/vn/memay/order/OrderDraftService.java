@@ -37,6 +37,12 @@ public class OrderDraftService {
   String reason=text(r.reason(),"reason",1000,d.status()==Status.KEEPING);if(reason!=null)db.noteItem(id,"ITEM_REMOVE",reason,r.meta(),actor,item,item.quantity());
   db.jdbc.update("delete from order_items where id=? and order_id=?",itemId,id);if(d.status()==Status.KEEPING)inventory.sync(id,actor);else inventory.checkDraft(id);refresh(id,true,true);return id;
  });}
+ /** Sale date of a book line: missing keeps the current one (today for a new line); never later than today. */
+ private static java.time.LocalDate soldOn(String value,java.time.LocalDate current,java.time.LocalDate today){
+  if(value==null||value.isBlank())return current;java.time.LocalDate d;
+  try{d=java.time.LocalDate.parse(value.trim());}catch(java.time.format.DateTimeParseException e){throw AdminApiException.field("soldOn","Ngày bán không hợp lệ");}
+  if(d.isAfter(today))throw AdminApiException.field("soldOn","Ngày bán không được sau hôm nay");return d;
+ }
  private void writeItem(long id,Long itemId,ItemRequest r,AdminUser actor){
   var d=db.require(id,false);editable(d);OrderItem old=itemId==null?null:d.items().stream().filter(i->i.id().equals(itemId.toString())).findFirst().orElseThrow(()->new AdminApiException(404,"not_found"));
   String source=text(r.sourceType()==null&&old!=null?old.sourceType():r.sourceType(),"sourceType",16,true);if(!Set.of("CATALOG","MANUAL").contains(source))throw AdminApiException.field("sourceType","Chọn nguồn sách");
@@ -64,9 +70,12 @@ public class OrderDraftService {
    }
   }
   if(weight!=null)number(weight,"unitWeightGrams",1,MAX);
+  var today=db.clock.instant().atZone(OrderValidation.ZONE).toLocalDate();var soldOn=soldOn(r.soldOn(),old==null?today:old.soldOn(),today);
+  String lot=source.equals("MANUAL")?text(r.lotLabel(),"lotLabel",60,false):null;
+  if(lot==null&&source.equals("CATALOG")&&r.lotLabel()!=null&&!r.lotLabel().isBlank())throw AdminApiException.field("lotLabel","Lô hàng chỉ dành cho sách ngoài");
   if(d.status()==Status.KEEPING&&weight==null)throw AdminApiException.field("unitWeightGrams","Bổ sung trọng lượng trước khi giữ");
-  if(old==null)db.jdbc.update("insert into order_items(order_id,source_type,book_copy_id,listing_id,book_code_snapshot,title_snapshot,unit_price_vnd,quantity,unit_weight_grams,manual_match_override_reason,manual_match_evidence,created_by,added_at) values(?,?,?,?,?,?,?,?,?,?,?,?,?)",id,source,book,listing,code,title,price,quantity,weight,reason,evidence,actor.getId(),Timestamp.from(db.clock.instant()));
-  else db.jdbc.update("update order_items set title_snapshot=?,unit_price_vnd=?,quantity=?,unit_weight_grams=?,manual_match_override_reason=?,manual_match_evidence=? where id=? and order_id=?",title,price,quantity,weight,reason,evidence,itemId,id);
+  if(old==null)db.jdbc.update("insert into order_items(order_id,source_type,book_copy_id,listing_id,book_code_snapshot,title_snapshot,unit_price_vnd,quantity,unit_weight_grams,manual_match_override_reason,manual_match_evidence,created_by,added_at,sold_on,lot_label) values(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",id,source,book,listing,code,title,price,quantity,weight,reason,evidence,actor.getId(),Timestamp.from(db.clock.instant()),java.sql.Date.valueOf(soldOn),lot);
+  else db.jdbc.update("update order_items set title_snapshot=?,unit_price_vnd=?,quantity=?,unit_weight_grams=?,manual_match_override_reason=?,manual_match_evidence=?,sold_on=?,lot_label=? where id=? and order_id=?",title,price,quantity,weight,reason,evidence,java.sql.Date.valueOf(soldOn),lot,itemId,id);
   if(d.status()==Status.KEEPING)inventory.sync(id,actor);else inventory.checkDraft(id);
   refresh(id,old==null||old.quantity()!=quantity||!Objects.equals(old.unitWeightGrams(),weight),old==null||old.quantity()!=quantity||old.unitPriceVnd()!=price);
  }

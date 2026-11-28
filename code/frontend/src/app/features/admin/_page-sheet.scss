@@ -1,0 +1,62 @@
+// Admin 2-layer layout: cool-grey #f4f5f7 canvas in .admin-main-wrap with crisp white #fff
+// cards and inverted white active browser-style tabs (only the open tab's text takes --ink-tab).
+$canvas: #f4f5f7;
+$sheet: #ffffff;
+$card-line: #eaecf0;
+$table-head: #f9fafb;
+
+/* No card around the page; it sits straight on the cool-grey admin canvas. */
+@mixin page {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+@mixin strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin: 0;
+  border-bottom: 0;
+  overflow-x: auto;
+}
+@mixin tab {
+  flex: none;
+  margin: 0;
+  padding: 0.7rem 1.1rem;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: none;
+  color: var(--muted);
+  font-weight: 650;
+  white-space: nowrap;
+  text-decoration: none;
+  &:hover {
+    background: rgb(255 255 255 / 65%);
+    color: var(--ink);
+  }
+}
+@mixin open {
+  background: $sheet;
+  color: var(--ink-tab, var(--ink));
+  border-color: $card-line;
+  position: relative;
+  z-index: 2;
+  &:hover {
+    background: $sheet;
+  }
+}
+/* Transparent layout wrapper under tabs/header so white cards float directly on #f4f5f7. */
+@mixin sheet {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+}
+/* White card on the grey canvas: faint border and a hairline shadow lift it off the background. */
+@mixin card {
+  border: 1px solid $card-line;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
+}

@@ -157,7 +157,7 @@
             } @else if ((balance() ?? 0) > 0 && !readOnly()) {
               <p>
                 Còn thiếu {{ money(balance()) }}.
-                <button type="button" class="secondary" (click)="paymentRequested.emit()">
+                <button type="button" class="success" (click)="paymentRequested.emit()">
                   Nhận cọc
                 </button>
               </p>
@@ -168,7 +168,7 @@
           @if ((balance() ?? 0) > 0 && !readOnly()) {
             <p>
               Còn thiếu {{ money(balance()) }}.
-              <button type="button" class="secondary" (click)="paymentRequested.emit()">
+              <button type="button" class="success" (click)="paymentRequested.emit()">
                 Nhận cọc
               </button>
             </p>

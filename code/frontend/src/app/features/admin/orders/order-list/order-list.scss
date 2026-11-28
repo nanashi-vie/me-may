@@ -1,40 +1,70 @@
 @use '../status-badges';
-/* Same measures as .trash-tabs; scrolls sideways instead of wrapping. */
-.order-tabs,
+@use '../../page-sheet' as sheet;
+/* Browser-style tabs on one grey sheet; only the open tab's title takes the status colour. */
+.order-tabs {
+  @include sheet.strip;
+}
+.order-tabs a {
+  @include sheet.tab;
+}
 .order-subs {
   display: flex;
-  gap: 0.35rem;
+  gap: 8px;
   overflow-x: auto;
 }
-.order-tabs {
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 18px;
-}
-.order-tabs a {
-  flex: none;
-  padding: 0.7rem 1.1rem;
-  border-bottom: 3px solid transparent;
-  color: var(--muted);
-  font-weight: 600;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.order-tabs a:hover {
-  color: var(--ink);
-}
-// Tone per tab, from the status badge colours: text/underline when open, count pill always.
-.order-tabs a {
-  --tone: var(--red);
-  --tint: #fceae5;
-}
-.order-tabs a.tone-draft { --tone: #4a4844; --tint: #f0efec; }
-.order-tabs a.tone-keeping { --tone: #2166a3; --tint: #edf4fc; }
-.order-tabs a.tone-packing { --tone: #8a4b06; --tint: #fdf1e3; }
-.order-tabs a.tone-completed { --tone: #1d6b3a; --tint: #e8f5ec; }
-.order-tabs a.tone-closed { --tone: #a13f24; --tint: #fceae5; }
+// Tone per tab, from the status badge colours: open tab title and count pill.
+.tone-all { --tone: #1f2328; --tint: #e5e7eb; }
+.tone-draft { --tone: #4a4844; --tint: #e8e5df; }
+.tone-keeping { --tone: #1d5d96; --tint: #dbeafe; }
+.tone-packing { --tone: #b45309; --tint: #fed7aa; }
+.tone-completed { --tone: #15803d; --tint: #dcfce7; }
+.tone-closed { --tone: #b91c1c; --tint: #fee2e2; }
 .order-tabs a.active {
-  border-bottom-color: var(--tone);
-  color: var(--tone);
+  @include sheet.open;
+  --ink-tab: var(--tone);
+  background: var(--tint);
+  border-color: color-mix(in srgb, var(--tone) 24%, transparent);
+  margin-bottom: -1px;
+  &:hover {
+    background: var(--tint);
+  }
+}
+.order-tabs a.active .count {
+  background: #fff;
+}
+/* Transparent wrapper under tabs: white orders-card sits directly on #f4f5f7, pagination below. */
+.tab-sheet {
+  @include sheet.sheet;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.order-panel .tab-sheet > * {
+  margin: 0;
+}
+.orders-card {
+  @include sheet.card;
+}
+.tab-sheet.first-open .orders-card {
+  border-top-left-radius: 0;
+}
+.orders-card .table-scroll {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.orders-card .order-subs {
+  padding: 14px 18px 12px;
+  margin: 0;
+  border-bottom: 1px solid #eaecf0;
+}
+.orders-card > .error,
+.orders-card > [role='status'] {
+  margin: 14px 18px;
+}
+.orders-card .order-table thead th:last-child {
+  border-top-right-radius: 14px;
 }
 .order-tabs .count {
   display: inline-block;
@@ -49,7 +79,7 @@
 }
 .order-tabs a:focus-visible,
 .order-subs button:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: -2px;
 }
 .count {
@@ -60,14 +90,14 @@
   color: var(--red);
 }
 .order-subs {
-  gap: 8px;
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 .order-subs button {
   flex: none;
   min-height: 38px;
   padding: 6px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
   background: #fff;
   color: var(--ink);
   font-size: 0.85rem;
@@ -78,8 +108,8 @@
   outline-offset: -4px;
 }
 .order-subs button[aria-pressed='true'] {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: #181a1f;
+  background: #181a1f;
   color: #fff;
 }
 .order-subs .zero[aria-pressed='false'] {
@@ -127,14 +157,13 @@
 }
 /* Table in a rounded card: pale header, airy rows, the whole row opens the order. */
 .table-scroll {
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  @include sheet.card;
 }
 .order-table {
   min-width: 960px;
 }
 .order-table thead th {
-  background: #f6f5f2;
+  background: sheet.$table-head;
   white-space: nowrap;
 }
 .order-table td {
@@ -159,12 +188,62 @@
   cursor: pointer;
 }
 .order-row:hover {
-  background: #faf7f2;
+  background: #f9fafb;
 }
 .order-row:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: -2px;
 }
 .actions-cell {
   text-align: center;
+}
+
+/* Quick day filters beside the search box. */
+.quick-days {
+  display: flex;
+  gap: 6px;
+}
+.quick-days button {
+  min-height: 44px;
+  padding: 6px 16px;
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
+  background: #fff;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.quick-days button[aria-pressed='true'] {
+  border-color: #181a1f;
+  background: #181a1f;
+  color: #fff;
+}
+.quick-days button:focus-visible {
+  outline: 2px solid var(--admin-primary, #2563eb);
+  outline-offset: 2px;
+}
+/* A dot in the button's own padding: the toolbar never changes width. */
+[aria-controls='order-filters'] {
+  position: relative;
+}
+.filter-dot {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--admin-primary, #2563eb);
+}
+.tab-sheet > .error {
+  margin: 12px 0 0;
+}
+/* Search, quick days, dates and the customer filter apply to every tab, so they sit above the tabs. */
+.list-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.order-panel .list-filters > * {
+  margin: 0;
 }

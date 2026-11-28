@@ -1,4 +1,5 @@
 @use '../status-badges';
+@use '../../page-sheet' as sheet;
 // Transfer receipts: a small thumbnail in the ledger and a large view on demand.
 .proof-thumb {
   padding: 0;
@@ -30,6 +31,9 @@
     align-items: center;
     gap: 6px;
     font-size: 0.8rem;
+    background: #fff;
+    border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+    box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
   }
   // A dot in the badge's own colour, like the reference header.
   h1 .badge::before {
@@ -40,44 +44,49 @@
     background: currentColor;
   }
   > div:first-child { flex: 1; }
+  .admin-back-btn { margin-top: 2px; }
   .head-actions { flex: none; }
 }
-.head-actions {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  button { width: auto; margin: 0; }
-}
+.head-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; button { width: auto; margin: 0; } }
+/* Segmented tray tabs above the 2-column white cards on #f4f5f7. */
 .tabs {
-  display: flex;
+  display: inline-flex;
   gap: 4px;
-  margin: 20px 0;
-  border-bottom: 1px solid var(--line);
+  margin: 18px 0 16px;
+  padding: 4px;
+  border-radius: 12px;
+  background: #e2e8f0;
   button {
     width: auto;
-    margin: 0 0 -1px;
-    padding: 10px 18px;
+    min-height: 38px;
+    padding: 0.45rem 1.2rem;
     border: 0;
-    border-bottom: 3px solid transparent;
-    border-radius: 0;
-    background: none;
-    color: var(--muted);
+    border-radius: 9px;
+    background: transparent;
+    color: #475467;
     font-weight: 650;
   }
-  button[aria-selected='true'] {
-    border-bottom-color: var(--red);
-    color: var(--ink);
+  button:hover:not([aria-selected='true']) {
+    background: rgb(255 255 255 / 55%);
+    color: #1f2328;
   }
+  button[aria-selected='true'] {
+    background: #fff;
+    color: #2563eb;
+    font-weight: 750;
+    box-shadow: 0 1px 3px rgb(16 24 40 / 12%), 0 1px 2px rgb(16 24 40 / 8%);
+  }
+}
+.tab-sheet {
+  @include sheet.sheet;
+  margin-bottom: 20px;
 }
 .card {
   min-width: 0;
   margin: 0 0 20px;
   padding: 22px 24px;
-  border: 1px solid var(--line);
+  @include sheet.card;
   border-radius: 16px;
-  background: #fff;
   h2 {
     margin: 0 0 16px;
     padding-bottom: 12px;
@@ -102,13 +111,12 @@ button.small {
   min-height: 0;
   margin: 0;
   padding: 6px 14px;
-  border-radius: 999px;
   font-size: 0.88rem;
   font-weight: 650;
 }
 .detail-grid {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 24px;
   align-items: start;
 }
@@ -127,13 +135,13 @@ button.small {
 }
 .cover {
   display: block;
-  width: 40px;
-  height: 53px;
+  width: 36px;
+  height: 48px;
   border-radius: 4px;
   object-fit: cover;
 }
-.cover.empty { background: #f0efec; }
-.items-total { margin: 12px 0 0; text-align: right; font-variant-numeric: tabular-nums; }
+.cover.empty { padding: 0; background: #f0efec; }
+.items-total { margin: 0 0 0 auto; font-size: 0.9rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .text-button.neutral { color: var(--ink); }
 .customer-name {
   display: flex;
@@ -143,7 +151,7 @@ button.small {
   margin: 0;
   font-weight: 700;
   a { color: var(--ink); text-decoration: none; }
-  a:hover { color: var(--red); }
+  a:hover { color: #2563eb; }
 }
 .channel-chip {
   padding: 2px 10px;
@@ -187,10 +195,24 @@ button.small {
 .delivery-card details { margin-top: 14px; }
 .detail-side .card { padding: 20px; }
 // The books card sits in the narrower column: tighter cells so all columns fit at 1440px.
+/* Compact rows (~60px); past about ten books the list scrolls inside the card under a sticky header. */
+.item-scroll {
+  max-height: 640px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
 .detail-main .item-table {
-  min-width: 560px;
-  th, td { padding: 10px 8px; }
-  th:first-child, td:first-child { width: 40px; padding-left: 0; }
+  min-width: 640px;
+  th, td { padding: 6px; }
+  th, .actions { white-space: nowrap; flex-wrap: nowrap; }
+  th:first-child, td:first-child { padding-left: 0; }
+  thead th { position: sticky; top: 0; z-index: 1; background: #fff; }
+  td.lot { max-width: 140px; overflow-wrap: anywhere; color: var(--muted); font-size: 0.88rem; }
+}
+.item-table tr.flash td { animation: item-flash 1.2s ease-out; }
+@keyframes item-flash { from { background: #fdf1d6; } }
+@media (prefers-reduced-motion: reduce) {
+  .item-table tr.flash td { animation: none; background: #fdf1d6; }
 }
 .detail-main .ledger { min-width: 560px; }
 // Carrier choice in the handover form: pills like the bill's internal section.
@@ -222,8 +244,8 @@ button.small {
     cursor: pointer;
   }
   label.check:has(input:checked) {
-    border-color: var(--red);
-    background: #fdf8f5;
+    border-color: #2563eb;
+    background: #eff6ff;
   }
   label.check:has(input:disabled) {
     opacity: 0.55;
@@ -233,7 +255,7 @@ button.small {
     width: 16px;
     min-height: 16px;
     margin: 0;
-    accent-color: var(--red);
+    accent-color: #2563eb;
   }
   small {
     width: 100%;

@@ -1,6 +1,15 @@
 <p class="eyebrow">Xem trước trong quản trị · Nội dung đã lưu</p>
 <p>Đường dẫn này cần đăng nhập quản trị.</p>
-<a [routerLink]="['/admin/sach', bookId()]">← Chỉnh sửa sách</a>
+@if (!book()) {
+  <a
+    class="admin-back-btn"
+    [routerLink]="['/admin/sach', bookId()]"
+    aria-label="Quay lại chỉnh sửa sách"
+    title="Quay lại chỉnh sửa sách"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  </a>
+}
 @if (error()) {
   <p role="alert" class="error">{{ error() }}</p>
 }
@@ -8,7 +17,18 @@
   @if (incomplete()) {
     <p class="error">Sách này chưa đủ điều kiện xuất bản.</p>
   }
-  <h1>{{ title() || 'Chưa có tên sách' }}</h1>
+  <div class="admin-title-row">
+    <a
+      class="admin-back-btn"
+      [routerLink]="['/admin/sach', bookId()]"
+      aria-label="Quay lại chỉnh sửa sách"
+      title="Quay lại chỉnh sửa sách"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </a>
+    <h1>{{ title() || 'Chưa có tên sách' }}</h1>
+  </div>
+  <section class="admin-card preview-card">
   @if(b.features?.length) {<ul class="preview-features" aria-label="Đặc điểm sách">@for(f of b.features;track f.code){<li>{{f.label}}</li>}</ul>}
   <p class="muted">
     {{ b.bookCode }} · {{ b.availability === 'AVAILABLE' ? 'Còn hàng' : 'Hết hàng' }}
@@ -44,4 +64,5 @@
       <small>{{ priceNote }}</small>
     }
   </div>
+  </section>
 }

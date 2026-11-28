@@ -1,6 +1,14 @@
-<a class="back-link" routerLink="/admin/customers" [queryParams]="backQuery"
-  >‹ Quay về danh sách khách hàng</a
->
+@if (!customer()) {
+  <a
+    class="admin-back-btn"
+    routerLink="/admin/customers"
+    [queryParams]="backQuery"
+    aria-label="Quay lại danh sách khách hàng"
+    title="Quay lại danh sách khách hàng"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  </a>
+}
 @if (loading()) {
   <p class="empty" role="status">Đang tải hồ sơ…</p>
 }
@@ -16,6 +24,15 @@
   <article class="customer-panel detail-panel">
     <header class="page-heading">
       <div class="profile-heading">
+        <a
+          class="admin-back-btn"
+          routerLink="/admin/customers"
+          [queryParams]="backQuery"
+          aria-label="Quay lại danh sách khách hàng"
+          title="Quay lại danh sách khách hàng"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </a>
         <span class="profile-avatar" aria-hidden="true">{{
           c.fullName.charAt(0).toUpperCase()
         }}</span>
@@ -43,6 +60,8 @@
         </div>
       }
     </header>
+    <div class="page-sheet">
+    <section class="sheet-card" aria-label="Hồ sơ khách">
     <dl class="profile-fields">
       <div>
         <dt>Số điện thoại</dt>
@@ -69,7 +88,11 @@
       <span>Ngày tạo: {{ c.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span
       ><span>Cập nhật: {{ c.updatedAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</span>
     </div>
-    @if(owner()){<app-customer-order-history [customerId]="c.id" />}
+    </section>
+    @if (owner()) {
+      <section class="sheet-card"><app-customer-order-history [customerId]="c.id" /></section>
+    }
+    </div>
   </article>
 }
 <app-customer-form (saved)="onSaved($event)" />

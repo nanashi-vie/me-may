@@ -22,7 +22,7 @@
 }
 .row-menu-toggle:focus-visible,
 .row-menu button:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: 1px;
 }
 .row-menu {
@@ -50,8 +50,8 @@
   text-align: left;
 }
 .row-menu .danger-item {
-  color: #a13f24;
+  color: var(--admin-danger, #d92d20);
 }
 .row-menu .danger-item:hover {
-  background: #fceae5;
+  background: var(--admin-danger-soft, #fef3f2);
 }

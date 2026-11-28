@@ -1,4 +1,5 @@
 <h1>Thùng rác</h1>
+<div class="admin-card trash-card">
 <nav class="trash-tabs" aria-label="Loại dữ liệu trong Thùng rác">
   @for (t of tabs; track t.kind) {
     <a routerLink="/admin/thung-rac" [queryParams]="{ loai: t.param }" [class.active]="t === tab()"
@@ -22,7 +23,7 @@
           (change)="selectPage(trash.items, $any($event.target).checked)" />
         <span>Chọn tất cả trên trang này</span>
       </label>
-      <button type="button" [disabled]="busy() || loading() || !selected().size" (click)="askSelected(purgeDialog)">Dọn ({{ selected().size }})</button>
+      <button type="button" class="danger" [disabled]="busy() || loading() || !selected().size" (click)="askSelected(purgeDialog)">Dọn ({{ selected().size }})</button>
       <button type="button" class="secondary" [disabled]="busy() || loading() || !trash.totalElements" (click)="askAll(purgeDialog)">Dọn tất cả</button>
     </div>
   </div>
@@ -40,6 +41,9 @@
       </li>
     } @empty { <li class="trash-empty">Thùng rác trống.</li> }
   </ul>
+}
+</div>
+@if (result(); as trash) {
   <app-pagination [page]="trash.page" [totalPages]="trash.totalPages" [disabled]="busy() || loading()" (pageChange)="load($event)" />
 }
 <dialog #purgeDialog aria-labelledby="purge-heading" (cancel)="busy() && $event.preventDefault()">
@@ -48,6 +52,6 @@
     <p>{{ target.all ? 'Thao tác áp dụng cho toàn bộ tab ' + tab().label + ', kể cả các trang khác.' : 'Thao tác áp dụng cho các mục đã chọn.' }}
       Dữ liệu{{ tab().kind === 'books' ? ' và ảnh (nếu có)' : tab().kind === 'orders' ? ' và lịch sử giao dịch' : '' }} bị xóa vĩnh viễn, kể cả khi chưa đủ 7 ngày.</p>
     <button type="button" class="secondary" autofocus [disabled]="busy()" (click)="purgeDialog.close()">Hủy</button>
-    <button type="button" [disabled]="busy()" (click)="confirmPurge(purgeDialog)">Dọn vĩnh viễn</button>
+    <button type="button" class="danger" [disabled]="busy()" (click)="confirmPurge(purgeDialog)">Dọn vĩnh viễn</button>
   }
 </dialog>

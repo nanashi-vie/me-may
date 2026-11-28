@@ -255,3 +255,31 @@ Gate và cách chạy theo [PROGRESS](../PROGRESS.md), [DEPLOYMENT](../runbooks/
   tick không ảnh → ẩn ô ảnh, ô "Lý do không có ảnh *".
 - Chưa kiểm trên trình duyệt: bấm bàn giao thật (hộp xác nhận của trình duyệt), lỗi mã "hi"/trùng
   (có test backend), dưới 1024px.
+
+## Ngày bán, lô hàng, lọc nhanh và tab kiểu trình duyệt — 28/11/2026
+
+- Backend: `./mvnw -o test` 479 test, 0 lỗi, 3 skip trên PostgreSQL tạm 127.0.0.1:55461
+  (locale en_US.UTF-8; locale C làm hỏng 3 test sắp chữ có sẵn; đã xóa) vì `me_may_test` local
+  vẫn lệch checksum V21. Test mới (`OrderDraftTest` ngày bán/lô/tìm kênh) viết cùng code, không đỏ trước.
+- Frontend: `npm test` 641/641, `npm run build` đạt (đã gọn CSS chi tiết đơn để vừa budget 6 kB).
+- Trình duyệt 1440px (backend 18080 áp V41 lên `me_may_dev`, frontend 4210): Hôm qua → URL
+  27/11, 6 đơn, số tab theo ngày; tab Đang keep xanh liền tấm có nút phụ; `@giabao` ra khách
+  TikTok, `thanhtam` ra khách Zalo. DH-000012: thêm Sách ngoài có lô (ô Lô hàng ngang Trọng lượng),
+  Tiền sách 115.000đ ở card thông tin; Sửa → Ngày bán max hôm nay, đổi về 26/11 thì dòng lên đầu,
+  sáng rồi tắt, audit `ITEM_UPDATE` có ngày trước/sau. 13 dòng: vùng cuộn 640px, tiêu đề dính,
+  thêm dòng mới tự cuộn tới cuối, lô điền sẵn; Xuất bill vẫn chia trang đủ sách, không có lô.
+  Sửa lỗi có từ trước: quy tắc `.empty` đệm 84px vào ô bìa trống. Đã xóa 11 dòng thử.
+- Chưa kiểm: dưới 1024px, Safari, dòng sách website có ảnh bìa thật trong bảng mới.
+
+## Tấm xám chung, lọc nhanh không nhảy, bảng khách bấm cả dòng — 28/11/2026
+
+- Owner xem bản vẽ ba màu, chọn xám ấm `#ebe9e5`, sau đó đổi nhạt hơn một bậc thành `#f2f0ec`. `npm test` 642/642, `npm run build` đạt.
+- Trình duyệt 1440px: Đang keep chữ xanh trên tấm xám phủ tới phân trang; đo vị trí ô tìm/3 nút và
+  bảng trước và sau bấm Hôm qua giống hệt; nhập ngày tay → chấm đỏ trong Bộ lọc, Xóa lọc ở hàng
+  ngày. Chi tiết đơn tấm xám. Danh sách khách kiểu bảng đơn, bấm ô SĐT mở chi tiết khách giữ query;
+  chi tiết khách hai card trắng trên tấm xám (bỏ đường kẻ đầu lịch sử đơn).
+- Chưa kiểm: dưới 1024px, Safari, OWNER/STAFF khác nhau trên bảng khách mới (có test đơn vị).
+- Bổ sung cùng ngày: tấm `#f4f5f7` (xám lạnh theo mẫu), card viền `#e8e6e1` + bóng `0 1px 2px` 5%,
+  tiêu đề bảng `#f9fafb`; ô tìm/Hôm nay/Hôm qua/Bộ lọc/lọc khách lên trên hàng tab; trang khách ô
+  tìm ngoài tấm. Sidebar thêm icon Lucide users/receipt/id-card, bỏ đường kẻ giữa Đơn hàng và Nhân
+  viên. `npm test` 642/642, build đạt; trình duyệt 1440px: danh sách đơn, chi tiết đơn, danh sách khách.

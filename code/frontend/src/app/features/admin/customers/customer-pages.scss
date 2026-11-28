@@ -1,6 +1,5 @@
+@use '../page-sheet' as sheet;
 :host {
-  --admin-field-active: var(--red);
-  --admin-field-active-ring: #b3263526;
   --admin-field-radius: 24px;
   display: block;
   max-width: 1400px;
@@ -8,10 +7,63 @@
   color: var(--ink);
 }
 .customer-panel {
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  padding: 26px;
-  background: #fff;
+  @include sheet.page;
+}
+/* Transparent wrapper on #f4f5f7; the customer-card and profile sections are white cards on it. */
+.page-sheet {
+  @include sheet.sheet;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.customer-panel .page-sheet > * {
+  margin: 0;
+}
+.sheet-card,
+.customer-card,
+.page-sheet .table-scroll {
+  @include sheet.card;
+}
+.sheet-card {
+  padding: 22px 24px;
+}
+.customer-card .customer-toolbar {
+  padding: 16px 18px;
+  margin-bottom: 0;
+  border-bottom: 1px solid #eaecf0;
+}
+.customer-card .table-scroll {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.customer-card > .notice,
+.customer-card > .error {
+  margin: 14px 18px 0;
+}
+.customer-table thead th {
+  background: sheet.$table-head;
+  white-space: nowrap;
+}
+.customer-table :is(th, td):first-child {
+  padding-left: 18px;
+}
+.customer-table :is(th, td):last-child {
+  padding-right: 18px;
+}
+.customer-table .customer-code {
+  margin-top: 2px;
+}
+.customer-row {
+  cursor: pointer;
+}
+.customer-row:hover {
+  background: #f9fafb;
+}
+.customer-row:focus-visible {
+  outline: 2px solid var(--admin-primary, #2563eb);
+  outline-offset: -2px;
 }
 .page-heading {
   display: flex;
@@ -31,7 +83,7 @@ h1 {
 button {
   width: auto;
   margin: 0;
-  border-radius: 30px;
+  border-radius: 999px;
   min-height: 44px;
   white-space: nowrap;
 }
@@ -67,7 +119,7 @@ select {
 }
 input:focus,
 select:focus {
-  outline: 2px solid var(--red);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: 2px;
 }
 .table-scroll {
@@ -105,10 +157,6 @@ th:last-child {
   color: var(--ink);
   text-decoration: none;
 }
-.customer-name:hover {
-  color: var(--red);
-  text-decoration: underline;
-}
 .customer-code {
   display: block;
   font-size: 0.78rem;
@@ -129,7 +177,7 @@ th:last-child {
 .text-button {
   border: 0;
   background: transparent;
-  color: var(--red);
+  color: var(--admin-primary, #2563eb);
   padding: 4px 0;
   min-height: 44px;
   border-radius: 0;
@@ -159,8 +207,8 @@ th:last-child {
   color: var(--muted);
 }
 .notice {
-  border-left: 3px solid var(--red);
-  background: #fff5f4;
+  border-left: 3px solid var(--admin-primary, #2563eb);
+  background: var(--admin-primary-soft, #eff6ff);
   padding: 10px 14px;
   border-radius: 4px;
 }
@@ -176,18 +224,12 @@ th:last-child {
   color: var(--muted);
 }
 .status-badge.active {
-  background: #fff0ee;
-  color: var(--red);
-}
-.back-link {
-  display: inline-block;
-  margin: 0 0 18px;
-  font-size: 0.9rem;
-  text-decoration: none;
+  background: #ecfdf3;
+  color: #027a48;
 }
 .profile-heading {
   display: flex;
-  gap: 18px;
+  gap: 14px;
   align-items: center;
   min-width: 0;
 }
@@ -198,8 +240,8 @@ th:last-child {
   place-items: center;
   flex-shrink: 0;
   border-radius: 50%;
-  background: #fff0ee;
-  color: var(--red);
+  background: var(--admin-primary-soft, #eff6ff);
+  color: var(--admin-primary-hover, #1d4ed8);
   font-size: 1.5rem;
   font-weight: 800;
 }
@@ -211,8 +253,7 @@ th:last-child {
   gap: 10px;
 }
 .detail-panel .page-heading {
-  border-bottom: 1px solid var(--line);
-  padding-bottom: 24px;
+  margin-bottom: 20px;
 }
 .profile-fields {
   margin: 0;
@@ -267,9 +308,6 @@ dd.prominent {
   margin: 8px 0;
 }
 @media (max-width: 800px) {
-  .customer-panel {
-    padding: 20px;
-  }
   .page-heading {
     align-items: flex-start;
     flex-wrap: wrap;
@@ -293,9 +331,11 @@ dd.prominent {
   }
 }
 @media (max-width: 500px) {
-  .customer-panel {
-    padding: 16px;
-    border-radius: 16px;
+  .page-sheet {
+    padding: 0;
+  }
+  .customer-card .customer-toolbar {
+    padding: 12px;
   }
   .customer-toolbar {
     flex-direction: column;

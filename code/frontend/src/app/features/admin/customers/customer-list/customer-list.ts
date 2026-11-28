@@ -1,6 +1,7 @@
 import { Pagination } from '../../../../shared/pagination/pagination';
 import { Component, DestroyRef, computed, inject, signal, viewChild } from '@angular/core';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DOCUMENT } from '@angular/common';
 import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
 import {
   Subject,
@@ -20,7 +21,7 @@ import { CustomerForm } from '../customer-form/customer-form';
 
 @Component({
   selector: 'app-customer-list',
-  imports: [Pagination, RouterLink, CustomerForm, TrashDialog, TrashIcon],
+  imports: [Pagination, CustomerForm, TrashDialog, TrashIcon],
   templateUrl: './customer-list.html',
   styleUrls: ['../customer-pages.scss'],
 })
@@ -30,6 +31,7 @@ export class CustomerList {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroy = inject(DestroyRef);
+  private readonly view = inject(DOCUMENT).defaultView;
   private readonly editor = viewChild(CustomerForm);
   private readonly trash = viewChild.required(TrashDialog);
   private readonly reloads = new Subject<void>();
@@ -128,5 +130,18 @@ export class CustomerList {
     const editor = this.editor();
     if (editor?.visible() && !editor.requestClose()) return false;
     return true;
+  }
+  /** The whole row opens the customer, as in the order list; selecting text or its buttons does not. */
+  openRow(event: MouseEvent, id: string) {
+    if ((event.target as Element).closest('a, button') || this.view?.getSelection()?.toString()) return;
+    const queryParams = this.filter();
+    if (event.ctrlKey || event.metaKey) {
+      const url = this.router.serializeUrl(this.router.createUrlTree(['/admin/customers', id], { queryParams }));
+      this.view?.open(url, '_blank', 'noopener');
+    } else void this.router.navigate(['/admin/customers', id], { queryParams });
+  }
+  openRowKey(event: Event, id: string) {
+    if (event.target !== event.currentTarget) return;
+    void this.router.navigate(['/admin/customers', id], { queryParams: this.filter() });
   }
 }

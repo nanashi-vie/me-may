@@ -1,5 +1,14 @@
-<a routerLink="/admin/sach">← Danh sách sách</a>
-<h1>Import sách</h1>
+<div class="admin-title-row">
+  <a
+    class="admin-back-btn"
+    routerLink="/admin/sach"
+    aria-label="Quay lại danh sách sách"
+    title="Quay lại danh sách sách"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  </a>
+  <h1>Import sách</h1>
+</div>
 <p>Nhập thông tin từ file CSV/Excel, sau đó thêm ảnh và tự xuất bản từng sách.</p>
 @if (error()) { <p role="alert" class="error">{{ error() }}</p> }
 @if (notice()) { <p role="status">{{ notice() }}</p> }

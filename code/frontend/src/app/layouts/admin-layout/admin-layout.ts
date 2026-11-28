@@ -19,7 +19,9 @@ export class AdminLayout {
   readonly busy = signal(false);
   readonly error = signal('');
   readonly bookMenuOpen = signal(true);
-  readonly employeeMenuOpen = signal(true);
+  readonly employeeMenuOpen = signal(
+    this.router.url.startsWith('/admin/nhan-vien') || this.router.url.startsWith('/admin/cham-cong'),
+  );
   readonly userInitials = computed(() => {
     const email = this.auth.user()?.email || '';
     return email.charAt(0).toUpperCase() || 'A';
