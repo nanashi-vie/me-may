@@ -52,13 +52,15 @@ describe('BookList', () => {
     const fixture = TestBed.createComponent(BookList);
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
-    const button = Array.from(root.querySelectorAll('button'))
-      .find(node => node.textContent.includes('Tải ảnh'))!;
-    expect(button).toBeDefined();
-    expect(button.disabled).toBe(true);
+    const findDownloadBtn = () =>
+      Array.from(root.querySelectorAll('button')).find(node => node.textContent.includes('Tải ảnh'));
+    expect(findDownloadBtn()).toBeUndefined();
     root.querySelector<HTMLInputElement>('[aria-label="Chọn MM-000007"]')!.click();
     root.querySelector<HTMLInputElement>('[aria-label="Chọn MM-000009"]')!.click();
     fixture.detectChanges();
+    const button = findDownloadBtn()!;
+    expect(button).toBeDefined();
+    expect(button.disabled).toBe(false);
     button.click();
     fixture.detectChanges();
     expect(button.disabled).toBe(true);
@@ -163,7 +165,7 @@ describe('BookList', () => {
     TestBed.configureTestingModule({providers:[provideRouter([]),{provide:AuthService,useValue:{user:()=>({role:'STAFF'})}},{provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},{provide:BookApi,useValue:{ storageBoxes: () => of([]), list:()=>of({items:[],page:0,size:20,totalElements:0,totalPages:0})}}]});
     const f=TestBed.createComponent(BookList);f.detectChanges();expect(f.nativeElement.querySelector('a[href="/admin/sach/moi"]')).toBeNull();expect(f.nativeElement.querySelector('option[value="DRAFT"]')).toBeNull();
   });
-  it('renders bulk toolbar with inline select-all checkbox and dedicated row checkbox column', () => {
+  it('shows bulk toolbar only when selected, toggled via header select-all checkbox', () => {
     const item = { id: '7', bookCode: 'MM-000007', title: 'Imported', publication: 'ARCHIVED', version: 2, totalStock: 1 };
     TestBed.configureTestingModule({
       providers: [
@@ -177,17 +179,22 @@ describe('BookList', () => {
     fixture.detectChanges();
     const root = fixture.nativeElement as HTMLElement;
 
-    const toolbar = root.querySelector('.bulk-toolbar') as HTMLElement;
-    expect(toolbar).not.toBeNull();
-    const selectAllInput = toolbar.querySelector('.bulk-select-all input[type="checkbox"]') as HTMLInputElement;
+    expect(root.querySelector('.bulk-toolbar')).toBeNull();
+    const selectAllInput = root.querySelector('thead input.select-all-check') as HTMLInputElement;
     expect(selectAllInput).not.toBeNull();
     const rowCheck = root.querySelector('.book-cell input.row-check') as HTMLInputElement;
     expect(rowCheck).not.toBeNull();
 
     selectAllInput.click();
     fixture.detectChanges();
+    const toolbar = root.querySelector('.bulk-toolbar') as HTMLElement;
+    expect(toolbar).not.toBeNull();
     expect(rowCheck.checked).toBe(true);
     expect(toolbar.querySelector('.bulk-trash-btn')?.textContent?.trim()).toBe('Chuyển 1 cuốn vào Thùng rác');
+
+    selectAllInput.click();
+    fixture.detectChanges();
+    expect(root.querySelector('.bulk-toolbar')).toBeNull();
   });
   describe('mark as sold out', () => {
     const books = () => [
@@ -209,7 +216,7 @@ describe('BookList', () => {
       dialog.showModal = vi.fn(); dialog.close = vi.fn();
       const row = (id:string) => root.querySelector<HTMLElement>('#admin-book-' + id)!;
       const rowButton = (id:string) => row(id).querySelector<HTMLButtonElement>('.sold-out-btn');
-      const bulk = () => root.querySelector<HTMLButtonElement>('.bulk-sold-out-btn')!;
+      const bulk = () => root.querySelector<HTMLButtonElement>('.bulk-sold-out-btn');
       const dialogButton = (text:string) => Array.from(dialog.querySelectorAll('button')).find(b=>b.textContent.trim()===text);
       const select = (code:string) => { root.querySelector<HTMLInputElement>(`[aria-label="Chọn ${code}"]`)!.click(); f.detectChanges(); };
       return {f,root,dialog,row,rowButton,bulk,dialogButton,select,response,markSoldOut,list};
@@ -265,19 +272,20 @@ describe('BookList', () => {
     });
     it('bulk marks only selected books that still have stock and clears the selection', () => {
       const t = setup();
-      expect(t.bulk().disabled).toBe(true);
+      expect(t.bulk()).toBeNull();
       t.select('MM-000008');
-      expect(t.bulk().textContent).toContain('(0 cuốn)');
-      expect(t.bulk().disabled).toBe(true);
+      expect(t.bulk()!.textContent).toContain('(0 cuốn)');
+      expect(t.bulk()!.disabled).toBe(true);
       t.select('MM-000007'); t.select('MM-000009');
-      expect(t.bulk().textContent).toContain('(2 cuốn)');
-      t.bulk().click(); t.f.detectChanges();
+      expect(t.bulk()!.textContent).toContain('(2 cuốn)');
+      t.bulk()!.click(); t.f.detectChanges();
       expect(t.dialog.textContent).toContain('2 cuốn');
       expect(t.dialog.textContent).toContain('4 → 0');
       t.dialogButton('Đánh dấu hết hàng')!.click();
       expect(t.markSoldOut).toHaveBeenCalledExactlyOnceWith([{id:'7',version:2},{id:'9',version:4}]);
       t.response.next(['7','9'].map(id=>({id,version:9,totalStock:0,availability:'SOLD',updatedAt:'2026-11-25T06:00:00Z'}))); t.f.detectChanges();
       expect(t.f.componentInstance.selected().size).toBe(0);
+      expect(t.bulk()).toBeNull();
       expect(t.root.querySelectorAll('.sold-out-badge').length).toBe(3);
       expect(t.root.querySelector('[role="status"]')?.textContent).toContain('2 cuốn');
     });

@@ -210,35 +210,35 @@ form button { width: 100%; margin-top: 1.5rem; }
   background: var(--admin-primary-hover);
   border-color: var(--admin-primary-hover);
 }
-:where(.admin-shell, .login-page) .secondary {
+:where(.admin-shell, .login-page) :where(button, .button).secondary {
   border-color: #d0d5dd;
   background: #fff;
   color: #1f2328;
 }
-:where(.admin-shell, .login-page) .secondary:where(:hover:not(:disabled)) {
+:where(.admin-shell, .login-page) :where(button, .button).secondary:where(:hover:not(:disabled)) {
   background: #f3f4f6;
   border-color: #98a2b3;
   color: #1f2328;
 }
-:where(.admin-shell, .login-page) .success {
+:where(.admin-shell, .login-page) :where(button, .button).success {
   border-color: var(--admin-success);
   background: var(--admin-success);
   color: #fff;
 }
-:where(.admin-shell, .login-page) .success:where(:hover:not(:disabled)) {
+:where(.admin-shell, .login-page) :where(button, .button).success:where(:hover:not(:disabled)) {
   background: var(--admin-success-hover);
   border-color: var(--admin-success-hover);
 }
-:where(.admin-shell, .login-page) .success:where(:active:not(:disabled)) {
+:where(.admin-shell, .login-page) :where(button, .button).success:where(:active:not(:disabled)) {
   background: var(--admin-success-active);
   border-color: var(--admin-success-active);
 }
-:where(.admin-shell, .login-page) .danger {
+:where(.admin-shell, .login-page) :where(button, .button).danger {
   border-color: var(--admin-danger);
   background: var(--admin-danger);
   color: #fff;
 }
-:where(.admin-shell, .login-page) .danger:where(:hover:not(:disabled)) {
+:where(.admin-shell, .login-page) :where(button, .button).danger:where(:hover:not(:disabled)) {
   background: var(--admin-danger-hover);
   border-color: var(--admin-danger-hover);
 }

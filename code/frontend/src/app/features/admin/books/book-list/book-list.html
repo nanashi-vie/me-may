@@ -169,23 +169,14 @@
 }
 </div>
 @if (result(); as data) {
-  <div class="bulk-toolbar">
-    <p class="book-total">{{ data.totalElements }} cuốn</p>
-    @if (auth.user()?.role === 'OWNER') {
+  @if (auth.user()?.role === 'OWNER' && selected().size > 0) {
+    <div class="bulk-toolbar" role="region" aria-label="Thao tác hàng loạt">
+      <p class="bulk-selected">Đã chọn {{ selected().size }} cuốn</p>
       <div class="bulk-actions">
-        <label class="bulk-select-all">
-          <input
-            type="checkbox"
-            [checked]="data.items.length > 0 && selected().size === data.items.length"
-            [disabled]="mutationBusy() || loading() || !data.items.length"
-            (change)="selectPage(data.items, $any($event.target).checked)"
-          />
-          <span>Chọn tất cả trên trang này</span>
-        </label>
         <button
           type="button"
           class="secondary"
-          [disabled]="mutationBusy() || loading() || photoDownloadBusy() || !selected().size"
+          [disabled]="mutationBusy() || loading() || photoDownloadBusy()"
           (click)="downloadPhotos()"
         >
           {{ photoDownloadBusy() ? 'Đang tạo ZIP…' : 'Tải ảnh (' + selected().size + ' cuốn)' }}
@@ -201,19 +192,34 @@
         <button
           type="button"
           class="bulk-trash-btn danger"
-          [disabled]="mutationBusy() || loading() || !selected().size"
+          [disabled]="mutationBusy() || loading()"
           (click)="askBulk(bulkDialog)"
         >
           Chuyển {{ selected().size }} cuốn vào Thùng rác
         </button>
       </div>
-    }
-  </div>
+    </div>
+  }
   <div class="table-scroll">
     <table>
       <thead>
         <tr>
-          <th>Mã / sách</th>
+          <th>
+            <div class="head-select">
+              @if (auth.user()?.role === 'OWNER') {
+                <input
+                  type="checkbox"
+                  class="row-check select-all-check"
+                  aria-label="Chọn tất cả trên trang này"
+                  [checked]="data.items.length > 0 && selected().size === data.items.length"
+                  [indeterminate]="selected().size > 0 && selected().size < data.items.length"
+                  [disabled]="mutationBusy() || loading() || !data.items.length"
+                  (change)="selectPage(data.items, $any($event.target).checked)"
+                />
+              }
+              <span>Mã / sách</span>
+            </div>
+          </th>
           <th>Giá tham khảo</th>
           <th>Xuất bản</th>
           <th>Tồn kho</th>
@@ -299,7 +305,10 @@
 }
 </div>
 @if (result(); as data) {
-  <app-pagination class="pagination" [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
+  <footer class="pagination">
+    <span class="book-total">{{ data.totalElements }} cuốn</span>
+    <app-pagination [page]="data.page" [totalPages]="data.totalPages" [disabled]="loading() || mutationBusy()" (pageChange)="search($event)" />
+  </footer>
 }
 <dialog #trashDialog aria-labelledby="trash-dialog-heading" (cancel)="mutationBusy() && $event.preventDefault()">
   @if (target(); as book) {
