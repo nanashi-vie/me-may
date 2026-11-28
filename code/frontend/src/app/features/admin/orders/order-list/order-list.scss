@@ -13,20 +13,26 @@
   overflow-x: auto;
 }
 // Tone per tab, from the status badge colours: open tab title and count pill.
-.tone-all { --tone: var(--red); --tint: #fceae5; }
-.tone-draft { --tone: #4a4844; --tint: #f0efec; }
-.tone-keeping { --tone: #2166a3; --tint: #edf4fc; }
-.tone-packing { --tone: #8a4b06; --tint: #fdf1e3; }
-.tone-completed { --tone: #1d6b3a; --tint: #e8f5ec; }
-.tone-closed { --tone: #a13f24; --tint: #fceae5; }
+.tone-all { --tone: #1f2328; --tint: #e5e7eb; }
+.tone-draft { --tone: #4a4844; --tint: #e8e5df; }
+.tone-keeping { --tone: #1d5d96; --tint: #dbeafe; }
+.tone-packing { --tone: #b45309; --tint: #fed7aa; }
+.tone-completed { --tone: #15803d; --tint: #dcfce7; }
+.tone-closed { --tone: #b91c1c; --tint: #fee2e2; }
 .order-tabs a.active {
   @include sheet.open;
   --ink-tab: var(--tone);
+  background: var(--tint);
+  border-color: color-mix(in srgb, var(--tone) 24%, transparent);
+  margin-bottom: -1px;
+  &:hover {
+    background: var(--tint);
+  }
 }
 .order-tabs a.active .count {
   background: #fff;
 }
-/* Everything under the tabs stacks on the sheet with one gap; hidden rows take no space. */
+/* Transparent wrapper under tabs: white orders-card sits directly on #f4f5f7, pagination below. */
 .tab-sheet {
   @include sheet.sheet;
   display: flex;
@@ -36,8 +42,29 @@
 .order-panel .tab-sheet > * {
   margin: 0;
 }
-.tab-sheet.first-open {
+.orders-card {
+  @include sheet.card;
+}
+.tab-sheet.first-open .orders-card {
   border-top-left-radius: 0;
+}
+.orders-card .table-scroll {
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.orders-card .order-subs {
+  padding: 14px 18px 12px;
+  margin: 0;
+  border-bottom: 1px solid #eaecf0;
+}
+.orders-card > .error,
+.orders-card > [role='status'] {
+  margin: 14px 18px;
+}
+.orders-card .order-table thead th:last-child {
+  border-top-right-radius: 14px;
 }
 .order-tabs .count {
   display: inline-block;
@@ -52,7 +79,7 @@
 }
 .order-tabs a:focus-visible,
 .order-subs button:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: -2px;
 }
 .count {
@@ -69,7 +96,8 @@
   flex: none;
   min-height: 38px;
   padding: 6px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
   background: #fff;
   color: var(--ink);
   font-size: 0.85rem;
@@ -80,8 +108,8 @@
   outline-offset: -4px;
 }
 .order-subs button[aria-pressed='true'] {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: #181a1f;
+  background: #181a1f;
   color: #fff;
 }
 .order-subs .zero[aria-pressed='false'] {
@@ -160,10 +188,10 @@
   cursor: pointer;
 }
 .order-row:hover {
-  background: #faf7f2;
+  background: #f9fafb;
 }
 .order-row:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: -2px;
 }
 .actions-cell {
@@ -178,18 +206,19 @@
 .quick-days button {
   min-height: 44px;
   padding: 6px 16px;
-  border: 1px solid var(--line);
+  border: 1px solid #d0d5dd;
+  border-radius: 999px;
   background: #fff;
   color: var(--ink);
   white-space: nowrap;
 }
 .quick-days button[aria-pressed='true'] {
-  border-color: var(--ink);
-  background: var(--ink);
+  border-color: #181a1f;
+  background: #181a1f;
   color: #fff;
 }
 .quick-days button:focus-visible {
-  outline: 2px solid var(--action);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: 2px;
 }
 /* A dot in the button's own padding: the toolbar never changes width. */
@@ -203,7 +232,7 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: var(--red);
+  background: var(--admin-primary, #2563eb);
 }
 .tab-sheet > .error {
   margin: 12px 0 0;

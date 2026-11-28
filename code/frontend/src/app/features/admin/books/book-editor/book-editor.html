@@ -1,8 +1,18 @@
 <div class="editor-layout" [class.with-queue]="(routeBookId() || book()) && editable()">
 <div class="editor-main">
-<a routerLink="/admin/sach" queryParamsHandling="preserve">← Danh sách sách</a>
 <div class="heading-row">
-  <h1>{{ book() ? (editable() ? 'Chỉnh sửa sách' : 'Thông tin sách') : (routeBookId() ? 'Chỉnh sửa sách' : 'Thêm sách') }}</h1>
+  <div class="admin-title-row">
+    <a
+      class="admin-back-btn"
+      routerLink="/admin/sach"
+      queryParamsHandling="preserve"
+      aria-label="Quay lại danh sách sách"
+      title="Quay lại danh sách sách"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </a>
+    <h1>{{ book() ? (editable() ? 'Chỉnh sửa sách' : 'Thông tin sách') : (routeBookId() ? 'Chỉnh sửa sách' : 'Thêm sách') }}</h1>
+  </div>
   <span class="code">{{ book()?.bookCode || 'Mã tự sinh khi lưu' }}</span>
 </div>
 @if (loading()) {
@@ -34,7 +44,7 @@
 }
 @if (!routeBookId() || book()) {
 <button type="button" class="secondary" [disabled]="formDisabled()" (click)="loadMetadata(true)">Làm mới thể loại và bộ sưu tập</button>
-<form [formGroup]="form" (ngSubmit)="save()" class="book-form">
+<form [formGroup]="form" (ngSubmit)="save()" class="book-form admin-card">
   <app-book-media-panel [readonly]="!editable()" [disabled]="formDisabled()" />
   <fieldset [disabled]="formDisabled()">
     <legend>Thông tin cuốn sách</legend>
@@ -368,6 +378,7 @@
 }
 
 @if (book(); as saved) {
+  <div class="admin-card editor-status-card">
   <p>
     <a [routerLink]="['/admin/sach', saved.id, 'xem-truoc']" target="_blank" rel="noopener"
       >Xem trước nội dung đã lưu ↗</a
@@ -383,6 +394,7 @@
     (failed)="fail($event)"
     (busyChange)="otherBusy.set($event)"
   /><app-book-audit-panel [bookId]="saved.id" [version]="saved.version" (failed)="fail($event)" />
+  </div>
 }
 </div>
 @if ((routeBookId() || book()) && editable()) {

@@ -9,8 +9,12 @@
   font-size: 1rem;
 }
 .book-form {
-  max-width: 780px;
-  margin-block: 2rem;
+  max-width: 820px;
+  margin-block: 1.25rem;
+}
+.editor-status-card {
+  max-width: 820px;
+  margin-bottom: 1.5rem;
 }
 .fields {
   display: grid;
@@ -132,9 +136,27 @@ small {
 .unpublished-toggle { position: sticky; bottom: 0.5rem; }
 .unpublished-dialog { max-height: 85dvh; max-width: calc(100vw - 2rem); }
 .unpublished-sidebar li, .unpublished-dialog li { margin-block: 0.65rem; }
+.unpublished-sidebar li a,
+.unpublished-dialog li a {
+  color: var(--ink, #1f2328);
+  font-weight: 700;
+  text-decoration: none;
+}
 @media (min-width: 72rem) {
   .editor-layout.with-queue { display: grid; grid-template-columns: minmax(0, 1fr) minmax(16rem, 23rem); gap: 1.5rem; }
-  .unpublished-sidebar { display: block; position: sticky; top: 1rem; align-self: start; max-height: calc(100dvh - 2rem); overflow: auto; padding: 1rem; border: 1px solid #d8d2c9; }
+  .unpublished-sidebar {
+    display: block;
+    position: sticky;
+    top: 1rem;
+    align-self: start;
+    max-height: calc(100dvh - 2rem);
+    overflow: auto;
+    padding: 1.15rem;
+    background: #fff;
+    border: 1px solid #eaecf0;
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgb(16 24 40 / 5%);
+  }
   .unpublished-toggle { display: none; }
 }
 

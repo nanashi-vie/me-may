@@ -117,7 +117,7 @@
 }
 .pin-rank {
   font-weight: 800;
-  color: #9b1c28;
+  color: var(--admin-primary, #2563eb);
   min-width: 28px;
   text-align: center;
 }
@@ -195,6 +195,14 @@
   padding: 0.4rem 0.85rem;
   font-size: 0.85rem;
   white-space: nowrap;
+}
+.remove-btn {
+  color: var(--admin-danger, #d92d20);
+  border-color: #fda29b;
+  &:hover:not(:disabled) {
+    background: var(--admin-danger-soft, #fef3f2);
+    border-color: var(--admin-danger, #d92d20);
+  }
 }
 .shelf-empty-note {
   margin: 0.4rem 0 0;

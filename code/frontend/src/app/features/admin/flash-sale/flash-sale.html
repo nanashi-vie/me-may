@@ -13,7 +13,7 @@
 }
 <button class="secondary" (click)="load()" [disabled]="busy()">Tải lại dữ liệu</button>
 @if (campaign()) {
-  <form (ngSubmit)="save()" (change)="dirty = true">
+  <form class="admin-card" (ngSubmit)="save()" (change)="dirty = true">
     <fieldset [disabled]="busy()">
       <label class="enabled"
         ><input type="checkbox" name="enabled" [(ngModel)]="enabled" />Bật đợt Flash Sale</label

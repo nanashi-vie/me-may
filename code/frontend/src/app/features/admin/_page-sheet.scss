@@ -1,9 +1,11 @@
-// Admin page layout shared by orders and customers (owner 28/11/2026): the page title and the
-// list's search sit on the page, browser-style tabs (where a page has them) open onto one cool
-// light-grey sheet (as in the owner's reference) on which white cards stand out. Only the open tab's title takes its status colour (set --ink-tab).
-$sheet: #f4f5f7;
+// Admin 2-layer layout: cool-grey #f4f5f7 canvas in .admin-main-wrap with crisp white #fff
+// cards and inverted white active browser-style tabs (only the open tab's text takes --ink-tab).
+$canvas: #f4f5f7;
+$sheet: #ffffff;
+$card-line: #eaecf0;
+$table-head: #f9fafb;
 
-/* No card around the page; it sits straight on the admin background. */
+/* No card around the page; it sits straight on the cool-grey admin canvas. */
 @mixin page {
   padding: 0;
   border: 0;
@@ -22,7 +24,8 @@ $sheet: #f4f5f7;
   flex: none;
   margin: 0;
   padding: 0.7rem 1.1rem;
-  border: 0;
+  border: 1px solid transparent;
+  border-bottom: 0;
   border-radius: 12px 12px 0 0;
   background: none;
   color: var(--muted);
@@ -30,27 +33,27 @@ $sheet: #f4f5f7;
   white-space: nowrap;
   text-decoration: none;
   &:hover {
-    background: color-mix(in srgb, #{$sheet} 55%, transparent);
+    background: rgb(255 255 255 / 65%);
     color: var(--ink);
   }
 }
 @mixin open {
   background: $sheet;
   color: var(--ink-tab, var(--ink));
+  border-color: $card-line;
+  position: relative;
+  z-index: 2;
   &:hover {
     background: $sheet;
   }
 }
-/* The area under the strip (or under the title on pages without tabs). Users square the corner
-   under the first tab while it is open. */
+/* Transparent layout wrapper under tabs/header so white cards float directly on #f4f5f7. */
 @mixin sheet {
-  padding: 18px;
-  border-radius: 16px;
-  background: $sheet;
+  padding: 0;
+  border-radius: 0;
+  background: none;
 }
-/* White card on the sheet: faint border and a hairline shadow lift it off the grey. */
-$card-line: #e8e6e1;
-$table-head: #f9fafb;
+/* White card on the grey canvas: faint border and a hairline shadow lift it off the background. */
 @mixin card {
   border: 1px solid $card-line;
   border-radius: 14px;

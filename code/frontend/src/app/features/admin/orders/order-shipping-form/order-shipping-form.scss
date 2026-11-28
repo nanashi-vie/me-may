@@ -67,7 +67,7 @@ $bill-field: ':is(.bill-contact, .bill-fee) :is(input, textarea):not([type="chec
 }
 #{$bill-field}:focus {
   border-bottom-color: transparent;
-  outline: 2px solid var(--red);
+  outline: 2px solid var(--admin-primary, #2563eb);
   outline-offset: 1px;
 }
 #{$bill-field}::placeholder {
@@ -122,14 +122,14 @@ $bill-field: ':is(.bill-contact, .bill-fee) :is(input, textarea):not([type="chec
     cursor: pointer;
   }
   label:has(input:checked) {
-    border-color: var(--red);
-    background: #fdf8f5;
+    border-color: var(--admin-primary, #2563eb);
+    background: var(--admin-primary-soft, #eff6ff);
   }
   input {
     width: 16px;
     min-height: 16px;
     margin: 0;
-    accent-color: var(--red);
+    accent-color: var(--admin-primary, #2563eb);
   }
 }
 .missing {

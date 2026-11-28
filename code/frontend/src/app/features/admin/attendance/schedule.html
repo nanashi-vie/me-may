@@ -1,7 +1,16 @@
 <section class="attendance-page">
   @if (employeeId !== null) {
-    <a routerLink="/admin/nhan-vien">‹ Hồ sơ nhân viên</a>
-    <h1>Lịch làm việc · {{ employees().get(employeeId)?.fullName || 'Hồ sơ nhân viên' }}</h1>
+    <div class="admin-title-row">
+      <a
+        class="admin-back-btn"
+        routerLink="/admin/nhan-vien"
+        aria-label="Quay lại hồ sơ nhân viên"
+        title="Quay lại hồ sơ nhân viên"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+      </a>
+      <h1>Lịch làm việc · {{ employees().get(employeeId)?.fullName || 'Hồ sơ nhân viên' }}</h1>
+    </div>
   } @else { <h1>Lịch làm việc</h1> }
   <p class="muted">Đánh dấu ngày dự kiến làm việc của từng nhân viên theo tuần.</p>
   @if (error()) { <p class="error" role="alert">{{ error() }}</p> }

@@ -1,4 +1,14 @@
-<a class="back-link" routerLink="/admin/orders" [queryParams]="backQuery">‹ Danh sách đơn hàng</a>
+@if (!newId && !order()) {
+  <a
+    class="admin-back-btn"
+    routerLink="/admin/orders"
+    [queryParams]="backQuery"
+    aria-label="Quay lại danh sách đơn hàng"
+    title="Quay lại danh sách đơn hàng"
+  >
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+  </a>
+}
 @if (error()) {
   <div class="error" role="alert">
     {{ error() }}
@@ -29,12 +39,23 @@
   @if (newId) {
     <section class="order-panel">
       <header class="heading">
-        <div>
-          <p class="eyebrow">Đơn hàng mới</p>
-          <h1>Chọn khách hàng</h1>
-          @if (!selectedCustomer()) {
-            <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
-          }
+        <div class="admin-title-row-start">
+          <a
+            class="admin-back-btn"
+            routerLink="/admin/orders"
+            [queryParams]="backQuery"
+            aria-label="Quay lại danh sách đơn hàng"
+            title="Quay lại danh sách đơn hàng"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+          </a>
+          <div>
+            <p class="eyebrow">Đơn hàng mới</p>
+            <h1>Chọn khách hàng</h1>
+            @if (!selectedCustomer()) {
+              <p>Chọn khách đang hoạt động hoặc thêm khách mới.</p>
+            }
+          </div>
         </div>
         @if (!selectedCustomer()) {
           <button
@@ -139,17 +160,28 @@
   @if (order(); as d) {
     @let state = billState();
     <header class="page-head heading">
-      <div>
-        <h1>
-          Đơn {{ d.orderCode }}
-          <span class="badge" [class]="'badge ' + statusTone(d)">{{ statusLabel(d) }}</span>
-          @if (paymentBadge(); as b) {
-            <span class="badge payment-badge" [class]="'badge payment-badge ' + b.tone">{{
-              b.label
-            }}</span>
-          }
-        </h1>
-        <p>Tạo lúc {{ d.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+      <div class="admin-title-row-start">
+        <a
+          class="admin-back-btn"
+          routerLink="/admin/orders"
+          [queryParams]="backQuery"
+          aria-label="Quay lại danh sách đơn hàng"
+          title="Quay lại danh sách đơn hàng"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+        </a>
+        <div>
+          <h1>
+            Đơn {{ d.orderCode }}
+            <span class="badge" [class]="'badge ' + statusTone(d)">{{ statusLabel(d) }}</span>
+            @if (paymentBadge(); as b) {
+              <span class="badge payment-badge" [class]="'badge payment-badge ' + b.tone">{{
+                b.label
+              }}</span>
+            }
+          </h1>
+          <p>Tạo lúc {{ d.createdAt | date: 'dd/MM/yyyy HH:mm' : '+0700' }}</p>
+        </div>
       </div>
       <div class="head-actions">
         @if (state === 'edit' || state === 'readonly') {
@@ -644,7 +676,7 @@
                           >
                             Sửa</button
                           ><button
-                            class="text-button"
+                            class="text-button danger-text"
                             [disabled]="busy() || !!pending()"
                             (click)="remove(item)"
                           >
@@ -669,7 +701,7 @@
             <div class="actions">
               @if (d.status !== 'CANCELLED') {
                 <button
-                  class="secondary small"
+                  class="success small"
                   [disabled]="busy() || !!pending()"
                   (click)="openPayment('DEPOSIT')"
                 >

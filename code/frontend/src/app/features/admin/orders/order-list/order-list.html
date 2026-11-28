@@ -104,6 +104,7 @@
       }
     </nav>
     <div class="tab-sheet" [class.first-open]="tab() === tabs[0]">
+    <div class="orders-card">
     @if (tab().subs.length) {
       <div class="order-subs" role="group" [attr.aria-label]="'Lọc trong ' + tab().label">
         <button
@@ -207,6 +208,9 @@
       } @else {
         <p class="empty">Chưa có đơn hàng phù hợp.</p>
       }
+    }
+    </div>
+    @if (!loading() && page(); as result) {
       <footer class="pagination">
         <span>{{ result.totalElements }} đơn hàng</span>
         <app-pagination [page]="filter().page" [totalPages]="result.totalPages" [disabled]="loading()" (pageChange)="navigate({ page: $event })" />

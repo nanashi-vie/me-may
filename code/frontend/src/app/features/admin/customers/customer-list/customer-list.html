@@ -8,6 +8,8 @@
       <button class="primary" type="button" (click)="openNew()">＋ Thêm khách mới</button>
     }
   </header>
+  <div class="page-sheet">
+  <div class="customer-card">
   <div class="customer-toolbar">
     <label class="search"
       ><span class="sr-only">Tìm khách hàng</span
@@ -25,7 +27,6 @@
       </select></label
     >
   </div>
-  <div class="page-sheet">
   @if (toast()) {
     <p class="notice" role="status">{{ toast() }}</p>
   }
@@ -95,6 +96,9 @@
         }}
       </p>
     }
+  }
+  </div>
+  @if (!loading() && page(); as result) {
     <footer class="pagination">
       <span>{{ result.totalElements }} khách hàng</span>
       <app-pagination [page]="filter().page" [totalPages]="result.totalPages" [disabled]="loading()" (pageChange)="goPage($event)" />

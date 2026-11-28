@@ -168,6 +168,31 @@ export class BookList {
       state:{returnScroll: this.document.defaultView?.scrollY ?? 0}});
   }
 
+  openRow(event: MouseEvent, id: string) {
+    if (
+      (event.target as Element).closest('a, button, input, label') ||
+      this.document.defaultView?.getSelection()?.toString()
+    ) {
+      return;
+    }
+    if (event.ctrlKey || event.metaKey) {
+      this.document.defaultView?.open(this.editUrl(id), '_blank', 'noopener');
+    } else {
+      void this.router.navigate(['/admin/sach', id], {
+        queryParamsHandling: 'preserve',
+        state: { returnScroll: this.document.defaultView?.scrollY ?? 0 },
+      });
+    }
+  }
+
+  openRowKey(event: Event, id: string) {
+    if (event.target !== event.currentTarget) return;
+    void this.router.navigate(['/admin/sach', id], {
+      queryParamsHandling: 'preserve',
+      state: { returnScroll: this.document.defaultView?.scrollY ?? 0 },
+    });
+  }
+
   private focusSavedBook(result: Page<BookSummary>) {
     const id = this.focusId;
     if (!id) return;

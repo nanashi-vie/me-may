@@ -176,11 +176,11 @@ Refresh khi vào trang/retry/foreground/codes thay đổi; hủy response cũ. S
 
 ## Bảng quản trị — desktop
 
-Sidebar Modern Clean (rộng 240px, nền be kem #FBF8F2, viền phải #E8E2D8, sticky 100vh):
-- Đầu sidebar: logo Mẹ Mây font Baloo 2 đỏ + nhãn "Trang quản trị".
-- Menu điều hướng kèm icon SVG trực quan: Tổng quan (📊), Sách (📚), Bộ sưu tập (🗂️, chỉ OWNER), Flash Sale (⚡, chỉ OWNER), phân cách, Xem website (↗).
-- Mục Active: nền đỏ kem nhạt #FDF2F2, chữ và icon đỏ thương hiệu #9B1C28 (font-weight 700), viền trái đỏ 3px. Hover: nền be sáng #F3EDE2.
-- Đáy sidebar: Thẻ tài khoản (avatar chữ cái đầu, email, badge OWNER/STAFF) và nút Đăng xuất. Bỏ thanh admin-header phía trên để không gian nội dung bên phải rộng rãi.
+Sidebar trắng + vùng nội dung xám lạnh `#F4F5F7` (chốt 28/11/2026; sidebar rộng 240px, nền `#FFFFFF`, viền phải `#E5E7EB`, sticky 100vh):
+- Đầu sidebar: logo tròn Mẹ Mây (`favicon/web-app-manifest-192x192.png`) + chữ **Mẹ Mây** đỏ chuẩn (`#9B1C28`, font Baloo 2) và nhãn `Trang quản trị`.
+- Menu điều hướng kèm icon SVG Lucide: `Tổng quan`, nhóm `Quản lý sách` (mở sẵn), `Khách hàng`, `Đơn hàng` (OWNER), nhóm `Nhân viên` (OWNER, **đóng mặc định**, tự mở khi đang ở route `/admin/nhan-vien` hoặc `/admin/cham-cong`), phân cách, `Thùng rác` (OWNER), phân cách, `Xem website` (↗).
+- Trạng thái Active & nhánh submenu: mục cấp 1 và mục con active dùng nền đỏ pastel `#FEF2F2` + chữ/icon đỏ `#9B1C28` in đậm (nhóm cha chữ `#9B1C28` nền `#FAFAFB`); submenu dùng đường nhánh cong mảnh `#E2E8F0`. Hover nền `#F3F4F6` chữ `#1F2328`.
+- Đáy sidebar: 1 hàng gọn gồm avatar tròn (`#FEF2F2` / `#9B1C28`), email + badge `OWNER`/`STAFF` và nút icon Đăng xuất ở mép phải (tooltip `Đăng xuất`, hover đỏ `#D92D20`). Bỏ thanh admin-header phía trên.
 - Link "Quản trị" public: footer và cuối menu mobile; header dùng switch sáng/tối từ14/11. Link menu nhận diện phiên để chuyển /admin hoặc /admin/dang-nhap.
 
 Main: tiêu đề → Thêm sách → search mã/tên, filter publication/availability → bảng bìa/mã/tên/giá/khả dụng/xuất bản/cập nhật/thao tác → pagination.
@@ -227,27 +227,24 @@ Mã bất biến sau khi tạo. Lưu chưa công khai dùng ARCHIVED, không có
   - Meta row: Trình độ đọc tham khảo (`7fr`, 35%) · Link video đọc sách (`13fr`, 65%).
   - Panel ảnh: Bỏ câu thừa "Các biến thể dùng chung bộ ảnh; tiệm xác nhận ảnh/video đúng bản khi khách hỏi.".
 
-### Hệ thống Input Field & Custom Dropdown Popover quản trị /admin (duyệt 05/11)
+### Hệ thống Input Field, CTA & Dropdown Popover quản trị /admin (cập nhật 28/11)
 
-- Thiết kế Notched Outlined Label: nhãn nằm cố định trên viền trên của ô (`background: #ffffff` che viền), không giật chuyển động khi focus/nhập liệu, chiều cao ô 46px, bo góc 8px.
-- Trạng thái Active/Focus: viền và nhãn chuyển màu xanh tím Indigo (`#4F46E5`), kèm focus ring `rgba(79, 70, 229, 0.15)`.
-- Custom Dropdown Popover (áp dụng cho Thể loại, Trình độ đọc tham khảo và thanh Bộ lọc tại `/admin/sach`):
-  - Menu xổ xuống nền sáng `#FFFFFF`, viền `#E4E7EC`, bo góc `10px`, đổ bóng mềm, hover tím nhạt `#F4F3FF`, mục đang chọn hiển thị dấu `✓` bên phải.
-  - Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Hover/focus dòng `›` mở kiểu bìa; ở bộ lọc chung menu con nằm trong cột điều kiện để vừa màn hình. Nhóm Thể loại hiển thị kèm kiểu bìa đã chọn.
-  - `/admin/sach` (duyệt14/11): ngoài bảng giữ tìm tên/mã và nút Bộ lọc có số nhóm đang áp dụng; tái sử dụng CSS dropdown trên.
-  - Bảng gồm Xuất bản (có Chưa xuất bản), Khả dụng, Thể loại & Kiểu bìa, Nơi lưu trữ, Thiếu thông tin; desktop hai cột, mobile nhóm cuộn ngang trên điều kiện.
-  - Chọn nhiều nhóm rồi Áp dụng mới cập nhật URL/tải và về trang1. Đặt lại chỉ xóa bản chọn tạm; đóng/click ngoài/Escape hủy bản tạm. Search/phân trang giữ điều kiện đã áp dụng; Back/reload khôi phục URL.
-  - Nhãn điều kiện bên ngoài có nút ×; bỏ từng nhãn/Xóa tất cả áp dụng ngay, giữ tìm kiếm. Board book bỏ kiểu bìa; thùng0 là chưa phân thùng. Escape/đóng/áp dụng trả focus về nút Bộ lọc.
-- Báo lỗi (Error State): viền và nhãn chuyển đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) hiển thị ở góc phải của ô, helper text bên dưới đổi màu đỏ.
+- Notched Outlined Label: nhãn cố định trên viền trên (`background: #ffffff`), cao 46px, bo góc 8px. Active/Focus, checkbox/radio, link hành động thường (`Xuất bill →`) và phân trang admin dùng xanh Cobalt `#2563EB` (`rgba(37, 99, 235, 0.16)`), giữ nguyên 100% public màu đỏ.
+- Nút CTA admin dùng bo tròn viên thuốc (`999px`): Primary `#2563EB` (hover `#1D4ED8`), Secondary nền `#FFFFFF` viền `#D0D5DD` chữ `#1F2328` (hover `#F3F4F6`), nút `Nhận cọc` xanh lá `#16A34A` (hover `#15803D`), Danger (`Xóa`, `Hủy đơn`, thùng rác, `Dọn vĩnh viễn`) giữ riêng đỏ `#D92D20`. Các nút quay lại trang chi tiết/con bỏ chữ, dùng nút icon tròn `←` (`36×36px`) đặt ngang hàng bên trái `<h1>`. Tên sách bảng `/admin/sach` chữ đen đậm không gạch chân, bấm cả dòng để mở sửa (như Khách hàng/Đơn hàng).
+- Custom Dropdown Popover (Thể loại, Trình độ đọc tham khảo và Bộ lọc `/admin/sach`): nền `#FFFFFF`, viền `#E4E7EC`, bo `10px`, hover xanh nhạt `#EFF6FF` chữ `#2563EB`, dấu `✓` bên phải.
+- Mọi thể loại ngoài Board book có menu con Kiểu bìa (`Chưa xác định / Paperback / Hardcover` ở form nhập/sửa sách, hoặc `Tất cả kiểu bìa / Paperback / Hardcover` ở thanh lọc `/admin/sach`). Hover/focus dòng `›` mở kiểu bìa; ở bộ lọc chung menu con nằm trong cột điều kiện để vừa màn hình. Nhóm Thể loại hiển thị kèm kiểu bìa đã chọn.
+- `/admin/sach` (duyệt14/11): ngoài bảng giữ tìm tên/mã và nút Bộ lọc có số nhóm đang áp dụng; tái sử dụng CSS dropdown trên; `Import sách` dùng nút phụ secondary, `Thêm sách` là CTA chính.
+- Bảng gồm Xuất bản (có Chưa xuất bản), Khả dụng, Thể loại & Kiểu bìa, Nơi lưu trữ, Thiếu thông tin; desktop hai cột, mobile nhóm cuộn ngang trên điều kiện.
+- Chọn nhiều nhóm rồi Áp dụng mới cập nhật URL/tải và về trang1. Đặt lại chỉ xóa bản chọn tạm; đóng/click ngoài/Escape hủy bản tạm. Search/phân trang giữ điều kiện đã áp dụng; Back/reload khôi phục URL.
+- Nhãn điều kiện bên ngoài có nút ×; bỏ từng nhãn/Xóa tất cả áp dụng ngay, giữ tìm kiếm. Board book bỏ kiểu bìa; thùng0 là chưa phân thùng. Escape/đóng/áp dụng trả focus về nút Bộ lọc.
+- Báo lỗi (Error State): viền và nhãn đỏ (`#D92D20`), icon cảnh báo tam giác (⚠️) góc phải ô, helper text đỏ.
 - Native select giữ một chevron16px bên phải/không lặp và đủ padding; module chỉ đổi background-color, không reset ảnh bằng shorthand background (sửa18/11).
-- Áp dụng đồng bộ cho toàn bộ các trang quản trị: Thêm/Sửa sách, Đăng nhập, Bộ lọc danh sách sách, Flash Sale, Bộ sưu tập, Import.
+- Áp dụng đồng bộ cho toàn bộ trang quản trị (`/admin/*` và `/admin/dang-nhap`). Vùng nội dung `.admin-main-wrap` dùng nền xám `#F4F5F7` với các card trắng `#FFFFFF` (`border-radius: 14px`, viền `#EAECF0`, bỏ tấm xám lồng nhau): Đơn hàng giữ bảng dưới màu trắng, riêng thẻ tab đang mở ở danh sách đơn tô nền pastel theo màu nhãn (cam `Đang đóng gói` `#FED7AA` / `#B45309`) kèm chip số trắng, còn 2 tab chi tiết đơn nằm trong khay segmented `#E2E8F0` (tab chọn nền trắng chữ `#2563EB`); Khách hàng và `/admin/sach` gộp tìm kiếm/bộ lọc vào đầu card bảng trắng (phân trang nằm dưới card trên `#F4F5F7`); Sửa/Import/Xem trước sách, Bộ sưu tập, Flash Sale, Thùng rác và Tổng quan bọc phần nội dung chính trong card trắng.
 
-## Thanh điều hướng Admin Sidebar — 06/11/2026
+## Thanh điều hướng Admin Sidebar — 06/11 (cập nhật 28/11/2026)
 
-- **Cấu trúc phân cấp / Accordion**: Thêm mục cha "Quản lý sách" dạng accordion có mũi tên xoay (`v` khi mở, `>` khi đóng), mặc định mở sẵn khi truy cập trang quản trị.
-- **Mục con (Submenu)**: Thụt lề với đường kẻ dọc tree-line thanh lịch (`#E8E2D8`), phong cách clean text gồm: "Sách", "Bộ sưu tập", "Flash sale" (chỉ hiển thị mục phân quyền cho OWNER).
-- **Trạng thái Active**: Nền đỏ pastel vừa vặn (`#FDE8E8`), bo góc dạng pill (`border-radius: 8px`), chữ đỏ đậm `#9B1C28`, bỏ đường viền nhỏ bên trái (`border-left` indicator).
-- **Responsive mobile**: Tự động chuyển layout linh hoạt khi màn hình hẹp ($\le 768px$).
+- **Accordion & Submenu**: `Quản lý sách` mặc định mở; `Nhân viên` (`Hồ sơ nhân viên`, `Lịch làm việc`, `Bảng công`) mặc định đóng (tự mở khi đang ở route nhân viên/chấm công). Submenu nối đường nhánh cong mảnh `#E2E8F0`; mục con active nền `#FEF2F2` chữ `#9B1C28`.
+- **Responsive mobile**: Tự động chuyển layout linh hoạt khi màn hình hẹp (`≤ 768px`).
 
 ## Trạng thái UX dùng chung
 

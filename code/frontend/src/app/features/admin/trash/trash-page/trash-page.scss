@@ -1,3 +1,7 @@
+.trash-card {
+  margin-top: 1.25rem;
+  margin-bottom: 1rem;
+}
 .trash-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -13,14 +17,14 @@
   }
   a:hover { color: var(--ink); }
   a.active {
-    border-bottom-color: var(--action);
-    color: var(--red);
+    border-bottom-color: var(--admin-primary, #2563eb);
+    color: var(--admin-primary, #2563eb);
   }
 }
 .trash-notice {
   padding: 0.65rem 0.9rem;
-  border-left: 3px solid var(--action);
-  background: #fff5f4;
+  border-left: 3px solid var(--admin-primary, #2563eb);
+  background: var(--admin-primary-soft, #eff6ff);
 }
 .trash-toolbar {
   display: flex;
@@ -47,7 +51,7 @@
   button {
     height: 38px;
     padding: 0 1rem;
-    border-radius: 6px;
+    border-radius: 999px;
     font-size: 0.88rem;
     font-weight: 600;
   }
@@ -81,7 +85,7 @@ input[type='checkbox'] {
 
   button {
     padding: 0.4rem 0.85rem;
-    border-radius: 6px;
+    border-radius: 999px;
     font-size: 0.88rem;
   }
 }

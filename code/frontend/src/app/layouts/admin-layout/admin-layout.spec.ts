@@ -64,8 +64,29 @@ describe('AdminLayout', () => {
     const chevron = fixture.nativeElement.querySelector('.nav-chevron svg');
     expect(chevron).toBeTruthy();
 
+    const logo = fixture.nativeElement.querySelector('.brand-logo') as HTMLImageElement | null;
+    expect(logo?.getAttribute('src')).toContain('favicon/web-app-manifest-192x192.png');
+
     const avatar = fixture.nativeElement.querySelector('.account-avatar');
     expect(avatar?.textContent?.trim()).toBe('O');
+  });
+
+  it('keeps Nhân viên submenu collapsed by default and toggles on click', () => {
+    const { fixture, component } = setup();
+    expect(component.employeeMenuOpen()).toBe(false);
+
+    const buttons = fixture.nativeElement.querySelectorAll('.nav-group-btn') as NodeListOf<HTMLButtonElement>;
+    const employeeToggle = buttons[1];
+    const submenu = fixture.nativeElement.querySelector('#employee-submenu');
+    expect(employeeToggle.getAttribute('aria-expanded')).toBe('false');
+    expect(submenu.classList.contains('collapsed')).toBe(true);
+
+    employeeToggle.click();
+    fixture.detectChanges();
+
+    expect(component.employeeMenuOpen()).toBe(true);
+    expect(employeeToggle.getAttribute('aria-expanded')).toBe('true');
+    expect(submenu.classList.contains('collapsed')).toBe(false);
   });
 
   it('toggles book management accordion on button click', () => {

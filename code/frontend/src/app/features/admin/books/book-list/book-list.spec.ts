@@ -378,4 +378,27 @@ describe('BookList', () => {
     expect(root.querySelector('.applied-filters')?.textContent).toContain('Chưa xuất bản');
     expect(root.querySelector('.applied-filters')?.textContent).toContain('Thùng 7');
   });
+  it('opens book editor when clicking a row but ignores checkbox and action buttons',()=>{
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({imports:[BookList],providers:[
+      provideRouter([]),
+      {provide:BookApi,useValue:{
+        list:()=>of({items:[{id:'7',bookCode:'MM-000007',title:'Book Seven',publication:'PUBLISHED',availability:'AVAILABLE',totalStock:2,priceMinVnd:10000,priceMaxVnd:15000,storageBoxNumber:null,updatedAt:'2026-10-01T00:00:00Z'}],page:0,size:20,totalElements:1,totalPages:1}),
+        storageBoxes:()=>of([]),
+      }},
+      {provide:AuthService,useValue:{user:()=>({id:1,email:'o@m.vn',role:'OWNER'}),epoch:()=>0}},
+      {provide:ActivatedRoute,useValue:{queryParamMap:of(new Map())}},
+    ]});
+    const navigate=vi.spyOn(TestBed.inject(Router),'navigate').mockResolvedValue(true);
+    const f=TestBed.createComponent(BookList);f.detectChanges();
+    const root=f.nativeElement as HTMLElement;
+    const row=root.querySelector<HTMLTableRowElement>('tr.book-row')!;
+    expect(row.querySelector('.book-title')?.textContent?.trim()).toBe('Book Seven');
+    root.querySelector<HTMLInputElement>('.row-check')!.click();
+    root.querySelector<HTMLButtonElement>('.sold-out-btn')!.click();
+    root.querySelector<HTMLButtonElement>('.trash-btn')!.click();
+    expect(navigate).not.toHaveBeenCalled();
+    row.click();
+    expect(navigate).toHaveBeenCalledWith(['/admin/sach','7'],expect.objectContaining({queryParamsHandling:'preserve'}));
+  });
 });
